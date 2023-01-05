@@ -15,14 +15,17 @@
 #
 
 from collections import namedtuple
+import os
 import time
 import numpy as np
 from typing import Dict
 from abc import abstractmethod
-
+import bigdl
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
+
+_whole_acceleration_env = ['tcmalloc', 'jemalloc']
 
 CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
 
@@ -58,6 +61,35 @@ class AccelerationOption(object):
     def optimize(self, *args, **kwargs):
         pass
 
+
+class AccelerationEnv(object):
+    __slot__ = _whole_acceleration_env
+
+    def __init__(self, **kwargs):
+        """
+        initialize optimization env
+        """
+        for option in _whole_acceleration_env:
+            setattr(self, option, kwargs.get(option, False))
+
+    def get_malloc_lib(self):
+        if self.tcmalloc:
+            return "tcmalloc"
+        if self.jemalloc:
+            return "jemalloc"
+        return "tcmalloc"
+
+    def get_env_dict(self):
+        tmp_env_dict = {}
+        nano_dir = os.path.join(bigdl.__file__, 'nano')
+        if self.get_malloc_lib == 'jemalloc':
+            tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libjemalloc.so')
+            tmp_env_dict['MALLOC_CONF'] = 'oversize_threshold:1,background_thread:false,' \
+                                          'metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1'
+        else:
+            tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libtcmalloc.so')
+            tmp_env_dict['MALLOC_CONF'] = ''
+        return tmp_env_dict
 
 def throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''

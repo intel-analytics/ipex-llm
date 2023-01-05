@@ -22,7 +22,7 @@ from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
+from bigdl.nano.utils.inference.common.utils import AccelerationEnv, AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -145,6 +145,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     DEFAULT_INFERENCE_ACCELERATION_METHOD = {}
     for method in _default_methods:
         DEFAULT_INFERENCE_ACCELERATION_METHOD[method] = ALL_INFERENCE_ACCELERATION_METHOD[method]
+        
+    ALL_ACCELERATION_ENV = {
+        'tcmalloc': AccelerationEnv(tcmalloc=True),
+        'jemalloc': AccelerationEnv(jemalloc=True)
+    }
 
     def optimize(self, model: nn.Module,
                  training_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]],
@@ -163,7 +168,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
-                 output_filename: Optional[str] = None) -> None:
+                 output_filename: Optional[str] = None,
+                 search_env: Optional[bool] = False) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -277,6 +283,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
+        :param search_env: (optional) a boolean value that determines whether the optimizer searches
+               for the best environment parameters for this model.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -382,11 +390,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model(*input_sample)
 
         throughput_calculate_helper_with_env = spawn_new_process(throughput_calculate_helper)
-        env_result_map = {}
-        for idx, (method, env) in enumerate(available_env_dict.items()):
-            env_result_map[method], _ = throughput_calculate_helper_with_env(
-                latency_sample_num, baseline_time, func_test, model, input_sample, env_var=env)
-        best_env = available_env_dict[min(env_result_map, key=env_result_map.get)]
+        accuracy_calculate_helper_with_env = spawn_new_process(_accuracy_calculate_helper)
+
+        if search_env:
+            env_result_map = {}
+            for method, env in self.ALL_ACCELERATION_ENV.items():
+                env_result_map[method], _ = throughput_calculate_helper_with_env(
+                    latency_sample_num, baseline_time, func_test, model, input_sample,
+                    env_var=env.get_env_dict())
+            best_env = self.ALL_ACCELERATION_ENV[
+                min(env_result_map, key=env_result_map.get)].get_env_dict()
+        else:
+            best_env = {}
 
         for idx, (method, available) in enumerate(available_dict.items()):
             result_map[method] = {}
@@ -445,8 +460,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 # test whether metric works
                                 try:
                                     result_map[method]["accuracy"] =\
-                                        _accuracy_calculate_helper(acce_model, metric,
-                                                                   validation_data)
+                                        accuracy_calculate_helper_with_env(acce_model, metric,
+                                                                           validation_data, env=best_env)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
@@ -463,9 +478,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         "metric(model, data_loader) (or metric(model) if "
                                         "validation_data is None).")
                             else:
-                                result_map[method]["accuracy"] =\
-                                    _accuracy_calculate_helper(acce_model, metric,
-                                                               validation_data)
+                                result_map[method]["accuracy"] = \
+                                    accuracy_calculate_helper_with_env(acce_model, metric,
+                                                                       validation_data, env=best_env)
                     else:
                         result_map[method]["accuracy"] = None
 
