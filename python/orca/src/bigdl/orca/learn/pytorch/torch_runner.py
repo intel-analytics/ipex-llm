@@ -389,7 +389,8 @@ class TorchRunner(BaseRunner):
                                            info["num_epochs"])
                 else:
                     desc = "{}e".format(info["epoch_idx"] + 1)
-            invalidInputError(tqdm is not None, "tqdm is not installed, please install with 'pip install tqdm'")
+            invalidInputError(tqdm is not None, 
+                              "tqdm is not installed, please install with 'pip install tqdm'")
             _progress_bar = tqdm(
                 total=len(iterator),
                 desc=desc,
