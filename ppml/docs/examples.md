@@ -142,7 +142,7 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 
 
 ### Run Trusted SimpleQuery
-<details><summary>Trusted SimpleQuery With Single KMS/DataSource</summary>
+<details><summary>Trusted SimpleQuery With Single Data source/KMS</summary>
 
 spark native mode
 <p align="left">
@@ -293,7 +293,7 @@ bash bigdl-ppml-submit.sh \
 ```
 </details>
 
-<details><summary>Trusted SimpleQuery With Multiple KMS/Datasource</summary>
+<details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
 
 If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
 
