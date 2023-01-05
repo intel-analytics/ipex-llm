@@ -279,14 +279,12 @@ class SparkRunner:
             # create local model for predict
             self.setup_local()
 
-
     def setup(self):
         import tensorflow as tf
         tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
         tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
-
 
     def setup_local(self):
         self.size = 1
@@ -299,7 +297,6 @@ class SparkRunner:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
         self.strategy = ds_context.get_strategy()
-
 
     def setup_distributed(self, cluster):
         """
@@ -318,7 +315,6 @@ class SparkRunner:
         os.environ["no_proxy"] = ",".join(ips)
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,
@@ -345,15 +341,15 @@ class SparkRunner:
             replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
         history = self.model.fit(train_dataset,
-                            epochs=epochs,
-                            verbose=verbose,
-                            callbacks=callbacks,
-                            validation_data=test_dataset,
-                            class_weight=class_weight,
-                            initial_epoch=initial_epoch,
-                            steps_per_epoch=steps_per_epoch,
-                            validation_steps=validation_steps,
-                            validation_freq=validation_freq)
+                                 epochs=epochs,
+                                 verbose=verbose,
+                                 callbacks=callbacks,
+                                 validation_data=test_dataset,
+                                 class_weight=class_weight,
+                                 initial_epoch=initial_epoch,
+                                 steps_per_epoch=steps_per_epoch,
+                                 validation_steps=validation_steps,
+                                 validation_freq=validation_freq)
 
         if callbacks:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
@@ -375,17 +371,17 @@ class SparkRunner:
         val_data_creator = validation_data_creator
 
         history = self.distributed_train_func(data_creator,
-                                                     config,
-                                                     epochs=epochs,
-                                                     verbose=verbose,
-                                                     callbacks=callbacks,
-                                                     steps_per_epoch=steps_per_epoch,
-                                                     class_weight=class_weight,
-                                                     initial_epoch=initial_epoch,
-                                                     validation_data_creator=val_data_creator,
-                                                     validation_steps=validation_steps,
-                                                     validation_freq=validation_freq
-                                                     )
+                                              config,
+                                              epochs=epochs,
+                                              verbose=verbose,
+                                              callbacks=callbacks,
+                                              steps_per_epoch=steps_per_epoch,
+                                              class_weight=class_weight,
+                                              initial_epoch=initial_epoch,
+                                              validation_data_creator=val_data_creator,
+                                              validation_steps=validation_steps,
+                                              validation_freq=validation_freq
+                                              )
         if history is None:
             stats = {}
         else:
