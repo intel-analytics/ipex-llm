@@ -140,8 +140,8 @@ def load_dict_with_decryption(dataset_dict_path: str, fs=None, key: Optional[str
             f"No such file or directory: '{dataset_dict_json_path}'. Expected to load a DatasetDict object, but got a Dataset. Please use datasets.load_from_disk instead."
         )
     #with _open_encrypted_file_like_with_key(fs.open(dataset_dict_json_path, "r", key=key)) as config:
-    with _open_encrypted_file_like_with_key(dataset_dict_json_path, fs, "r", key=key) as config:
-        for k in json.load(config)["splits"]:
+    with _open_encrypted_file_like_with_key(dataset_dict_json_path, fs, "r", key=key) as load_config:
+        for k in json.load(load_config)["splits"]:
             dataset_dict_split_path = (
                 dataset_dict_path.split("://")[0] + "://" + Path(dest_dataset_dict_path, k).as_posix()
                 if is_remote_filesystem(fs)

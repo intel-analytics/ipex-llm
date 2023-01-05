@@ -95,5 +95,15 @@ def save_datasetdict_to_disk():
     torch.save(temp, "datasetdict.pt")
 
 
+def test():
+    dc = torch.load("datasetdict.pt")
+    print(dc['train'][1])
+
+
+def try_load_from_disk():
+    dc = load_from_disk("/ppml/datasetdict")
+    print(dc)
+
+
 if __name__ == "__main__":
     save_datasetdict_to_disk()
