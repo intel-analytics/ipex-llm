@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.Path
  * @param kms
  * @param sparkSession
  */
-class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession=null) {
+class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null) {
 
   protected var dataKeyPlainText: String = ""
   protected val multiKms = new scala.collection.mutable.HashMap[String, KeyManagementService]
