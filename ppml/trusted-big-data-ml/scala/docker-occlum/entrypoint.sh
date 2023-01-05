@@ -58,13 +58,6 @@ if [ -n "$SPARK_EXTRA_CLASSPATH" ]; then
   SPARK_CLASSPATH="$SPARK_CLASSPATH:$SPARK_EXTRA_CLASSPATH"
 fi
 
-if [[ -z "$META_SPACE" ]]; then
-    echo "META_SPACE not set, using default value 256m"
-    META_SPACE=256m
-else
-    echo "META_SPACE=$META_SPACE"
-fi
-
 echo "SGX_LOG_LEVEL $SGX_LOG_LEVEL" && \
 echo "SGX_DRIVER_JVM_MEM_SIZE $SGX_DRIVER_JVM_MEM_SIZE" && \
 echo "SGX_EXECUTOR_JVM_MEM_SIZE $SGX_EXECUTOR_JVM_MEM_SIZE" && \
@@ -91,7 +84,6 @@ case "$SPARK_K8S_CMD" in
             -Divy.home="/tmp/.ivy" \
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
-            -XX:MaxMetaspaceSize=$META_SPACE \
             -Djdk.lang.Process.launchMechanism=posix_spawn \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$DRIVER_MEMORY \
@@ -109,7 +101,6 @@ case "$SPARK_K8S_CMD" in
             -Divy.home="/tmp/.ivy" \
             -Dos.name="Linux" \
             -XX:-UseCompressedOops \
-            -XX:MaxMetaspaceSize=$META_SPACE \
             -Djdk.lang.Process.launchMechanism=posix_spawn \
             -cp "$SPARK_CLASSPATH" \
             -Xmx$SGX_DRIVER_JVM_MEM_SIZE \
@@ -134,7 +125,6 @@ case "$SPARK_K8S_CMD" in
             /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
             "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
             -XX:-UseCompressedOops \
-            -XX:MaxMetaspaceSize=$META_SPACE \
             -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
             -Divy.home=/tmp/.ivy \
             -Xms$SPARK_EXECUTOR_MEMORY \
@@ -156,7 +146,6 @@ case "$SPARK_K8S_CMD" in
             /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
             "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
             -XX:-UseCompressedOops \
-            -XX:MaxMetaspaceSize=$META_SPACE \
             -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
             -Divy.home=/tmp/.ivy \
             -Xms$SGX_EXECUTOR_JVM_MEM_SIZE \
