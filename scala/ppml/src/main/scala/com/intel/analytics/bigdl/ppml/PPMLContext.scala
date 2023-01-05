@@ -360,7 +360,7 @@ object PPMLContext{
       val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
       val dataKey = conf.get(s"spark.bigdl.kms.datasource${i}.data")
       ppmlSc.addDataSource(dataSourceName, kms)
-     ppmlSc.loadKeys(primaryKey, dataKey, dataSourceName)
+      ppmlSc.loadKeys(primaryKey, dataKey, dataSourceName)
     }
   ppmlSc
   }
