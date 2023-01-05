@@ -204,7 +204,7 @@ else
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
 
-        runtime_command=($JAVA_RUN $JVM_ARGS ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
+        runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
         export sgx_command="${runtime_command[@]}"
         ./init.sh && \
         gramine-sgx bash 1>&2
