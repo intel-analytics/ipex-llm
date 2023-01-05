@@ -498,10 +498,8 @@ class SparkRunner:
         def predict_fn(shard):
             y = self.model.predict(shard["x"], **params)
             return {"prediction": y}
-        import collections
-        if isinstance(dataset, collections.Iterable):
-            for shard in dataset:
-                yield predict_fn(shard)
+        for shard in dataset:
+            yield predict_fn(shard)
         self._stop_log_monitor()
 
     @property
