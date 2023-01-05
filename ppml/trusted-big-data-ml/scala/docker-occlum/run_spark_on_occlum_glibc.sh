@@ -62,13 +62,6 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
-    if [[ -z "$META_SPACE" ]]; then
-        echo "META_SPACE not set, using default value 256m"
-        META_SPACE=256m
-    else
-        echo "META_SPACE=$META_SPACE"
-    fi
-
     if [[ -z "$SGX_MEM_SIZE" ]]; then
         sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
     else
@@ -199,7 +192,7 @@ build_spark() {
                 echo "generate quote success"
                 #attest quote
                 occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                            -XX:-UseCompressedOops -XX:MaxMetaspaceSize=1g \
+                            -XX:-UseCompressedOops \
                             -XX:ActiveProcessorCount=4 \
                             -Divy.home="/tmp/.ivy" \
                             -Dos.name="Linux" \
@@ -226,7 +219,7 @@ run_pyspark_pi() {
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark Pi${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -242,7 +235,7 @@ run_pyspark_sql_example() {
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark SQL example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -258,7 +251,7 @@ run_pyspark_sklearn_example() {
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -273,7 +266,7 @@ run_spark_pi() {
     build_spark
     echo -e "${BLUE}occlum run spark Pi${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -301,7 +294,6 @@ run_spark_unittest_only() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
-		-XX:MaxMetaspaceSize=$META_SPACE \
 	        -Dspark.testing=true \
 	        -Dspark.test.home=/opt/spark-source \
 	        -Dspark.python.use.daemon=false \
@@ -322,7 +314,7 @@ run_spark_lenet_mnist(){
     echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -350,7 +342,7 @@ run_spark_resnet_cifar(){
     build_spark
     echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -378,7 +370,7 @@ run_spark_tpch(){
     build_spark
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -417,7 +409,7 @@ run_spark_xgboost() {
     build_spark
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -439,7 +431,7 @@ run_spark_gbt() {
     build_spark
     echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -465,7 +457,7 @@ run_spark_gbt_e2e() {
     EHSM_KMS_IP=${EHSM_URL%:*}
     EHSM_KMS_PORT=${EHSM_URL#*:}
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -502,7 +494,7 @@ run_spark_sql_e2e() {
     EHSM_KMS_IP=${EHSM_URL%:*}
     EHSM_KMS_PORT=${EHSM_URL#*:}
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
