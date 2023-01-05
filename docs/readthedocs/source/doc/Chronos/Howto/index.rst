@@ -39,6 +39,7 @@ Persist a forecaster
 * `Export the OpenVINO model files to disk <how_to_export_openvino_files.html>`__
 * `Export the TorchScript model files to disk <how_to_export_torchscript_files.html>`__
 * `Preprocess my data <how_to_preprocess_my_data.html>`__
+* `Built-in dataset <how_to_use_built-in_datasets.html>`__
 
 Benchmark a forecaster
 ~~~~~~~~~~~~~~~~~~~~~~~~~
