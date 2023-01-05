@@ -209,7 +209,8 @@ class IPEXJITInference_gt_1_10:
         # test save & load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
+            model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 

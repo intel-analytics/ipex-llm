@@ -517,7 +517,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_attrs(result, model)
 
         elif precision == 'bf16':
-            invalidInputError(accelerator == 'openvino',
+            invalidInputError(accelerator == 'openvino' or accelerator is None,
                               "Accelerator {} is invalid for BF16.".format(accelerator))
             invalidInputError(device == 'CPU',
                               "Device {} don't support bfloat16.".format(device))
@@ -535,7 +535,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         **kwargs)
             return patch_attrs(result, model)
 
-        invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
+        # invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
         if not isinstance(x, tf.data.Dataset) and y is None:
             # fake label to make quantization work

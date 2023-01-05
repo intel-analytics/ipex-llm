@@ -23,6 +23,8 @@ from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from neural_compressor.config import MixedPrecisionConfig
+from neural_compressor import mix_precision
 
 
 class TestModelQuantize(TestCase):
