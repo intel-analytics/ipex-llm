@@ -142,6 +142,14 @@ class XGBClassifierModel private[bigdl](
     output
   }
 
+  def getFeatureScore(featureMap: String = null): Map[String, Integer] = {
+    model.nativaBooster.getFeatureScore(featureMap)
+  }
+
+  def getScore(featureMap: String, importanceType: String): Map[String, Double] = {
+    model.getScore(featureMap, importanceType)
+  }
+  
   def save(path: String): Unit = {
     model.write.overwrite().save(path)
   }

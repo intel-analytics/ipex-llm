@@ -117,6 +117,16 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.transform(dataset)
   }
 
+  def getFeatureScoreXGBClassifierModel(model: XGBClassifierModel,
+                                        featureMap: String = null): Map[String, Integer] = {
+    model.getFeatureScore(featureMap)
+  }
+
+  def getScoreXGBClassifierModel(model: XGBClassifierModel,
+                                featureMap: String,
+                                importanceType: String): Map[String, Double] = {
+    model.getScore(featureMap, importanceType)
+  }
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
     val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
     new XGBRegressor(xgbparams)

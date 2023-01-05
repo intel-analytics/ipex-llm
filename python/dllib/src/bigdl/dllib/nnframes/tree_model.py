@@ -91,7 +91,15 @@ class XGBClassifierModel:
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
         return df
+    
+    def getFScore(self, fmap=""):
+        scores = callZooFunc("dict", "getFeatureScoreXGBClassifierModel", self.value, fmap)
+        return scores
 
+    def getScore(self, fmap="", importance_type="weight"):
+        score = callZooFunc("dict", "getScoreXGBClassifierModel", self.value, fmap)
+        return score
+    
     def saveModel(self, path):
         callZooFunc("float", "saveXGBClassifierModel", self.value, path)
 
