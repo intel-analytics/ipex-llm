@@ -375,7 +375,7 @@ with InferenceOptimizer.get_context(ipex_model, classifer):
     Neural Compressor >= 2.0 is needed for this function. You may call ``pip install --upgrade neural-compressor`` before using this functionality.
 ```
 
-We also provides a no-code method for users to accelerate their pytorch inferencing workflow through neural coder. Users could call
+We also provides a no-code method for users to accelerate their pytorch inferencing workflow through Neural Coder. Neural Coder is a novel component under Intel® Neural Compressor to further simplify the deployment of deep learning models via one-click. BigDL-Nano is now a backend in Neural Coder. Users could call
 
 ```bash
 python -m neural_coder -o <acceleration_name> example.py
@@ -383,7 +383,7 @@ python -m neural_coder -o <acceleration_name> example.py
 
 For `example.py`, it could be a common pytorch inference script without any code changes needed. For `<acceleration_name>`, please check following table.
 
-| Optimization Set | <acceleration_name> | 
+| Optimization Set | `<acceleration_name>` | 
 | ------------- | ------------- | 
 | BF16 + Channels Last | `nano_bf16_channels_last` | 
 | BF16 + IPEX + Channels Last | `nano_bf16_ipex_channels_last` | 
