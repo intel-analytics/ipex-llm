@@ -26,6 +26,7 @@ import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
+import scala.collection.Map
 
 object PythonTreeModel {
 

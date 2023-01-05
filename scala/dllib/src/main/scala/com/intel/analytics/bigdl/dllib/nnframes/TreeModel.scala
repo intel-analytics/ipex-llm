@@ -27,6 +27,7 @@ import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMC
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressionModel => MLightGBMRegressionModel}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
 
+import scala.collection.Map
 
 class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   val sc = SparkContext.getOrCreate()
