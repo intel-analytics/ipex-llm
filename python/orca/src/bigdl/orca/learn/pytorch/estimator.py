@@ -41,7 +41,7 @@ class Estimator(object):
                    config: Optional[Dict]=None,
                    workers_per_node: int=1,
                    scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
-                   scheduler_step_freq: str="batch",
+                   scheduler_step_freq: str="epoch",
                    use_tqdm: bool=False,
                    model_dir: Optional[str]=None,
                    sync_stats: bool=False,
@@ -79,7 +79,7 @@ class Estimator(object):
                Default: None if no scheduler is needed.
         :param scheduler_step_freq: The frequency when `scheduler.step` is called.
                "batch" or "epoch" if there is a scheduler.
-               Default: "batch".
+               Default: "epoch".
         :param use_tqdm: Whether to use tqdm to monitor the training progress.
                Default: False.
         :param model_dir: The path to save the PyTorch model during the training if
