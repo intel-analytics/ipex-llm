@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import subprocess
-import re
 import operator
 from pathlib import Path
 from bigdl.nano.utils.log4Error import invalidInputError

@@ -44,7 +44,7 @@ def export(model, input_sample=None, xml_path="model.xml",
         # split kwargs to torch.onnx.export and mo
         export_args = inspect.getfullargspec(torch.onnx.export).args
         export_defaults = inspect.getfullargspec(torch.onnx.export).defaults
-        export_args = export_args[len(export_args)-len(export_defaults):]
+        export_args = export_args[len(export_args) - len(export_defaults):]
         export_kwargs = {}
         mo_kwargs = {}
         for key, value in kwargs.items():
