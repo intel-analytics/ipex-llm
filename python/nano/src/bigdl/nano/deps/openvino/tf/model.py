@@ -29,7 +29,8 @@ import os
 
 class KerasOpenVINOModel(AcceleratedKerasModel):
     def __init__(self, model, input_spec=None, precision='fp32',
-                 thread_num=None, device='CPU', config=None, logging=True):
+                 thread_num=None, device='CPU', config=None,
+                 logging=True, **kwargs):
         """
         Create a OpenVINO model from Keras.
 
@@ -47,6 +48,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                        inference. default: None.
         :param logging: whether to log detailed information of model conversion.
                         default: True.
+        :param **kwargs: will be passed to model optimizer function.
         """
         ov_model_path = model
         with TemporaryDirectory() as dir:
@@ -63,7 +65,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                     model.compute_output_shape(input_shape)
                 export(model, str(dir / 'tmp.xml'),
                        precision=precision,
-                       logging=logging)
+                       logging=logging,
+                       **kwargs)
                 ov_model_path = dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
