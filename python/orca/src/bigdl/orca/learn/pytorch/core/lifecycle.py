@@ -75,8 +75,6 @@ class LifeCycle(metaclass=ABCMeta):
             rank=world_rank,
             world_size=world_size)
         self.backend = "torch-distributed"
-        self.rank = world_rank
-        self.size = world_size
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
