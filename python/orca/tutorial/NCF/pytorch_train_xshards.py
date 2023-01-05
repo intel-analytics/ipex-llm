@@ -98,7 +98,7 @@ for r in result:
 # Step 6: Save the trained pytorch model and processed data for resuming training or prediction
 est.save("NCF_model")
 
-if os.path.exists("train_xshards")
+if os.path.exists("train_xshards"):
     import shutil
     shutil.rmtree("train_xshards")
     shutil.rmtree("test_xshards")
