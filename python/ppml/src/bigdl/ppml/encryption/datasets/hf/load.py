@@ -147,7 +147,7 @@ def load_dict_with_decryption(dataset_dict_path: str, fs=None, key: Optional[str
                 if is_remote_filesystem(fs)
                 else Path(dest_dataset_dict_path, k).as_posix()
             )
-            dataset_dict[k] = Dataset.load_from_disk(dataset_dict_split_path, fs, keep_in_memory=keep_in_memory)
+            dataset_dict[k] = Dataset.load_from_disk(dataset_dict_split_path, fs, keep_in_memory=keep_in_memory, key=key)
 
     return dataset_dict
 
@@ -294,7 +294,7 @@ def load_from_disk(dataset_path: str, fs=None, keep_in_memory: Optional[bool] = 
         return Dataset.load_from_disk(dataset_path, fs, key=key, keep_in_memory=keep_in_memory)
     # TODO: test this later, check this later
     elif fs.isfile(Path(dest_dataset_path, config.DATASETDICT_JSON_FILENAME).as_posix()):
-        return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory)
+        return DatasetDict.load_from_disk(dataset_path, fs, keep_in_memory=keep_in_memory, key=key)
     else:
         invalidInputError(False,
             f"Directory {dataset_path} is neither a dataset directory nor a dataset dict directory."
