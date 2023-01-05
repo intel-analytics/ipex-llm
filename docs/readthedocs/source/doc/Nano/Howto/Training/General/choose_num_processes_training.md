@@ -1,4 +1,4 @@
-# Choose the Number of Porcesses for Multi-Instance Training
+# Choose the Number of Processes for Multi-Instance Training
 
 BigDL-Nano supports multi-instance training on a server with multiple CPU cores or sockets. With Nano, you could launch a self-defined number of processes to perform data-parallel training. When choosing the number of processes, there are 3 empirical recommendations for better training performance:
 
