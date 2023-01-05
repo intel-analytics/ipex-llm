@@ -49,6 +49,7 @@ from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
                                             NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.core import BaseRunner
+from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
@@ -254,6 +255,7 @@ class TorchRunner(BaseRunner):
             val_steps = None
 
         # Check uniqueness of the MainCallback
+        make_only_mainCallback(callbacks)
 
         if callbacks is not None:
             for callback in callbacks:
@@ -438,7 +440,8 @@ class TorchRunner(BaseRunner):
 
             if self.scheduler and batch_info.get(
                     SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
-                self.scheduler.step()
+                # TODO: Totally abandon SCHEDULER_STEP
+                self.call_hook("on_lr_adjust")
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
@@ -494,22 +497,11 @@ class TorchRunner(BaseRunner):
 
         # Compute output.
         with self.timers.record("fwd"):
-            *features, target = self.batch
-            self.output = self.model(*features)
-
-            # Ensure `target` and `output` are always in a list format.
-            targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
-            self.loss = self.criterion(*outputL, *targetL)
+            self.call_hook("on_train_forward")
 
         # Compute gradients in a backward pass.
-        with self.timers.record("grad"):
-            self.optimizer.zero_grad()
-            self.loss.backward()
-
-        # Call step of optimizer to update model params.
-        with self.timers.record("apply"):
-            self.optimizer.step()
+        with self.timers.record("grad&apply"):
+            self.call_hook("on_iter_backward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
@@ -541,6 +533,10 @@ class TorchRunner(BaseRunner):
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
+
+        # Check uniqueness of the MainCallback
+        make_only_mainCallback(callbacks)
+
         with self.timers.record("validation"):
             validation_stats = self._validate(loader,
                                               info=info,
@@ -640,13 +636,7 @@ class TorchRunner(BaseRunner):
 
         # compute output
         with self.timers.record("eval_fwd"):
-            *features, target = self.batch
-            self.output = self.model(*features)
-
-            # Ensure `target` and `output` are always in a list format.
-            targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
-            loss = self.criterion(*outputL, *targetL)
+            self.call_hook("on_val_forward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
@@ -655,7 +645,7 @@ class TorchRunner(BaseRunner):
         del self.batch
         del self.output
 
-        return output, target, loss
+        return output, target, self.loss
 
     def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
@@ -816,7 +806,8 @@ class TorchRunner(BaseRunner):
             return
 
         for hook in callbacks:
-            getattr(hook, fn_name)(self)
+            if hasattr(hook, fn_name):
+                getattr(hook, fn_name)(self)
 
     @property
     def given_models(self):
