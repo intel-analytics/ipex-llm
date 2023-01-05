@@ -8,6 +8,7 @@ set -e
 
 # the number of epoch to run is limited for testing purposes
 sed -i 's/epochs=10/epochs=1/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i 's/range(10)/range(1)/' $NANO_HOWTO_GUIDES_TEST_DIR/tensorflow_training_bf16.ipynb
 
 # the number of batches to run is limited for testing purposes
 sed -i "s/steps_per_epoch=(ds_info.splits\['train'].num_examples \/\/ 32)/steps_per_epoch=(ds_info.splits\['train'].num_examples \/\/ 32 \/\/ 10)/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_tensorflow_training_multi_instance.ipynb
