@@ -31,4 +31,5 @@ RUN cd /ppml && \
 
 WORKDIR /ppml
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+#ENTRYPOINT [ "/opt/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/flink-entrypoint.sh" ]
