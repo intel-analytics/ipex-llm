@@ -17,6 +17,7 @@
 # simple test, delete later
 import os
 from bigdl.ppml.encryption.datasets.hf.load import load_from_disk
+#from bigdl.nano.pytorch.patching import patch_encryption
 import datasets
 from cryptography.fernet import Fernet
 import random
@@ -105,5 +106,20 @@ def try_load_from_disk():
     print(dc)
 
 
+def test_encryption():
+    patch_encryption()
+    dc = load_from_disk("/ppml/datasetdict")
+    torch.save(dc, "encryption.pt", encryption_key=_create_random(32))
+
+
+def test_encryption_load():
+    patch_encryption()
+    test = torch.load("encryption.pt", decryption_key=_create_random(32))
+    print(test)
+
+def test_load_dict():
+    test = load_from_disk("/ppml/datasetdict-en/", keep_in_memory=True, key=_create_random(32))
+    print(test)
+
 if __name__ == "__main__":
-    save_datasetdict_to_disk()
+    test_load_dict()
