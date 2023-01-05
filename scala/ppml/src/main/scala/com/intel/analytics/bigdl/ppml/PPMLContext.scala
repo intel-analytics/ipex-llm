@@ -65,16 +65,16 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
   def loadKeys(primaryKeyPath: String, dataKeyPath: String, dataSourceName: String = "dataSource"): this.type = {
     var kms = this.kms
     if (kms == null) {
-      Log4Error.invalidInputError(this.dataSources.contains(dataSourceName), "this.dataSources.get(dataSourceName).get==null, cant get kms of "+dataSourceName+"    "+this.dataSources.toString)
+      Log4Error.invalidInputError(this.dataSources.contains(dataSourceName), "this.dataSources.get(dataSourceName).get==null, cant get kms of " + dataSourceName)
       val kmsName=this.dataSources.get(dataSourceName).get
-      Log4Error.invalidInputError(this.multiKms.contains(kmsName)," get kms == null, cant get kms of KMSname "+kmsName+", MultiKMS: "+this.multiKms.toString)
+      Log4Error.invalidInputError(this.multiKms.contains(kmsName)," get kms == null, cant get kms of KMSname " + kmsName)
       kms = this.multiKms.get(kmsName).get
     }
     Log4Error.invalidInputError(kms != null,"LOAD KEYS: kms not found")
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
       sparkSession.sparkContext.hadoopConfiguration)
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms."+dataSourceName+".key", dataKeyPlainText)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms." + dataSourceName + ".key", dataKeyPlainText)
     this
   }
   
@@ -338,8 +338,8 @@ object PPMLContext{
   
     //init data sources
     val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue=2)
-    for (i<-1 to dataSourceInstance ){
-      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",defaultValue = s"dataSource${i}")
+    for (i <- 1 to dataSourceInstance){
+      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name", defaultValue = s"dataSource${i}")
       val kms = conf.get(s"spark.bigdl.kms.datasource${i}.kms")
       
       // get input and output path 
@@ -347,8 +347,8 @@ object PPMLContext{
       s"input path of data source${i} not found, please provide input path")
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
       s"output path of data source${i} not found, please provide output path")
-      val inputPath=conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
-      val outputPath=conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
+      val inputPath = conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
+      val outputPath = conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
 
       // get primary key and data key
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
@@ -360,7 +360,7 @@ object PPMLContext{
       val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
       val dataKey = conf.get(s"spark.bigdl.kms.datasource${i}.data")
       ppmlSc.addDataSource(dataSourceName, kms)
-     ppmlSc.loadKeys(primaryKey, dataKey,dataSourceName)
+     ppmlSc.loadKeys(primaryKey, dataKey, dataSourceName)
     }
   ppmlSc
   }
