@@ -60,7 +60,7 @@ object BigDLRemoteAttestationService {
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger(getClass)
-    case class CmdParams(serviceURL: String = "0.0.0.0",
+    case class CmdParams(serviceHost: String = "0.0.0.0",
                           servicePort: String = "9875",
                           httpsKeyStoreToken: String = "token",
                           httpsKeyStorePath: String = "./key",
@@ -69,9 +69,9 @@ object BigDLRemoteAttestationService {
 
     val cmdParser : OptionParser[CmdParams] =
       new OptionParser[CmdParams]("BigDL Remote Attestation Service") {
-        opt[String]('u', "serviceURL")
-          .text("Attestation Service URL")
-          .action((x, c) => c.copy(serviceURL = x))
+        opt[String]('h', "serviceHost")
+          .text("Attestation Service Host")
+          .action((x, c) => c.copy(serviceHost = x))
         opt[String]('p', "servicePort")
           .text("Attestation Service Port")
           .action((x, c) => c.copy(servicePort = x))
@@ -91,7 +91,7 @@ object BigDLRemoteAttestationService {
         post {
           path("verifyQuote") {
             entity(as[Quote]) { quoteMsg =>
-              println(quoteMsg)
+              logger.info(quoteMsg)
               val verifyQuoteResult = quoteVerifier.verifyQuote(
                 Base64.getDecoder().decode(quoteMsg.quote.getBytes))
               val res = new Result(verifyQuoteResult)
@@ -104,23 +104,23 @@ object BigDLRemoteAttestationService {
           }
         }
 
-    val serviceURL = params.serviceURL
+    val serviceHost = params.serviceHost
     val servicePort = params.servicePort
     val servicePortInt = servicePort.toInt
     if (params.httpsEnabled) {
       val serverContext = defineServerContext(params.httpsKeyStoreToken,
         params.httpsKeyStorePath)
       val bindingFuture = Http().bindAndHandle(route,
-       serviceURL, servicePortInt, connectionContext = serverContext)
-      println("Server online at https://%s:%s/\n".format(serviceURL, servicePort) +
+       serviceHost, servicePortInt, connectionContext = serverContext)
+      println("Server online at https://%s:%s/\n".format(serviceHost, servicePort) +
         "Press RETURN to stop...")
       StdIn.readLine()
       bindingFuture
         .flatMap(_.unbind())
         .onComplete(_ => system.terminate())
     } else {
-      val bindingFuture = Http().bindAndHandle(route, serviceURL, servicePortInt)
-      println("Server online at http://%s:%s/\n".format(serviceURL, servicePort) +
+      val bindingFuture = Http().bindAndHandle(route, serviceHost, servicePortInt)
+      println("Server online at http://%s:%s/\n".format(serviceHost, servicePort) +
         "Press RETURN to stop...")
       StdIn.readLine()
       bindingFuture
