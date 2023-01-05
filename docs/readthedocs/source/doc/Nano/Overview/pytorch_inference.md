@@ -368,3 +368,40 @@ with InferenceOptimizer.get_context(ipex_model, classifer):
     output = classifer(x) 
     assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
 ```
+
+## One-click Accleration Without Code Change
+```eval_rst
+.. note::
+    Neural Compressor >= 2.0 is needed for this function. You may call ``pip install --upgrade neural-compressor`` before using this functionality.
+```
+
+We also provides a no-code method for users to accelerate their pytorch inferencing workflow through Neural Coder. Neural Coder is a novel component under Intel® Neural Compressor to further simplify the deployment of deep learning models via one-click. BigDL-Nano is now a backend in Neural Coder. Users could call
+
+```bash
+python -m neural_coder -o <acceleration_name> example.py
+```
+
+For `example.py`, it could be a common pytorch inference script without any code changes needed. For `<acceleration_name>`, please check following table.
+
+| Optimization Set | `<acceleration_name>` | 
+| ------------- | ------------- | 
+| BF16 + Channels Last | `nano_bf16_channels_last` | 
+| BF16 + IPEX + Channels Last | `nano_bf16_ipex_channels_last` | 
+| BF16 + IPEX | `nano_bf16_ipex` | 
+| BF16 | `nano_bf16` | 
+| Channels Last | `nano_fp32_channels_last` | 
+| IPEX + Channels Last | `nano_fp32_ipex_channels_last` | 
+| IPEX | `nano_fp32_ipex` | 
+| INT8 | `nano_int8` | 
+| JIT + BF16 + Channels Last | `nano_jit_bf16_channels_last` | 
+| JIT + BF16 + IPEX + Channels Last | `nano_jit_bf16_ipex_channels_last` | 
+| JIT + BF16 + IPEX | `nano_jit_bf16_ipex` | 
+| JIT + BF16 | `nano_jit_bf16` | 
+| JIT + Channels Last | `nano_jit_fp32_channels_last` | 
+| JIT + IPEX + Channels Last | `nano_jit_fp32_ipex_channels_last` | 
+| JIT + IPEX | `nano_jit_fp32_ipex` | 
+| JIT | `nano_jit_fp32` | 
+| ONNX Runtime | `nano_onnxruntime_fp32` | 
+| ONNX Runtime + INT8 | `nano_onnxruntime_int8_qlinear` | 
+| OpenVINO | `nano_openvino_fp32` | 
+| OpenVINO + INT8 | `nano_openvino_int8` |
