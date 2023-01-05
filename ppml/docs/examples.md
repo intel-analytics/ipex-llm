@@ -400,7 +400,7 @@ bash bigdl-ppml-submit.sh \
 
 k8s cluster mode
 
-```
+```bash
 export SimpleAPPID=YOUR_SIMPLE_APPID
 export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
 export EHSMIP=YOUR_EHSM_IP
