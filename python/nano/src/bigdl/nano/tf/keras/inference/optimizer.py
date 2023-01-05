@@ -302,7 +302,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               device: Optional[str] = 'CPU',
               onnxruntime_session_options=None,
               openvino_config=None,
-              logging=True):
+              logging=True,
+              **kwargs):
         """
         Trace a Keras model and convert it into an accelerated module for inference.
 
@@ -323,6 +324,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 accelerator='openvino', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
+        :param **kwargs: Other extra advanced settings include those be passed to model optimizer
+                         function of openvino, only valid when accelerator='openvino',
+                         otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         # device name might be: CPU, GPU, GPU.0, VPUX ...
@@ -342,7 +346,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num,
                                         device=device,
                                         config=final_openvino_option,
-                                        logging=logging)
+                                        logging=logging,
+                                        **kwargs)
         elif accelerator == 'onnxruntime':
             if onnxruntime_session_options is None:
                 import onnxruntime
@@ -379,7 +384,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  sample_size: int = 100,
                  onnxruntime_session_options=None,
                  openvino_config=None,
-                 logging: bool = True):
+                 logging: bool = True,
+                 **kwargs):
         """
         Post-training quantization on a keras model.
 
@@ -454,7 +460,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 accelerator='openvino', otherwise will be ignored.
         :param logging: whether to log detailed information of model conversion, only valid when
                         accelerator='openvino', otherwise will be ignored. Default: ``True``.
-        :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
+        :param **kwargs: Other extra advanced settings include those be passed to model optimizer
+                         function of openvino, only valid when accelerator='openvino',
+                         otherwise will be ignored.
+        :return:            A TensorflowBaseModel. If there is no model found, return None.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
@@ -467,7 +476,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if precision == 'fp16':
-            invalidInputError('GPU' in device,
+            invalidInputError('GPU' in device or device == 'VPUX',
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
@@ -478,7 +487,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num,
                                         device=device,
                                         config=openvino_config,
-                                        logging=logging)
+                                        logging=logging,
+                                        **kwargs)
             return patch_attrs(result, model)
 
         elif precision == 'bf16':
@@ -496,7 +506,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num,
                                         device=device,
                                         config=final_openvino_option,
-                                        logging=logging)
+                                        logging=logging,
+                                        **kwargs)
             return patch_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -544,7 +555,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                     thread_num=thread_num,
                                                     device=device,
                                                     config=openvino_config,
-                                                    logging=logging)
+                                                    logging=logging,
+                                                    **kwargs)
             if metric:
                 if not isinstance(accuracy_criterion, dict):
                     accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}

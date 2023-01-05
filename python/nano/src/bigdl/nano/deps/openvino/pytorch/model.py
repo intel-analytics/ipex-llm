@@ -32,7 +32,7 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, precision='fp32',
                  thread_num=None, device='CPU', dynamic_axes=True,
-                 logging=True, config=None, **export_kwargs):
+                 logging=True, config=None, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -63,7 +63,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param config: The config to be inputted in core.compile_model.
-        :param **export_kwargs: will be passed to torch.onnx.export function.
+        :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
         """
         ov_model_path = model
         with TemporaryDirectory() as tmpdir:
@@ -74,7 +74,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                     dynamic_axes = False
                 export(model, input_sample, str(tmpdir / 'tmp.xml'),
                        precision=precision, dynamic_axes=dynamic_axes,
-                       logging=logging, **export_kwargs)
+                       logging=logging, **kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path,

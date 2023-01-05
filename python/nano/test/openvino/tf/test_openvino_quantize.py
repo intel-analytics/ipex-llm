@@ -179,3 +179,20 @@ class TestOpenVINO(TestCase):
         preds1 = openvino_model(train_examples).numpy()
         preds2 = new_ov_model(train_examples).numpy()
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
+
+    def test_model_quantize_openvino_kwargs(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+        openvino_model = model.trace(accelerator='openvino')
+        openvino_quantized_model = InferenceOptimizer.quantize(openvino_model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
+                                                               thread_num=8,
+                                                               mean_value=[123.68,116.78,103.94]) # mo param
+
+        y_hat = openvino_quantized_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)

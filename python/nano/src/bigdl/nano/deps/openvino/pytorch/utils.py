@@ -17,6 +17,8 @@ from tempfile import TemporaryDirectory
 from ..core.utils import convert_onnx_to_xml
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
 from pathlib import Path
+import torch
+import inspect
 
 
 def export(model, input_sample=None, xml_path="model.xml",
@@ -33,13 +35,24 @@ def export(model, input_sample=None, xml_path="model.xml",
                       defaults to 'fp32'.
     :param dynamic_axes: parameter of torch.onnx.export.
     :param logging: whether to log detailed information of model conversion. default: True.
-    :param **kwargs: will be passed to torch.onnx.export function.
+    :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
     '''
     # export a model with dynamic axes to enable IR to accept different batches and resolutions
     with TemporaryDirectory() as folder:
         folder = Path(folder)
         onnx_path = str(folder / 'tmp.onnx')
+        # split kwargs to torch.onnx.export and mo
+        export_args = inspect.getfullargspec(torch.onnx.export).args
+        export_defaults = inspect.getfullargspec(torch.onnx.export).defaults
+        export_args = export_args[len(export_args)-len(export_defaults):]
+        export_kwargs = {}
+        mo_kwargs = {}
+        for key, value in kwargs.items():
+            if key in export_args:
+                export_kwargs[key] = value
+            else:
+                mo_kwargs[key] = value
         export_to_onnx(model, input_sample, onnx_path,
-                       dynamic_axes=dynamic_axes, **kwargs)
+                       dynamic_axes=dynamic_axes, **export_kwargs)
         convert_onnx_to_xml(onnx_path, xml_path, precision=precision,
-                            logging=logging)
+                            logging=logging, **mo_kwargs)
