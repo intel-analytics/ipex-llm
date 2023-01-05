@@ -57,7 +57,9 @@ if platform.system() == "Linux":
             affinity_core_num = preset_thread_nums
 
     if preset_thread_nums > affinity_core_num:
-        torch.set_num_threads(affinity_core_num)
+        # setting thread num will cause bug
+        # todo
+        pass
 
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer
