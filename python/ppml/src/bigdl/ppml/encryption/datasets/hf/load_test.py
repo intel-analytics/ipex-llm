@@ -17,9 +17,11 @@
 # simple test, delete later
 import os
 from bigdl.ppml.encryption.datasets.hf.load import load_from_disk
+import datasets
 from cryptography.fernet import Fernet
 import random
 import base64
+import torch
 
 def _create_random(length) -> str:
     random.seed(0)
@@ -73,9 +75,25 @@ def main():
 def main2():
     temp = load_from_disk("/ppml/save-datasets/test")
     print(temp[0])
+    torch.save(temp, "tempsave.pt")
 
 
+def main3():
+    temp_dataset = torch.load("tempsave.pt")
+    print(temp_dataset[0])
+
+
+def generate_datasetdict():
+    train_dataset = load_from_disk("/ppml/save-datasets/train")
+    test_dataset = load_from_disk("/ppml/save-datasets/test")
+    dataset_dict = datasets.dataset_dict.DatasetDict({'train': train_dataset, 'test': test_dataset})
+    return dataset_dict
+
+def save_datasetdict_to_disk():
+    temp = generate_datasetdict()
+    temp.save_to_disk("/ppml/datasetdict")
+    torch.save(temp, "datasetdict.pt")
 
 
 if __name__ == "__main__":
-    main2()
+    save_datasetdict_to_disk()
