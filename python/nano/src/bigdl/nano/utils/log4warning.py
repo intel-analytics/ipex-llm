@@ -31,4 +31,8 @@ def output_suggestions():
 
 def register_suggestion(warning_message):
     global warning_messages
+
+    # in case core dump / seg fault
+    print(warning_message, flush=True)
+
     warning_messages.append(warning_message)
