@@ -189,17 +189,18 @@ object BKeywhizKMSFrontend extends Supportive {
   }
 
   def getKeyFromKeywhiz(user:String, keyName:String): String = {
-    s"$keywhizCli --user $user get --name $keyName" !!
+    val rawKey:String = s"$keywhizCli --user $user get --name $keyName".!!
+    rawKey.dropRight(1)
   }
 
   def dataKeyCryptoCodec(base64PrimaryKeyPlaintext:String,
                      base64DataKey:String,
                      om: Int): String = {
-      val bytePrimaryKeyPlaintext = base64PrimaryKeyPlaintext.getBytes
+      val bytePrimaryKeyPlaintext = Base64.getDecoder().decode(base64PrimaryKeyPlaintext)
       val encryptionKeySpec = new SecretKeySpec(bytePrimaryKeyPlaintext, "AES")
       val cipher = Cipher.getInstance("AES")
       cipher.init(om, encryptionKeySpec)
-      val byteDataKey = Base64.getDecoder().decode(base64DataKey.getBytes)
+      val byteDataKey = Base64.getDecoder().decode(base64DataKey)
       val byteDataKeyOperated = cipher.doFinal(byteDataKey)
       val base64DataKeyOperated = Base64.getEncoder.encodeToString(byteDataKeyOperated)
       base64DataKeyOperated
