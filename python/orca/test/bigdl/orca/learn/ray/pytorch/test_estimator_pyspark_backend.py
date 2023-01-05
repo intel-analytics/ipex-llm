@@ -668,13 +668,8 @@ class TestPyTorchEstimator(TestCase):
             trainer.shutdown()
 
             estimator = Estimator.from_torch(model=lambda config: IdentityNet(),
-                                             loss=nn.BCELoss(),
-                                             metrics=Accuracy(),
-                                             config={"lr": 1e-2},
                                              workers_per_node=2,
-                                             backend="spark",
-                                             sync_stats=False,
-                                             log_level=logging.DEBUG)
+                                             backend="spark")
             estimator.load(path)
 
             result_shards = estimator.predict(shards, batch_size=4)
