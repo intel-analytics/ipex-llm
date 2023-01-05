@@ -306,7 +306,7 @@ class TorchRunner(BaseRunner):
 
         if not self.criterion:
             invalidInputError(False,
-                              "You must provide a loss_creator.")
+                              "You must provide a loss for train and evaluate.")
 
         info = info or {}
         self._toggle_profiling(profile=profile)
@@ -533,7 +533,7 @@ class TorchRunner(BaseRunner):
         """Evaluates the model on the validation data set."""
         if not self.criterion:
             invalidInputError(False,
-                              "You must provide a loss_creator.")
+                              "You must provide a loss for train and evaluate.")
 
         config = copy.copy(self.config)
         info = info or {}
