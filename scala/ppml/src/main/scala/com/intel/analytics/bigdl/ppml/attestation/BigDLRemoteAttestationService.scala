@@ -113,19 +113,19 @@ object BigDLRemoteAttestationService {
       val bindingFuture = Http().bindAndHandle(route,
        serviceHost, servicePortInt, connectionContext = serverContext)
       println("Server online at https://%s:%s/\n".format(serviceHost, servicePort) +
-        "Press RETURN to stop...")
-      StdIn.readLine()
-      bindingFuture
-        .flatMap(_.unbind())
-        .onComplete(_ => system.terminate())
+        "Press Ctrl + C to stop...")
+      // StdIn.readLine()
+      // bindingFuture
+      //   .flatMap(_.unbind())
+      //   .onComplete(_ => system.terminate())
     } else {
       val bindingFuture = Http().bindAndHandle(route, serviceHost, servicePortInt)
       println("Server online at http://%s:%s/\n".format(serviceHost, servicePort) +
-        "Press RETURN to stop...")
-      StdIn.readLine()
-      bindingFuture
-        .flatMap(_.unbind())
-        .onComplete(_ => system.terminate())
+        "Press Ctrl + C to stop...")
+      // StdIn.readLine()
+      // bindingFuture
+      //   .flatMap(_.unbind())
+      //   .onComplete(_ => system.terminate())
     }
   }
 

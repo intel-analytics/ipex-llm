@@ -6,43 +6,17 @@ bash build-docker-image.sh
 
 ## 2. Start container
 
-### SGX
-If you want to verify SGX quote, you need to mount SGX device to the docker container.
 ```bash
-export DOCKER_IMAGE=your_docker_image
 sudo docker run -itd \
 --privileged \
 --net=host \
---name=$DOCKER_NAME \
+--name=bigdl-remote-attestation-service \
 --oom-kill-disable \
---device=/dev/sgx_enclave \
---device=/dev/sgx_provision \
 -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-$DOCKER_IMAGE 
+-e PCCS_URL=127.0.0.1 \
+-e ATTESTATION_SERVICE_HOST=0.0.0.0 \
+-e ATTESTATION_SERVICE_PORT=9875 \
+intelanalytics/bigdl-attestation-service:2.2.0-SNAPSHOT
 ```
 
-### TDX
-Mount TDX device `/dev/tdx-attest` when start container.
-```bash
-export DOCKER_IMAGE=your_docker_image
-export DOCKER_NAME=your_docker_name
-sudo docker run -itd \
---privileged \
---net=host \
---name=$DOCKER_NAME \
---oom-kill-disable \
---device=/dev/tdx-attest \
--v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-$DOCKER_IMAGE 
-```
-
-3. Start Attestation Service
-```bash
-docker exec -it $DOCKER_NAME bash
-
-# For SGX
-bash ./init_sgx.sh
-
-java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.attestation.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s <httpsKeyStoreToken> -t <httpsKeyStorePath> -h <httpsEnabled>
-```
 Detailed usages can refer to [this](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/attestation)

@@ -1,6 +1,8 @@
 ARG JDK_VERSION=8u192
 ARG SPARK_VERSION=3.1.3
 ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG http_proxy
+ARG https_proxy
 
 # stage.1 java & spark
 FROM ubuntu:20.04 AS builder
@@ -79,9 +81,9 @@ COPY --from=builder /opt/jdk /opt/jdk8
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
 # COPY --from=bigdl ${BIGDL_HOME} ${BIGDL_HOME}
 
-RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
-    (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-2.11.8.tgz
+# RUN cd / && wget -c https://downloads.lightbend.com/scala/2.11.8/scala-2.11.8.tgz && \
+#     (cd / && gunzip < scala-2.11.8.tgz)|(cd /opt && tar -xvf -) && \
+#     rm /scala-2.11.8.tgz
 
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
@@ -96,6 +98,13 @@ RUN ./download-bigdl.sh && \
 #     pip3 install --upgrade pip && \
 #     pip install setuptools==58.4.0
 
-ADD ./init_sgx.sh /opt/bigdl-${BIGDL_VERSION}/init_sgx.sh
-WORKDIR /opt/bigdl-${BIGDL_VERSION}
-ENTRYPOINT [ "/bin/bash" ]
+# To do attestation with sbx server
+# ADD ./libsgx_dcap_quoteverify.so /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
+# RUN chmod +x /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
+
+ADD ./entrypoint.sh /opt/entrypoint.sh
+RUN chmod 777 /opt/entrypoint.sh
+# ADD ./bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar /opt/bigdl-${BIGDL_VERSION}/jars
+# RUN rm /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
