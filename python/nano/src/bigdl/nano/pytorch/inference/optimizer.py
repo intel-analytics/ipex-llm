@@ -642,14 +642,24 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          QConfig.html#torch.quantization.qconfig.QConfig .
                          This parameter only works for native ipex quantization.
         :param **kwargs: Other extra advanced settings include:
-                         1. those be passed to torch.onnx.export function,
+                         1. those be passed to ``torch.onnx.export`` function,
                          only valid when accelerator='onnxruntime'/'openvino',
                          otherwise will be ignored.
-                         2. those be passed to model optimizer function of openvino,
+                         Possible arguments are: input_names, output_names, opset_version, 
+                         et al. For more details, please refer
+                         https://pytorch.org/docs/stable/onnx.html#torch.onnx.export.
+                         2. those be passed to ``model optimizer`` function of openvino,
                          only valid when accelerator='openvino',
                          otherwise will be ignored.
+                         Possible arguments are: mean_values, layout, input, output, et al.
+                         For more details about model optimizer, you can see mo --help .
                          If you want to quantize with openvino float16 precision on VPUX device,
-                         you must specify mean_value for model optimizer function.
+                         you must specify  ``mean_value`` for model optimizer function.
+                         Here ``mean_value`` represents mean values to be used for the input image
+                         per channel. Values to be provided in the (R,G,B) or [R,G,B] format. 
+                         Can be defined for desired input of the model, for example: 
+                         "--mean_values data[255,255,255],info[255,255,255]". The exact meaning 
+                         and order of channels depend on how the original model was trained.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
@@ -940,9 +950,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
                          otherwise will be ignored.
+                         Possible arguments are: input_names, output_names, opset_version, 
+                         et al. For more details, please refer
+                         https://pytorch.org/docs/stable/onnx.html#torch.onnx.export.
                          2. those be passed to model optimizer function of openvino,
                          only valid when accelerator='openvino',
                          otherwise will be ignored.
+                         Possible arguments are: mean_values, layout, input, output, et al.
+                         For more details about model optimizer, you can see mo --help .
         :return: Model with different acceleration.
         """
         invalidInputError(
