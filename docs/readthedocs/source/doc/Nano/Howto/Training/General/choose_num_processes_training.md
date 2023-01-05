@@ -35,10 +35,8 @@ Based on that, the number of processes np can be calculated as:
 That is, empirically, we could set the number of processes to 2, 4 or 8 here for good training performance.
 
 ```eval_rst
-.. card::
+.. seealso::
 
-    **Related Readings**
-    ^^^
     * `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <../PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
     * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <../TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 ```
