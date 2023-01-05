@@ -306,10 +306,10 @@ object PPMLContext{
   def initPPMLContextMultiKMS(sparkSession: SparkSession): PPMLContext = {
     // get sparkconf and init ppml context
     val conf = sparkSession.sparkContext.getConf
-    val ppmlSc=new PPMLContext(sparkSession=sparkSession)
+    val ppmlSc = new PPMLContext(sparkSession=sparkSession)
 
     //init kms
-    val instance= conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
+    val instance = conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
     for (i <- 1 to instance){
       val kmsType = conf.get(s"spark.bigdl.kms.multikms.type${i}", defaultValue = "SimpleKeyManagementService")
       val kmsName = conf.get(s"spark.bigdl.kms.multikms.name${i}", defaultValue = s"KMS${i}")
@@ -340,7 +340,7 @@ object PPMLContext{
     val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue=2)
     for (i<-1 to dataSourceInstance ){
       val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",defaultValue = s"dataSource${i}")
-      val kms=conf.get(s"spark.bigdl.kms.datasource${i}.kms")
+      val kms = conf.get(s"spark.bigdl.kms.datasource${i}.kms")
       
       // get input and output path 
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.inputpath"),
@@ -359,7 +359,7 @@ object PPMLContext{
        s" both spark.bigdl.kms.datasource${i}.primary and spark.bigdl.kms.datasource${i}.data.")
       val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
       val dataKey = conf.get(s"spark.bigdl.kms.datasource${i}.data")
-      ppmlSc.addDataSource(dataSourceName,kms)
+      ppmlSc.addDataSource(dataSourceName, kms)
      ppmlSc.loadKeys(primaryKey, dataKey,dataSourceName)
     }
   ppmlSc
