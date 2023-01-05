@@ -59,6 +59,9 @@ class OpenVINOModel:
 
     def _check_device(self, ie, device):
         devices = ie.available_devices
+        if device == 'GPU' and 'GPU.0' in devices:
+            # GPU is equivalent to GPU.0
+            return True
         invalidInputError(device in devices,
                           "Your machine don't have {} device, please modify the incoming "
                           "device value.".format(device))
