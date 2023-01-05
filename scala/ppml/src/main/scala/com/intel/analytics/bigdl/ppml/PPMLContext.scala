@@ -63,12 +63,12 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    * @return
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String, dataSourceName: String = "dataSource"): this.type = {
-    var kms=this.kms
-    if (kms==null) {
+    var kms = this.kms
+    if (kms == null) {
       Log4Error.invalidInputError(this.dataSources.contains(dataSourceName), "this.dataSources.get(dataSourceName).get==null, cant get kms of "+dataSourceName+"    "+this.dataSources.toString)
       val kmsName=this.dataSources.get(dataSourceName).get
       Log4Error.invalidInputError(this.multiKms.contains(kmsName)," get kms == null, cant get kms of KMSname "+kmsName+", MultiKMS: "+this.multiKms.toString)
-      kms= this.multiKms.get(kmsName).get
+      kms = this.multiKms.get(kmsName).get
     }
     Log4Error.invalidInputError(kms != null,"LOAD KEYS: kms not found")
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
