@@ -463,6 +463,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param **kwargs: Other extra advanced settings include those be passed to model optimizer
                          function of openvino, only valid when accelerator='openvino',
                          otherwise will be ignored.
+                         If you want to quantize with openvino float16 precision on VPUX device,
+                         you must specify mean_value for model optimizer function.
         :return:            A TensorflowBaseModel. If there is no model found, return None.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
@@ -480,6 +482,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
+            if device == 'VPUX':
+                # for fp16 on VPUX, must specify mean_value.
+                invalidInputError('mean_value' in kwargs,
+                                  "If you want to quantize with openvino float16 precision on "
+                                  "VPUX device, you must specify mean_value for model optimizer "
+                                  "function. For more details about model optimizer, you can "
+                                  "see mo --help .")
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         input_spec=input_spec,

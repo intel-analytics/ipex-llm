@@ -281,6 +281,35 @@ class TestOpenVINO(TestCase):
         # VPU don't support dynamic shape
         with pytest.raises(RuntimeError):
             openvino_model(x2)
+        
+        # test VPU fp16
+        model = resnet50()
+        with pytest.raises(RuntimeError):
+            openvino_model = InferenceOptimizer.quanize(model,
+                                                        input_sample=x,
+                                                        accelerator='openvino',
+                                                        device='VPUX',
+                                                        precision='fp16')
+
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='VPUX',
+                                                    precision='fp16',
+                                                    mean_value=[123.68,116.78,103.94])  # first type of mean value
+        result = openvino_model(x)
+
+        openvino_model = InferenceOptimizer.quanize(model,
+                                                    input_sample=x,
+                                                    accelerator='openvino',
+                                                    device='VPUX',
+                                                    precision='fp16',
+                                                    mean_value="x[123.68,116.78,103.94]") # the second type of mean value
+        result = openvino_model(x)
+
+        # VPU don't support dynamic shape
+        with pytest.raises(RuntimeError):
+            openvino_model(x2)
 
     def test_openvino_kwargs(self):
         # test export kwargs and mo kwargs for openvino

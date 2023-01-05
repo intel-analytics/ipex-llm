@@ -648,6 +648,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          2. those be passed to model optimizer function of openvino,
                          only valid when accelerator='openvino',
                          otherwise will be ignored.
+                         If you want to quantize with openvino float16 precision on VPUX device,
+                         you must specify mean_value for model optimizer function.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
@@ -836,6 +838,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
+            if device == 'VPUX':
+                # for fp16 on VPUX, must specify mean_value.
+                invalidInputError('mean_value' in kwargs,
+                                  "If you want to quantize with openvino float16 precision on "
+                                  "VPUX device, you must specify mean_value for model optimizer "
+                                  "function. For more details about model optimizer, you can "
+                                  "see mo --help .")
             return PytorchOpenVINOModel(model, input_sample,
                                         precision=precision,
                                         thread_num=thread_num,
