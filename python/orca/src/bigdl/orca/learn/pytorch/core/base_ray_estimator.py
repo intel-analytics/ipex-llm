@@ -90,30 +90,21 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
     def setup(self, params, backend='ray', runner_cls=None, workers_per_node=1):
         ray_ctx = OrcaRayContext.get()
         if backend == "ray":
-            import torch.distributed as dist
-            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
-            RemoteRunner = ray.remote(num_cpus=cores_per_node)(runner_cls)
+            self.init_ddp_process = False
+            self.cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
+            self.num_nodes = ray_ctx.num_ray_nodes * workers_per_node
+            RemoteRunner = ray.remote(num_cpus=self.cores_per_node)(runner_cls)
             self.remote_workers = [
-                RemoteRunner.remote(**params) for i in range(num_nodes)
+                RemoteRunner.remote(**params) for i in range(self.num_nodes)
             ]
             ray.get([
-                worker.setup.remote(cores_per_node)
+                worker.setup.remote(self.cores_per_node)
                 for i, worker in enumerate(self.remote_workers)
             ])
-
-            driver_ip = get_driver_node_ip()
-            driver_tcp_store_port = find_free_port()
-
-            _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
-                              dist.constants.default_pg_timeout)
-
             ray.get([
-                worker.setup_torch_distribute.remote(
-                    driver_ip, driver_tcp_store_port, i, num_nodes)
+                worker.setup_torch_estimator.remote(i, self.num_nodes)
                 for i, worker in enumerate(self.remote_workers)
             ])
-
         elif backend == "horovod":
             from bigdl.orca.learn.horovod.horovod_ray_runner import HorovodRayRunner
             self.horovod_runner = HorovodRayRunner(ray_ctx,
@@ -136,6 +127,22 @@ class BaseRayEstimator(BaseEstimator, metaclass=ABCMeta):
                               "Only \"ray\" and \"horovod\" are supported "
                               "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
+
+    def setup_torch_ddp(self):
+        import torch.distributed as dist
+        driver_ip = get_driver_node_ip()
+        driver_tcp_store_port = find_free_port()
+
+        _ = dist.TCPStore(driver_ip, driver_tcp_store_port, -1, True,
+                          dist.constants.default_pg_timeout)
+
+        ray.get([
+            worker.setup_torch_distribute.remote(
+                driver_ip, driver_tcp_store_port, i, self.num_nodes)
+            for i, worker in enumerate(self.remote_workers)
+        ])
+
+        self.init_ddp_process = True
 
     def get_state_dict(self) -> Dict:
         stream_ids = [
