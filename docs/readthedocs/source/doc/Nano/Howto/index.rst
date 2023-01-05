@@ -5,6 +5,14 @@ Nano How-to Guides
 
 In Nano How-to Guides, you could expect to find multiple task-oriented, bite-sized, and executable examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
 
+Preprocessing Optimization
+---------------------------
+
+PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a computer vision data processing pipeline <Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline.html>`_
+
+
 Training Optimization
 -------------------------
 
@@ -14,7 +22,6 @@ PyTorch Lightning
 * `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
 * `How to use the channels last memory format in your PyTorch Lightning application for training <Training/PyTorchLightning/pytorch_lightning_training_channels_last.html>`_
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch Lightning application <Training/PyTorchLightning/pytorch_lightning_training_bf16.html>`_
-* `How to accelerate a computer vision data processing pipeline <Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline.html>`_
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
