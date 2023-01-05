@@ -143,11 +143,11 @@ class XGBClassifierModel private[bigdl](
   }
 
   def getFeatureScore(featureMap: String = null): Map[String, Integer] = {
-    model.nativaBooster.getFeatureScore(featureMap)
+    model.nativeBooster.getFeatureScore(featureMap)
   }
 
   def getScore(featureMap: String, importanceType: String): Map[String, Double] = {
-    model.getScore(featureMap, importanceType)
+    model.nativeBooster.getScore(featureMap, importanceType)
   }
   
   def save(path: String): Unit = {
