@@ -77,12 +77,19 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                        logging=logging, **kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
             self.dynamic_axes = dynamic_axes
+            self.ov_model = OpenVINOModel(ov_model_path,
+                                          device=device,
+                                          precision=precision,
+                                          thread_num=thread_num,
+                                          config=config)
 
-        self.ov_model = OpenVINOModel(ov_model_path,
-                                      device=device,
-                                      precision=precision,
-                                      thread_num=thread_num,
-                                      config=config)
+        if not isinstance(model, torch.nn.Module):
+            self.ov_model = OpenVINOModel(ov_model_path,
+                                          device=device,
+                                          precision=precision,
+                                          thread_num=thread_num,
+                                          config=config)
+
         super().__init__(None)
         self._nano_context_manager = generate_context_manager(accelerator="openvino",
                                                               precision="fp32",
