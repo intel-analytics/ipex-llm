@@ -1,5 +1,9 @@
 ## 1. Build image
-After configure variables in `build-docker-image.sh`, build the container with command:
+You can pull the BigDL Remote Attestation Service image from dockerhub.
+``` bash
+docker pull intelanalytics/bigdl-attestation-service:2.2.0-SNAPSHOT
+```
+Or you can clone BigDL repository and build the image with `build-docker-image.sh`. After configure variables in `build-docker-image.sh`, build the container with command:
 ```bash
 bash build-docker-image.sh
 ```
