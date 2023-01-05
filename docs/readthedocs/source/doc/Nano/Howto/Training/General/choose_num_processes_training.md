@@ -1,4 +1,4 @@
-# Choose the Number of Porcesses for Multi-Instance Training
+# Choose the Number of Processes for Multi-Instance Training
 
 BigDL-Nano supports multi-instance training on a server with multiple CPU cores or sockets. With Nano, you could launch a self-defined number of processes to perform data-parallel training. When choosing the number of processes, there are 3 empirical recommendations for better training performance:
 
@@ -35,10 +35,8 @@ Based on that, the number of processes np can be calculated as:
 That is, empirically, we could set the number of processes to 2, 4 or 8 here for good training performance.
 
 ```eval_rst
-.. card::
+.. seealso::
 
-    **Related Readings**
-    ^^^
     * `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <../PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
     * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <../TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 ```

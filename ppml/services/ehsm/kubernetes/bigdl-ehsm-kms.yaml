@@ -68,6 +68,9 @@ spec:
       - name: dev-aesmd
         hostPath:
           path: /var/run/aesmd
+      - name: runtime-folder
+        hostPath:
+          path: /var/run/ehsm
       containers:
       - name: dkeyserver
         image: $dkeyserverImageName
@@ -84,6 +87,8 @@ spec:
           name: dev-aesmd
         - mountPath: /etc
           name: domain-key-persistent-storage
+        - mountPath: /var/run/ehsm
+          name: runtime-folder
         env:
         - name: PCCS_URL
           value: "https://$pccsIP:18081"

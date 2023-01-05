@@ -20,27 +20,12 @@ import subprocess
 import re
 from typing import Optional
 import platform
+import cpuinfo
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def get_cgroup_cpuset():
-    if platform.system() == "Windows":
-        get_physical_core_args = ["wmic", "CPU",
-                                  "GET", "NumberOfCores", "/VALUE"]
-        cpu_set = [i for i in range(int(subprocess.check_output(
-            get_physical_core_args, universal_newlines=True).splitlines()[4].split("=")[1]))]
-    else:
-        with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
-            content = f.readlines()
-        cpu_set = []
-        values = content[0].strip().split(",")
-        for value in values:
-            if "-" in value:
-                # Parse the value like "2-4"
-                start, end = value.split("-")
-                cpu_set.extend([i for i in range(int(start), int(end) + 1)])
-            else:
-                cpu_set.append(int(value))
+    cpu_set = list(range(cpuinfo.get_cpu_info()["count"]))
     return cpu_set
 
 

@@ -24,15 +24,13 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import _LRScheduler
 
 import pytorch_lightning as pl
-from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
 from pytorch_lightning.plugins.environments import KubeflowEnvironment
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_optimize
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
 
 class DDPK8sStrategy(DDPStrategy):
@@ -53,14 +51,11 @@ class DDPK8sStrategy(DDPStrategy):
         if num_processes is None:
             num_processes = int(os.environ["WORLD_SIZE"])
 
-        invalidInputError(not (use_ipex and TORCH_VERSION_LESS_1_10),
-                          "currently ipex with torch version under 1.10 is not supported.")
-
         device = 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
         cluster_environment = KubeflowEnvironment()
         if use_ipex and dtype == torch.bfloat16 and 'precision_plugin' not in kwargs:
-            from bigdl.nano.pytorch.strategies.ipex.ipex_strategy import IPEXBF16Precision
+            from bigdl.nano.pytorch.strategies import IPEXBF16Precision
             super().__init__(parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment,
                              precision_plugin=IPEXBF16Precision(), **kwargs)
@@ -79,12 +74,6 @@ class DDPK8sStrategy(DDPStrategy):
         invalidInputError(self.model is not None, "You must specify the model.")
 
         super().setup(trainer)
-        # `configure_ddp` will create a `DistributedDataParallel`, which has no
-        # `test_step` method in pytorch_lightning 1.6, which causes error when
-        # calling `trainer.test()`, so we call `configure_ddp` only when fitting
-        trainer_fn = trainer.state.fn
-        if trainer_fn != TrainerFn.FITTING:
-            self.model.eval()
 
         if trainer.training and self.auto_lr:
 
@@ -106,17 +95,9 @@ class DDPK8sStrategy(DDPStrategy):
                         lr * self.world_size for lr in scheduler.base_lrs  # type: ignore
                     ]
 
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            num_optimizers = len(self.optimizers)
-
-            if num_optimizers == 1:
-                optimizer = self.optimizers[0]
-                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=self.dtype)
-            elif num_optimizers == 0:
-                ipex_optimize(self.model, inplace=True, dtype=self.dtype)
-            else:
-                warnings.warn(f"IPEX currently only support single optimizers, "
-                              f"but got {num_optimizers}. Skip IPEX")
+        if self.use_ipex:
+            ipex_optimize(self.model, optimizers=self.optimizers,
+                          inplace=True, dtype=self.dtype)
 
     def on_train_start(self):
         """Setup warmup lr_schedulers after resetting the train dataloaders."""

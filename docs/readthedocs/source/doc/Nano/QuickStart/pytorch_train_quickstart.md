@@ -66,7 +66,7 @@ class LitResnet(LightningModule):
     def __init__(self, learning_rate=0.05, num_processes=1):
         super().__init__()
 
-        self.save_hyperparameters()
+        self.save_hyperparameters('learning_rate', 'num_processes')
         self.model = create_model()
 
     def forward(self, x):

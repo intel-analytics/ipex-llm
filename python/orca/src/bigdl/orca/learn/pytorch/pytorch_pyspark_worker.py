@@ -60,7 +60,6 @@ class PytorchPysparkWorker(TorchRunner):
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
-                 training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
                  scheduler_step_freq=None,
@@ -75,9 +74,16 @@ class PytorchPysparkWorker(TorchRunner):
                  driver_log_port=None,
                  driver_tcp_store_port=None
                  ):
-        super().__init__(model_creator, optimizer_creator, loss_creator, metrics,
-                         scheduler_creator, training_operator_cls, config, use_tqdm,
-                         scheduler_step_freq, sync_stats, log_level=log_level)
+        super().__init__(model_creator=model_creator,
+                         optimizer_creator=optimizer_creator,
+                         loss_creator=loss_creator,
+                         metrics=metrics,
+                         scheduler_creator=scheduler_creator,
+                         config=config,
+                         use_tqdm=use_tqdm,
+                         scheduler_step_freq=scheduler_step_freq,
+                         sync_stats=sync_stats,
+                         log_level=log_level)
 
         self.state_dict = state_dict
         self.size = size
@@ -114,6 +120,7 @@ class PytorchPysparkWorker(TorchRunner):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
+            self.setup_components()
             self.setup_torch_distribute(tcp_store_host=driver_ip,
                                         tcp_store_port=driver_tcp_store_port,
                                         world_rank=self.rank,

@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.forecaster.autoformer_forecaster import AutoformerForecaster
-from bigdl.chronos.data import TSDataset
+from bigdl.chronos.forecaster import AutoformerForecaster
+from bigdl.chronos.data import TSDataset, get_public_dataset
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -29,16 +29,10 @@ horizon = 720
 label_len = 48
 
 def generate_data():
-    # read the data
-    raw_df = pd.read_csv('electricity.csv', parse_dates=["date"])
-    target = []
-    for i in range(0, 320):
-        target.append(str(i))
-    target.append("OT")
-
-    # use TSDataset to split and preprocess the data
-    tsdata_train, _, tsdata_test =\
-        TSDataset.from_pandas(raw_df, dt_col="date", target_col=target, with_split=True, test_ratio=0.2, val_ratio=0.1)
+    tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='tsinghua_electricity',
+                                                               with_split=True,
+                                                               val_ratio=0.1,
+                                                               test_ratio=0.2)
     standard_scaler = StandardScaler()
     for tsdata in [tsdata_train, tsdata_test]:
         tsdata.impute()\
@@ -64,7 +58,7 @@ if __name__ == '__main__':
                                       output_feature_num=321,
                                       label_len=label_len,
                                       freq='h',
-                                      seed=2)  # 
+                                      seed=2)
 
     # get data
     train_loader, test_loader, pred_loader = generate_data()

@@ -1,15 +1,25 @@
 name: 'Run PPML Occlum k8s ExampleTests'
 description: 'Run PPML Occlum k8s ExampleTests'
-
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: '2.2.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
     - name: Run tests
       shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-        docker pull 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
-
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        docker pull $IMAGE
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
         export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205
         export kubernetes_master_url=172.168.0.205
 
@@ -21,13 +31,15 @@ runs:
         status_4_spark_gbt=1
         status_5_spark_gbt_criteo=1
         status_6_spark_tpch=1
+        status_7_pyspark_sklearn=1
+        status_8_pyspark_sql=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
           echo "################## start spark pi"
           echo "example.1 spark pi"
-          bash run_spark_pi.sh
+          bash run_spark_pi.sh $IMAGE
           if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
-            pi_driver=`kubectl get pods | grep spark-pi-test | awk '{print $1}'`
+            pi_driver=`kubectl get pods | grep spark-pi-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $pi_driver | egrep 'Pi is roughly 3'
           status_1_spark_pi=$(echo $?)
@@ -39,9 +51,9 @@ runs:
         if [ $status_2_spark_lr -ne 0 ]; then
           echo "################## start spark lr"
           echo "example.2 spark lr"
-          bash run_spark_lr.sh
+          bash run_spark_lr.sh $IMAGE
           if [ "`kubectl get pods | grep spark-lr-test | awk '{print $1}'`" != "" ]; then
-            lr_driver=`kubectl get pods | grep spark-lr-test | awk '{print $1}'`
+            lr_driver=`kubectl get pods | grep spark-lr-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $lr_driver | egrep 'Training data results'
           status_2_spark_lr=$(echo $?)
@@ -53,9 +65,9 @@ runs:
         if [ $status_3_spark_sql -ne 0 ]; then
           echo "################## start spark sql"
           echo "example.3 spark sql"
-          bash run_spark_sql.sh
+          bash run_spark_sql.sh $IMAGE
           if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
-            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}'`
+            sql_driver=`kubectl get pods | grep spark-sql-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $sql_driver | egrep 'Name: Michael'
           status_3_spark_sql=$(echo $?)
@@ -67,9 +79,9 @@ runs:
         if [ $status_4_spark_gbt -ne 0 ]; then
           echo "################## start spark gbt"
           echo "example.4 spark gbt"
-          bash run_spark_gbt.sh
+          bash run_spark_gbt.sh $IMAGE
           if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
-            gbt_example_driver=`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
+            gbt_example_driver=`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $gbt_example_driver | egrep 'Training data results'
           status_4_spark_gbt=$(echo $?)
@@ -81,7 +93,7 @@ runs:
         if [ $status_5_spark_gbt_criteo -ne 0 ]; then
           echo "################## start spark gbt criteo"
           echo "example.5 spark gbt criteo"
-          bash run_spark_gbt_criteo.sh
+          bash run_spark_gbt_criteo.sh $IMAGE
           if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
             gbt_criteo_driver=`kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
           fi
@@ -95,9 +107,9 @@ runs:
         if [ $status_6_spark_tpch -ne 0 ]; then
           echo "################## start spark tpch"
           echo "example.6 spark tpch"
-          bash run_spark_tpch.sh
+          bash run_spark_tpch.sh $IMAGE
           if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
-            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+            tpch_driver=`kubectl get pods | grep spark-tpch-test | awk '{print $1}' | grep driver`
           fi
           kubectl logs $tpch_driver | egrep '22 finished-'
           status_6_spark_tpch=$(echo $?)
@@ -105,10 +117,41 @@ runs:
             kubectl delete pods `kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
           fi
         fi
+        
+        if [ $status_7_pyspark_sklearn -ne 0 ]; then
+          echo "################## start pyspark sklearn"
+          echo "example.7 pyspark sklearn"
+          bash run_pyspark_sklearn_example.sh $IMAGE
+          if [ "`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`" != "" ]; then
+            sklearn_driver=`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}' | grep driver`
+          fi
+          kubectl logs $sklearn_driver | egrep 'mean_squared_error'
+          status_7_pyspark_sklearn=$(echo $?)
+          if [ "`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}' | grep driver`
+          fi
+        fi
+        
+        if [ $status_8_pyspark_sql -ne 0 ]; then
+          echo "################## start pyspark SQL example"
+          echo "example.8 pyspark sql"
+          bash run_pyspark_sql_example.sh $IMAGE
+          if [ "`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`" != "" ]; then
+            sql_driver=`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}' | grep driver`
+          fi
+          kubectl logs $sql_driver | egrep 'Example API finished'
+          status_8_pyspark_sql=$(echo $?)
+          if [ "`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`
+          fi
+        fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_spark_lr $status_2_spark_lr"
-        #echo "status_3_spark_sql $status_3_spark_sql"
+        echo "status_3_spark_sql $status_3_spark_sql"
         echo "status_4_spark_gbt $status_4_spark_gbt"
         echo "status_5_spark_gbt_criteo $status_5_spark_gbt_criteo"
         echo "status_6_spark_tpch $status_6_spark_tpch"
+        echo "status_7_pyspark_sklearn $status_7_pyspark_sklearn"
+        echo "status_8_pyspark_sql $status_8_pyspark_sql"
+

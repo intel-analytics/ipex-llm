@@ -925,8 +925,7 @@ class SparkXShards(XShards):
     def merge(self,
               right: "SparkXShards",
               how: str = "inner",
-              on: Optional[str] = None,
-              **kwargs) -> "SparkXShards":
+              on: Optional[str] = None) -> "SparkXShards":
         """
         Merge two SparkXShards into a single SparkXShards with a database-style join.
 
@@ -1098,7 +1097,7 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support select() on"
+                              "Currently only support sample_to_pdf() on"
                               " XShards of Pandas DataFrame")
         sampled = self.sample(
             frac=frac, replace=replace, weights=weights, random_state=random_state)

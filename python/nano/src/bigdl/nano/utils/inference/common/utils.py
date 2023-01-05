@@ -17,6 +17,7 @@
 from collections import namedtuple
 import os
 import time
+import numbers
 import numpy as np
 from typing import Dict
 from abc import abstractmethod
@@ -132,7 +133,7 @@ def format_acceleration_option(method_name: str,
                 repr_str = repr_str + "int8" + " + "
             else:
                 repr_str = repr_str + key + " + "
-        elif isinstance(value, str):
+        elif isinstance(value, str) and value != 'ipex':
             repr_str = repr_str + value + " + "
     if len(repr_str) > 0:
         # remove " + " at last
@@ -153,7 +154,7 @@ def format_optimize_result(optimize_result_dict: dict,
             .format("-" * 32, "-" * 22, "-" * 14, "-" * 22)
         repr_str = horizontal_line
         repr_str += "| {0:^30} | {1:^20} | {2:^12} | {3:^20} |\n" \
-            .format("method", "status", "latency(ms)", "accuracy")
+            .format("method", "status", "latency(ms)", "metric value")
         repr_str += horizontal_line
         for method, result in optimize_result_dict.items():
             status = result["status"]
@@ -162,6 +163,10 @@ def format_optimize_result(optimize_result_dict: dict,
                 latency = round(latency, 3)
             accuracy = result.get("accuracy", "None")
             if accuracy != "None" and isinstance(accuracy, float):
+                accuracy = round(accuracy, 3)
+            elif isinstance(accuracy, numbers.Real):
+                # support more types
+                accuracy = float(accuracy)
                 accuracy = round(accuracy, 3)
             else:
                 try:

@@ -1,0 +1,10 @@
+name: 'Remove Nano TensorFlow Env'
+description: 'remove nano tensorflow env'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Remove Conda Env
+      shell: bash
+      run: |
+        $CONDA/bin/conda remove -n nano-tensorflow -y --all

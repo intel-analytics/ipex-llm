@@ -35,6 +35,11 @@ class BaseOpenVINOMetric(Metric):
     def avg_value(self):
         preds = self.stack(self._pred_list)
         targets = self.stack(self._target_list)
+        # fix bug, todo
+        if preds.ndim > 2 and preds.shape[1] == 1:
+            preds = preds.squeeze(1)
+        if targets.ndim > 1 and targets.shape[1] == 1:
+            targets = targets.squeeze(1)
         score = self.metric(preds, targets)
         return {self._name: self.to_scalar(score)}
 

@@ -104,7 +104,8 @@ class TestDataloader(TestCase):
         trainer = Trainer()
         model = ModelWithMultipleInputs()
 
-        trainer.quantize(model, calib_data=dataloader, metric=torchmetrics.F1())
+        trainer.quantize(model, calib_data=dataloader, 
+                         metric=torchmetrics.F1Score('multiclass', num_classes=10))
 
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray
@@ -120,7 +121,7 @@ class TestDataloader(TestCase):
         # tuning
         with pytest.raises(RuntimeError):
             trainer.quantize(model, calib_data=loader,
-                             metric=torchmetrics.F1(10))
+                             metric=torchmetrics.F1Score('multiclass', num_classes=10))
 
 
 if __name__ == '__main__':
