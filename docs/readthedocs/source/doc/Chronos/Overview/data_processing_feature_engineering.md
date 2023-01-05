@@ -274,8 +274,3 @@ for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
           .impute()\
           .scale(stand, fit=tsdata is tsdata_train)
 ```
-
-```eval_rst
-.. note::
-    About how to use the built-in dataset, please refer to [Howto Guide](../Howto/how_to_use_built-in_datasets.html)
-```
