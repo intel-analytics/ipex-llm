@@ -119,10 +119,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.backend = backend
         self.workers_per_node = workers_per_node
 
-        if not loss_creator:
-            invalidInputError(False,
-                              "You must provide a loss_creator.")
-
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
         self.setup_params = dict(
