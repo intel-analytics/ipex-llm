@@ -36,7 +36,7 @@ import org.apache.hadoop.fs.Path
  * @param kms
  * @param sparkSession
  */
-class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null) {
+class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null){
 
   protected var dataKeyPlainText: String = ""
   protected val multiKms = new scala.collection.mutable.HashMap[String, KeyManagementService]
@@ -66,7 +66,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
                dataKeyPath: String, 
                dataSourceName: String = "dataSource"): this.type = {
     var kms = this.kms
-    if (kms == null) {
+    if (kms == null){
       Log4Error.invalidInputError(this.dataSources.contains(dataSourceName),
         "this.dataSources.get(dataSourceName).get==null, cant get kms of " + dataSourceName)
       val kmsName = this.dataSources.get(dataSourceName).get
@@ -151,7 +151,7 @@ object PPMLContext{
                minPartitions: Int = -1): RDD[String] = {
     Log4Error.invalidInputError(dataKeyPlaintext != "",
       "dataKeyPlainText should not be empty, please loadKeys first.")
-    val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0) {
+    val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0){
       sc.binaryFiles(path, minPartitions)
     } else {
       sc.binaryFiles(path)
@@ -250,7 +250,7 @@ object PPMLContext{
         throw new EncryptRuntimeException("Wrong kms type")
     }
     val ppmlSc = new PPMLContext(kms, sparkSession)
-    if (conf.contains("spark.bigdl.kms.key.primary")) {
+    if (conf.contains("spark.bigdl.kms.key.primary")){
       Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.key.data"),
         "Data key not found, please provide" +
           " both spark.bigdl.kms.key.primary and spark.bigdl.kms.key.data.")
@@ -348,11 +348,11 @@ object PPMLContext{
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
      }
-     ppmlSc.addKMS(kmsName , kms)
+     ppmlSc.addKMS(kmsName, kms)
     }
 
-    // init data sources
-    val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue=2)
+    // init data sources=
+    val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue = 2)
     for (i <- 1 to dataSourceInstance){
       val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",
         defaultValue = s"dataSource${i}")
