@@ -7,19 +7,22 @@ runs:
       shell: bash
       run: |
         source activate py37
+        pip uninstall bigdl-dllib
         export SPARK_LOCAL_HOSTNAME=localhost
         unset SPARK_HOME
         
+        # install dlib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+
         # install requires
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetircs==0.10.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyspark==3.1.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tqdm
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cloudpickle
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} "ray[default]==1.9.2"
-        # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} seaborn
-        # pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} "orca_whl[ray]"
 
         pip list
         export FTP_URI=${FTP_URI}
