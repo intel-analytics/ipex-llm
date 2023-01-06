@@ -425,7 +425,7 @@ class KerasNet(ZooKerasLayer):
         if distributed:
             if isinstance(x, np.ndarray):
                 invalidInputError(len(x.shape) >= 2, "x should be a batch of ndarray, " +
-                                  "dim should >= 2, but got $s" % str(x.shape))
+                                  "dim should >= 2, but got %s" % str(x.shape))
                 # wrap x again, avoid an error if x is resized by np.asmatrix.
                 x = np.resize(x, x.shape)
                 data_rdd = to_sample_rdd(x, np.zeros([x.shape[0]]))
