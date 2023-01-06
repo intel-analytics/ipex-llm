@@ -585,7 +585,7 @@ class RayOnSparkContext(object):
                     include_dashboard=self.include_webui,
                     dashboard_host="0.0.0.0",
                     _system_config=self.system_config,
-                    namespace="az"
+                    namespace="bigdl"
                 )
                 if self.redis_password:
                     init_params["_redis_password"] = self.redis_password
@@ -676,7 +676,7 @@ class RayOnSparkContext(object):
         init_params = dict(
             address=redis_address,
             _node_ip_address=node_ip,
-            namespace="az"
+            namespace="bigdl"
         )
         if self.redis_password:
             init_params["_redis_password"] = self.redis_password

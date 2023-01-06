@@ -108,7 +108,7 @@ def init_ray_if_not(redis_address, redis_password):
         init_params = dict(
             address=redis_address,
             ignore_reinit_error=True,
-            namespace="az"
+            namespace="bigdl"
         )
         if redis_password:
             init_params["_redis_password"] = redis_password
