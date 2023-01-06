@@ -61,9 +61,8 @@ else:
     checkpoint = 'hfl/chinese-pert-base'
     tokenizer = BertTokenizer.from_pretrained(checkpoint, model_max_length=512)
 
+
 # prepare environment
-
-
 def prepare_env():
     """
     |1. Check whether arguments required by KMS is set.
@@ -80,9 +79,8 @@ def prepare_env():
     encrypted_data_key_path = "./encrypted_data_key"
     patch_encryption()
 
+
 # Get a key from kms that can be used for encryption/decryption
-
-
 def get_key():
     return get_data_key_plaintext(EHSM_IP, EHSM_PORT, encrypted_primary_key_path, encrypted_data_key_path)
 
@@ -185,14 +183,13 @@ def main():
         level=logging.DEBUG)
 
     prepare_env()
-    # This is only safe in sgx environment, where the memory can not be read
+    # WARNING: This is only safe in sgx environment, where the memory can not be read
     secret_key = get_key()
 
     encrypted_dataset_path = "/ppml/encryption_dataset.pt"
 
     # Assume we are in customer environment when executing this(which is safe and trusted)
-    save_encrypted_dataset(
-        args.dataset_path, encrypted_dataset_path, secret_key)
+    save_encrypted_dataset(args.dataset_path, encrypted_dataset_path, secret_key)
 
     # Now we have the encrypted dataset, we can safely distribute it into
     # untrusted environments.
