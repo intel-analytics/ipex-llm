@@ -34,3 +34,5 @@ Patch API
 .. autofunction:: bigdl.nano.tf.patch_tensorflow
 
 .. autofunction:: bigdl.nano.tf.unpatch_tensorflow
+
+.. autofunction:: bigdl.nano.tf.keras.nano_bf16
