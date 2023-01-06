@@ -63,8 +63,8 @@ class OpenVINOModel:
             # GPU is equivalent to GPU.0
             return True
         invalidInputError(device in devices,
-                          "Your machine don't have {} device, please modify the incoming "
-                          "device value.".format(device))
+                          "Your machine don't have {} device (only have {}), please modify "
+                          "the incoming device value.".format(device, ",".join(list(devices))))
 
     @property
     def forward_args(self):
