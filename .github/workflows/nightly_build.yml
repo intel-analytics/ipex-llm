@@ -1,8 +1,8 @@
 name: Nightly Build
 
 on:
-  #pull_request:
-    #branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
   schedule:
     - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
@@ -288,7 +288,7 @@ jobs:
         runner-hosted-on: 'America'
 
   python-sourceforge-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
 
     steps:
@@ -300,7 +300,7 @@ jobs:
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7.15'
+        python-version: '3.7.10'
     
     - name: Install dependencies
       run: |
