@@ -11,8 +11,9 @@
 
 ## Prerequests
 
-- Please make sure you have a workable **Kubernetes cluster/machine**.
-- Please make sure you have a reachable **NFS**.
+- Make sure you have a workable **Kubernetes cluster/machine**.
+- Make sure you have a reachable **NFS**.
+- Prepare [bigdl-keywhiz image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/BKeywhiz/docker#pullbuild-container-image)
 
 ## Start BKeywhiz on Kubernetes
 Modify parameters in script `install-bkeywhiz-kms.sh`:
@@ -53,6 +54,8 @@ NAME                       READY   AGE
 statefulset.apps/keywhiz   1/1     4m56s
 ```
 
+## Validate Status of BKeywhiz
+
 You can communicate with BKeywhiz KMS using client [BKeywhizKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BKeywhizManagementService.scala), or simply verify through requesting REST API like below:
 
 ```
@@ -72,6 +75,15 @@ user [<userName>] is created successfully!
 curl -X POST -k -v "https://<kmsIP>:9876/primaryKey/<primaryKeyName>?user=<userName>&&password=<userPassword>"
 primaryKey [<primaryKeyName>] is generated successfully!
 
-......
+curl -X POST -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&password=<userPassword>&&primaryKeyName=<primaryKeyName>"
+dataKey [<dataKeyName>] is generated successfully!
+
+curl -X GET -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&password=<userPassword>&&primaryKeyName=<primaryKeyName>"
+XY********Yw==
 
 ```
+
+##Test KMS with PPML end-to-end example
+
+[LocalCryptoExample](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples#localcryptoexample-with-bkeywhiz-kms)
+[PPMLContext]() (TODO)
