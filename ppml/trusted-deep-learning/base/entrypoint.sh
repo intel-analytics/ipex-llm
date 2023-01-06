@@ -27,6 +27,12 @@ set +e
 uidentry=$(getent passwd $myuid)
 set -e
 
+function delete_file {
+  if [ -f $1 ]; then
+      rm -f $1
+  fi
+}
+
 # Set PCCS conf
 if [ "$PCCS_URL" != "" ] ; then
     echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
@@ -63,28 +69,28 @@ runtime_command="$@"
 
 if [ "$SGX_ENABLED" == "true" ]; then
   if [ "$ATTESTATION" ==  "true" ]; then 
-    rm /ppml/temp_command_file || true
+    delete_file "/ppml/temp_command_file"
     bash attestation.sh
     if [ "$ENCRYPTED_FSD" == "true" ]; then
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
     fi
     echo $runtime_command >> temp_command_file
-    export sgx_command="bash temp_command_file && rm temp_command_file"
+    export sgx_command="bash temp_command_file"
   else 
     if [ "$ENCRYPTED_FSD" == "true" ]; then
-      rm /ppml/temp_command_file || true
+      delete_file "/ppml/temp_command_file"
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
       echo $runtime_command >> temp_command_file
-      export sgx_command="bash temp_command_file && rm temp_command_file"
+      export sgx_command="bash temp_command_file"
     else
       export sgx_command=$runtime_command
     fi
   fi
   ./init.sh && \
   gramine-sgx bash 2>&1
-  rm /ppml/temp_command_file || true
+  delete_file "/ppml/temp_command_file"
 else
   exec $runtime_command
 fi
