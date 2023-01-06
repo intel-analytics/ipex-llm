@@ -341,4 +341,15 @@ In SGX mode, there is a problem when using Hyper-threading combined with Gramine
 
 We provide a customized `torch.save` and `torch.load` method.  The `torch.save` method will automatically encrypt the object before saving it on disk or to memory.  In the opposite, the `torch.load` method will automatically decrypt the object before loading it back to memory so that the user do not need to worry about encryption/decryption.
 
-An example is included in the image, you can find it at path `/ppml/examples/load_save_ex.py`.
+Besides, some datasets can also be encrypted using `torch.save` method.
+
+A possible process could be:
+
+1. User loads the dataset in trusted customer environment.
+2. User saves the dataset using `torch.save(dataset, "encryption_dataset.pt", encryption_key=xxxx)`
+3. User safely distribute the `encryption_dataset.pt` dataset file into untrusted environment
+4. Doing PyTorch training in SGX environment, using `torch.load("encryption_dataset.pt", decryption_key=xxxx)` to load the dataset back into memory.
+
+The `encryption_key` and `decryption_key` should be the same.  A typical solution is to use key management service for retrieving the key.
+
+An example is included in the image, you can find it at path `/ppml/examples/load_save_encryption_ex.py`.
