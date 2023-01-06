@@ -31,7 +31,6 @@ bigdl.nano.tf.optimizers
 Patch API
 ---------------------------
 
-.. automodule:: bigdl.nano.tf.dispatcher
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: bigdl.nano.tf.patch_tensorflow
+
+.. autofunction:: bigdl.nano.tf.unpatch_tensorflow
