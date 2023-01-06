@@ -97,7 +97,7 @@ else:
           "but got " + args.cluster_mode)
 
 
-# Step 2: Read and process data using Orca XShards
+# Step 2: Read and process data using Spark Dataframe
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(args.remote_dir, neg_scale=4)
 
