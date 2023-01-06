@@ -83,13 +83,15 @@ class AccelerationEnv(object):
     def get_env_dict(self):
         tmp_env_dict = {}
         nano_dir = os.path.join(bigdl.__file__, 'nano')
-        if self.get_malloc_lib == 'jemalloc':
+        if self.get_malloc_lib() == 'jemalloc':
             tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libjemalloc.so')
             tmp_env_dict['MALLOC_CONF'] = 'oversize_threshold:1,background_thread:false,' \
                                           'metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1'
+            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = '1'
         else:
             tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libtcmalloc.so')
             tmp_env_dict['MALLOC_CONF'] = ''
+            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
         return tmp_env_dict
 
 def throughput_calculate_helper(iterrun, baseline_time, func, *args):

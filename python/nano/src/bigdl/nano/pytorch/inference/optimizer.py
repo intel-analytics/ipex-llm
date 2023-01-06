@@ -407,7 +407,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 min(env_result_map, key=env_result_map.get)].get_env_dict()
             print(f"----------Best environment variables----------")
             for env_key, env_value in best_env.items():
-                print(f'export {env_key}={env_value}')
+                print(f'export {env_key}=\'{env_value}\'')
         else:
             best_env = {}
 
