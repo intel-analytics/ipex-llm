@@ -549,6 +549,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data.tf.data import Dataset
 
         if isinstance(data, DataFrame):
+            data.rdd.cache()
             xshards, _ = dataframe_to_xshards(data,
                                               validation_data=None,
                                               feature_cols=feature_cols,

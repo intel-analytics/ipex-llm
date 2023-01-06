@@ -584,13 +584,12 @@ class RayOnSparkContext(object):
                     object_store_memory=self.object_store_memory,
                     include_dashboard=self.include_webui,
                     dashboard_host="0.0.0.0",
-                    _system_config=self.system_config
+                    _system_config=self.system_config,
+                    namespace="az"
                 )
                 if self.redis_password:
                     init_params["_redis_password"] = self.redis_password
                 init_params.update(kwargs)
-                if version.parse(ray.__version__) >= version.parse("1.4.0"):
-                    init_params["namespace"] = "az"
                 self._address_info = ray.init(**init_params)
             else:
                 self.cluster_ips = self._gather_cluster_ips()
@@ -676,10 +675,9 @@ class RayOnSparkContext(object):
         ray.shutdown()
         init_params = dict(
             address=redis_address,
-            _node_ip_address=node_ip
+            _node_ip_address=node_ip,
+            namespace="az"
         )
         if self.redis_password:
             init_params["_redis_password"] = self.redis_password
-        if version.parse(ray.__version__) >= version.parse("1.4.0"):
-            init_params["namespace"] = "az"
         return ray.init(**init_params)

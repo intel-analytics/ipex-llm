@@ -107,12 +107,11 @@ def init_ray_if_not(redis_address, redis_password):
     if not ray.is_initialized():
         init_params = dict(
             address=redis_address,
-            ignore_reinit_error=True
+            ignore_reinit_error=True,
+            namespace="az"
         )
         if redis_password:
             init_params["_redis_password"] = redis_password
-        if version.parse(ray.__version__) >= version.parse("1.4.0"):
-            init_params["namespace"] = "az"
         ray.init(**init_params)
 
 
@@ -160,6 +159,7 @@ class RayXShards(XShards):
                  partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
+        self.rdd.cache()
         self.partition_stores = partition_stores
         self.id_ip_store = self.rdd.collect()
         self.partition2store_name = {idx: store_name for idx, _, store_name in self.id_ip_store}
@@ -208,14 +208,8 @@ class RayXShards(XShards):
         password = ray_ctx.redis_password  # type: ignore
         partition2store = self.partition2store_name
         rdd = self.rdd.mapPartitionsWithIndex(
-            lambda idx, _: get_from_ray(idx, address, password, partition2store))
-
-        # the reason why we trigger computation here is to ensure we get the data
-        # from ray before the RayXShards goes out of scope and the data get garbage collected
-        rdd = rdd.cache()
-        result_rdd = rdd.map(lambda x: x)  # sparkxshards will uncache the rdd when gc
-        spark_xshards = SparkXShards(result_rdd)
-        return spark_xshards
+            lambda idx, _: get_from_ray(idx, address, password, partition2store)).cache()
+        return SparkXShards(rdd)
 
     def _get_multiple_partition_refs(self, ids: List[int]) -> List["ObjectRef"]:
         refs = []
@@ -399,7 +393,6 @@ class RayXShards(XShards):
     def from_partition_refs(ip2part_id: DefaultDict[str, List[int]],
                             part_id2ref: Dict[int, "ObjectRef"],
                             old_rdd: "RDD[Any]") -> "RayXShards":
-        ray_ctx = OrcaRayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
         partition_stores = {}
@@ -408,7 +401,7 @@ class RayXShards(XShards):
         for node, part_ids in ip2part_id.items():
             name = f"partition:{uuid_str}:{node}"
             store = ray.remote(num_cpus=0, resources={f"node:{node}": 1e-4})(LocalStore) \
-                .options(name=name).remote()
+                .options(name=name, lifetime="detached").remote()
             partition_stores[name] = store
             for idx in part_ids:
                 result.append(store.upload_partition.remote(idx, [part_id2ref[idx]]))
@@ -416,7 +409,7 @@ class RayXShards(XShards):
                 part_id2ip[idx] = node
         ray.get(result)
         new_id_ip_store_rdd = old_rdd.mapPartitionsWithIndex(
-            lambda idx, _: [(idx, part_id2ip[idx], id2store_name[idx])]).cache()
+            lambda idx, _: [(idx, part_id2ip[idx], id2store_name[idx])])
         return RayXShards(uuid_str, new_id_ip_store_rdd, partition_stores)
 
     @staticmethod
@@ -445,25 +438,17 @@ class RayXShards(XShards):
         partition_stores = {}
         for node in nodes:
             name = f"partition:{uuid_str}:{node}"
-            if version.parse(ray.__version__) >= version.parse("1.4.0"):
-                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
-                    .options(name=name, lifetime="detached").remote()
-            else:
-                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore) \
-                    .options(name=name).remote()
+            store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
+                .options(name=name, lifetime="detached").remote()
             partition_stores[name] = store
 
-        # actor creation is aync, this is to make sure they all have been started
+        # actor creation is async, this is to make sure they all have been started
         ray.get([v.get_partitions_refs.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
         result_rdd = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
-            idx, part, address, password, partition_store_names)).cache()
-        result = result_rdd.collect()
-
-        id2ip = {}
-        id2store_name = {}
-        for idx, ip, local_store_name in result:
-            id2ip[idx] = ip
-            id2store_name[idx] = local_store_name
+            idx, part, address, password, partition_store_names))
 
         return RayXShards(uuid_str, result_rdd, partition_stores)
+
+    def __del__(self):
+        self.rdd.unpersist()
