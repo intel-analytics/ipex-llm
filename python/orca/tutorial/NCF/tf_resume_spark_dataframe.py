@@ -29,9 +29,10 @@ init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Spark DataFrame
-data_dir = './ml-1m'  # path to ml-1m
-train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(data_dir, neg_scale=4)
+train_df = spark.read.parquet("./train_processed.parquet")
+test_df = spark.read.parquet("./test_processed.parquet")
+feature_cols = get_feature_cols()
+label_cols = ["label"]
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
