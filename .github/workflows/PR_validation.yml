@@ -311,6 +311,20 @@ jobs:
     - name: Run Test
       uses: ./.github/actions/orca/orca-tutorial-xshards
 
+  Orca-Tutorial-NCF:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-NCF
+
   Orca-Python-Ray-Ctx:
     needs: changes
     if: ${{ needs.changes.outputs.orca == 'true' }}

@@ -1,5 +1,5 @@
-name: 'Run Orca Tutorial NCF Spark3'
-description: 'Run Orca Tutorial NCF Spark3'
+name: 'Run Orca Tutorial NCF'
+description: 'Run Orca Tutorial NCF'
 runs:
   using: "composite"
   steps:
