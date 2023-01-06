@@ -9,7 +9,6 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         unset SPARK_HOME
-        bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
         # install requires
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
