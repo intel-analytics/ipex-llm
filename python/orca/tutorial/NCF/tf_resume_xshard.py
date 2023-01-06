@@ -29,9 +29,10 @@ init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data using Xshards
-dataset_dir = "./ml-1m"
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+train_data = XShards.load_pickle("./train_processed_xshards")
+test_data = XShards.load_pickle("./test_processed_xshards")
+feature_cols = get_feature_cols()
+label_cols = ["label"]
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
