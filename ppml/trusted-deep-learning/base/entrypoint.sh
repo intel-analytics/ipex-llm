@@ -29,7 +29,6 @@ set -e
 
 function delete_file {
   if [ -f $1 ]; then
-      # file exists
       rm -f $1
   fi
 }
