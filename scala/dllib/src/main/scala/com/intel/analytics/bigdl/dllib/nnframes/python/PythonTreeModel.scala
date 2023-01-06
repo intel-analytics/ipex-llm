@@ -26,7 +26,7 @@ import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-import scala.collection.Map
+import scala.collection
 
 object PythonTreeModel {
 
@@ -119,13 +119,13 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def getFeatureScoreXGBClassifierModel(model: XGBClassifierModel,
-                                        featureMap: String = null): Map[String, Integer] = {
+                                        featureMap: String = null): collection.Map[String, Integer] = {
     model.getFeatureScore(featureMap)
   }
 
   def getScoreXGBClassifierModel(model: XGBClassifierModel,
                                 featureMap: String,
-                                importanceType: String): Map[String, Double] = {
+                                importanceType: String): collection.Map[String, Double] = {
     model.getScore(featureMap, importanceType)
   }
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
