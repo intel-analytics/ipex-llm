@@ -25,8 +25,8 @@ def patch_encryption():
 
     Patched details include:
 
-    | 1. torch.save is now located at bigdl.nano.pytorch.encryption.torch.models.save
-    | 2. torch.load is now located at bigdl.nano.pytorch.encryption.torch.models.load
+    | 1. torch.save is now located at bigdl.nano.pytorch.encryption.save
+    | 2. torch.load is now located at bigdl.nano.pytorch.encryption.load
 
     A key argument is added to torch.save and torch.load which is used to
     encrypt/decrypt the content before saving/loading it to/from disk.
@@ -43,7 +43,7 @@ def patch_encryption():
 def _get_encryption_patch_map():
     global _torch_encryption_patch
     import torch
-    from bigdl.nano.pytorch.encryption.torch.models import save, load
+    from bigdl.nano.pytorch.encryption import save, load
     _torch_encryption_patch = []
     _torch_encryption_patch += [
         [torch, "old_save", torch.save],
