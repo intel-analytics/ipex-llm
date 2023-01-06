@@ -27,6 +27,8 @@ cd "`dirname $0`"
 cd ../../tutorial/NCF
 
 #download dataset from ftp
+rm -f ./orca-tutorial-ncf-dataset.zip
+rm -rf ml-1m
 wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset.zip
 unzip orca-tutorial-ncf-dataset.zip
 echo "Successfully gets dataset from ftp"
