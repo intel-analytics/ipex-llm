@@ -407,7 +407,6 @@ export EHSMIP=YOUR_EHSM_IP
 export EHSMPORT=YOUR_EHSM_PORT
 export EHSMAPPID=YOUR_EHSM_APPID
 export EHSMAPIKEY=YOUR_EHSM_APIKEY
-export CONTAINER=YOUR_CONTAINER
 export UPLOADPATH=YOUR_UPLOAD_PATH
   
 bash bigdl-ppml-submit.sh \
@@ -417,7 +416,7 @@ bash bigdl-ppml-submit.sh \
     --driver-cores 4 \
     --executor-memory 32g \
     --executor-cores 4 \
-    --conf spark.kubernetes.container.image=${CONTAINER} \
+    --conf spark.kubernetes.container.image=${RUNTIME_SPARK_K8S_IMAGE} \
     --sgx-enabled false \
     --num-executors 2 \
     --conf spark.cores.max=8 \
