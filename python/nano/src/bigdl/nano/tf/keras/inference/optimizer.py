@@ -578,9 +578,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # for fp16 on VPUX, must specify mean_value.
                     invalidInputError('mean_value' in kwargs,
                                       "If you want to quantize with openvino on VPUX device, "
-                                      "you must specify mean_value for model optimizer function. "
-                                      "For more details about model optimizer, you can see "
-                                      "mo --help .")
+                                      "you must specify mean_value for model optimizer "
+                                      "function. For more details about model optimizer, you "
+                                      "can see mo --help .")
                 openvino_model = KerasOpenVINOModel(model,
                                                     input_spec=input_spec,
                                                     precision=_precision,
