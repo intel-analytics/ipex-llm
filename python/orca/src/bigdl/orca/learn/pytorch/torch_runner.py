@@ -441,7 +441,7 @@ class TorchRunner(BaseRunner):
             if self.scheduler and batch_info.get(
                     SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
                 # TODO: Totally abandon SCHEDULER_STEP
-                self.call_hook("on_lr_adjust")
+                self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
@@ -497,11 +497,11 @@ class TorchRunner(BaseRunner):
 
         # Compute output.
         with self.timers.record("fwd"):
-            self.call_hook("on_train_forward")
+            self.call_hook(callbacks=callbacks, fn_name="on_train_forward")
 
         # Compute gradients in a backward pass.
         with self.timers.record("grad&apply"):
-            self.call_hook("on_iter_backward")
+            self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
@@ -636,7 +636,7 @@ class TorchRunner(BaseRunner):
 
         # compute output
         with self.timers.record("eval_fwd"):
-            self.call_hook("on_val_forward")
+            self.call_hook(callbacks=callbacks, fn_name="on_val_forward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
