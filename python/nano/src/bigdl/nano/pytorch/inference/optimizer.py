@@ -653,7 +653,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          otherwise will be ignored.
                          Possible arguments are: mean_values, layout, input, output, et al.
                          For more details about model optimizer, you can see mo --help .
-                         If you want to quantize with openvino float16 precision on VPUX device,
+                         If you want to quantize with openvino on VPUX device,
                          you must specify  ``mean_value`` for model optimizer function.
                          Here ``mean_value`` represents mean values to be used for the input image
                          per channel. Values to be provided in the (R,G,B) or [R,G,B] format.
