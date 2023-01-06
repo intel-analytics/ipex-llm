@@ -45,7 +45,7 @@ object MultiKMSExample extends Supportive {
           .csv(conf.get("spark.bigdl.kms.datasource1.inputpath"))
       }
 
-      val df2 = timing("1/3 read data source 2"){
+      val df2 = timing("1/3 read data source 2") {
         sc.read(cryptoMode = CryptoMode.parse(
           conf.get("spark.bigdl.kms.datasource2.inputEncryptMode")))
           .option("header", "true")
@@ -67,7 +67,7 @@ object MultiKMSExample extends Supportive {
         developers
       }
 
-      val developers2 = timing("2/3 datasource2 do SQL"){
+      val developers2 = timing("2/3 datasource2 do SQL") {
         df2.select("name").count
 
         df2.select(df2("name"), df2("age") ).show()
