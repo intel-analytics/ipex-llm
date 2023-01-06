@@ -18,10 +18,11 @@
 import math
 import tensorflow as tf
 
-from process_xshards import prepare_data
-
+from bigdl.orca.data import XShards
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
+
+from process_xshards import get_feature_cols
 
 
 # Step 1: Init Orca Context
