@@ -131,7 +131,7 @@ class PytorchPysparkWorker(TorchRunner):
                 self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     info=None, wrap_dataloader=None, callbacks=[],
                      validation_data_creator=None):
         self.load_state_dict(self.state_dict.value)
         stats_list = super().train_epochs(data_creator=data_creator,
@@ -157,11 +157,11 @@ class PytorchPysparkWorker(TorchRunner):
             return [state_dict, stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None):
+                 info=None, wrap_dataloader=None, callbacks=[]):
         """Evaluates the model on the validation data set."""
         self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
-                                            wrap_dataloader)
+                                            wrap_dataloader, callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]

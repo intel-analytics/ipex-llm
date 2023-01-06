@@ -257,12 +257,11 @@ class TorchRunner(BaseRunner):
         # Check uniqueness of the MainCallback
         make_only_mainCallback(callbacks)
 
-        if callbacks is not None:
-            for callback in callbacks:
-                callback.set_model(self.given_models)
-                if hasattr(callback, "set_trainer"):
-                    callback.set_trainer(self)
-                callback.on_train_begin()
+        for callback in callbacks:
+            callback.set_model(self.given_models)
+            if hasattr(callback, "set_trainer"):
+                callback.set_trainer(self)
+            callback.on_train_begin()
 
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
@@ -430,7 +429,7 @@ class TorchRunner(BaseRunner):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_batch_begin(batch_idx)
-            metrics = self._train_batch(batch, batch_info=batch_info)
+            metrics = self._train_batch(batch, callbacks=callbacks, batch_info=batch_info)
             if self.use_tqdm and self.rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
@@ -802,9 +801,6 @@ class TorchRunner(BaseRunner):
             fn_name (str): The function name in each hook to be called, such as
                 "on_iter_begin".
         """
-        if not callbacks:
-            return
-
         for hook in callbacks:
             if hasattr(hook, fn_name):
                 getattr(hook, fn_name)(self)
