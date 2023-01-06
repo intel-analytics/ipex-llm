@@ -154,7 +154,7 @@ driver)
             bash encrypted-fsd.sh
           fi
           echo $sgx_command >>temp_command_file
-          export sgx_command="bash temp_command_file && rm temp_command_file"
+          export sgx_command="bash temp_command_file"
         else
           # ATTESTATION is false
           if [ "$ENCRYPTED_FSD" == "true" ]; then
@@ -163,7 +163,7 @@ driver)
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
             echo $sgx_command >>temp_command_file
-            export sgx_command="bash temp_command_file && rm temp_command_file"
+            export sgx_command="bash temp_command_file"
           fi
         fi
       echo $sgx_command &&
@@ -223,7 +223,7 @@ executor)
             bash encrypted-fsd.sh
           fi
           echo $sgx_command >>temp_command_file
-          export sgx_command="bash temp_command_file && rm temp_command_file"
+          export sgx_command="bash temp_command_file"
         else
           # ATTESTATION is false
           if [ "$ENCRYPTED_FSD" == "true" ]; then
@@ -232,7 +232,7 @@ executor)
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
             echo $sgx_command >>temp_command_file
-            export sgx_command="bash temp_command_file && rm temp_command_file"
+            export sgx_command="bash temp_command_file"
           fi
         fi
       echo $sgx_command &&
