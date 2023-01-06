@@ -76,14 +76,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                        precision=precision, dynamic_axes=dynamic_axes,
                        logging=logging, **kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
-            self.dynamic_axes = dynamic_axes
-            self.ov_model = OpenVINOModel(ov_model_path,
-                                          device=device,
-                                          precision=precision,
-                                          thread_num=thread_num,
-                                          config=config)
 
-        if not isinstance(model, torch.nn.Module):
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
                                           precision=precision,
@@ -176,8 +169,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                       device=self.ov_model._device,
                       thread_num=thread_num,
                       precision='int8',
-                      config=config,
-                      dynamic_axes=self.dynamic_axes)
+                      config=config)
         return self
 
     def _save_model(self, path):
