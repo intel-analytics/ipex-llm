@@ -42,7 +42,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_m
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
-from nano.utils.util import spawn_new_process
+from bigdl.nano.utils.util import spawn_new_process
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
@@ -397,12 +397,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         if search_env:
             env_result_map = {}
-            for method, env in self.ALL_ACCELERATION_ENV.items():
+            for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
+                print(f"----------Start test {method} variables "
+                      f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 env_result_map[method], _ = throughput_calculate_helper_with_env(
                     latency_sample_num, baseline_time, func_test, model, input_sample,
                     env_var=env.get_env_dict())
             best_env = self.ALL_ACCELERATION_ENV[
                 min(env_result_map, key=env_result_map.get)].get_env_dict()
+            print(f"----------Best environment variables----------")
+            for env_key, env_value in best_env.items():
+                print(f'export {env_key}={env_value}')
         else:
             best_env = {}
 
