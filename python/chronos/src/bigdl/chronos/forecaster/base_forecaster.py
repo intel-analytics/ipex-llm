@@ -608,10 +608,12 @@ class BasePytorchForecaster(Forecaster):
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        excludes = None
+        excludes = ["fp32_channels_last", "fp32_ipex_channels_last", "bf16_channels_last",
+                    "bf16_ipex_channels_last", "jit_fp32_channels_last", "jit_bf16_channels_last",
+                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last"]
         if not self.quantize_available:
-            excludes = ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
-                        "bf16", "jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
+            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
+                                   "bf16", "jit_bf16_ipex"]
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
