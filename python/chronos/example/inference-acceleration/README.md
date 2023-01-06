@@ -12,6 +12,10 @@ In this example, we show an example to train the model on GPU and accelerate the
 python cpu_inference_acceleration.py
 ```
 
+```note
+More inference acceleration info, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/speed_up.html#inference-acceleration).
+```
+
 ## Sample output
 ```bash
 Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 288/288
