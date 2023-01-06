@@ -11,8 +11,8 @@
 
 ## Prerequests
 
-- Make sure you have a workable **Kubernetes cluster/machine**.
-- Make sure you have a reachable **NFS**.
+- Make sure you have a workable **Kubernetes cluster/machine**
+- Make sure you have a reachable **NFS**
 - Prepare [bigdl-keywhiz image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/BKeywhiz/docker#pullbuild-container-image)
 
 ## Start BKeywhiz on Kubernetes
@@ -83,7 +83,7 @@ XY********Yw==
 
 ```
 
-##Test KMS with PPML end-to-end example
+## Test KMS with PPML end-to-end example
 
 [LocalCryptoExample](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples#localcryptoexample-with-bkeywhiz-kms)
 [PPMLContext]() (TODO)
