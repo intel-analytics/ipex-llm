@@ -733,3 +733,22 @@ class TestChronosNBeatsForecaster(TestCase):
 
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+
+    @op_inference
+    def test_nbeats_forecaster_set_thread_num(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mse',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+        
+        num = max(1, original_thread//2)
+        forecaster.build_onnx(num)
+        pred = forecaster.predict_with_onnx(test_data[0])
+        current_thread = torch.get_num_threads()
+        assert current_thread == num
+        assert forecaster.thread_num == num
+        assert forecaster.optimized_model_thread_num == num
