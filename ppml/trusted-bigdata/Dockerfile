@@ -144,7 +144,6 @@ ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./attestation.sh /opt/attestation.sh
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
@@ -152,7 +151,6 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/bigdl-ppml-submit.sh && \
-    chmod +x /opt/attestation.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
