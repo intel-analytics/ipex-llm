@@ -172,7 +172,6 @@ if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     export sgx_command=${spark_submit_command}
     if [ "$ENCRYPTED_FSD" == "true" ]; then
       delete_file "/ppml/temp_command_file"
-      rm /ppml/temp_command_file || true
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
       echo $sgx_command >> temp_command_file
@@ -180,7 +179,6 @@ if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     fi
     ./init.sh
     gramine-sgx bash 2>&1 | tee $LOG_FILE
-    rm /ppml/temp_command_file || true
     delete_file "/ppml/temp_command_file"
 else
     $spark_submit_command 2>&1 | tee $LOG_FILE
