@@ -198,5 +198,4 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
 
-#ENTRYPOINT [ "/opt/entrypoint.sh" ]
-ENTRYPOINT [ "/opt/flink-entrypoint.sh" ]
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
