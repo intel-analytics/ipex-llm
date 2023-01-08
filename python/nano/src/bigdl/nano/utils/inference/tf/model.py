@@ -28,9 +28,10 @@ except ImportError:
 class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
     """A wrapper class for tf.keras.Model with accelerators."""
 
-    def __init__(self, model):
+    def __init__(self, model, precision=tf.float32):
         super().__init__()
         self.model = model
+        self.precision = precision
 
     def __call__(self, *args, **kwds):
         invalidInputError(
@@ -41,7 +42,7 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         return super().__call__(*args, **kwds)
 
     def call(self, *inputs):
-        return tf.py_function(self.forward, inputs, Tout=tf.float32)
+        return tf.py_function(self.forward, inputs, Tout=self.precision)
 
     def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)
