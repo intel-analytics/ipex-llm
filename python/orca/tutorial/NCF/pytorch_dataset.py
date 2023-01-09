@@ -59,7 +59,7 @@ class NCFData(data.Dataset):
         self.labels = labels_ps + labels_ng
 
     def merge_features(self, users, items, feature_cols=None):
-        df = pd.DataFrame(self.features, columns=["user", "item"], dtype=np.int32)
+        df = pd.DataFrame(self.features, columns=["user", "item"], dtype=np.int64)
         df["labels"] = self.labels
         df = users.merge(df, on="user")
         df = df.merge(items, on="item")
@@ -90,11 +90,11 @@ def process_users_items(dataset_dir):
         os.path.join(dataset_dir, "users.dat"),
         sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
         usecols=[0, 1, 2, 3, 4],
-        dtype={0: np.int32, 1: str, 2: np.int32, 3: np.int32, 4: str})
+        dtype={0: np.int64, 1: str, 2: np.int64, 3: np.int64, 4: str})
     items = pd.read_csv(
         os.path.join(dataset_dir, "movies.dat"),
         sep="::", header=None, names=["item", "category"],
-        usecols=[0, 2], dtype={0: np.int32, 1: str}, encoding="latin-1")
+        usecols=[0, 2], dtype={0: np.int64, 1: str}, encoding="latin-1")
 
     user_num = users["user"].max() + 1
     item_num = items["item"].max() + 1
@@ -136,10 +136,10 @@ def process_ratings(dataset_dir, user_num, item_num):
     ratings = pd.read_csv(
         os.path.join(dataset_dir, "ratings.dat"),
         sep="::", header=None, names=["user", "item"],
-        usecols=[0, 1], dtype={0: np.int32, 1: np.int32})
+        usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
 
     # load ratings as a dok matrix
-    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
     for x in ratings.values.tolist():
         train_mat[x[0], x[1]] = 1
     return ratings, train_mat
