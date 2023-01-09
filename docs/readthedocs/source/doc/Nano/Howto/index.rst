@@ -67,11 +67,11 @@ PyTorch
 * |pytorch_inference_context_manager_link|_
 * `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
 * `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
-* `How to save and load optimized ONNXRuntime model <Inference/PyTorch/pytorch_save_and_load_onnx.html>`_
-* `How to save and load optimized OpenVINO model <Inference/PyTorch/pytorch_save_and_load_openvino.html>`_
-* `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
+* `How to save and load optimized ONNXRuntime model in PyTorch <Inference/PyTorch/pytorch_save_and_load_onnx.html>`_
+* `How to save and load optimized OpenVINO model in PyTorch <Inference/PyTorch/pytorch_save_and_load_openvino.html>`_
+* `How to find accelerated method with minimal latency for PyTorch model using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
 
-.. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
+.. |pytorch_inference_context_manager_link| replace:: How to use context manager for PyTorch inference through ``get_context``
 .. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
 
 TensorFlow
