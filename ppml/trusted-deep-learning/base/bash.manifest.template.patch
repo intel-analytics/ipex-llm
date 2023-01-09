@@ -1,6 +1,0 @@
-6c6
-< loader.env.LD_PRELOAD  = ""
----
-> loader.env.LD_PRELOAD  = "/ppml/lib/libgomp.so.1"
-98a99
->   "file:/ppml/lib/libgomp.so.1",
