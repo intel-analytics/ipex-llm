@@ -115,7 +115,13 @@ def _quantize(
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         dataloader = DataLoader(framework, dataloader)
 
-    model = model.onnx_model if 'onnx' in framework else model
+    if 'pytorch' in framework:
+        # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
+        from bigdl.nano.pytorch.lightning import LightningModule
+        if isinstance(model, LightningModule):
+            model = model.model
+    elif 'onnx' in framework:
+        model = model.onnx_model
 
     if 'relative' in accuracy_criterion:
         criterion = 'relative'
