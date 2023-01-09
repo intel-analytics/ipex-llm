@@ -15,6 +15,8 @@
 #
 
 # Step 0: Import necessary libraries
+import os
+import argparse
 import math
 import tensorflow as tf
 
@@ -24,15 +26,77 @@ from process_xshards import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
+parser = argparse.ArgumentParser(description="Tensorflow Example")
+parser.add_argument("--data_dir", type=str,
+                    help="The path to load data from local or remote resources.")
+parser.add_argument("--cluster_mode", type=str, default="local",
+                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
+                         "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
+parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
+parser.add_argument("--callback", type=bool, default=True,
+                    help="Whether to use TensorBoardCallback.")
+args = parser.parse_args()
+
 
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode="local")
+if args.cluster_mode == "local":
+    sc = init_orca_context(cluster_mode="local")
+elif args.cluster_mode.startswith("yarn"):
+    if args.cluster_mode == "yarn-client":
+        sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
+                               driver_cores=2, driver_memory="2g",
+                               extra_python_lib="tf_model.py,process_xshards.py")
+    elif args.cluster_mode == "yarn-cluster":
+        sc = init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
+                               driver_cores=2, driver_memory="2g",
+                               extra_python_lib="tf_model.py,process_xshards.py")
+elif args.cluster_mode.startswith("k8s"):
+    if args.cluster_mode == "k8s-client":
+        conf = {
+            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".options.claimName": "nfsvolumeclaim",
+            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".mount.path": "/bigdl/nfsdata"
+        }
+        sc = init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=4, memory="10g",
+                               driver_cores=2, driver_memory="2g",
+                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
+                               container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
+                               extra_python_lib="tf_model.py,process_xshards.py",
+                               conf=conf)
+    elif args.cluster_mode == "k8s-cluster":
+        conf = {
+            "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".options.claimName": "nfsvolumeclaim",
+            "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".mount.path": "/bigdl/nfsdata",
+            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".options.claimName": "nfsvolumeclaim",
+            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
+            ".mount.path": "/bigdl/nfsdata",
+            "spark.kubernetes.authenticate.driver.serviceAccountName": "spark",
+            "spark.kubernetes.file.upload.path": "/bigdl/nfsdata/"
+        }
+        sc = init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=4, memory="10g",
+                               driver_cores=2, driver_memory="2g",
+                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
+                               container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
+                               penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
+                               extra_python_lib="tf_model.py,process_xshards.py",
+                               conf=conf)
+elif args.cluster_mode == "bigdl-submit":
+    sc = init_orca_context(cluster_mode="bigdl-submit")
+elif args.cluster_mode == "spark-submit":
+    sc = init_orca_context(cluster_mode="spark-submit")
+else:
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
+          "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
+          "but got " + args.cluster_mode)
 
 
-# Step 2: Read and process data using Spark DataFrame
-dataset_dir = "./ml-1m"
+# Step 2: Read and process data using Orca Xshards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
 
 
 # Step 3: Define the NCF model
@@ -63,15 +127,14 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
-backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
-                           backend=backend)
+                           backend=args.backend)
 
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")] if args.callback else []
 
 est.fit(train_data,
         epochs=2,
@@ -95,9 +158,8 @@ for r in result:
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
-
-train_data.save_pickle("./train_processed_xshards")
-test_data.save_pickle("./test_processed_xshards")
+train_data.save_pickle(args.data_dir, "train_xshards")
+test_data.save_pickle(args.data_dir, "test_xshards")
 
 
 # Step 7: Stop Orca Context when program finishes
