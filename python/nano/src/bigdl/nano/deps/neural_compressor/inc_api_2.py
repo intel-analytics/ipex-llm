@@ -98,7 +98,7 @@ def _quantize(
         dataloader = None
     elif 'onnx' in framework:
         if hasattr(dataloader, "batch_size"):
-            # dataloader is pytorch DataLoader
+            # `dataloader` is pytorch DataLoader
             import torch
 
             def wrap_collate_fn(func):
@@ -109,7 +109,7 @@ def _quantize(
             dataloader = DataLoader(framework, dataloader.dataset,
                                     collate_fn=wrap_collate_fn(dataloader.collate_fn))
         else:
-            # dataloader is tensorflow (x,y)
+            # `dataloader` is tensorflow (x,y)
             from .onnx.tensorflow.quantization import KerasNumpyDataset
             dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
@@ -118,17 +118,23 @@ def _quantize(
     model = model.onnx_model if 'onnx' in framework else model
 
     if 'relative' in accuracy_criterion:
+        criterion = 'relative'
+    elif 'absolute' in accuracy_criterion:
+        criterion = 'absolute'
+    else:
+        criterion = None
+
+    if criterion is None:
         accuracy_criterion = AccuracyCriterion(
             higher_is_better=accuracy_criterion.get('higher_is_better', True),
-            criterion='relative',
-            tolerable_loss=1.0 - accuracy_criterion['relative']
         )
     else:
         accuracy_criterion = AccuracyCriterion(
             higher_is_better=accuracy_criterion.get('higher_is_better', True),
-            criterion='absolute',
-            tolerable_loss=1.0 - accuracy_criterion['absolute']
+            criterion=criterion,
+            tolerable_loss=1.0 - accuracy_criterion[criterion]
         )
+
     tuning_criterion = TuningCriterion(
         strategy=tuning_strategy,
         timeout=timeout,
