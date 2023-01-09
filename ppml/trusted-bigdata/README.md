@@ -556,6 +556,9 @@ If you get the following results, then the thrift server is functioning normally
 ```
 
 ## Start Flink
+The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
+![flink cluster in application mode](./flink%20cluster%20in%20application%20mode.png)
+
 ### 1. Enter the client contianer
 First, use the docker command to enter the client container.
 ```bash
@@ -596,17 +599,17 @@ $FLINK_HOME/bin/flink run-application \
     -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
     local:///ppml/flink/examples/streaming/WordCount.jar
 ```
-The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
-The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
-The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.  
-The `kubernetes.flink.conf.dir` parameter specifies the directory of the flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
-The `kubernetes.jobmanager.service-account` and `kubernetes.taskmanager.service-account` parameters specify the k8s service account created in Section 1.2.  
-The `kubernetes.cluster-id` parameter is the name of the flink cluster to be started, which can be customized by the user.  
-The `kubernetes.pod-template-file.jobmanager` parameter specifies the template file of the jobmanager, which is used as the configuration when k8s starts the `jobmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
-The `kubernetes.pod-template-file.taskmanager` parameter specifies the template file of the taskmanager, which is used as the configuration when k8s starts the `taskmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
-The `kubernetes.container.image` parameter specifies the image used to start `jobmanager` and `taskmanager`.  
+* The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
+* The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
+* **The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.**  
+* The `kubernetes.flink.conf.dir` parameter specifies the directory of the flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
+* The `kubernetes.jobmanager.service-account` and `kubernetes.taskmanager.service-account` parameters specify the k8s service account created in Section 1.2.  
+* The `kubernetes.cluster-id` parameter is the name of the flink cluster to be started, which can be customized by the user.  
+* The `kubernetes.pod-template-file.jobmanager` parameter specifies the template file of the jobmanager, which is used as the configuration when k8s starts the `jobmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
+* The `kubernetes.pod-template-file.taskmanager` parameter specifies the template file of the taskmanager, which is used as the configuration when k8s starts the `taskmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
+* The `kubernetes.container.image` parameter specifies the image used to start `jobmanager` and `taskmanager`.  
 
-The remaining parameters are related to the `timeout` configuration of flink cluster. For more configuration of flink cluster, please refer to the flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
+> The remaining parameters are related to the `timeout` configuration of flink cluster. For more configuration of flink cluster, please refer to the flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
 
 After start a flink cluster in application mode on SGX, you can use `kubectl` command to get `deployment` and `pod` created by flink cluster:
 ```bash
@@ -616,22 +619,24 @@ kubectl get deployment | grep "wordcount-example-flink-cluster"
 kubectl get pods | grep "wordcount"
 ```
 
-### 4. Flink total process memory
+### 3. Flink total process memory
 [Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
 
 The following uses **the total process memory** to introduce how flink allocates memory.
 
 The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
 
-![jobmanager memory image](./jobmanager%20memory%20allocation.jpg)
-<p style="text-align:center">jobmanager memory allocation</p>
+<img src="./jobmanager%20memory%20allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
+
+**<p align="center">jobmanager memory allocation</p>**
 
 The **total process memory** in jobmanager corresponds to the memory (4G) given by `jobmanager.memory.process.size` parameter, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.
 
 In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
 
-![taskmanager memory image](./taskmanager%20memory%20allocation.jpg)
-<p style="text-align:center">taskmanager memory allocation</p>
+<img src="./taskmanager%20memory%20allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
+
+**<p align="center">taskmanager memory allocation</p>**
 
 Similar to the allocation of jobmanager memory, **the total process memory** in taskmanager corresponds to the memory (4G) given by `taskmanager.memory.process.size parameter`, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.  
 
@@ -730,3 +735,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
+
