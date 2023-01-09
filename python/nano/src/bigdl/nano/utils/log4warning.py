@@ -29,7 +29,7 @@ def output_suggestions():
         logger.warning(f"\n*****************Nano performance Suggestions*****************")
 
 
-def register_suggestion(warning_message):
+def register_suggestion(warning_message: str):
     global warning_messages
 
     # in case core dump / seg fault
