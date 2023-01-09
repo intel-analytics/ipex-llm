@@ -284,6 +284,7 @@ case class BigDLKMSFrontendArguments(
                                  httpsKeyStoreToken: String = null,
                                  keywhizTrustStorePath: String = null,
                                  keywhizTrustStoreToken: String = null,
-                                 frontendKeywhizConf: String = "/usr/src/app/frontend-keywhiz-conf.yaml"
+                                 frontendKeywhizConf: String =
+                                   "/usr/src/app/frontend-keywhiz-conf.yaml"
                                )
 
