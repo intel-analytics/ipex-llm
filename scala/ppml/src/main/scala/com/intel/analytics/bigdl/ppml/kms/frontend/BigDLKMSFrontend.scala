@@ -113,7 +113,7 @@ object BigDLKMSFrontend extends Supportive {
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get a data key like: " +
                   "POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
-                  "&&user=your_username&&password=your_password")
+                  "&&user=your_username&&token=your_token")
             }
             }
             }
@@ -131,7 +131,7 @@ object BigDLKMSFrontend extends Supportive {
                   case e: Exception =>
                     e.printStackTrace()
                     complete(500, e.getMessage + "\n please create a user like: " +
-                      "POST /user/{userName}?password=a_password_for_the_user")
+                      "POST /user/{userName}?token=a_token_for_the_user")
                 }
                 }
                 }
@@ -153,7 +153,7 @@ object BigDLKMSFrontend extends Supportive {
                 e.printStackTrace()
                 complete(500, e.getMessage + "\n please get the data key like: " +
                   "GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
-                  "&&user=your_username&&password=your_password")
+                  "&&user=your_username&&token=your_token")
             }
             }
             }
