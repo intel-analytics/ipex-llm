@@ -28,8 +28,8 @@ class BF16Model(AcceleratedKerasModel):
             layer._dtype_policy = policy_bf16
         with TemporaryDirectory() as temp_dir:
             model.save(temp_dir)
-            model = tf.keras.models.load_model(temp_dir)
-        self.model = model
+            bf16_model = tf.keras.models.load_model(temp_dir)
+        self.model = bf16_model
 
     def forward_step(self, *inputs):
         return self.model(*inputs)
