@@ -163,8 +163,8 @@ for r in result:
 
 # Step 6: Save the trained pytorch model and processed data for resuming training or prediction
 est.save("NCF_model")
-train_data.save_pickle(args.data_dir, "train_xshards")
-test_data.save_pickle(args.data_dir, "test_xshards")
+train_data.save_pickle(os.path.join(args.data_dir, "train_xshards"))
+test_data.save_pickle(os.path.join(args.data_dir, "test_xshards"))
 
 
 # Step 7: Stop Orca Context when program finishes
