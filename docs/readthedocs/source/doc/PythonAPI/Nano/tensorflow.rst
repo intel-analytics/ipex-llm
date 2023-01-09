@@ -13,11 +13,6 @@ bigdl.nano.tf.keras
     :undoc-members:
     :inherited-members: Sequential
 
-.. autoclass:: bigdl.nano.tf.keras.InferenceOptimizer
-    :members:
-    :undoc-members:
-    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD
-
 .. autoclass:: bigdl.nano.tf.keras.layers.Embedding
     :members:
     :undoc-members:
@@ -27,6 +22,13 @@ bigdl.nano.tf.optimizers
 .. autoclass:: bigdl.nano.tf.optimizers.SparseAdam
     :members: 
     :undoc-members:
+
+bigdl.nano.tf.keras.InferenceOptimizer
+---------------------------------------
+.. autoclass:: bigdl.nano.tf.keras.InferenceOptimizer
+    :members:
+    :undoc-members:
+    :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD
 
 Patch API
 ---------------------------
