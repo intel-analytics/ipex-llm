@@ -299,22 +299,23 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
     ```bash
     pip install -r /path/to/requirements.txt
     ```
+Note that you are not recommended to install BigDL Orca in the conda environment if you use spark-submit to aviod possible conflicts.
 
 3. Pack the current activate conda environment to an archive before submitting the example:
     ```bash
     conda pack -o environment.tar.gz
     ```
 
-4. Download and extract [Spark](https://archive.apache.org/dist/spark/). Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
+4. Download the BigDL assembly package from [here](../Overview/install.html#download-bigdl-orca) and unzip it. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
     ```bash
-    export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
-    export SPARK_VERSION="downloaded spark version"
+    export BIGDL_HOME=/path/to/unzipped_BigDL  # the folder path where you extract the BigDL package
+    export BIGDL_VERSION="downloaded BigDL version"
     ```
 
-5. Refer to [here](../Overview/install.html#download-bigdl-orca) to download and unzip a BigDL assembly package. Make sure the Spark version of your downloaded BigDL matches your downloaded Spark. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+5. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for Spark 2.4 and Spark 3.1. Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
     ```bash
-    export BIGDL_HOME=/path/to/unzipped_BigDL
-    export BIGDL_VERSION="downloaded BigDL version"
+    export SPARK_HOME=/path/to/uncompressed_spark  # the folder path where you extract the Spark package
+    export SPARK_VERSION="downloaded Spark version"
     ```
 
 Some runtime configurations for Spark are as follows:
