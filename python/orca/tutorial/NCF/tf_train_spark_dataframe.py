@@ -114,15 +114,15 @@ config = dict(
 
 
 def model_creator(config):
-    model = ncf_model(user_num=config['user_num'],
-                      item_num=config['item_num'],
-                      num_layers=config['num_layers'],
-                      factor_num=config['factor_num'],
-                      dropout=config['dropout'],
-                      lr=config['lr'],
-                      sparse_feats_input_dims=config['sparse_feats_input_dims'],
-                      sparse_feats_embed_dims=config['sparse_feats_embed_dims'],
-                      num_dense_feats=config['num_dense_feats'])
+    model = ncf_model(user_num=config["user_num"],
+                      item_num=config["item_num"],
+                      num_layers=config["num_layers"],
+                      factor_num=config["factor_num"],
+                      dropout=config["dropout"],
+                      lr=config["lr"],
+                      sparse_feats_input_dims=config["sparse_feats_input_dims"],
+                      sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
+                      num_dense_feats=config["num_dense_feats"])
     return model
 
 
@@ -151,7 +151,7 @@ result = est.evaluate(test_df,
                       label_cols=label_cols,
                       batch_size=batch_size,
                       num_steps=val_steps)
-print('Evaluation results:')
+print("Evaluation results:")
 for r in result:
     print("{}: {}".format(r, result[r]))
 
