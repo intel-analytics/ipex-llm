@@ -514,6 +514,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=openvino_config,
                                         logging=logging,
                                         **kwargs)
+            patch_compiled(result, model)
             return patch_attrs(result, model)
 
         elif precision == 'bf16':
@@ -533,6 +534,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=final_openvino_option,
                                         logging=logging,
                                         **kwargs)
+            patch_compiled(result, model)
             return patch_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
