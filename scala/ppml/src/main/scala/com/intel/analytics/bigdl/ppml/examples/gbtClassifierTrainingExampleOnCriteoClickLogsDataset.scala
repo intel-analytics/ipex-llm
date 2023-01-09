@@ -79,7 +79,7 @@ case class Params(
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
         kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
-      case KMS_CONVENTION.MODE_BKEYWHIZ_KMS =>
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
         kmsArgs("spark.bigdl.kms.bkeywhiz.user") = userName
         kmsArgs("spark.bigdl.kms.bkeywhiz.password") = userPassword
       case _ =>

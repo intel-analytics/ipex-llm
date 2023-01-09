@@ -35,7 +35,7 @@ java \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
     -cp "$BIGDL_HOME/jars/*" \
-    com.intel.analytics.bigdl.ppml.kms.frontend.BKeywhizKMSFrontend \
+    com.intel.analytics.bigdl.ppml.kms.frontend.BigDLKMSFrontend \
     --keywhizHost "keywhiz-service" \
     --httpsKeyStorePath "${https_key_store_path}" \
     --httpsKeyStoreToken "${https_secure_password}" | tee ./bkeywhiz-https-frontend.log

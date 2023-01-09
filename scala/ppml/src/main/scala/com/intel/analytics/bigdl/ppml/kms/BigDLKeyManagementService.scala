@@ -38,22 +38,30 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
 
-object BKEYWHIZ_ACTION extends Enumeration {
+object BIGDLKMS_ACTION extends Enumeration {
   type TYPE = Value
   val CREATE_USER, CREATE_PRIMARY_KEY, CREATE_DATA_KEY, GET_DATA_KEY = Value
   val POST_REQUEST, GET_REQUEST = Value
 }
 
-class BKeywhizKeyManagementService(
+class BigDLKeyManagementService(
       kmsServerIP: String,
       kmsServerPort: String,
       userName: String,
-      userPassword: String)extends KeyManagementService {
+      userToken: String)extends KeyManagementService {
 
-  Log4Error.invalidInputError(userName != null && userName != "", 
-        "User name should not be empty string. Pre-create or use name and password to enroll a new one.")
-  Log4Error.invalidInputError(userPassword != null && userPassword != "", 
-        "User password should not be empty string. Pre-create or use name and password to enroll a new one.")
+  Log4Error.invalidInputError(userName != null && userName != "",
+    """
+    User name should not be empty string.
+    Pre-create or use name and password to enroll a new one.
+    """
+    )
+  Log4Error.invalidInputError(userToken != null && userToken != "",
+    """
+    User password should not be empty string.
+    Pre-create or use name and password to enroll a new one.
+    """
+    )
   val logger = LoggerFactory.getLogger(getClass)
   val sslConSocFactory = {
     val sslContext: SSLContext = SSLContext.getInstance("SSL")
@@ -68,10 +76,10 @@ class BKeywhizKeyManagementService(
 
   def enroll(): Unit = {
     // call enroll if user and password has not been created before
-    val action = BKEYWHIZ_ACTION.CREATE_USER
+    val action = BIGDLKMS_ACTION.CREATE_USER
     val url = constructBaseUrl(action, userName)
     val response = timing("BKeyManagementService request for creating user") {
-      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
+      sendRequest(BIGDLKMS_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -79,12 +87,12 @@ class BKeywhizKeyManagementService(
   def retrievePrimaryKey(primaryKeyName: String, config: Configuration = null): Unit = {
     Log4Error.invalidInputError(primaryKeyName != null && primaryKeyName != "",
       "primaryKeyName should be specified")
-    logger.info("BKeywhiz retrievePrimaryKey API create a primary key at KMS server" +
+    logger.info("BigDLKMS retrievePrimaryKey API create a primary key at KMS server" +
                 " and do not save locally.")
-    val action = BKEYWHIZ_ACTION.CREATE_PRIMARY_KEY
-    val url = constructBaseUrl(action, primaryKeyName) + s"&user=$userName" 
+    val action = BIGDLKMS_ACTION.CREATE_PRIMARY_KEY
+    val url = constructBaseUrl(action, primaryKeyName) + s"&user=$userName"
     val response = timing("BKeyManagementService request for creating primaryKey") {
-      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
+      sendRequest(BIGDLKMS_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -95,13 +103,13 @@ class BKeywhizKeyManagementService(
       "primaryKeyName should be specified")
     Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
       "dataKeyName should be specified")
-    logger.info("BKeywhiz retrieveDataKey API create a data key at KMS server" +
+    logger.info("BigDLKMS retrieveDataKey API create a data key at KMS server" +
                 " and do not save locally.")
-    val action = BKEYWHIZ_ACTION.CREATE_DATA_KEY
+    val action = BIGDLKMS_ACTION.CREATE_DATA_KEY
     val url = constructBaseUrl(action, dataKeyName) +
               s"&user=$userName&primaryKeyName=$primaryKeyName"
     val response = timing("BKeyManagementService request for creating dataKey") {
-      sendRequest(BKEYWHIZ_ACTION.POST_REQUEST, url)
+      sendRequest(BIGDLKMS_ACTION.POST_REQUEST, url)
     }
     logger.info(response)
   }
@@ -113,36 +121,35 @@ class BKeywhizKeyManagementService(
       "primaryKeyName should be specified")
     Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
       "dataKeyName should be specified")
-    logger.info("BKeywhiz retrieveDataKeyPlaintext API get the specific data key from KMS server")
-    val action = BKEYWHIZ_ACTION.GET_DATA_KEY
+    logger.info("BigDLKMS retrieveDataKeyPlaintext API get the specific data key from KMS server")
+    val action = BIGDLKMS_ACTION.GET_DATA_KEY
     val url = constructBaseUrl(action, dataKeyName) +
               s"&user=$userName&primaryKeyName=$primaryKeyName"
-    val response = timing("BKeyManagementService request for getting dataKey") {
-      sendRequest(BKEYWHIZ_ACTION.GET_REQUEST, url)
+    val response = timing("BigDLKeyManagementService request for getting dataKey") {
+      sendRequest(BIGDLKMS_ACTION.GET_REQUEST, url)
     }
     response
   }
 
 
-  private def constructBaseUrl(action: BKEYWHIZ_ACTION.TYPE, customParamName: String): String = {
+  private def constructBaseUrl(action: BIGDLKMS_ACTION.TYPE, customParamName: String): String = {
     val path = action match {
-        case BKEYWHIZ_ACTION.CREATE_USER => "/user/"
-        case BKEYWHIZ_ACTION.CREATE_PRIMARY_KEY => "/primaryKey/"
-        case BKEYWHIZ_ACTION.CREATE_DATA_KEY => "/dataKey/"
-        case BKEYWHIZ_ACTION.GET_DATA_KEY => "/dataKey/"
+        case BIGDLKMS_ACTION.CREATE_USER => "/user/"
+        case BIGDLKMS_ACTION.CREATE_PRIMARY_KEY => "/primaryKey/"
+        case BIGDLKMS_ACTION.CREATE_DATA_KEY => "/dataKey/"
+        case BIGDLKMS_ACTION.GET_DATA_KEY => "/dataKey/"
     }
-    val baseUrl = s"https://$kmsServerIP:$kmsServerPort/" + 
-                  path + customParamName +
-                  s"?password=$userPassword"
+    val baseUrl = s"https://$kmsServerIP:$kmsServerPort/" +
+                  path + customParamName + s"?password=$userToken"
     baseUrl
   }
 
-  private def sendRequest(requestType: BKEYWHIZ_ACTION.TYPE, url: String): String = {
+  private def sendRequest(requestType: BIGDLKMS_ACTION.TYPE, url: String): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
-    val request = requestType match{
-        case BKEYWHIZ_ACTION.POST_REQUEST => new HttpPost(url)
-        case BKEYWHIZ_ACTION.GET_REQUEST => new HttpGet(url)
+    val request = requestType match {
+        case BIGDLKMS_ACTION.POST_REQUEST => new HttpPost(url)
+        case BIGDLKMS_ACTION.GET_REQUEST => new HttpGet(url)
     }
     val response = httpsClient.execute(request)
     EntityUtils.toString(response.getEntity, "UTF-8")

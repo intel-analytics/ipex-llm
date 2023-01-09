@@ -2,10 +2,10 @@
 export nfsServerIp=your_nfs_server_ip
 export nfsPath=a_nfs_shared_folder_path_on_the_server
 export mysqlImage=mysql:8
-export keywhizServerImage=intelanalytics/bkeywhiz:2.2.0-SNAPSHOT
-export bkeywhizFrontendImage=intelanalytics/bkeywhiz:2.2.0-SNAPSHOT
+export keywhizServerImage=intelanalytics/bigdl-kms:2.2.0-SNAPSHOT
+export bigdlKMSFrontendImage=intelanalytics/bigdl-kms:2.2.0-SNAPSHOT
 export kmsIP=your_kms_ip_to_use_as
 
-# Create k8s namespace and apply BKeywhiz KMS
-kubectl create namespace bkeywhiz
+# Create k8s namespace and apply bigdl kms
+kubectl create namespace bigdl-kms
 envsubst < bkeywhiz-kms.yaml | kubectl apply -f -

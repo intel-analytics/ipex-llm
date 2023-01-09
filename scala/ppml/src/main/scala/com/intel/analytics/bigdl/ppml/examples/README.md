@@ -72,11 +72,11 @@ Run this example in spark local mode:
       --maxIter 100
   ```
 
-## LocalCryptoExample with BKeywhiz KMS
+## LocalCryptoExample with BigDL KMS
 
 ### Usage
 
-- for `BKeywhizKeyManagementService`
+- for `BigDLKeyManagementService`
 
   ```bash
   /opt/jdk8/bin/java \
@@ -91,9 +91,11 @@ Run this example in spark local mode:
       --inputPath input_data_file_to_encrypt_and_decrypt \
       --primaryKeyPath specify_a_primary_key_name_like_BobPrimaryKey1 \
       --dataKeyPath specify_a_primary_key_name_like_BobDataKey1 \
-      --kmsType BKeywhizKeyManagementService \
+      --kmsType BigDLKeyManagementService \
       --kmsServerIP bkeywhiz_kms_server_ip \
-      --kmsServerPort bkewyhiz_kms_server_port
+      --kmsServerPort bkewyhiz_kms_server_port \
+      --userName your_pre_created_bkeywhiz_user_name \
+      --userToken your_pre_created_bkeywhiz_user_token
   ```
 
   
