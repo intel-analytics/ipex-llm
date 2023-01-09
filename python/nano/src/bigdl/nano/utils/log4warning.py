@@ -15,9 +15,11 @@
 #
 
 import logging
+from typing import List
+
 
 logger = logging.getLogger(__name__)
-warning_messages = []
+warning_messages: List[str] = []
 
 
 def output_suggestions():
