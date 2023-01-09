@@ -23,11 +23,11 @@ runs:
         pip install bigdl-orca[ray]
 
         # install requires
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.13.1
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.14.1
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tqdm
+        pip install -i https://pypi.org/simple tensorflow==2.9.0
+        pip install -i https://pypi.org/simple torchmetrics==0.10.0
+        pip install -i https://pypi.org/simple torch==1.13.1
+        pip install -i https://pypi.org/simple torchvision==0.14.1
+        pip install -i https://pypi.org/simple tqdm
 
         pip list
         export FTP_URI=${FTP_URI}
