@@ -534,6 +534,38 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 hdfs  crypto -listZones
 ```
 
+## Using BigDL Orca pytorch and tensorflow in SGX
+Introduction to [BigDL-Orca](https://bigdl.readthedocs.io/en/latest/doc/Orca/index.html).
+Using a new image to test,and Occlum instance is already built in it. image_name:intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:orca-test-build.
+```bash
+#test.sh
+bash /opt/mount.sh
+occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "/opt/spark/conf/:/opt/spark/jars/*:/bin/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                --conf "spark.pyspark.python=/bin/python3" \
+                /py-examples/$1
+```
+### [Orca-pytorch quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html)
+1.Set PROXY and enter the container according to the previous steps
+
+2.Runnig Orca-pytorch quickstart example
+```bash
+cd /opt/occlum_spark && bash test.sh orca-pytorch.py
+```
+
+### [Orca-tensorflow quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html)
+1.Set PROXY and Enter the container according to the previous steps
+
+2.Runnig Orca-tensorflow quickstart example
+```bash
+cd /opt/occlum_spark && bash test.sh orca-tf.py
+```
 ## Using BigDL PPML Occlum EHSM Attestation Server
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
 We assume you have already set up environment and enroll yourself on EHSM.
