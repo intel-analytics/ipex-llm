@@ -27,17 +27,18 @@ cd "`dirname $0`"
 cd ../../tutorial/NCF
 
 #download dataset from ftp
-rm -f ./orca-tutorial-ncf-dataset.zip
+rm -f ./orca-tutorial-ncf-dataset-compressed.zip
 rm -rf ml-1m
-wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset.zip
-unzip orca-tutorial-ncf-dataset.zip
+wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
+unzip orca-tutorial-ncf-dataset-compressed.zip
 echo "Successfully gets dataset from ftp"
 
 echo "#1 Running pytorch_train_dataloader"
 #timer
 start=$(date "+%s")
 
-python ./pytorch_train_dataloader.py
+sed 's/epochs=2/epochs=1/1' ./pytorch_train_dataloader.py > ./temp.py 
+python ./temp.py
 
 now=$(date "+%s")
 time1=$((now - start))
@@ -50,7 +51,8 @@ echo "#2 Running pytorch_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-python ./pytorch_train_spark_dataframe.py
+sed 's/epochs=2/epochs=1/1' ./pytorch_train_spark_dataframe.py > ./temp.py
+python ./temp.py
 
 now=$(date "+%s")
 time2=$((now - start))
@@ -63,7 +65,8 @@ echo "#3 Running pytorch_train_xshards"
 #timer
 start=$(date "+%s")
 
-python ./pytorch_train_xshards.py
+sed 's/epochs=2/epochs=1/1' ./pytorch_train_xshards.py > ./temp.py
+python ./temp.py
 
 now=$(date "+%s")
 time3=$((now - start))
@@ -76,7 +79,8 @@ echo "#4 Running tf_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-python ./tf_train_spark_dataframe.py
+sed 's/epochs=2/epochs=1/1' ./tf_train_spark_dataframe.py > ./temp.py
+python ./temp.py
 
 now=$(date "+%s")
 time4=$((now - start))
@@ -91,7 +95,8 @@ echo "#5 Running tf_train_xshards"
 #timer
 start=$(date "+%s")
 
-python ./tf_train_xshards.py
+sed 's/epochs=2/epochs=1/1' ./tf_train_xshards.py > ./temp.py
+python ./temp.py
 
 now=$(date "+%s")
 time5=$((now - start))
@@ -109,5 +114,6 @@ echo "#4 Running tf_train_spark_dataframe time used: $time4 seconds"
 echo "#5 Running tf_train_xshards time used: $time5 seconds"
 
 #clean files
-rm -r ml-1m
-rm orca-tutorial-ncf-dataset.zip
+rm -rf ml-1m
+rm -f orca-tutorial-ncf-dataset-compressed.zip
+rm -f ./temp.py
