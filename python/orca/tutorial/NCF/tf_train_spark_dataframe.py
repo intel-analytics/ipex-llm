@@ -158,8 +158,8 @@ for r in result:
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save("NCF_model")
-train_df.write.parquet("./train_dataframe.parquet", mode="overwrite")
-test_df.write.parquet("./test_dataframe.parquet", mode="overwrite")
+train_df.write.parquet(os.path.join(args.data_dir, "train_dataframe.parquet"), mode="overwrite")
+test_df.write.parquet("os.path.join(args.data_dir, "test_dataframe.parquet"), mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
