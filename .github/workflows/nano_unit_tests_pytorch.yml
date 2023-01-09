@@ -83,7 +83,7 @@ jobs:
       - name: Run PyTorch unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n pytorch -y python==3.7.10 setuptools=58.0.4 cryptography==3.3.2
           source $CONDA/bin/activate pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch

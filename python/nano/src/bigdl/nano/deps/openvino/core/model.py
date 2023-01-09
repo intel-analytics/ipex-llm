@@ -59,9 +59,12 @@ class OpenVINOModel:
 
     def _check_device(self, ie, device):
         devices = ie.available_devices
+        if device == 'GPU' and 'GPU.0' in devices:
+            # GPU is equivalent to GPU.0
+            return True
         invalidInputError(device in devices,
-                          "Your machine don't have {} device, please modify the incoming "
-                          "device value.".format(device))
+                          "Your machine don't have {} device (only have {}), please modify "
+                          "the incoming device value.".format(device, ",".join(list(devices))))
 
     @property
     def forward_args(self):
@@ -84,13 +87,10 @@ class OpenVINOModel:
         if self.additional_config is not None and self._device == 'CPU':
             # TODO: check addition config based on device
             config.update(self.additional_config)
-        if self._device != 'VPUX' or self._precision == 'int8':
-            # For VPU, now only int8 quantizaton model works
-            # fp16 model always meets compilation error
-            self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                          device_name=self._device,
-                                                          config=config)
-            self._infer_request = self._compiled_model.create_infer_request()
+        self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                      device_name=self._device,
+                                                      config=config)
+        self._infer_request = self._compiled_model.create_infer_request()
         self.final_config = config
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names

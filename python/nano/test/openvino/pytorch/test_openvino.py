@@ -18,6 +18,7 @@ from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
+from torchvision.models import resnet50
 import torch
 import torch.nn as nn
 import numpy as np
@@ -287,3 +288,17 @@ class TestOpenVINO(TestCase):
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             model = InferenceOptimizer.load(tmp_dir_name)  # GPU model
             model = InferenceOptimizer.load(tmp_dir_name, device='CPU')  # CPU model
+
+    def test_openvino_trace_kwargs(self):
+        # test export kwargs and mo kwargs for openvino
+        model = resnet50()
+        x = torch.randn(1, 3, 224, 224)
+
+        ov_model = InferenceOptimizer.trace(model,
+                                            accelerator="openvino",
+                                            input_sample=x,
+                                            do_constant_folding=False, # onnx export param
+                                            mean_value=[123.68,116.78,103.94]  # ov mo param
+                                            )
+        with InferenceOptimizer.get_context(ov_model):
+            result = ov_model(x)

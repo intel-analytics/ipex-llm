@@ -213,21 +213,21 @@ def result(args, records):
     """
 
     print(">>>>>>>>>>>>> test-run information >>>>>>>>>>>>>")
-    print("Model:", args.model)
-    print("Stage:", args.stage)
-    print("Dataset:", args.dataset)
+    print("\033[1m\tModel\033[0m: \033[0;31m{}\033[0m".format(args.model))
+    print("\033[1m\tStage\033[0m: \033[0;31m{}\033[0m".format(args.stage))
+    print("\033[1m\tDataset\033[0m: \033[0;31m{}\033[0m".format(args.dataset))
     if args.cores:
-        print("Cores:", args.cores)
+        print("\033[1m\tCores\033[0m: \033[0;31m{}\033[0m".format(args.cores))
     else:
-        print("Cores:", psutil.cpu_count(logical=False) *
+        print("\033[1m\tCores\033[0m: \033[0;31m{}\033[0m".format(psutil.cpu_count(logical=False) *
               int(subprocess.getoutput('cat /proc/cpuinfo | '
-                                       'grep "physical id" | sort -u | wc -l')))
-    print("Lookback:", args.lookback)
-    print("Horizon:", args.horizon)
+                                       'grep "physical id" | sort -u | wc -l'))))
+    print("\033[1m\tLookback\033[0m: \033[0;31m{}\033[0m".format(args.lookback))
+    print("\033[1m\tHorizon\033[0m: \033[0;31m{}\033[0m".format(args.horizon))
 
     if args.stage == 'train':
         print("\n>>>>>>>>>>>>> train result >>>>>>>>>>>>>")
-        print("avg throughput: {}".format(records['train_throughput']))
+        print(f"\033[1m\tavg throughput\033[0m: \033[0;34m{records['train_throughput']}\033[0m")
         print(">>>>>>>>>>>>> train result >>>>>>>>>>>>>")
     elif args.stage == 'latency':
         for framework in args.inference_framework:
@@ -282,7 +282,8 @@ def main():
     parser.add_argument('--inference_batchsize', type=int, default=1, metavar='',
                         help='batch size when infering, default to 1.')
     parser.add_argument('--quantize', action='store_true',
-                        help='if use the quantized model to predict, default to False.')
+                        help='if use the quantized model to predict, default to False.'
+                        'tensorflow will support quantize later.')
     parser.add_argument('--inference_framework', nargs='+', default=['torch'], metavar='',
                         help=('predict without/with accelerator, choose from torch/onnx/openvino'
                         '/jit, default to "torch" (i.e. predict without accelerator).'))
@@ -333,6 +334,9 @@ def main():
     elif 'openvino' in args.inference_framework:
         args.quantize_type = 'openvino'
 
+    get_CPU_info()
+    check_nano_env()
+
     path = os.path.abspath(os.path.dirname(__file__))
     model_path = os.path.join(path, args.ckpt)
 
@@ -357,8 +361,6 @@ def main():
         accuracy(args, records, forecaster, train_loader, val_loader, test_loader)
 
     # print results
-    get_CPU_info()
-    check_nano_env()
     result(args, records)
 
 

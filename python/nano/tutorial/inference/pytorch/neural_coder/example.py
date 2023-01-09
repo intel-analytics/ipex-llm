@@ -12,4 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
+
+
+import torch
+from torchvision.models import resnet18
+
+if __name__ == "__main__":
+
+    model_ft = resnet18(pretrained=True)
+
+    x = torch.rand(2, 3, 224, 224)
+    y_hat = model_ft(x)
+    predictions = y_hat.argmax(dim=1)
+    print(predictions)

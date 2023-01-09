@@ -106,3 +106,16 @@ class TestOpenVINO(TestCase):
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)  # GPU model
             load_model = InferenceOptimizer.load(tmp_dir_name, model, device='CPU')  # CPU model
+
+    def test_model_trace_openvino_kwargs(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels)).batch(2)
+
+        # trace a Keras model
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', thread_num=4,
+                                                  mean_value=[123.68,116.78,103.94]) # mo param
+        y_hat = openvino_model(train_examples[:10])
+        assert y_hat.shape == (10, 10)

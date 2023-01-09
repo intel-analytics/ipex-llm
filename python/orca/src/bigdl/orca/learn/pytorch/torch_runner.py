@@ -304,6 +304,10 @@ class TorchRunner(BaseRunner):
             self.train_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
+        if not self.criterion:
+            invalidInputError(False,
+                              "You must provide a loss for train and evaluate.")
+
         info = info or {}
         self._toggle_profiling(profile=profile)
 
@@ -389,6 +393,8 @@ class TorchRunner(BaseRunner):
                                            info["num_epochs"])
                 else:
                     desc = "{}e".format(info["epoch_idx"] + 1)
+            invalidInputError(tqdm is not None,
+                              "tqdm is not installed, please install with 'pip install tqdm'")
             _progress_bar = tqdm(
                 total=len(iterator),
                 desc=desc,
@@ -522,6 +528,10 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  info=None, wrap_dataloader=None):
         """Evaluates the model on the validation data set."""
+        if not self.criterion:
+            invalidInputError(False,
+                              "You must provide a loss for train and evaluate.")
+
         config = copy.copy(self.config)
         info = info or {}
         self._toggle_profiling(profile=profile)
@@ -729,7 +739,7 @@ class TorchRunner(BaseRunner):
             "epoch": self.epochs,
             "models": [model.state_dict() for model in self.models]
         }
-        if self.optimizers is not None:
+        if self.optimizers:
             state.update({
                 "optimizers": [
                     opt.state_dict() for opt in self.optimizers
@@ -756,7 +766,7 @@ class TorchRunner(BaseRunner):
             else:
                 for model, state_dict in zip(self.models, state):
                     model.load_state_dict(state_dict)
-        if "optimizers" in state:
+        if self.optimizers and "optimizers" in state:
             for optimizer, state_dict in zip(self.optimizers, state["optimizers"]):
                 optimizer.load_state_dict(state_dict)
         if self.schedulers and "schedulers" in state:

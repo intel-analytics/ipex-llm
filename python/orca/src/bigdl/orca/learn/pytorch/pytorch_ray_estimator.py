@@ -90,7 +90,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             config: Dict=None,
-            scheduler_step_freq: str="batch",
+            scheduler_step_freq: str="epoch",
             use_tqdm: bool=False,
             backend: str="ray",
             workers_per_node: int=1,
@@ -117,14 +117,11 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
         self.backend = backend
-
-        if not loss_creator:
-            invalidInputError(False,
-                              "You must provide a loss_creator.")
+        self.workers_per_node = workers_per_node
 
         self.config = {} if config is None else config
         worker_config = copy.copy(self.config)
-        params = dict(
+        self.setup_params = dict(
             model_creator=self.model_creator,
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
@@ -136,10 +133,10 @@ class PyTorchRayEstimator(BaseRayEstimator):
             sync_stats=sync_stats,
             log_level=log_level
         )
-        self.setup(params=params,
+        self.setup(params=self.setup_params,
                    backend=self.backend,
                    runner_cls=PytorchRayWorker,
-                   workers_per_node=workers_per_node)
+                   workers_per_node=self.workers_per_node)
 
     def fit(self,
             data: Union['SparkXShards',
@@ -203,6 +200,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
             info=info,
             callbacks=callbacks,
         )
+
+        if self.backend == "ray" and not self.init_ddp_process:
+            self.setup_torch_ddp()
 
         from bigdl.orca.data import SparkXShards
         from ray.data import Dataset
