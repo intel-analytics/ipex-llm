@@ -114,6 +114,7 @@ subtrees:
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
+                  - file: doc/Nano/Howto/Inference/OpenVINO/accelerate_inference_openvino_gpu
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
