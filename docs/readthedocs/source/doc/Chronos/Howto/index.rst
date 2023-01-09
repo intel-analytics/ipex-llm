@@ -48,3 +48,4 @@ Benchmark a forecaster
 Deploy a forecaster
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `A whole workflow in production environment after my forecaster is developed <how_to_process_data_in_production_environment.html>`__
+* `Export data processing pipeline to torchscript for further deployment without Python environment <how_to_export_data_processing_pipeline_to_torchscript.html>`__
