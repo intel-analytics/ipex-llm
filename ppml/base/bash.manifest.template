@@ -24,9 +24,17 @@ sgx.static_address = 1
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
+<<<<<<< HEAD
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/lib"
 loader.env.PATH = "{{ execdir }}:/usr/lib/python3.7/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.7"
+=======
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.8/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/lib"
+loader.env.PATH = "{{ execdir }}:/usr/lib/python3.8/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.8"
+# We can use the same PYTHONPATH in the bash environment
+#loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
+>>>>>>> 33935df3c (Change python version to 3.8)
 loader.env.JAVA_HOME = "{{ jdk_home }}"
 loader.env.JAVA_OPTS = "'-Djava.library.path={{ jdk_home }}/lib -Dsun.boot.library.path={{ jdk_home }}/lib'"
 loader.env.SPARK_LOCAL_IP = "{{ spark_local_ip }}"
@@ -56,7 +64,7 @@ fs.mounts = [
   { path = "/opt", uri = "file:/opt" },
   { path = "/bin", uri = "file:/bin" },
   { path = "/tmp", uri = "file:/tmp" },
-  { path = "/usr/lib/python3.7", uri = "file:/usr/lib/python3.7" },
+  { path = "/usr/lib/python3.8", uri = "file:/usr/lib/python3.8" },
   { path = "/usr/lib/python3/dist-packages", uri = "file:/usr/lib/python3/dist-packages" },
   { path = "/root/.kube/", uri = "file:/root/.kube/" },
   { path = "/root/.keras", uri = "file:/root/.keras" },
@@ -87,7 +95,7 @@ sgx.allowed_files = [
   "file:{{ jdk_home }}",
   "file:/ppml",
   "file:{{ python_home }}",
-  "file:/usr/local/lib/python3.7/dist-packages",
+  "file:/usr/local/lib/python3.8/dist-packages",
   "file:/root/.keras",
   "file:/root/.m2",
   "file:/root/.zinc",
