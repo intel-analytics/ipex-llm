@@ -15,6 +15,7 @@
 #
 
 import torch
+from torch.utils.data import Dataset
 import io
 import os
 import pathlib
@@ -142,3 +143,47 @@ def load(f, map_location=None, pickle_module=pickle,
     decrypted_buf.seek(0)
     return torch.old_load(decrypted_buf, pickle_module=pickle_module,
                           map_location=map_location, **pickle_load_args)
+
+
+class EncryptedDataset(torch.utils.data.Dataset):
+    r"""A concrete class representing a :class:`EncryptedDataset`.
+
+    This class gives an very simple example on how to use patched `torch.load`
+    to load decrypted dataset into memory and constructs an Dataset upon it. You
+    can use this :class:`EncryptedDataset` if its load_data method works good with
+    your dataset.  Otherwise, it would be quite simple to build your own Dataset
+    class given this example
+
+    .. note::
+      The decryption key passed in should be the same with the key that is
+      used to encrypt the dataset through torch.save(dataset, encryption_key=xxx)
+    """
+    def __init__(self, data_path, key):
+        """
+        Init method for :class:`EncryptedDataset`
+
+        :param data_path: str. The path where the dataset is stored.
+               The dataset should be previously stored using patched `torch.save`
+               with the encryption key
+        :param key: str. The key which is used to previously encrypted
+               the dataset using patched `torch.save`
+        """
+        self.data = self.load_data(data_path, key)
+
+
+    def load_data(self, data_path, key):
+        tmp_dataset = torch.load(data_path, decryption_key=key)
+        Data = {}
+        for idx, line in enumerate(tmp_dataset):
+            sample = line
+            Data[idx] = sample
+
+        return Data
+
+
+    def __len__(self):
+        return len(self.data)
+
+
+    def __getitem__(self, idx):
+        return self.data[idx]
