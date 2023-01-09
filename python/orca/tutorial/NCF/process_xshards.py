@@ -27,7 +27,7 @@ from sklearn.model_selection import train_test_split
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
-# user and item ids are converted to int64 to be compatible with lower versions of PyTorch 
+# user and item ids are converted to int64 to be compatible with lower versions of PyTorch
 # such as 1.7.1.
 
 sparse_features = ["zipcode", "gender", "category", "occupation"]
