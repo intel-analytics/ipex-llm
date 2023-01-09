@@ -552,7 +552,7 @@ occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 /py-examples/$1
 ```
 ### [Orca-pytorch quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html)
-1.Enter the container according to the previous steps
+1.Set PROXY and enter the container according to the previous steps
 
 2.Runnig Orca-pytorch quickstart example
 ```bash
@@ -560,7 +560,7 @@ cd /opt/occlum_spark && bash test.sh orca-pytorch.py
 ```
 
 ### [Orca-tensorflow quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html)
-1.Enter the container according to the previous steps
+1.Set PROXY and Enter the container according to the previous steps
 
 2.Runnig Orca-tensorflow quickstart example
 ```bash
