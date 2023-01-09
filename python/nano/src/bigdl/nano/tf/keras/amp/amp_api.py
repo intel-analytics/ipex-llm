@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 
+
 def BF16Model(*args, **kwargs):
     from .bfloat16 import BF16Model
     return BF16Model(*args, **kwargs)
 
 
-def load_bf16_model(path, model):
+def load_bf16_model(path):
     from .bfloat16 import BF16Model
     return BF16Model._load(path)

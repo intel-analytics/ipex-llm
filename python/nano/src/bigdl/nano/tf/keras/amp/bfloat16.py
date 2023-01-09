@@ -18,6 +18,7 @@ from tensorflow.keras import mixed_precision
 from tempfile import TemporaryDirectory
 import tensorflow as tf
 
+
 class BF16Model(AcceleratedKerasModel):
     def __init__(self, model, **kwargs):
         super().__init__(model, precision=tf.bfloat16)
@@ -39,7 +40,7 @@ class BF16Model(AcceleratedKerasModel):
         status.update({"ModelType": type(self.target_obj).__name__,
                        "precision": "bfloat16"})
         return status
-    
+
     def _save_model(self, path):
         self.model.save(path)
 

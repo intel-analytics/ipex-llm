@@ -37,7 +37,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
-from bigdl.nano.tf.keras.amp import BF16Model
+from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -706,6 +706,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_attrs(result, model)
         if model_type == 'KerasQuantizedModel':
             result = load_inc_model(path, model, framework='tensorflow')
+            return patch_attrs(result, model)
+        if model_type == 'BF16Model':
+            result = load_bf16_model(path)
             return patch_attrs(result, model)
         if isinstance(model, Model):
             # typically for keras Model
