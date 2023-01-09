@@ -146,8 +146,8 @@ def load(f, map_location=None, pickle_module=pickle,
 
 
 class EncryptedDataset(torch.utils.data.Dataset):
-
-    r"""A concrete class representing a :class:`EncryptedDataset`.
+    """
+    A concrete class representing a :class:`EncryptedDataset`.
 
     This class gives an very simple example on how to use patched `torch.load`
     to load decrypted dataset into memory and constructs an Dataset upon it. You
@@ -159,10 +159,10 @@ class EncryptedDataset(torch.utils.data.Dataset):
       The decryption key passed in should be the same with the key that is
       used to encrypt the dataset through torch.save(dataset, encryption_key=xxx)
     """
-    def __init__(self, data_path, key):
 
+    def __init__(self, data_path, key):
         """
-        Init method for :class:`EncryptedDataset`
+        Init method for :class:`EncryptedDataset`.
 
         :param data_path: str. The path where the dataset is stored.
                The dataset should be previously stored using patched `torch.save`
