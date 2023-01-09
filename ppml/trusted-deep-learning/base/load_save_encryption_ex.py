@@ -23,6 +23,7 @@ import os
 import torch.nn as nn
 import time
 from bigdl.nano.pytorch.patching import patch_encryption
+from bigdl.nano.pytorch.encryption import EncryptedDataset
 import logging
 from bigdl.ppml.kms.client import generate_primary_key, generate_data_key, get_data_key_plaintext
 from datasets.load import load_from_disk
@@ -89,27 +90,6 @@ def save_encrypted_dataset(dataset_path, save_path, secret_key):
     dataset = load_from_disk(dataset_path, keep_in_memory=True)
     # This will save the encrypted dataset into disk
     torch.save(dataset, save_path, encryption_key=secret_key)
-
-
-class Dataset(torch.utils.data.Dataset):
-    def __init__(self, data_path, key):
-        self.data = self.load_data(data_path, key)
-
-    def load_data(self, data_path, key):
-        # Passing the same key here
-        tmp_dataset = torch.load(data_path, decryption_key=key)
-        Data = {}
-        for idx, line in enumerate(tmp_dataset):
-            sample = line
-            Data[idx] = sample
-
-        return Data
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        return self.data[idx]
 
 
 def collate_fn(batch_samples):
@@ -195,7 +175,7 @@ def main():
     # untrusted environments.
 
     # load the encrypted dataset back and ready for training
-    train_dataset = Dataset(encrypted_dataset_path, secret_key)
+    train_dataset = EncryptedDataset(encrypted_dataset_path, secret_key)
     train_dataloader = DataLoader(
         train_dataset, batch_size=16, shuffle=True, collate_fn=collate_fn)
     print("[INFO]Data get loaded successfully", flush=True)
