@@ -93,8 +93,10 @@ def prepare_data(dataset_dir, num_ng=4):
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
             users = indexer.fit_transform(users)
+            users[col] = users[col].astype(np.int64)
         else:
             items = indexer.fit_transform(items)
+            items[col] = items[col].astype(np.int64)
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
