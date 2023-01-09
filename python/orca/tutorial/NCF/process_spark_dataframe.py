@@ -17,7 +17,7 @@ import os.path
 
 from pyspark.ml.feature import StringIndexer, MinMaxScaler, VectorAssembler
 from pyspark.ml import Pipeline
-from pyspark.sql.types import StructField, StructType, LongType, ArrayType, StringType
+from pyspark.sql.types import StructField, StructType, IntegerType, LongType, ArrayType, StringType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
@@ -37,7 +37,7 @@ def read_data(data_dir):
         [
             StructField("user", LongType(), False),
             StructField("gender", StringType(), False),
-            StructField("age", LongType(), False),
+            StructField("age", IntegerType(), False),
             StructField("occupation", LongType(), False),
             StructField("zipcode", StringType(), False)
         ]
@@ -92,7 +92,7 @@ def string_index(df, col):
     df = df.drop(col).withColumnRenamed(col + "_index", col)
     # The StringIndexer output is float type.
     # Change to 1-based index with 0 reversed for unknown features.
-    df = df.withColumn(col, df[col].cast("int") + 1)
+    df = df.withColumn(col, df[col].cast("long") + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
