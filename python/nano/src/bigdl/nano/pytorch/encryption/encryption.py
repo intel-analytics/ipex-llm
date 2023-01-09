@@ -170,7 +170,6 @@ class EncryptedDataset(torch.utils.data.Dataset):
         """
         self.data = self.load_data(data_path, key)
 
-
     def load_data(self, data_path, key):
         tmp_dataset = torch.load(data_path, decryption_key=key)
         Data = {}
@@ -180,10 +179,8 @@ class EncryptedDataset(torch.utils.data.Dataset):
 
         return Data
 
-
     def __len__(self):
         return len(self.data)
-
 
     def __getitem__(self, idx):
         return self.data[idx]
