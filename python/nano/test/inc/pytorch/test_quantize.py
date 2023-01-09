@@ -235,8 +235,8 @@ class TestTrainer(TestCase):
                                     method="ipex",
                                     inplace=False)
 
-    # This UT will fail with INC 1.14 and INC 2.0
-    @pytest.mark.skipif(compare_version("neural_compressor", operator.ge, "1.14"), reason="")
+    # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
+    # but we have some workaround for pl models returned by our `Trainer.compile`
     def test_quantize_with_pl_model(self):
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)

@@ -23,8 +23,6 @@ from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
-from neural_compressor.config import MixedPrecisionConfig
-from neural_compressor import mix_precision
 
 
 class TestModelQuantize(TestCase):
@@ -58,7 +56,7 @@ class TestModelQuantize(TestCase):
         # Case 3: Invalid approach, dynamic or qat is not supported
         invalid_approach = 'dynamic'
         with pytest.raises(RuntimeError, match="Only 'static' approach is supported now."):
-            InferenceOptimizer.quantize(model, x=train_dataset, approach=invalid_approach)
+            InferenceOptimizer.quantize(model, x=None, approach=invalid_approach)
 
     def test_model_quantize_without_dataset(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)

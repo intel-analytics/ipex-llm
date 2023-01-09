@@ -21,6 +21,7 @@ from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.lightning import LightningModule
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
@@ -49,7 +50,13 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             model is not None,
             errMsg="FP32 model is required to create a quantized model."
         )
-        qmodel = PyTorchModel(load(path, model))
+        # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
+        # so we only quantize the internal nn.Module to fix this issue,
+        # so we should load weight using internal nn.Module also
+        if isinstance(model, LightningModule):
+            qmodel = PyTorchModel(load(path, model.model))
+        else:
+            qmodel = PyTorchModel(load(path, model))
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):
             path = Path(path)
