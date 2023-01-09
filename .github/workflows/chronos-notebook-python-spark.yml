@@ -7,15 +7,12 @@ concurrency:
 
 # Controls when the action will run. 
 on:
+  schedule:
+    - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
   # Trigger the workflow on pull request events but only for the main branch
   pull_request:
     branches: [ main ]
     paths:
-      - 'python/chronos/src/**'
-      - 'python/chronos/use-case/**'
-      - 'python/nano/src/**'
-      - 'python/orca/src/bigdl/orca/automl/**'
-      - 'python/orca/src/bigdl/orca/data/**'
       - '.github/workflows/chronos-notebook-python-spark.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -49,17 +46,8 @@ jobs:
           apt-get install -y libgl1
           apt-get install patchelf
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
-          #wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          #pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i https://pypi.python.org/simple jupyter
           pip install pytest==5.4.1
-          #bash python/dev/release_default_linux_spark246.sh default false false
-          #bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
-          #whl_name=`ls python/nano/dist/`
-          #pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow,pytorch,inference]
-          #pip install -i https://pypi.python.org/simple python/dllib/src/dist/bigdl_dllib-*-py3-none-manylinux1_x86_64.whl
-          #pip install -i https://pypi.python.org/simple python/orca/src/dist/bigdl_orca-*-py3-none-manylinux1_x86_64.whl
-          #pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos-*-py3-none-manylinux1_x86_64.whl
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[all]
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
