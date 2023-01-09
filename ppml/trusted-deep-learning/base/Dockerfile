@@ -41,10 +41,10 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # Small examples for PyTorch
-ADD ./mnist.py        /ppml/examples/mnist.py
-ADD ./pert.py         /ppml/examples/pert.py
-ADD ./pert_ipex.py    /ppml/examples/pert_ipex.py
-ADD ./load_save_ex.py /ppml/examples/load_save_ex.py
+ADD ./mnist.py                   /ppml/examples/mnist.py
+ADD ./pert.py                    /ppml/examples/pert.py
+ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
+ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
 ADD ./bash.manifest.template.patch /bash.manifest.template.patch
