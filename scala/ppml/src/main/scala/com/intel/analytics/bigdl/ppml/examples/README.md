@@ -88,11 +88,12 @@ Run this example in spark local mode:
       --verbose \
       --jars local:///ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
       local:////ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar \
+      --inputPath input_data_file_to_encrypt_and_decrypt \
       --primaryKeyPath specify_a_primary_key_name_like_BobPrimaryKey1 \
       --dataKeyPath specify_a_primary_key_name_like_BobDataKey1 \
       --kmsType BKeywhizKeyManagementService \
       --kmsServerIP bkeywhiz_kms_server_ip \
-      --kmsServerPort bkewyhiz_kms_server_port \
+      --kmsServerPort bkewyhiz_kms_server_port
   ```
 
   
