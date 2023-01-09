@@ -86,14 +86,14 @@ class NCFData(data.Dataset):
 
 
 def process_users_items(dataset_dir):
-    sparse_features = ["gender", "zipcode", "category"]
+    sparse_features = ["gender", "zipcode", "category", "occupation"]
     dense_features = ["age"]
 
     users = pd.read_csv(
         os.path.join(dataset_dir, "users.dat"),
         sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
         usecols=[0, 1, 2, 3, 4],
-        dtype={0: np.int64, 1: str, 2: np.int64, 3: np.int64, 4: str})
+        dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str})
     items = pd.read_csv(
         os.path.join(dataset_dir, "movies.dat"),
         sep="::", header=None, names=["item", "category"],
@@ -103,10 +103,9 @@ def process_users_items(dataset_dir):
     item_num = items["item"].max() + 1
 
     # categorical encoding
-    for i in sparse_features:
+    for i in sparse_features[:-1]:  # occupation is already indexed.
         df = users if i in users.columns else items
         df[i], _ = pd.Series(df[i]).factorize()
-    sparse_features.append("occupation")  # occupation is already indexed.
 
     # scale dense features
     for i in dense_features:
