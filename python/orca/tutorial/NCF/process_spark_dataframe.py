@@ -22,6 +22,9 @@ from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
 
+# user and item ids are converted to LongType to be compatible with lower versions of PyTorch 
+# such as 1.7.1.
+
 sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
 
@@ -89,7 +92,7 @@ def string_index(df, col):
     df = df.drop(col).withColumnRenamed(col + "_index", col)
     # The StringIndexer output is float type.
     # Change to 1-based index with 0 reversed for unknown features.
-    df = df.withColumn(col, df[col].cast("long") + 1)
+    df = df.withColumn(col, df[col].cast("int") + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
