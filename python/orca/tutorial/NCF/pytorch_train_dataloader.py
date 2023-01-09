@@ -153,7 +153,7 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    "factor_num": 16,
                                    "num_layers": 3,
                                    "dropout": 0.5,
-                                   "lr": 0.001,
+                                   "lr": 0.01,
                                    "model": "NeuMF-end",
                                    "sparse_feats_embed_dims": 8})
 est.fit(data=train_loader_func, epochs=2, batch_size=10240, callbacks=callbacks)
