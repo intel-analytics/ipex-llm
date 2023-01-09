@@ -164,7 +164,7 @@ for r in result:
 # Step 6: Save the trained pytorch model and processed data for resuming training or prediction
 est.save("NCF_model")
 train_data.write.parquet("./train_dataframe.parquet", mode="overwrite")
-train_data.write.parquet("./test_dataframe.parquet", mode="overwrite")
+test_data.write.parquet("./test_dataframe.parquet", mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
