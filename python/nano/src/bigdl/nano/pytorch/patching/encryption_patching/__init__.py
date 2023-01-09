@@ -13,3 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from .encryption_patching import patch_encryption
