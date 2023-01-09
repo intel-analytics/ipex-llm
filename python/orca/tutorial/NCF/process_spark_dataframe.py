@@ -89,7 +89,7 @@ def string_index(df, col):
     df = df.drop(col).withColumnRenamed(col + "_index", col)
     # The StringIndexer output is float type.
     # Change to 1-based index with 0 reversed for unknown features.
-    df = df.withColumn(col, df[col].cast("int") + 1)
+    df = df.withColumn(col, df[col].cast("long") + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
