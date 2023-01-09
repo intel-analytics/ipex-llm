@@ -9,6 +9,8 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
+
         chmod a+x python/orca/dev/test/run-pytests-ray
         python/orca/dev/test/run-pytests-ray
         source deactivate
