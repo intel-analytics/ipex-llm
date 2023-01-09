@@ -27,6 +27,9 @@ from sklearn.model_selection import train_test_split
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
+# user and item ids are converted to int64 to be compatible with lower versions of PyTorch 
+# such as 1.7.1.
+
 sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
 
@@ -93,10 +96,8 @@ def prepare_data(dataset_dir, num_ng=4):
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
             users = indexer.fit_transform(users)
-            users[col] = users[col].astype(np.int64)
         else:
             items = indexer.fit_transform(items)
-            items[col] = items[col].astype(np.int64)
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
@@ -128,6 +129,13 @@ def prepare_data(dataset_dir, num_ng=4):
     print("Merge data...")
     data = users.merge(ratings, on="user")
     data = data.merge(items, on="item")
+
+    # Convert data type to long
+    def convert_datatype(shard):
+        for col in ["user", "item"] + sparse_features:
+            shard[col] = shard[col].astype(np.int64)
+        return shard
+    data = data.transform_shard(lambda shard: convert_datatype(shard))
 
     # Split dataset
     print("Split data...")
