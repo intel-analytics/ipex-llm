@@ -53,13 +53,13 @@ class BigDLKeyManagementService(
   Log4Error.invalidInputError(userName != null && userName != "",
     """
     User name should not be empty string.
-    Pre-create or use name and password to enroll a new one.
+    Pre-create or use name and token to enroll a new one.
     """
     )
   Log4Error.invalidInputError(userToken != null && userToken != "",
     """
-    User password should not be empty string.
-    Pre-create or use name and password to enroll a new one.
+    User token should not be empty string.
+    Pre-create or use name and token to enroll a new one.
     """
     )
   val logger = LoggerFactory.getLogger(getClass)
@@ -75,7 +75,7 @@ class BigDLKeyManagementService(
   }
 
   def enroll(): Unit = {
-    // call enroll if user and password has not been created before
+    // call enroll if user and token has not been created before
     val action = BIGDLKMS_ACTION.CREATE_USER
     val url = constructBaseUrl(action, userName)
     val response = timing("BKeyManagementService request for creating user") {
@@ -140,7 +140,7 @@ class BigDLKeyManagementService(
         case BIGDLKMS_ACTION.GET_DATA_KEY => "/dataKey/"
     }
     val baseUrl = s"https://$kmsServerIP:$kmsServerPort/" +
-                  path + customParamName + s"?password=$userToken"
+                  path + customParamName + s"?token=$userToken"
     baseUrl
   }
 
