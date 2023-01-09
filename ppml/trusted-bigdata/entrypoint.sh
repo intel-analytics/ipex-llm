@@ -29,7 +29,7 @@ set -e
 
 # Set PCCS conf
 if [ "$PCCS_URL" != "" ]; then
-  echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' >/etc/sgx_default_qcnl.conf
+  echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v4/' >/etc/sgx_default_qcnl.conf
   echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
 fi
 
@@ -116,6 +116,11 @@ driver)
     unset PYTHONHOME &&
     unset PYTHONPATH &&
     if [ "$SGX_ENABLED" == "false" ]; then
+      if [ "$ATTESTATION" = "true" ]; then
+        rm /ppml/temp_command_file || true
+        bash attestation.sh
+        bash temp_command_file
+      fi
       $SPARK_HOME/bin/spark-submit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"
     elif [ "$SGX_ENABLED" == "true" ]; then
       export driverExtraClassPath=$(cat /opt/spark/conf/spark.properties | grep -P -o "(?<=spark.driver.extraClassPath=).*") &&
@@ -176,6 +181,11 @@ executor)
     unset PYTHONHOME &&
     unset PYTHONPATH &&
     if [ "$SGX_ENABLED" == "false" ]; then
+      if [ "$ATTESTATION" = "true" ]; then
+        rm /ppml/temp_command_file || true
+        bash attestation.sh
+        bash temp_command_file
+      fi
       /opt/jdk8/bin/java \
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
