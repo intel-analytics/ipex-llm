@@ -68,7 +68,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             if self.channels_last:
                 self.model = self.model.to(memory_format=torch.channels_last)
                 self.channels_last_available = channels_last_available
-            self._nano_context_manager = generate_context_manager(accelerator=None,
+            _accelerator = "jit" if use_jit is True else None
+            self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                                   precision="fp32",
                                                                   thread_num=thread_num)
             return
@@ -127,7 +128,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                         except Exception:
                             self.model = torch.jit.script(self.model)
                     self.model = torch.jit.freeze(self.model)
-        self._nano_context_manager = generate_context_manager(accelerator=None,
+        _accelerator = "jit" if use_jit is True else None
+        self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="fp32",
                                                               thread_num=thread_num)
         self.thread_num = thread_num
