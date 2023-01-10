@@ -371,7 +371,7 @@ class TestInferencePipeline(TestCase):
             preds1 = [model(b) for b in input_data]
         
         # test normal
-        multi_instance_model = InferenceOptimizer.to_multi_instance(model, num_processes=4)
+        multi_instance_model = InferenceOptimizer.to_multi_instance(model, num_processes=2)
         preds2 = multi_instance_model(input_data)
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,

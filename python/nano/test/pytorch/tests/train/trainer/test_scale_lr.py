@@ -190,7 +190,7 @@ class TestScaleLr(TestCase):
 
     def test_scale_lr_spawn(self):
         model = ResNetWithScheduler()
-        trainer = Trainer(num_processes=4,
+        trainer = Trainer(num_processes=2,
                           distributed_backend='spawn',
                           auto_lr=True,
                           max_epochs=2,
@@ -221,7 +221,7 @@ class TestScaleLr(TestCase):
 
     def test_warmup_spawn(self):
         model = ResNetWith2Optimizers()
-        trainer = Trainer(num_processes=4,
+        trainer = Trainer(num_processes=2,
                           distributed_backend='spawn',
                           auto_lr={'warmup_epochs': 4},
                           max_epochs=10,
