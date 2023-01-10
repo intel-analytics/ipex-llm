@@ -26,7 +26,7 @@ from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimi
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled, patch_attrs
+from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
 from bigdl.nano.utils.log4Error import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
@@ -360,8 +360,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def quantize(model: Model,
@@ -514,7 +513,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=openvino_config,
                                         logging=logging,
                                         **kwargs)
-            return patch_attrs(result, model)
+            return patch_compiled_and_attrs(result, model)
 
         elif precision == 'bf16':
             invalidInputError(accelerator == 'openvino',
@@ -533,7 +532,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=final_openvino_option,
                                         logging=logging,
                                         **kwargs)
-            return patch_attrs(result, model)
+            return patch_compiled_and_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
@@ -645,8 +644,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def save(model: Model, path):
