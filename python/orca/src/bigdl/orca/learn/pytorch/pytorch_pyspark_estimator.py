@@ -296,7 +296,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         # Check uniqueness of the MainCallback
         if not callbacks:
-            callbacks=[]
+            callbacks = []
         make_only_mainCallback(callbacks)
 
         params = dict(
@@ -551,7 +551,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         # Check uniqueness of the MainCallback
         if not callbacks:
-            callbacks=[]
+            callbacks = []
         make_only_mainCallback(callbacks)
 
         params = dict(
