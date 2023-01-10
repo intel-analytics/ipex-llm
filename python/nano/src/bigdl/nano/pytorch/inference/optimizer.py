@@ -469,7 +469,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 try:
                                     result_map[method]["accuracy"] =\
                                         accuracy_calculate_helper_with_env(acce_model, metric,
-                                                                           validation_data, env=best_env)
+                                                                           validation_data, env_var=best_env)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
@@ -488,7 +488,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             else:
                                 result_map[method]["accuracy"] = \
                                     accuracy_calculate_helper_with_env(acce_model, metric,
-                                                                       validation_data, env=best_env)
+                                                                       validation_data, env_var=best_env)
                     else:
                         result_map[method]["accuracy"] = None
 
