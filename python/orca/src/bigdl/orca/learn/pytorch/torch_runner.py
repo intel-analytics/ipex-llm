@@ -495,7 +495,7 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="on_train_forward")
 
         # Compute gradients in a backward pass.
-        with self.timers.record("grad&apply"):
+        with self.timers.record("bwd"):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")

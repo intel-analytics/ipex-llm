@@ -240,8 +240,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param label_cols: label column names if data is Spark DataFrame.
         :param validation_data: validation data. Validation data type should be the same
                as train data.
-        :param callbacks: A list for all callbacks. Note that only one special MainCallback
-               should be allowed to implement these methods among all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -522,8 +522,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame.
-        :param callbacks: A list for all callbacks. Note that only one special MainCallback
-               should be allowed to implement these methods among all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)

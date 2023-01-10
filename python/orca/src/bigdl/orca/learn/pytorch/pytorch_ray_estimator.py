@@ -184,8 +184,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param validation_data: validation data. Validation data type should be the same
                as train data.
-        :param callbacks: A list for all callbacks. Note that only one special MainCallback
-               should be allowed to implement these methods among all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -425,8 +425,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
-        :param callbacks: A list for all callbacks. Note that only one special MainCallback
-               should be allowed to implement these methods among all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)
@@ -445,6 +445,19 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
+
+        params =dict(batch_size=batch_size,
+                     num_steps=num_steps,
+                     profile=profile,
+                     info=info,
+                     wrap_dataloader=False,
+                     callbacks=callbacks)
+
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
+
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
@@ -454,8 +467,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
             def transform_func(worker, partition_refs):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
-                return worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                params["data_creator"] = data_creator
+                return worker.validate.remote(**params)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
@@ -469,9 +482,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 return torch_datashard
 
             remote_worker_stats = []
+            params["data_creator"] = data_creator
             for shard, worker in zip(shards, self.remote_workers):
-                stats = worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                stats = worker.validate.remote(**params)
                 remote_worker_stats.append(stats)
             worker_stats = ray.get(remote_worker_stats)
         else:
@@ -479,16 +492,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            # Check uniqueness of the MainCallback
-            if not callbacks:
-                callbacks = []
-            make_only_mainCallback(callbacks)
-
-            params = dict(data_creator=reload_dataloader_creator(data),
-                          batch_size=batch_size, num_steps=num_steps,
-                          profile=profile, info=info, callbacks=callbacks)
-
+            params["data_creator"] = reload_dataloader_creator(data)
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
+
         if reduce_results:
             return process_stats(worker_stats)
         else:

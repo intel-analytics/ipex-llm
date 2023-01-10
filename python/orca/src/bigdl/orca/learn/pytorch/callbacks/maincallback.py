@@ -28,7 +28,7 @@ def make_only_mainCallback(callbacks: list):
     if _num_MCB == 0:
         callbacks.insert(0, MainCallback())
     elif _num_MCB > 1:
-        invalidInputError(False, f"Expect only one or no MainCallback"
+        invalidInputError(False, f"Expect at most one MainCallback"
                           "instance to be passed to torch estimator, "
                           "got {_num_MCB} MainCallback instances.")
 
