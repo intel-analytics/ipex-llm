@@ -132,6 +132,8 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                   - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
                   - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
