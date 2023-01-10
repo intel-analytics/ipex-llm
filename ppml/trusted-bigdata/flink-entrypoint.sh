@@ -23,6 +23,7 @@ COMMAND_HISTORY_SERVER="history-server"
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
+SGX_ENABLED=$(cat $CONF_FILE | grep "sgx.enabled" | awk -F ' ' '{print $2}')
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
@@ -204,10 +205,14 @@ else
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
 
-        runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
-        export sgx_command="${runtime_command[@]}"
-        ./init.sh && \
-        gramine-sgx bash 1>&2
+        if [ "$SGX_ENABLED" == "false" ]; then
+            exec $JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}"
+        elif [ "$SGX_ENABLED" == "true" ]; then
+            runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
+            export sgx_command="${runtime_command[@]}"
+            ./init.sh && \
+            gramine-sgx bash 1>&2
+        fi
 
     elif [ "${params[0]}" = "kubernetes-taskmanager.sh" ]; then
 
@@ -268,9 +273,13 @@ else
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
 
-        runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
-        export sgx_command="${runtime_command[@]}"
-        ./init.sh && \
-        gramine-sgx bash 1>&2
+        if [ "$SGX_ENABLED" == "false" ]; then
+            exec $JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}"
+        elif [ "$SGX_ENABLED" == "true" ]; then
+            runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
+            export sgx_command="${runtime_command[@]}"
+            ./init.sh && \
+            gramine-sgx bash 1>&2
+        fi
     fi
 fi
