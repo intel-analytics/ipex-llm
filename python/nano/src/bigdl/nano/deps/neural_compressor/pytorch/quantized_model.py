@@ -15,6 +15,7 @@
 #
 from pathlib import Path
 import yaml
+import operator
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
@@ -22,6 +23,7 @@ from neural_compressor.model.model import PyTorchModel
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.pytorch.lightning import LightningModule
+from bigdl.nano.utils.util import compare_version
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
@@ -53,7 +55,8 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
         # so we only quantize the internal nn.Module to fix this issue,
         # so we should load weight using internal nn.Module also
-        if isinstance(model, LightningModule):
+        if isinstance(model, LightningModule) and compare_version("neural_compressor",
+                                                                  operator.ge, "2.0"):
             qmodel = PyTorchModel(load(path, model.model))
         else:
             qmodel = PyTorchModel(load(path, model))
