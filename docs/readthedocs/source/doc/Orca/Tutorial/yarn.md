@@ -295,11 +295,11 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
     sc = init_orca_context(cluster_mode="spark-submit")
     ```
 
-2. Download requirement file [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install required Python libraries of BigDL Orca according to your needs.
+2. Download the requirement file from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
     ```bash
     pip install -r /path/to/requirements.txt
     ```
-Note that you are not recommended to install BigDL Orca in the conda environment if you use spark-submit to aviod possible conflicts.
+    Note that you are recommended **NOT** to install BigDL Orca in the conda environment if you use spark-submit to avoid possible conflicts.
 
 3. Pack the current activate conda environment to an archive before submitting the example:
     ```bash
@@ -312,7 +312,7 @@ Note that you are not recommended to install BigDL Orca in the conda environment
     export BIGDL_VERSION="downloaded BigDL version"
     ```
 
-5. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for Spark 2.4 and Spark 3.1. Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
+5. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for [Spark 2.4](https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz) and [Spark 3.1](https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz). Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
     ```bash
     export SPARK_HOME=/path/to/uncompressed_spark  # the folder path where you extract the Spark package
     export SPARK_VERSION="downloaded Spark version"
