@@ -31,8 +31,8 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 parser = argparse.ArgumentParser(description="PyTorch Example")
 parser.add_argument("--data_dir", type=str,
                     help="The path to load data from local or remote resources.")
-parser.add_argument("--cluster_mode", type=str, default="local",
-                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
+parser.add_argument("--cluster_mode", type=str, default="default",
+                    help="The cluster mode, such as default, local, yarn-client, yarn-cluster, "
                          "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
 parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
 parser.add_argument("--callback", type=bool, default=True,
@@ -43,8 +43,10 @@ args = parser.parse_args()
 
 
 # Step 1: Init Orca Context
-if args.cluster_mode == "local":
-    sc = init_orca_context(cluster_mode="local", memory="12g")
+if args.cluster_mode == "default":
+    sc = init_orca_context()
+elif args.cluster_mode == "local":
+    sc = init_orca_context(cluster_mode="local")
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
