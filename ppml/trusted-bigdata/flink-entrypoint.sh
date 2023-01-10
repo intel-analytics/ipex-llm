@@ -23,7 +23,7 @@ COMMAND_HISTORY_SERVER="history-server"
 # If unspecified, the hostname of the container is taken as the JobManager address
 JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
-SGX_ENABLED=$(cat $CONF_FILE | grep "sgx.enabled" | awk -F ' ' '{print $2}')
+SGX_ENABLED=$(cat $CONF_FILE | grep "kubernetes.sgx.enabled" | awk -F ' ' '{print $2}')
 
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then

@@ -600,7 +600,7 @@ $FLINK_HOME/bin/flink run-application \
     -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
     local:///ppml/flink/examples/streaming/WordCount.jar
 ```
-* The `-Dkubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
+* The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
 * The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
 * The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
 * **The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.**  
