@@ -16,6 +16,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mxnet==1.6.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mmcv
         
         chmod a+x python/orca/dev/test/run-pytests-ray
         python/orca/dev/test/run-pytests-ray
