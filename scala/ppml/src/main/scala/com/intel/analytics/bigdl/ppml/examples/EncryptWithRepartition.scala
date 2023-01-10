@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.ppml.examples
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.{SparkConf}
 import org.apache.spark.rdd.RDD
