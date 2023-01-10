@@ -3,6 +3,8 @@ kind: Pod
 spec:
   containers:
   - name: spark-executor
+    # securityContext:
+    #   privileged: true
     env:
       - name: ATTESTATION
         value: false
@@ -31,9 +33,15 @@ spec:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: policy_id
+      #- name: ATTESTATION_TYPE
+      #  value: BigDLRemoteAttestationService
+      #- name: QUOTE_TYPE
+      #  value: TDX
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
+      # - name: tdx-device
+      #   mountPath: /dev/tdx-attest
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
@@ -64,6 +72,9 @@ spec:
     - name: device-plugin
       hostPath:
         path: /var/lib/kubelet/device-plugins
+    # - name: tdx-device
+    #   hostPath:
+    #     path: /dev/tdx-attest
     - name: aesm-socket
       hostPath:
         path: /var/run/aesmd/aesm.socket
