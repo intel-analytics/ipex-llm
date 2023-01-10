@@ -8,4 +8,4 @@ export kmsIP=your_kms_ip_to_use_as
 
 # Create k8s namespace and apply bigdl kms
 kubectl create namespace bigdl-kms
-envsubst < bkeywhiz-kms.yaml | kubectl apply -f -
+envsubst < bigdl-kms.yaml | kubectl apply -f -

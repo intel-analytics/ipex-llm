@@ -98,7 +98,7 @@ RUN cd keywhiz && \
     cp docker/keywhiz-config.tpl /usr/src/app && \
     cp frontend-keywhiz-conf.yaml /usr/src/app && \
     chmod a+x /usr/src/app/entry.sh
-ADD ./start-https-frontend.sh /opt/start-https-frontend.sh
+ADD ./start-https-frontend.sh /usr/src/app/start-https-frontend.sh
 RUN chmod a+x /usr/src/app/start-https-frontend.sh && \
     chmod a+x /usr/src/app/server/target/keywhiz-server-0.10.2-SNAPSHOT-shaded.jar
 
