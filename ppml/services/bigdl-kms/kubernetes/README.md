@@ -14,7 +14,7 @@
 
 - Make sure you have a workable **Kubernetes cluster/machine**
 - Make sure you have a reachable **NFS**
-- Prepare [bigdl-keywhiz image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/BKeywhiz/docker#pullbuild-container-image)
+- Prepare [bigdl-kms image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-kms/docker#pullbuild-container-image)
 
 ## Start BigDL KMS on Kubernetes
 Modify parameters in script `install-bigdl-kms.sh`:
