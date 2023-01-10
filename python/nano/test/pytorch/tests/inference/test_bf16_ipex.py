@@ -22,6 +22,7 @@ from torchvision.models.resnet import resnet18
 from unittest.mock import PropertyMock, patch
 from bigdl.nano.common import check_avx512
 import tempfile
+from typing import List
 
 
 class CaseWithoutAVX512:
@@ -39,7 +40,7 @@ class DummyMultiInputModel(nn.Module):
     def __init__(self):
         super(DummyMultiInputModel, self).__init__()
 
-    def forward(self, x1, x2, x3):
+    def forward(self, x1, x2, x3: List[float]):
         return x1, x2, x3
 
 class Pytorch1_11:
@@ -238,9 +239,9 @@ class Pytorch1_11:
 
     def test_bf16_ipex_channels_last_various_input_sample(self):
         model = DummyMultiInputModel()
-        x1 = torch.rand(10, 256, 256) # 3-dim input test
-        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
-        x3 = x2.tolist() # input without .to() method
+        x1 = torch.rand(1, 8, 8) # 3-dim input test
+        x2 = torch.rand(1, 3, 8, 8) # 4-dim input test
+        x3 = [1, 2, 3, 4] # input without .to() method
         bf16_ipex_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                                     channels_last=True, use_ipex=True)
         with InferenceOptimizer.get_context(bf16_ipex_channels_last_model):
@@ -252,9 +253,9 @@ class Pytorch1_11:
 
     def test_bf16_jit_channels_last_various_input_sample(self):
         model = DummyMultiInputModel()
-        x1 = torch.rand(10, 256, 256) # 3-dim input test
-        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
-        x3 = x2.tolist() # input without .to() method
+        x1 = torch.rand(1, 8, 8) # 3-dim input test
+        x2 = torch.rand(1, 3, 8, 8) # 4-dim input test
+        x3 = [1, 2, 3, 4] # input without .to() method
         bf16_jit_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                                    channels_last=True, accelerator="jit")
         with InferenceOptimizer.get_context(bf16_jit_channels_last_model):
@@ -266,9 +267,9 @@ class Pytorch1_11:
 
     def test_bf16_ipex_jit_channels_last_various_input_sample(self):
         model = DummyMultiInputModel()
-        x1 = torch.rand(10, 256, 256) # 3-dim input test
-        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
-        x3 = x2.tolist() # input without .to() method
+        x1 = torch.rand(1, 8, 8) # 3-dim input test
+        x2 = torch.rand(1, 3, 8, 8) # 4-dim input test
+        x3 = [1, 2, 3, 4] # input without .to() method
         bf16_ipex_jit_channels_last_model = InferenceOptimizer.quantize(model, precision='bf16',
                                                                         channels_last=True,
                                                                         use_ipex=True, accelerator="jit")
