@@ -17,6 +17,8 @@ RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \
     cd pytorch-serve/frontend && \
+    sed -i 's/distributionUrl.*/distributionUrl=..\/..\/gradle-7.3-bin.zip/' gradle/wrapper/gradle-wrapper.properties && \
+    wget https://services.gradle.org/distributions/gradle-7.3-bin.zip && \
     ./gradlew clean assemble && \
     mkdir -p /ppml/torchserve && \
     mv server/build/libs/server-1.0.jar /ppml/torchserve/frontend.jar
