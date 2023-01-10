@@ -76,13 +76,13 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
+    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
+    sed -i '/import abc/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
+    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    sed -i '/json/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    cp /usr/local/lib/python3.8/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /ppml/torchserve/start-backend-sgx.sh && \
     chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
     chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
