@@ -1636,14 +1636,15 @@ class BasePytorchForecaster(Forecaster):
                                 quantized_dirname=None,
                                 save_pipeline=False,
                                 tsdata=None,
-                                drop_dtcol=False):
+                                drop_dtcol=True):
         """
-        Save the torchscript model file or the whole forecasting pipeline to the disk.
+        Save the torchscript model file and the whole forecasting pipeline to the disk.
 
-        When The whole forecasting pipeline is saved, it can be used without Python environment.
-        For example, when you finish developing a forecaster, you could call this method to save
-        the whole pipeline (data preprocessing, inference, data postprocessing) to a torchscript
-        module, then you could deploy the pipeline in C++ using libtorch APIs.
+        When the whole forecasting pipeline is saved, it can be used without Python environment.
+        For example, when you finish developing a forecaster, you could call this method with
+        "save_pipeline=True" to save the whole pipeline (data preprocessing, inference, data
+        postprocessing) to torchscript (the forecaster will be saved as torchscript model too),
+        then you could deploy the pipeline in C++ using libtorch APIs.
 
         Currently the pipeline is similar to the following code:
 
@@ -1652,12 +1653,12 @@ class BasePytorchForecaster(Forecaster):
         >>>       .roll(lookback, horizon, is_predict=True)
         >>> preprocess_output = tsdata.to_numpy()
         >>> # inference using trained forecaster
-        >>> # forecaster_module is obtained by forecaster.export_torchscript_file()
+        >>> # forecaster_module is the saved torchscript model
         >>> inference_output = forecaster_module.forward(preprocess_output)
         >>> # postprocess
         >>> postprocess_output = tsdata.unscale_numpy(inference_output)
 
-        When deploying, the compiled torchscript module can be used by:
+        When deploying, the pipeline can be used by:
 
         >>> // deployment in C++
         >>> #include <torch/torch.h>
@@ -1666,13 +1667,14 @@ class BasePytorchForecaster(Forecaster):
         >>> // The data to create the input tensor should have the same format as the
         >>> // data used in developing
         >>> torch::Tensor input = create_input_tensor(data);
-        >>> // load the module
+        >>> // load the pipeline
         >>> torch::jit::script::Module forecasting_pipeline;
         >>> forecasting_pipeline = torch::jit::load(path);
         >>> // run pipeline
         >>> torch::Tensor output = forecasting_pipeline.forward(input_tensor).toTensor();
 
-        The limitations of this API is same as TSDataset.export_jit():
+        The limitations of exporting the forecasting pipeline is same as limitations in
+        TSDataset.export_jit():
             1. Please make sure the value of each column can be converted to Pytorch tensor,
                for example, id "00" is not allowed because str can not be converted to a tensor,
                you should use integer (0, 1, ..) as id instead of string.
@@ -1688,11 +1690,12 @@ class BasePytorchForecaster(Forecaster):
         :param quantized_dirname: The dir location you want to save the quantized torchscript model.
         :param save_pipeline: Whether to save the whole forecasting pipeline, defaluts to False.
                If set to True, the whole forecasting pipeline will be saved in
-               "dirname/chronos_forecasting_pipeline.pt".
+               "dirname/chronos_forecasting_pipeline.pt", if set to False, only the torchscript
+               model will be saved.
         :param tsdata: The TSDataset instance used when developing the forecaster. The parameter
-               should only be used when save_pipeline is True.
-        :param drop_dtcol: Whether to delete the datetime column, defaults to False. The parameter
-               is vaild only when save_pipeline is True.
+               should be used only when save_pipeline is True.
+        :param drop_dtcol: Whether to delete the datetime column, defaults to True. The parameter
+               is valid only when save_pipeline is True.
                Since datetime value (like "2022-12-12") can't be converted to Pytorch tensor, you
                can choose different ways to workaround this. If set to True, the datetime column
                will be deleted, then you also need to skip the datetime column when reading data
