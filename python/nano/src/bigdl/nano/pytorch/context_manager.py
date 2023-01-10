@@ -35,6 +35,11 @@ class BaseContextManager(object):
         if self.thread_num is not None:
             torch.set_num_threads(self.thread_num)
         self.infer_mode.__enter__()
+        if self.accelerator == "jit":
+            if compare_version("torch", operator.ge, "1.12.0"):
+                #  onednn fusion be added from torch version 1.12
+                if not torch.jit.onednn_fusion_enabled():
+                    torch.jit.enable_onednn_fusion(True)
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.infer_mode.__exit__(exc_type, exc_value, exc_tb)
