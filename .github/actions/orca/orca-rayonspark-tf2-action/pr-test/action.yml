@@ -17,7 +17,8 @@ runs:
         pip install -i https://pypi.python.org/simple ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
-
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.15.3
+        
         chmod a+x python/orca/dev/test/run-pytests-tf2-rayonspark.sh
         python/orca/dev/test/run-pytests-tf2-rayonspark.sh
         source deactivate
