@@ -37,6 +37,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
+from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -516,23 +517,27 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_compiled_and_attrs(result, model)
 
         elif precision == 'bf16':
-            invalidInputError(accelerator == 'openvino',
+            invalidInputError(accelerator == 'openvino' or accelerator is None,
                               "Accelerator {} is invalid for BF16.".format(accelerator))
             invalidInputError(device == 'CPU',
                               "Device {} don't support bfloat16.".format(device))
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
-            if openvino_config is not None:
-                final_openvino_option.update(openvino_config)
-            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
-            result = KerasOpenVINOModel(model,
-                                        input_spec=input_spec,
-                                        precision=precision,
-                                        thread_num=thread_num,
-                                        device=device,
-                                        config=final_openvino_option,
-                                        logging=logging,
-                                        **kwargs)
-            return patch_compiled_and_attrs(result, model)
+            if accelerator == 'openvino':
+                final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
+                if openvino_config is not None:
+                    final_openvino_option.update(openvino_config)
+                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
+                result = KerasOpenVINOModel(model,
+                                            input_spec=input_spec,
+                                            precision=precision,
+                                            thread_num=thread_num,
+                                            device=device,
+                                            config=final_openvino_option,
+                                            logging=logging,
+                                            **kwargs)
+                return patch_compiled_and_attrs(result, model)
+            elif accelerator is None:
+                result = BF16Model(model)
+                return patch_compiled_and_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
@@ -701,6 +706,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_attrs(result, model)
         if model_type == 'KerasQuantizedModel':
             result = load_inc_model(path, model, framework='tensorflow')
+            return patch_attrs(result, model)
+        if model_type == 'BF16Model':
+            result = load_bf16_model(path)
             return patch_attrs(result, model)
         if isinstance(model, Model):
             # typically for keras Model
