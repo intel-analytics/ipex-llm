@@ -19,7 +19,7 @@
 
 set -x
 
-echo "### Launching BKeywhiz HTTPS Frontend ###"
+echo "[INFO] Launching BigDL KMS HTTPS Frontend"
 
 keywhiz_port=$KEYWHIZ_PORT
 https_key_store_path=/usr/src/app/server/src/main/resources/dev_and_test_keystore.p12
