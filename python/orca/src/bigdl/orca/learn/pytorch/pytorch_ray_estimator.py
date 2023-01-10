@@ -482,7 +482,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 return torch_datashard
 
             remote_worker_stats = []
-            params["data_creator"] = data_creator # type:ignore
+            params["data_creator"] = data_creator  # type:ignore
             for shard, worker in zip(shards, self.remote_workers):
                 stats = worker.validate.remote(**params)
                 remote_worker_stats.append(stats)
