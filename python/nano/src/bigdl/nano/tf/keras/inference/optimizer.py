@@ -26,7 +26,7 @@ from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimi
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled, patch_attrs
+from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
 from bigdl.nano.utils.log4Error import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
@@ -360,8 +360,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def quantize(model: Model,
@@ -474,7 +473,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          otherwise will be ignored.
                          Possible arguments are: mean_values, layout, input, output, et al.
                          For more details about model optimizer, you can see mo --help .
-                         If you want to quantize with openvino float16 precision on VPUX device,
+                         If you want to quantize with openvino on VPUX device,
                          you must specify  ``mean_value`` for model optimizer function.
                          Here ``mean_value`` represents mean values to be used for the input image
                          per channel. Values to be provided in the (R,G,B) or [R,G,B] format.
@@ -514,7 +513,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=openvino_config,
                                         logging=logging,
                                         **kwargs)
-            return patch_attrs(result, model)
+            return patch_compiled_and_attrs(result, model)
 
         elif precision == 'bf16':
             invalidInputError(accelerator == 'openvino',
@@ -533,7 +532,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=final_openvino_option,
                                         logging=logging,
                                         **kwargs)
-            return patch_attrs(result, model)
+            return patch_compiled_and_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
@@ -574,6 +573,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 # For CPU: fp32 -> int8, for GPU: fp16 -> int8
                 _precision = 'fp16' if device != 'CPU' else 'fp32'
+                if device == 'VPUX':
+                    # for fp16 on VPUX, must specify mean_value.
+                    invalidInputError('mean_value' in kwargs,
+                                      "If you want to quantize with openvino on VPUX device, "
+                                      "you must specify mean_value for model optimizer "
+                                      "function. For more details about model optimizer, you "
+                                      "can see mo --help .")
                 openvino_model = KerasOpenVINOModel(model,
                                                     input_spec=input_spec,
                                                     precision=_precision,
@@ -638,8 +644,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def save(model: Model, path):

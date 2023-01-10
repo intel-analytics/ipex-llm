@@ -682,7 +682,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          otherwise will be ignored.
                          Possible arguments are: mean_values, layout, input, output, et al.
                          For more details about model optimizer, you can see mo --help .
-                         If you want to quantize with openvino float16 precision on VPUX device,
+                         If you want to quantize with openvino on VPUX device,
                          you must specify  ``mean_value`` for model optimizer function.
                          Here ``mean_value`` represents mean values to be used for the input image
                          per channel. Values to be provided in the (R,G,B) or [R,G,B] format.
@@ -835,6 +835,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         input_sample = calib_dataloader
                     # For CPU: fp32 -> int8, for GPU/VPUX: fp16 -> int8
                     _precision = 'fp16' if device != 'CPU' else 'fp32'
+                    if device == 'VPUX':
+                        # for fp16 on VPUX, must specify mean_value.
+                        invalidInputError('mean_value' in kwargs,
+                                          "If you want to quantize with openvino on VPUX device, "
+                                          "you must specify mean_value for model optimizer "
+                                          "function. For more details about model optimizer, you "
+                                          "can see mo --help .")
                     model = PytorchOpenVINOModel(model, input_sample,
                                                  precision=_precision,
                                                  thread_num=thread_num,

@@ -14,10 +14,17 @@
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
         <parquet.version>1.12.2</parquet.version>
+        <akka.http.version>10.1.15</akka.http.version>
+        <akka.actor.version>2.5.31</akka.actor.version>
     </properties>
 
     <dependencyManagement>
-        <dependencies>
+	<dependencies>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
@@ -298,6 +305,32 @@
             <artifactId>reactor-core</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.major.version}</artifactId>
+            <version>${akka.actor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-http_${scala.major.version}</artifactId>
+            <version>${akka.http.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-http-core_${scala.major.version}</artifactId>
+            <version>${akka.http.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-stream_${scala.major.version}</artifactId>
+            <version>${akka.actor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-http-spray-json_${scala.major.version}</artifactId>
+            <version>${akka.http.version}</version>
+        </dependency>
+
     </dependencies>
     <build>
         <extensions>
@@ -371,6 +404,9 @@
                             <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>reference.conf</resource>
+                                </transformer>
 			                </transformers>
 			                <relocations>
                           	    <relocation>

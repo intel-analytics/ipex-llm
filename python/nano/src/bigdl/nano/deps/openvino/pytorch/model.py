@@ -165,6 +165,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         # below code will re-define a new object, and original attrs will be lost.
         # return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
         self.__init__(model,
+                      device=self.ov_model._device,
                       thread_num=thread_num,
                       precision='int8',
                       config=config)

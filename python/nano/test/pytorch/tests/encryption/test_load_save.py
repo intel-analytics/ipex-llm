@@ -20,8 +20,7 @@ import base64
 import torch.nn as nn
 import unittest
 import random
-from bigdl.ppml.encryption.torch.models import save, load
-from bigdl.ppml.kms.client import decrypt_buffer_with_key, generate_primary_key, generate_data_key
+from bigdl.nano.pytorch.patching import patch_encryption
 import torch.optim as optim
 
 # The example from pytorch tutorial
@@ -70,51 +69,71 @@ encryption_key = _create_random(32)
 
 class TestModelSaveLoad(unittest.TestCase):
 
+    def setUp(self) -> None:
+        patch_encryption()
+
     def test_save_load_to_buf(self):
         model = linearModel()
         encrypted_buf = io.BytesIO()
         # Reference expected value
         expected_buf = io.BytesIO()
-        torch.save(model.state_dict(), expected_buf)
+        torch.old_save(model.state_dict(), expected_buf)
         expected_buf.seek(0)
         expected_state = torch.load(expected_buf)
-        save(model.state_dict(), encrypted_buf, encryption_key)
+        torch.save(model.state_dict(), encrypted_buf, encryption_key=encryption_key)
         # load it back and compare the stat_dict is the same
-        our_state_dict = load(encrypted_buf, encryption_key)
+        our_state_dict = torch.load(encrypted_buf, decryption_key=encryption_key)
         self.assertEqual(our_state_dict, expected_state)
 
     def test_save_load_to_file(self):
         # Initialize the model
         model = linearModel()
-        save(model.state_dict(), "testsave.pt", encryption_key)
+        torch.save(model.state_dict(), "testsave.pt", encryption_key=encryption_key)
         # change its default value
         model.linear.weight.data.fill_(1.110)
         # now we try to load it back, and check the weight is the same
-        model.load_state_dict(load("testsave.pt", encryption_key))
+        model.load_state_dict(torch.load("testsave.pt", decryption_key=encryption_key))
         self.assertEqual(model.linear.weight.data[0], 1.245)
 
     def test_save_load_buf2(self):
         # Initialize the model
         model = linearModel()
         buf = io.BytesIO()
-        save(model.state_dict(), buf, encryption_key)
+        torch.save(model.state_dict(), buf, encryption_key=encryption_key)
         model.linear.weight.data.fill_(1.110)
         # now we try to load it back, and check the weight is the same
-        model.load_state_dict(load(buf, encryption_key))
+        model.load_state_dict(torch.load(buf, decryption_key=encryption_key))
         self.assertEqual(model.linear.weight.data[0], 1.245)
 
     def test_multi_save(self):
         model = TheModelClass()
         optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
-        save({
+        torch.save({
             'epoch': 5,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': 1.842,
-        }, "checkpoint.pt", encryption_key)
-        checkpoint = load("checkpoint.pt", encryption_key)
+        }, "checkpoint.pt", encryption_key=encryption_key)
+        checkpoint = torch.load("checkpoint.pt", decryption_key=encryption_key)
         self.assertEqual(checkpoint['epoch'], 5)
         self.assertEqual(checkpoint['loss'], 1.842)
         self.assertEqual(optimizer.state_dict(), checkpoint['optimizer_state_dict'])
         for param_tensor in model.state_dict():
             self.assertTrue(torch.equal(model.state_dict()[param_tensor], checkpoint['model_state_dict'][param_tensor]))
+
+    def test_without_keys(self):
+        model = TheModelClass()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        torch.save({
+            'epoch': 5,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': 1.842,
+        }, "checkpoint.pt")
+        checkpoint = torch.load("checkpoint.pt")
+        self.assertEqual(checkpoint['epoch'], 5)
+        self.assertEqual(checkpoint['loss'], 1.842)
+        self.assertEqual(optimizer.state_dict(), checkpoint['optimizer_state_dict'])
+        for param_tensor in model.state_dict():
+            self.assertTrue(torch.equal(model.state_dict()[
+                            param_tensor], checkpoint['model_state_dict'][param_tensor]))

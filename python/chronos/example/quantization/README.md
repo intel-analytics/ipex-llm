@@ -1,7 +1,7 @@
 # Use Chronos forecasters' quantization method to speed-up inference
 LSTM, TCN and NBeats users can easily quantize their forecasters to low precision and speed up the inference process (both throughput and latency) by on a single node. The functionality is powered by Project Nano.
 
-## Prepare the environment
+## How to prepare the environment
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster.
 Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
@@ -9,9 +9,6 @@ For this example your may just
 ```bash
 pip install --pre --upgrade bigdl-chronos[pytorch,inference]
 ```
-
-## Prepare data
-We are using the nyc taxi provided by NAB, from 2014-07-01 to 2015-01-31 taxi fare information For more details, you can refer to the detailed information [here](https://github.com/numenta/NAB/tree/master/data). The dataset will be downloaded automatically for you.
 
 ## Run the example
 For tcn forecaster example
@@ -37,3 +34,5 @@ int8 onnx smape: 16.58
 Quantization trick will transform the weight of the model to int8 type to improve the performance on CPU and utilize (if possible) high throughput instruction set such as VNNI.
 
 Quantization typically has a good throughput when `batch_size`, `lookback`, `horizon` and the hyperparameters of the model are large.
+
+More quantize feature info, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/QuickStart/index.html
