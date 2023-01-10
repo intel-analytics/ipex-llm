@@ -446,12 +446,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
 
-        params =dict(batch_size=batch_size,
-                     num_steps=num_steps,
-                     profile=profile,
-                     info=info,
-                     wrap_dataloader=False,
-                     callbacks=callbacks)
+        params = dict(batch_size=batch_size,
+                      num_steps=num_steps,
+                      profile=profile,
+                      info=info,
+                      wrap_dataloader=False,
+                      callbacks=callbacks)
 
         # Check uniqueness of the MainCallback
         if not callbacks:
