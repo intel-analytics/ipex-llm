@@ -41,3 +41,4 @@ Patch API
 
 .. autofunction:: bigdl.nano.pytorch.patching.patch_dtype
     
+.. autofunction:: bigdl.nano.pytorch.patching.patch_encryption
