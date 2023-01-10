@@ -446,17 +446,17 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
 
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
+
         params = dict(batch_size=batch_size,
                       num_steps=num_steps,
                       profile=profile,
                       info=info,
                       wrap_dataloader=False,
                       callbacks=callbacks)
-
-        # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
-        make_only_mainCallback(callbacks)
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
