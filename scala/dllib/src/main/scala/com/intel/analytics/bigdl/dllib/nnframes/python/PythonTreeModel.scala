@@ -130,20 +130,19 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def getFeatureImportanceXGBClassifierModel(model: XGBClassifierModel): collection.Map[String, Integer] = {
-    // val xgbModel = model.model
-    // val booster = xgbModel.nativeBooster
-    // var score : collection.Map[String, Integer]
-    // if(xgbModel.importanceType == null){
-    //   if(booster == "gblinear"){
-    //     score = booster.getScore(importanceType="weight")
-    //   } else{
-    //     score = booster.getScore(importanceType="gain")
-    //   }
-    // } else{
-    //   score = booster.getScore(importanceType=xgbModel.importanceType)
-    // }
-    // if booster.feature
-    model.model.featureImportances
+    val xgbModel = model.model
+    val booster = xgbModel.nativeBooster
+    var score : collection.Map[String, Integer]
+    if(xgbModel.importanceType == null){
+      if(booster == "gblinear"){
+        score = booster.getScore(importanceType="weight")
+      } else{
+        score = booster.getScore(importanceType="gain")
+      }
+    } else{
+      score = booster.getScore(importanceType=xgbModel.importanceType)
+    }
+    booster.getScore('', "weight")
   }
 
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
