@@ -1633,38 +1633,17 @@ class BasePytorchForecaster(Forecaster):
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_torchscript_file(self, dirname="fp32_torchscript",
-                                quantized_dirname=None):
+                                quantized_dirname=None,
+                                save_pipeline=False,
+                                tsdata=None,
+                                drop_dtcol=False):
         """
-        Save the torchscript model file to the disk.
+        Save the torchscript model file or the whole forecasting pipeline to the disk.
 
-        :param dirname: The dir location you want to save the torchscript file.
-        :param quantized_dirname: The dir location you want to save the quantized torchscript file.
-        """
-        from bigdl.nano.pytorch import InferenceOptimizer
-        from bigdl.nano.utils.log4Error import invalidInputError
-        if self.distributed:
-            invalidInputError(False,
-                              "export_torchscript_file has not been supported for distributed "
-                              "forecaster. You can call .to_local() to transform the "
-                              "forecaster to a non-distributed version.")
-        if quantized_dirname:
-            if self.accelerate_method == "jit_int8":
-                InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
-            else:
-                warnings.warn("Please call .quantize() method to build "
-                              "an up-to-date quantized model")
-        if dirname:
-            if self.accelerate_method != "jit_fp32":
-                self.build_jit()
-            InferenceOptimizer.save(self.accelerated_model, dirname)
-
-    def export_torchscript_module(self, tsdata, path_dir=None, drop_dtcol=True):
-        """
-        Export Chronos forecasting pipeline to torchscript module, so that it can be used
-        without Python environment. For example, when you finish developing a forecaster, you
-        can call this method to save the whole pipeline (data preprocessing, infernce, data
-        postprocessing) to a torchscript module, then you could deploy the pipeline in C++ using
-        libtorch APIs.
+        When The whole forecasting pipeline is saved, it can be used without Python environment.
+        For example, when you finish developing a forecaster, you could call this method to save
+        the whole pipeline (data preprocessing, inference, data postprocessing) to a torchscript
+        module, then you could deploy the pipeline in C++ using libtorch APIs.
 
         Currently the pipeline is similar to the following code:
 
@@ -1705,42 +1684,51 @@ class BasePytorchForecaster(Forecaster):
             3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
                Single roll operation is not supported for converting now.
 
-        :param tsdata: The TSDataset instance used when developing the forecaster.
-        :param path_dir: The path to save the compiled torchscript module, default to None.
-               If set to None, you should call torch.jit.save() in your code to save the returned
-               module; if not None, the path should be a directory, and the module will be saved
-               at "path_dir/chronos_forecasting_pipeline.pt".
-        :param drop_dtcol: Whether to delete the datetime column, defaults to True. Since datetime
-               value (like "2022-12-12") can't be converted to Pytorch tensor, you can choose
-               different ways to workaround this. If set to True, the datetime column will be
-               deleted, then you also need to skip the datetime column when reading data from data
-               source (like csv files) in deployment environment to keep the same structure as the
-               data used in development; if set to False, the datetime column will not be deleted,
-               and you need to make sure the datetime colunm can be successfully converted to
-               Pytorch tensor when reading data in deployment environment. For example, you can set
-               each data in datetime column to an int (or other vaild types) value, since datetime
-               column is not necessary in preprocessing and postprocessing, the value can be
-               arbitrary.
-
-        :return: The compiled torchscript module containing the whole forecasting pipeline.
+        :param dirname: The dir location you want to save the torchscript file.
+        :param quantized_dirname: The dir location you want to save the quantized torchscript model.
+        :param save_pipeline: Whether to save the whole forecasting pipeline, defaluts to False.
+               If set to True, the whole forecasting pipeline will be saved in
+               "dirname/chronos_forecasting_pipeline.pt".
+        :param tsdata: The TSDataset instance used when developing the forecaster. The parameter
+               should only be used when save_pipeline is True.
+        :param drop_dtcol: Whether to delete the datetime column, defaults to False. The parameter
+               is vaild only when save_pipeline is True.
+               Since datetime value (like "2022-12-12") can't be converted to Pytorch tensor, you
+               can choose different ways to workaround this. If set to True, the datetime column
+               will be deleted, then you also need to skip the datetime column when reading data
+               from data source (like csv files) in deployment environment to keep the same
+               structure as the data used in development; if set to False, the datetime column will
+               not be deleted, and you need to make sure the datetime colunm can be successfully
+               converted to Pytorch tensor when reading data in deployment environment. For
+               example, you can set each data in datetime column to an int (or other vaild types)
+               value, since datetime column is not necessary in preprocessing and postprocessing,
+               the value can be arbitrary.
         """
-        import tempfile
-        import shutil
+        from bigdl.nano.pytorch import InferenceOptimizer
+        from bigdl.nano.utils.log4Error import invalidInputError
         from .utils import get_exported_module
+        from pathlib import Path
+        if self.distributed:
+            invalidInputError(False,
+                              "export_torchscript_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if quantized_dirname:
+            if self.accelerate_method == "jit_int8":
+                InferenceOptimizer.save(self.accelerated_model, quantized_dirname)
+            else:
+                warnings.warn("Please call .quantize() method to build "
+                              "an up-to-date quantized model")
+        if dirname:
+            if self.accelerate_method != "jit_fp32":
+                self.build_jit()
+            InferenceOptimizer.save(self.accelerated_model, dirname)
 
-        temp_dir = tempfile.mkdtemp()
-        self.export_torchscript_file(dirname=temp_dir)
-        forecaster_path = os.path.join(temp_dir, "ckpt.pth")
-        exported_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
-
-        if path_dir:
-            saved_path = os.path.join(path_dir, "chronos_forecasting_pipeline.pt")
-            torch.jit.save(exported_module, saved_path)
-
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-
-        return exported_module
+            if save_pipeline:
+                forecaster_path = Path(dirname) / "ckpt.pth"
+                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
+                saved_path = Path(dirname) / "chronos_forecasting_pipeline.pt"
+                torch.jit.save(exproted_module, saved_path)
 
     def quantize(self, calib_data=None,
                  val_data=None,

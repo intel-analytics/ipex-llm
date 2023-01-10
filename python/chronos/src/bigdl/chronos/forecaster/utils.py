@@ -197,7 +197,7 @@ class ExportForecastingPipeline(nn.Module):
         return postprocess_output
 
 
-def get_exported_module(tsdata, model_path, drop_dtcol):
+def get_exported_module(tsdata, forecaster_path, drop_dtcol):
     from bigdl.chronos.data.utils.export_torchscript \
         import get_processing_module_instance, get_index
 
@@ -215,6 +215,6 @@ def get_exported_module(tsdata, model_path, drop_dtcol):
                                                  id_index, target_feature_index,
                                                  tsdata.scaler_index, "postprocessing")
 
-    inference = torch.jit.load(model_path)
+    inference = torch.jit.load(forecaster_path)
 
     return torch.jit.script(ExportForecastingPipeline(preprocess, inference, postprocess))

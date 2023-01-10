@@ -680,7 +680,7 @@ class TestChronosNBeatsForecaster(TestCase):
         eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
 
-    def test_nbeats_forecaster_export_torchscript_module(self):
+    def test_nbeats_forecaster_export_forecasting_pipeline(self):
         import shutil
         import pandas as pd
         from sklearn.preprocessing import StandardScaler
@@ -702,9 +702,10 @@ class TestChronosNBeatsForecaster(TestCase):
         # export the pipeline to torchscript
         pipeline_module_dir = os.path.join(temp_dir, "pipeline")
         os.mkdir(pipeline_module_dir)
-        forecaster.export_torchscript_module(train_data,
-                                             path_dir=pipeline_module_dir,
-                                             drop_dtcol=True)
+        forecaster.export_torchscript_file(dirname=pipeline_module_dir,
+                                           save_pipeline=True,
+                                           tsdata=train_data,
+                                           drop_dtcol=True)
         # save the test data for deployment
         test_data_path = os.path.join(temp_dir, "inference_data.csv")
         test_data.df.to_csv(test_data_path, index=False)
