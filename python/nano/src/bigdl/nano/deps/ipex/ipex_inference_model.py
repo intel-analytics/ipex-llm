@@ -23,7 +23,8 @@ import torch
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
-                 use_jit=False, channels_last=None, channels_last_available=[], thread_num=None, from_load=False,
+                 use_jit=False, channels_last=None, channels_last_available=[],
+                 thread_num=None, from_load=False,
                  inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
@@ -42,7 +43,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                     meaning do nothing.
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
-        :param channels_last_available: only passed by _load method, to decide which input can be converted to channels-last mode.
+        :param channels_last_available: only passed by _load method,
+                                        to decide which input can be converted
+                                        to channels-last mode.
         :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -62,6 +65,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.jit_strict = jit_strict
             self.jit_method = jit_method
             self.weights_prepack = weights_prepack
+            if self.channels_last:
+                self.model = self.model.to(memory_format=torch.channels_last)
+                self.channels_last_available = channels_last_available
             self._nano_context_manager = generate_context_manager(accelerator=None,
                                                                   precision="fp32",
                                                                   thread_num=thread_num)
@@ -76,7 +82,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
-            if channels_last_available: # init from _load, the channels_last_available is not none
+            if channels_last_available:  # init from _load, the channels_last_available is not none
                 self.channels_last_available = channels_last_available
             else:
                 self.channels_last_available = generate_channels_last_available(input_sample)

@@ -28,6 +28,7 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import tempfile
+from typing import List
 
 batch_size = 256
 num_workers = 0
@@ -62,7 +63,7 @@ class DummyMultiInputModel(nn.Module):
     def __init__(self):
         super(DummyMultiInputModel, self).__init__()
 
-    def forward(self, x1, x2, x3):
+    def forward(self, x1, x2, x3: List[float]):
         return x1, x2, x3
 
 class MultipleInputWithKwargsNet(nn.Module):
@@ -129,25 +130,25 @@ class IPEXJITInference_gt_1_10:
 
     def test_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
-        x1 = torch.rand(10, 256, 256) # 3-dim input test
-        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
-        x3 = x2.tolist() # input without .to() method
+        x1 = torch.rand(1, 1) # 3-dim input test
+        x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
+        x3 = [1, 2, 3, 4] # input without .to() method
         jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                   use_ipex=False)
+                                                           use_ipex=False)
         with InferenceOptimizer.get_context(jit_channels_last_model):
             jit_channels_last_model(x1, x2, x3)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
-    
+
     def test_ipex_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
-        x1 = torch.rand(10, 256, 256) # 3-dim input test
-        x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
-        x3 = x2.tolist() # input without .to() method
+        x1 = torch.rand(1, 1) # 3-dim input test
+        x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
+        x3 = [1, 2, 3, 4] # input without .to() method
         ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                   use_ipex=True)
+                                                                use_ipex=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2, x3)
         with tempfile.TemporaryDirectory() as tmp_dir_name:

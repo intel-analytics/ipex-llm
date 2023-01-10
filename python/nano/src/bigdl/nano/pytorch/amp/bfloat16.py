@@ -40,7 +40,8 @@ class BF16Model(AcceleratedLightningModule):
 
         :param model: the model(nn.module) to be transform.
         :param channels_last: if set model and data to be channels-last mode.
-        :param channels_last_available: only passed by _load method, to decide which input can be converted to channels-last mode.
+        :param channels_last_available: only passed by _load method,
+               to decide which input can be converted to channels-last mode.
         :param thread_num: the thread num allocated for this model.
         """
         super().__init__(model)
@@ -50,9 +51,9 @@ class BF16Model(AcceleratedLightningModule):
         self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
-            if channels_last_available: # init from load
+            if channels_last_available:  # init from load
                 self.channels_last_available = channels_last_available
-            else: # init without channels_last_available loaded
+            else:  # init without channels_last_available loaded
                 self.channels_last_available = generate_channels_last_available(input_sample)
         else:
             self.channels_last_available = []

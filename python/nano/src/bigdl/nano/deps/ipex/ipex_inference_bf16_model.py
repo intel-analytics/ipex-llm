@@ -25,8 +25,9 @@ import torch
 
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
-                 use_jit=False, channels_last=None, channels_last_available=[], thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
+                 use_jit=False, channels_last=None, channels_last_available=[], thread_num=None,
+                 from_load=False, inplace=False, jit_strict=True, jit_method=None,
+                 weights_prepack=None):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -61,7 +62,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
-                                     channels_last=channels_last, channels_last_available=channels_last_available, 
+                                     channels_last=channels_last,
+                                     channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
                                      jit_method=jit_method, weights_prepack=weights_prepack)
         self._nano_context_manager = generate_context_manager(accelerator=None,
