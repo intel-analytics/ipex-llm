@@ -61,14 +61,15 @@ def patch_tensorflow(precision='float32'):
 
     | 1. ``tf.keras.Model``/``keras.Model`` -> ``bigdl.nano.tf.keras.Model``
     | 2. ``tf.keras.Sequential``/``keras.Sequential`` -> ``bigdl.nano.tf.keras.Sequential``
-    | 3. ``tf.keras.layers.Embedding``/``keras.layers.Embedding`` -> 
+    | 3. ``tf.keras.layers.Embedding``/``keras.layers.Embedding`` ->
       ``bigdl.nano.tf.keras.layers.Embedding``
     | 4. ``tf.optimizers.Adam`` -> ``bigdl.nano.tf.optimizers.SparseAdam``
 
-    :param precision: str, specify the compute and variable dtypes, select from ``'float32'`` and
-                      ``'mixed_bfloat16'``. Once ``'float32'`` is set, both compute and variable dtypes
-                      will be float32. When ``'mixed_bfloat16'`` is set, the compute dtype is bfloat16
-                      and the variable dtype is float32. Default to be ``'float32'``.
+    :param precision: str, specify the compute and variable dtypes, select from ``'float32'`` 
+                      and ``'mixed_bfloat16'``. Once ``'float32'`` is set, both compute and 
+                      variable dtypes will be float32. When ``'mixed_bfloat16'`` is set, 
+                      the compute dtype is bfloat16 and the variable dtype is float32. 
+                      Default to be ``'float32'``.
     """
     mapping_tf = _get_patch_map()
 
@@ -91,10 +92,11 @@ def unpatch_tensorflow(precision='float32'):
 
     Meanwhile, set ``precision`` as global dtype policy.
 
-    :param precision: str, specify the compute and variable dtypes, select from ``'float32'`` and
-                      ``'mixed_bfloat16'``. Once ``'float32'`` is set, both compute and variable dtypes
-                      will be float32. When ``'mixed_bfloat16'`` is set, the compute dtype is bfloat16
-                      and the variable dtype is float32. Default to be ``'float32'``.
+    :param precision: str, specify the compute and variable dtypes, select from ``'float32'`` 
+                      and ``'mixed_bfloat16'``. Once ``'float32'`` is set, both compute and 
+                      variable dtypes will be float32. When ``'mixed_bfloat16'`` is set, 
+                      the compute dtype is bfloat16 and the variable dtype is float32. 
+                      Default to be ``'float32'``.
     """
     mapping_tf = _get_patch_map()
 
