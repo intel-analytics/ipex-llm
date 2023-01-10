@@ -49,7 +49,6 @@ from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
                                             NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.core import BaseRunner
-from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 try:
@@ -207,7 +206,7 @@ class TorchRunner(BaseRunner):
             self.dist_backend = TorchDistBackend()
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=[],
+                     info=None, wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
         if OrcaContext.serialize_data_creator:
@@ -253,9 +252,6 @@ class TorchRunner(BaseRunner):
         else:
             val_loader = None
             val_steps = None
-
-        # Check uniqueness of the MainCallback
-        make_only_mainCallback(callbacks)
 
         for callback in callbacks:
             callback.set_model(self.given_models)
@@ -513,7 +509,7 @@ class TorchRunner(BaseRunner):
         return {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None, callbacks=[]):
+                 info=None, wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         info = info or {}
@@ -532,9 +528,6 @@ class TorchRunner(BaseRunner):
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
-
-        # Check uniqueness of the MainCallback
-        make_only_mainCallback(callbacks)
 
         with self.timers.record("validation"):
             validation_stats = self._validate(loader,

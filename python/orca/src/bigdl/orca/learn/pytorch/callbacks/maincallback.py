@@ -45,6 +45,11 @@ class MainCallback(Callback):
     there will propagate forward and backward twice.
     """
     def on_iter_forward(self, runner):
+        """
+        If `on_train_forward` and `on_val_forward` are not overridden,
+        this will be called during forward when training and validating.
+        Any behavior inconsistent with the default forward behavior should be overridden here.
+        """
         # Forward features
         *features, target = runner.batch
         runner.output = runner.model(*features)
@@ -55,17 +60,34 @@ class MainCallback(Callback):
         runner.loss = runner.criterion(*outputL, *targetL)
 
     def on_iter_backward(self, runner):
+        """
+        this will be called during backward when training.
+        Any behavior inconsistent with the default backward behavior should be overridden here.
+        """
         runner.optimizer.zero_grad()
         runner.loss.backward()
         runner.optimizer.step()
 
     # TODO: Refactor scheduler update logic in TorchRunner
     def on_lr_adjust(self, runner):
+        """
+        this will be called during adjusting lr_scheduler when each epoch ends.
+        By default, this will step lr_scheduler if there is lr_scheduler in runner.
+        Any behavior inconsistent with the default behavior should be overridden here.
+        """
         if runner.lr_scheduler is not None:
             runner.lr_scheduler.step()
 
     def on_train_forward(self, runner):
+        """
+        Called during training.
+        Any behavior inconsistent with the default training behavior should be overridden here.
+        """
         self.on_iter_forward(runner)
 
     def on_val_forward(self, runner):
+        """
+        Called during validate.
+        Any behavior inconsistent with the default training behavior should be overridden here.
+        """
         self.on_iter_forward(runner)
