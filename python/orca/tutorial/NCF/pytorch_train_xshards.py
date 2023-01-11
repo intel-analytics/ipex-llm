@@ -46,7 +46,7 @@ args = parser.parse_args()
 if args.cluster_mode == "default":
     sc = init_orca_context()
 elif args.cluster_mode == "local":
-    sc = init_orca_context(cluster_mode="local")
+    sc = init_orca_context(cluster_mode="local", cores=4)
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
