@@ -141,7 +141,7 @@ class XGBClassifierModel private[bigdl](
     }
     output
   }
-  
+
   def save(path: String): Unit = {
     model.write.overwrite().save(path)
   }
