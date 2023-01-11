@@ -257,8 +257,10 @@ object PPMLContext{
     conf.set("spark.hadoop.io.compression.codecs",
         "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     val sc = initNNContext(conf, appName)
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
+    val sparkSession: SparkSession = SparkSession.builder()
+                                                 .config("spark.bigdl.kms.type", kmsType)
+                                                 .getOrCreate()
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get("spark.bigdl.kms.ehs.ip", defaultValue = "0.0.0.0")
