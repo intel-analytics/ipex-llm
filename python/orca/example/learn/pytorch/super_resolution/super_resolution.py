@@ -26,6 +26,7 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
+import shutil
 import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
@@ -300,8 +301,8 @@ elif opt.backend in ["ray", "spark"]:
         }
     )
 
-    if not exists(model_dir):
-        makedirs(model_dir)
+    if exists(model_dir):
+        shutil.rmtree(model_dir)
 
     f_model_out_path = model_dir + "/" + "model_epoch_{epoch:02d}.pth"
 
@@ -318,11 +319,10 @@ elif opt.backend in ["ray", "spark"]:
                                     batch_size=opt.test_batch_size)
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
             .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
-
     
     model = estimator.get_model()
-    last_model_path = f_model_out_path.format(epoch=opt.epoch)
-    torch.save(model, last_model_path)
+    last_model_path = f_model_out_path.format(epoch=opt.epochs)
+    estimator.save(last_model_path)
     print("Checkpoint saved to {}".format(last_model_path))
 else:
     invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend, "
