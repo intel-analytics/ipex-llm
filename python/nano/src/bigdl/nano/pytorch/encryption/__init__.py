@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .encryption import save, load
+from .encryption import save, load, EncryptedDataset

@@ -298,7 +298,8 @@ class TestOpenVINO(TestCase):
                                             accelerator="openvino",
                                             input_sample=x,
                                             do_constant_folding=False, # onnx export param
-                                            mean_value=[123.68,116.78,103.94]  # ov mo param
+                                            mean_value=[123.68,116.78,103.94],  # ov mo param,
+                                            input="x",  # test multi params for mo
                                             )
         with InferenceOptimizer.get_context(ov_model):
             result = ov_model(x)

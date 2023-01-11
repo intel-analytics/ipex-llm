@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.examples
 
-import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
+import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService, BigDLKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT, DECRYPT, EncryptRuntimeException}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
@@ -40,6 +40,9 @@ object Encrypt extends App with Supportive{
       SimpleKeyManagementService(arguments.simpleAPPID, arguments.simpleAPIKEY)
     case KMS_CONVENTION.MODE_AZURE_KMS =>
       new AzureKeyManagementService(arguments.keyVaultName, arguments.managedIdentityClientId)
+    case KMS_CONVENTION.MODE_BIGDL_KMS =>
+      new BigDLKeyManagementService(arguments.kmsServerIP, arguments.kmsServerPort,
+        arguments.userName, arguments.userToken)
     case _ =>
       throw new EncryptRuntimeException("Wrong kms type")
   }

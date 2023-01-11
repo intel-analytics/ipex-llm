@@ -99,6 +99,18 @@ def patch_compiled(target_model: Model, source_model: Model):
     return target_model
 
 
+def patch_compiled_and_attrs(target_obj: object, source_obj: object) -> object:
+    """
+    Patch compile attributes and other attributes of `source_obj` to `target_obj`.
+
+    :param target_obj: target object
+    :param source_obj: source object
+    :return: `target_obj`
+    """
+    patch_compiled(target_obj, source_obj)
+    return patch_attrs(target_obj, source_obj)
+
+
 def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
     """Fake a `Tensor` from `TensorSpec`."""
     shape = tensor_spec.shape

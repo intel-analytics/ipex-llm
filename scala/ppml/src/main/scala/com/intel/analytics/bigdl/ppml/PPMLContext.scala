@@ -25,7 +25,7 @@ import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyManagementService, KMS_CONVENTION,
-KeyManagementService, SimpleKeyManagementService}
+KeyManagementService, SimpleKeyManagementService, BigDLKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import org.apache.hadoop.fs.Path
 
@@ -217,6 +217,12 @@ object PPMLContext{
         val vaultName = conf.get("spark.bigdl.kms.azure.vault")
         val clientId = conf.get("spark.bigdl.kms.azure.clientId")
         new AzureKeyManagementService(vaultName, clientId)
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        val ip = conf.get("spark.bigdl.kms.bigdl.ip")
+        val port = conf.get("spark.bigdl.kms.bigdl.port")
+        val userName = conf.get("spark.bigdl.kms.bigdl.user")
+        val userToken = conf.get("spark.bigdl.kms.bigdl.token")
+        new BigDLKeyManagementService(ip, port, userName, userToken)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
@@ -263,6 +269,12 @@ object PPMLContext{
         val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
         val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
         new AzureKeyManagementService(vaultName, clientId)
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        val ip = conf.get("spark.bigdl.kms.bigdl.ip")
+        val port = conf.get("spark.bigdl.kms.bigdl.port")
+        val userName = conf.get("spark.bigdl.kms.bigdl.user")
+        val userToken = conf.get("spark.bigdl.kms.bigdl.token")
+        new BigDLKeyManagementService(ip, port, userName, userToken)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
