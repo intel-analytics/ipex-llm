@@ -177,3 +177,19 @@ class TestTraceAndQuantize(TestCase):
                                                       input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
         outputs = quantized_model(x)
         assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
+
+    def test_quantize_bf16(self):
+        model = MyModel(100)
+        model.compile(loss='mse', metrics=MeanSquaredError())
+        x = np.random.random((100, 4))
+        model(x)
+
+        traced_model = InferenceOptimizer.quantize(model, precision="bf16")
+
+        from bigdl.nano.utils import CPUInfo
+        cpuinfo = CPUInfo()
+        if cpuinfo.has_bf16:
+            model(x)
+
+        InferenceOptimizer.save(model, "save_bf16")
+        model = InferenceOptimizer.load("save_bf16", model)

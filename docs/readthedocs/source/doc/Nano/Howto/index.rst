@@ -27,6 +27,10 @@ PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * |convert_pytorch_training_torchnano|_
 * |use_nano_decorator_pytorch_training|_
+* `How to accelerate a PyTorch application on training workloads through Intel® Extension for PyTorch* <Training/PyTorch/accelerate_pytorch_training_ipex.html>`_
+* `How to accelerate a PyTorch application on training workloads through multiple instances <Training/PyTorch/accelerate_pytorch_training_multi_instance.html>`_
+* `How to use the channels last memory format in your PyTorch application for training <Training/PyTorch/pytorch_training_channels_last.html>`_
+* `How to conduct BFloat16 Mixed Precision training in your PyTorch application <Training/PyTorch/accelerate_pytorch_training_bf16.html>`_
 
 .. |use_nano_decorator_pytorch_training| replace:: How to accelerate your PyTorch training loop with ``@nano`` decorator
 .. _use_nano_decorator_pytorch_training: Training/PyTorch/use_nano_decorator_pytorch_training.html
@@ -78,6 +82,8 @@ TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
 * `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
+* `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
+* `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
 
 Install
 -------------------------

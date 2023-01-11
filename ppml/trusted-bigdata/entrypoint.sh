@@ -33,6 +33,12 @@ if [ "$PCCS_URL" != "" ]; then
   echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
 fi
 
+function delete_file {
+  if [ -f $1 ]; then
+      rm -f $1
+  fi
+}
+
 # If there is no passwd entry for the container UID, attempt to create one
 if [ -z "$uidentry" ]; then
   if [ -w /etc/passwd ]; then
@@ -129,29 +135,29 @@ driver)
         export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/spark-${SPARK_VERSION}/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH:$driverExtraClassPath" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" &&
         if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
-          rm /ppml/temp_command_file || true
+          delete_file "/ppml/temp_command_file"
           bash attestation.sh
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
           fi
           echo $sgx_command >>temp_command_file
-          export sgx_command="bash temp_command_file && rm temp_command_file"
+          export sgx_command="bash temp_command_file"
         else
           # ATTESTATION is false
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             # ATTESTATION false, encrypted-fsd true
-            rm /ppml/temp_command_file || true
+            delete_file "/ppml/temp_command_file"
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
             echo $sgx_command >>temp_command_file
-            export sgx_command="bash temp_command_file && rm temp_command_file"
+            export sgx_command="bash temp_command_file"
           fi
         fi
       echo $sgx_command &&
         ./init.sh &&
         gramine-sgx bash 1>&2
-      rm /ppml/temp_command_file || true
+      delete_file "/ppml/temp_command_file"
     fi
   ;;
 driver-py)
@@ -203,29 +209,29 @@ executor)
       export sgx_command="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/spark-${SPARK_VERSION}/conf/log4j2.xml -Xms1G -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" &&
         if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
-          rm /ppml/temp_command_file || true
+          delete_file "/ppml/temp_command_file"
           bash attestation.sh
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
           fi
           echo $sgx_command >>temp_command_file
-          export sgx_command="bash temp_command_file && rm temp_command_file"
+          export sgx_command="bash temp_command_file"
         else
           # ATTESTATION is false
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             # ATTESTATION false, encrypted-fsd true
-            rm /ppml/temp_command_file || true
+            delete_file "/ppml/temp_command_file"
             echo "[INFO] Distributed encrypted file system is enabled"
             bash encrypted-fsd.sh
             echo $sgx_command >>temp_command_file
-            export sgx_command="bash temp_command_file && rm temp_command_file"
+            export sgx_command="bash temp_command_file"
           fi
         fi
       echo $sgx_command &&
         ./init.sh &&
         gramine-sgx bash 1>&2
-      rm /ppml/temp_command_file || true
+      delete_file "/ppml/temp_command_file"
     fi
   ;;
 
