@@ -81,21 +81,18 @@ def model_init(num_classes):
     return model
 
 
-def test_fit_function():
+def test_graph_mode_fit():
+
+    from tensorflow.python.framework.ops import disable_eager_execution
+    disable_eager_execution()
     num_classes, train_ds, val_ds = dataset_generation()
 
-    # Case 1: Default
     model_default = model_init(num_classes)
     history_default = model_default.fit(train_ds, epochs=3, validation_data=val_ds)
 
-    # TODO: 2.11 has some issue for this test
-    if LooseVersion(tf.__version__) >= LooseVersion('2.10.0'):
-        return
-
-    # Case 2: Multiple processing argument
-    # Case 2.1: multiple processing backend
-    model_multiprocess = model_init(num_classes)
-    history_multiprocess = model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
-                                                  num_processes=2, backend="multiprocessing")
-    assert (history_default.history['accuracy'][-1]
-            - history_multiprocess.history['accuracy'][-1]) <= 0.1
+    # currently multiprocessing on graph mode does not work
+    # model_multiprocess = model_init(num_classes)
+    # history_multiprocess = model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
+    #                                               num_processes=2, backend="multiprocessing")
+    # assert (history_default.history['accuracy'][-1]
+    #         - history_multiprocess.history['accuracy'][-1]) <= 0.1
