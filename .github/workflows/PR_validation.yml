@@ -67,6 +67,7 @@ jobs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca: ${{ steps.filter.outputs.orca }}
+      orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
@@ -122,7 +123,10 @@ jobs:
               - 'python/orca/**'
               - 'python/dllib/**'
               - '.github/actions/orca/**'
-                    
+
+            orca-tutorial:
+              - 'python/orca/tutorial/**'
+
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -300,7 +304,7 @@ jobs:
 
   Orca-Tutorial-Xshards:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
