@@ -99,7 +99,10 @@ def open_image(path: str) -> "JpegImageFile":
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]
-        return Image.open(path)
+        with open(path, "rb") as f:
+            image = Image.open(f)
+            image.load()
+            return image
 
 
 def load_numpy(path: str) -> "ndarray":
