@@ -717,7 +717,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         # if set `optimize=False`, keep the current thread num
         num = max(1, current_thread//2)
-        forecaster.optimize(test_data, thread_num=num)
+        forecaster.optimize(test_data, thread_num=num, acceleration=False)
         pred = forecaster.predict(test_data[0])
         new_current_thread = torch.get_num_threads()
         assert new_current_thread == current_thread

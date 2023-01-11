@@ -685,7 +685,7 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
 
-        if quantize or not acceleration:
+        if quantize or acceleration:
             self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
