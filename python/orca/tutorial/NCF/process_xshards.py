@@ -34,8 +34,8 @@ sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
 
 
-def ng_sampling(data, user_num, item_num, num_ng):
-    data_X = data.values.tolist()
+def ng_sampling(df, user_num, item_num, num_ng):
+    data_X = df.values.tolist()
 
     # calculate a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
@@ -63,8 +63,8 @@ def ng_sampling(data, user_num, item_num, num_ng):
     return data_XY
 
 
-def split_dataset(data):
-    train_data, test_data = train_test_split(data, test_size=0.2, random_state=100)
+def split_dataset(df):
+    train_data, test_data = train_test_split(df, test_size=0.2, random_state=100)
     return train_data, test_data
 
 
@@ -93,20 +93,19 @@ def prepare_data(dataset_dir, num_ng=4):
 
     print("Processing features...")
 
-
-    def convert_to_long(shard, col):
-        shard[col] = shard[col].astype(np.int64)
-        return shard
+    def convert_to_long(df, col):
+        df[col] = df[col].astype(np.int64)
+        return df
 
     # Categorical encoding
     for col in sparse_features[:-1]:  # occupation is already indexed.
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
             users = indexer.fit_transform(users)
-            users = users.transform_shard(lambda shard: convert_to_long(shard, col))
+            users = users.transform_shard(lambda df: convert_to_long(df, col))
         else:
             items = indexer.fit_transform(items)
-            items = items.transform_shard(lambda shard: convert_to_long(shard, col))
+            items = items.transform_shard(lambda df: convert_to_long(df, col))
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
@@ -116,23 +115,23 @@ def prepare_data(dataset_dir, num_ng=4):
         sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
 
     # scale dense features
-    def rename(shard, col):
-        shard = shard.drop(columns=[col]).rename(columns={col + "_scaled": col})
-        return shard
+    def rename(df, col):
+        df = df.drop(columns=[col]).rename(columns={col + "_scaled": col})
+        return df
 
     for col in dense_features:
         scaler = MinMaxScaler(inputCol=[col], outputCol=col + "_scaled")
         if col in users.get_schema()["columns"]:
             users = scaler.fit_transform(users)
-            users = users.transform_shard(lambda shard: rename(shard, col))
+            users = users.transform_shard(lambda df: rename(df, col))
         else:
             items = scaler.fit_transform(items)
-            items = items.transform_shard(lambda shard: rename(shard, col))
+            items = items.transform_shard(lambda df: rename(df, col))
 
     # Negative sampling
     print("Negative sampling...")
     ratings = ratings.partition_by("user")
-    ratings = ratings.transform_shard(lambda shard: ng_sampling(shard, user_num, item_num, num_ng))
+    ratings = ratings.transform_shard(lambda df: ng_sampling(df, user_num, item_num, num_ng))
 
     # Merge XShards
     print("Merge data...")
