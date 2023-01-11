@@ -63,7 +63,7 @@ def quality_check_timeseries_dataframe(df, dt_col, id_col=None, repair=True):
     # 3. missing value check
     if _missing_value_check(df, dt_col) is False:
         if repair is True:
-            flag = flag and _missing_value_repair(df)
+            flag = flag and _missing_value_repair(df, dt_col)
         else:
             flag = False
 
@@ -201,13 +201,16 @@ def _missing_value_check(df, dt_col, threshold=0):
     return True
 
 
-def _missing_value_repair(df):
+def _missing_value_repair(df, dt_col):
     '''
     This repair is used to fill missing value with impute by linear interpolation.
     '''
     try:
         # interpolate for most cases
-        df.interpolate(axis=0, limit_direction='both', inplace=True)
+        temp_col = df[dt_col]
+        df[dt_col] = 0
+        df.interpolate(method='linear', axis=0, limit_direction='both', inplace=True)
+        df[dt_col] = temp_col
         # fillna with 0 for cases when the whole column is missing
         df.fillna(0, inplace=True)
     except:
