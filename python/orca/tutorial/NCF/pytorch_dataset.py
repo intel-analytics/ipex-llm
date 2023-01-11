@@ -28,8 +28,8 @@ from sklearn.preprocessing import MinMaxScaler
 
 from bigdl.orca.data.file import get_remote_dir_to_local, rmdir
 
-# user and item ids are converted to int64 to be compatible with lower versions of PyTorch
-# such as 1.7.1.
+# user and item ids and sparse features are converted to int64 to be compatible with
+# lower versions of PyTorch such as 1.7.1.
 
 
 class NCFData(data.Dataset):
@@ -162,7 +162,7 @@ def process_ratings(dataset_dir, user_num, item_num):
         rmdir(local_data_dir)
 
     # load ratings as a dok matrix
-    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
     for x in ratings.values.tolist():
         train_mat[x[0], x[1]] = 1
     return ratings, train_mat
