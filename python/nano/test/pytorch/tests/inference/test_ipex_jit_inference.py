@@ -17,7 +17,7 @@
 
 import os
 from unittest import TestCase
-
+import operator
 import pytest
 import torch
 from torch.utils.data import TensorDataset, DataLoader
