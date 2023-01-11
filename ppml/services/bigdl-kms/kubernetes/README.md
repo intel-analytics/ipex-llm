@@ -87,4 +87,5 @@ XY********Yw==
 ## Test KMS with PPML end-to-end example
 
 [LocalCryptoExample](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples#localcryptoexample-with-bigdl-kms)
-[PPMLContext]() (TODO)
+
+[PPMLContext](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext)
