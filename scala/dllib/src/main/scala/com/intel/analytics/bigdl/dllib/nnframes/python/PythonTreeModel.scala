@@ -26,7 +26,6 @@ import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-import scala.collection
 
 object PythonTreeModel {
 
@@ -119,30 +118,23 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   }
 
   def getFeatureScoreXGBClassifierModel(model: XGBClassifierModel,
-                                        featureMap: String = null): collection.Map[String, Integer] = {
-    model.model.nativeBooster.getFeatureScore(featureMap)
+                                        featureMap: String = null): JMap[String, Integer] = {
+    model.model.nativeBooster.getFeatureScore(featureMap).asJava
   }
 
   def getScoreXGBClassifierModel(model: XGBClassifierModel,
                                 featureMap: String,
-                                importanceType: String): collection.Map[String, Double] = {
-    model.model.nativeBooster.getScore(featureMap, importanceType)
+                                importanceType: String): JMap[String, Double] = {
+    model.model.nativeBooster.getScore(featureMap, importanceType).asJava
   }
 
-  def getFeatureImportanceXGBClassifierModel(model: XGBClassifierModel): collection.Map[String, Integer] = {
+  def getFeatureImportanceXGBClassifierModel(model: XGBClassifierModel): JMap[String, Double] = {
     val xgbModel = model.model
     val booster = xgbModel.nativeBooster
-    var score : collection.Map[String, Integer]
-    if(xgbModel.importanceType == null){
-      if(booster == "gblinear"){
-        score = booster.getScore(importanceType="weight")
-      } else{
-        score = booster.getScore(importanceType="gain")
-      }
-    } else{
-      score = booster.getScore(importanceType=xgbModel.importanceType)
-    }
-    booster.getScore('', "weight")
+    // Currently we set importance type default value to "weight"
+    val score = booster.getScore("", "weight")
+    val total = score.foldLeft(0.0)(_+_._2)
+    score.map(s => (s._1, s._2 / total)).asJava
   }
 
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
