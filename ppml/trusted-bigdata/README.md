@@ -153,7 +153,7 @@ python register-mrenclave.py --appid <your_appid> \
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
 
 ### 1. Start the spark client as Docker container
-### 1.1 Prepare the keys/password/data/enclave-key.pem
+#### 1.1 Prepare the keys/password/data/enclave-key.pem
 Please refer to the previous section about [preparing keys and passwords](#2-prepare-spark-ssl-key).
 
 ``` bash
@@ -163,8 +163,8 @@ kubectl apply -f keys/keys.yaml
 kubectl apply -f password/password.yaml
 ```
 
-### 1.2 Prepare the k8s configurations
-#### 1.2.1 Create the RBAC
+#### 1.2 Prepare the k8s configurations
+##### 1.2.1 Create the RBAC
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
@@ -181,12 +181,12 @@ kubectl config set-context spark-context --user=spark-user
 kubectl config get-clusters
 kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
 ```
-#### 1.2.2 Generate k8s config file
+##### 1.2.2 Generate k8s config file
 ```bash
 kubectl config use-context spark-context
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
-#### 1.2.3 Create k8s secret
+##### 1.2.3 Create k8s secret
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 kubectl create secret generic kms-secret \
@@ -197,7 +197,7 @@ kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
-### 1.3 Start the client container
+#### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
@@ -229,9 +229,9 @@ sudo docker run -itd \
 ```
 run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
+#### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
-#### 1.4.1 Configure `spark-executor-template.yaml` in the container
+##### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
@@ -240,7 +240,7 @@ Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
-#### 1.4.2 Submit spark command
+##### 1.4.2 Submit spark command
 
 ```bash
 ./init.sh
@@ -306,16 +306,16 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 1. `local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
-#### 1.4.3 Spark-Pi example
+##### 1.4.3 Spark-Pi example
 
 ```bash
 gramine-sgx bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
-### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
+#### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
 
 Here, we assume you have started the client container and executed `init.sh`.
 
-#### 1.5.1 Spark-Pi on local mode
+##### 1.5.1 Spark-Pi on local mode
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
 #!/bin/bash
@@ -333,7 +333,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-#### 1.5.2 Spark-Pi on local sgx mode
+##### 1.5.2 Spark-Pi on local sgx mode
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
 ```
 #!/bin/bash
@@ -356,7 +356,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 
 ```
-#### 1.5.3 Spark-Pi on client mode
+##### 1.5.3 Spark-Pi on client mode
 ![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
 
 ```
@@ -383,7 +383,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
-#### 1.5.4 Spark-Pi on cluster mode
+##### 1.5.4 Spark-Pi on cluster mode
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 
 ```
@@ -409,7 +409,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-#### 1.5.5 bigdl-ppml-submit.sh explanations
+##### 1.5.5 bigdl-ppml-submit.sh explanations
 
 bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 
@@ -501,7 +501,7 @@ sbin/start-thriftserver.sh
   local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
 ```
 
-#### 1.2.3 Start with bigdl-ppml-submit.sh
+##### 1.2.3 Start with bigdl-ppml-submit.sh
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
@@ -554,7 +554,128 @@ If you get the following results, then the thrift server is functioning normally
 |      Bob |        1 | Engineer |
 +----------+----------+----------+
 ```
+### 2. Enable transparent encryption
+To ensure data security, we need to encrypt and store data. For ease of use, we adopt transparent encryption. Here are a few ways to achieve transparent encryption:
+#### 2.1 HDFS Transparent Encryption
 
+If you use hdfs as warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information.
+##### 2.1.1 Start hadoop KMS(Key Management Service)
+1.	Make sure you can correctly start and use hdfs
+```
+hadoop fs -ls /
+```
+2.	Config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.)
+```xml
+<property>
+    <name>hadoop.security.key.provider.path</name>
+    <value>kms://http@your_hdfs_ip:your_selected_port/kms</value>
+    <description>
+        The KeyProvider to use when interacting with encryption keys used
+        when reading and writing to an encryption zone.
+    </description>
+</property>
+```
+3. Config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file.(Update all nodes as before)
+```xml
+<property>
+    <name>hadoop.kms.key.provider.uri</name>
+    <value>jceks://file@/${user.home}/kms.keystore</value>
+</property>
+```
+4. Restart you hdfs server.
+```bash
+bash $HADOOP_HOME/sbin/stop-dfs.sh
+bash $HADOOP_HOME/sbin/start-dfs.sh
+```
+5. Start KMS server.
+```bash
+hadoop --daemon start kms
+```
+6. Run this bash command to check if the KMS started
+```bash
+hadoop key list
+```
+
+##### 2.1.2 Use KMS to encrypt and decrypt data
+1. Create a new encryption key for an encryption zone
+```bash
+hadoop key create your_key
+```
+2.	Create a new empty directory(must) and make it an encryption zone
+```bash
+hdfs crypto -createZone -keyName your_key -path /empty_zone
+```
+3.	Get encryption information from the file
+```bash
+hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
+```
+4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml.It will be hotbooted after every update.
+**hint:**This should be set on name node.
+```xml
+<property>
+    <name>key.acl.your_key.ALL</name>
+    <value>use_a group_a</value>
+</property>
+```
+use_a group_a should be replaced with your user or group
+5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone. Please check encrypted zone:
+```bash
+hdfs crypto -listZones
+```
+6. Then set encryption zone as spark.sql.warehouse.dir.
+```conf
+spark.sql.warehouse.dir         hdfs://host:ip/path #encryption zone
+```
+7. Start thrift server as above.
+#### 2.2 Gramine file system encryption
+Gramine also has the ability to encrypt and decrypt data. You can see more information [here][fsdGuide].
+In this case, hdfs is not supported. If it is a stand-alone environment, the data can be directly stored locally. If it is a distributed environment, then the data can be stored on a distributed file system such as nfs. Let's take nfs as an example.
+1. Set `spark.sql.warehouse.dir`.
+```conf
+spark.sql.warehouse.dir         /ppml/encrypted-fsd
+```
+2. prepare plaintext
+Store the key in `plaintext` under `/ppml/encrypted_keys`. The length of the key must be greater than 16
+```bash
+echo 1234567812345678 > work/plaintext
+```
+3. set environment variables
+```bash
+export USING_LOCAL_DATA_KEY=true
+export LOCAL_DATA_KEY=/ppml/encrypted_keys/plaintextkey
+export ENCRYPTED_FSD=true
+```
+4. Modify files `spark-driver-template.yaml` and `spark-executor-template.yaml`
+uncomment and modify the content
+```yaml
+env:
+      - name: USING_LOCAL_DATA_KEY
+        value: true
+      - name: LOCAL_DATA_KEY
+        value: /ppml/encrypted_keys/plaintextkey
+      - name: ENCRYPTED_FSD
+        value: true
+······
+volumeMounts:
+      - name: nfs-storage
+        mountPath: /ppml/encrypted-fsd
+        subPath: encrypted-fsd
+      - name: nfs-storage
+        mountPath: /ppml/encrypted_keys
+        subPath: test_keys
+```
+5. Start Thrift Server as above.
+#### 2.3 Bigdl PPML Codec
+The jar package of bigdl ppml contains codec, which can realize transparent encryption. Just need to go through some settings to start.
+**attention:**This method is under development. The following content can only be used as an experimental demo and cannot be put into production.
+1. Start Thrift Server as above.
+2. Start beeline and set environment variables.
+```bash
+SET io.compression.codecs=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
+SET bigdl.kms.data.key=49554850515352504848545753575357; #Currently no interface is given for users to obtain
+SET hive.exec.compress.output=true;
+SET mapreduce.output.fileoutputformat.compress.codec=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
+```
 ## Configuration Explainations
 
 ### 1. Bigdl ppml SGX related configurations
@@ -646,3 +767,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
+[fsdGuide]:https://github.com/intel-analytics/BigDL/tree/main/ppml/base#how-to-use-the-encryptiondecryption-function-provided-by-gramine
