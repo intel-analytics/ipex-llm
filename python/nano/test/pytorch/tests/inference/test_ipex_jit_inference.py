@@ -398,6 +398,51 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.weights_prepack is False
+    
+    def test_ipex_jit_inference_onednn(self):
+        # test jit + ipex
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         use_ipex=True, input_sample=self.data_sample,
+                                         enable_onednn=True)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+            assert new_model.enable_onednn is True
+            if compare_version("torch", operator.ge, "1.12.0"):
+                # onednn fusion be added to torch from version 1.12
+                assert torch.jit.onednn_fusion_enabled() is True
+
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         use_ipex=True, input_sample=self.data_sample,
+                                         enable_onednn=False)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+            assert new_model.enable_onednn is False
+            if compare_version("torch", operator.ge, "1.12.0"):
+                # onednn fusion be added to torch from version 1.12
+                assert torch.jit.onednn_fusion_enabled() is False
+
+        # test jit
+        model = InferenceOptimizer.trace(self.model, accelerator="jit",
+                                         input_sample=self.data_sample,
+                                         enable_onednn=True)
+        with InferenceOptimizer.get_context(model):
+            model(self.data_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, self.model)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(self.data_sample)
+            assert new_model.enable_onednn is True
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):

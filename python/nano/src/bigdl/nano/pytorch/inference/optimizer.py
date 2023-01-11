@@ -516,6 +516,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = True,
                  inplace: bool = False,
                  weights_prepack: Optional[bool] = None,
+                 enable_onednn: bool = True,
                  q_config=None,
                  **kwargs):
         """
@@ -631,6 +632,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to
+                              ``True``, only valid when accelerator='jit', otherwise will
+                              be ignored. For more details, please refer https://github.com/
+                              pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -688,7 +695,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
                                                    jit_method=jit_method,
-                                                   weights_prepack=weights_prepack)
+                                                   weights_prepack=weights_prepack,
+                                                   enable_onednn=enable_onednn)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            input_sample=input_sample,
@@ -892,6 +900,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               logging: bool = True,
               inplace: bool = False,
               weights_prepack: Optional[bool] = None,
+              enable_onednn: bool = True,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -954,6 +963,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to 
+                              ``True``, only valid when accelerator='jit', otherwise will be
+                              ignored. For more details, please refer https://github.com/pytorch/
+                              pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -1015,7 +1030,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
                                        jit_strict=jit_strict, jit_method=jit_method,
-                                       weights_prepack=weights_prepack)
+                                       weights_prepack=weights_prepack,
+                                       enable_onednn=enable_onednn)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
