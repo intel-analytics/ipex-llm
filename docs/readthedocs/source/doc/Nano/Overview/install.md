@@ -75,7 +75,7 @@ In a conda environment, when you run `source bigdl-nano-init` manually, this com
 In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
 ## Python Version
-`bigdl-nano` is validated on Python 3.7.x-3.9.x.
+`bigdl-nano` is validated on Python 3.7-3.9.
 
 
 ## Operating System
