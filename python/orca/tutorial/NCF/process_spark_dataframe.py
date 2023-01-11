@@ -22,8 +22,8 @@ from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
 
-# user and item ids are converted to LongType to be compatible with lower versions of PyTorch
-# such as 1.7.1.
+# user and item ids and sparse features are converted to LongType to be compatible with
+# lower versions of PyTorch such as 1.7.1.
 
 sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
