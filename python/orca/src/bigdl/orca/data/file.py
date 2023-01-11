@@ -80,7 +80,9 @@ def open_image(path: str) -> "JpegImageFile":
         import pyarrow as pa
         fs = pa.hdfs.connect()
         with fs.open(path, 'rb') as f:
-            return Image.open(f)
+            image = Image.open(f)
+            image.load()
+            return image
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]

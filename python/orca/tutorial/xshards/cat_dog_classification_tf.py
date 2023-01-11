@@ -29,12 +29,12 @@ sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
 
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image.read_images_spark(path)
+data_shard = bigdl.orca.data.image.read_images_pil(path)
 
 def get_label(im):
     filename = im['origin']
     label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    return {'x': im['pilimage'], 'y': [label]}
+    return {'x': im['pilimage'], 'y': label}
 
 
 def crop(data):

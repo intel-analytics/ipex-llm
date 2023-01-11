@@ -1106,26 +1106,21 @@ class SparkXShards(XShards):
         return pdf
 
     def stack_feature_labels(self) -> "SparkXShards":
-        if self._get_class_name() != "builtins.dict":
+        if self._get_class_name() != "builtins.tuple":
             invalidInputError(False,
                               "Currently only support stack_feature_labels() on"
-                              " XShards of dictionary")
-        keys = self.rdd.first().keys()
-        if not (all(x in ['x', 'y'] for x in keys)):
-            invalidInputError(False,
-                              "features of x or labels of y do not exit")
+                              " XShards of tuple of features and labels")
 
         def per_partition(iterator):
             features = []
             labels = []
             for it in iterator:
-                feature = it['x']
-                label = it['y']
-                features.append(np.asarray(feature))
+                feature, label = it[0], it[1]
+                features.append(feature)
                 labels.append(label)
             out = {'x': np.array(features).astype(np.float32),
                    'y': np.array(labels).astype(np.float32)}
-            return out
+            return [out]
         rdd = self.rdd.mapPartitions(lambda x: per_partition(x))
         return SparkXShards(rdd)
 

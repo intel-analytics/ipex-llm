@@ -27,6 +27,7 @@ import torch.optim as optim
 
 from bigdl.orca import init_orca_context, stop_orca_context
 import numpy as np
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 import bigdl.orca.data.image
 from pyspark import SparkConf, SparkContext
@@ -34,10 +35,11 @@ from pyspark import SparkConf, SparkContext
 conf = {
     "spark.app.name": "myapp",
     "spark.local.dir": "/tmp",
-    'spark.executorEnv.ARROW_LIBHDFS_DIR':'/opt/cloudera/parcels/CDH/lib64'}
+    'spark.executorEnv.ARROW_LIBHDFS_DIR': '/opt/cloudera/parcels/CDH/lib64'}
 
 sc = init_orca_context(cluster_mode="local", cores=4, memory="4g", conf=conf)
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
+
 
 # executor_memory='40g'
 # executor_cores=20
@@ -51,31 +53,56 @@ path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 #
 # path = 'hdfs://172.16.0.105:8020/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image.read_images_spark(path)
 
+def get_label(file_name):
+    label = [1] if 'dog' in file_name.split('/')[-1] else [0]
+    return label
+
+
+data_shard = bigdl.orca.data.image.read_images_spark(path, get_label)
+
+data_shard = bigdl.orca.data.image.read_images_pil(path)
+print(data_shard.collect()[0])
+# import sys
+# sys.exit()
 
 def train_transform(im):
-    features = im['pilimage']
-    features = transforms.Resize((80, 80))(features)
-    features = transforms.RandomResizedCrop(80)(features)
+    features = im[0]
+    features = transforms.Resize((224, 224))(features)
+    features = transforms.RandomResizedCrop(224)(features)
     features = transforms.RandomHorizontalFlip()(features)
     features = transforms.ToTensor()(features)
-    im.update({'x': features})
-    return im
+    features = features.numpy()
+    return features, im[1]
 
-
-def get_label(im):
-    filename = im['origin']
-    label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    im.update({'y': label})
-    return im
-
+to_ndarray = lambda x: {'x': np.array([x[0]]).astype(np.float32),
+                        'y': np.array([x[1]]).astype(np.float32)}
 
 data_shard = data_shard.transform_shard(train_transform)
-data_shard = data_shard.transform_shard(get_label)
+# data_shard = data_shard.transform_shard(to_ndarray)
+# print(data_shard.collect()[0])
+print("******************")
 data_shard = data_shard.stack_feature_labels()
 
-print(len(data_shard))
+# data_shard = data_shard.transform_shard(to_ndarray)
+#
+
+def train_transform(im):
+    features = im[0]
+    features = transforms.Resize((224, 224))(features)
+    features = transforms.RandomResizedCrop(224)(features)
+    features = transforms.RandomHorizontalFlip()(features)
+    features = transforms.ToTensor()(features)
+    features = features.numpy()
+    return {'x': np.array([features]).astype(np.float32),
+            'y': np.array([im[1]]).astype(np.float32)}
+
+
+# data_shard = data_shard.transform_shard(train_transform)
+
+print("******************")
+print(data_shard.collect()[0]['x'].shape)
+print(data_shard.collect()[0]['y'].shape)
 
 
 class Cnn(nn.Module):
