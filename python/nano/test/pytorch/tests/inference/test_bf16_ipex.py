@@ -223,11 +223,11 @@ class Pytorch1_11:
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
         # test jit + ipex
-        model = InferenceOptimizer.trace(model, precision='bf16',
-                                         accelerator="jit",
-                                         use_ipex=True,
-                                         input_sample=x,
-                                         weights_prepack=False)
+        model = InferenceOptimizer.quantize(model, precision='bf16',
+                                            accelerator="jit",
+                                            use_ipex=True,
+                                            input_sample=x,
+                                            weights_prepack=False)
         with InferenceOptimizer.get_context(model):
             model(x)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -284,11 +284,11 @@ class Pytorch1_11:
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
         # test jit + ipex
-        model = InferenceOptimizer.trace(model, precision='bf16',
-                                         accelerator="jit",
-                                         use_ipex=True,
-                                         input_sample=x,
-                                         enable_onednn=True)
+        model = InferenceOptimizer.quantize(model, precision='bf16',
+                                            accelerator="jit",
+                                            use_ipex=True,
+                                            input_sample=x,
+                                            enable_onednn=True)
         with InferenceOptimizer.get_context(model):
             model(x)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
