@@ -47,9 +47,16 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @return
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
-    dataKeyPlainText = kms.retrieveDataKeyPlainText(
-      new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
-      sparkSession.sparkContext.hadoopConfiguration)
+    val kmsType = sparkSession.sparkContext.getConf.get(
+      "spark.bigdl.kms.type")
+    dataKeyPlainText = kmsType match {
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+      case _ =>
+        kms.retrieveDataKeyPlainText(
+          new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
+          sparkSession.sparkContext.hadoopConfiguration)
+    }
     sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
