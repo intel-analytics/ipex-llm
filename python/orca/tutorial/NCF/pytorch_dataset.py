@@ -28,7 +28,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from bigdl.orca.data.file import get_remote_dir_to_local, rmdir
 
-# user and item ids and sparse features are converted to int64 to be compatible with
+# user/item ids and sparse features are converted to int64 to be compatible with
 # lower versions of PyTorch such as 1.7.1.
 
 
@@ -97,6 +97,7 @@ def process_users_items(dataset_dir):
         local_data_dir += "/ml-1m"
     else:
         local_data_dir = dataset_dir
+
     users = pd.read_csv(
         os.path.join(local_data_dir, "users.dat"),
         sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
@@ -108,6 +109,7 @@ def process_users_items(dataset_dir):
         sep="::", header=None, names=["item", "category"],
         usecols=[0, 2], dtype={0: np.int64, 1: str},
         engine="python", encoding="latin-1")
+
     if dataset_dir.startswith("hdfs"):
         rmdir(local_data_dir)
 
@@ -153,11 +155,13 @@ def process_ratings(dataset_dir, user_num, item_num):
         local_data_dir += "/ml-1m"
     else:
         local_data_dir = dataset_dir
+
     ratings = pd.read_csv(
         os.path.join(local_data_dir, "ratings.dat"),
         sep="::", header=None, names=["user", "item"],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
         engine="python")
+
     if dataset_dir.startswith("hdfs"):
         rmdir(local_data_dir)
 
