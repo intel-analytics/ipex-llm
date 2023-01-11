@@ -127,7 +127,6 @@ jobs:
             orca-tutorial:
               - 'python/orca/tutorial/**'
               - '.github/actions/orca/orca-tutorial-xshards/**'
-              - '.github/workflows/PR_validation.yml'
 
   Friesian-Scala-UT:
     needs: changes
