@@ -351,3 +351,88 @@ class BaseTF2Forecaster(Forecaster):
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,
                    **kwargs)
+
+    def build_onnx(self, thread_num=None, sess_options=None):
+        '''
+        Build onnx model to speed up inference and reduce latency.
+        The method is Not required to call before predict_with_onnx,
+        evaluate_with_onnx or export_onnx_file.
+        It is recommended to use when you want to:
+        | 1. Strictly control the thread to be used during inferencing.
+        | 2. Alleviate the cold start problem when you call predict_with_onnx
+             for the first time.
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :param sess_options: an onnxruntime.SessionOptions instance, if you set this
+               other than None, a new onnxruntime session will be built on this setting
+               and ignore other settings you assigned(e.g. thread_num...).
+        Example:
+            >>> # to pre build onnx sess
+            >>> forecaster.build_onnx(thread_num=1)  # build onnx runtime sess for single thread
+            >>> pred = forecaster.predict_with_onnx(data)
+            >>> # ------------------------------------------------------
+            >>> # directly call onnx related method is also supported
+            >>> pred = forecaster.predict_with_onnx(data)
+        '''
+        import onnxruntime
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
+            invalidInputError(False,
+                              "sess_options should be an onnxruntime.SessionOptions instance"
+                              f", but found {type(sess_options)}")
+        if sess_options is None:
+            sess_options = onnxruntime.SessionOptions()
+            if thread_num is not None:
+                sess_options.intra_op_num_threads = thread_num
+                sess_options.inter_op_num_threads = thread_num
+        if self.distributed:
+            invalidInputError(False,
+                              "build_onnx has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        spec = tf.TensorSpec((1, self.model_config["past_seq_len"],
+                                 self.model_config["input_feature_num"]), tf.float32)
+        self.onnxruntime_fp32 = self.internal.trace(accelerator="onnxruntime", input_sample=spec)
+
+    def predict_with_onnx(self, data, batch_size=1):
+        """
+        Predict using a trained forecaster with onnxruntime. The method can only be
+        used when forecaster is a non-distributed version.
+        Directly call this method without calling build_onnx is valid and Forecaster will
+        automatically build an onnxruntime session with default settings.
+        :param data: The data support following formats:
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               |
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
+               | Forecaster will automatically process the TSDataset.
+               | By default, TSDataset will be transformed to a pytorch dataloader,
+               | which is memory-friendly while a little bit slower.
+               | Users may call `roll` on the TSDataset before calling `fit`
+               | Then the training speed will be faster but will consume more memory.
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time). Defaults
+               to 32. None for all-data-single-time inference.
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
+        """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.distributed:
+            invalidInputError(False,
+                              "ONNX inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
+        if isinstance(data, TSDataset):
+            data = data.to_tf_dataset(batch_size)
+        self.build_onnx()
+        return self.onnxruntime_fp32.predict(data)

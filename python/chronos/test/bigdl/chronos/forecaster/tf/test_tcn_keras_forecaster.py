@@ -252,5 +252,17 @@ class TestTCNForecaster(TestCase):
 
         stop_orca_context()
 
+    def test_tcn_forecaster_onnx_methods(self):
+        train_data, test_data = create_tsdataset(roll=True)
+        forecaster = TCNForecaster.from_tsdataset(train_data,
+                                                  num_channels=[16]*2)
+        forecaster.fit(train_data, epochs=3)
+        try:
+            pred = forecaster.predict(test_data)
+            pred_onnx = forecaster.predict_with_onnx(test_data)
+            np.testing.assert_almost_equal(pred, pred_onnx, decimal=5)
+        except ImportError:
+            pass
+
 if __name__ == '__main__':
     pytest.main([__file__])
