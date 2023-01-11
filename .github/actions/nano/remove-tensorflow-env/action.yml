@@ -1,10 +1,21 @@
 name: 'Remove Nano TensorFlow Env'
 description: 'remove nano tensorflow env'
 
+inputs:
+  os:
+    description: 'ubuntu or centos'
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Remove Conda Env
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export CONDA=$CONDA_HOME
+        fi
+
         $CONDA/bin/conda remove -n nano-tensorflow -y --all
+      env:
+        OS: ${{ inputs.os }}

@@ -5,6 +5,9 @@ inputs:
   python-version: 
     description: 'python version'
     required: true
+  os:
+    description: 'ubuntu or centos'
+    required: true
 
 runs:
   using: "composite"
@@ -12,7 +15,14 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        apt-get update && apt-get install -y wget libgl1
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          yum install -y gcc mesa-libGL
+          export CONDA=$CONDA_HOME
+        else
+          apt-get update && apt-get install -y wget libgl1
+        fi
 
         $CONDA/bin/conda remove -n nano-pytorch -y --all
         $CONDA/bin/conda create -n nano-pytorch -y python==${PYTHON_VERSION} setuptools==58.0.4
@@ -39,3 +49,4 @@ runs:
       env:
         PYTHON_VERSION: ${{ inputs.python-version }}
         IS_PR: ${{ github.event.pull_request != null }}
+        OS: ${{ inputs.os }}

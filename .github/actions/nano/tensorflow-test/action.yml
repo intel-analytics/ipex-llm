@@ -1,12 +1,23 @@
 name: 'Nano TensorFlow Test'
 description: 'run nano tensorflow test'
 
+inputs:
+  os:
+    description: 'ubuntu or centos'
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Run Nano TensorFlow Test (TensorFlow)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -16,10 +27,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Horovod)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -29,10 +47,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Ray)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -42,10 +67,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Automl)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -56,10 +88,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (INC)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -69,10 +108,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (OpenVINO)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -82,10 +128,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (ONNXRuntime)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -95,10 +148,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (NoteBook)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -108,10 +168,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Tutorial)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -124,10 +191,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (How To Guide)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
@@ -137,3 +211,4 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}

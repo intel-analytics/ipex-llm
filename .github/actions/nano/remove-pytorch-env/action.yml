@@ -1,10 +1,21 @@
 name: 'Remove Nano PyTorch Env'
 description: 'remove nano pytorch env'
 
+inputs:
+  os:
+    description: 'ubuntu or centos'
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Remove Conda Env
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export CONDA=$CONDA_HOME
+        fi
+
         $CONDA/bin/conda remove -n nano-pytorch -y --all
+      env:
+        OS: ${{ inputs.os }}

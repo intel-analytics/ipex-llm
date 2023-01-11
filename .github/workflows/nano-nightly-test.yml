@@ -23,7 +23,7 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   Nano-PyTorch-UT-Test:
-    runs-on: [ "ubuntu-20.04" ]
+    runs-on: [ "Gondolin-centos" ]
 
     strategy:
       fail-fast: false
@@ -36,10 +36,15 @@ jobs:
       uses: ./.github/actions/nano/setup-pytorch-env
       with:
         python-version: ${{ matrix.python-version }}
+        os: "centos"
     - name: Run Nano PyTorch Test
       uses: ./.github/actions/nano/pytorch-test
+      with:
+        os: "centos"
     - name: Remove Nano PyTorch Env
       uses: ./.github/actions/nano/remove-pytorch-env
+      with:
+        os: "centos"
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -53,7 +58,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Nano-Tensorflow-UT-Test:
-    runs-on: [ "ubuntu-20.04" ]
+    runs-on: [ "Gondolin-centos" ]
 
     strategy:
       fail-fast: false
@@ -66,10 +71,15 @@ jobs:
       uses: ./.github/actions/nano/setup-tensorflow-env
       with:
         python-version: ${{ matrix.python-version }}
+        os: "centos"
     - name: Run Nano Tensorflow Test
       uses: ./.github/actions/nano/tensorflow-test
+      with:
+        os: "centos"
     - name: Remove Nano Tensorflow Env
       uses: ./.github/actions/nano/remove-tensorflow-env
+      with:
+        os: "centos"
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}

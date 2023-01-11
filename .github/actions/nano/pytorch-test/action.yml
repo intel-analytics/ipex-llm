@@ -1,12 +1,23 @@
 name: 'Nano PyTorch Test'
 description: 'run nano pytorch test'
 
+inputs:
+  os:
+    description: 'ubuntu or centos'
+    required: true
+
 runs:
   using: "composite"
   steps:
     - name: Run Nano PyTorch Test (PyTorch)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -15,10 +26,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (Ray)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -27,10 +45,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (Automl)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -39,10 +64,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (INC)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -51,10 +83,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (OpenVINO)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -64,10 +103,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (ONNXRuntime)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -76,10 +122,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (IPEX)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -88,10 +141,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (Optimizer)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -101,10 +161,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (NoteBook)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -116,10 +183,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (Tutorial)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -133,10 +207,17 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano PyTorch Test (How To Guide)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          export CONDA=$CONDA_HOME
+        fi
+
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
@@ -148,3 +229,4 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
