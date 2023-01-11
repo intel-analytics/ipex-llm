@@ -85,13 +85,12 @@ class TrainingUtils:
             use_multiprocessing=use_multiprocessing,
         )
 
-        # adapt the different default param values of training_v1.Model and training.Model 
+        # adapt the different default param values of training_v1.Model and training.Model
         if isinstance(self, V1Model):
             if validation_batch_size is None:
                 fit_kwargs.pop("validation_batch_size")
             if verbose == "auto":
                 fit_kwargs["verbose"] = 1
-
 
         if num_processes is not None:
             if validation_data is not None:
