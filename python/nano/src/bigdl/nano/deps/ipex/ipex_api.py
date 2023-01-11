@@ -65,7 +65,7 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
            this knob overwrites the configuration set by level knob. Only valid when
            ``use_ipex=True``, otherwise will be ignored.
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
-           API, which provides a flexible API for aggressive fusion. Default to 
+           API, which provides a flexible API for aggressive fusion. Default to
            ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
@@ -97,7 +97,7 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
            this knob overwrites the configuration set by level knob. Only valid when
            ``use_ipex=True``, otherwise will be ignored.
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
-           API, which provides a flexible API for aggressive fusion. Default to 
+           API, which provides a flexible API for aggressive fusion. Default to
            ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model

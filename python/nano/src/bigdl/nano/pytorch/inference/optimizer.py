@@ -964,7 +964,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
-                              which provides a flexible API for aggressive fusion. Default to 
+                              which provides a flexible API for aggressive fusion. Default to
                               ``True``, only valid when accelerator='jit', otherwise will be
                               ignored. For more details, please refer https://github.com/pytorch/
                               pytorch/tree/master/torch/csrc/jit/codegen/
