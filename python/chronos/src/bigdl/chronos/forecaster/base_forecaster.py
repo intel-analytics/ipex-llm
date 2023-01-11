@@ -685,10 +685,8 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
 
-        if self.optimized_model_thread_num is not None and \
-        self.optimized_model_thread_num != self.thread_num:
-            self.thread_num = self.optimized_model_thread_num
-            torch.set_num_threads(self.thread_num)
+        if quantize or not acceleration:
+            self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -794,10 +792,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
-        if self.optimized_model_thread_num is not None and \
-        self.optimized_model_thread_num != self.thread_num:
-            self.thread_num = self.optimized_model_thread_num
-            torch.set_num_threads(self.thread_num)
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -819,6 +814,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -870,10 +867,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
-        if self.optimized_model_thread_num is not None and \
-        self.optimized_model_thread_num != self.thread_num:
-            self.thread_num = self.optimized_model_thread_num
-            torch.set_num_threads(self.thread_num)
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -896,6 +890,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -947,10 +943,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
-        if self.optimized_model_thread_num is not None and \
-        self.optimized_model_thread_num != self.thread_num:
-            self.thread_num = self.optimized_model_thread_num
-            torch.set_num_threads(self.thread_num)
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -973,6 +966,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "jit_fp32":
                 self.build_jit()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -1275,10 +1270,7 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
-        if self.optimized_model_thread_num is not None and \
-        self.optimized_model_thread_num != self.thread_num:
-            self.thread_num = self.optimized_model_thread_num
-            torch.set_num_threads(self.thread_num)
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         # step1, according to validation dataset, calculate inherent noise
         if not hasattr(self, "data_noise"):
@@ -1742,7 +1734,6 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.nano.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
-        from .utils import get_exported_module
         from pathlib import Path
         if self.distributed:
             invalidInputError(False,

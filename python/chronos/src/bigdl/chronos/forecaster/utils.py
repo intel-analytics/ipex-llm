@@ -35,7 +35,9 @@ __all__ = ['loader_to_creator',
            'read_csv',
            'delete_folder',
            'is_main_process',
-           'xshard_expand_dim']
+           'xshard_expand_dim',
+           'get_exported_module',
+           'set_pytorch_thread']
 
 
 def loader_to_creator(loader):
@@ -218,3 +220,13 @@ def get_exported_module(tsdata, forecaster_path, drop_dtcol):
     inference = torch.jit.load(forecaster_path)
 
     return torch.jit.script(ExportForecastingPipeline(preprocess, inference, postprocess))
+
+
+def set_pytorch_thread(optimized_model_thread_num, thread_num):
+    if optimized_model_thread_num is None:
+        from bigdl.nano.common.cpu_schedule import get_cpu_info
+        optimized_model_thread_num = len(get_cpu_info()[0])
+    if optimized_model_thread_num != thread_num:
+        thread_num = optimized_model_thread_num
+        torch.set_num_threads(thread_num)
+    return thread_num
