@@ -27,7 +27,7 @@ from sklearn.model_selection import train_test_split
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
-# user and item ids and sparse features are converted to int64 to be compatible with
+# user/item ids and sparse features are converted to int64 to be compatible with
 # lower versions of PyTorch such as 1.7.1.
 
 sparse_features = ["zipcode", "gender", "category", "occupation"]
@@ -93,11 +93,12 @@ def prepare_data(dataset_dir, num_ng=4):
 
     print("Processing features...")
 
-    # Categorical encoding
+
     def convert_to_long(shard, col):
         shard[col] = shard[col].astype(np.int64)
         return shard
 
+    # Categorical encoding
     for col in sparse_features[:-1]:  # occupation is already indexed.
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
