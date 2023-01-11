@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ## Usage ################################
-# ./bigdl-nano-init <command to run under openmp and jemalloc environment variables>
+# source bigdl-nano-init [-o] [--option]
 # Example:
-# bigdl-nano-init python pytorch-lenet.py --device ipex
+# source bigdl-nano-init -t --disable-openmp # enable tcmalloc and disable intel-openmp
 #########################################
 
 
@@ -16,11 +16,19 @@ function disable-openmp-var {
 function enable-jemalloc-var {
     echo "Option: Enable jemalloc and set related variables"
     export ENABLE_JEMALLOC_VAR=1
+    unset ENABLE_TCMALLOC_VAR
 }
 
-function disable-tcmalloc-var {
-    echo "Option: Disable tcmalloc and unset related variables"
-    export DISABLE_TCMALLOC_VAR=1
+function enable-tcmalloc-var {
+	echo "Option: Enable tcmalloc and set related variables"
+	export ENABLE_TCMALLOC_VAR=1
+	unset ENABLE_JEMALLOC_VAR
+}
+
+function disable-allocator {
+    echo "Option: Disable jemalloc and tcmalloc and unset related variables"
+    unset ENABLE_JEMALLOC_VAR
+    unset ENABLE_TCMALLOC_VAR
 }
 
 function enable-perf-var {
@@ -35,29 +43,29 @@ function display-error {
 }
 
 function display-help {
-    echo "Usage: bigdl-nano-run [-o] [-j] <subcommand>"
+    echo "Usage: source bigdl-nano-init [-o] [--option]"
         echo ""
-        echo "bigdl-nano-run is a tool to automatically configure and run the subcommand under"
+        echo "bigdl-nano-init is a tool to automatically configure and run the subcommand under"
         echo "environment variables for accelerating pytorch."
         echo ""
         echo "Optional options:"
         echo "    -h, --help                Display this help message and exit."
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
-        echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
-        echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
+        echo "    -j, --enable-jemalloc     Enable jemalloc and set related variables (default)"
+        echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
+        echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
 }
 
 # Init
-OPENMP=0
-JEMALLOC=1
-TCMALLOC=1
+export ENABLE_JEMALLOC_VAR=1
+unset ENABLE_TCMALLOC_VAR
 # Set TF_ENABLE_ONEDNN_OPTS
 export TF_ENABLE_ONEDNN_OPTS=1
 
 OPTIND=1
 
-while getopts ":ojhcp-:" opt; do
+while getopts ":ojhtcp-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -65,14 +73,16 @@ while getopts ":ojhcp-:" opt; do
                     disable-openmp-var
                     ;;
                 enable-jemalloc)
-                    disable-tcmalloc-var
                     enable-jemalloc-var
                     ;;
-                disable-tcmalloc)
-                    disable-tcmalloc-var
+                enable-tcmalloc)
+                    enable-tcmalloc-var
+                    ;;
+                disable-allocator)
+                    disable-allocator
                     ;;
                 perf)
-                        enable-perf-var
+                    enable-perf-var
                     ;;
                 help)
                     display-help
@@ -89,11 +99,13 @@ while getopts ":ojhcp-:" opt; do
             disable-openmp-var
             ;;
         j )
-            disable-tcmalloc-var
             enable-jemalloc-var
             ;;
+        t )
+            enable-tcmalloc-var
+            ;;
         c )
-            disable-tcmalloc-var
+            disable-allocator
             ;;
         p )
             enable-perf-var
@@ -101,7 +113,7 @@ while getopts ":ojhcp-:" opt; do
         h )
             display-help
             return 0
-            ;;	
+            ;;
         \? )
             display-error $OPTARG
             return 1
@@ -126,7 +138,7 @@ PYTHON_VERSION=$(python3 -c "import platform; major, mnior, patch = platform.pyt
 
 NANO_DIR="$(dirname "$(python3 -c "import bigdl; print(bigdl.__file__)")")/nano/"
 
-
+OPENMP=0
 # Detect Intel openMP library
 if [ -f "${LIB_DIR}/libiomp5.so" ]; then
     echo "OpenMP library found..."
@@ -151,11 +163,11 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
     echo "Setting KMP_AFFINITY..."
     export KMP_AFFINITY=granularity=fine,none
 
-        if [[ "${PERF_VAR}" == "1" ]]; then
-            # experiment variable to speed up performance.
-            export OPENMP=0
-            export KMP_AFFINITY=granularity=fine,compact,1,0
-        fi
+    if [[ "${PERF_VAR}" == "1" ]]; then
+        # experiment variable to speed up performance.
+        export OPENMP=0
+        export KMP_AFFINITY=granularity=fine,compact,1,0
+    fi
 
     echo "Setting KMP_BLOCKTIME..."
     export KMP_BLOCKTIME=1
@@ -175,8 +187,7 @@ if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
 fi
 
 # Set JEMALLOC lib path
-if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
-    DISABLE_TCMALLOC_VAR=1
+if [[ ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
     if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
         JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
     elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
@@ -185,10 +196,7 @@ if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
     # if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
     # extra space on the left or right sides, use echo to remove them
     export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
-fi
-
-# Set TCMALLOC lib path
-if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
+elif [[ ! -z "${ENABLE_TCMALLOC_VAR:-}" ]]; then
     if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
         TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
     elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
@@ -211,13 +219,13 @@ if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
     unset DISABLE_OPENMP_VAR
     export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
 fi
+
 if [ -z "${ENABLE_JEMALLOC_VAR:-}" ]; then
     unset MALLOC_CONF
     export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
 fi
 
-if [ ! -z "${DISABLE_TCMALLOC_VAR:-}" ]; then
-    unset DISABLE_TCMALLOC_VAR
+if [ -z "${ENABLE_TCMALLOC_VAR:-}" ]; then
     export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
 fi
 
