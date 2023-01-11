@@ -158,8 +158,9 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.28.1-ubuntu20.04 as ppml
+FROM intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:occlum-0.28.1 as ppml
 
+RUN rm -rf /opt/test/
 ARG BIGDL_VERSION=2.1.0
 ARG SPARK_VERSION
 ARG HADOOP_VERSION

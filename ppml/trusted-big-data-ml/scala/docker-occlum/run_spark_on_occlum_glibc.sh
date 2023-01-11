@@ -355,7 +355,7 @@ run_spark_gbt() {
     build_spark
     echo -e "${BLUE}occlum run BigDL Spark GBT${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
