@@ -223,7 +223,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    jit_strict=status.get('jit_strict', True),
                                    jit_method=status.get('jit_method', None),
                                    weights_prepack=status.get('weights_prepack', None),
-                                   enable_onednn=statue.get('enable_onednn', True))
+                                   enable_onednn=status.get('enable_onednn', True))
 
     def _save_model(self, path):
         if self.use_jit:
