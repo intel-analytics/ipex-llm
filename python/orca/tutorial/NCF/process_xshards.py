@@ -92,6 +92,7 @@ def prepare_data(dataset_dir, num_ng=4):
     item_num = max(item_set) + 1
 
     print("Processing features...")
+
     # Categorical encoding
     def convert_to_long(shard, col):
         shard[col] = shard[col].astype(np.int64)
