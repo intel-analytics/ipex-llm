@@ -27,8 +27,8 @@ from sklearn.model_selection import train_test_split
 from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data.transformer import StringIndexer, MinMaxScaler
 
-# user and item ids are converted to int64 to be compatible with lower versions of PyTorch
-# such as 1.7.1.
+# user and item ids and sparse features are converted to int64 to be compatible with
+# lower versions of PyTorch such as 1.7.1.
 
 sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
@@ -38,7 +38,7 @@ def ng_sampling(data, user_num, item_num, num_ng):
     data_X = data.values.tolist()
 
     # calculate a dok matrix
-    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int64)
+    train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
     for row in data_X:
         train_mat[row[0], row[1]] = 1
 
@@ -93,7 +93,7 @@ def prepare_data(dataset_dir, num_ng=4):
 
     print("Processing features...")
     # Categorical encoding
-    def convert_datatype(shard, col):
+    def convert_to_long(shard, col):
         shard[col] = shard[col].astype(np.int64)
         return shard
 
@@ -101,10 +101,10 @@ def prepare_data(dataset_dir, num_ng=4):
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
             users = indexer.fit_transform(users)
-            users = users.transform_shard(lambda shard: convert_datatype(shard, col))
+            users = users.transform_shard(lambda shard: convert_to_long(shard, col))
         else:
             items = indexer.fit_transform(items)
-            items = items.transform_shard(lambda shard: convert_datatype(shard, col))
+            items = items.transform_shard(lambda shard: convert_to_long(shard, col))
 
     # Calculate input_dims for each sparse features
     sparse_feats_input_dims = []
