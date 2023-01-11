@@ -25,6 +25,9 @@ from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 from bigdl.dllib.nncontext import init_nncontext
+from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
+from bigdl.orca.learn.utils import process_xshards_of_pandas_dataframe,\
+                                   add_predict_to_pd_xshards
 
 from openvino.inference_engine import IECore
 import numpy as np
@@ -60,6 +63,7 @@ class OpenvinoEstimator(SparkEstimator):
     def predict(self,  # type: ignore[override]
                 data: Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]],
                 feature_cols: Optional[List[str]] = None,
+                label_cols: Optional[List[str]] = None,
                 batch_size: Optional[int] = 4,
                 input_cols: Optional[Union[str, List[str]]]=None
                 ) -> Optional[Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]]]:
@@ -224,31 +228,29 @@ class OpenvinoEstimator(SparkEstimator):
                                   "x in each shard should be a ndarray or a list of ndarray.")
             return feature_data
 
+        def update_result_shard(data):
+            shard, y = data
+            pred_list = []
+            for i in range(len(y)):
+                pred_list.append(y[i].tolist())
+            shard["prediction"] = pred_list
+            return shard
+
         if isinstance(data, DataFrame):
-            from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
-            is_df = True
-            schema = data.schema
-            result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
+            xshards = spark_df_to_pd_sparkxshards(data)
+            pd_sparkxshards = process_xshards_of_pandas_dataframe(xshards,
+                                                                  feature_cols=feature_cols,
+                                                                  label_cols=label_cols)
 
-            # Deal with types
-            result_struct = []
-            for key, shape in self.output_dict.items():
-                struct_type = FloatType()
-                for _ in range(len(shape)):
-                    struct_type = ArrayType(struct_type)  # type: ignore
-                result_struct.append(StructField(key, struct_type))
+            transformed_data = pd_sparkxshards.transform_shard(predict_transform, batch_size)
+            result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
 
-            schema = StructType(schema.fields + result_struct)
-            result_df = result.toDF(schema)
-            return result_df
+            pred_shards = SparkXShards(pd_sparkxshards.rdd.zip(result_rdd).map(update_result_shard))
+            res_shards = add_predict_to_pd_xshards(xshards, pred_shards)
+            return res_shards.to_spark_df()
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-
-            def update_result_shard(data):
-                shard, y = data
-                shard["prediction"] = y
-                return shard
             return SparkXShards(result_rdd)
         elif isinstance(data, (np.ndarray, list)):
             if isinstance(data, np.ndarray):
