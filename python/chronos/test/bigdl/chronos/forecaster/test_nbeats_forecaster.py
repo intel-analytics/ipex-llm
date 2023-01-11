@@ -752,7 +752,7 @@ class TestChronosNBeatsForecaster(TestCase):
         assert forecaster.optimized_model_thread_num == 1
 
         num = max(1, original_thread//2)
-        forecaster.quantize(test_data, thread_num=num)
+        forecaster.quantize(train_data, thread_num=num)
         pred = forecaster.predict(test_data[0], quantize=True)
         current_thread = torch.get_num_threads()
         assert current_thread == num
@@ -761,8 +761,11 @@ class TestChronosNBeatsForecaster(TestCase):
 
         # if set `optimize=False`, keep the current thread num
         num = max(1, current_thread//2)
-        forecaster.optimize(test_data, thread_num=num, acceleration=False)
-        pred = forecaster.predict(test_data[0])
+        forecaster.optimize(train_data=train_data,
+                            validation_data=val_data,
+                            batch_size=32,
+                            thread_num=num)
+        pred = forecaster.predict(test_data[0], acceleration=False)
         new_current_thread = torch.get_num_threads()
         assert new_current_thread == current_thread
         assert forecaster.thread_num == current_thread
