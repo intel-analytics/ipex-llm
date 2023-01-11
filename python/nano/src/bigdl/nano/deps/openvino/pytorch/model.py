@@ -32,7 +32,7 @@ from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, precision='fp32',
                  thread_num=None, device='CPU', dynamic_axes=True,
-                 logging=True, config=None, **export_kwargs):
+                 logging=True, config=None, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -46,7 +46,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param thread_num: a int represents how many threads(cores) is needed for
                            inference. default: None.
         :param device: A string represents the device of the inference. Default to 'CPU'.
-                       'CPU', 'GPU' and 'VPU' are supported for now.
+                       'CPU', 'GPU' and 'VPUX' are supported for now.
         :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
                              will have the first dim of each Tensor input as a dynamic batch_size.
                              If dynamic_axes=False, the exported model will have the shapes of all
@@ -63,7 +63,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param config: The config to be inputted in core.compile_model.
-        :param **export_kwargs: will be passed to torch.onnx.export function.
+        :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
         """
         ov_model_path = model
         with TemporaryDirectory() as tmpdir:
@@ -74,11 +74,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                     dynamic_axes = False
                 export(model, input_sample, str(tmpdir / 'tmp.xml'),
                        precision=precision, dynamic_axes=dynamic_axes,
-                       logging=logging, **export_kwargs)
+                       logging=logging, **kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
 
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
+                                          precision=precision,
                                           thread_num=thread_num,
                                           config=config)
             super().__init__(None)
@@ -163,7 +164,11 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                                   n_requests=n_requests, sample_size=sample_size)
         # below code will re-define a new object, and original attrs will be lost.
         # return PytorchOpenVINOModel(model, thread_num=thread_num, config=config)
-        self.__init__(model, thread_num=thread_num, config=config)
+        self.__init__(model,
+                      device=self.ov_model._device,
+                      thread_num=thread_num,
+                      precision='int8',
+                      config=config)
         return self
 
     def _save_model(self, path):

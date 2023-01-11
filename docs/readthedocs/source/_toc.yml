@@ -38,23 +38,19 @@ subtrees:
                 - file: doc/Orca/Overview/distributed-training-inference
                 - file: doc/Orca/Overview/distributed-tuning
                 - file: doc/Orca/Overview/ray
-          - file: doc/Orca/QuickStart/index
-            title: "Quickstarts"
-            subtrees:
-              - entries:
-                - file: doc/Orca/QuickStart/orca-tf2keras-quickstart
-                - file: doc/Orca/QuickStart/orca-pytorch-quickstart
-                - file: doc/Orca/QuickStart/ray-quickstart
-                - file: doc/Orca/QuickStart/orca-tf-quickstart
-                - file: doc/Orca/QuickStart/orca-keras-quickstart
           - file: doc/Orca/Howto/index
             title: "How-to Guides"
             subtrees:
               - entries:
+                - file: doc/Orca/Howto/tf2keras-quickstart
+                - file: doc/Orca/Howto/pytorch-quickstart
+                - file: doc/Orca/Howto/ray-quickstart
                 - file: doc/Orca/Howto/spark-dataframe
                 - file: doc/Orca/Howto/xshards-pandas
-                - file: doc/Orca/Howto/orca-autoestimator-pytorch-quickstart
-                - file: doc/Orca/Howto/orca-autoxgboost-quickstart
+                - file: doc/Orca/Howto/autoestimator-pytorch-quickstart
+                - file: doc/Orca/Howto/autoxgboost-quickstart
+                - file: doc/Orca/Howto/tf1-quickstart
+                - file: doc/Orca/Howto/tf1keras-quickstart
           - file: doc/Orca/Tutorial/index
             title: "Tutorials"
             subtrees:
@@ -83,6 +79,7 @@ subtrees:
                 - entries:
                   - file: doc/Nano/Overview/pytorch_train
                   - file: doc/Nano/Overview/pytorch_inference
+                  - file: doc/Nano/Overview/pytorch_cuda_patch
                   - file: doc/Nano/Overview/tensorflow_train
                   - file: doc/Nano/Overview/tensorflow_inference
                   - file: doc/Nano/Overview/hpo
@@ -104,15 +101,20 @@ subtrees:
               title: "How-to Guides"
               subtrees:
                 - entries:
+                  - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
                   - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
                   - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline
                   - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
                   - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
+                  - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
+                  - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
@@ -128,6 +130,10 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
+                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
@@ -207,6 +213,8 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_export_torchscript_files
                 - file: doc/Chronos/Howto/how_to_preprocess_my_data
                 - file: doc/Chronos/Howto/how_to_process_data_in_production_environment
+                - file: doc/Chronos/Howto/how_to_choose_forecasting_alg
+                - file: doc/Chronos/Howto/how_to_export_data_processing_pipeline_to_torchscript
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:

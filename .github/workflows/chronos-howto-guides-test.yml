@@ -108,7 +108,6 @@ jobs:
           pip install -i https://pypi.python.org/simple python/chronos/src/dist/bigdl_chronos_*-py3-none-manylinux1_x86_64.whl
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
-          export PYTHONPATH=$PYTHONPATH:/home/user/wangning/BigDL/python/chronos/src/
           bash python/chronos/dev/test/run-benchmark-tool.sh
           source deactivate
           conda remove -n chronos-benchmakr-tool-env -y --all

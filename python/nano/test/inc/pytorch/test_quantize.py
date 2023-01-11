@@ -83,7 +83,7 @@ class TestTrainer(TestCase):
         # Case 2: Override by arguments
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
-                                             metric=torchmetrics.F1(10),
+                                             metric=torchmetrics.F1Score('multiclass', num_classes=10),
                                              approach='static',
                                              tuning_strategy='basic',
                                              accuracy_criterion={'relative': 0.99,
@@ -108,7 +108,7 @@ class TestTrainer(TestCase):
         # Case 5: Test if registered metric can be fetched successfully
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
-                                             metric=torchmetrics.F1(10),
+                                             metric=torchmetrics.F1Score('multiclass', num_classes=10),
                                              accuracy_criterion={'relative': 0.99,
                                                                 'higher_is_better': True})
         assert qmodel

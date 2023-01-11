@@ -1191,3 +1191,112 @@ class TSDataset:
             self.best_cycle_length = int(res.max())
 
         return self.best_cycle_length
+
+    def export_jit(self, path_dir=None, drop_dt_col=True):
+        """
+        Exporting data processing pipeline to torchscript so that it can be used without
+        Python environment. For example, when you are deploying a trained model in C++
+        and need to process input data, you can call this method to get a torchscript module
+        containing the data processing pipeline and save it in a .pt file when you finish
+        developing the model, when deploying, you can load the torchscript module from .pt
+        file and run the data processing pipeline in C++ using libtorch APIs, and the output
+        tensor can be fed into the trained model for inference.
+
+        Currently we support exporting preprocessing (scale and roll) and postprocessing (unscale)
+        to torchscript, they can do the same thing as the following code:
+
+        >>> # preprocess
+        >>> tsdata.scale(scaler, fit=False) \\
+        >>>       .roll(lookback, horizon, is_predict=True)
+        >>> preprocess_output = tsdata.to_numpy()
+        >>> # postprocess
+        >>> # "data" can be the output of model inference
+        >>> postprocess_output = tsdata.unscale_numpy(data)
+
+        Preprocessing and postprocessing will be converted to separate torchscript modules, so two
+        modules will be returned and saved.
+
+        When deploying, the compiled torchscript module can be used by:
+
+        >>> // deployment in C++
+        >>> #include <torch/torch.h>
+        >>> #include <torch/script.h>
+        >>> // create input tensor from your data
+        >>> // the data to create input tensor should have the same format as the
+        >>> // data used in developing
+        >>> torch::Tensor input_tensor = create_input_tensor(data);
+        >>> // load the module
+        >>> torch::jit::script::Module preprocessing;
+        >>> preprocessing = torch::jit::load(preprocessing_path);
+        >>> // run data preprocessing
+        >>> torch::Tensor preprocessing_output = preprocessing.forward(input_tensor).toTensor();
+        >>> // inference using your trained model
+        >>> torch::Tensor inference_output = trained_model(preprocessing_output)
+        >>> // load the postprocessing module
+        >>> torch::jit::script::Module postprocessing;
+        >>> postprocessing = torch::jit::load(postprocessing_path);
+        >>> // run postprocessing
+        >>> torch::Tensor output = postprocessing.forward(inference_output).toTensor()
+
+        Currently there are some limitations:
+            1. Please make sure the value of each column can be converted to Pytorch tensor,
+               for example, id "00" is not allowed because str can not be converted to a tensor,
+               you should use integer (0, 1, ..) as id instead of string.
+            2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this
+               pipeline:
+                    a. If self.roll_additional_feature is not None, it can't be processed in scale
+                       and roll
+                    b. id_sensitive, time_enc and label_len parameter is not supported in roll
+            3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
+               Single roll operation is not supported for converting now.
+
+        :param path_dir: The path to save the compiled torchscript modules, default to None.
+               If set to None, you should call torch.jit.save() in your code to save the returned
+               modules; if not None, the path should be a directory, and the modules will be saved
+               at "path_dir/tsdata_preprocessing.pt" and "path_dir/tsdata_postprocessing.pt".
+        :param drop_dtcol: Whether to delete the datetime column, defaults to True. Since datetime
+               value (like "2022-12-12") can't be converted to Pytorch tensor, you can choose
+               different ways to workaround this. If set to True, the datetime column will be
+               deleted, then you also need to skip the datetime column when reading data from data
+               source (like csv files) in deployment environment to keep the same structure as the
+               data used in development; if set to False, the datetime column will not be deleted,
+               and you need to make sure the datetime colunm can be successfully converted to
+               Pytorch tensor when reading data in deployment environment. For example, you can set
+               each data in datetime column to an int (or other vaild types) value, since datetime
+               column is not necessary in preprocessing and postprocessing, the value can be
+               arbitrary.
+
+        :return: A tuple (preprocessing_module, postprocessing_module) containing the compiled
+                 torchscript modules.
+
+        """
+        from bigdl.chronos.data.utils.export_torchscript \
+            import export_processing_to_jit, get_index
+        import torch
+        import os
+
+        if drop_dt_col:
+            self.df.drop(columns=self.dt_col, inplace=True)
+
+        # target_feature_index: index of target col and feature col, will be used in scale and roll
+        id_index, target_feature_index = get_index(self.df, self.id_col,
+                                                   self.target_col, self.feature_col)
+
+        preprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
+                                                        id_index,
+                                                        target_feature_index,
+                                                        self.scaler_index,
+                                                        "preprocessing")
+        postprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
+                                                         id_index,
+                                                         target_feature_index,
+                                                         self.scaler_index,
+                                                         "postprocessing")
+
+        if path_dir:
+            preprocess_path = os.path.join(path_dir, "tsdata_preprocessing.pt")
+            postprocess_path = os.path.join(path_dir, "tsdata_postprocessing.pt")
+            torch.jit.save(preprocessing_module, preprocess_path)
+            torch.jit.save(postprocessing_module, postprocess_path)
+
+        return preprocessing_module, postprocessing_module

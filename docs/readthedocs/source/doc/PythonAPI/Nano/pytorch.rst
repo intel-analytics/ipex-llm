@@ -10,7 +10,7 @@ bigdl.nano.pytorch.Trainer
     :exclude-members: accelerator_connector, checkpoint_connector, reload_dataloaders_every_n_epochs, limit_val_batches, logger, logger_connector, state
 
 bigdl.nano.pytorch.InferenceOptimizer
----------------------------
+---------------------------------------
 
 .. autoclass:: bigdl.nano.pytorch.InferenceOptimizer
     :members:
@@ -21,23 +21,24 @@ bigdl.nano.pytorch.InferenceOptimizer
 TorchNano API
 ---------------------------
 
-.. automodule:: bigdl.nano.pytorch.torch_nano
+.. autoclass:: bigdl.nano.pytorch.TorchNano
     :members:
     :undoc-members:
     :exclude-members: run
 
+.. autofunction:: bigdl.nano.pytorch.nano
+
 Patch API
 ---------------------------
 
-.. automodule:: bigdl.nano.pytorch.dispatcher
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autofunction:: bigdl.nano.pytorch.patch_torch
 
-.. automodule:: bigdl.nano.pytorch.patching.gpu_cpu.gpu_cpu
-    :members: patch_cuda, unpatch_cuda
-    :show-inheritance:
+.. autofunction:: bigdl.nano.pytorch.unpatch_torch
 
-.. automodule:: bigdl.nano.pytorch.patching.dtype_patching.dtype_patching
-    :members: patch_dtype
-    :show-inheritance:
+.. autofunction:: bigdl.nano.pytorch.patching.patch_cuda
+
+.. autofunction:: bigdl.nano.pytorch.patching.unpatch_cuda
+
+.. autofunction:: bigdl.nano.pytorch.patching.patch_dtype
+    
+.. autofunction:: bigdl.nano.pytorch.patching.patch_encryption

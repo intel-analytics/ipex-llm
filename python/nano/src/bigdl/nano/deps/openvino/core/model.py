@@ -25,11 +25,13 @@ import numpy as np
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str, device='CPU', thread_num=None, config=None):
+    def __init__(self, ie_network: str, device='CPU', precision='fp32',
+                 thread_num=None, config=None):
         self._ie = Core()
         # check device
         self._check_device(self._ie, device)
         self._device = device
+        self._precision = precision
         self.thread_num = thread_num
         self.additional_config = config
         self.ie_network = ie_network
@@ -42,7 +44,7 @@ class OpenVINOModel:
         return self._infer_request.infer(list(inputs))
 
     def on_forward_end(self, outputs):
-        arrays = tuple(map(lambda x: x, outputs.values()))
+        arrays = tuple(outputs.values())
         if len(arrays) == 1:
             arrays = arrays[0]
         return arrays
@@ -57,9 +59,12 @@ class OpenVINOModel:
 
     def _check_device(self, ie, device):
         devices = ie.available_devices
+        if device == 'GPU' and 'GPU.0' in devices:
+            # GPU is equivalent to GPU.0
+            return True
         invalidInputError(device in devices,
-                          "Your machine don't have {} device, please modify the incoming "
-                          "device value.".format(device))
+                          "Your machine don't have {} device (only have {}), please modify "
+                          "the incoming device value.".format(device, ",".join(list(devices))))
 
     @property
     def forward_args(self):
@@ -85,8 +90,8 @@ class OpenVINOModel:
         self._compiled_model = self._ie.compile_model(model=self.ie_network,
                                                       device_name=self._device,
                                                       config=config)
-        self.final_config = config
         self._infer_request = self._compiled_model.create_infer_request()
+        self.final_config = config
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 

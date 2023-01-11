@@ -77,7 +77,6 @@ y_hat.argmax(dim=1)
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
 from bigdl.nano.pytorch import InferenceOptimizer
-from torchmetrics import Accuracy
 ov_q_model = InferenceOptimizer.quantize(model, accelerator="openvino", calib_data=data_loader)
 
 # run simple prediction

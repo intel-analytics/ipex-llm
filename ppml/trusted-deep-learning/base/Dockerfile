@@ -41,13 +41,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # Small examples for PyTorch
-ADD ./mnist.py        /ppml/examples/mnist.py
-ADD ./pert.py         /ppml/examples/pert.py
-ADD ./pert_ipex.py    /ppml/examples/pert_ipex.py
-ADD ./load_save_ex.py /ppml/examples/load_save_ex.py
+ADD ./mnist.py                   /ppml/examples/mnist.py
+ADD ./pert.py                    /ppml/examples/pert.py
+ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
+ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
-ADD ./bash.manifest.template.patch /bash.manifest.template.patch
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
@@ -115,8 +114,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /ppml/bigdl-ppml/ && \
     cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
     rm -rf /ppml/BigDL && \
-    cd /ppml && \
-    patch /ppml/bash.manifest.template /bash.manifest.template.patch
+    cd /ppml
 
 ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml/src
 

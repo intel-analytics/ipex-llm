@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          thread_num=None, device='CPU',
                          dynamic_axes=True, logging=True,
-                         config=None, **export_kwargs):
+                         config=None, **kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -49,7 +49,7 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          If accelerator != 'openvino'/'onnxruntime', it will be ignored.
     :param logging: whether to log detailed information of model conversion. default: True.
     :param config: The config to be inputted in core.compile_model.
-    :param **export_kwargs: will be passed to torch.onnx.export function.
+    :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
     from .pytorch.model import PytorchOpenVINOModel
@@ -61,28 +61,40 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 dynamic_axes=dynamic_axes,
                                 logging=logging,
                                 config=config,
-                                **export_kwargs)
+                                **kwargs)
 
 
-def load_openvino_model(path, device=None):
+def load_openvino_model(path, framework='pytorch', device=None):
     """
     Load an OpenVINO model for inference from directory.
 
     :param path: Path to model to be loaded.
+    :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel._load(path, device=device)
+    if framework == 'pytorch':
+        from .pytorch.model import PytorchOpenVINOModel
+        return PytorchOpenVINOModel._load(path, device=device)
+    elif framework == 'tensorflow':
+        from .tf.model import KerasOpenVINOModel
+        return KerasOpenVINOModel._load(path, device=device)
+    else:
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
-                       device='CPU', config=None, logging=True):
+def KerasOpenVINOModel(model, input_spec=None, precision='fp32',
+                       thread_num=None, device='CPU', config=None,
+                       logging=True, **kwargs):
     """
     Create a OpenVINO model from Keras.
 
     :param model: Keras model to be converted to OpenVINO for inference or
                   path to Openvino saved model.
+    :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                       the shape/dtype of the input
     :param precision: Global precision of model, supported type: 'fp32', 'fp16',
                       defaults to 'fp32'.
     :param thread_num: a int represents how many threads(cores) is needed for
@@ -91,15 +103,18 @@ def KerasOpenVINOModel(model, precision='fp32', thread_num=None,
                    'CPU', 'GPU' and 'VPUX' are supported for now.
     :param config: The config to be inputted in core.compile_model.
     :param logging: whether to log detailed information of model conversion. default: True.
+    :param **kwargs: will be passed to model optimizer function.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
     from .tf.model import KerasOpenVINOModel
     return KerasOpenVINOModel(model=model,
+                              input_spec=input_spec,
                               precision=precision,
                               thread_num=thread_num,
                               device=device,
                               config=config,
-                              logging=logging)
+                              logging=logging,
+                              **kwargs)
 
 
 def OpenVINOModel(model, device='CPU'):

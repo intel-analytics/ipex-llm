@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import torch
-from torchmetrics import Accuracy
+from torchmetrics.functional.classification.accuracy import multiclass_accuracy
 from _finetune import MilestonesFinetuning, TransferLearningModel, CatDogImageDataModule
 
 from bigdl.nano.pytorch.trainer import Trainer
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     def accuracy(pred, target):
         pred = torch.sigmoid(pred)
         target = target.view((-1, 1)).type_as(pred).int()
-        return Accuracy()(pred, target)
+        return multiclass_accuracy(pred, target, num_classes=2)
 
     # 3. Accelaration inference using InferenceOptimizer
     optimizer = InferenceOptimizer()

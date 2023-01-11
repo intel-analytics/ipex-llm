@@ -1,4 +1,3 @@
-
 This file contains the list of third party software ("third party programs")
 contained in the Intel software and their required notices and/or license
 terms. This third party software, even if included with the distribution of
@@ -11,7 +10,9 @@ terms are listed below.
 
 -------------------------------------------------------------
 
-1. accessors-smart
+1. Tensorflow
+
+   accessors-smart
 
    annotations
 
@@ -26,6 +27,12 @@ terms are listed below.
 
    arrow-vector
 	© 2016-2022 The Apache Software Foundation
+
+   avatica
+	Copyright 2012-2022 The Apache Software Foundation
+
+   breeze
+	Breeze is distributed under an Apache License V2.0 (See LICENSE)
 
    chill-java
 	Copyright 2012 Twitter, Inc
@@ -80,11 +87,22 @@ terms are listed below.
    guava
 	Copyright © 2022 The Apache Software Foundation, Licensed under the Apache License, Version 2.0.
 
+   httpclient5
+	Apache HttpComponents Client
+	Copyright 1999-2022 The Apache Software Foundation
+
    httpcomponents-client
 	Copyright © 2009-2022 The Apache Software Foundation
 
    httpcomponents-core
 	Copyright © 2009-2022 The Apache Software Foundation
+
+   httpcore5
+	Apache HttpComponents Core
+	Copyright 2005-2022 The Apache Software Foundation
+
+   intel-hexl
+	Copyright 2020 Intel Corporation
 
    jackson
 	== Jackson Json-processor ==
@@ -300,6 +318,9 @@ terms are listed below.
 
    jcip-annotations
 
+   jcommander
+	Copyright 2010 Cedric Beust cedric@beust.com
+
    jctools-core
 
    jna
@@ -313,6 +334,9 @@ terms are listed below.
 	NOTE: Oracle is not sponsoring this project, even though the package name (com.sun.jna) might imply otherwise.
 
    json-smart
+
+   json4s
+	
 
    jsr305
 	Copyright (C) 1991, 1999 Free Software Foundation, Inc.
@@ -328,6 +352,9 @@ terms are listed below.
    libtensorflow
 	Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
 
+   listenablefuture
+	
+
    log4j
 	Copyright © 1999-2022 The Apache Software Foundation. All Rights Reserved.
 
@@ -341,6 +368,9 @@ terms are listed below.
 	Copyright © 1999-2022 The Apache Software Foundation. All Rights Reserved.
 
    lz4-java
+
+   macro-compat
+	
 
    maven-artifact
 	© 2001-2009 The Apache Software Foundation - Privacy Policy
@@ -704,6 +734,27 @@ terms are listed below.
 	Licensed under Apache Software License 2.0
 	Sponsored by Vmware
 
+   scala-java8-compat
+	Copyright (c) 2002-2022 EPFL
+	Copyright (c) 2011-2022 Lightbend, Inc.
+	scala-java8-compat includes software developed at LAMP/EPFL (https://lamp.epfl.ch/) and Lightbend, Inc. (https://www.lightbend.com/).
+	Licensed under the Apache License, Version 2.0 (the "License").
+	Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+   scala-parser-combinators
+	Copyright (c) 2002-2022 EPFL
+	Copyright (c) 2011-2022 Lightbend, Inc.
+	Scala includes software developed at LAMP/EPFL (https://lamp.epfl.ch/) and Lightbend, Inc. (https://www.lightbend.com/).
+	Licensed under the Apache License, Version 2.0 (the "License").
+	Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.See the License for the specific language governing permissions and limitations under the License.
+
+   scalactic
+	- This product includes software developed by
+	    Artima, Inc. (http://www.artima.com/).
+
+   shapeless
+	
+
    simpleclient
 	Prometheus instrumentation library for JVM applications
 	Copyright 2012-2015 The Prometheus Authors
@@ -800,12 +851,19 @@ terms are listed below.
    snappy-java
 	Snappy-java is developed by Taro L. Saito. Twitter @taroleo
 
-   structure-maven-plugin
+   spray-json
+	
 
-   Tensorflow
+   ssl-config-core
+	
+
+   structure-maven-plugin
 
    tensorflow-hadoop
 	Except as otherwise noted, the content of this page is licensed under the Creative Commons Attribution 4.0 License, and code samples are licensed under the Apache 2.0 License. For details, see the Google Developers Site Policies. Java is a registered trademark of Oracle and/or its affiliates.
+
+   testng
+	
 
    threading_building_blocks
 
@@ -1999,7 +2057,242 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-5. opennlp-tools
+5. llvm
+	University of Illinois/NCSA
+	Open Source License
+	
+	Copyright (c) 2003-2009 University of Illinois at Urbana-Champaign.
+	All rights reserved.
+	
+	Developed by:
+	
+	    LLVM Team
+	
+	    University of Illinois at Urbana-Champaign
+	
+	    http://llvm.org
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+    1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+    2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+    3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+    4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+    5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+    6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+    7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+    8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+    9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+    END OF TERMS AND CONDITIONS
+
+    APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+    Copyright [yyyy] [name of copyright owner]
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+
+    --- LLVM Exceptions to the Apache 2.0 License ----
+
+    As an exception, if, as a result of your compiling your source code, portions
+    of this Software are embedded into an Object form of such source code, you
+    may redistribute such embedded portions in such Object form without complying
+    with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
+
+    In addition, if you combine or link compiled forms of this Software with
+    software that is licensed under the GPLv2 ("Combined Software") and if a
+    court of competent jurisdiction determines that the patent provision (Section
+    3), the indemnity provision (Section 9) or other Section of the License
+    conflicts with the conditions of the GPLv2, you may retroactively and
+    prospectively choose to deem waived or otherwise exclude such Section(s) of
+    the License, but only in their entirety and only with respect to the Combined
+    Software.
+
+-------------------------------------------------------------
+6. opennlp-tools
 	Copyright © 2017 The Apache Software Foundation. All rights reserved.
 
 
@@ -2283,7 +2576,7 @@ terms are listed below.
     SOFTWARE.
 
 -------------------------------------------------------------
-6. apr
+7. apr
 
                                  Apache License
                            Version 2.0, January 2004
@@ -2776,631 +3069,14 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-7. netty
-
-   netty-codec
-
-   netty-codec-dns
-
-   netty-codec-http
-
-   netty-codec-http2
-
-   netty-codec-socks
-
-   netty-handler
-
-   netty-handler-proxy
-
-   netty-resolver
-
-   netty-resolver-dns
-
-   netty-resolver-dns-classes-macos
-
-   netty-resolver-dns-native-macos
-
-   netty-tcnative-boringssl-static
-
-   netty-tcnative-classes
-
-   netty-transport
-
-   netty-transport-classes-epoll
-
-   netty-transport-classes-kqueue
-
-   netty-transport-native-epoll
-
-   netty-transport-native-kqueue
-
-   netty-transport-native-unix-common
-
-                                The Netty Project
-                                =================
-
-    Please visit the Netty web site for more information:
-
-    * http://netty.io/
-
-    Copyright 2011 The Netty Project
-
-    The Netty Project licenses this file to you under the Apache License,
-    version 2.0 (the "License"); you may not use this file except in compliance
-    with the License. You may obtain a copy of the License at:
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-    License for the specific language governing permissions and limitations
-    under the License.
-
-    Also, please refer to each LICENSE..txt file, which is located in
-    the 'license' directory of the distribution file, for the license terms of the
-    components that this product depends on.
-
-    -------------------------------------------------------------------------------
-    This product contains the extensions to Java Collections Framework which has
-    been derived from the works by JSR-166 EG, Doug Lea, and Jason T. Greene:
-
-    * LICENSE:
-        * license/LICENSE.jsr166y.txt (Public Domain)
-    * HOMEPAGE:
-        * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/
-        * http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
-
-    This product contains a modified version of Robert Harder's Public Domain
-    Base64 Encoder and Decoder, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.base64.txt (Public Domain)
-    * HOMEPAGE:
-        * http://iharder.sourceforge.net/current/java/base64/
-
-    This product contains a modified portion of 'Webbit', an event based  
-    WebSocket and HTTP server, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.webbit.txt (BSD License)
-    * HOMEPAGE:
-        * https://github.com/joewalnes/webbit
-
-    This product contains a modified portion of 'SLF4J', a simple logging
-    facade for Java, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.slf4j.txt (MIT License)
-    * HOMEPAGE:
-        * http://www.slf4j.org/
-
-
-    This product contains a modified version of Roland Kuhn's ASL2
-    AbstractNodeQueue, which is based on Dmitriy Vyukov's non-intrusive MPSC queue.
-    It can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.abstractnodequeue.txt (Public Domain)
-    * HOMEPAGE:
-        * https://github.com/akka/akka/blob/wip-2.2.3-for-scala-2.11/akka-actor/src/main/java/akka/dispatch/AbstractNodeQueue.java
-
-    This product contains a modified portion of Nitsan Wakart's 'JCTools', Java Concurrency Tools for the JVM,
-    which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.jctools.txt (ASL2 License)
-    * HOMEPAGE:
-        * https://github.com/JCTools/JCTools
-
-
-    This product optionally depends on 'JZlib', a re-implementation of zlib in
-    pure Java, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.jzlib.txt (BSD style License)
-    * HOMEPAGE:
-        * http://www.jcraft.com/jzlib/
-
-    This product optionally depends on 'Protocol Buffers', Google's data
-    interchange format, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.protobuf.txt (New BSD License)
-    * HOMEPAGE:
-        * http://code.google.com/p/protobuf/
-
-    This product optionally depends on 'Bouncy Castle Crypto APIs' to generate
-    a temporary self-signed X.509 certificate when the JVM does not provide the
-    equivalent functionality.  It can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.bouncycastle.txt (MIT License)
-    * HOMEPAGE:
-        * http://www.bouncycastle.org/
-
-    This product optionally depends on 'Snappy', a compression library produced
-    by Google Inc, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.snappy.txt (New BSD License)
-    * HOMEPAGE:
-        * http://code.google.com/p/snappy/
-
-    This product optionally depends on 'JBoss Marshalling', an alternative Java
-    serialization API, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.jboss-marshalling.txt (GNU LGPL 2.1)
-    * HOMEPAGE:
-        * http://www.jboss.org/jbossmarshalling
-
-    This product optionally depends on 'Caliper', Google's micro-
-    benchmarking framework, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.caliper.txt (Apache License 2.0)
-    * HOMEPAGE:
-        * http://code.google.com/p/caliper/
-
-    This product optionally depends on 'Apache Commons Logging', a logging
-    framework, which can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.commons-logging.txt (Apache License 2.0)
-    * HOMEPAGE:
-        * http://commons.apache.org/logging/
-
-    This product optionally depends on 'Apache Log4J', a logging framework, which
-    can be obtained at:
-
-    * LICENSE:
-        * license/LICENSE.log4j.txt (Apache License 2.0)
-    * HOMEPAGE:
-        * http://logging.apache.org/log4j/
-    Here is the Apache 2.0 license:
-
-
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-   1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-   END OF TERMS AND CONDITIONS
-
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [1995-2009] [Mort Bay Consulting Pty Ltd]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License. 
-
--------------------------------------------------------------
-8. llvm
-	University of Illinois/NCSA
-	Open Source License
-	
-	Copyright (c) 2003-2009 University of Illinois at Urbana-Champaign.
-	All rights reserved.
-	
-	Developed by:
-	
-	    LLVM Team
-	
-	    University of Illinois at Urbana-Champaign
-	
-	    http://llvm.org
-
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-    1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-    2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-    3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-    4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-    5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-    6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-    7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-    8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-    9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-    END OF TERMS AND CONDITIONS
-
-    APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-    Copyright [yyyy] [name of copyright owner]
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
-
-    --- LLVM Exceptions to the Apache 2.0 License ----
-
-    As an exception, if, as a result of your compiling your source code, portions
-    of this Software are embedded into an Object form of such source code, you
-    may redistribute such embedded portions in such Object form without complying
-    with the conditions of Sections 4(a), 4(b) and 4(d) of the License.
-
-    In addition, if you combine or link compiled forms of this Software with
-    software that is licensed under the GPLv2 ("Combined Software") and if a
-    court of competent jurisdiction determines that the patent provision (Section
-    3), the indemnity provision (Section 9) or other Section of the License
-    conflicts with the conditions of the GPLv2, you may retroactively and
-    prospectively choose to deem waived or otherwise exclude such Section(s) of
-    the License, but only in their entirety and only with respect to the Combined
-    Software.
-
--------------------------------------------------------------
-9. LatencyUtils
+8. LatencyUtils
 	LatencyUtils was authored by Gil Tene (@giltene)
+
+   jemalloc
+	Copyright (C) 2002-present Jason Evans <jasone@canonware.com>.
+	All rights reserved.
+	Copyright (C) 2007-2012 Mozilla Foundation.  All rights reserved.
+	Copyright (C) 2009-present Facebook, Inc.  All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -3411,7 +3087,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-10. arpack_combined_all
+9. arpack_combined_all
 	Copyright © 2022 The University of Tennessee. All rights reserved.
 
    asm
@@ -3430,6 +3106,9 @@ terms are listed below.
 	Copyright (c) 2008-2020, Harald Kuhr
 	All rights reserved.
 
+   grizzled-slf4j
+	
+
    imageio-core
 	Copyright (c) 2009, Harald Kuhr
 	All rights reserved.
@@ -3438,6 +3117,13 @@ terms are listed below.
 	Copyright (c) 2012, Harald Kuhr
 	All rights reserved.
 
+   jsch
+	Copyright (c) 2002-2015 Atsuhiko Yamanaka, JCraft,Inc. 
+	All rights reserved.
+
+   nanopb
+	Copyright (c) 2011 Petteri Aimonen <jpa at nanopb.mail.kapsi.fi>
+
    paranamer
 	Portions copyright (c) 2006-2018 Paul Hammant & ThoughtWorks Inc
 	 Portions copyright (c) 2000-2007 INRIA, France Telecom
@@ -3445,6 +3131,9 @@ terms are listed below.
 
    stax2
 	Copyright (c) 2008 FasterXML LLC info@fasterxml.com
+
+   zstd
+	Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
@@ -3457,7 +3146,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-11. kryo
+10. kryo
 	Copyright (c) 2008-2022, Nathan Sweet All rights reserved.
 
    minlog
@@ -3477,7 +3166,7 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-12. libwebp
+11. libwebp
 	Copyright (c) 2010, Google Inc. All rights reserved.
 
    protobuf
@@ -3517,7 +3206,7 @@ terms are listed below.
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-13. hamcrest
+12. hamcrest
 	Copyright (c) 2000-2015 www.hamcrest.org
 	All rights reserved.
 
@@ -3545,7 +3234,7 @@ terms are listed below.
     DAMAGE.
 
 -------------------------------------------------------------
-14. xsdlib
+13. xsdlib
 	Copyright (c) 2010 xsdlib, All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -3556,7 +3245,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-15. hdrhistogram
+14. hdrhistogram
 	HdrHistogram was originally authored by Gil Tene (@giltene) and placed in the public domain, as explained at http://creativecommons.org/publicdomain/zero/1.0/, with ports by Mike Barker (@mikeb01) (C), Matt Warren (@mattwarren) (C#), Darach Ennis (@darach) (Erlang), Alec Hothan (@ahothan) (Python), Coda Hale (@codahale) (Go), Jon Gjengset (@jonhoo) (Rust), and Alexandre Victoor (@alexvictoor) (JavaScript)
 
    reactive-streams
@@ -3590,7 +3279,7 @@ terms are listed below.
         d. Affirmer understands and acknowledges that Creative 
 
 -------------------------------------------------------------
-16. classworlds
+15. classworlds
 	Copyright 2002 (C) The Codehaus. All Rights Reserved.
 
     Redistribution and use of this software and associated documentation ("Software"), with or without modification, are permitted provided that the following conditions are met:
@@ -3603,7 +3292,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE CODEHAUS AND CONTRIBUTORS ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE CODEHAUS OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-17. curl
+16. curl
 	Copyright (c) 1996 - 2022, Daniel Stenberg, daniel@haxx.se, and many contributors, see the THANKS file.
 	
 	All rights reserved.
@@ -3615,7 +3304,7 @@ terms are listed below.
     Except as contained in this notice, the name of a copyright holder shall not be used in advertising or otherwise to promote the sale, use or other dealings in this Software without prior written authorization of the copyright holder.
 
 -------------------------------------------------------------
-18. junit
+17. junit
 	Copyright © 2022 The JUnit Team
 
     THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
@@ -3705,6 +3394,34 @@ terms are listed below.
     This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
 
 -------------------------------------------------------------
+18. intel-openmp
+
+   oneMKL
+
+    Use and Redistribution.  You may use and redistribute the software (the “Software”), without modification, provided the following conditions are met:
+
+        * Redistributions must reproduce the above copyright notice and the following terms of use in the Software and in the documentation and/or other materials provided with the distribution.
+        * Neither the name of Intel nor the names of its suppliers may be used to endorse or promote products derived from this Software without specific prior written permission.
+        * No reverse engineering, decompilation, or disassembly of this Software is permitted.
+    No other licenses.  Except as provided in the preceding section, Intel grants no licenses or other rights by implication, estoppel or otherwise to, patent, copyright, trademark, trade name, service mark or other intellectual property licenses or rights of Intel.
+
+    Third party software.  The Software may contain Third Party Software. “Third Party Software” is open source software, third party software, or other Intel software that may be identified in the Software itself or in the files (if any) listed in the “third-party-software.txt” or similarly named text file included with the Software. Third Party Software, even if included with the distribution of the Software, may be governed by separate license terms, including without limitation, open source software license terms, third party software license terms, and other Intel software license terms. Those separate license terms solely govern your use of the Third Party Software, and nothing in this license limits any rights under, or grants rights that supersede, the terms of the applicable license terms.  
+
+    DISCLAIMER.  THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT ARE DISCLAIMED. THIS SOFTWARE IS NOT INTENDED FOR USE IN SYSTEMS OR APPLICATIONS WHERE FAILURE OF THE SOFTWARE MAY CAUSE PERSONAL INJURY OR DEATH AND YOU AGREE THAT YOU ARE FULLY RESPONSIBLE FOR ANY CLAIMS, COSTS, DAMAGES, EXPENSES, AND ATTORNEYS’ FEES ARISING OUT OF ANY SUCH USE, EVEN IF ANY CLAIM ALLEGES THAT INTEL WAS NEGLIGENT REGARDING THE DESIGN OR MANUFACTURE OF THE SOFTWARE.
+
+    LIMITATION OF LIABILITY. IN NO EVENT WILL INTEL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    No support.  Intel may make changes to the Software, at any time without notice, and is not obligated to support, update or provide training for the Software. 
+
+    Termination. Your right to use the Software is terminated in the event of your breach of this license.
+
+    Feedback.  Should you provide Intel with comments, modifications, corrections, enhancements or other input (“Feedback”) related to the Software, Intel will be free to use, disclose, reproduce, license or otherwise distribute or exploit the Feedback in its sole discretion without any obligations or restrictions of any kind, including without limitation, intellectual property rights or licensing obligations.
+
+    Compliance with laws.  You agree to comply with all relevant laws and regulations governing your use, transfer, import or export (or prohibition thereof) of the Software.
+
+    Governing law.  All disputes will be governed by the laws of the United States of America and the State of Delaware without reference to conflict of law principles and subject to the exclusive jurisdiction of the state or federal courts sitting in the State of Delaware, and each party agrees that it submits to the personal jurisdiction and venue of those courts and waives any objections. The United Nations Convention on Contracts for the International Sale of Goods (1980) is specifically excluded and will not apply to the Software.
+
+-------------------------------------------------------------
 19. xpp3
 	Indiana University Extreme! Lab Software License
 	
@@ -3754,464 +3471,7 @@ terms are listed below.
       ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-20. intel-openmp
-
-   oneMKL
-
-    Use and Redistribution.  You may use and redistribute the software (the “Software”), without modification, provided the following conditions are met:
-
-        * Redistributions must reproduce the above copyright notice and the following terms of use in the Software and in the documentation and/or other materials provided with the distribution.
-        * Neither the name of Intel nor the names of its suppliers may be used to endorse or promote products derived from this Software without specific prior written permission.
-        * No reverse engineering, decompilation, or disassembly of this Software is permitted.
-    No other licenses.  Except as provided in the preceding section, Intel grants no licenses or other rights by implication, estoppel or otherwise to, patent, copyright, trademark, trade name, service mark or other intellectual property licenses or rights of Intel.
-
-    Third party software.  The Software may contain Third Party Software. “Third Party Software” is open source software, third party software, or other Intel software that may be identified in the Software itself or in the files (if any) listed in the “third-party-software.txt” or similarly named text file included with the Software. Third Party Software, even if included with the distribution of the Software, may be governed by separate license terms, including without limitation, open source software license terms, third party software license terms, and other Intel software license terms. Those separate license terms solely govern your use of the Third Party Software, and nothing in this license limits any rights under, or grants rights that supersede, the terms of the applicable license terms.  
-
-    DISCLAIMER.  THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT ARE DISCLAIMED. THIS SOFTWARE IS NOT INTENDED FOR USE IN SYSTEMS OR APPLICATIONS WHERE FAILURE OF THE SOFTWARE MAY CAUSE PERSONAL INJURY OR DEATH AND YOU AGREE THAT YOU ARE FULLY RESPONSIBLE FOR ANY CLAIMS, COSTS, DAMAGES, EXPENSES, AND ATTORNEYS’ FEES ARISING OUT OF ANY SUCH USE, EVEN IF ANY CLAIM ALLEGES THAT INTEL WAS NEGLIGENT REGARDING THE DESIGN OR MANUFACTURE OF THE SOFTWARE.
-
-    LIMITATION OF LIABILITY. IN NO EVENT WILL INTEL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    No support.  Intel may make changes to the Software, at any time without notice, and is not obligated to support, update or provide training for the Software. 
-
-    Termination. Your right to use the Software is terminated in the event of your breach of this license.
-
-    Feedback.  Should you provide Intel with comments, modifications, corrections, enhancements or other input (“Feedback”) related to the Software, Intel will be free to use, disclose, reproduce, license or otherwise distribute or exploit the Feedback in its sole discretion without any obligations or restrictions of any kind, including without limitation, intellectual property rights or licensing obligations.
-
-    Compliance with laws.  You agree to comply with all relevant laws and regulations governing your use, transfer, import or export (or prohibition thereof) of the Software.
-
-    Governing law.  All disputes will be governed by the laws of the United States of America and the State of Delaware without reference to conflict of law principles and subject to the exclusive jurisdiction of the state or federal courts sitting in the State of Delaware, and each party agrees that it submits to the personal jurisdiction and venue of those courts and waives any objections. The United Nations Convention on Contracts for the International Sale of Goods (1980) is specifically excluded and will not apply to the Software.
-
--------------------------------------------------------------
-21. libjpeg-turbo
-	Copyright (C)2009-2022 D. R. Commander. All Rights Reserved.
-	Copyright (C)2015 Viktor Szathmáry. All Rights Reserved.
-
-    libjpeg-turbo is covered by three compatible BSD-style open source licenses:
-
-    * The IJG (Independent JPEG Group) License, which is listed in README.ijg
-    This license applies to the libjpeg API library and associated programs (any code inherited from libjpeg, and any modifications to that code.)
-    * The Modified (3-clause) BSD License, which is listed below
-    This license covers the TurboJPEG API library and associated programs, as well as the build system.
-    * The zlib License
-    This license is a subset of the other two, and it covers the libjpeg-turbo SIMD extensions.
-
-    libjpeg-turbo note:  This file has been modified by The libjpeg-turbo Project
-    to include only information relevant to libjpeg-turbo, to wordsmith certain
-    sections, and to remove impolitic language that existed in the libjpeg v8
-    README.  It is included only for reference.  Please see README.md for
-    information specific to libjpeg-turbo.
-
-
-    ------------------------------------------------
-    The Independent JPEG Group's JPEG software
-    ==========================================
-
-    This distribution contains a release of the Independent JPEG Group's free JPEG
-    software.  You are welcome to redistribute this software and to use it for any
-    purpose, subject to the conditions under LEGAL ISSUES, below.
-
-    This software is the work of Tom Lane, Guido Vollbeding, Philip Gladstone,
-    Bill Allombert, Jim Boucher, Lee Crocker, Bob Friesenhahn, Ben Jackson,
-    Julian Minguillon, Luis Ortiz, George Phillips, Davide Rossi, Ge' Weijers,
-    and other members of the Independent JPEG Group.
-
-    IJG is not affiliated with the ISO/IEC JTC1/SC29/WG1 standards committee
-    (also known as JPEG, together with ITU-T SG16).
-
-
-    DOCUMENTATION ROADMAP
-    =====================
-
-    This file contains the following sections:
-
-    OVERVIEW            General description of JPEG and the IJG software.
-    LEGAL ISSUES        Copyright, lack of warranty, terms of distribution.
-    REFERENCES          Where to learn more about JPEG.
-    ARCHIVE LOCATIONS   Where to find newer versions of this software.
-    FILE FORMAT WARS    Software *not* to get.
-    TO DO               Plans for future IJG releases.
-
-    Other documentation files in the distribution are:
-
-    User documentation:
-    usage.txt         Usage instructions for cjpeg, djpeg, jpegtran,
-                        rdjpgcom, and wrjpgcom.
-    *.1               Unix-style man pages for programs (same info as usage.txt).
-    wizard.txt        Advanced usage instructions for JPEG wizards only.
-    change.log        Version-to-version change highlights.
-    Programmer and internal documentation:
-    libjpeg.txt       How to use the JPEG library in your own programs.
-    example.txt       Sample code for calling the JPEG library.
-    structure.txt     Overview of the JPEG library's internal structure.
-    coderules.txt     Coding style rules --- please read if you contribute code.
-
-    Please read at least usage.txt.  Some information can also be found in the JPEG
-    FAQ (Frequently Asked Questions) article.  See ARCHIVE LOCATIONS below to find
-    out where to obtain the FAQ article.
-
-    If you want to understand how the JPEG code works, we suggest reading one or
-    more of the REFERENCES, then looking at the documentation files (in roughly
-    the order listed) before diving into the code.
-
-
-    OVERVIEW
-    ========
-
-    This package contains C software to implement JPEG image encoding, decoding,
-    and transcoding.  JPEG (pronounced "jay-peg") is a standardized compression
-    method for full-color and grayscale images.  JPEG's strong suit is compressing
-    photographic images or other types of images that have smooth color and
-    brightness transitions between neighboring pixels.  Images with sharp lines or
-    other abrupt features may not compress well with JPEG, and a higher JPEG
-    quality may have to be used to avoid visible compression artifacts with such
-    images.
-
-    JPEG is lossy, meaning that the output pixels are not necessarily identical to
-    the input pixels.  However, on photographic content and other "smooth" images,
-    very good compression ratios can be obtained with no visible compression
-    artifacts, and extremely high compression ratios are possible if you are
-    willing to sacrifice image quality (by reducing the "quality" setting in the
-    compressor.)
-
-    This software implements JPEG baseline, extended-sequential, and progressive
-    compression processes.  Provision is made for supporting all variants of these
-    processes, although some uncommon parameter settings aren't implemented yet.
-    We have made no provision for supporting the hierarchical or lossless
-    processes defined in the standard.
-
-    We provide a set of library routines for reading and writing JPEG image files,
-    plus two sample applications "cjpeg" and "djpeg", which use the library to
-    perform conversion between JPEG and some other popular image file formats.
-    The library is intended to be reused in other applications.
-
-    In order to support file conversion and viewing software, we have included
-    considerable functionality beyond the bare JPEG coding/decoding capability;
-    for example, the color quantization modules are not strictly part of JPEG
-    decoding, but they are essential for output to colormapped file formats or
-    colormapped displays.  These extra functions can be compiled out of the
-    library if not required for a particular application.
-
-    We have also included "jpegtran", a utility for lossless transcoding between
-    different JPEG processes, and "rdjpgcom" and "wrjpgcom", two simple
-    applications for inserting and extracting textual comments in JFIF files.
-
-    The emphasis in designing this software has been on achieving portability and
-    flexibility, while also making it fast enough to be useful.  In particular,
-    the software is not intended to be read as a tutorial on JPEG.  (See the
-    REFERENCES section for introductory material.)  Rather, it is intended to
-    be reliable, portable, industrial-strength code.  We do not claim to have
-    achieved that goal in every aspect of the software, but we strive for it.
-
-    We welcome the use of this software as a component of commercial products.
-    No royalty is required, but we do ask for an acknowledgement in product
-    documentation, as described under LEGAL ISSUES.
-
-
-    LEGAL ISSUES
-    ============
-
-    In plain English:
-
-    1. We don't promise that this software works.  (But if you find any bugs,
-    please let us know!)
-    2. You can use this software for whatever you want.  You don't have to pay us.
-    3. You may not pretend that you wrote this software.  If you use it in a
-    program, you must acknowledge somewhere in your documentation that
-    you've used the IJG code.
-
-    In legalese:
-
-    The authors make NO WARRANTY or representation, either express or implied,
-    with respect to this software, its quality, accuracy, merchantability, or
-    fitness for a particular purpose.  This software is provided "AS IS", and you,
-    its user, assume the entire risk as to its quality and accuracy.
-
-    This software is copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
-    All Rights Reserved except as specified below.
-
-    Permission is hereby granted to use, copy, modify, and distribute this
-    software (or portions thereof) for any purpose, without fee, subject to these
-    conditions:
-    (1) If any part of the source code for this software is distributed, then this
-    README file must be included, with this copyright and no-warranty notice
-    unaltered; and any additions, deletions, or changes to the original files
-    must be clearly indicated in accompanying documentation.
-    (2) If only executable code is distributed, then the accompanying
-    documentation must state that "this software is based in part on the work of
-    the Independent JPEG Group".
-    (3) Permission for use of this software is granted only if the user accepts
-    full responsibility for any undesirable consequences; the authors accept
-    NO LIABILITY for damages of any kind.
-
-    These conditions apply to any software derived from or based on the IJG code,
-    not just to the unmodified library.  If you use our work, you ought to
-    acknowledge us.
-
-    Permission is NOT granted for the use of any IJG author's name or company name
-    in advertising or publicity relating to this software or products derived from
-    it.  This software may be referred to only as "the Independent JPEG Group's
-    software".
-
-    We specifically permit and encourage the use of this software as the basis of
-    commercial products, provided that all warranty or liability claims are
-    assumed by the product vendor.
-
-
-    REFERENCES
-    ==========
-
-    We recommend reading one or more of these references before trying to
-    understand the innards of the JPEG software.
-
-    The best short technical introduction to the JPEG compression algorithm is
-            Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
-            Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
-    (Adjacent articles in that issue discuss MPEG motion picture compression,
-    applications of JPEG, and related topics.)  If you don't have the CACM issue
-    handy, a PDF file containing a revised version of Wallace's article is
-    available at http://www.ijg.org/files/Wallace.JPEG.pdf.  The file (actually
-    a preprint for an article that appeared in IEEE Trans. Consumer Electronics)
-    omits the sample images that appeared in CACM, but it includes corrections
-    and some added material.  Note: the Wallace article is copyright ACM and IEEE,
-    and it may not be used for commercial purposes.
-
-    A somewhat less technical, more leisurely introduction to JPEG can be found in
-    "The Data Compression Book" by Mark Nelson and Jean-loup Gailly, published by
-    M&T Books (New York), 2nd ed. 1996, ISBN 1-55851-434-1.  This book provides
-    good explanations and example C code for a multitude of compression methods
-    including JPEG.  It is an excellent source if you are comfortable reading C
-    code but don't know much about data compression in general.  The book's JPEG
-    sample code is far from industrial-strength, but when you are ready to look
-    at a full implementation, you've got one here...
-
-    The best currently available description of JPEG is the textbook "JPEG Still
-    Image Data Compression Standard" by William B. Pennebaker and Joan L.
-    Mitchell, published by Van Nostrand Reinhold, 1993, ISBN 0-442-01272-1.
-    Price US$59.95, 638 pp.  The book includes the complete text of the ISO JPEG
-    standards (DIS 10918-1 and draft DIS 10918-2).
-
-    The original JPEG standard is divided into two parts, Part 1 being the actual
-    specification, while Part 2 covers compliance testing methods.  Part 1 is
-    titled "Digital Compression and Coding of Continuous-tone Still Images,
-    Part 1: Requirements and guidelines" and has document numbers ISO/IEC IS
-    10918-1, ITU-T T.81.  Part 2 is titled "Digital Compression and Coding of
-    Continuous-tone Still Images, Part 2: Compliance testing" and has document
-    numbers ISO/IEC IS 10918-2, ITU-T T.83.
-
-    The JPEG standard does not specify all details of an interchangeable file
-    format.  For the omitted details, we follow the "JFIF" conventions, revision
-    1.02.  JFIF version 1 has been adopted as ISO/IEC 10918-5 (05/2013) and
-    Recommendation ITU-T T.871 (05/2011): Information technology - Digital
-    compression and coding of continuous-tone still images: JPEG File Interchange
-    Format (JFIF).  It is available as a free download in PDF file format from
-    https://www.iso.org/standard/54989.html and http://www.itu.int/rec/T-REC-T.871.
-    A PDF file of the older JFIF 1.02 specification is available at
-    http://www.w3.org/Graphics/JPEG/jfif3.pdf.
-
-    The TIFF 6.0 file format specification can be obtained from
-    http://mirrors.ctan.org/graphics/tiff/TIFF6.ps.gz.  The JPEG incorporation
-    scheme found in the TIFF 6.0 spec of 3-June-92 has a number of serious
-    problems.  IJG does not recommend use of the TIFF 6.0 design (TIFF Compression
-    tag 6).  Instead, we recommend the JPEG design proposed by TIFF Technical Note
-    #2 (Compression tag 7).  Copies of this Note can be obtained from
-    http://www.ijg.org/files/.  It is expected that the next revision
-    of the TIFF spec will replace the 6.0 JPEG design with the Note's design.
-    Although IJG's own code does not support TIFF/JPEG, the free libtiff library
-    uses our library to implement TIFF/JPEG per the Note.
-
-
-    ARCHIVE LOCATIONS
-    =================
-
-    The "official" archive site for this software is www.ijg.org.
-    The most recent released version can always be found there in
-    directory "files".
-
-    The JPEG FAQ (Frequently Asked Questions) article is a source of some
-    general information about JPEG.  It is available at
-    http://www.faqs.org/faqs/jpeg-faq.
-
-
-    FILE FORMAT COMPATIBILITY
-    =========================
-
-    This software implements ITU T.81 | ISO/IEC 10918 with some extensions from
-    ITU T.871 | ISO/IEC 10918-5 (JPEG File Interchange Format-- see REFERENCES).
-    Informally, the term "JPEG image" or "JPEG file" most often refers to JFIF or
-    a subset thereof, but there are other formats containing the name "JPEG" that
-    are incompatible with the DCT-based JPEG standard or with JFIF (for instance,
-    JPEG 2000 and JPEG XR).  This software therefore does not support these
-    formats.  Indeed, one of the original reasons for developing this free software
-    was to help force convergence on a common, interoperable format standard for
-    JPEG files.
-
-    JFIF is a minimal or "low end" representation.  TIFF/JPEG (TIFF revision 6.0 as
-    modified by TIFF Technical Note #2) can be used for "high end" applications
-    that need to record a lot of additional data about an image.
-
-
-    TO DO
-    =====
-
-    Please send bug reports, offers of help, etc. to jpeg-info@jpegclub.org.
-
-    --------------------------------------------------------
-    The Modified (3-clause) BSD License
-
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-    Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    Neither the name of the libjpeg-turbo Project nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS", AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
-
-
-    ----------------------------------------------------------
-    The zlib/libpng License (Zlib)
-
-    This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
-
-    Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
-
-    1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
-
-    2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
-
-    3. This notice may not be removed or altered from any source distribution.
-
--------------------------------------------------------------
-22. libpng
-	* Copyright (c) 1995-2020 The PNG Reference Library Authors.
-	 * Copyright (c) 2018-2020 Cosmin Truta.
-	 * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
-	 * Copyright (c) 1996-1997 Andreas Dilger.
-	 * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
-
-    The software is supplied "as is", without warranty of any kind,
-    express or implied, including, without limitation, the warranties
-    of merchantability, fitness for a particular purpose, title, and
-    non-infringement.  In no event shall the Copyright owners, or
-    anyone distributing the software, be liable for any damages or
-    other liability, whether in contract, tort or otherwise, arising
-    from, out of, or in connection with the software, or the use or
-    other dealings in the software, even if advised of the possibility
-    of such damage.
-
-    Permission is hereby granted to use, copy, modify, and distribute
-    this software, or portions hereof, for any purpose, without fee,
-    subject to the following restrictions:
-
-    1. The origin of this software must not be misrepresented; you
-        must not claim that you wrote the original software.  If you
-        use this software in a product, an acknowledgment in the product
-        documentation would be appreciated, but is not required.
-
-    2. Altered source versions must be plainly marked as such, and must
-        not be misrepresented as being the original software.
-
-    3. This Copyright notice may not be removed or altered from any
-        source or altered source distribution.
-
-
-    PNG Reference Library License version 1 (for libpng 0.5 through 1.6.35)
-    -----------------------------------------------------------------------
-
-    libpng versions 1.0.7, July 1, 2000, through 1.6.35, July 15, 2018 are
-    Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson, are
-    derived from libpng-1.0.6, and are distributed according to the same
-    disclaimer and license as libpng-1.0.6 with the following individuals
-    added to the list of Contributing Authors:
-
-        Simon-Pierre Cadieux
-        Eric S. Raymond
-        Mans Rullgard
-        Cosmin Truta
-        Gilles Vollant
-        James Yu
-        Mandar Sahastrabuddhe
-        Google Inc.
-        Vadim Barkov
-
-    and with the following additions to the disclaimer:
-
-        There is no warranty against interference with your enjoyment of
-        the library or against infringement.  There is no warranty that our
-        efforts or the library will fulfill any of your particular purposes
-        or needs.  This library is provided with all faults, and the entire
-        risk of satisfactory quality, performance, accuracy, and effort is
-        with the user.
-
-    Some files in the "contrib" directory and some configure-generated
-    files that are distributed with libpng have other copyright owners, and
-    are released under other open source licenses.
-
-    libpng versions 0.97, January 1998, through 1.0.6, March 20, 2000, are
-    Copyright (c) 1998-2000 Glenn Randers-Pehrson, are derived from
-    libpng-0.96, and are distributed according to the same disclaimer and
-    license as libpng-0.96, with the following individuals added to the
-    list of Contributing Authors:
-
-        Tom Lane
-        Glenn Randers-Pehrson
-        Willem van Schaik
-
-    libpng versions 0.89, June 1996, through 0.96, May 1997, are
-    Copyright (c) 1996-1997 Andreas Dilger, are derived from libpng-0.88,
-    and are distributed according to the same disclaimer and license as
-    libpng-0.88, with the following individuals added to the list of
-    Contributing Authors:
-
-        John Bowler
-        Kevin Bracey
-        Sam Bushell
-        Magnus Holmgren
-        Greg Roelofs
-        Tom Tanner
-
-    Some files in the "scripts" directory have other copyright owners,
-    but are released under this license.
-
-    libpng versions 0.5, May 1995, through 0.88, January 1996, are
-    Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
-
-    For the purposes of this copyright and license, "Contributing Authors"
-    is defined as the following set of individuals:
-
-        Andreas Dilger
-        Dave Martindale
-        Guy Eric Schalnat
-        Paul Schmidt
-        Tim Wegner
-
-    The PNG Reference Library is supplied "AS IS".  The Contributing
-    Authors and Group 42, Inc. disclaim all warranties, expressed or
-    implied, including, without limitation, the warranties of
-    merchantability and of fitness for any purpose.  The Contributing
-    Authors and Group 42, Inc. assume no liability for direct, indirect,
-    incidental, special, exemplary, or consequential damages, which may
-    result from the use of the PNG Reference Library, even if advised of
-    the possibility of such damage.
-
-    Permission is hereby granted to use, copy, modify, and distribute this
-    source code, or portions hereof, for any purpose, without fee, subject
-    to the following restrictions:
-
-    1. The origin of this source code must not be misrepresented.
-
-    2. Altered versions must be plainly marked as such and must not
-        be misrepresented as being the original source.
-
-    3. This Copyright notice may not be removed or altered from any
-        source or altered source distribution.
-
-    The Contributing Authors and Group 42, Inc. specifically permit,
-    without fee, and encourage the use of this source code as a component
-    to supporting the PNG file format in commercial products.  If you use
-    this source code in a product, acknowledgment is not required but would
-    be appreciated.
-
--------------------------------------------------------------
-23. libtiff
+20. libtiff
 	Copyright © 1988-1997 Sam Leffler
 	Copyright © 1991-1997 Silicon Graphics, Inc.
 
@@ -4222,7 +3482,10 @@ terms are listed below.
     IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -------------------------------------------------------------
-24. animal-sniffer-annotations
+21. Microsoft SEAL
+	Copyright (c) Microsoft Corporation. All rights reserved.
+
+   animal-sniffer-annotations
 
    azure-core
 	Copyright (c) 2015 Microsoft
@@ -4252,6 +3515,12 @@ terms are listed below.
    libffi
 	libffi - Copyright (c) 1996-2021  Anthony Green, Red Hat, Inc and others.
 
+   lightgbmlib
+	Copyright (c) Microsoft Corporation
+
+   machinist
+	Copyright (c) 2011-2014 Erik Osheim, Tom Switzer
+
    msal4j
 	Copyright (c) Microsoft Corporation. All rights reserved.
 
@@ -4261,18 +3530,31 @@ terms are listed below.
    objenesis
 	Copyright (c) 2003-2013, Objenesis Team and all contributors
 
+   scopt
+	Copyright (c) scopt contributors
+
    slf4j-log4j12
 	Copyright (c) 2004-2017 QOS.ch
 	 All rights reserved.
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+   spire
+	
 
-    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+   synapseml
+	Copyright (c) Microsoft Corporation. All rights reserved.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+The MIT License
+
+Copyright <YEAR> <COPYRIGHT HOLDER>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------
-25. safestring
+22. safestring
 	Copyright (c) 2014-2018 Intel Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -4320,264 +3602,21 @@ terms are listed below.
     OTHER DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------
-26. boringssl
-	Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+23. fmt
+	Copyright (c) 2012 - present, Victor Zverovich
 
-    BoringSSL is a fork of OpenSSL. As such, large parts of it fall under OpenSSL
-    licensing. Files that are completely new have a Google copyright and an ISC
-    license. This license is reproduced at the bottom of this file.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-    Contributors to BoringSSL are required to follow the CLA rules for Chromium:
-    https://cla.developers.google.com/clas
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-    Files in third_party/ have their own licenses, as described therein. The MIT
-    license, for third_party/fiat, which, unlike other third_party directories, is
-    compiled into non-test libraries, is included below.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    The OpenSSL toolkit stays under a dual license, i.e. both the conditions of the
-    OpenSSL License and the original SSLeay license apply to the toolkit. See below
-    for the actual license texts. Actually both licenses are BSD-style Open Source
-    licenses. In case of any license issues related to OpenSSL please contact
-    openssl-core@openssl.org.
+--- Optional exception to the license ---
 
-    The following are Google-internal bug numbers where explicit permission from
-    some authors is recorded for use of their work. (This is purely for our own
-    record keeping.)
-    27287199
-    27287880
-    27287883
-
-    OpenSSL License
-    ---------------
-
-    /* ====================================================================
-    * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
-    *
-    * Redistribution and use in source and binary forms, with or without
-    * modification, are permitted provided that the following conditions
-    * are met:
-    *
-    * 1. Redistributions of source code must retain the above copyright
-    *    notice, this list of conditions and the following disclaimer. 
-    *
-    * 2. Redistributions in binary form must reproduce the above copyright
-    *    notice, this list of conditions and the following disclaimer in
-    *    the documentation and/or other materials provided with the
-    *    distribution.
-    *
-    * 3. All advertising materials mentioning features or use of this
-    *    software must display the following acknowledgment:
-    *    "This product includes software developed by the OpenSSL Project
-    *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
-    *
-    * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
-    *    endorse or promote products derived from this software without
-    *    prior written permission. For written permission, please contact
-    *    openssl-core@openssl.org.
-    *
-    * 5. Products derived from this software may not be called "OpenSSL"
-    *    nor may "OpenSSL" appear in their names without prior written
-    *    permission of the OpenSSL Project.
-    *
-    * 6. Redistributions of any form whatsoever must retain the following
-    *    acknowledgment:
-    *    "This product includes software developed by the OpenSSL Project
-    *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
-    *
-    * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
-    * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-    * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
-    * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-    * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-    * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-    * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-    * OF THE POSSIBILITY OF SUCH DAMAGE.
-    * ====================================================================
-    *
-    * This product includes cryptographic software written by Eric Young
-    * (eay@cryptsoft.com).  This product includes software written by Tim
-    * Hudson (tjh@cryptsoft.com).
-    *
-    */
-
-    Original SSLeay License
-    -----------------------
-
-    /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
-    * All rights reserved.
-    *
-    * This package is an SSL implementation written
-    * by Eric Young (eay@cryptsoft.com).
-    * The implementation was written so as to conform with Netscapes SSL.
-    * 
-    * This library is free for commercial and non-commercial use as long as
-    * the following conditions are aheared to.  The following conditions
-    * apply to all code found in this distribution, be it the RC4, RSA,
-    * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
-    * included with this distribution is covered by the same copyright terms
-    * except that the holder is Tim Hudson (tjh@cryptsoft.com).
-    * 
-    * Copyright remains Eric Young's, and as such any Copyright notices in
-    * the code are not to be removed.
-    * If this package is used in a product, Eric Young should be given attribution
-    * as the author of the parts of the library used.
-    * This can be in the form of a textual message at program startup or
-    * in documentation (online or textual) provided with the package.
-    * 
-    * Redistribution and use in source and binary forms, with or without
-    * modification, are permitted provided that the following conditions
-    * are met:
-    * 1. Redistributions of source code must retain the copyright
-    *    notice, this list of conditions and the following disclaimer.
-    * 2. Redistributions in binary form must reproduce the above copyright
-    *    notice, this list of conditions and the following disclaimer in the
-    *    documentation and/or other materials provided with the distribution.
-    * 3. All advertising materials mentioning features or use of this software
-    *    must display the following acknowledgement:
-    *    "This product includes cryptographic software written by
-    *     Eric Young (eay@cryptsoft.com)"
-    *    The word 'cryptographic' can be left out if the rouines from the library
-    *    being used are not cryptographic related :-).
-    * 4. If you include any Windows specific code (or a derivative thereof) from 
-    *    the apps directory (application code) you must include an acknowledgement:
-    *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
-    * 
-    * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
-    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-    * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-    * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-    * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-    * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-    * SUCH DAMAGE.
-    * 
-    * The licence and distribution terms for any publically available version or
-    * derivative of this code cannot be changed.  i.e. this code cannot simply be
-    * copied and put under another distribution licence
-    * [including the GNU Public Licence.]
-    */
-
-
-    ISC license used for completely new code in BoringSSL:
-
-    /* Copyright (c) 2015, Google Inc.
-    *
-    * Permission to use, copy, modify, and/or distribute this software for any
-    * purpose with or without fee is hereby granted, provided that the above
-    * copyright notice and this permission notice appear in all copies.
-    *
-    * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-    * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-    * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
-    * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
-    * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
-
-
-    The code in third_party/fiat carries the MIT license:
-
-    Copyright (c) 2015-2016 the fiat-crypto authors (see
-    https://github.com/mit-plv/fiat-crypto/blob/master/AUTHORS).
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE.
-
-
-    Licenses for support code
-    -------------------------
-
-    Parts of the TLS test suite are under the Go license. This code is not included
-    in BoringSSL (i.e. libcrypto and libssl) when compiled, however, so
-    distributing code linked against BoringSSL does not trigger this license:
-
-    Copyright (c) 2009 The Go Authors. All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are
-    met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following disclaimer
-    in the documentation and/or other materials provided with the
-    distribution.
-    * Neither the name of Google Inc. nor the names of its
-    contributors may be used to endorse or promote products derived from
-    this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-    BoringSSL uses the Chromium test infrastructure to run a continuous build,
-    trybots etc. The scripts which manage this, and the script for generating build
-    metadata, are under the Chromium license. Distributing code linked against
-    BoringSSL does not trigger this license.
-
-    Copyright 2015 The Chromium Authors. All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are
-    met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following disclaimer
-    in the documentation and/or other materials provided with the
-    distribution.
-    * Neither the name of Google Inc. nor the names of its
-    contributors may be used to endorse or promote products derived from
-    this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+As an exception, if, as a result of your compiling your source code, portions of this Software are embedded into a machine-executable object form of such source code, you may redistribute such embedded portions in such object form without including the above copyright and permission notices.
 
 -------------------------------------------------------------
-27. icu
+24. icu
 	Copyright © 1991-2022 Unicode, Inc. All rights reserved.
 
     UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
@@ -5101,11 +4140,292 @@ terms are listed below.
     without express or implied warranty.
 
 -------------------------------------------------------------
-28. jep
-	Copyright (c) 2004 - 2020 JEP AUTHORS.
+25. libjpeg-turbo
+	Copyright (C)2009-2022 D. R. Commander. All Rights Reserved.
+	Copyright (C)2015 Viktor Szathmáry. All Rights Reserved.
 
-   zlib
-	Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler
+    libjpeg-turbo is covered by three compatible BSD-style open source licenses:
+
+    * The IJG (Independent JPEG Group) License, which is listed in README.ijg
+    This license applies to the libjpeg API library and associated programs (any code inherited from libjpeg, and any modifications to that code.)
+    * The Modified (3-clause) BSD License, which is listed below
+    This license covers the TurboJPEG API library and associated programs, as well as the build system.
+    * The zlib License
+    This license is a subset of the other two, and it covers the libjpeg-turbo SIMD extensions.
+
+    libjpeg-turbo note:  This file has been modified by The libjpeg-turbo Project
+    to include only information relevant to libjpeg-turbo, to wordsmith certain
+    sections, and to remove impolitic language that existed in the libjpeg v8
+    README.  It is included only for reference.  Please see README.md for
+    information specific to libjpeg-turbo.
+
+
+    ------------------------------------------------
+    The Independent JPEG Group's JPEG software
+    ==========================================
+
+    This distribution contains a release of the Independent JPEG Group's free JPEG
+    software.  You are welcome to redistribute this software and to use it for any
+    purpose, subject to the conditions under LEGAL ISSUES, below.
+
+    This software is the work of Tom Lane, Guido Vollbeding, Philip Gladstone,
+    Bill Allombert, Jim Boucher, Lee Crocker, Bob Friesenhahn, Ben Jackson,
+    Julian Minguillon, Luis Ortiz, George Phillips, Davide Rossi, Ge' Weijers,
+    and other members of the Independent JPEG Group.
+
+    IJG is not affiliated with the ISO/IEC JTC1/SC29/WG1 standards committee
+    (also known as JPEG, together with ITU-T SG16).
+
+
+    DOCUMENTATION ROADMAP
+    =====================
+
+    This file contains the following sections:
+
+    OVERVIEW            General description of JPEG and the IJG software.
+    LEGAL ISSUES        Copyright, lack of warranty, terms of distribution.
+    REFERENCES          Where to learn more about JPEG.
+    ARCHIVE LOCATIONS   Where to find newer versions of this software.
+    FILE FORMAT WARS    Software *not* to get.
+    TO DO               Plans for future IJG releases.
+
+    Other documentation files in the distribution are:
+
+    User documentation:
+    usage.txt         Usage instructions for cjpeg, djpeg, jpegtran,
+                        rdjpgcom, and wrjpgcom.
+    *.1               Unix-style man pages for programs (same info as usage.txt).
+    wizard.txt        Advanced usage instructions for JPEG wizards only.
+    change.log        Version-to-version change highlights.
+    Programmer and internal documentation:
+    libjpeg.txt       How to use the JPEG library in your own programs.
+    example.txt       Sample code for calling the JPEG library.
+    structure.txt     Overview of the JPEG library's internal structure.
+    coderules.txt     Coding style rules --- please read if you contribute code.
+
+    Please read at least usage.txt.  Some information can also be found in the JPEG
+    FAQ (Frequently Asked Questions) article.  See ARCHIVE LOCATIONS below to find
+    out where to obtain the FAQ article.
+
+    If you want to understand how the JPEG code works, we suggest reading one or
+    more of the REFERENCES, then looking at the documentation files (in roughly
+    the order listed) before diving into the code.
+
+
+    OVERVIEW
+    ========
+
+    This package contains C software to implement JPEG image encoding, decoding,
+    and transcoding.  JPEG (pronounced "jay-peg") is a standardized compression
+    method for full-color and grayscale images.  JPEG's strong suit is compressing
+    photographic images or other types of images that have smooth color and
+    brightness transitions between neighboring pixels.  Images with sharp lines or
+    other abrupt features may not compress well with JPEG, and a higher JPEG
+    quality may have to be used to avoid visible compression artifacts with such
+    images.
+
+    JPEG is lossy, meaning that the output pixels are not necessarily identical to
+    the input pixels.  However, on photographic content and other "smooth" images,
+    very good compression ratios can be obtained with no visible compression
+    artifacts, and extremely high compression ratios are possible if you are
+    willing to sacrifice image quality (by reducing the "quality" setting in the
+    compressor.)
+
+    This software implements JPEG baseline, extended-sequential, and progressive
+    compression processes.  Provision is made for supporting all variants of these
+    processes, although some uncommon parameter settings aren't implemented yet.
+    We have made no provision for supporting the hierarchical or lossless
+    processes defined in the standard.
+
+    We provide a set of library routines for reading and writing JPEG image files,
+    plus two sample applications "cjpeg" and "djpeg", which use the library to
+    perform conversion between JPEG and some other popular image file formats.
+    The library is intended to be reused in other applications.
+
+    In order to support file conversion and viewing software, we have included
+    considerable functionality beyond the bare JPEG coding/decoding capability;
+    for example, the color quantization modules are not strictly part of JPEG
+    decoding, but they are essential for output to colormapped file formats or
+    colormapped displays.  These extra functions can be compiled out of the
+    library if not required for a particular application.
+
+    We have also included "jpegtran", a utility for lossless transcoding between
+    different JPEG processes, and "rdjpgcom" and "wrjpgcom", two simple
+    applications for inserting and extracting textual comments in JFIF files.
+
+    The emphasis in designing this software has been on achieving portability and
+    flexibility, while also making it fast enough to be useful.  In particular,
+    the software is not intended to be read as a tutorial on JPEG.  (See the
+    REFERENCES section for introductory material.)  Rather, it is intended to
+    be reliable, portable, industrial-strength code.  We do not claim to have
+    achieved that goal in every aspect of the software, but we strive for it.
+
+    We welcome the use of this software as a component of commercial products.
+    No royalty is required, but we do ask for an acknowledgement in product
+    documentation, as described under LEGAL ISSUES.
+
+
+    LEGAL ISSUES
+    ============
+
+    In plain English:
+
+    1. We don't promise that this software works.  (But if you find any bugs,
+    please let us know!)
+    2. You can use this software for whatever you want.  You don't have to pay us.
+    3. You may not pretend that you wrote this software.  If you use it in a
+    program, you must acknowledge somewhere in your documentation that
+    you've used the IJG code.
+
+    In legalese:
+
+    The authors make NO WARRANTY or representation, either express or implied,
+    with respect to this software, its quality, accuracy, merchantability, or
+    fitness for a particular purpose.  This software is provided "AS IS", and you,
+    its user, assume the entire risk as to its quality and accuracy.
+
+    This software is copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
+    All Rights Reserved except as specified below.
+
+    Permission is hereby granted to use, copy, modify, and distribute this
+    software (or portions thereof) for any purpose, without fee, subject to these
+    conditions:
+    (1) If any part of the source code for this software is distributed, then this
+    README file must be included, with this copyright and no-warranty notice
+    unaltered; and any additions, deletions, or changes to the original files
+    must be clearly indicated in accompanying documentation.
+    (2) If only executable code is distributed, then the accompanying
+    documentation must state that "this software is based in part on the work of
+    the Independent JPEG Group".
+    (3) Permission for use of this software is granted only if the user accepts
+    full responsibility for any undesirable consequences; the authors accept
+    NO LIABILITY for damages of any kind.
+
+    These conditions apply to any software derived from or based on the IJG code,
+    not just to the unmodified library.  If you use our work, you ought to
+    acknowledge us.
+
+    Permission is NOT granted for the use of any IJG author's name or company name
+    in advertising or publicity relating to this software or products derived from
+    it.  This software may be referred to only as "the Independent JPEG Group's
+    software".
+
+    We specifically permit and encourage the use of this software as the basis of
+    commercial products, provided that all warranty or liability claims are
+    assumed by the product vendor.
+
+
+    REFERENCES
+    ==========
+
+    We recommend reading one or more of these references before trying to
+    understand the innards of the JPEG software.
+
+    The best short technical introduction to the JPEG compression algorithm is
+            Wallace, Gregory K.  "The JPEG Still Picture Compression Standard",
+            Communications of the ACM, April 1991 (vol. 34 no. 4), pp. 30-44.
+    (Adjacent articles in that issue discuss MPEG motion picture compression,
+    applications of JPEG, and related topics.)  If you don't have the CACM issue
+    handy, a PDF file containing a revised version of Wallace's article is
+    available at http://www.ijg.org/files/Wallace.JPEG.pdf.  The file (actually
+    a preprint for an article that appeared in IEEE Trans. Consumer Electronics)
+    omits the sample images that appeared in CACM, but it includes corrections
+    and some added material.  Note: the Wallace article is copyright ACM and IEEE,
+    and it may not be used for commercial purposes.
+
+    A somewhat less technical, more leisurely introduction to JPEG can be found in
+    "The Data Compression Book" by Mark Nelson and Jean-loup Gailly, published by
+    M&T Books (New York), 2nd ed. 1996, ISBN 1-55851-434-1.  This book provides
+    good explanations and example C code for a multitude of compression methods
+    including JPEG.  It is an excellent source if you are comfortable reading C
+    code but don't know much about data compression in general.  The book's JPEG
+    sample code is far from industrial-strength, but when you are ready to look
+    at a full implementation, you've got one here...
+
+    The best currently available description of JPEG is the textbook "JPEG Still
+    Image Data Compression Standard" by William B. Pennebaker and Joan L.
+    Mitchell, published by Van Nostrand Reinhold, 1993, ISBN 0-442-01272-1.
+    Price US$59.95, 638 pp.  The book includes the complete text of the ISO JPEG
+    standards (DIS 10918-1 and draft DIS 10918-2).
+
+    The original JPEG standard is divided into two parts, Part 1 being the actual
+    specification, while Part 2 covers compliance testing methods.  Part 1 is
+    titled "Digital Compression and Coding of Continuous-tone Still Images,
+    Part 1: Requirements and guidelines" and has document numbers ISO/IEC IS
+    10918-1, ITU-T T.81.  Part 2 is titled "Digital Compression and Coding of
+    Continuous-tone Still Images, Part 2: Compliance testing" and has document
+    numbers ISO/IEC IS 10918-2, ITU-T T.83.
+
+    The JPEG standard does not specify all details of an interchangeable file
+    format.  For the omitted details, we follow the "JFIF" conventions, revision
+    1.02.  JFIF version 1 has been adopted as ISO/IEC 10918-5 (05/2013) and
+    Recommendation ITU-T T.871 (05/2011): Information technology - Digital
+    compression and coding of continuous-tone still images: JPEG File Interchange
+    Format (JFIF).  It is available as a free download in PDF file format from
+    https://www.iso.org/standard/54989.html and http://www.itu.int/rec/T-REC-T.871.
+    A PDF file of the older JFIF 1.02 specification is available at
+    http://www.w3.org/Graphics/JPEG/jfif3.pdf.
+
+    The TIFF 6.0 file format specification can be obtained from
+    http://mirrors.ctan.org/graphics/tiff/TIFF6.ps.gz.  The JPEG incorporation
+    scheme found in the TIFF 6.0 spec of 3-June-92 has a number of serious
+    problems.  IJG does not recommend use of the TIFF 6.0 design (TIFF Compression
+    tag 6).  Instead, we recommend the JPEG design proposed by TIFF Technical Note
+    #2 (Compression tag 7).  Copies of this Note can be obtained from
+    http://www.ijg.org/files/.  It is expected that the next revision
+    of the TIFF spec will replace the 6.0 JPEG design with the Note's design.
+    Although IJG's own code does not support TIFF/JPEG, the free libtiff library
+    uses our library to implement TIFF/JPEG per the Note.
+
+
+    ARCHIVE LOCATIONS
+    =================
+
+    The "official" archive site for this software is www.ijg.org.
+    The most recent released version can always be found there in
+    directory "files".
+
+    The JPEG FAQ (Frequently Asked Questions) article is a source of some
+    general information about JPEG.  It is available at
+    http://www.faqs.org/faqs/jpeg-faq.
+
+
+    FILE FORMAT COMPATIBILITY
+    =========================
+
+    This software implements ITU T.81 | ISO/IEC 10918 with some extensions from
+    ITU T.871 | ISO/IEC 10918-5 (JPEG File Interchange Format-- see REFERENCES).
+    Informally, the term "JPEG image" or "JPEG file" most often refers to JFIF or
+    a subset thereof, but there are other formats containing the name "JPEG" that
+    are incompatible with the DCT-based JPEG standard or with JFIF (for instance,
+    JPEG 2000 and JPEG XR).  This software therefore does not support these
+    formats.  Indeed, one of the original reasons for developing this free software
+    was to help force convergence on a common, interoperable format standard for
+    JPEG files.
+
+    JFIF is a minimal or "low end" representation.  TIFF/JPEG (TIFF revision 6.0 as
+    modified by TIFF Technical Note #2) can be used for "high end" applications
+    that need to record a lot of additional data about an image.
+
+
+    TO DO
+    =====
+
+    Please send bug reports, offers of help, etc. to jpeg-info@jpegclub.org.
+
+    --------------------------------------------------------
+    The Modified (3-clause) BSD License
+
+    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+    Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+    Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+    Neither the name of the libjpeg-turbo Project nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS", AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+
+
+    ----------------------------------------------------------
+    The zlib/libpng License (Zlib)
 
     This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 
@@ -5118,16 +4438,803 @@ terms are listed below.
     3. This notice may not be removed or altered from any source distribution.
 
 -------------------------------------------------------------
-29. Blas
+26. libpng
+	* Copyright (c) 1995-2020 The PNG Reference Library Authors.
+	 * Copyright (c) 2018-2020 Cosmin Truta.
+	 * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
+	 * Copyright (c) 1996-1997 Andreas Dilger.
+	 * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
 
-Licensing:
-The reference BLAS is a freely-available software package. It is available from netlib via anonymous ftp and the World Wide Web. Thus, it can be included in commercial software packages (and has been). We only ask that proper credit be given to the authors.
+    The software is supplied "as is", without warranty of any kind,
+    express or implied, including, without limitation, the warranties
+    of merchantability, fitness for a particular purpose, title, and
+    non-infringement.  In no event shall the Copyright owners, or
+    anyone distributing the software, be liable for any damages or
+    other liability, whether in contract, tort or otherwise, arising
+    from, out of, or in connection with the software, or the use or
+    other dealings in the software, even if advised of the possibility
+    of such damage.
 
-Like all software, it is copyrighted. It is not trademarked, but we do ask the following:
+    Permission is hereby granted to use, copy, modify, and distribute
+    this software, or portions hereof, for any purpose, without fee,
+    subject to the following restrictions:
 
-If you modify the source for these routines we ask that you change the name of the routine and comment the changes made to the original.
+    1. The origin of this software must not be misrepresented; you
+        must not claim that you wrote the original software.  If you
+        use this software in a product, an acknowledgment in the product
+        documentation would be appreciated, but is not required.
 
-We will gladly answer any questions regarding the software. If a modification is done, however, it is the responsibility of the person who modified the routine to provide support.
+    2. Altered source versions must be plainly marked as such, and must
+        not be misrepresented as being the original software.
+
+    3. This Copyright notice may not be removed or altered from any
+        source or altered source distribution.
+
+
+    PNG Reference Library License version 1 (for libpng 0.5 through 1.6.35)
+    -----------------------------------------------------------------------
+
+    libpng versions 1.0.7, July 1, 2000, through 1.6.35, July 15, 2018 are
+    Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson, are
+    derived from libpng-1.0.6, and are distributed according to the same
+    disclaimer and license as libpng-1.0.6 with the following individuals
+    added to the list of Contributing Authors:
+
+        Simon-Pierre Cadieux
+        Eric S. Raymond
+        Mans Rullgard
+        Cosmin Truta
+        Gilles Vollant
+        James Yu
+        Mandar Sahastrabuddhe
+        Google Inc.
+        Vadim Barkov
+
+    and with the following additions to the disclaimer:
+
+        There is no warranty against interference with your enjoyment of
+        the library or against infringement.  There is no warranty that our
+        efforts or the library will fulfill any of your particular purposes
+        or needs.  This library is provided with all faults, and the entire
+        risk of satisfactory quality, performance, accuracy, and effort is
+        with the user.
+
+    Some files in the "contrib" directory and some configure-generated
+    files that are distributed with libpng have other copyright owners, and
+    are released under other open source licenses.
+
+    libpng versions 0.97, January 1998, through 1.0.6, March 20, 2000, are
+    Copyright (c) 1998-2000 Glenn Randers-Pehrson, are derived from
+    libpng-0.96, and are distributed according to the same disclaimer and
+    license as libpng-0.96, with the following individuals added to the
+    list of Contributing Authors:
+
+        Tom Lane
+        Glenn Randers-Pehrson
+        Willem van Schaik
+
+    libpng versions 0.89, June 1996, through 0.96, May 1997, are
+    Copyright (c) 1996-1997 Andreas Dilger, are derived from libpng-0.88,
+    and are distributed according to the same disclaimer and license as
+    libpng-0.88, with the following individuals added to the list of
+    Contributing Authors:
+
+        John Bowler
+        Kevin Bracey
+        Sam Bushell
+        Magnus Holmgren
+        Greg Roelofs
+        Tom Tanner
+
+    Some files in the "scripts" directory have other copyright owners,
+    but are released under this license.
+
+    libpng versions 0.5, May 1995, through 0.88, January 1996, are
+    Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
+
+    For the purposes of this copyright and license, "Contributing Authors"
+    is defined as the following set of individuals:
+
+        Andreas Dilger
+        Dave Martindale
+        Guy Eric Schalnat
+        Paul Schmidt
+        Tim Wegner
+
+    The PNG Reference Library is supplied "AS IS".  The Contributing
+    Authors and Group 42, Inc. disclaim all warranties, expressed or
+    implied, including, without limitation, the warranties of
+    merchantability and of fitness for any purpose.  The Contributing
+    Authors and Group 42, Inc. assume no liability for direct, indirect,
+    incidental, special, exemplary, or consequential damages, which may
+    result from the use of the PNG Reference Library, even if advised of
+    the possibility of such damage.
+
+    Permission is hereby granted to use, copy, modify, and distribute this
+    source code, or portions hereof, for any purpose, without fee, subject
+    to the following restrictions:
+
+    1. The origin of this source code must not be misrepresented.
+
+    2. Altered versions must be plainly marked as such and must not
+        be misrepresented as being the original source.
+
+    3. This Copyright notice may not be removed or altered from any
+        source or altered source distribution.
+
+    The Contributing Authors and Group 42, Inc. specifically permit,
+    without fee, and encourage the use of this source code as a component
+    to supporting the PNG file format in commercial products.  If you use
+    this source code in a product, acknowledgment is not required but would
+    be appreciated.
 
 -------------------------------------------------------------
+27. netty
 
+   netty-codec
+
+   netty-codec-dns
+
+   netty-codec-http
+
+   netty-codec-http2
+
+   netty-codec-socks
+
+   netty-handler
+
+   netty-handler-proxy
+
+   netty-resolver
+
+   netty-resolver-dns
+
+   netty-resolver-dns-classes-macos
+
+   netty-resolver-dns-native-macos
+
+   netty-tcnative-boringssl-static
+
+   netty-tcnative-classes
+
+   netty-transport
+
+   netty-transport-classes-epoll
+
+   netty-transport-classes-kqueue
+
+   netty-transport-native-epoll
+
+   netty-transport-native-kqueue
+
+   netty-transport-native-unix-common
+
+                                The Netty Project
+                                =================
+
+    Please visit the Netty web site for more information:
+
+    * http://netty.io/
+
+    Copyright 2011 The Netty Project
+
+    The Netty Project licenses this file to you under the Apache License,
+    version 2.0 (the "License"); you may not use this file except in compliance
+    with the License. You may obtain a copy of the License at:
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+    License for the specific language governing permissions and limitations
+    under the License.
+
+    Also, please refer to each LICENSE..txt file, which is located in
+    the 'license' directory of the distribution file, for the license terms of the
+    components that this product depends on.
+
+    -------------------------------------------------------------------------------
+    This product contains the extensions to Java Collections Framework which has
+    been derived from the works by JSR-166 EG, Doug Lea, and Jason T. Greene:
+
+    * LICENSE:
+        * license/LICENSE.jsr166y.txt (Public Domain)
+    * HOMEPAGE:
+        * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/
+        * http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
+
+    This product contains a modified version of Robert Harder's Public Domain
+    Base64 Encoder and Decoder, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.base64.txt (Public Domain)
+    * HOMEPAGE:
+        * http://iharder.sourceforge.net/current/java/base64/
+
+    This product contains a modified portion of 'Webbit', an event based  
+    WebSocket and HTTP server, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.webbit.txt (BSD License)
+    * HOMEPAGE:
+        * https://github.com/joewalnes/webbit
+
+    This product contains a modified portion of 'SLF4J', a simple logging
+    facade for Java, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.slf4j.txt (MIT License)
+    * HOMEPAGE:
+        * http://www.slf4j.org/
+
+
+    This product contains a modified version of Roland Kuhn's ASL2
+    AbstractNodeQueue, which is based on Dmitriy Vyukov's non-intrusive MPSC queue.
+    It can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.abstractnodequeue.txt (Public Domain)
+    * HOMEPAGE:
+        * https://github.com/akka/akka/blob/wip-2.2.3-for-scala-2.11/akka-actor/src/main/java/akka/dispatch/AbstractNodeQueue.java
+
+    This product contains a modified portion of Nitsan Wakart's 'JCTools', Java Concurrency Tools for the JVM,
+    which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.jctools.txt (ASL2 License)
+    * HOMEPAGE:
+        * https://github.com/JCTools/JCTools
+
+
+    This product optionally depends on 'JZlib', a re-implementation of zlib in
+    pure Java, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.jzlib.txt (BSD style License)
+    * HOMEPAGE:
+        * http://www.jcraft.com/jzlib/
+
+    This product optionally depends on 'Protocol Buffers', Google's data
+    interchange format, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.protobuf.txt (New BSD License)
+    * HOMEPAGE:
+        * http://code.google.com/p/protobuf/
+
+    This product optionally depends on 'Bouncy Castle Crypto APIs' to generate
+    a temporary self-signed X.509 certificate when the JVM does not provide the
+    equivalent functionality.  It can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.bouncycastle.txt (MIT License)
+    * HOMEPAGE:
+        * http://www.bouncycastle.org/
+
+    This product optionally depends on 'Snappy', a compression library produced
+    by Google Inc, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.snappy.txt (New BSD License)
+    * HOMEPAGE:
+        * http://code.google.com/p/snappy/
+
+    This product optionally depends on 'JBoss Marshalling', an alternative Java
+    serialization API, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.jboss-marshalling.txt (GNU LGPL 2.1)
+    * HOMEPAGE:
+        * http://www.jboss.org/jbossmarshalling
+
+    This product optionally depends on 'Caliper', Google's micro-
+    benchmarking framework, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.caliper.txt (Apache License 2.0)
+    * HOMEPAGE:
+        * http://code.google.com/p/caliper/
+
+    This product optionally depends on 'Apache Commons Logging', a logging
+    framework, which can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.commons-logging.txt (Apache License 2.0)
+    * HOMEPAGE:
+        * http://commons.apache.org/logging/
+
+    This product optionally depends on 'Apache Log4J', a logging framework, which
+    can be obtained at:
+
+    * LICENSE:
+        * license/LICENSE.log4j.txt (Apache License 2.0)
+    * HOMEPAGE:
+        * http://logging.apache.org/log4j/
+    Here is the Apache 2.0 license:
+
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [1995-2009] [Mort Bay Consulting Pty Ltd]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License. 
+
+-------------------------------------------------------------
+28. boringssl
+	Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+
+    BoringSSL is a fork of OpenSSL. As such, large parts of it fall under OpenSSL
+    licensing. Files that are completely new have a Google copyright and an ISC
+    license. This license is reproduced at the bottom of this file.
+
+    Contributors to BoringSSL are required to follow the CLA rules for Chromium:
+    https://cla.developers.google.com/clas
+
+    Files in third_party/ have their own licenses, as described therein. The MIT
+    license, for third_party/fiat, which, unlike other third_party directories, is
+    compiled into non-test libraries, is included below.
+
+    The OpenSSL toolkit stays under a dual license, i.e. both the conditions of the
+    OpenSSL License and the original SSLeay license apply to the toolkit. See below
+    for the actual license texts. Actually both licenses are BSD-style Open Source
+    licenses. In case of any license issues related to OpenSSL please contact
+    openssl-core@openssl.org.
+
+    The following are Google-internal bug numbers where explicit permission from
+    some authors is recorded for use of their work. (This is purely for our own
+    record keeping.)
+    27287199
+    27287880
+    27287883
+
+    OpenSSL License
+    ---------------
+
+    /* ====================================================================
+    * Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
+    *
+    * Redistribution and use in source and binary forms, with or without
+    * modification, are permitted provided that the following conditions
+    * are met:
+    *
+    * 1. Redistributions of source code must retain the above copyright
+    *    notice, this list of conditions and the following disclaimer. 
+    *
+    * 2. Redistributions in binary form must reproduce the above copyright
+    *    notice, this list of conditions and the following disclaimer in
+    *    the documentation and/or other materials provided with the
+    *    distribution.
+    *
+    * 3. All advertising materials mentioning features or use of this
+    *    software must display the following acknowledgment:
+    *    "This product includes software developed by the OpenSSL Project
+    *    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+    *
+    * 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+    *    endorse or promote products derived from this software without
+    *    prior written permission. For written permission, please contact
+    *    openssl-core@openssl.org.
+    *
+    * 5. Products derived from this software may not be called "OpenSSL"
+    *    nor may "OpenSSL" appear in their names without prior written
+    *    permission of the OpenSSL Project.
+    *
+    * 6. Redistributions of any form whatsoever must retain the following
+    *    acknowledgment:
+    *    "This product includes software developed by the OpenSSL Project
+    *    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+    *
+    * THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+    * EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+    * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+    * ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+    * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+    * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+    * OF THE POSSIBILITY OF SUCH DAMAGE.
+    * ====================================================================
+    *
+    * This product includes cryptographic software written by Eric Young
+    * (eay@cryptsoft.com).  This product includes software written by Tim
+    * Hudson (tjh@cryptsoft.com).
+    *
+    */
+
+    Original SSLeay License
+    -----------------------
+
+    /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+    * All rights reserved.
+    *
+    * This package is an SSL implementation written
+    * by Eric Young (eay@cryptsoft.com).
+    * The implementation was written so as to conform with Netscapes SSL.
+    * 
+    * This library is free for commercial and non-commercial use as long as
+    * the following conditions are aheared to.  The following conditions
+    * apply to all code found in this distribution, be it the RC4, RSA,
+    * lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+    * included with this distribution is covered by the same copyright terms
+    * except that the holder is Tim Hudson (tjh@cryptsoft.com).
+    * 
+    * Copyright remains Eric Young's, and as such any Copyright notices in
+    * the code are not to be removed.
+    * If this package is used in a product, Eric Young should be given attribution
+    * as the author of the parts of the library used.
+    * This can be in the form of a textual message at program startup or
+    * in documentation (online or textual) provided with the package.
+    * 
+    * Redistribution and use in source and binary forms, with or without
+    * modification, are permitted provided that the following conditions
+    * are met:
+    * 1. Redistributions of source code must retain the copyright
+    *    notice, this list of conditions and the following disclaimer.
+    * 2. Redistributions in binary form must reproduce the above copyright
+    *    notice, this list of conditions and the following disclaimer in the
+    *    documentation and/or other materials provided with the distribution.
+    * 3. All advertising materials mentioning features or use of this software
+    *    must display the following acknowledgement:
+    *    "This product includes cryptographic software written by
+    *     Eric Young (eay@cryptsoft.com)"
+    *    The word 'cryptographic' can be left out if the rouines from the library
+    *    being used are not cryptographic related :-).
+    * 4. If you include any Windows specific code (or a derivative thereof) from 
+    *    the apps directory (application code) you must include an acknowledgement:
+    *    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+    * 
+    * THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+    * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+    * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+    * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+    * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+    * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+    * SUCH DAMAGE.
+    * 
+    * The licence and distribution terms for any publically available version or
+    * derivative of this code cannot be changed.  i.e. this code cannot simply be
+    * copied and put under another distribution licence
+    * [including the GNU Public Licence.]
+    */
+
+
+    ISC license used for completely new code in BoringSSL:
+
+    /* Copyright (c) 2015, Google Inc.
+    *
+    * Permission to use, copy, modify, and/or distribute this software for any
+    * purpose with or without fee is hereby granted, provided that the above
+    * copyright notice and this permission notice appear in all copies.
+    *
+    * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+    * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+    * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+    * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
+
+
+    The code in third_party/fiat carries the MIT license:
+
+    Copyright (c) 2015-2016 the fiat-crypto authors (see
+    https://github.com/mit-plv/fiat-crypto/blob/master/AUTHORS).
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+
+    Licenses for support code
+    -------------------------
+
+    Parts of the TLS test suite are under the Go license. This code is not included
+    in BoringSSL (i.e. libcrypto and libssl) when compiled, however, so
+    distributing code linked against BoringSSL does not trigger this license:
+
+    Copyright (c) 2009 The Go Authors. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following disclaimer
+    in the documentation and/or other materials provided with the
+    distribution.
+    * Neither the name of Google Inc. nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+    BoringSSL uses the Chromium test infrastructure to run a continuous build,
+    trybots etc. The scripts which manage this, and the script for generating build
+    metadata, are under the Chromium license. Distributing code linked against
+    BoringSSL does not trigger this license.
+
+    Copyright 2015 The Chromium Authors. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+    copyright notice, this list of conditions and the following disclaimer
+    in the documentation and/or other materials provided with the
+    distribution.
+    * Neither the name of Google Inc. nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+-------------------------------------------------------------
+29. jep
+	Copyright (c) 2004 - 2020 JEP AUTHORS.
+
+   tinyxml2
+	
+
+   zlib
+	Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler
+
+The zlib/libpng License (Zlib)
+
+Copyright <YEAR> <COPYRIGHT HOLDER>
+
+This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source distribution.
+
+-------------------------------------------------------------

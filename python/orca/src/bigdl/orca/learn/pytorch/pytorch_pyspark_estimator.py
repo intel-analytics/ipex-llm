@@ -36,7 +36,7 @@ from bigdl.orca.learn.base_estimator import BaseEstimator
 from bigdl.orca.data.file import get_remote_file_to_local, put_local_file_to_remote
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
-
+from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -111,7 +111,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             config: Optional[Dict]=None,
-            scheduler_step_freq: str="batch",
+            scheduler_step_freq: str="epoch",
             use_tqdm: bool=False,
             workers_per_node: int=1,
             sync_stats: bool=True,
@@ -140,10 +140,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-
-        if not loss_creator:
-            invalidInputError(False,
-                              "You must provide a loss_creator.")
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -214,7 +210,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                    'SparkDataFrame',
                                    Callable[[Dict, int], 'DataLoader'],
                                    None]=None,
-            callbacks: List['Callback']=[]) -> List:
+            callbacks: Optional[List['Callback']]=None) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TorchRunner.train_epochs()` on N parallel workers simultaneously
@@ -240,7 +236,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param label_cols: label column names if data is Spark DataFrame.
         :param validation_data: validation data. Validation data type should be the same
                as train data.
-        :param callbacks: A list for all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -292,6 +289,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             state_dict=state_dict,
             cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
+
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
 
         params = dict(
             epochs=epochs,
@@ -488,7 +490,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  reduce_results: bool=True,
                  info: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols: Optional[List[str]]=None) -> Union[List[Dict], Dict]:
+                 label_cols: Optional[List[str]]=None,
+                 callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -515,6 +518,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)
@@ -540,11 +545,17 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
+
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info
+            info=info,
+            callbacks=callbacks
         )
 
         if isinstance(data, SparkXShards):
