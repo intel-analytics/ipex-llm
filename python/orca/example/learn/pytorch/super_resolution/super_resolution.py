@@ -313,13 +313,13 @@ elif opt.backend in ["ray", "spark"]:
                                                      save_weights_only=True)])
     for epochinfo in stats:
         print("===> Epoch {} Complete: Avg. Loss: {:.4f}"
-                .format(epochinfo["epoch"], epochinfo["train_loss"]))
+              .format(epochinfo["epoch"], epochinfo["train_loss"]))
 
     val_stats = estimator.evaluate(data=validation_data_creator,
-                                    batch_size=opt.test_batch_size)
+                                   batch_size=opt.test_batch_size)
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
-            .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
-    
+          .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
+
     model = estimator.get_model()
     last_model_path = f_model_out_path.format(epoch=opt.epochs)
     estimator.save(last_model_path)
