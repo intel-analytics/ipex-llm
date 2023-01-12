@@ -15,4 +15,5 @@
 #
 
 from bigdl.nano.pytorch.patching.dtype_patching import patch_dtype
-from bigdl.nano.pytorch.patching.gpu_cpu import patch_cuda
+from bigdl.nano.pytorch.patching.gpu_cpu import patch_cuda, unpatch_cuda
+from bigdl.nano.pytorch.patching.encryption_patching import patch_encryption

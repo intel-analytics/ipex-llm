@@ -28,9 +28,12 @@ class LifeCycle(metaclass=ABCMeta):
                                world_size):
         self._init_torch_ddp(tcp_store_host, tcp_store_port, world_rank,
                              world_size)
-
-        self.setup_components()
         self.setup_ddp_components()
+
+    def setup_torch_estimator(self, world_rank, world_size):
+        self.rank = world_rank
+        self.size = world_size
+        self.setup_components()
 
     @abstractmethod
     def setup_components(self):
@@ -72,8 +75,6 @@ class LifeCycle(metaclass=ABCMeta):
             rank=world_rank,
             world_size=world_size)
         self.backend = "torch-distributed"
-        self.rank = world_rank
-        self.size = world_size
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")

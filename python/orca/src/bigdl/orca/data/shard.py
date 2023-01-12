@@ -1097,12 +1097,37 @@ class SparkXShards(XShards):
         """
         if self._get_class_name() != 'pandas.core.frame.DataFrame':
             invalidInputError(False,
-                              "Currently only support select() on"
+                              "Currently only support sample_to_pdf() on"
                               " XShards of Pandas DataFrame")
         sampled = self.sample(
             frac=frac, replace=replace, weights=weights, random_state=random_state)
         pdf = sampled.concat_to_pdf(axis=axis)
         return pdf
+
+    def stack_feature_labels(self) -> "SparkXShards":
+        """
+        Stack tuple of features and labels in each partition into an ndarray for
+        Orca Estimator traning
+
+        :return: SparkXShards.
+        """
+        if self._get_class_name() != "builtins.tuple":
+            invalidInputError(False,
+                              "Currently only support stack_feature_labels() on"
+                              " XShards of tuple of features and labels")
+
+        def per_partition(iterator):
+            features = []
+            labels = []
+            for it in iterator:
+                feature, label = it[0], it[1]
+                features.append(feature)
+                labels.append(label)
+            out = {'x': np.array(features).astype(np.float32),
+                   'y': np.array(labels).astype(np.float32)}
+            return [out]
+        rdd = self.rdd.mapPartitions(lambda x: per_partition(x))
+        return SparkXShards(rdd)
 
 
 class SharedValue(object):

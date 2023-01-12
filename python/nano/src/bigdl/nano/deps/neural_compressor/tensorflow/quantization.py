@@ -50,7 +50,6 @@ class TensorflowQuantization(BaseQuantization):
         return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        # TODO: Need to wrapp q_model similar to Pytorch
         return KerasQuantizedModel(q_model)
 
     @property

@@ -5,8 +5,11 @@ ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
+ARG FLINK_VERSION=1.15.3
+ARG SCALA_VERSION=2.12
 
-# Stage.1 Spark & Hadoop & Hive
+
+# Stage.1 Spark & Hadoop & Hive & Flink
 FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -16,10 +19,14 @@ ARG SPARK_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
+ARG FLINK_VERSION
+ARG SCALA_VERSION
 
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+ENV FLINK_HOME                          /opt/flink
+ENV GOSU_VERSION                        1.11
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip git maven nasm
@@ -115,7 +122,24 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     mvn -T 16 -DskipTests=true clean package && \
     mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
+
+# flink
+RUN wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" && \
+  chmod +x /usr/local/bin/gosu && \
+  gosu nobody true && \
+  mkdir -p $FLINK_HOME && \
+  cd $FLINK_HOME && \
+  wget -nv -O flink.tgz "https://www.apache.org/dyn/closer.cgi?action=download&filename=flink/flink-${FLINK_VERSION}/flink-${FLINK_VERSION}-bin-scala_${SCALA_VERSION}.tgz" && \
+  tar -xf flink.tgz --strip-components=1 && \
+  rm flink.tgz && \
+# Replace default REST/RPC endpoint bind address to use the container's network interface
+  sed -i 's/rest.address: localhost/rest.address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml && \
+  sed -i 's/rest.bind-address: localhost/rest.bind-address: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml && \
+  sed -i 's/jobmanager.bind-host: localhost/jobmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml && \
+  sed -i 's/taskmanager.bind-host: localhost/taskmanager.bind-host: 0.0.0.0/g' $FLINK_HOME/conf/flink-conf.yaml && \
+  sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml
 RUN ls -al /opt
+
 
 # stage.2 gramine
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
@@ -123,12 +147,15 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 ARG SPARK_VERSION
 ARG TINI_VERSION
 
+ENV FLINK_HOME                          /ppml/flink
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
+ENV PATH                                $FLINK_HOME/bin:$PATH
+
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -139,11 +166,16 @@ RUN mkdir -p /ppml/lib && \
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
+COPY --from=bigdata /opt/flink $FLINK_HOME
+COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
+ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
+ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
+
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar && \
@@ -152,7 +184,17 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/bigdl-ppml-submit.sh && \
     cp /sbin/tini /usr/bin/tini && \
-    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
+#flink
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y libsnappy1v5 gettext-base libjemalloc-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd --system --gid=9999 flink && \
+    useradd --system --home-dir ${FLINK_HOME} --uid=9999 --gid=flink flink && \
+    chmod +x /usr/local/bin/gosu && \
+    chmod +x /opt/flink-entrypoint.sh && \
+    chmod -R 777 ${FLINK_HOME} && \
+    chown -R flink:flink ${FLINK_HOME}
+
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
 

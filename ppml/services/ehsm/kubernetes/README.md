@@ -25,10 +25,6 @@
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 
-
-Now you have already had a PCCS image.
-
-
 ## 1. Deploy BigDL-PCCS on Kubernetes
 If you already have a BigDL-PCCS service on Kubernetes, please skip this step.
 
@@ -63,7 +59,7 @@ The `dkeyserverNodeName` is the fixed node which you want to assign `dkeyserver`
 nfsServerIP: your_nfs_server_ip                   --->   <the_IP_address_of_your_NFS_server>
 nfsPath: a_nfs_shared_folder_path_on_the_server   --->   <an_existing_shared_folder_path_on_NFS_server>
 ......
-pccsIP: your_pccs_ip                              --->   <the_ip_address_in_your_subnetwork_you_have_assigned_to_pccs_in_step1>
+pccsURL: your_pccs_URL_like_https://xxxx:yyyy     --->   <the_URL_of_PCCS_service_you_have_deployed_in_step1>
 kmsIP: your_kms_ip_to_use_as                      --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_kms>
 dkeyserverNodeName: the_fixed_node_you_want_to_assign_dkeyserver_to --->   <a_node_name_in_k8s_cluster_to_run_dkerysever_on>
 ```

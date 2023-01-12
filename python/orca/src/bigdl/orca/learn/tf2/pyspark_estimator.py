@@ -161,30 +161,6 @@ class SparkTFEstimator():
             local_batch_size = None
         sc = OrcaContext.get_spark_context()
 
-        if isinstance(data, SparkXShards):
-            data = data.to_lazy()
-            if validation_data is not None and isinstance(validation_data, SparkXShards):
-                validation_data = validation_data.to_lazy()
-        # Data partition should be equal to num workers.
-        # Repartition Spark DataFrame before converting to SparkXShards.
-        # Repartition on SparkXShards will result in empty partitions.
-        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
-            if data.rdd.getNumPartitions() != self.num_workers:
-                data = data.repartition(self.num_workers)
-            if validation_data is not None:
-                invalidInputError(
-                    isinstance(validation_data, DataFrame) or
-                    isinstance(validation_data, SparkXShards),
-                    "validation_data should have the same type with train data")
-                if validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
-                    validation_data = validation_data.repartition(self.num_workers)  # type:ignore
-        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
-                                                           feature_cols, label_cols,
-                                                           mode="fit",
-                                                           num_workers=self.num_workers,
-                                                           accept_str_col=True,
-                                                           shard_size=local_batch_size)
-
         # for continuous training
         if self.model_weights:
             weights = sc.broadcast(self.model_weights)
@@ -220,6 +196,30 @@ class SparkTFEstimator():
             validation_freq=validation_freq,
             data_config=data_config
         )
+
+        if isinstance(data, SparkXShards):
+            data = data.to_lazy()
+            if validation_data is not None and isinstance(validation_data, SparkXShards):
+                validation_data = validation_data.to_lazy()
+        # Data partition should be equal to num workers.
+        # Repartition Spark DataFrame before converting to SparkXShards.
+        # Repartition on SparkXShards will result in empty partitions.
+        if isinstance(data, DataFrame) or isinstance(data, SparkXShards):
+            if data.rdd.getNumPartitions() != self.num_workers:
+                data = data.repartition(self.num_workers)
+            if validation_data is not None:
+                invalidInputError(
+                    isinstance(validation_data, DataFrame) or
+                    isinstance(validation_data, SparkXShards),
+                    "validation_data should have the same type with train data")
+                if validation_data.rdd.getNumPartitions() != self.num_workers:  # type:ignore
+                    validation_data = validation_data.repartition(self.num_workers)  # type:ignore
+        data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
+                                                           feature_cols, label_cols,
+                                                           mode="fit",
+                                                           num_workers=self.num_workers,
+                                                           accept_str_col=True,
+                                                           shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):  # Computation triggered when collect
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -259,23 +259,9 @@ class SparkTFEstimator():
             res = self.workerRDD.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
-        if self.model_dir is not None:
-            result = res
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
-                                         os.path.join(temp_dir, "state.pkl"))
-                import pickle
-                with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
-                    state = pickle.load(f)
-                    self.model_weights = state['weights']
-            finally:
-                shutil.rmtree(temp_dir)
-        else:
-            result = res[0]
-            self.model_weights = res[1]
+        result = self._update_weights(res)
 
-        return result[0]
+        return result
 
     def evaluate(self,
                  data: Union["SparkXShards", "SparkDataFrame", Callable],
@@ -462,6 +448,10 @@ class SparkTFEstimator():
                                               mode="predict",
                                               accept_str_col=True,
                                               shard_size=local_batch_size)
+
+            def transform_func(iter, init_param, param):
+                param["data_creator"] = make_data_creator(iter)
+                return SparkRunner(**init_param).predict(**param)
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
@@ -659,3 +649,21 @@ class SparkTFEstimator():
         """
         if self.need_to_log_to_driver:
             stop_log_server(self.log_server_thread, self.ip, self.port)
+
+    def _update_weights(self, res):
+        if self.model_dir is not None:
+            result = res
+            try:
+                temp_dir = tempfile.mkdtemp()
+                get_remote_file_to_local(os.path.join(self.model_dir, "state.pkl"),
+                                         os.path.join(temp_dir, "state.pkl"))
+                import pickle
+                with open(os.path.join(temp_dir, "state.pkl"), 'rb') as f:
+                    state = pickle.load(f)
+                    self.model_weights = state['weights']
+            finally:
+                shutil.rmtree(temp_dir)
+        else:
+            result = res[0]
+            self.model_weights = res[1]
+        return result

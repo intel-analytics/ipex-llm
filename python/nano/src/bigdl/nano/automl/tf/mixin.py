@@ -257,11 +257,13 @@ class HPOMixin:
         :param n_parallels: number of parallel processes to run trials.
         :param target_metric_mode: target metric of which epoch to report as the final result,
             possible options are:
-                'max': maximum value of all epochs's results
-                'min': minimum value of all epochs's results
-                'last': result of the last epoch
-                'auto': if direction is maximize, use max mode
+
+            | 'max': maximum value of all epochs's results
+            | 'min': minimum value of all epochs's results
+            | 'last': result of the last epoch
+            | 'auto': if direction is maximize, use max mode
                         if direction is minimize, use min mode
+
         :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.

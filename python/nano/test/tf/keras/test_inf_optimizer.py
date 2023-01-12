@@ -15,6 +15,8 @@
 
 from unittest import TestCase
 import tensorflow as tf
+import tempfile
+import os
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
 from tensorflow.keras.applications.resnet import ResNet50
@@ -116,7 +118,7 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
-        
+
         # test dataset with only x
         model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
         train_examples = np.random.random((100, 40, 40, 3))
@@ -128,3 +130,15 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
+
+    def test_optimizer_save_load(self):
+        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        # prepare dataset
+        train_examples = np.random.random((100, 40, 40, 3))
+        # save load for original model
+        output1 = model(train_examples)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            output2 = load_model(train_examples)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)

@@ -16,48 +16,52 @@
 
 import argparse
 import os
-import fileoperator, keymanager
+import bigdl.ppml.kms.file_operator as file_operator
+import bigdl.ppml.kms.key_manager as key_manager
 
 def generate_primary_key(ip, port):
-    keymanager.generate_primary_key_ciphertext(ip, port)
+    key_manager.generate_primary_key_cipher_text(ip, port)
 
 
 def generate_data_key(ip, port, encrypted_primary_key_path, data_key_length):
-    keymanager.generate_data_key_ciphertext(ip, port, encrypted_primary_key_path, data_key_length)
+    key_manager.generate_data_key_cipher_text(ip, port, encrypted_primary_key_path, data_key_length)
 
 
 def encrypt_file_without_key(data_file_path, ip, port):
-    keymanager.generate_primary_key_ciphertext(ip, port)
-    keymanager.generate_data_key_ciphertext(ip, port, './encrypted_primary_key')
-    fileoperator.encrypt_data_file(ip, port, data_file_path, './encrypted_primary_key', './encrypted_data_key')
+    key_manager.generate_primary_key_cipher_text(ip, port)
+    key_manager.generate_data_key_cipher_text(ip, port, './encrypted_primary_key')
+    file_operator.encrypt_data_file(ip, port, data_file_path, './encrypted_primary_key', './encrypted_data_key')
 
 
 def encrypt_file_with_key(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
-    fileoperator.encrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
+    file_operator.encrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
 
+def decrypt_buffer_with_key(buf, decrypted_buf, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
+    file_operator.decrypt_buf(ip, port, buf, decrypted_buf, encrypted_primary_key_path, encrypted_data_key_path)
 
 def decrypt_file(data_file_path, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
-    fileoperator.decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
-
+    file_operator.decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path)
 
 def encrypt_directory_with_key(dir_path, ip, port,encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
-    fileoperator.encrypt_directory_automation(ip, port, dir_path, encrypted_primary_key_path, encrypted_data_key_path,save_dir)
+    file_operator.encrypt_directory_automation(ip, port, dir_path, encrypted_primary_key_path, encrypted_data_key_path,save_dir)
 
+def encrypt_buffer_with_key(buf, encrypted_buf, ip, port, encrypted_primary_key_path, encrypted_data_key_path):
+    file_operator.encrypt_buf_automation(ip, port, buf, encrypted_buf, encrypted_primary_key_path, encrypted_data_key_path)
 
 def encrypt_directory_without_key(dir_path, ip, port, save_dir=None):
-    keymanager.generate_primary_key_ciphertext(ip, port)
-    keymanager.generate_data_key_ciphertext(ip, port, './encrypted_primary_key')
-    fileoperator.encrypt_directory_automation(ip, port, dir_path, './encrypted_primary_key', './encrypted_data_key',save_dir)
+    key_manager.generate_primary_key_cipher_text(ip, port)
+    key_manager.generate_data_key_cipher_text(ip, port, './encrypted_primary_key')
+    file_operator.encrypt_directory_automation(ip, port, dir_path, './encrypted_primary_key', './encrypted_data_key',save_dir)
 
 
 def get_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path):
-    data_key_plaintext = keymanager.retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
+    data_key_plaintext = key_manager.retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     print(data_key_plaintext)
     return data_key_plaintext
 
 
 def decrypt_csv_columns(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir):
-    fileoperator.decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir)
+    file_operator.decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypted_data_key_path, input_dir)
 
 
 if __name__ == "__main__":

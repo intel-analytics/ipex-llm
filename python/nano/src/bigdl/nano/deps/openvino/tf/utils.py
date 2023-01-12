@@ -18,18 +18,21 @@ from ..core.utils import convert_pb_to_xml
 from pathlib import Path
 
 
-def export(model, xml_path="model.xml", logging=True):
+def export(model, xml_path="model.xml", precision='fp32', logging=True, **kwargs):
     '''
     Function to export pytorch model into openvino and save it to local.
     Any instance of torch.nn.Module including Lightning Module is acceptable.
 
     :param model: Model instance of torch.nn.module to be exported.
-    :param input_sample: torch.Tensor or a list for the model tracing.
     :param xml_path: The path to save openvino model file.
+    :param precision: Global precision of model, supported type: 'fp32', 'fp16',
+                      defaults to 'fp32'.
+    :param logging: whether to log detailed information of model conversion. default: True.
+    :param **kwargs: will be passed to model optimizer function.
     '''
     # export a model with dynamic axes to enable IR to accept different batches and resolutions
     with TemporaryDirectory() as folder:
         folder = Path(folder)
         pb_path = str(folder)
         model.save(str(folder))
-        convert_pb_to_xml(pb_path, xml_path, logging=logging)
+        convert_pb_to_xml(pb_path, xml_path, precision=precision, logging=logging, **kwargs)

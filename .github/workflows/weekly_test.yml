@@ -46,8 +46,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: set env
+      env:
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum'
+        DEFAULT_TAG: '2.2.0-SNAPSHOT'
+      run: |
+        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Run Test
       uses: ./.github/actions/ppml-occlum-k8s-exampletests-action
+      with:
+        image: ${{env.IMAGE}}
+        image-tag: ${{env.TAG}}
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
