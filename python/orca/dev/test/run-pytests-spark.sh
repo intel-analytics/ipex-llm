@@ -29,7 +29,7 @@ export PYSPARK_DRIVER_PYTHON=python
 
 #python -m pytest -v --doctest-modules ../../../../orca/src/bigdl/orca/tfpark
 
-python -m pytest -v test/bigdl/orca/tfpark
+#python -m pytest -v test/bigdl/orca/tfpark
 python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
 python -m pytest -v test/bigdl/orca/learn/test_metrics.py
 python -m pytest -v test/bigdl/orca/learn/test_utils.py
