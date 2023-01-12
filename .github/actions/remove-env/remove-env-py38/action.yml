@@ -7,10 +7,10 @@ runs:
       shell: bash
       run: |
         unset PYTHONHOME 
-        source activate py37
+        source activate py38
         pip uninstall -y pyspark bigdl-friesian bigdl bigdl-dllib-spark3 bigdl-orca-spark3 bigdl-tf bigdl-math bigdl-orca  bigdl-dllib bigdl-tf bigdl-chronos bigdl-nano
         source deactivate
-        conda remove -n py37 -y --all
+        conda remove -n py38 -y --all
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
