@@ -24,6 +24,7 @@ from bigdl.orca.data.file import *
 from bigdl.orca.data.utils import *
 from bigdl.orca.data import SparkXShards
 from pyspark.sql.functions import col
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def get_file_paths(file_path):
