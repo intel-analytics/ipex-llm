@@ -46,7 +46,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
+        is-self-hosted-runner: false
         file-name: Nano-PyTorch-UT-Test.json
         type: job
         job-name: Nano-PyTorch-UT-Test
@@ -76,7 +76,7 @@ jobs:
       with:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
+        is-self-hosted-runner: false
         file-name: Nano-Tensorflow-UT-Test.json
         type: job
         job-name: Nano-Tensorflow-UT-Test
