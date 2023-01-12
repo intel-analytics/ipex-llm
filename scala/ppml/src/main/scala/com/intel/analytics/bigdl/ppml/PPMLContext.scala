@@ -62,18 +62,25 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    * @param dataKeyPath
    * @return
    */
+  
+  def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
+    dataKeyPlainText = kms.retrieveDataKeyPlainText(
+      new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
+      sparkSession.sparkContext.hadoopConfiguration)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
+    this
+  }
+  
+  // specified one datasource to loadkeys 
   def loadKeys(primaryKeyPath: String,
                dataKeyPath: String,
-               dataSourceName: String = "dataSource"): this.type = {
-    var kms = this.kms
-    if (kms == null) {
-      Log4Error.invalidInputError(this.dataSources.contains(dataSourceName),
-        "this.dataSources.get(dataSourceName).get==null, cant get kms of " + dataSourceName)
-      val kmsName = this.dataSources.get(dataSourceName).get
-      Log4Error.invalidInputError(this.multiKms.contains(kmsName),
-        " get kms == null, cant get kms of KMSname " + kmsName)
-      kms = this.multiKms.get(kmsName).get
-    }
+               dataSourceName: String ): this.type = {
+    Log4Error.invalidInputError(this.dataSources.contains(dataSourceName),
+      "this.dataSources.get(dataSourceName).get==null, cant get kms of " + dataSourceName)
+    val kmsName = this.dataSources.get(dataSourceName).get
+    Log4Error.invalidInputError(this.multiKms.contains(kmsName),
+      " get kms == null, cant get kms of KMSname " + kmsName)
+    val kms = this.multiKms.get(kmsName).get
     Log4Error.invalidInputError(kms != null, "LOAD KEYS: kms not found")
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
@@ -314,12 +321,16 @@ object PPMLContext{
     val ppmlSc = new PPMLContext(sparkSession = sparkSession)
 
     // init kms
+    Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.instance"),
+      "spark.bigdl.kms.multikms.instance not found, please provide instance of your KMS")
     val instance = conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
     for (i <- 1 to instance) {
-      val kmsType = conf.get(s"spark.bigdl.kms.multikms.type${i}",
-        defaultValue = "SimpleKeyManagementService")
-      val kmsName = conf.get(s"spark.bigdl.kms.multikms.name${i}",
-        defaultValue = s"KMS${i}")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.type${i}"),
+        s"spark.bigdl.kms.multikms.type${i} not found.")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.name${i}"),
+        s"spark.bigdl.kms.multikms.name${i} not found.")
+      val kmsType = conf.get(s"spark.bigdl.kms.multikms.type${i}")
+      val kmsName = conf.get(s"spark.bigdl.kms.multikms.name${i}")
       val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get(s"spark.bigdl.kms.multikms.ehs.ip${i}",
@@ -351,11 +362,16 @@ object PPMLContext{
      ppmlSc.addKMS(kmsName, kms)
     }
 
-    // init data sources=
+    // init data sources
+    Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource.instance"),
+      "spark.bigdl.kms.datasource.instance not found, please provide the instance of your data sources.")
     val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue = 2)
     for (i <- 1 to dataSourceInstance) {
-      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",
-        defaultValue = s"dataSource${i}")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.name"),
+        s"spark.bigdl.kms.datasource${i}.name not found")
+      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.kms"),
+        s"spark.bigdl.kms.datasource${i}.kms not found")
       val kms = conf.get(s"spark.bigdl.kms.datasource${i}.kms")
 
       // get input and output path
