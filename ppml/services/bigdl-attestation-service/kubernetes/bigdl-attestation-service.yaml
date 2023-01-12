@@ -1,0 +1,48 @@
+# remote-attestation-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-attestation-service
+  namespace: bigdl-remote-attestation-service
+  labels:
+    app: remote-attestation-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: remote-attestation-service
+      port: 9875
+      targetPort: 9875
+  selector:
+    app: remote-attestation-service
+  externalIPs:
+  - 0.0.0.0 
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: remote-attestation-service
+  namespace: bigdl-remote-attestation-service
+spec:
+  selector:
+    matchLabels:
+      app: remote-attestation-service
+  serviceName: "remote-attestation-service"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: remote-attestation-service
+    spec:
+      containers:
+      - name: remote-attestation-service
+        image: intelanalytics/bigdl-attestation-service:2.2.0-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        command: ["./opt/entrypoint.sh"]
+        env:
+        - name: PCCS_URL
+          value: your_pccs_url
+        - name: ATTESTATION_SERVICE_HOST
+          value: 0.0.0.0
+        - name: ATTESTATION_SERVICE_PORT
+          value: "9875" 
+---

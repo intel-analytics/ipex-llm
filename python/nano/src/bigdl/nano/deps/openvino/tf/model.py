@@ -119,7 +119,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
         return KerasOpenVINOModel(model, precision='int8',
-                                  config=config, thread_num=thread_num)
+                                  config=config, thread_num=thread_num,
+                                  device=self.ov_model._device)
 
     @staticmethod
     def _load(path, device=None):
