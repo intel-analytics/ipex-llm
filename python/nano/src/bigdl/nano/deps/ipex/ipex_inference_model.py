@@ -17,6 +17,7 @@
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+from bigdl.nano.utils.log4warning import register_suggestion
 import torch
 
 
@@ -54,6 +55,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         """
         super().__init__(model)
         if from_load:
+            register_suggestion(" The first two inference times will be longer than the subsequent \
+                                inference times for the reason that model loaded lack of warm up.")
             self.use_ipex = use_ipex
             self.use_jit = use_jit
             self.channels_last = channels_last

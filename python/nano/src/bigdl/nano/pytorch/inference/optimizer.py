@@ -1019,10 +1019,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if use_jit:
                 invalidInputError(jit_method in [None, 'trace', 'script'],
                                   "jit_method {} is invalid.".format(jit_method))
-                print('======================DEBUG START: warm up successfully======================')
                 for _ in range(2):
                     ipex_jit_fp32_model(input_sample)
-                print('======================DEBUG  END : warm up successfully======================')
             return ipex_jit_fp32_model
 
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
