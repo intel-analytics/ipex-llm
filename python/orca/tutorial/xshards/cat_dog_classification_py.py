@@ -61,7 +61,6 @@ def get_label(file_name):
 
 data_shard = bigdl.orca.data.image.read_images_spark(path, get_label)
 
-data_shard = bigdl.orca.data.image.read_images_pil(path)
 print(data_shard.collect()[0])
 # import sys
 # sys.exit()
@@ -103,7 +102,6 @@ def train_transform(im):
 print("******************")
 print(data_shard.collect()[0]['x'].shape)
 print(data_shard.collect()[0]['y'].shape)
-
 
 class Cnn(nn.Module):
     def __init__(self):

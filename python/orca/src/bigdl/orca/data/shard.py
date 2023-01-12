@@ -1105,6 +1105,12 @@ class SparkXShards(XShards):
         return pdf
 
     def stack_feature_labels(self) -> "SparkXShards":
+        """
+        Stack tuple of features and labels in each partition into an ndarray for
+        Orca Estimator traning
+
+        :return: SparkXShards.
+        """
         if self._get_class_name() != "builtins.tuple":
             invalidInputError(False,
                               "Currently only support stack_feature_labels() on"

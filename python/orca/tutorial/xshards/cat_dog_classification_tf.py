@@ -29,23 +29,23 @@ sc = init_orca_context(cluster_mode="local", cores=4, memory="4g")
 
 path = '/Users/guoqiong/intelWork/data/dogs-vs-cats/small/'
 
-data_shard = bigdl.orca.data.image.read_images_pil(path)
 
-def get_label(im):
-    filename = im['origin']
-    label = [1] if 'dog' in filename.split('/')[-1] else [0]
-    return {'x': im['pilimage'], 'y': label}
 
+def get_label(file_name):
+    label = [1] if 'dog' in file_name.split('/')[-1] else [0]
+    return label
+
+data_shard = bigdl.orca.data.image.read_images_pil(path, get_label)
 
 def crop(data):
-    im = data['x']
+    im = data[0]
     width, height = im.size  # Get dimensions
     left = width / 4
     top = height / 4
     right = 3 * width / 4
     bottom = 3 * height / 4
     cropped = im.crop((left, top, right, bottom))
-    return {'x': cropped, 'y': data['y']}
+    return {'x': cropped, 'y': data[1]}
 
 
 def resize(im):
@@ -55,8 +55,6 @@ def resize(im):
 
 to_nparray = lambda x: {'x': np.array([np.asarray(x['x'])]), 'y': np.array([x['y']])}
 
-
-data_shard = data_shard.transform_shard(get_label)
 data_shard = data_shard.transform_shard(crop)
 data_shard = data_shard.transform_shard(resize)
 data_shard = data_shard.transform_shard(to_nparray)
