@@ -57,16 +57,16 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: chronos-NB-pytorch-test.json
-        type: job
-        job-name: chronos-NB-pytorch-test
-        runner-hosted-on: 'Shanghai'
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-pytorch-test.json
+          type: job
+          job-name: chronos-NB-pytorch-test
+          runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -108,16 +108,16 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
       - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: chronos-NB-pytorch-inference-test.json
-        type: job
-        job-name: chronos-NB-pytorch-inference-test
-        runner-hosted-on: 'Shanghai'
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-pytorch-inference-test.json
+          type: job
+          job-name: chronos-NB-pytorch-inference-test
+          runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-automl-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -160,16 +160,16 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
       - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: chronos-NB-pytorch-inference-automl-test.json
-        type: job
-        job-name: chronos-NB-pytorch-inference-automl-test
-        runner-hosted-on: 'Shanghai'
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-pytorch-inference-automl-test.json
+          type: job
+          job-name: chronos-NB-pytorch-inference-automl-test
+          runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -213,16 +213,16 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
       - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: chronos-NB-pytorch-inference-automl-distributed-test.json
-        type: job
-        job-name: chronos-NB-pytorch-inference-automl-distributed-test
-        runner-hosted-on: 'Shanghai'
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-pytorch-inference-automl-distributed-test.json
+          type: job
+          job-name: chronos-NB-pytorch-inference-automl-distributed-test
+          runner-hosted-on: 'Shanghai'
 
   create-workflow-badge:
     runs-on: ubuntu-latest
