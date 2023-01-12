@@ -43,7 +43,7 @@ def gen_dataloader():
     return tsdata_traindataloader, tsdata_valdataloader, tsdata_testdataloader
 
 def predict_wraper(model, input_sample):
-    with InferenceOptimizer.get_context(model):
+    with torch.no_grad():
         model(input_sample)
 
 if __name__ == '__main__':

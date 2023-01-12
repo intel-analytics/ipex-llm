@@ -153,6 +153,8 @@ class Seq2SeqForecaster(BasePytorchForecaster):
 
         # nano setting
         current_num_threads = torch.get_num_threads()
+        self.thread_num = current_num_threads
+        self.optimized_model_thread_num = current_num_threads
         if current_num_threads >= 24:
             self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         else:
