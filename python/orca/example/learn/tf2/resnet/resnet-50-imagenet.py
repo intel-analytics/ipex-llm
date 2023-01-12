@@ -434,6 +434,6 @@ if __name__ == "__main__":
             callbacks=callbacks,
             validation_steps=args.num_images_validation // global_batch_size,
         )
-            
+
         trainer.save(os.path.join(args.log_dir, f"model-{args.epochs}.pkl"))
     stop_orca_context()
