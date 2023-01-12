@@ -11,6 +11,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  GIST_ID: bc8a699b455bced4a1aef138ad5df07e
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   chronos-NB-pytorch-test:
@@ -48,9 +51,22 @@ jobs:
           bash python/chronos/dev/test/run-installation-options.sh "torch and not inference and not automl and not distributed and not diff_set_all"
           source deactivate
           conda remove -n chronos-nb-env-py37 -y --all
+
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: chronos-NB-pytorch-test.json
+        type: job
+        job-name: chronos-NB-pytorch-test
+        runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -90,6 +106,18 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: chronos-NB-pytorch-inference-test.json
+        type: job
+        job-name: chronos-NB-pytorch-inference-test
+        runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-automl-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -130,6 +158,18 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: chronos-NB-pytorch-inference-automl-test.json
+        type: job
+        job-name: chronos-NB-pytorch-inference-automl-test
+        runner-hosted-on: 'Shanghai'
 
   chronos-NB-pytorch-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -171,3 +211,28 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: chronos-NB-pytorch-inference-automl-distributed-test.json
+        type: job
+        job-name: chronos-NB-pytorch-inference-automl-distributed-test
+        runner-hosted-on: 'Shanghai'
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: chronos-nb-python-2.4-py37.json
+        type: workflow
