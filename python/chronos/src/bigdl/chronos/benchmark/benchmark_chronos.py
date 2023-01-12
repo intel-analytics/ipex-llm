@@ -254,6 +254,9 @@ def experiment(args, records):
     model_path = os.path.join(path, args.ckpt)
 
     if args.framework == "tensorflow":
+        import tensorflow as tf
+        tf.config.threading.set_inter_op_parallelism_threads(1)
+        tf.config.threading.set_intra_op_parallelism_threads(args.cores)
         if not os.path.exists(model_path):
             os.makedirs(model_path, exist_ok=True)
 
