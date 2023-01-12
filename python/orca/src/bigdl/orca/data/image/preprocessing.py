@@ -125,8 +125,6 @@ def read_images_spark(file_path: str,
     num_partitions = num_files if num_files < total_cores else total_cores
 
     image_df = spark.read.format("image").load(img_paths)
-    print("image modes", image_df.select("image.mode").distinct().collect())
-    print("image nChannels", image_df.select("image.nChannels").distinct().collect())
 
     def convert_bgr_array_to_rgb_array(img_array):
         B, G, R, = img_array.T
