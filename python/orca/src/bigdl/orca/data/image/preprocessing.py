@@ -49,15 +49,15 @@ def read_images(file_path: str,
                 target_path: str = None,
                 image_type: str = ".jpg",
                 target_type: str = ".png",
-                backend: str = 'pil'):
+                backend: str = 'pillow'):
 
     backend = backend.lower()
-    invalidInputError(backend == "spark" or backend == "pil",
-                      "backend of read_images must be either spark or pil")
+    invalidInputError(backend == "spark" or backend == "pillow",
+                      "backend of read_images must be either spark or pillow")
     if backend == 'spark':
-        images = read_images_pil(file_path, label_func, target_path, image_type, target_type)
-    else:
         images = read_images_spark(file_path, label_func, target_path, image_type, target_type)
+    else:
+        images = read_images_pil(file_path, label_func, target_path, image_type, target_type)
     return images
 
 
