@@ -25,6 +25,12 @@ JOB_MANAGER_RPC_ADDRESS=${JOB_MANAGER_RPC_ADDRESS:-$(hostname -f)}
 CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
 SGX_ENABLED=$(cat $CONF_FILE | grep "kubernetes.sgx.enabled" | awk -F ' ' '{print $2}')
 
+# Set PCCS conf
+if [ "$PCCS_URL" != "" ]; then
+  echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' >/etc/sgx_default_qcnl.conf
+  echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
+fi
+
 drop_privs_cmd() {
     if [ $(id -u) != 0 ]; then
         # Don't need to drop privs if EUID != 0
@@ -210,6 +216,13 @@ else
         elif [ "$SGX_ENABLED" == "true" ]; then
             runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
             export sgx_command="${runtime_command[@]}"
+            if [ "$ATTESTATION" = "true" ]; then
+                delete_file "/ppml/temp_command_file"
+                cd /ppml
+                bash attestation.sh
+                echo $sgx_command >>temp_command_file
+                export sgx_command="bash temp_command_file"
+            fi 
             ./init.sh && \
             gramine-sgx bash 1>&2
         fi
@@ -278,6 +291,13 @@ else
         elif [ "$SGX_ENABLED" == "true" ]; then
             runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
             export sgx_command="${runtime_command[@]}"
+            if [ "$ATTESTATION" = "true" ]; then
+                delete_file "/ppml/temp_command_file"
+                cd /ppml
+                bash attestation.sh
+                echo $sgx_command >>temp_command_file
+                export sgx_command="bash temp_command_file"
+            fi 
             ./init.sh && \
             gramine-sgx bash 1>&2
         fi

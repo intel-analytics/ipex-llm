@@ -3,6 +3,28 @@ kind: Pod
 spec:
   containers:
   - name: flink-main-container
+    env:
+      - name: ATTESTATION
+        value: false
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      #- name: PCCS_URL
+      #  value: your_pccs_url
+      #- name: APP_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: API_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
+      #- name: ATTESTATION_POLICYID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: policy_id
     volumeMounts:
       - name: kubeconf
         mountPath: /root/.kube
