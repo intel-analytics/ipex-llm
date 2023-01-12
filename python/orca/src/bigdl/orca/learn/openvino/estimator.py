@@ -63,7 +63,6 @@ class OpenvinoEstimator(SparkEstimator):
     def predict(self,  # type: ignore[override]
                 data: Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]],
                 feature_cols: Optional[List[str]] = None,
-                label_cols: Optional[List[str]] = None,
                 batch_size: Optional[int] = 4,
                 input_cols: Optional[Union[str, List[str]]]=None
                 ) -> Optional[Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]]]:
@@ -239,8 +238,7 @@ class OpenvinoEstimator(SparkEstimator):
         if isinstance(data, DataFrame):
             xshards = spark_df_to_pd_sparkxshards(data)
             pd_sparkxshards = process_xshards_of_pandas_dataframe(xshards,
-                                                                  feature_cols=feature_cols,
-                                                                  label_cols=label_cols)
+                                                                  feature_cols=feature_cols)
 
             transformed_data = pd_sparkxshards.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
