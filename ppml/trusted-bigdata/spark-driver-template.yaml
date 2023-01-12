@@ -3,8 +3,6 @@ kind: Pod
 spec:
   containers:
   - name: spark-driver
-    # securityContext:
-    #   privileged: true
     env:
       - name: ATTESTATION
         value: false
@@ -40,8 +38,6 @@ spec:
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
-      # - name: tdx-device
-      #   mountPath: /dev/tdx-attest
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
       - name: nfs-storage
@@ -76,9 +72,6 @@ spec:
     - name: device-plugin
       hostPath:
         path: /var/lib/kubelet/device-plugins
-    # - name: tdx-device
-    #   hostPath:
-    #     path: /dev/tdx-attest
     - name: aesm-socket
       hostPath:
         path: /var/run/aesmd/aesm.socket

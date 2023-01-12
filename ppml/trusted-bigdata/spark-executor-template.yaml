@@ -3,6 +3,7 @@ kind: Pod
 spec:
   containers:
   - name: spark-executor
+    # Only required for TDX-VM Attestation
     # securityContext:
     #   privileged: true
     env:
