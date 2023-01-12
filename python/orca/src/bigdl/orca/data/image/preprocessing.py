@@ -144,7 +144,7 @@ def read_images_spark(file_path: str,
             mode = 'L'
         else:
             invalidInputError(False, "invalid nChannels of spark image, "
-                                     "please use read_images_spark method")
+                                     "please use read_images_pil instead")
         img = Image.frombytes(mode=mode, data=bytes(image_spark.image.data),
                               size=[image_spark.image.width, image_spark.image.height])
         if mode in ['RGB', 'RGBA']:
