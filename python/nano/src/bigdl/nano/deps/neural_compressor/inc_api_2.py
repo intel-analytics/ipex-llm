@@ -84,7 +84,7 @@ def _quantize(
     timeout=0,
     max_trials=1,
     inputs=[],
-    outpus=[],
+    outputs=[],
     **kwargs
 ):
     from neural_compressor import quantization
@@ -99,6 +99,7 @@ def _quantize(
     elif 'onnx' in framework:
         if hasattr(dataloader, "batch_size"):
             # `dataloader` is pytorch DataLoader
+            # we should convert pytorch tensor to numpy ndarray
             import torch
 
             def wrap_collate_fn(func):
@@ -110,9 +111,14 @@ def _quantize(
                                     collate_fn=wrap_collate_fn(dataloader.collate_fn))
         else:
             # `dataloader` is tensorflow (x,y)
+            # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
             from .onnx.tensorflow.quantization import KerasNumpyDataset
             dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
+        # INC requires a batched dataloader,
+        # A torch.Dataset doesn't have `batch_size` attribute,
+        # A tf.Dataset without `_batch_size` attribute is unbatched,
+        # So we construct a INC DataLoader from them
         dataloader = DataLoader(framework, dataloader)
 
     if 'pytorch' in framework:
@@ -138,6 +144,7 @@ def _quantize(
         accuracy_criterion = AccuracyCriterion(
             higher_is_better=accuracy_criterion.get('higher_is_better', True),
             criterion=criterion,
+            # we calculate `tolerable_loss` by `1 - target_accuracy`
             tolerable_loss=1.0 - accuracy_criterion[criterion]
         )
 
@@ -151,7 +158,7 @@ def _quantize(
         tuning_criterion=tuning_criterion,
         approach=approach,
         inputs=inputs,
-        outputs=outpus,
+        outputs=outputs,
     )
     config.performance_only = True
     config = Config(quantization=config, benchmark=None, pruning=None,
