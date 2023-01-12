@@ -34,7 +34,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/dogs-vs-cats/ ]
 then
     echo "dogs-vs-cats already exists"
 else
-    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -nH --cut-dirs=2 ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=image_classification_tf
@@ -42,7 +42,7 @@ ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
 	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
 
-# python ${filename}.py
+python ${filename}.py
 echo "finished notebook image_classification_tf.ipynb"
 now=$(date "+%s")
 time1=$((now - start))
@@ -57,7 +57,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/dogs-vs-cats/ ]
 then
     echo "dogs-vs-cats already exists"
 else
-    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -nH --cut-dirs=2  ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=image_classification_py
@@ -65,7 +65,7 @@ ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
 	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
 
-# python ${filename}.py
+python ${filename}.py
 echo "finished notebook image_classification_py.ipynb"
 now=$(date "+%s")
 time2=$((now - start))
@@ -78,7 +78,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/petsdata/ ]
 then
     echo "petsdata already exists"
 else
-    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/petsdata/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/petsdata/ -nH --cut-dirs=2 ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=segmentation_tf
@@ -87,7 +87,7 @@ ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
 
 
-# python ${filename}.py
+python ${filename}.py
 echo "finished notebook segmentation_tf.ipynb"
 now=$(date "+%s")
 time3=$((now - start))
@@ -103,15 +103,15 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tsg_salt/ ]
 then
     echo "tsg_salt already exists"
 else
-    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/tsg_salt/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/tsg_salt/ -nH --cut-dirs=2 ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=segmentation_py
 ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
-		sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
+	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
 
-# python ${filename}.py
+python ${filename}.py
 echo "finished notebook segmentation_py.ipynb"
 now=$(date "+%s")
 time4=$((now - start))
