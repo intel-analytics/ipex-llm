@@ -27,7 +27,7 @@ from bigdl.dllib.utils import nest
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
 from bigdl.orca.learn.utils import process_xshards_of_pandas_dataframe,\
-                                   add_predict_to_pd_xshards
+    add_predict_to_pd_xshards
 
 from openvino.inference_engine import IECore
 import numpy as np
