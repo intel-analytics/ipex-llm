@@ -34,7 +34,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/dogs-vs-cats/ ]
 then
     echo "dogs-vs-cats already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=image_classification_tf
@@ -56,7 +56,7 @@ if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/dogs-vs-cats/ ]
 then
     echo "dogs-vs-cats already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/dogs-vs-cats/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=image_classification_py
@@ -73,9 +73,9 @@ echo "#3 image segmentation of tensorflow"
 start=$(date "+%s")
 if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/petsdata/ ]
 then
-    echo "dogs-vs-cats already exists"
+    echo "petsdata already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/petsdata/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/petsdata/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=segmentation_tf
@@ -97,9 +97,9 @@ start=$(date "+%s")
 
 if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tsg_salt/ ]
 then
-    echo "dogs-vs-cats already exists"
+    echo "tsg_salt already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/xshards/tsg_salt/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
+    wget -r -np -R "index.html*" $FTP_URI/analytics-zoo-data/xshards/tsg_salt/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 fi
 
 filename=segmentation_py
