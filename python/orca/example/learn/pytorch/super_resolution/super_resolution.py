@@ -304,7 +304,7 @@ elif opt.backend in ["ray", "spark"]:
     if exists(model_dir):
         shutil.rmtree(model_dir)
 
-    f_model_out_path = model_dir + "/" + "model_epoch_{epoch:02d}.pth"
+    f_model_out_path = join(model_dir, "model_epoch_{epoch:02d}.pth")
 
     stats = estimator.fit(data=train_data_creator,
                           epochs=opt.epochs,
