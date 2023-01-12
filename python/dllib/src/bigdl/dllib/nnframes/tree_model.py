@@ -39,8 +39,21 @@ class XGBClassifier():
         return callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
 
     def fit(self, df):
+        # get features cols or features col
+        features_cols = self.value.getFeaturesCols()
+        features_col = self.value.getFeaturesCol()
         model = callZooFunc("float", "fitXGBClassifier", self.value, df)
+        # get features names
+        feature_names = []
+        if features_cols:
+            feature_names = features_cols
+        elif features_col:
+            feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
+        else:
+            if "features" in df.columns:
+                feature_names = [f"f{i}" for i in range(len(df.first()["features"]))]
         xgb_model = XGBClassifierModel(model)
+        xgb_model.setFeatureNames(feature_names)
         return xgb_model
 
     def setMissing(self, value: int):
@@ -78,8 +91,7 @@ class XGBClassifierModel:
         super(XGBClassifierModel, self).__init__()
         invalidInputError(jvalue is not None, "XGBClassifierModel jvalue cannot be None")
         self.value = jvalue
-        self.feature_importances = callZooFunc(
-            "float", "getFeatureImportanceXGBClassifierModel", self.value)
+        self.feature_names = []
 
     def setFeaturesCol(self, features):
         return callZooFunc("float", "setFeaturesXGBClassifierModel", self.value, features)
@@ -89,6 +101,9 @@ class XGBClassifierModel:
 
     def setInferBatchSize(self, batch_size):
         return callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
+
+    def setFeatureNames(self, feature_names):
+        self.feature_names = feature_names
 
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
@@ -102,6 +117,13 @@ class XGBClassifierModel:
         score = callZooFunc(
             "float", "getScoreXGBClassifierModel", self.value, fmap, importance_type)
         return score
+
+    @property
+    def feature_importances(self):
+        score = callZooFunc("float", "getFeatureImportanceXGBClassifierModel", self.value)
+        all_features = [score.get(f, 0.0) for f in self.feature_names]
+        all_features_arr = np.array(all_features, dtype=np.float32)
+        return all_features_arr
 
     def saveModel(self, path):
         callZooFunc("float", "saveXGBClassifierModel", self.value, path)

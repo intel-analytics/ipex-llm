@@ -105,6 +105,15 @@ class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
     estimator.setTimeoutRequestWorkers(value)
     this
   }
+
+  def getFeaturesCol(): String = {
+    estimator.getFeaturesCol()
+  }
+
+  def getFeaturesCols(): Array[String] = {
+    estimator.getFeaturesCols()
+  }
+
 }
 /**
  * [[XGBClassifierModel]] is a trained XGBoost classification model.
