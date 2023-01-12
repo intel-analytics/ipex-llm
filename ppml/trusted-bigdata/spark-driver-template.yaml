@@ -32,9 +32,9 @@ spec:
       #      name: kms-secret
       #      key: policy_id
       #- name: ATTESTATION_TYPE
-      #  value: BigDLRemoteAttestationService
+      #  value: EHSMAttestationService
       #- name: QUOTE_TYPE
-      #  value: TDX
+      #  value: gramine
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
