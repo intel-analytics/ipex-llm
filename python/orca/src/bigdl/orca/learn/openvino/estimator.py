@@ -229,10 +229,7 @@ class OpenvinoEstimator(SparkEstimator):
 
         def update_result_shard(data):
             shard, y = data
-            pred_list = []
-            for i in range(len(y)):
-                pred_list.append(y[i].tolist())
-            shard["prediction"] = pred_list
+            shard["prediction"] = y
             return shard
 
         if isinstance(data, DataFrame):
