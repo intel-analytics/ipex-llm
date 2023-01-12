@@ -30,7 +30,7 @@ echo "#1 image classification of tensorflow"
 #timer
 start=$(date "+%s")
 
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tutorial/dogs-vs-cats/ ]
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/dogs-vs-cats/ ]
 then
     echo "dogs-vs-cats already exists"
 else
@@ -95,7 +95,7 @@ echo "#4 image segmentation of pytorch"
 start=$(date "+%s")
 
 
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tutorial/tsg_salt/ ]
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tsg_salt/ ]
 then
     echo "dogs-vs-cats already exists"
 else
