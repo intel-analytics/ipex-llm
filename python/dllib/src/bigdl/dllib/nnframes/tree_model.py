@@ -78,7 +78,7 @@ class XGBClassifierModel:
         super(XGBClassifierModel, self).__init__()
         invalidInputError(jvalue is not None, "XGBClassifierModel jvalue cannot be None")
         self.value = jvalue
-        self.feature_importances = callZooFunc("dict", "getFeatureImportanceXGBClassifierModel", self.value)
+        self.feature_importances = callZooFunc("float", "getFeatureImportanceXGBClassifierModel", self.value)
 
     def setFeaturesCol(self, features):
         return callZooFunc("float", "setFeaturesXGBClassifierModel", self.value, features)
@@ -94,11 +94,11 @@ class XGBClassifierModel:
         return df
     
     def getFScore(self, fmap=""):
-        scores = callZooFunc("dict", "getFeatureScoreXGBClassifierModel", self.value, fmap)
+        scores = callZooFunc("float", "getFeatureScoreXGBClassifierModel", self.value, fmap)
         return scores
 
     def getScore(self, fmap="", importance_type="weight"):
-        score = callZooFunc("dict", "getScoreXGBClassifierModel", self.value, fmap, importance_type)
+        score = callZooFunc("float", "getScoreXGBClassifierModel", self.value, fmap, importance_type)
         return score
     
     def saveModel(self, path):
