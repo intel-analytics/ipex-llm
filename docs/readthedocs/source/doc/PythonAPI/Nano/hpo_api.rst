@@ -19,14 +19,14 @@ HPO for Tensorflow
 bigdl.nano.automl.tf.keras.Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
+.. autoclass:: bigdl.nano.automl.tf.keras.Model
     :members: search, search_summary
 
 
 bigdl.nano.automl.tf.keras.Sequential
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
+.. autoclass:: bigdl.nano.automl.tf.keras.Sequential
     :members: search, search_summary
 
 

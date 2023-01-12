@@ -30,6 +30,10 @@ def patch_encryption():
 
     A key argument is added to torch.save and torch.load which is used to
     encrypt/decrypt the content before saving/loading it to/from disk.
+
+    .. note::
+
+       Please be noted that the key is only secured in Intel SGX mode.
     """
     global is_encryption_patched
     if is_encryption_patched:
