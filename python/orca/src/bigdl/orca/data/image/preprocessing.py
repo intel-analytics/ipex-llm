@@ -44,6 +44,23 @@ def get_file_paths(file_path):
     return file_paths
 
 
+def read_images(file_path: str,
+                label_func: Callable = None,
+                target_path: str = None,
+                image_type: str = ".jpg",
+                target_type: str = ".png",
+                backend: str = 'pil'):
+
+    backend = backend.lower()
+    invalidInputError(backend == "spark" or backend == "pil",
+                      "backend of read_images must be either spark or pil")
+    if backend == 'spark':
+        images = read_images_pil(file_path, label_func, target_path, image_type, target_type)
+    else:
+        images = read_images_spark(file_path, label_func, target_path, image_type, target_type)
+    return images
+
+
 def read_images_pil(file_path: str,
                     label_func: Callable = None,
                     target_path: str = None,
