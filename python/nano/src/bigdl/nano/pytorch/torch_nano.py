@@ -164,6 +164,9 @@ class TorchNano(LightningLite):
             only take effect when ``num_processes`` > 1
         :param channels_last: whether convert input to channels last memory formats,
             defaults to ``False``.
+        :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
+            Defaults to ``True``.
+            If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
         """
         self.num_processes = num_processes
         self.use_ipex = use_ipex
@@ -386,6 +389,9 @@ def nano(num_processes: Optional[int] = None,
         only take effect when ``num_processes`` > 1
     :param channels_last: whether convert input to channels last memory formats,
         defaults to ``False``.
+    :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
+        Defaults to ``True``.
+        If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
     """
     if "strategy" in kwargs:
         strategy = kwargs["strategy"]

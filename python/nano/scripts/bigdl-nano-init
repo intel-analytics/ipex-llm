@@ -9,33 +9,33 @@
 
 # Get options
 function disable-openmp-var {
-	echo "Option: Disable opemMP and unset related variables"
-	export DISABLE_OPENMP_VAR=1
+    echo "Option: Disable opemMP and unset related variables"
+    export DISABLE_OPENMP_VAR=1
 }
 
 function enable-jemalloc-var {
-	echo "Option: Enable jemalloc and unset related variables"
-	export ENABLE_JEMALLOC_VAR=1
+    echo "Option: Enable jemalloc and set related variables"
+    export ENABLE_JEMALLOC_VAR=1
 }
 
 function disable-tcmalloc-var {
-	echo "Option: Disable tcmalloc and unset related variables"
-	export DISABLE_TCMALLOC_VAR=1
+    echo "Option: Disable tcmalloc and unset related variables"
+    export DISABLE_TCMALLOC_VAR=1
 }
 
-function enable-tensorflow-var {
-	echo "Option: Enable tensorflow optimaztion"
-	export ENABLE_TF_OPTS=1
+function enable-perf-var {
+    echo "Option: Enable perf mode"
+    PERF_VAR=1
 }
 
 function display-error {
-	echo "Invalid Option: -$1" 1>&2
-        echo "Try to run 'bigdl-nano-run -h' for detailed usage." 1>&2
-        exit 1
+    echo "Invalid Option: -$1" 1>&2
+    echo ""
+    display-help
 }
 
 function display-help {
-	echo "Usage: bigdl-nano-run [-o] [-j] <subcommand>"
+    echo "Usage: bigdl-nano-run [-o] [-j] <subcommand>"
         echo ""
         echo "bigdl-nano-run is a tool to automatically configure and run the subcommand under"
         echo "environment variables for accelerating pytorch."
@@ -45,7 +45,7 @@ function display-help {
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
         echo "    -c, --disable-tcmalloc    Disable tcmalloc and unset related variables"
-        echo "    -f, --enable-tensorflow   Enable tensorflow specific OMP_NUM_THREADS setting"
+        echo "    -p, --perf                Use performance mode"
 }
 
 # Init
@@ -57,63 +57,67 @@ export TF_ENABLE_ONEDNN_OPTS=1
 
 OPTIND=1
 
-while getopts ":ojhc-:" opt; do
-	case ${opt} in
-		- )
-			case "${OPTARG}" in
-				disable-openmp)
-					disable-openmp-var
-					;;
-				enable-jemalloc)
-					enable-jemalloc-var
-					;;
-				disable-tcmalloc)
-					disable-tcmalloc-var
-					;;
-				enable-tensorflow)
-					enable-tensorflow-var
-					;;
-				help)
-					display-help
-					exit 0
-					;;
-				*)
-					display-error "-$OPTARG"
-					;;
-			esac
-			;;
+while getopts ":ojhcp-:" opt; do
+    case ${opt} in
+        - )
+            case "${OPTARG}" in
+                disable-openmp)
+                    disable-openmp-var
+                    ;;
+                enable-jemalloc)
+                    disable-tcmalloc-var
+                    enable-jemalloc-var
+                    ;;
+                disable-tcmalloc)
+                    disable-tcmalloc-var
+                    ;;
+                perf)
+                        enable-perf-var
+                    ;;
+                help)
+                    display-help
+                    return 0
+                    ;;
+                *)
+                    display-error $OPTARG
+                    return 1
+                    ;;
+            esac
+            ;;
 
-		o )
-			disable-openmp-var
-			;;
-		j )
-			enable-jemalloc-var
-			;;
-		c )
-			disable-tcmalloc-var
-			;;
-		f )
-			enable-tensorflow-var
-			;;
-		h )
-			display-help
-			exit 0
-			;;	
-		\? )
-			display-error $OPTARG
-			;;
-	esac
+        o )
+            disable-openmp-var
+            ;;
+        j )
+            disable-tcmalloc-var
+            enable-jemalloc-var
+            ;;
+        c )
+            disable-tcmalloc-var
+            ;;
+        p )
+            enable-perf-var
+            ;;
+        h )
+            display-help
+            return 0
+            ;;	
+        \? )
+            display-error $OPTARG
+            return 1
+            ;;
+    esac
 done
 
 shift $((OPTIND -1))
 
 # Find conda dir
 if [ ! -z $BASH_SOURCE ]; then
-	# using bash
-	BASE_DIR="$(dirname $BASH_SOURCE)/.."
+    # using bash
+    BASE_DIR="$(dirname $BASH_SOURCE)/.."
 else
-	# using zsh
-	BASE_DIR="$(dirname ${(%):-%N})/.."
+    # using zsh
+    BASE_DIR="$(dirname ${(%):-%N})/.."
 fi
 echo "conda dir found: $BASE_DIR"
 LIB_DIR=$BASE_DIR/lib
@@ -125,42 +129,39 @@ NANO_DIR="$(dirname "$(python3 -c "import bigdl; print(bigdl.__file__)")")/nano/
 
 # Detect Intel openMP library
 if [ -f "${LIB_DIR}/libiomp5.so" ]; then
-	echo "OpenMP library found..."
-	OPENMP=1
+    echo "OpenMP library found..."
+    OPENMP=1
 
-	# detect number of physical cores
-	cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
-	max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
-	# bash's array index starts from 0, while zsh's array index starts from 1,
-	# so we use -1, -2, -3 as index here for consistency
-	let cpu_=${max_cpu_info[-3]}+1
-	let sockets_=${max_cpu_info[-2]}+1
-	let core_=${max_cpu_info[-1]}+1
-	let threads_per_core=$cpu_/$core_
-	let cores_per_socket=$core_/$sockets_
+    # detect number of physical cores
+    cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
+    max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
+    # bash's array index starts from 0, while zsh's array index starts from 1,
+    # so we use -1, -2, -3 as index here for consistency
+    let cpu_=${max_cpu_info[-3]}+1
+    let sockets_=${max_cpu_info[-2]}+1
+    let core_=${max_cpu_info[-1]}+1
+    let threads_per_core=$cpu_/$core_
+    let cores_per_socket=$core_/$sockets_
 
 
-	# set env variables
-	echo "Setting OMP_NUM_THREADS..."
+    # set env variables
+    echo "Setting OMP_NUM_THREADS..."
+    export OMP_NUM_THREADS=$core_
 
-	if [ -z "${ENABLE_TF_OPTS:-}" ]; then
-		echo "Setting OMP_NUM_THREADS specified for pytorch..."
-		export OMP_NUM_THREADS=$((cores_per_socket*sockets_))
-		export NANO_TF_INTER_OP=1
-	else
-		echo "Setting OMP_NUM_THREADS specified for tensorflow..."
-		export OMP_NUM_THREADS=${cores_per_socket}
-		export NANO_TF_INTER_OP=$sockets_
-	fi
+    echo "Setting KMP_AFFINITY..."
+    export KMP_AFFINITY=granularity=fine,none
 
-	echo "Setting KMP_AFFINITY..."
-	export KMP_AFFINITY=granularity=fine,none
+        if [[ "${PERF_VAR}" == "1" ]]; then
+            # experiment variable to speed up performance.
+            export OPENMP=0
+            export KMP_AFFINITY=granularity=fine,compact,1,0
+        fi
 
-	echo "Setting KMP_BLOCKTIME..."
-	export KMP_BLOCKTIME=1
+    echo "Setting KMP_BLOCKTIME..."
+    export KMP_BLOCKTIME=1
 
 else
-	echo "No openMP library found in ${LIB_DIR}."
+    echo "No openMP library found in ${LIB_DIR}."
 fi
 
 # set env variables
@@ -168,55 +169,60 @@ echo "Setting MALLOC_CONF..."
 export MALLOC_CONF="oversize_threshold:1,background_thread:false,metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1"
 
 # Set LD_PRELOAD
-if [ -z "${LD_PRELOAD:-}" ]; then
-	echo "Setting LD_PRELOAD..."
-	if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
-		export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
-	fi
-	if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
-	    DISABLE_TCMALLOC_VAR=1
-		if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
-			JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
-		elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
-			JEMALLOC_PATH="${LIB_DIR}/libjemalloc.so"
-		fi
-		# if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
-		# extra space on the left or right sides, use echo to remove them
-		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
-	fi
+echo "Setting LD_PRELOAD..."
+if [[ $OPENMP -eq 1 && -z "${DISABLE_OPENMP_VAR:-}" ]]; then
+    export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
+fi
 
-	# Set TCMALLOC lib path
-	if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
-		if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
-			TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
-		elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
-			TCMALLOC_PATH="${LIB_DIR}/libtcmalloc.so"
-		fi
-		# the same as above
-		export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
-	fi
+# Set JEMALLOC lib path
+if [[ $JEMALLOC -eq 1 && ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
+    DISABLE_TCMALLOC_VAR=1
+    if [ -f "${NANO_DIR}/libs/libjemalloc.so" ]; then
+        JEMALLOC_PATH="${NANO_DIR}/libs/libjemalloc.so"
+    elif [ -f "${LIB_DIR}/libjemalloc.so" ]; then
+        JEMALLOC_PATH="${LIB_DIR}/libjemalloc.so"
+    fi
+    # if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
+    # extra space on the left or right sides, use echo to remove them
+    export LD_PRELOAD=$(echo ${LD_PRELOAD} ${JEMALLOC_PATH})
+fi
+
+# Set TCMALLOC lib path
+if [[ $TCMALLOC -eq 1 && -z "${DISABLE_TCMALLOC_VAR:-}" ]]; then
+    if [ -f "${NANO_DIR}/libs/libtcmalloc.so" ]; then
+        TCMALLOC_PATH="${NANO_DIR}/libs/libtcmalloc.so"
+    elif [ -f "${LIB_DIR}/libtcmalloc.so" ]; then
+        TCMALLOC_PATH="${LIB_DIR}/libtcmalloc.so"
+    fi
+    # the same as above
+    export LD_PRELOAD=$(echo ${LD_PRELOAD} ${TCMALLOC_PATH})
+fi
+
+# Clean up perf var
+if [[ "${PERF_VAR}" == "1" ]]; then
+    unset PERF_VAR
 fi
 
 # Disable openmp or jemalloc according to options
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
-	unset OMP_NUM_THREADS
-	unset KMP_AFFINITY
-	unset KMP_BLOCKTIME
-	unset DISABLE_OPENMP_VAR
-	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
+    unset OMP_NUM_THREADS
+    unset KMP_AFFINITY
+    unset KMP_BLOCKTIME
+    unset DISABLE_OPENMP_VAR
+    export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
 fi
 if [ -z "${ENABLE_JEMALLOC_VAR:-}" ]; then
-	unset MALLOC_CONF
-	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
+    unset MALLOC_CONF
+    export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
 fi
 
 if [ ! -z "${DISABLE_TCMALLOC_VAR:-}" ]; then
-	unset DISABLE_TCMALLOC_VAR
-	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
+    unset DISABLE_TCMALLOC_VAR
+    export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
 fi
 
 if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
-	echo "Not in a conda env"
+    echo "Not in a conda env"
 else
     if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
         echo "nano_vars.sh already exists"
@@ -257,7 +263,5 @@ echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
-echo "ENABLE_TF_OPTS=${ENABLE_TF_OPTS}"
-echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 echo "Complete."

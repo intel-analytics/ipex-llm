@@ -19,7 +19,6 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.models import resnet18
 from torchvision.datasets import OxfordIIITPet
-from torchmetrics import Accuracy
 from tqdm import tqdm
 
 from bigdl.nano.pytorch import nano

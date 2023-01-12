@@ -17,7 +17,7 @@
 from bigdl.chronos.forecaster import TCNForecaster
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.pytorch import TSTrainer
+from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
 import torch
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # train the forecaster
     forecaster.fit(train_data, epochs=10)
 
-    model = TSTrainer.trace(forecaster.internal, accelerator="jit",
-                            input_sample=torch.randn(1, 6, 1))
+    model = InferenceOptimizer.trace(forecaster.internal, accelerator="jit",
+                                     input_sample=torch.randn(1, 6, 1))
 
-    TSTrainer.save(model, path="checkpoint")
+    InferenceOptimizer.save(model, path="checkpoint")

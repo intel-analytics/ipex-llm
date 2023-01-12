@@ -332,3 +332,24 @@ PyTorch also recommends to utilize NUMA when do PyTorch training, more details c
 In native mode (with SGX disabled), the use of hyper-threading may increase the training time because two logical cores reside in the same physical core may not be able to execute fully in parallel.
 
 In SGX mode, there is a problem when using Hyper-threading combined with Gramine, which leads to the result that only one of the hyper-threads in the physical core can be fully utilized.  We are currently investigating this issue.  In this case, the use of hyper-threads may bring additional overheads to the distributed training.
+
+
+
+### Encryption / Decryption
+
+#### torch.load / torch.save
+
+We provide a customized `torch.save` and `torch.load` method.  The `torch.save` method will automatically encrypt the object before saving it on disk or to memory.  In the opposite, the `torch.load` method will automatically decrypt the object before loading it back to memory so that the user do not need to worry about encryption/decryption.
+
+Besides, some datasets can also be encrypted using `torch.save` method.
+
+A possible process could be:
+
+1. User loads the dataset in trusted customer environment.
+2. User saves the dataset using `torch.save(dataset, "encryption_dataset.pt", encryption_key=xxxx)`
+3. User safely distribute the `encryption_dataset.pt` dataset file into untrusted environment
+4. Doing PyTorch training in SGX environment, using `torch.load("encryption_dataset.pt", decryption_key=xxxx)` to load the dataset back into memory.
+
+The `encryption_key` and `decryption_key` should be the same.  A typical solution is to use key management service for retrieving the key.
+
+An example is included in the image, you can find it at path `/ppml/examples/load_save_encryption_ex.py`.

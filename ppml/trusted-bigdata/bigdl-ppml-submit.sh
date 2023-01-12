@@ -8,6 +8,13 @@ DRIVER_TEMPLATE="/ppml/spark-driver-template.yaml"
 EXECUTOR_TEMPLATE="/ppml/spark-executor-template.yaml"
 KEY_STORE="/ppml/keys/keystore.jks"
 
+function delete_file {
+  if [ -f $1 ]; then
+      # file exists
+      rm -f $1
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --master)
@@ -164,15 +171,15 @@ if [ "$SGX_ENABLED" == "true" ] && [ "$DEPLOY_MODE" != "cluster" ]; then
     echo "[INFO] sgx enabled and convert spark submit command to sgx command"
     export sgx_command=${spark_submit_command}
     if [ "$ENCRYPTED_FSD" == "true" ]; then
-      rm /ppml/temp_command_file || true
+      delete_file "/ppml/temp_command_file"
       echo "[INFO] Distributed encrypted file system is enabled"
       bash encrypted-fsd.sh
       echo $sgx_command >> temp_command_file
-      export sgx_command="bash temp_command_file && rm temp_command_file"
+      export sgx_command="bash temp_command_file"
     fi
     ./init.sh
     gramine-sgx bash 2>&1 | tee $LOG_FILE
-    rm /ppml/temp_command_file || true
+    delete_file "/ppml/temp_command_file"
 else
     $spark_submit_command 2>&1 | tee $LOG_FILE
 fi

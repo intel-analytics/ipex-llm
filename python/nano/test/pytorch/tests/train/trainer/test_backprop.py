@@ -104,8 +104,8 @@ class TestLightningModuleFromTorch(TestCase):
             model,
             loss,
             optimizer,
-            metrics=[torchmetrics.F1(num_classes),
-                     torchmetrics.Accuracy(num_classes=10)])
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)])
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         loss_fn = nn.CrossEntropyLoss(reduction='none')
         sb = SelectiveBackprop(start=0.25,

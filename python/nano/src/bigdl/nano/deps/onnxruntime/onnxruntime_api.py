@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def PytorchONNXRuntimeModel(model, input_sample=None,
@@ -57,9 +58,17 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                                    **export_kwargs)
 
 
-def load_onnxruntime_model(path):
-    from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
-    return PytorchONNXRuntimeModel._load(path)
+def load_onnxruntime_model(path, framework='pytorch'):
+    if framework == 'pytorch':
+        from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
+        return PytorchONNXRuntimeModel._load(path)
+    elif framework == 'tensorflow':
+        from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
+        return KerasONNXRuntimeModel._load(path)
+    else:
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
 
 
 def KerasONNXRuntimeModel(model, input_spec,

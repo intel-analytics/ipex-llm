@@ -15,7 +15,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.sgx.log.level=off \
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="15GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \

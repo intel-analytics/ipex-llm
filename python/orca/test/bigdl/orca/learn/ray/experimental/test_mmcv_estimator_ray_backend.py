@@ -250,6 +250,24 @@ class TestMMCVRayEstimator(unittest.TestCase):
         if os.path.exists(TEMP_WORK_DIR):
             shutil.rmtree(TEMP_WORK_DIR)
 
+    def test_get_model(self):
+        model = Model()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=None,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=None,
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')])
+        )
+        estimator = get_estimator(runner_creator, cfg)
+        estimator.run([train_dataloader_creator], [('train', 1)])
+
+        model_state_dict = estimator.get_model()
+        assert model_state_dict
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

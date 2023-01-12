@@ -44,7 +44,7 @@ def impute_timeseries_dataframe(df,
     if mode == "const":
         res_df = _const_impute_timeseries_dataframe(df, const_num)
     if mode == "linear":
-        res_df = _linear_impute_timeseries_dataframe(df)
+        res_df = _linear_impute_timeseries_dataframe(df, dt_col)
 
     return res_df
 
@@ -61,6 +61,9 @@ def _const_impute_timeseries_dataframe(df, const_num):
     return res_df
 
 
-def _linear_impute_timeseries_dataframe(df):
-    res_df = df.interpolate(axis=0, limit_direction='both')
+def _linear_impute_timeseries_dataframe(df, dt_col):
+    res_df = df.copy()
+    res_df[dt_col] = 0
+    res_df = res_df.interpolate(method='linear', axis=0, limit_direction='both')
+    res_df[dt_col] = df[dt_col]
     return res_df

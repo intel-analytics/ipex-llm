@@ -51,7 +51,7 @@ train_dataloader = DataLoader(train_dataset, batch_size=32)
 import torch
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 model_ft = resnet18(pretrained=True)
 num_ftrs = model_ft.fc.in_features
 
@@ -61,7 +61,7 @@ loss_ft = torch.nn.CrossEntropyLoss()
 optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
 
 # Compile our model with loss function, optimizer.
-model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy])
+model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[MulticlassAccuracy(num_classes=37)])
 trainer = Trainer(max_epochs=5)
 trainer.fit(model, train_dataloader=train_dataloader)
 
@@ -78,8 +78,8 @@ With the ONNXRuntime accelerator, `InferenceOptimizer.quantize()` will return a 
 you can add quantization as below:
 ```python
 from bigdl.nano.pytorch import InferenceOptimizer
-from torchmetrics.functional import accuracy
-ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=train_dataloader, metric=accuracy)
+from torchmetrics.classification import MulticlassAccuracy
+ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=train_dataloader, metric=MulticlassAccuracy(num_classes=37))
 
 # run simple prediction
 y_hat = ort_q_model(x)
