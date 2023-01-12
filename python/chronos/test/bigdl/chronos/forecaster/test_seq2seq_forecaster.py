@@ -708,8 +708,8 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert forecaster.optimized_model_thread_num == 1
 
         num = max(1, original_thread//2)
-        forecaster.quantize(train_data, thread_num=num)
-        pred = forecaster.predict(test_data[0], quantize=True)
+        forecaster.build_onnx(thread_num=num)
+        pred = forecaster.predict(test_data[0])
         current_thread = torch.get_num_threads()
         assert current_thread == num
         assert forecaster.thread_num == num
