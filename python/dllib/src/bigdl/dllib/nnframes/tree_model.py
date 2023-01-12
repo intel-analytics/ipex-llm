@@ -99,7 +99,8 @@ class XGBClassifierModel:
         return scores
 
     def getScore(self, fmap="", importance_type="weight"):
-        score = callZooFunc("float", "getScoreXGBClassifierModel", self.value, fmap, importance_type)
+        score = callZooFunc(
+            "float", "getScoreXGBClassifierModel", self.value, fmap, importance_type)
         return score
 
     def saveModel(self, path):

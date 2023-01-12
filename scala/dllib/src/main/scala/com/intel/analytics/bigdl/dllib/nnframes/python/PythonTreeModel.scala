@@ -133,7 +133,7 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     val booster = xgbModel.nativeBooster
     // Currently we set importance type default value to "weight"
     val score = booster.getScore("", "weight")
-    val total = score.foldLeft(0.0)(_+_._2)
+    val total = score.foldLeft(0.0)(_ + _._2)
     score.map(s => (s._1, s._2 / total)).asJava
   }
 
