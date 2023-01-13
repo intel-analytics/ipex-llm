@@ -43,7 +43,7 @@ def parse_args(framework, input_data_type):
 def init_orca(args, framework, input_data_type):
     if args.cluster_mode.startswith("yarn") or args.cluster_mode.startswith("k8s"):
         cores = 4
-        memory = "8g"
+        memory = "10g"
         num_nodes = 2
         driver_cores = 2
         driver_memory = "2g"
