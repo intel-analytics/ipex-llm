@@ -36,16 +36,14 @@ object MultiKMSExample extends Supportive {
     //
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
-      val df = timing("1/3 loadInputs") {
-        Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource1.inputEncryptMode"),
-          "input encrypt mode not found, " + conf)
+      val simpleKMSDf = timing("1/3 loadInputs") {
         sc.read(cryptoMode = CryptoMode.parse(
           conf.get("spark.bigdl.kms.datasource1.inputEncryptMode")))
           .option("header", "true")
           .csv(conf.get("spark.bigdl.kms.datasource1.inputpath"))
       }
 
-      val df2 = timing("1/3 read data source 2") {
+      val ehsmDf = timing("1/3 read data source 2") {
         sc.read(cryptoMode = CryptoMode.parse(
           conf.get("spark.bigdl.kms.datasource2.inputEncryptMode")))
           .option("header", "true")
@@ -53,30 +51,27 @@ object MultiKMSExample extends Supportive {
       }
 
 
-      val developers = timing("2/3 doSQLOperations") {
+      val simpleKMSDevelopers = timing("2/3 doSQLOperations") {
         // Select only the "name" column
-        df.select("name").count()
+        simpleKMSDf.select("name").count()
 
         // Select everybody, but increment the age by 1
-        df.select(df("name"), df("age") + 1).show()
+        simpleKMSDf.select(simpleKMSDf("name"), simpleKMSDf("age") + 1).show()
 
       // Select Developer and records count
-        val developers = df.filter(df("job") === "Developer" and df("age").between(20, 40)).toDF()
-        developers.count()
+        val simpleKMSDevelopers = simpleKMSDf.filter(simpleKMSDf("job") === "Developer" and simpleKMSDf("age").between(20, 40)).toDF()
+        simpleKMSDevelopers.count()
 
-        developers
+        simpleKMSDevelopers
       }
 
-      val developers2 = timing("2/3 datasource2 do SQL") {
-        df2.select("name").count
-
-        df2.select(df2("name"), df2("age") ).show()
-
-        val developers2 = df2.filter(df2("job") === "Developer" and df2("age")
+      val ehsmDevelopers = timing("2/3 datasource2 do SQL") {
+        ehsmDf.select("name").count
+        ehsmDf.select(ehsmDf("name"), ehsmDf("age") ).show()
+        val ehsmDevelopers = ehsmDf.filter(ehsmDf("job") === "Developer" and ehsmDf("age")
           .between(20, 40)).toDF()
-        developers2.count()
-
-        developers2
+        ehsmDevelopers.count()
+        ehsmDevelopers
       }
 
 
@@ -86,20 +81,29 @@ object MultiKMSExample extends Supportive {
           "output encryput mode not found")
 
         // write encrypted data
-        sc.write(developers, cryptoMode = CryptoMode.parse(
+        var simpleKMSOutputPath : String =""
+        if (conf.contains("spark.bigdl.kms.datasource1.outputpath")){
+          simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.outputpath")
+        } else {
+          simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.inputpath") + ".output"
+        }
+        sc.write(simpleKMSDevelopers, cryptoMode = CryptoMode.parse(
           conf.get("spark.bigdl.kms.datasource1.outputEncryptMode")))
           .mode("overwrite")
           .option("header", true)
-          .csv(conf.get("spark.bigdl.kms.datasource1.outputpath"),
-            conf.get("spark.bigdl.kms.datasource1.data"))
+          .csv(simpleKMSOutputPath, conf.get("spark.bigdl.kms.datasource1.data"))
 
-        // conf.set("spark.bigdl.kms.activeKey","spark.bigdl.kms.datasource2.data")
-        sc.write(developers, cryptoMode = CryptoMode.parse(
+        var ehsmOutputPath: String = ""
+        if (conf.contains("spark.bigdl.kms.datasource2.outputpath")){
+          ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.outputpath")
+        } else {
+          ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.inputpath") + ".output"
+        }
+        sc.write(ehsmDevelopers, cryptoMode = CryptoMode.parse(
           conf.get("spark.bigdl.kms.datasource2.outputEncryptMode")))
           .mode("overwrite")
           .option("header", true)
-          .csv(conf.get("spark.bigdl.kms.datasource2.outputpath"),
-            conf.get("spark.bigdl.kms.datasource2.data"))
+          .csv(ehsmOutputPath, conf.get("spark.bigdl.kms.datasource2.data"))
       }
     }
   }
