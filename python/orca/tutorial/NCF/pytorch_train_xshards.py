@@ -21,9 +21,8 @@ import torch.optim as optim
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
-from utils import parse_args, init_orca
+from utils import *
 
-from bigdl.orca import stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
@@ -61,7 +60,8 @@ loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-callbacks = [TensorBoardCallback(log_dir="runs", freq=1000)] if args.tensorboard else []
+callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "log"),
+                                 freq=1000)] if args.tensorboard else []
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
@@ -98,9 +98,9 @@ for r in result:
 
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
-est.save("NCF_model")
-train_data.save_pickle(os.path.join(args.data_dir, "train_xshards"))
-test_data.save_pickle(os.path.join(args.data_dir, "test_xshards"))
+est.save(os.path.join(args.model_dir, "NCF_model"))
+train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
+test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
 # Step 7: Stop Orca Context when program finishes
