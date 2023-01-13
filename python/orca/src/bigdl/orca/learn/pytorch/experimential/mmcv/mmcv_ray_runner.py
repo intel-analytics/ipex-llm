@@ -24,7 +24,7 @@ import torch
 import warnings
 from collections import OrderedDict
 from torch.optim import Optimizer
-from mmcv.runner import EpochBasedRunner
+from mmcv.runner import EpochBasedRunner, EvalHook
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel import is_module_wrapper
 from mmcv.parallel.distributed import MMDistributedDataParallel
@@ -168,6 +168,10 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
 
     def setup_components(self) -> None:
         runner = self.mmcv_runner_creator(self.config)
+        # add DistributedSampler for val data loader
+        for hook in runner._hooks:
+            if isinstance(hook, EvalHook):
+                hook.dataloader = self.with_sampler(hook.dataloader)
         self._wrap_from_ebr(runner)
 
     def setup_ddp_components(self) -> None:
