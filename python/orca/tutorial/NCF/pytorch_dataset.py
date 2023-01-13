@@ -26,7 +26,7 @@ import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
-from bigdl.orca.data.file import get_remote_dir_to_local, rmdir
+from bigdl.orca.data.file import get_remote_dir_to_local
 
 # user/item ids and sparse features are converted to int64 to be compatible with
 # lower versions of PyTorch such as 1.7.1.
@@ -110,9 +110,6 @@ def process_users_items(dataset_dir):
         usecols=[0, 2], dtype={0: np.int64, 1: str},
         engine="python", encoding="latin-1")
 
-    if dataset_dir.startswith("hdfs"):
-        rmdir(local_data_dir)
-
     user_num = users["user"].max() + 1
     item_num = items["item"].max() + 1
 
@@ -161,9 +158,6 @@ def process_ratings(dataset_dir, user_num, item_num):
         sep="::", header=None, names=["user", "item"],
         usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
         engine="python")
-
-    if dataset_dir.startswith("hdfs"):
-        rmdir(local_data_dir)
 
     # load ratings as a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
