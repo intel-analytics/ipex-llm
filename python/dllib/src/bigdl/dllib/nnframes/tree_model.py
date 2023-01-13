@@ -41,7 +41,7 @@ class XGBClassifier():
     def fit(self, df):
         model = callZooFunc("float", "fitXGBClassifier", self.value, df)
         xgb_model = XGBClassifierModel(model)
-        features_col = callZooFunc("float", "getFeaturesCol", self.value)
+        features_col = callZooFunc("float", "getXGBClassifierFeaturesCol", self.value)
         xgb_model.feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
         return xgb_model
 

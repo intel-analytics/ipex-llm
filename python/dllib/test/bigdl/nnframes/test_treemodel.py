@@ -93,7 +93,7 @@ class TestTreeModel():
         xgbmodel = classifier.fit(df)
         xgbmodel.setFeaturesCol("features")
         fscore = xgbmodel.getFScore()
-        score = xgbmodel.getScore(importance_type="weight")
+        score = xgbmodel.getScore(importance_type="gain")
         feature_importances = xgbmodel.feature_importances
         assert len(fscore) == len(score)
         assert len(feature_importances) >= len(score)

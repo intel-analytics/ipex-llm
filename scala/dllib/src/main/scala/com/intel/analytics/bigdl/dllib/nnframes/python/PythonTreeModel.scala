@@ -140,7 +140,7 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     score.map(s => (s._1, s._2 / total)).asJava
   }
 
-  def getFeaturesCol(model: XGBClassifier): String = {
+  def getXGBClassifierFeaturesCol(model: XGBClassifier): String = {
     model.getFeaturesCol()
   }
 
