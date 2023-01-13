@@ -379,9 +379,8 @@ object PPMLContext{
       "spark.bigdl.kms.datasource.instance not found, please provide the instance of your data sources.")
     val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue = 2)
     for (i <- 1 to dataSourceInstance) {
-      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.name"),
-        s"spark.bigdl.kms.datasource${i}.name not found")
-      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name")
+      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",
+        defaultValue = s"datasource${i}")
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.kms"),
         s"spark.bigdl.kms.datasource${i}.kms not found")
       val kms = conf.get(s"spark.bigdl.kms.datasource${i}.kms")
@@ -389,10 +388,14 @@ object PPMLContext{
       // get input and output path
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.inputpath"),
       s"input path of data source${i} not found, please provide input path")
-      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
-      s"output path of data source${i} not found, please provide output path")
+      // Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
+      // s"output path of data source${i} not found, please provide output path")
       val inputPath = conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
-      val outputPath = conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
+      if (conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath")){
+        val outputPath = conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
+      } else {
+        val outputPath = inputPath + ".output"
+      }
 
       // get primary key and data key
       Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
