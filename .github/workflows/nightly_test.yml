@@ -134,7 +134,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Jep-ExampleTest-Py37-Spark2:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Jep-ExampleTest-Py37-Spark2' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
