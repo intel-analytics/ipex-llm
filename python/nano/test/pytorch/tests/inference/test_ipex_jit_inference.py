@@ -205,7 +205,7 @@ class IPEXJITInference_gt_1_10:
                                                 method='ipex',
                                                 calib_data=data_loader)
         # test context manager
-        with InferenceOptimizer.get_context(model):
+        with InferenceOptimizer.get_context(inc_model):
             inc_model(self.data_sample)
 
         # test save & load
