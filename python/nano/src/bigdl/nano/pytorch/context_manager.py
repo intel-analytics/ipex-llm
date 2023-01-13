@@ -25,17 +25,17 @@ class BaseContextManager(object):
     """
 
     def __init__(self, thread_num=None):
-        self.no_grad = torch.no_grad()
+        self.infer_mode = torch.inference_mode(mode=True)
         self.thread_num = thread_num
         self.original_thread_num = torch.get_num_threads()
 
     def __enter__(self):
         if self.thread_num is not None:
             torch.set_num_threads(self.thread_num)
-        self.no_grad.__enter__()
+        self.infer_mode.__enter__()
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        self.no_grad.__exit__(exc_type, exc_value, exc_tb)
+        self.infer_mode.__exit__(exc_type, exc_value, exc_tb)
         torch.set_num_threads(self.original_thread_num)
 
 
