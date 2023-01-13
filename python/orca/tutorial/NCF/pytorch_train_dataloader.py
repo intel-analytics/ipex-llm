@@ -29,14 +29,14 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
-parser = argparse.ArgumentParser(description="PyTorch Example")
+parser = argparse.ArgumentParser(description="PyTorch NCF Training with DataLoader")
 parser.add_argument("--data_dir", type=str,
                     help="The path to load data from local or remote resources.")
 parser.add_argument("--cluster_mode", type=str, default="local",
-                    help="The cluster mode, such as default, local, yarn-client, yarn-cluster, "
+                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
                          "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
 parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
-parser.add_argument("--callback", type=bool, default=True,
+parser.add_argument("--tensorboard", action='store_true',
                     help="Whether to use TensorBoardCallback.")
 parser.add_argument("--workers_per_node", type=int, default=1,
                     help="The number of PyTorch workers on each node.")
@@ -44,9 +44,7 @@ args = parser.parse_args()
 
 
 # Step 1: Init Orca Context
-if args.cluster_mode == "default":
-    sc = init_orca_context()
-elif args.cluster_mode == "local":
+if args.cluster_mode == "local":
     sc = init_orca_context(cluster_mode="local")
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
@@ -96,9 +94,10 @@ elif args.cluster_mode == "bigdl-submit":
 elif args.cluster_mode == "spark-submit":
     sc = init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
+    print("cluster_mode should be one of 'local', 'yarn-client', "
           "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
           "but got " + args.cluster_mode)
+    exit()
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
@@ -142,7 +141,7 @@ loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-callbacks = [TensorBoardCallback(log_dir="runs", freq=1000)] if args.callback else []
+callbacks = [TensorBoardCallback(log_dir="runs", freq=1000)] if args.tensorboard else []
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                            loss=loss,
