@@ -16,7 +16,6 @@
 from pathlib import Path
 import yaml
 import operator
-import torch
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
@@ -29,6 +28,7 @@ from bigdl.nano.utils.util import compare_version
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
     def __init__(self, model, thread_num=None):
+        super().__init__(model.model)
         self.quantized = model
         self.thread_num = thread_num
         self._nano_context_manager = generate_context_manager(accelerator=None,

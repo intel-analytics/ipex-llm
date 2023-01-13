@@ -23,6 +23,7 @@ from bigdl.nano.utils.util import compare_version
 def load_inc_model(path, model, framework, input_sample=None):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
+        # only ipex quantization needs example_inputs
         return PytorchQuantizedModel._load(path, model, example_inputs=input_sample)
     elif framework == 'tensorflow':
         from .tensorflow.model import KerasQuantizedModel
