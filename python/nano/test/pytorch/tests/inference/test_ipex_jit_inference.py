@@ -209,11 +209,14 @@ class IPEXJITInference_gt_1_10:
             inc_model(self.data_sample)
 
         # test save & load
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(inc_model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name, model)
-        with InferenceOptimizer.get_context(new_model):
-            new_model(self.data_sample)
+        import operator
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(inc_model, tmp_dir_name)
+                new_model = InferenceOptimizer.load(tmp_dir_name, model,
+                                                    input_sample=next(iter(data_loader))[0])
+            with InferenceOptimizer.get_context(new_model):
+                new_model(self.data_sample)
 
         # test dataloader only contains x
         from torchvision.models import resnet18
