@@ -134,7 +134,7 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     // Currently we set importance type default value to "weight"
     val score = booster.getScore("", "weight")
     val total = score.foldLeft(0.0)(_ + _._2)
-    if(total == 0){
+    if(total == 0) {
       return score.asJava
     }
     score.map(s => (s._1, s._2 / total)).asJava
