@@ -422,8 +422,8 @@ class TorchRunner(BaseRunner):
             if self.use_tqdm and self.rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
-                if "train_loss" in self.output:
-                    postfix.update(loss=self.output["train_loss"])
+                if "train_loss" in self.metrics_stats:
+                    postfix.update(loss=self.metrics_stats["train_loss"])
                 _progress_bar.set_postfix(postfix)
 
             if self.scheduler and batch_info.get(
@@ -431,11 +431,11 @@ class TorchRunner(BaseRunner):
                 # TODO: Totally abandon SCHEDULER_STEP
                 self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
-            metric_meters.update(self.output, n=self.output.pop(NUM_SAMPLES, 1))
+            metric_meters.update(self.metrics_stats, n=self.metrics_stats.pop(NUM_SAMPLES, 1))
             self.global_step += 1
 
             del self.batch_idx
-            del self.output
+            del self.metrics_stats
 
     def _train_batch(self, batch, batch_info=None, callbacks=None):
         """Computes loss and updates the model over one batch.
@@ -492,7 +492,7 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         loss_item = self.loss.item()
-        self.output = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
+        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch/loss from last iteration
