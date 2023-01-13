@@ -30,10 +30,8 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-framework = "PyTorch"
-input_data_type = "DataLoader"
-args = parse_args(framework, input_data_type)
-init_orca(args, framework, input_data_type)
+args = parse_args("PyTorch NCF Training with DataLoader")
+init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
