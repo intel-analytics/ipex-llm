@@ -28,10 +28,8 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-framework = "Tensorflow"
-input_data_type = "Spark DataFrame"
-args = parse_args(framework, input_data_type)
-init_orca(args, framework, input_data_type)
+args = parse_args("Tensorflow NCF Training with Spark DataFrame")
+init_orca(args, extra_python_lib="tf_model.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
@@ -69,7 +67,8 @@ def model_creator(config):
 # Step 4: Distributed training with Orca TF2 Estimator
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
-                           backend=args.backend)
+                           backend=args.backend,
+                           workers_per_node=args.workers_per_node)
 
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
