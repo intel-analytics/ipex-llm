@@ -67,6 +67,7 @@ object BigDLKMSFrontend extends Supportive {
         arguments.keyProviderJarPath,
         "keywhiz.KeywhizService",
         "main")
+      val port = arguments.keywhizPort
 
       val route = timing("initialize http route") {
         path("") {
@@ -92,13 +93,16 @@ object BigDLKMSFrontend extends Supportive {
             try {
               val base64AES256Key: String = generateAESKey(256,
                                                            keyProviderMethod,
-                                                           keyProviderInstance)
-              loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance)
+                                                           keyProviderInstance
+                                                           )
+              loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance, port)
               addKeyToKeywhiz(user,
                               primaryKeyName,
                               base64AES256Key,
                               keywhizCliMethod,
-                              keywhizCliInstance)
+                              keywhizCliInstance,
+                              port
+                              )
               complete(s"primaryKey [$primaryKeyName] is generated successfully!")
             } catch {
               case e: Exception =>
@@ -116,11 +120,13 @@ object BigDLKMSFrontend extends Supportive {
             (primaryKeyName, user, token) => {
             timing("generate data key") {
             try {
-                loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance)
+                loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance, port)
                 val primaryKey: String = getKeyFromKeywhiz(user,
                                                            primaryKeyName,
                                                            keywhizCliMethod,
-                                                           keywhizCliInstance)
+                                                           keywhizCliInstance,
+                                                           port
+                                                           )
                 val base64AES128Key: String = generateAESKey(128,
                                                              keyProviderMethod,
                                                              keyProviderInstance)
@@ -129,7 +135,8 @@ object BigDLKMSFrontend extends Supportive {
                                 dataKeyName,
                                 encryptedDataKey,
                                 keywhizCliMethod,
-                                keywhizCliInstance)
+                                keywhizCliInstance,
+                                port)
                 complete(s"dataKey [$dataKeyName] is generated successfully!")
             } catch {
               case e: Exception =>
@@ -152,7 +159,8 @@ object BigDLKMSFrontend extends Supportive {
                                        token,
                                        arguments.frontendKeywhizConf,
                                        keywhizCliMethod,
-                                       keywhizCliInstance)
+                                       keywhizCliInstance,
+                                       port)
                    complete(s"user [$userName] is created successfully!")
                 } catch {
                   case e: Exception =>
@@ -170,15 +178,19 @@ object BigDLKMSFrontend extends Supportive {
             (primaryKeyName, user, token) => {
             timing("get data key") {
             try {
-                loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance)
+                loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance, port)
                 val primaryKey = getKeyFromKeywhiz(user,
                                                    primaryKeyName,
                                                    keywhizCliMethod,
-                                                   keywhizCliInstance)
+                                                   keywhizCliInstance,
+                                                   port
+                                                   )
                 val base64DataKeyCiphertext = getKeyFromKeywhiz(user,
                                                                 dataKeyName,
                                                                 keywhizCliMethod,
-                                                                keywhizCliInstance)
+                                                                keywhizCliInstance,
+                                                                port
+                                                                )
                 val base64DataKeyPlaintext = decryptDataKey(primaryKey, base64DataKeyCiphertext)
                 complete(base64DataKeyPlaintext)
             } catch {
@@ -205,18 +217,24 @@ object BigDLKMSFrontend extends Supportive {
                           token: String,
                           frontendKeywhizConf: String,
                           keywhizCliMethod: Method,
-                          keywhizCliInstance: URLClassLoader): Unit = {
+                          keywhizCliInstance: URLClassLoader,
+                          port: Int): Unit = {
     val args: String = constructKeywhizArgs(
-        s"add-user $frontendKeywhizConf --user $user --token $token")
+        s"add-user $frontendKeywhizConf --user $user --token $token",
+        port
+    )
     invokeExternalMethod(keywhizCliMethod, keywhizCliInstance, args)
   }
 
   def loginKeywhiz(user: String,
                    token: String,
                    keywhizCliMethod: Method,
-                   keywhizCliInstance: URLClassLoader): Unit = {
+                   keywhizCliInstance: URLClassLoader,
+                   port: Int): Unit = {
     val args: String = constructKeywhizArgs(
-        s"--user $user --token $token login")
+        s"--user $user --token $token login",
+        port
+    )
     invokeExternalMethod(keywhizCliMethod, keywhizCliInstance, args)
   }
 
@@ -234,10 +252,13 @@ object BigDLKMSFrontend extends Supportive {
                       keyName: String,
                       keyContent: String,
                       keywhizCliMethod: Method,
-                      keywhizCliInstance: URLClassLoader): Unit = {
+                      keywhizCliInstance: URLClassLoader,
+                      port: Int): Unit = {
     val args: String = constructKeywhizArgs(
         s"--user $user " +
-        s"add secret --name $keyName --datakey $keyContent"
+        s"add secret --name $keyName " +
+        s"""--json {"_key":"$keyContent"}""",
+        port
     )
     invokeExternalMethod(keywhizCliMethod, keywhizCliInstance, args)
   }
@@ -245,14 +266,17 @@ object BigDLKMSFrontend extends Supportive {
   def getKeyFromKeywhiz(user: String,
                         keyName: String,
                         keywhizCliMethod: Method,
-                        keywhizCliInstance: URLClassLoader): String = {
+                        keywhizCliInstance: URLClassLoader,
+                        port: Int): String = {
     val args: String = constructKeywhizArgs(
-        s"--user $user get --name $keyName"
+        s"--user $user get --name $keyName",
+        port
     )
     val key: String = invokeExternalMethod(
         keywhizCliMethod,
         keywhizCliInstance,
-        args).asInstanceOf[String].dropRight(1)
+        args
+    ).asInstanceOf[String].dropRight(1)
     key
   }
 
@@ -293,8 +317,8 @@ object BigDLKMSFrontend extends Supportive {
     (method, instance.asInstanceOf[URLClassLoader])
   }
 
-  def constructKeywhizArgs(args: String): String = {
-    "--devTrustStore --url https://keywhiz-service:4444 " + args
+  def constructKeywhizArgs(args: String, port: Int): String = {
+    s"--devTrustStore --url https://keywhiz-service:$port " + args
   }
 
   def invokeExternalMethod(method: Method,
@@ -318,7 +342,7 @@ object BigDLKMSFrontend extends Supportive {
     opt[Int]('r', "keywhizPort")
       .action((x, c) => c.copy(keywhizPort = x))
       .text("port of keywhiz")
-    opt[String]('p', "httpsKeyStorePath")
+    opt[String]('y', "httpsKeyStorePath")
       .action((x, c) => c.copy(httpsKeyStorePath = x))
       .text("https keyStore path")
     opt[String]('w', "httpsKeyStoreToken")
