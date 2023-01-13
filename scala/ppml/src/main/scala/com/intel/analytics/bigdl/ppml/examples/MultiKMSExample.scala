@@ -59,7 +59,9 @@ object MultiKMSExample extends Supportive {
         simpleKMSDf.select(simpleKMSDf("name"), simpleKMSDf("age") + 1).show()
 
       // Select Developer and records count
-        val simpleKMSDevelopers = simpleKMSDf.filter(simpleKMSDf("job") === "Developer" and simpleKMSDf("age").between(20, 40)).toDF()
+        val simpleKMSDevelopers = simpleKMSDf
+          .filter(simpleKMSDf("job") === "Developer" and simpleKMSDf("age").between(20, 40))
+          .toDF()
         simpleKMSDevelopers.count()
 
         simpleKMSDevelopers
@@ -81,8 +83,8 @@ object MultiKMSExample extends Supportive {
           "output encryput mode not found")
 
         // write encrypted data
-        var simpleKMSOutputPath : String =""
-        if (conf.contains("spark.bigdl.kms.datasource1.outputpath")){
+        var simpleKMSOutputPath : String = ""
+        if (conf.contains("spark.bigdl.kms.datasource1.outputpath")) {
           simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.outputpath")
         } else {
           simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.inputpath") + ".output"
@@ -94,7 +96,7 @@ object MultiKMSExample extends Supportive {
           .csv(simpleKMSOutputPath, conf.get("spark.bigdl.kms.datasource1.data"))
 
         var ehsmOutputPath: String = ""
-        if (conf.contains("spark.bigdl.kms.datasource2.outputpath")){
+        if (conf.contains("spark.bigdl.kms.datasource2.outputpath")) {
           ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.outputpath")
         } else {
           ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.inputpath") + ".output"

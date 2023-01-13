@@ -62,7 +62,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    * @param dataKeyPath
    * @return
    */
-  
+
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
@@ -70,8 +70,8 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
     sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
-  
-  // specified one datasource to loadkeys 
+
+  // specified one datasource to loadkeys
   def loadKeys(primaryKeyPath: String,
                dataKeyPath: String,
                dataSourceName: String ): this.type = {
@@ -376,7 +376,8 @@ object PPMLContext{
 
     // init data sources
     Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource.instance"),
-      "spark.bigdl.kms.datasource.instance not found, please provide the instance of your data sources.")
+      "spark.bigdl.kms.datasource.instance not found" +
+      "please provide the instance of your data sources.")
     val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue = 2)
     for (i <- 1 to dataSourceInstance) {
       val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",
@@ -391,7 +392,7 @@ object PPMLContext{
       // Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
       // s"output path of data source${i} not found, please provide output path")
       val inputPath = conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
-      if (conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath")){
+      if (conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath")) {
         val outputPath = conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
       } else {
         val outputPath = inputPath + ".output"
