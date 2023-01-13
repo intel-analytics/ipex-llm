@@ -208,12 +208,10 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(model):
             inc_model(self.data_sample)
 
-        # The save/load of ipex_int8 quanzation has konwn bug,
-        # will fix it in the future
         # test save & load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(inc_model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
 

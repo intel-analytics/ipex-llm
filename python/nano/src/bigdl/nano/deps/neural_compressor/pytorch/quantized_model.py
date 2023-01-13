@@ -31,7 +31,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
     def __init__(self, model, thread_num=None):
         if isinstance(model, torch.jit._script.RecursiveScriptModule):
             # ipex quantization's save will check whether model is instance
-            # torch.jit._script.RecursiveScriptModule
+            # of torch.jit._script.RecursiveScriptModule
             super().__init__(model)
         else:
             super().__init__(model.model)
