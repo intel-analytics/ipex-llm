@@ -15,6 +15,8 @@
 #
 
 import torch
+import operator
+from bigdl.nano.utils.util import compare_version
 
 
 class BaseContextManager(object):
@@ -48,6 +50,9 @@ class AutocastContextManager(BaseContextManager):
     """
     def __init__(self, thread_num=None):
         super().__init__(thread_num=thread_num)
+        if compare_version("torch", operator.lt, "1.13.0"):
+            # In torch1.12, torch.inference_mode(mode=True) will cause bug for jit+bf16
+            self.infer_mode = torch.no_grad()
         self.autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
 
     def __enter__(self):
