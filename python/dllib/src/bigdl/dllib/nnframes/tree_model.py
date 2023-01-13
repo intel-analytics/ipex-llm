@@ -40,7 +40,7 @@ class XGBClassifier():
 
     def fit(self, df):
         # get features col
-        features_col = self.value.getFeaturesCol()
+        features_col = callZooFunc("float", "getFeaturesCol", self.value)
         # get features names
         feature_names = []
         if features_col in df.columns:
