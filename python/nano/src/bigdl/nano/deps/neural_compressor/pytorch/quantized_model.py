@@ -16,6 +16,7 @@
 from pathlib import Path
 import yaml
 import operator
+import torch
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
@@ -28,7 +29,12 @@ from bigdl.nano.utils.util import compare_version
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
     def __init__(self, model, thread_num=None):
-        super().__init__(model.model)
+        if isinstance(model, torch.jit._script.RecursiveScriptModule):
+            # ipex quantization's save will check whether model is instance
+            # torch.jit._script.RecursiveScriptModule
+            super().__init__(model)
+        else:
+            super().__init__(model.model)
         self.quantized = model
         self.thread_num = thread_num
         self._nano_context_manager = generate_context_manager(accelerator=None,
@@ -57,9 +63,9 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         # so we should load weight using internal nn.Module also
         if isinstance(model, LightningModule) and compare_version("neural_compressor",
                                                                   operator.ge, "2.0"):
-            qmodel = PyTorchModel(load(path, model.model))
+            qmodel = load(path, model.model)
         else:
-            qmodel = PyTorchModel(load(path, model))
+            qmodel = load(path, model)
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):
             path = Path(path)
