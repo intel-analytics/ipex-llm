@@ -160,13 +160,15 @@ def _quantize(
         inputs=inputs,
         outputs=outputs,
     )
-    config.performance_only = True
-    if framework == "pytorch_ipex":
-        backend = "ipex"
-    else:
-        backend = "default"
-    # for onnxruntime, what is the backend?
-    config.backend = backend
+    # if metric is None and eval_dataloader is None:
+    if metric is None:
+        config.performance_only = True
+    config = Config(quantization=config, benchmark=None, pruning=None,
+                    distillation=None, nas=None)
+
+    q_conf = QuantConf()
+    q_conf.map_pyconfig_to_cfg(config)
+    q_conf.usr_cfg.model.framework = framework
 
     q_model = quantization.fit(
         model=model,
