@@ -46,8 +46,7 @@ python ${filename}.py
 echo "finished notebook image_classification_tf.ipynb"
 now=$(date "+%s")
 time1=$((now - start))
-echo "filename: $filename"
-cat ${filename}.py
+
 
 echo "#2 image classification of pytorch"
 #timer
@@ -69,8 +68,6 @@ python ${filename}.py
 echo "finished notebook image_classification_py.ipynb"
 now=$(date "+%s")
 time2=$((now - start))
-echo "filename: $filename"
-cat ${filename}.py
 
 echo "#3 image segmentation of tensorflow"
 start=$(date "+%s")
@@ -86,43 +83,13 @@ ${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
 	sed -i "s/get_ipython()/#/g"  ${filename}.py
 	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
 
-
 python ${filename}.py
+cat ${filename}.py
 echo "finished notebook segmentation_tf.ipynb"
 now=$(date "+%s")
 time3=$((now - start))
-echo "filename: $filename"
-cat ${filename}.py
-
-echo "#4 image segmentation of pytorch"
-#timer
-start=$(date "+%s")
-
-
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/tsg_salt/ ]
-then
-    echo "tsg_salt already exists"
-else
-    wget -r -np -nH --cut-dirs=2 $FTP_URI/analytics-zoo-data/xshards/tsg_salt/ -P ${BIGDL_ROOT}/python/orca/tutorial/xshards/
-fi
-
-filename=segmentation_py
-${BIGDL_ROOT}/python/orca/dev/colab-notebook/ipynb2py.sh ${filename}
-	sed -i "s/get_ipython()/#/g"  ${filename}.py
-	sed -i "s/EPOCHS = 50/EPOCHS = 1/g" ${filename}.py
-
-python ${filename}.py
-echo "finished notebook segmentation_py.ipynb"
-now=$(date "+%s")
-time4=$((now - start))
-echo "filename: $filename"
-cat ${filename}.py
-
-
-ls -ltr ${BIGDL_ROOT}/python/orca/tutorial/xshards/
 
 
 echo "#1 Running image_classification_tf time used: $time1 seconds"
 echo "#2 Running image_classification_py time used: $time2 seconds"
 echo "#3 Running segmentation_tf time used: $time3 seconds"
-echo "#4 Running segmentation_py time used: $time4 seconds"
