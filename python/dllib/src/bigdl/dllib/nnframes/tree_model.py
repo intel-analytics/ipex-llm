@@ -39,19 +39,18 @@ class XGBClassifier():
         return callZooFunc("float", "setXGBClassifierNumWorkers", self.value, value)
 
     def fit(self, df):
-        # get features cols or features col
-        features_cols = self.value.getFeaturesCols()
+        # get features col
         features_col = self.value.getFeaturesCol()
-        model = callZooFunc("float", "fitXGBClassifier", self.value, df)
         # get features names
         feature_names = []
-        if features_cols:
-            feature_names = features_cols
-        elif features_col:
+        if features_col:
             feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
+        elif "features" in df.columns:
+            feature_names = [f"f{i}" for i in range(len(df.first()["features"]))]
         else:
-            if "features" in df.columns:
-                feature_names = [f"f{i}" for i in range(len(df.first()["features"]))]
+            invalidInputError(False, 
+            "The input data should set the FeaturesCol or use the default value 'features'")
+        model = callZooFunc("float", "fitXGBClassifier", self.value, df)
         xgb_model = XGBClassifierModel(model)
         xgb_model.setFeatureNames(feature_names)
         return xgb_model
