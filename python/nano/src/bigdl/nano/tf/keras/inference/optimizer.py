@@ -315,8 +315,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param model: The Keras model to trace.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec`` or numpy array
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'``,
+                           ``input_spec`` is only required when you have a custom Keras model.
+>>>>>>> 76154c3972 (Revise docstrings for inputspec)
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -415,8 +418,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec`` or numpy array
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'`` or
+                           ``precision='fp16'``, ``input_spec`` is required when you have
+                           a custom Keras model. If ``accelerator=None`` and ``precision='int8'``,
+                           ``input_spec`` is required when you have a custom Keras model, or
+                           you skip the ``InputLayer`` with Keras Sequential Model.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
