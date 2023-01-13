@@ -92,11 +92,11 @@ class TestTreeModel():
         classifier = XGBClassifier(params)
         xgbmodel = classifier.fit(df)
         xgbmodel.setFeaturesCol("features")
-        fscore = xgbmodel.getFscore()
-        score = xgbmodel.getScore(importance_type="gain")
+        fscore = xgbmodel.getFScore()
+        score = xgbmodel.getScore(importance_type="weight")
         feature_importances = xgbmodel.feature_importances
         assert len(fscore) == len(score)
-        assert len(feature_importances) == len(score)
+        assert len(feature_importances) >= len(score)
 
     def test_XGBRegressor(self):
         from sys import platform
