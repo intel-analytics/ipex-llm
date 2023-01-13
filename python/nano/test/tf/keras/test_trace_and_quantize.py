@@ -139,9 +139,7 @@ class TestTraceAndQuantize(TestCase):
                                                       accelerator=None,
                                                       input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
                                                       x=np.random.random((100, 4)),
-                                                      y=np.random.random((100, 5)),
-                                                      accuracy_criterion = {'relative': 0,
-                                                                            'higher_is_better': True})
+                                                      y=np.random.random((100, 5)))
         # try to access some custom attributes
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
