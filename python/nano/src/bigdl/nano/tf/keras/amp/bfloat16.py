@@ -1,0 +1,49 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
+from tensorflow.keras import mixed_precision
+from tempfile import TemporaryDirectory
+import tensorflow as tf
+
+
+class BF16Model(AcceleratedKerasModel):
+    def __init__(self, model, **kwargs):
+        super().__init__(model, precision=tf.bfloat16)
+        # TODO: check bf16 isa
+        policy_bf16 = mixed_precision.Policy('mixed_bfloat16')
+        for layer in model.layers:
+            layer._dtype_policy = policy_bf16
+        with TemporaryDirectory() as temp_dir:
+            model.save(temp_dir)
+            bf16_model = tf.keras.models.load_model(temp_dir)
+        self.model = bf16_model
+
+    def forward_step(self, *inputs):
+        return self.model(*inputs)
+
+    @property
+    def status(self):
+        status = super().status
+        status.update({"ModelType": type(self.target_obj).__name__,
+                       "precision": "bfloat16"})
+        return status
+
+    def _save_model(self, path):
+        self.model.save(path)
+
+    @staticmethod
+    def _load(path):
+        return BF16Model(tf.keras.models.load_model(path))

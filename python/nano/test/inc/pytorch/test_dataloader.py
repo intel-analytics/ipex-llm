@@ -16,12 +16,14 @@
 
 from unittest import TestCase
 
+import operator
 import pytest
 import torch
 from torch.utils.data import TensorDataset, DataLoader, Dataset
 from torch import nn
 import torchmetrics
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.utils.util import compare_version
 
 input1 = TensorDataset(torch.ones(10, 3))
 input2 = TensorDataset(torch.ones(10, 4))
@@ -107,6 +109,7 @@ class TestDataloader(TestCase):
         trainer.quantize(model, calib_data=dataloader, 
                          metric=torchmetrics.F1Score('multiclass', num_classes=10))
 
+    @pytest.mark.skipif(compare_version("neural_compressor", operator.ge, "2.0"), reason="")
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray
         dataset = TensorDataset(torch.ones(10, 3), torch.ones(10))

@@ -1386,3 +1386,97 @@ class TestChronosModelTCNForecaster(TestCase):
         eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
         eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
+
+    def test_tcn_forecaster_export_forecasting_pipeline(self):
+        import shutil
+        import pandas as pd
+        from sklearn.preprocessing import StandardScaler
+        from numpy.testing import assert_array_almost_equal
+        from bigdl.chronos.data import TSDataset        
+
+        temp_dir = tempfile.mkdtemp()
+
+        # developing 
+        train_data, test_data = create_tsdataset(roll=False)
+        scaler = StandardScaler()
+
+        train_data.scale(scaler, fit=True) \
+                  .roll(lookback=24, horizon=5)
+
+        forecaster = TCNForecaster.from_tsdataset(train_data)
+        forecaster.fit(train_data)
+
+        # export the pipeline to torchscript
+        pipeline_module_dir = os.path.join(temp_dir, "pipeline")
+        os.mkdir(pipeline_module_dir)
+        forecaster.export_torchscript_file(dirname=pipeline_module_dir,
+                                           save_pipeline=True,
+                                           tsdata=train_data,
+                                           drop_dtcol=True)
+        # save the test data for deployment
+        test_data_path = os.path.join(temp_dir, "inference_data.csv")
+        test_data.df.to_csv(test_data_path, index=False)
+
+        # deployment
+        test_df = pd.read_csv(test_data_path, parse_dates=["timeseries"])
+        test_data = TSDataset.from_pandas(df=test_df,
+                                          dt_col='timeseries',
+                                          target_col=['value1', 'value2'],
+                                          deploy_mode=True)
+        test_data.df.drop(columns=test_data.dt_col, inplace=True)
+        test_data.df["id"] = np.array([0] * len(test_data.df))
+        input_tensor = torch.from_numpy(test_data.df.values)
+        pipeline_module_path = os.path.join(pipeline_module_dir, "chronos_forecasting_pipeline.pt")
+        pipeline_module = torch.jit.load(pipeline_module_path)
+        output = pipeline_module.forward(input_tensor)
+
+        # compare the result of forecaster.predict_with_jit()
+        test_data.scale(scaler) \
+                 .roll(lookback=24, horizon=5)
+        input_data = test_data.to_numpy()
+        forecaster_output = forecaster.predict_with_jit(input_data)
+        postprocess_output = test_data.unscale_numpy(forecaster_output)
+        assert_array_almost_equal(output.numpy(), postprocess_output)
+
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+
+    @op_inference
+    def test_tcn_forecaster_set_thread_num(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        pred = forecaster.predict_with_onnx(test_data[0])
+        current_thread = torch.get_num_threads()
+        assert current_thread == 1
+        assert forecaster.thread_num == 1
+        assert forecaster.optimized_model_thread_num == 1
+
+        num = max(1, original_thread//2)
+        forecaster.quantize(train_data, thread_num=num)
+        pred = forecaster.predict(test_data[0], quantize=True)
+        current_thread = torch.get_num_threads()
+        assert current_thread == num
+        assert forecaster.thread_num == num
+        assert forecaster.optimized_model_thread_num == num
+
+        # if set `optimize=False`, keep the current thread num
+        num = max(1, current_thread//2)
+        forecaster.optimize(train_data=train_data,
+                            validation_data=val_data,
+                            batch_size=32,
+                            thread_num=num)
+        pred = forecaster.predict(test_data[0], acceleration=False)
+        new_current_thread = torch.get_num_threads()
+        assert new_current_thread == current_thread
+        assert forecaster.thread_num == current_thread
+        assert forecaster.optimized_model_thread_num == num

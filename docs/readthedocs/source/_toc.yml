@@ -108,12 +108,17 @@ subtrees:
                   - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
                   - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
                   - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
+                  - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
+                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
                   - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
                   - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
                   - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
                   - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
+                  - file: doc/Nano/Howto/Inference/OpenVINO/accelerate_inference_openvino_gpu
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
                   - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
@@ -128,6 +133,8 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                   - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
                   - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
+                  - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
                   - file: doc/Nano/Howto/install_in_colab
                   - file: doc/Nano/Howto/windows_guide
             - file: doc/Nano/Overview/known_issues
@@ -208,6 +215,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_preprocess_my_data
                 - file: doc/Chronos/Howto/how_to_process_data_in_production_environment
                 - file: doc/Chronos/Howto/how_to_choose_forecasting_alg
+                - file: doc/Chronos/Howto/how_to_export_data_processing_pipeline_to_torchscript
           - file: doc/Chronos/QuickStart/index
             title: "Tutorials"
             subtrees:

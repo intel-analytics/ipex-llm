@@ -26,6 +26,7 @@ on:
         - bigdl-ppml-trusted-python-toolkit-base
         - bigdl-ppml-trusted-python-toolkit-ref
         - bigdl-ppml-trusted-bigdata-gramine
+        - bigdl-kms
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -642,7 +643,30 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
-    
+        
+  bigdl-kms:
+    if: ${{ github.event.inputs.artifact == 'bigdl-kms' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: docker deploy bigdl-kms
+      run: |
+        export IMAGE=intelanalytics/bigdl-kms
+        cd ppml/services/bigdl-kms/docker
+        echo "########################################"
+        echo "############## bigdl-kms ###############"
+        echo "########################################"
+        docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg JDK_URL=${JDK_URL} \
+          -t $IMAGE:$TAG -f ./Dockerfile .
+        docker push ${IMAGE}:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
+        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
 
   bigdl-ppml-pccs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-pccs' || github.event.inputs.artifact == 'all' }}

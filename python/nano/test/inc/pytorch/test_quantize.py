@@ -16,6 +16,7 @@
 
 
 import os
+import operator
 import tempfile
 from unittest import TestCase
 
@@ -29,6 +30,8 @@ import torchmetrics
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.utils.log4Error import invalidOperationError
+from bigdl.nano.utils.util import compare_version
 
 batch_size = 256
 num_workers = 0
@@ -57,6 +60,11 @@ class LitResNet18(LightningModule):
 
     def forward(self, *args):
         return self.classify(args[0])
+
+
+class ModelCannotCopy(ResNet18):
+    def __deepcopy__(self, obj):
+        invalidOperationError(False, "This model cannot be deepcopy")
 
 
 class TestTrainer(TestCase):
@@ -217,3 +225,21 @@ class TestTrainer(TestCase):
             assert torch.get_num_threads() == 2
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+    # This UT will fail with INC < 2.0
+    @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")
+    def test_ipex_int8_quantize_with_model_cannot_deepcopy(self):
+        model = ModelCannotCopy(num_classes=10)
+        InferenceOptimizer.quantize(model,
+                                    calib_data=self.train_loader,
+                                    method="ipex",
+                                    inplace=False)
+
+    # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
+    # but we have some workaround for pl models returned by our `Trainer.compile`
+    def test_quantize_with_pl_model(self):
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.fit(pl_model, self.train_loader)
+        InferenceOptimizer.quantize(pl_model,
+                                    calib_data=self.train_loader)

@@ -253,12 +253,11 @@ class TorchRunner(BaseRunner):
             val_loader = None
             val_steps = None
 
-        if callbacks is not None:
-            for callback in callbacks:
-                callback.set_model(self.given_models)
-                if hasattr(callback, "set_trainer"):
-                    callback.set_trainer(self)
-                callback.on_train_begin()
+        for callback in callbacks:
+            callback.set_model(self.given_models)
+            if hasattr(callback, "set_trainer"):
+                callback.set_trainer(self)
+            callback.on_train_begin()
 
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
@@ -432,7 +431,7 @@ class TorchRunner(BaseRunner):
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_batch_begin(batch_idx)
-            metrics = self._train_batch(batch, batch_info=batch_info)
+            metrics = self._train_batch(batch, callbacks=callbacks, batch_info=batch_info)
             if self.use_tqdm and self.rank == 0:
                 _progress_bar.n = batch_idx + 1
                 postfix = {}
@@ -442,7 +441,8 @@ class TorchRunner(BaseRunner):
 
             if self.scheduler and batch_info.get(
                     SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
-                self.scheduler.step()
+                # TODO: Totally abandon SCHEDULER_STEP
+                self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
             metric_meters.update(metrics, n=metrics.pop(NUM_SAMPLES, 1))
             self.global_step += 1
@@ -498,22 +498,11 @@ class TorchRunner(BaseRunner):
 
         # Compute output.
         with self.timers.record("fwd"):
-            *features, target = self.batch
-            self.output = self.model(*features)
-
-            # Ensure `target` and `output` are always in a list format.
-            targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
-            self.loss = self.criterion(*outputL, *targetL)
+            self.call_hook(callbacks=callbacks, fn_name="on_train_forward")
 
         # Compute gradients in a backward pass.
-        with self.timers.record("grad"):
-            self.optimizer.zero_grad()
-            self.loss.backward()
-
-        # Call step of optimizer to update model params.
-        with self.timers.record("apply"):
-            self.optimizer.step()
+        with self.timers.record("bwd"):
+            self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
@@ -526,7 +515,7 @@ class TorchRunner(BaseRunner):
         return {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None):
+                 info=None, wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         if not self.criterion:
             invalidInputError(False,
@@ -549,11 +538,13 @@ class TorchRunner(BaseRunner):
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
         loader = iter(loader)
+
         with self.timers.record("validation"):
             validation_stats = self._validate(loader,
                                               info=info,
                                               metrics=self.metrics,
-                                              num_steps=num_steps)
+                                              num_steps=num_steps,
+                                              callbacks=callbacks)
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
@@ -647,13 +638,7 @@ class TorchRunner(BaseRunner):
 
         # compute output
         with self.timers.record("eval_fwd"):
-            *features, target = self.batch
-            self.output = self.model(*features)
-
-            # Ensure `target` and `output` are always in a list format.
-            targetL = [target] if not isinstance(target, (list, tuple)) else target
-            outputL = [self.output] if not isinstance(self.output, (list, tuple)) else self.output
-            loss = self.criterion(*outputL, *targetL)
+            self.call_hook(callbacks=callbacks, fn_name="on_val_forward")
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
@@ -662,7 +647,7 @@ class TorchRunner(BaseRunner):
         del self.batch
         del self.output
 
-        return output, target, loss
+        return output, target, self.loss
 
     def predict(self, partition, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
@@ -819,11 +804,9 @@ class TorchRunner(BaseRunner):
             fn_name (str): The function name in each hook to be called, such as
                 "on_iter_begin".
         """
-        if not callbacks:
-            return
-
         for hook in callbacks:
-            getattr(hook, fn_name)(self)
+            if hasattr(hook, fn_name):
+                getattr(hook, fn_name)(self)
 
     @property
     def given_models(self):

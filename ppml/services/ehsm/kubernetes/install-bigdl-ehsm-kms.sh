@@ -8,7 +8,7 @@ export dkeyserverImageName=intelccc/ehsm_dkeyserver-dev:0.3.2
 export couchdbImageName=couchdb:3.2
 export dkeycacheImageName=intelccc/ehsm_dkeycache-dev:0.3.2
 export ehsmKmsImageName=intelccc/ehsm_kms_service-dev:0.3.2
-export pccsIP=your_pccs_IP
+export pccsURL=your_pccs_URL_like_https://xxxx:yyyy
 export kmsIP=your_kms_ip_to_use_as
 export dkeyserverNodeName=the_fixed_node_you_want_to_assign_dkeyserver_to #kubectl get nodes, and choose one
 
