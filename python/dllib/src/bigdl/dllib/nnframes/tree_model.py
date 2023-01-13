@@ -43,10 +43,8 @@ class XGBClassifier():
         features_col = self.value.getFeaturesCol()
         # get features names
         feature_names = []
-        if features_col:
+        if features_col in df.columns:
             feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
-        elif "features" in df.columns:
-            feature_names = [f"f{i}" for i in range(len(df.first()["features"]))]
         else:
             invalidInputError(False, 
             "The input data should set the FeaturesCol or use the default value 'features'")
