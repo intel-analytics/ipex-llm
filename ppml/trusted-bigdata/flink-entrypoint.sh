@@ -217,7 +217,6 @@ else
             runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
             export sgx_command="${runtime_command[@]}"
             if [ "$ATTESTATION" = "true" ]; then
-                delete_file "/ppml/temp_command_file"
                 bash attestation.sh
                 echo $sgx_command >>temp_command_file
                 export sgx_command="bash temp_command_file"
@@ -291,7 +290,6 @@ else
             runtime_command=($JAVA_RUN $JVM_ARGS "-XX:CompressedClassSpaceSize=64m" ${FLINK_ENV_JAVA_OPTS} "${log_setting[@]}" -classpath ${classpath} ${CLASS_TO_RUN} "${ARGS[@]}")
             export sgx_command="${runtime_command[@]}"
             if [ "$ATTESTATION" = "true" ]; then
-                delete_file "/ppml/temp_command_file"
                 bash attestation.sh
                 echo $sgx_command >>temp_command_file
                 export sgx_command="bash temp_command_file"
