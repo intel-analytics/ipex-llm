@@ -17,19 +17,22 @@
 import os
 import argparse
 
-from bigdl.orca import init_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 
 def parse_args(description):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str,
+    parser.add_argument("--data_dir", type=str, default="./",
                         help="The path to load data from local or remote resources.")
+    parser.add_argument("--model_dir", type=str, default="./",
+                        help="The path to save model and logs.")
     parser.add_argument("--cluster_mode", type=str, default="local",
                         help="The cluster mode, such as local, yarn-client, yarn-cluster, "
                              "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
-    parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
+    parser.add_argument("--backend", type=str, default="spark",
+                        help="The backend of Orca Estimator, either ray or spark.")
     parser.add_argument("--tensorboard", action='store_true',
-                        help="Whether to use TensorBoardCallback.")
+                        help="Whether to use Tensorboard as the train callback.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
     args = parser.parse_args()
@@ -87,7 +90,6 @@ def init_orca(args, extra_python_lib=None):
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context(cluster_mode="spark-submit")
     else:
-        print("cluster_mode should be one of 'local', 'yarn-client', "
-              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
-              "but got " + args.cluster_mode)
-        exit()
+        exit("cluster_mode should be one of 'local', 'yarn-client', "
+             "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
+             "but got " + args.cluster_mode)
