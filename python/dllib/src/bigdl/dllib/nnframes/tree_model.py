@@ -44,8 +44,7 @@ class XGBClassifier():
         # get features col
         features_col = callZooFunc("float", "getFeaturesCol", self.value)
         # get features names
-        feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
-        xgb_model.setFeatureNames(feature_names)
+        xgb_model.feature_names = [f"f{i}" for i in range(len(df.first()[features_col]))]
         return xgb_model
 
     def setMissing(self, value: int):
@@ -93,9 +92,6 @@ class XGBClassifierModel:
 
     def setInferBatchSize(self, batch_size):
         return callZooFunc("float", "setInferBatchSizeXGBClassifierModel", self.value, batch_size)
-
-    def setFeatureNames(self, feature_names):
-        self.feature_names = feature_names
 
     def transform(self, dataset):
         df = callZooFunc("float", "transformXGBClassifierModel", self.value, dataset)
