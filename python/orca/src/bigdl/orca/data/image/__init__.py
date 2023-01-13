@@ -17,4 +17,3 @@
 
 from .parquet_dataset import write_mnist, write_from_directory, write_voc, write_parquet
 from .tfrecord_dataset import write_tfrecord, read_tfrecord
-from bigdl.orca.data.image.preprocessing import read_images_pil, read_images_spark

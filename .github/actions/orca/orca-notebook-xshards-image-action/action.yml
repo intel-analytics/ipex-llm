@@ -1,5 +1,5 @@
-name: 'Run Orca Notebook Xshards Image Py37 Spark3'
-description: 'Run Notebook Xshards Image Py37 Spark3'
+name: 'Run Orca Notebook Xshards Image Py37 Spark2'
+description: 'Run Notebook Xshards Image Py37 Spark2'
 runs:
   using: "composite"
   steps:
@@ -19,7 +19,6 @@ runs:
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         pip uninstall -y intel-tensorflow
         pip uninstall -y tensorflow
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==1.15.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} sklearn
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0
@@ -27,10 +26,14 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jupyter
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} seaborn
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow 
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.8.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} IPython
         pip list
         export FTP_URI=${FTP_URI}
-        #chmod a+x python/orca/dev/test/run-tutorial-xshards-notebooks.sh
-        #python/orca/dev/test/run-tutorial-xshards-notebooks.sh
+        chmod a+x python/orca/dev/test/run-tutorial-xshards-images.sh
+        python/orca/dev/test/run-tutorial-xshards-images.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}

@@ -241,6 +241,13 @@ class SparkXShards(XShards):
         """
         return self.rdd.collect()
 
+    def first(self):
+        """
+        Returns the first element in the rdd of SparkXShards
+        :return: a record of data.
+        """
+        return self.rdd.first()
+
     def cache(self) -> "SparkXShards":
         """
 
