@@ -26,32 +26,30 @@ from process_xshards import prepare_data
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
-parser = argparse.ArgumentParser(description="Tensorflow Example")
+parser = argparse.ArgumentParser(description="Tensorflow NCF Training with Orca Xshards")
 parser.add_argument("--data_dir", type=str,
                     help="The path to load data from local or remote resources.")
-parser.add_argument("--cluster_mode", type=str, default="default",
-                    help="The cluster mode, such as default, local, yarn-client, yarn-cluster, "
+parser.add_argument("--cluster_mode", type=str, default="local",
+                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
                          "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
 parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
-parser.add_argument("--callback", type=bool, default=True,
+parser.add_argument("--tensorboard", action='store_true',
                     help="Whether to use TensorBoardCallback.")
 args = parser.parse_args()
 
 
 # Step 1: Init Orca Context
-if args.cluster_mode == "default":
-    sc = init_orca_context()
-elif args.cluster_mode == "local":
+if args.cluster_mode == "local":
     sc = init_orca_context(cluster_mode="local", cores=4)
 elif args.cluster_mode.startswith("yarn"):
     if args.cluster_mode == "yarn-client":
         sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
                                driver_cores=2, driver_memory="2g",
-                               extra_python_lib="tf_model.py,process_xshards.py")
+                               extra_python_lib="tf_model.py")
     elif args.cluster_mode == "yarn-cluster":
         sc = init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
                                driver_cores=2, driver_memory="2g",
-                               extra_python_lib="tf_model.py,process_xshards.py")
+                               extra_python_lib="tf_model.py")
 elif args.cluster_mode.startswith("k8s"):
     if args.cluster_mode == "k8s-client":
         conf = {
@@ -64,7 +62,7 @@ elif args.cluster_mode.startswith("k8s"):
                                driver_cores=2, driver_memory="2g",
                                master=os.environ.get("RUNTIME_SPARK_MASTER"),
                                container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
-                               extra_python_lib="tf_model.py,process_xshards.py",
+                               extra_python_lib="tf_model.py",
                                conf=conf)
     elif args.cluster_mode == "k8s-cluster":
         conf = {
@@ -84,16 +82,17 @@ elif args.cluster_mode.startswith("k8s"):
                                master=os.environ.get("RUNTIME_SPARK_MASTER"),
                                container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                                penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
-                               extra_python_lib="tf_model.py,process_xshards.py",
+                               extra_python_lib="tf_model.py",
                                conf=conf)
 elif args.cluster_mode == "bigdl-submit":
     sc = init_orca_context(cluster_mode="bigdl-submit")
 elif args.cluster_mode == "spark-submit":
     sc = init_orca_context(cluster_mode="spark-submit")
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
+    print("cluster_mode should be one of 'local', 'yarn-client', "
           "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
           "but got " + args.cluster_mode)
+    exit()
 
 
 # Step 2: Read and process data using Orca Xshards
@@ -136,7 +135,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")] if args.callback else []
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")] if args.tensorboard else []
 
 est.fit(train_data,
         epochs=2,
