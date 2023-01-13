@@ -21,14 +21,13 @@ import tensorflow as tf
 
 from tf_model import ncf_model
 from process_spark_dataframe import prepare_data
-from utils import parse_args, init_orca
+from utils import *
 
-from bigdl.orca import stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("Tensorflow NCF Training with Spark DataFrame")
+args = parse_args("TensorFlow NCF Training with Spark DataFrame")
 init_orca(args, extra_python_lib="tf_model.py")
 
 
@@ -73,7 +72,8 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")] if args.tensorboard else []
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "log"))] \
+    if args.tensorboard else []
 
 est.fit(train_df,
         epochs=2,
@@ -96,9 +96,11 @@ for r in result:
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-est.save("NCF_model")
-train_df.write.parquet(os.path.join(args.data_dir, "train_dataframe.parquet"), mode="overwrite")
-test_df.write.parquet(os.path.join(args.data_dir, "test_dataframe.parquet"), mode="overwrite")
+est.save(os.path.join(args.model_dir, "NCF_model"))
+train_df.write.parquet(os.path.join(args.data_dir,
+                                    "train_processed_dataframe.parquet"), mode="overwrite")
+test_df.write.parquet(os.path.join(args.data_dir,
+                                   "test_processed_dataframe.parquet"), mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
