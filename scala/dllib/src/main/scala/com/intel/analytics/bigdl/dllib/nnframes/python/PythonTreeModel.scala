@@ -141,10 +141,6 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.getFeaturesCol()
   }
 
-  def getFeaturesCols(model: XGBClassifier): Array[String] = {
-    model.getFeaturesCols
-  }
-
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
     val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
     new XGBRegressor(xgbparams)

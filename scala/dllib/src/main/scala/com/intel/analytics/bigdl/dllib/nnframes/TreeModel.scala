@@ -107,11 +107,7 @@ class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
   }
 
   def getFeaturesCol(): String = {
-    estimator.getFeaturesCol()
-  }
-
-  def getFeaturesCols(): Array[String] = {
-    estimator.getFeaturesCols()
+    estimator.getFeaturesCol
   }
 
 }
