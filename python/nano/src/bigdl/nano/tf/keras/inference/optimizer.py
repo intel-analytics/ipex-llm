@@ -133,8 +133,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
+                           shape/dtype of the input.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
