@@ -24,6 +24,8 @@ echo "[INFO] Launching BigDL KMS HTTPS Frontend"
 keywhiz_port=$KEYWHIZ_PORT
 https_key_store_path=/usr/src/app/server/src/main/resources/dev_and_test_keystore.p12
 https_secure_password=$HTTPS_SECURE_PASSWORD # k8s secret
+keywhiz_cli_jar_path=/usr/src/app/cli/target/keywhiz-cli-0.10.2-SNAPSHOT-shaded.jar
+key_provider_jar_path=/usr/src/app/server/target/keywhiz-server-0.10.2-SNAPSHOT-shaded.jar
 
 java \
     -Xms2g \
@@ -37,5 +39,8 @@ java \
     -cp "$BIGDL_HOME/jars/*" \
     com.intel.analytics.bigdl.ppml.kms.frontend.BigDLKMSFrontend \
     --keywhizHost "keywhiz-service" \
+    --keywhizPort ${keywhiz_port} \
     --httpsKeyStorePath "${https_key_store_path}" \
-    --httpsKeyStoreToken "${https_secure_password}" | tee ./bkeywhiz-https-frontend.log
+    --httpsKeyStoreToken "${https_secure_password}" \
+    --keywhizCliJarPath "${keywhiz_cli_jar_path}" \
+    --keyProviderJarPath "${key_provider_jar_path}" | tee ./bkeywhiz-https-frontend.log
