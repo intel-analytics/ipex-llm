@@ -16,87 +16,24 @@
 
 # Step 0: Import necessary libraries
 import os
-import argparse
 import torch.nn as nn
 import torch.optim as optim
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
+from utils import parse_args, init_orca
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
-parser = argparse.ArgumentParser(description="PyTorch NCF Training with Orca Xshards")
-parser.add_argument("--data_dir", type=str,
-                    help="The path to load data from local or remote resources.")
-parser.add_argument("--cluster_mode", type=str, default="local",
-                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
-                         "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
-parser.add_argument("--backend", type=str, default="spark", help="ray or spark")
-parser.add_argument("--tensorboard", action='store_true',
-                    help="Whether to use TensorBoardCallback.")
-parser.add_argument("--workers_per_node", type=int, default=1,
-                    help="The number of PyTorch workers on each node.")
-args = parser.parse_args()
-
 
 # Step 1: Init Orca Context
-if args.cluster_mode == "local":
-    sc = init_orca_context(cluster_mode="local", cores=4)
-elif args.cluster_mode.startswith("yarn"):
-    if args.cluster_mode == "yarn-client":
-        sc = init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
-                               driver_cores=2, driver_memory="2g",
-                               extra_python_lib="pytorch_model.py")
-    elif args.cluster_mode == "yarn-cluster":
-        sc = init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
-                               driver_cores=2, driver_memory="2g",
-                               extra_python_lib="pytorch_model.py")
-elif args.cluster_mode.startswith("k8s"):
-    if args.cluster_mode == "k8s-client":
-        conf = {
-            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".options.claimName": "nfsvolumeclaim",
-            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".mount.path": "/bigdl/nfsdata"
-        }
-        sc = init_orca_context(cluster_mode="k8s-client", num_nodes=2, cores=4, memory="10g",
-                               driver_cores=2, driver_memory="2g",
-                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                               container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
-                               extra_python_lib="pytorch_model.py",
-                               conf=conf)
-    elif args.cluster_mode == "k8s-cluster":
-        conf = {
-            "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".options.claimName": "nfsvolumeclaim",
-            "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".mount.path": "/bigdl/nfsdata",
-            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".options.claimName": "nfsvolumeclaim",
-            "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
-            ".mount.path": "/bigdl/nfsdata",
-            "spark.kubernetes.authenticate.driver.serviceAccountName": "spark",
-            "spark.kubernetes.file.upload.path": "/bigdl/nfsdata/"
-        }
-        sc = init_orca_context(cluster_mode="k8s-cluster", num_nodes=2, cores=4, memory="10g",
-                               driver_cores=2, driver_memory="2g",
-                               master=os.environ.get("RUNTIME_SPARK_MASTER"),
-                               container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
-                               penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
-                               extra_python_lib="pytorch_model.py",
-                               conf=conf)
-elif args.cluster_mode == "bigdl-submit":
-    sc = init_orca_context(cluster_mode="bigdl-submit")
-elif args.cluster_mode == "spark-submit":
-    sc = init_orca_context(cluster_mode="spark-submit")
-else:
-    print("cluster_mode should be one of 'local', 'yarn-client', "
-          "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
-          "but got " + args.cluster_mode)
-    exit()
+framework = "PyTorch"
+input_data_type = "Orca Xshards"
+args = parse_args(framework, input_data_type)
+init_orca(args, framework, input_data_type)
 
 
 # Step 2: Read and process data using Orca XShards
