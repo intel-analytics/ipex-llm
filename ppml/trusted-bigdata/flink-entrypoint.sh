@@ -218,7 +218,6 @@ else
             export sgx_command="${runtime_command[@]}"
             if [ "$ATTESTATION" = "true" ]; then
                 delete_file "/ppml/temp_command_file"
-                cd /ppml
                 bash attestation.sh
                 echo $sgx_command >>temp_command_file
                 export sgx_command="bash temp_command_file"
@@ -293,7 +292,6 @@ else
             export sgx_command="${runtime_command[@]}"
             if [ "$ATTESTATION" = "true" ]; then
                 delete_file "/ppml/temp_command_file"
-                cd /ppml
                 bash attestation.sh
                 echo $sgx_command >>temp_command_file
                 export sgx_command="bash temp_command_file"
