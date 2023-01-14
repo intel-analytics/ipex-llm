@@ -15,6 +15,9 @@
 #
 
 import os
+import subprocess
+import tempfile
+import cloudpickle
 import copy
 import time
 import operator
@@ -240,12 +243,36 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        continue
+                    if method == "original":
+                        # for original keras model, as tf.config.threading can't set thread
+                        # during running, so here we use subprocess to calculate throughput
+                        params = {"iterrun": latency_sample_num,
+                                  "func": func_test,
+                                  "model": acce_model,
+                                  "input_sample": input_sample}
+                        with tempfile.TemporaryDirectory() as temp_dir:
+                            _filename = os.path.join(temp_dir, "params")
+                            cloudpickle.dump(params, open(_filename, "wb"))
+                            if thread_num is not None:
+                                my_env = os.environ.copy()
+                                my_env["OMP_NUM_THREADS"] = str(thread_num)
+                            else:
+                                my_env = None
+                            worker_file = os.path.join(os.path.split(os.path.realpath(__file__))[0],
+                                                       "_worker.py")
+                            result = subprocess.run(["python", worker_file, _filename],
+                                                    capture_output=True,
+                                                    universal_newlines=True,
+                                                    env=my_env)
+                            latency = float(result.stdout.strip())
+                        result_map[method]["latency"] = latency
+                    else:
+                        result_map[method]["latency"], status =\
+                            throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            continue
                 except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
