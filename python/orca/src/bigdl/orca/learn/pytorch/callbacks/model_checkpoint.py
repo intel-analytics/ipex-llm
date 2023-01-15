@@ -63,7 +63,7 @@ class ModelCheckpoint(Callback):
                                                       stats=stats)
         runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
 
-    def before_train_epoch(self, runner):
+    def before_run(self, runner):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
