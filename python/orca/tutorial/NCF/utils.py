@@ -22,7 +22,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 
 def parse_args(description):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str, default="./",
+    parser.add_argument("--data_dir", type=str, default="./ml-1m",
                         help="The path to load data from local or remote resources.")
     parser.add_argument("--model_dir", type=str, default="./",
                         help="The path to save model and logs.")
