@@ -116,6 +116,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: A keras.Model to be optimized
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -399,6 +400,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: The Keras model to quantize.
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
