@@ -734,6 +734,51 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
      </details>
 
+   - For `BigDLKeyManagementService`
+     
+
+      <details open>
+       <summary>scala</summary>
+
+      ```scala
+      import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+      val ppmlArgs: Map[String, String] = Map(
+             "spark.bigdl.kms.type" -> "BigDLKeyManagementService",
+             "spark.bigdl.kms.bigdl.ip" -> "your_server_ip",
+             "spark.bigdl.kms.bigdl.port" -> "your_server_port",
+             "spark.bigdl.kms.bigdl.user" -> "your_user_name",
+             "spark.bigdl.kms.bigdl.token" -> "your_user_token",
+             "spark.bigdl.kms.key.primary" -> "your_precreated_primary_key_name",
+             "spark.bigdl.kms.key.data" -> "your_precreated_data_key_name"
+      )
+   
+      val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+      ```
+
+     </details>
+
+     <details>
+       <summary>python</summary>
+
+       ```python
+       from bigdl.ppml.ppml_context import *
+
+       ppml_args = {"kms_type": "BigDLKeyManagementService",
+                    "kms_server_ip": "your_server_ip",
+                    "kms_server_port": "your_server_port",
+                    "kms_user_name": "your_user_name",
+                    "kms_user_token": "your_user_token",
+                    "primary_key_name": "your_precreated_primary_key_name",
+                    "data_key_name": "your_precreated_data_key_name"
+                   }
+
+       sc = PPMLContext("MyApp", ppml_args)
+       ```
+
+     </details>
+
+
 - create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
 
    If you need to set Spark configurations, you can provide a `SparkConf` with Spark configurations to create a `PPMLContext`.

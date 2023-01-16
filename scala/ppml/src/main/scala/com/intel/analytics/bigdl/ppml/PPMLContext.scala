@@ -47,9 +47,18 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @return
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
-    dataKeyPlainText = kms.retrieveDataKeyPlainText(
-      new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
-      sparkSession.sparkContext.hadoopConfiguration)
+    val kmsType = sparkSession.sparkContext.getConf.get(
+                  "spark.bigdl.kms.type",
+                  defaultValue = "SimpleKeyManagementService"
+                  )
+    dataKeyPlainText = kmsType match {
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+      case _ =>
+        kms.retrieveDataKeyPlainText(
+          new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
+          sparkSession.sparkContext.hadoopConfiguration)
+    }
     sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
@@ -250,7 +259,7 @@ object PPMLContext{
     conf.set("spark.hadoop.io.compression.codecs",
         "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     val sc = initNNContext(conf, appName)
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val sparkSession: SparkSession = SparkSession.builder().config(conf).getOrCreate()
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
