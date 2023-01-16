@@ -32,8 +32,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
-from bigdl.chronos.pytorch.context_manager import DummyForecasterContextManager, \
-                                                  ForecasterContextManager
+from bigdl.chronos.pytorch.context_manager import DummyForecasterContextManager,\
+    ForecasterContextManager
 
 
 class BasePytorchForecaster(Forecaster):
@@ -746,22 +746,22 @@ class BasePytorchForecaster(Forecaster):
                 if quantize:
                     if self.accelerate_method != "pytorch_int8":
                         invalidInputError(False,
-                                        "Can't find the quantized model, "
-                                        "please call .quantize() method first")
+                                          "Can't find the quantized model, "
+                                          "please call .quantize() method first")
                     yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                    input_data=data,
-                                                    batch_size=batch_size)
+                                                      input_data=data,
+                                                      batch_size=batch_size)
                 else:
                     if acceleration is False or self.accelerated_model is None:
                         self.internal.eval()
                         yhat = _pytorch_fashion_inference(model=self.internal,
-                                                        input_data=data,
-                                                        batch_size=batch_size)
+                                                          input_data=data,
+                                                          batch_size=batch_size)
                     else:
                         self.accelerated_model.eval()
                         yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                        input_data=data,
-                                                        batch_size=batch_size)
+                                                          input_data=data,
+                                                          batch_size=batch_size)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
@@ -981,19 +981,19 @@ class BasePytorchForecaster(Forecaster):
             if quantize and False:
                 if self.accelerate_method != "jit_int8":
                     invalidInputError(False,
-                                    "Can't find the quantized model, "
-                                    "please call .quantize() method first")
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
                 return _pytorch_fashion_inference(model=self.accelerated_model,
-                                                input_data=data,
-                                                batch_size=batch_size)
+                                                  input_data=data,
+                                                  batch_size=batch_size)
             else:
                 if self.accelerate_method != "jit_fp32":
                     self.build_jit()
                     self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                        self.thread_num)
+                                                         self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
-                                                input_data=data,
-                                                batch_size=batch_size)
+                                                  input_data=data,
+                                                  batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
                  acceleration: bool = True):
