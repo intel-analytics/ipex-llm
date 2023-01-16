@@ -83,6 +83,7 @@ est.fit(data=train_data, epochs=2,
         feature_cols=feature_cols,
         label_cols=label_cols,
         batch_size=10240,
+        validation_data=test_data,
         callbacks=callbacks)
 
 

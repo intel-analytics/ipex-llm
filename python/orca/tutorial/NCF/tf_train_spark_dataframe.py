@@ -80,6 +80,8 @@ est.fit(train_df,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
+        validation_data=test_df,
+        validation_steps=2,
         callbacks=callbacks)
 
 
