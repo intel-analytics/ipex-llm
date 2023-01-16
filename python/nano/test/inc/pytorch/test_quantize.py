@@ -233,6 +233,7 @@ class TestTrainer(TestCase):
         InferenceOptimizer.quantize(model,
                                     calib_data=self.train_loader,
                                     method="ipex",
+                                    # inplace=False is setting to disable back up ipex quantization
                                     inplace=False)
 
     # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
