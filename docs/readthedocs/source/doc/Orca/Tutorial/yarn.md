@@ -22,7 +22,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `memory`: a string that specifies the memory for each executor (default to be `"2g"`).
 * `num_nodes`: an integer that specifies the number of executors (default to be `1`).
 * `driver_cores`: an integer that specifies the number of cores for the driver node (default to be `4`).
-* `driver_memory`: a string that specifies the memory for the driver node (default to be `"1g"`).
+* `driver_memory`: a string that specifies the memory for the driver node (default to be `"2g"`).
 * `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
@@ -98,7 +98,6 @@ __Note__:
     pip install torch torchvision
     ```
 
-- For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
 ### 2.3 Run on CDH
 * For [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
