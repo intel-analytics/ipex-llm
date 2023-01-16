@@ -25,6 +25,8 @@ spec:
       #    secretKeyRef:
       #      name: kms-secret
       #      key: policy_id
+      #- name: FLINK_LOG_SAVE_PATH
+      #  value: /ppml/data
     volumeMounts:
       - name: kubeconf
         mountPath: /root/.kube
@@ -34,6 +36,8 @@ spec:
         mountPath: /var/run/aesmd/aesm.socket
       - name: secure-keys
         mountPath: /ppml/keys
+      - name: nfs-storage
+        mountPath: /ppml/data
     resources:
       requests:
         cpu: 8
@@ -60,3 +64,6 @@ spec:
     - name: kubeconf
       secret:
         secretName: kubeconf
+    - name: nfs-storage
+      persistentVolumeClaim:
+        claimName: nfsvolumeclaim

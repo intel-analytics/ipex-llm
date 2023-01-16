@@ -299,3 +299,9 @@ else
         fi
     fi
 fi
+
+if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
+    temp_dir=`date +"%s"`
+    mkdir -p "$FLINK_LOG_SAVE_PATH/$temp_dir"
+    cp -r "$FLINK_HOME/log" "$FLINK_LOG_SAVE_PATH/$temp_dir"
+fi
