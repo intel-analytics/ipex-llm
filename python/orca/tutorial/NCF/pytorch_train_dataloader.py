@@ -74,7 +74,7 @@ loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "log"),
+callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
 
 est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
