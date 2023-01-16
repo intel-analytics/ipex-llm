@@ -91,7 +91,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             metrics: Union['Metric', List['Metric'], None]=None,
             scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
             config: Dict=None,
-            scheduler_step_freq: str="epoch",
             use_tqdm: bool=False,
             backend: str="ray",
             workers_per_node: int=1,
@@ -114,7 +113,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
         self.backend = backend
@@ -127,7 +125,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
             scheduler_creator=self.scheduler_creator,
-            scheduler_step_freq=self.scheduler_step_freq,
             use_tqdm=self.use_tqdm,
             config=worker_config,
             metrics=metrics,
