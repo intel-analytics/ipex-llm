@@ -95,7 +95,7 @@ __Note__:
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
-    pip install torch torchvision
+    pip install torch torchvision tqdm
     ```
 
 
@@ -112,7 +112,7 @@ __Note__:
 ## 3. Prepare Dataset 
 To run the Fashion-MNIST example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
 
-First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the root folder.
+First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the dataset folder.
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
@@ -134,7 +134,7 @@ In the given example, you can specify the argument `--remote_dir` to be the dire
 ## 4. Prepare Custom Modules
 Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`) across the cluster by setting `--py-files` option in Spark scripts or specifying `extra_python_lib` in `init_orca_context`.
 
-The FasionMNIST example needs to import modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
+The FasionMNIST example needs to import the modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 * When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
     ```python
     init_orca_context(..., extra_python_lib="model.py")

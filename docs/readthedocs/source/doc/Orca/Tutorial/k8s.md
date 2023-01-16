@@ -199,7 +199,7 @@ In the launched BigDL K8s **Client Container**, please setup the environment fol
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example we provide:
 ```bash
-pip install torch torchvision
+pip install torch torchvision tqdm
 ```
 
 
@@ -207,7 +207,7 @@ pip install torch torchvision
 ## 4. Prepare Dataset
 To run the Fashion-MNIST example provided by this tutorial on K8s, you should upload the dataset to a K8s Volume (e.g. NFS).
 
-Please download the Fashion-MNIST dataset manually on your __Develop Node__ and put the data into the Volume. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the root folder.
+Please download the Fashion-MNIST dataset manually on your __Develop Node__ and put the data into the Volume. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the dataset folder.
 
 ```bash
 # PyTorch official dataset download link
@@ -228,7 +228,7 @@ In the given example, you can specify the argument `--remote_dir` to be the dire
 ## 5. Prepare Custom Modules
 Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) across the cluster by setting `--py-files` option in Spark scripts or specifying `extra_python_lib` in `init_orca_context`.
 
-The FasionMNIST example needs to import modules from `model.py`.
+The FasionMNIST example needs to import the modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 
 __Note:__ Please upload the extra Python dependency files to the Volume (e.g. NFS) when running the program on k8s-cluster mode (see __[Section 6.2.2](#id2)__ for more details).
 
@@ -254,20 +254,20 @@ For more details, please see [Spark Python Dependencies](https://spark.apache.or
 from model import model_creator, optimizer_creator
 ```
 
-__Note__:
+__Notes__:
 
 If your program depends on a nested directory of Python files, you are recommended to follow the steps below to use a zipped package instead.
 
 1. Compress the directory into a zipped package.
-```bash
-zip -q -r FashionMNIST_zipped.zip FashionMNIST
-```
+    ```bash
+    zip -q -r FashionMNIST_zipped.zip FashionMNIST
+    ```
 2. Upload the zipped package (`FashionMNIST_zipped.zip`) to K8s by setting `--py-files` or specifying `extra_python_lib` as discussed above.
 
 3. You can then import the custom modules from the unzipped file in your program as follows:
-```python
-from FashionMNIST.model import model_creator, optimizer_creator
-```
+    ```python
+    from FashionMNIST.model import model_creator, optimizer_creator
+    ```
 
 
 ---
