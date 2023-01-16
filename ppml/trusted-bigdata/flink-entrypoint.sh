@@ -225,6 +225,11 @@ else
             gramine-sgx bash 1>&2
         fi
 
+        if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
+            mkdir -p "$FLINK_LOG_SAVE_PATH"
+            cp "$log" "$FLINK_LOG_SAVE_PATH/$log"
+        fi
+
     elif [ "${params[0]}" = "kubernetes-taskmanager.sh" ]; then
 
         ARGS=$(eval echo "${params[@]:1}")
@@ -297,11 +302,11 @@ else
             ./init.sh && \
             gramine-sgx bash 1>&2
         fi
+
+        if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
+            mkdir -p "$FLINK_LOG_SAVE_PATH"
+            cp "$log" "$FLINK_LOG_SAVE_PATH/$log"
+        fi
     fi
 fi
 
-if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
-    temp_dir=`date +"%s"`
-    mkdir -p "$FLINK_LOG_SAVE_PATH/$temp_dir"
-    cp -r "$FLINK_HOME/log" "$FLINK_LOG_SAVE_PATH/$temp_dir"
-fi
