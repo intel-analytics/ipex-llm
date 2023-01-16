@@ -259,7 +259,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 my_env = None
                             worker_file = os.path.join(os.path.split(os.path.realpath(__file__))[0],
                                                        "_worker.py")
-                            result = subprocess.run(["python", worker_file, _filename],
+                            result = subprocess.run(["python", worker_file, _filename, str(thread_num)],
                                                     capture_output=True,
                                                     universal_newlines=True,
                                                     env=my_env)

@@ -40,7 +40,12 @@ def throughput_calculate_helper(iterrun, func, model, input_sample):
 
 
 if __name__ == "__main__":
-    my_input = sys.argv[1:]
-    params = pickle.load(open(my_input[0], "rb"))
+    param_file = sys.argv[1]
+    thread_num = sys.argv[2]
+    if thread_num != 'None':
+        thread_num = int(thread_num)
+        tf.config.threading.set_inter_op_parallelism_threads(1)
+        tf.config.threading.set_intra_op_parallelism_threads(thread_num)
+    params = pickle.load(open(param_file, "rb"))
     latency = throughput_calculate_helper(**params)
     print(latency)
