@@ -260,6 +260,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                         self.num_workers)
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
+            worker_stats = worker_stats[0]
         elif isinstance(data, Dataset):
             ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
             val_ray_xshards = None
@@ -271,6 +272,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     validation_data).get_ray_xshards(self.num_workers)  # type:ignore
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
+            worker_stats = worker_stats[0]
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
