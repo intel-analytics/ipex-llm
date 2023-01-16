@@ -22,6 +22,7 @@ import tensorflow as tf
 tf.config.threading.set_inter_op_parallelism_threads(1)
 tf.config.threading.set_intra_op_parallelism_threads(1)
 
+
 def throughput_calculate_helper(iterrun, func, model, input_sample):
     '''
     A simple helper to calculate average latency
