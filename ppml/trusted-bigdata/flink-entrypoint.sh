@@ -283,7 +283,8 @@ else
 
         CLASS_TO_RUN=org.apache.flink.kubernetes.taskmanager.KubernetesTaskExecutorRunner
 
-        log="${FLINK_HOME}/log/${TASK_MANAGER_RPC_ADDRESS}.log"
+        #log="${FLINK_HOME}/log/${TASK_MANAGER_RPC_ADDRESS}.log"
+        log="${FLINK_HOME}/log/${JOB_MANAGER_RPC_ADDRESS}-${HOSTNAME}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
