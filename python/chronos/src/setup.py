@@ -31,8 +31,8 @@ See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.h
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-
+# VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
+VERSION = '2.2.0b20230115'
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
@@ -66,7 +66,8 @@ def setup_package():
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
-                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION],
+                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION,
+                                                                   'pyarrow==6.0.1'],
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow_27]=='+VERSION,
