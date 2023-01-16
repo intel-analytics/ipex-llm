@@ -556,7 +556,7 @@ class TorchRunner(BaseRunner):
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
                     metric(output, target)
-                
+
                 del self.batch_idx
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
