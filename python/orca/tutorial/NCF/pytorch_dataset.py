@@ -98,9 +98,8 @@ def process_users_items(dataset_dir):
         if is_local_path(dataset_dir):
             local_dir = dataset_dir
         else:
-            local_dir = tmpdirname
-            get_remote_dir_to_local(remote_dir=dataset_dir, local_dir=local_dir)
-            local_dir += "/ml-1m"
+            get_remote_dir_to_local(remote_dir=dataset_dir, local_dir=tmpdirname)
+            local_dir = os.path.join(tmpdirname, "ml-1m")
 
         users = pd.read_csv(
             os.path.join(local_dir, "users.dat"),
