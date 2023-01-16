@@ -217,6 +217,7 @@ git clone https://github.com/zalandoresearch/fashion-mnist.git
 mv /path/to/fashion-mnist/data/fashion/* /bigdl/nfsdata/dataset/FashionMNIST/raw
 
 # Extract FashionMNIST archives
+# May need to upgrade gzip before running the command
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 

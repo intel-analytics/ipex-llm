@@ -121,6 +121,7 @@ git clone https://github.com/zalandoresearch/fashion-mnist.git
 mv /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
+# May need to upgrade gzip before running the command
 gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 Then upload it to a distributed storage. Sample command to upload data to HDFS is as follows:
