@@ -32,6 +32,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
+from bigdl.chronos.pytorch.context_manager import DummyForecasterContextManager, \
+                                                  ForecasterContextManager
 
 
 class BasePytorchForecaster(Forecaster):
@@ -88,6 +90,7 @@ class BasePytorchForecaster(Forecaster):
 
             self.accelerated_model = None  # accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
+            self.cxt_manager = DummyForecasterContextManager()
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -636,6 +639,19 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
         self.optimized_model_thread_num = thread_num
+
+    def get_context(self, thread_num=None, optimize=True):
+        """
+        Obtain context manager from forecaster.
+
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :param optimize: bool variable indicates whether use original model.
+               Default to True means use accelerated_model to generate context manager, which
+               requires to call .optimize(), otherwise the original model will be used.
+        :return: a context manager.
+        """
+        return ForecasterContextManager(self, thread_num, optimize)
 
     def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
