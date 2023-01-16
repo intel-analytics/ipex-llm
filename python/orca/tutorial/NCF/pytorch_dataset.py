@@ -27,8 +27,8 @@ import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
-from bigdl.orca.data.file import get_remote_dir_to_local, get_remote_file_to_local
 from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca.data.file import get_remote_dir_to_local, get_remote_file_to_local
 
 # user/item ids and sparse features are converted to int64 to be compatible with
 # lower versions of PyTorch such as 1.7.1.
