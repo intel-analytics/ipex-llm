@@ -421,11 +421,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 None means staying in tensorflow.
         :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec`` or numpy array
                            defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
-                           ``input_spec`` is required. If ``accelerator='openvino'``, ``input_spec``
-                           is required when you have a custom Keras model. If ``accelerator=None``
-                           and ``precision='int8'``, ``input_spec`` is required when you have a
-                           custom Keras model, or you skip the ``InputLayer`` with
-                           Keras Sequential Model.
+                           ``input_spec`` is required. If ``accelerator='openvino'``, or
+                           ``accelerator=None`` and ``precision='int8'``, ``input_spec``
+                           is required when you have a custom Keras model.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
