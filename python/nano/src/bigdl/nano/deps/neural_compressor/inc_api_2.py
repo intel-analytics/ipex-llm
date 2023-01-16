@@ -160,6 +160,8 @@ def _quantize(
         inputs=inputs,
         outputs=outputs,
     )
+    if framework == 'pytorch_ipex':
+        config['backend'] = 'ipex'
     # if metric is None and eval_dataloader is None:
     if metric is None:
         config.performance_only = True
