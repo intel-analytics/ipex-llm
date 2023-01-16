@@ -13,7 +13,7 @@
     "sqlite" : {
         "database" : "database",
         "username" : "username",
-        "password" : "password",
+        "password" : "YOUR_USER_PASSWORD",
         "options" : {
             "host": "localhost",
             "dialect": "sqlite",
@@ -33,7 +33,7 @@
     "mysql" : {
         "database" : "pckcache",
         "username" : "root",
-        "password" : "mypass",
+        "password" : "YOUR_USER_PASSWORD",
         "options" : {
             "host": "localhost",
             "dialect": "mysql",
