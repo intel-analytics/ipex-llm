@@ -181,7 +181,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if os.getenv('OMP_NUM_THREADS') is not None:
             default_threads: int = int(os.getenv('OMP_NUM_THREADS'))  # type: ignore
         else:
-            # TODO: how to get and control thread num in tf?
             default_threads = None  # type: ignore
         thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
