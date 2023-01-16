@@ -72,7 +72,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "log"))] \
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
 est.fit(train_data,
