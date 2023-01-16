@@ -17,6 +17,9 @@
 # limitations under the License.
 ###############################################################################
 
+# echo commands to the terminal output
+set -ex
+
 COMMAND_STANDALONE="standalone-job"
 COMMAND_HISTORY_SERVER="history-server"
 
