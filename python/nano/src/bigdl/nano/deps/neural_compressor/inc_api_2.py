@@ -172,7 +172,7 @@ def _quantize(
 
     q_model = quantization.fit(
         model=model,
-        conf=config,
+        conf=q_conf,
         calib_dataloader=dataloader,
         # todo: add eval
     )
