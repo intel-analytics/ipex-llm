@@ -71,12 +71,12 @@ class MainCallback(Callback):
     # TODO: Refactor scheduler update logic in TorchRunner
     def on_lr_adjust(self, runner):
         """
-        this will be called during adjusting lr_scheduler when each epoch ends.
-        By default, this will step lr_scheduler if there is lr_scheduler in runner.
+        this will be called during adjusting scheduler when each epoch ends.
+        By default, this will step scheduler if there is scheduler in runner.
         Any behavior inconsistent with the default behavior should be overridden here.
         """
-        if runner.lr_scheduler is not None:
-            runner.lr_scheduler.step()
+        if runner.scheduler is not None:
+            runner.scheduler.step()
 
     def on_train_forward(self, runner):
         """
