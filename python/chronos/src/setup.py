@@ -31,8 +31,7 @@ See [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.h
 bigdl_home = os.path.abspath(__file__ + "/../../../..")
 exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
-# VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
-VERSION = '2.2.0b20230115'
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
