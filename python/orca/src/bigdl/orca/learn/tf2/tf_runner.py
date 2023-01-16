@@ -409,7 +409,7 @@ class TFRunner:
         if history is None:
             stats = {}
         else:
-            stats = {"train_" + k: v[-1] for k, v in history.history.items()}
+            stats = {k: v[:] for k, v in history.history.items()}
 
         self.epoch += epochs
         return [stats]
