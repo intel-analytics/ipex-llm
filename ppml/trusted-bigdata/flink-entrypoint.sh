@@ -17,9 +17,6 @@
 # limitations under the License.
 ###############################################################################
 
-# echo commands to the terminal output
-set -ex
-
 COMMAND_STANDALONE="standalone-job"
 COMMAND_HISTORY_SERVER="history-server"
 
@@ -227,7 +224,6 @@ else
             ./init.sh && \
             gramine-sgx bash 1>&2
         fi
-
         if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
             mkdir -p "$FLINK_LOG_SAVE_PATH"
             cp "$log" "$FLINK_LOG_SAVE_PATH/$log"
