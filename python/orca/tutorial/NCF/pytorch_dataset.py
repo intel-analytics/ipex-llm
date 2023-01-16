@@ -18,14 +18,15 @@
 #
 
 import os
+import tempfile
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
-import tempfile
 
-import torch.utils.data as data
+import scipy.sparse as sp
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+
+import torch.utils.data as data
 
 from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.data.file import get_remote_dir_to_local, get_remote_file_to_local
