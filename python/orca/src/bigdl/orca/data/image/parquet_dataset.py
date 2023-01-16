@@ -28,7 +28,6 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 import os
 import numpy as np
 import random
-import pyarrow.parquet as pq
 import io
 import math
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -173,6 +172,7 @@ class ParquetIterable:
         self.cur_tail = len(self.datapiece)
 
     def _load_data(self, schema):
+        import pyarrow.parquet as pq
         if self.num_shards is None or self.rank is None:
             filter_row_group_indexed = [
                 index for index in list(range(len(self.row_group)))]
