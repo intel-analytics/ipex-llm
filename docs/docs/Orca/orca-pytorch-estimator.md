@@ -33,7 +33,6 @@ Estimator.from_torch(*,
                    training_operator_cls=TrainingOperator,
                    initialization_hook=None,
                    config=None,
-                   scheduler_step_freq="epoch",
                    use_tqdm=False,
                    workers_per_node=1,
                    model_dir=None,
@@ -43,11 +42,10 @@ Estimator.from_torch(*,
 * `optimizer`: Orca optimizer or PyTorch optimizer if `backend="bigdl"`, PyTorch optimizer creator if `backend="horovod" or "ray"`
 * `loss`: PyTorch loss if `backend="bigdl"`, PyTorch loss creator if `backend="horovod" or "ray"`
 * `metrics`: Orca validation methods for evaluate.
-* `scheduler_creator`: parameter for `horovod` and `ray` backends. a learning rate scheduler wrapping the optimizer. You will need to set ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
+* `scheduler_creator`: parameter for `horovod` and `ray` backends. a learning rate scheduler wrapping the optimizer. By default a scheduler will increment automatically every epoch.
 * `training_operator_cls`: parameter for `horovod` and `ray` backends. Custom training operator class that subclasses the TrainingOperator class. This class will be copied onto all remote workers and used to specify custom training and validation operations. Defaults to TrainingOperator.
 * `initialization_hook`: parameter for `horovod` and `ray` backends.
 * `config`: parameter for `horovod` and `ray` backends. Config dict, CfgNode or any class that plays a role of configuration to create model, optimizer loss and data.
-* `scheduler_step_freq`: parameter for `horovod` and `ray` backends. "batch", "epoch" or None. This will determine when ``scheduler.step`` is called. If "batch", ``step`` will be called after every optimizer step. If "epoch", ``step`` will be called after one pass of the DataLoader. If a scheduler is passed in, this value is expected to not be None.
 * `use_tqdm`: parameter for `horovod` and `ray` backends. You can monitor training progress if use_tqdm=True.
 * `workers_per_node`: parameter for `horovod` and `ray` backends. worker number on each node. default: 1.
 * `model_dir`: parameter for `bigdl` backend. The path to save model. During the training, if checkpoint_trigger is defined and triggered, the model will be saved to model_dir.
