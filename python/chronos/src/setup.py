@@ -33,6 +33,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
+
 def get_bigdl_packages():
     bigdl_python_home = os.path.abspath(__file__ + "/..")
     bigdl_packages = []
