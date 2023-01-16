@@ -20,8 +20,8 @@
 import os
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
 
+import scipy.sparse as sp
 from sklearn.model_selection import train_test_split
 
 from bigdl.orca.data.pandas import read_csv

@@ -32,7 +32,7 @@ def parse_args(description):
     parser.add_argument("--backend", type=str, default="spark",
                         help="The backend of Orca Estimator, either ray or spark.")
     parser.add_argument("--tensorboard", action='store_true',
-                        help="Whether to use Tensorboard as the train callback.")
+                        help="Whether to use TensorBoard as the train callback.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
     args = parser.parse_args()
@@ -93,3 +93,4 @@ def init_orca(args, extra_python_lib=None):
         exit("cluster_mode should be one of 'local', 'yarn-client', "
              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
              "but got " + args.cluster_mode)
+    return sc

@@ -15,12 +15,11 @@
 #
 
 # Step 0: Import necessary libraries
-import os
 import math
 import tensorflow as tf
 
-from tf_model import ncf_model
 from process_spark_dataframe import prepare_data
+from tf_model import ncf_model
 from utils import *
 
 from bigdl.orca.learn.tf2 import Estimator
