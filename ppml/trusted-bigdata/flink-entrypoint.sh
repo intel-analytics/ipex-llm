@@ -226,7 +226,7 @@ else
         fi
         if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
             mkdir -p "$FLINK_LOG_SAVE_PATH"
-            cp "$log" "$FLINK_LOG_SAVE_PATH/$log"
+            cp $log $FLINK_LOG_SAVE_PATH
         fi
 
     elif [ "${params[0]}" = "kubernetes-taskmanager.sh" ]; then
@@ -304,7 +304,7 @@ else
 
         if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
             mkdir -p "$FLINK_LOG_SAVE_PATH"
-            cp "$log" "$FLINK_LOG_SAVE_PATH/$log"
+            cp $log $FLINK_LOG_SAVE_PATH
         fi
     fi
 fi
