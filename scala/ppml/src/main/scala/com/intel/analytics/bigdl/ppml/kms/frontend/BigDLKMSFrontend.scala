@@ -19,10 +19,13 @@ package com.intel.analytics.bigdl.ppml.kms.frontend
 import java.io.File
 import java.lang.Object
 import java.net.{URL, URLClassLoader}
-import java.lang.reflect.Method
+import java.lang.reflect.{Method, InvocationTargetException}
 import java.security.{KeyStore, SecureRandom}
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
+import java.security.SecureRandom
+import javax.crypto.{KeyGenerator, SecretKey}
+import java.util.Base64
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.{ConnectionContext, Http}
@@ -62,11 +65,13 @@ object BigDLKMSFrontend extends Supportive {
       val (keywhizCliMethod, keywhizCliInstance) = externalClassMethodLoader(
         arguments.keywhizCliJarPath,
         "keywhiz.cli.CliMain",
-        "main")
+        "main"
+      )
       val (keyProviderMethod, keyProviderInstance) = externalClassMethodLoader(
         arguments.keyProviderJarPath,
         "keywhiz.KeywhizService",
-        "main")
+        "main"
+      )
       val port = arguments.keywhizPort
 
       val route = timing("initialize http route") {
@@ -91,10 +96,7 @@ object BigDLKMSFrontend extends Supportive {
             (user, token) => {
             timing("generate primary key") {
             try {
-              val base64AES256Key: String = generateAESKey(256,
-                                                           keyProviderMethod,
-                                                           keyProviderInstance
-                                                           )
+              val base64AES256Key: String = generateAESKey(256)
               loginKeywhiz(user, token, keywhizCliMethod, keywhizCliInstance, port)
               addKeyToKeywhiz(user,
                               primaryKeyName,
@@ -127,9 +129,7 @@ object BigDLKMSFrontend extends Supportive {
                                                            keywhizCliInstance,
                                                            port
                                                            )
-                val base64AES128Key: String = generateAESKey(128,
-                                                             keyProviderMethod,
-                                                             keyProviderInstance)
+                val base64AES128Key: String = generateAESKey(128)
                 val encryptedDataKey: String = encryptDataKey(primaryKey, base64AES128Key)
                 addKeyToKeywhiz(user,
                                 dataKeyName,
@@ -158,8 +158,8 @@ object BigDLKMSFrontend extends Supportive {
                    createUserToKeywhiz(userName,
                                        token,
                                        arguments.frontendKeywhizConf,
-                                       keywhizCliMethod,
-                                       keywhizCliInstance,
+                                       keyProviderMethod,
+                                       keyProviderInstance,
                                        port)
                    complete(s"user [$userName] is created successfully!")
                 } catch {
@@ -216,20 +216,20 @@ object BigDLKMSFrontend extends Supportive {
   def createUserToKeywhiz(user: String,
                           token: String,
                           frontendKeywhizConf: String,
-                          keywhizCliMethod: Method,
-                          keywhizCliInstance: URLClassLoader,
+                          keyProviderMethod: Method,
+                          keyProviderInstance: Object,
                           port: Int): Unit = {
     val args: String = constructKeywhizArgs(
         s"add-user $frontendKeywhizConf --user $user --token $token",
         port
     )
-    invokeExternalMethod(keywhizCliMethod, keywhizCliInstance, args)
+    invokeExternalMethod(keyProviderMethod, keyProviderInstance, args)
   }
 
   def loginKeywhiz(user: String,
                    token: String,
                    keywhizCliMethod: Method,
-                   keywhizCliInstance: URLClassLoader,
+                   keywhizCliInstance: Object,
                    port: Int): Unit = {
     val args: String = constructKeywhizArgs(
         s"--user $user --token $token login",
@@ -238,21 +238,19 @@ object BigDLKMSFrontend extends Supportive {
     invokeExternalMethod(keywhizCliMethod, keywhizCliInstance, args)
   }
 
-  def generateAESKey(keysize: Int,
-                     keyProviderMethod: Method,
-                     keyProviderInstance: URLClassLoader): String = {
-    val key = invokeExternalMethod(
-        keyProviderMethod,
-        keyProviderInstance,
-        s"gen-aes --keysize $keysize").asInstanceOf[String].dropRight(1)
-    key
+  def generateAESKey(keySize: Int): String = {
+    val generator = KeyGenerator.getInstance("AES");
+    generator.init(keySize, SecureRandom.getInstanceStrong());
+    val key: SecretKey = generator.generateKey();
+    val base64Key: String = Base64.getEncoder().encodeToString(key.getEncoded());
+    return base64Key;
   }
 
   def addKeyToKeywhiz(user: String,
                       keyName: String,
                       keyContent: String,
                       keywhizCliMethod: Method,
-                      keywhizCliInstance: URLClassLoader,
+                      keywhizCliInstance: Object,
                       port: Int): Unit = {
     val args: String = constructKeywhizArgs(
         s"--user $user " +
@@ -266,7 +264,7 @@ object BigDLKMSFrontend extends Supportive {
   def getKeyFromKeywhiz(user: String,
                         keyName: String,
                         keywhizCliMethod: Method,
-                        keywhizCliInstance: URLClassLoader,
+                        keywhizCliInstance: Object,
                         port: Int): String = {
     val args: String = constructKeywhizArgs(
         s"--user $user get --name $keyName",
@@ -309,12 +307,12 @@ object BigDLKMSFrontend extends Supportive {
 
   def externalClassMethodLoader(jarPath: String,
                                 className: String,
-                                methodName: String): (Method, URLClassLoader) = {
+                                methodName: String): (Method, Object) = {
     val classLoader = new URLClassLoader(Array[URL](new File(jarPath).toURI.toURL))
     val classToLoad = classLoader.loadClass(className)
-    val method = classToLoad.getDeclaredMethod(methodName)
+    val method = classToLoad.getDeclaredMethod(methodName, classOf[Array[String]])
     val instance = classToLoad.newInstance()
-    (method, instance.asInstanceOf[URLClassLoader])
+    (method, instance.asInstanceOf[Object])
   }
 
   def constructKeywhizArgs(args: String, port: Int): String = {
@@ -322,9 +320,10 @@ object BigDLKMSFrontend extends Supportive {
   }
 
   def invokeExternalMethod(method: Method,
-                           instance: URLClassLoader,
+                           instance: Object,
                            args: String = null): Object = {
-    method.invoke(instance)
+    val arguments: Array[String] = args.split(" ")
+    method.invoke(instance, arguments)
   }
 
   val argumentsParser =
