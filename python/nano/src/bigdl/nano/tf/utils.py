@@ -30,8 +30,8 @@ class _NanoPartial(partial):
 
 class _ModuleWrapper:
     def __init__(self, target_obj, source_obj):
-        self.target_obj = target_obj
-        self.source_obj = source_obj
+        self.__dict__["target_obj"] = target_obj
+        self.__dict__["source_obj"] = source_obj
 
     def __getattr__(self, name):
         try:
