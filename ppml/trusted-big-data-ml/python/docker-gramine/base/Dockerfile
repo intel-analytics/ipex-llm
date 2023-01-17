@@ -270,8 +270,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/trusted-big-data-ml/verify-attestation-service.sh && \
     cp /sbin/tini /usr/bin/tini && \
-    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/trusted-big-data-ml/secured_argvs
-
+    gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/trusted-big-data-ml/secured_argvs && \
+    wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
 # install sgxsdk
 RUN cd /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
