@@ -78,7 +78,7 @@ callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir,
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-if args.scheduler:
+if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
