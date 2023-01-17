@@ -18,7 +18,6 @@
 # https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
 #
 
-import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
