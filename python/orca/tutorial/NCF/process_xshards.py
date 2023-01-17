@@ -153,7 +153,7 @@ def get_feature_cols():
     return feature_cols
 
 
-def get_label_col():
+def get_label_cols():
     return ['labels']
 
 
