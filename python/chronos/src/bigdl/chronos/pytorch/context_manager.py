@@ -47,7 +47,8 @@ class ForecasterContextManager(object):
             self.thread_num = self.forecaster.optimized_model_thread_num
         else:
             self.thread_num = None
-        self.bf16_enable = 'bf16' in self.forecaster.accelerate_method
+        self.bf16_enable = self.forecaster.accelerate_method is not None and \
+                           'bf16' in self.forecaster.accelerate_method
         if optimize and self.bf16_enable:
             self.autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
 

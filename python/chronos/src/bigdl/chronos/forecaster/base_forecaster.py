@@ -91,6 +91,7 @@ class BasePytorchForecaster(Forecaster):
             self.accelerated_model = None  # accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
             self.cxt_manager = DummyForecasterContextManager()
+            self.context_enabled = False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
