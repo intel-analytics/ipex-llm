@@ -152,6 +152,9 @@ def get_feature_cols():
     return feature_cols
 
 
+def get_label_col():
+    return ['label']
+
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
 

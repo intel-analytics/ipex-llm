@@ -21,7 +21,7 @@ import pickle
 import tensorflow as tf
 
 from utils import *
-from process_spark_dataframe import get_feature_cols
+from process_spark_dataframe import get_feature_cols, get_label_col
 
 from bigdl.orca.learn.tf2 import Estimator
 
