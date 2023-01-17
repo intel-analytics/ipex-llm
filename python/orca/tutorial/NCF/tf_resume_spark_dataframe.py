@@ -16,7 +16,6 @@
 
 # Step 0: Import necessary libraries
 import math
-import pickle
 
 import tensorflow as tf
 
@@ -55,10 +54,6 @@ callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir,
 
 if args.scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
-    callbacks.append(lr_callback)
-
-    with open(os.path.join(args.model_dir, 'lr_callback.pkl'), 'rb')as f:
-        lr_callback = pickle.load(f)
     callbacks.append(lr_callback)
 
 est.fit(train_df,
