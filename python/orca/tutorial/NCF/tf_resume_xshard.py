@@ -21,7 +21,7 @@ import pickle
 import tensorflow as tf
 
 from utils import *
-from process_xshards import get_feature_cols
+from process_xshards import get_feature_cols, get_label_col
 
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
@@ -36,7 +36,7 @@ init_orca(args, extra_python_lib="tf_model.py")
 train_data = XShards.load_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 feature_cols = get_feature_cols()
-label_cols = ["label"]
+label_cols = get_label_col()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
