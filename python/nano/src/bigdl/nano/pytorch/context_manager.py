@@ -62,7 +62,6 @@ class AutocastContextManager(BaseContextManager):
     def __init__(self, thread_num=None, accelerator=None, enable_onednn=True):
         super().__init__(thread_num=thread_num, accelerator=accelerator,
                          enable_onednn=enable_onednn)
-        super().__init__(thread_num=thread_num, accelerator=accelerator)
         if compare_version("torch", operator.lt, "1.13.0"):
             # In torch1.12, torch.inference_mode(mode=True) will cause bug for jit+bf16
             self.infer_mode = torch.no_grad()
