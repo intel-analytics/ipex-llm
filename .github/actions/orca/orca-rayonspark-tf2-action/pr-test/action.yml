@@ -18,6 +18,7 @@ runs:
         
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.15.3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} Pillow
         
         chmod a+x python/orca/dev/test/run-pytests-tf2-rayonspark.sh
         python/orca/dev/test/run-pytests-tf2-rayonspark.sh
