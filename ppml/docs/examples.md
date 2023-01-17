@@ -378,7 +378,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
     --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
     --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.datasource.instance=1 \
+    --conf spark.bigdl.kms.datasource.instance=2 \
     --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
     --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
     --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/output/simple_people_output.crc \
@@ -437,7 +437,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
     --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
     --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.datasource.instance=1 \
+    --conf spark.bigdl.kms.datasource.instance=2 \
     --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
     --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
     --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/output/simple_people_output.crc \
