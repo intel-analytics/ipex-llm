@@ -307,48 +307,48 @@ Type-specific parameters for each KMS instance:
 
  - For a Simple KMS:
     
-    **spark.bigdl.kms.<KMSName>.appId:**  APPID of SimpleKMS.
+    **spark.bigdl.kms.[KMSName].appId:**  APPID of SimpleKMS.
 
-    **spark.bigdl.kms.<KMSName>.apiKey:**  APIKEY of SimpleKMS.
+    **spark.bigdl.kms.[KMSName].apiKey:**  APIKEY of SimpleKMS.
 
  - For an EHSM KMS:
     
-    **spark.bigdl.kms.<KMSName>.ip:**  EHSM service IP.
+    **spark.bigdl.kms.[KMSName].ip:**  EHSM service IP.
     
-    **spark.bigdl.kms.<KMSName>.port:**  EHSM port number.
+    **spark.bigdl.kms.[KMSName].port:**  EHSM port number.
     
-    **spark.bigdl.kms.<KMSName>.appId:**  EHSM APPID.
+    **spark.bigdl.kms.[KMSName].appId:**  EHSM APPID.
     
-    **spark.bigdl.kms.<KMSName>.apiKey:**  EHSM APIKEY.
+    **spark.bigdl.kms.[KMSName].apiKey:**  EHSM APIKEY.
 
  - For an Azure KMS:
     
-    **spark.bigdl.kms.<KMSName>.vault:** Azure KMS KeyVault.
+    **spark.bigdl.kms.[KMSName].vault:** Azure KMS KeyVault.
     
-    **spark.bigdl.kms.<KMSName>.clientId:** Azure KMS clientId.
+    **spark.bigdl.kms.[KMSName].clientId:** Azure KMS clientId.
 
  - For a BigDL KMS:
 
-    **spark.bigdl.kms.<KMSName>.ip:**  BigDL KMS service IP.
+    **spark.bigdl.kms.[KMSName].ip:**  BigDL KMS service IP.
     
-    **spark.bigdl.kms.<KMSName>.port:**  BigDL KMS port number.
+    **spark.bigdl.kms.[KMSName].port:**  BigDL KMS port number.
     
-    **spark.bigdl.kms.<KMSName>.user:**  BigDL KMS user name.
+    **spark.bigdl.kms.[KMSName].user:**  BigDL KMS user name.
     
-    **spark.bigdl.kms.<KMSName>.token:**  BigDL KMS user token.
+    **spark.bigdl.kms.[KMSName].token:**  BigDL KMS user token.
 
 
 For ***data sources***, configure according KMS, keys and paths etc. for each:
 
- - **spark.bigdl.kms.dataSource.<dataSourceName>.kms:**  name of the KMS used by <dataSourceName>.
+ - **spark.bigdl.kms.dataSource.[dataSourceName].kms:**  name of the KMS used by <dataSourceName>.
  
- - **spark.bigdl.kms.dataSource.<dataSourceName>.path:** input path of this data source, e.g. a HDFS/NFS path.
+ - **spark.bigdl.kms.dataSource.[dataSourceName].path:** input path of this data source, e.g. a HDFS/NFS path.
  
- - **spark.bigdl.kms.dataSource.<dataSourceName>.primaryKey:** path/name of the primary key  related to this data source.
+ - **spark.bigdl.kms.dataSource.[dataSourceName].primaryKey:** path/name of the primary key  related to this data source.
  
- - **spark.bigdl.kms.dataSource.<dataSourceName>.dataKey:** path/name of the data key related to this data source.
+ - **spark.bigdl.kms.dataSource.[dataSourceName].dataKey:** path/name of the data key related to this data source.
  
- - **spark.bigdl.dataSource.<dataSourceName>.encryptMode**: Encrypt mode when applying data key, e.g. AES/CBC/PKCS5Padding or plain_text.
+ - **spark.bigdl.dataSource.[dataSourceName].encryptMode**: Encrypt mode when applying data key, e.g. AES/CBC/PKCS5Padding or plain_text.
 
 
 **Data sink** is the destination for data flow to store, each application should have one data sink:
