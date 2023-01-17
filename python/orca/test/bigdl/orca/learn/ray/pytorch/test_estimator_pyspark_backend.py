@@ -709,5 +709,34 @@ class TestPyTorchEstimator(TestCase):
 
         assert np.array_equal(expected_result, result_after)
 
+    def test_jit_model(self):
+        sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        def get_jit_model(config):
+            torch.manual_seed(0)
+            return torch.jit.script(Net())
+
+        trainer = get_estimator(model_fn=get_jit_model)
+        trainer.fit(df, batch_size=4, epochs=2,
+                    validation_data=df,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+        trainer.evaluate(df, batch_size=4,
+                         feature_cols=["feature"],
+                         label_cols=["label"])
+        trainer.predict(df, feature_cols=["feature"]).collect()
+        trainer.shutdown()
+            
 if __name__ == "__main__":
     pytest.main([__file__])
