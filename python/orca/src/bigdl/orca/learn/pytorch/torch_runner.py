@@ -180,9 +180,9 @@ class TorchRunner(BaseRunner):
             self.models = self.model_creator(self.config)
 
             if isinstance(self.models, nn.Sequential) or not isinstance(
-                self.models, Iterable) or isinstance(
-                self.models, torch.jit.ScriptFunction) or isinstance(
-                self.models, torch.jit.ScriptModule):
+                    self.models, Iterable) or isinstance(
+                    self.models, torch.jit.ScriptFunction) or isinstance(
+                    self.models, torch.jit.ScriptModule):
                 self.models = [self.models]
 
             invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
