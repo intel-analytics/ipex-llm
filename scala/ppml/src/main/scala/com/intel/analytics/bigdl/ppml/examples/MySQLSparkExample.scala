@@ -26,23 +26,14 @@ import org.slf4j.LoggerFactory
 
 object MySQLSparkExample extends App {
 
-//    val (dbUrl, user, password) = this.args.toList match {
-//    case dbUrl :: Nil              => (dbUrl, "root", "password")
-//    case dbUrl :: user :: Nil      => (dbUrl, user, "password")
-//    case dbUrl :: user :: password => (dbUrl, user, password)
-//    case _ =>
-//        throw new IllegalArgumentException(s"miss dbUrl, (user, password)")
-//    }
     val dbUrl = this.args(0)
 
-    val sc = PPMLContext.initPPMLContext("spark-mysql")
-
+    val sc = PPMLContext.initPPMLContext("spark-mysql-io")
 
     val spark: SparkSession = SparkSession.builder
-        .appName("mysql-spark")
+        .appName("spark-mysql-io")
         .getOrCreate
 
-    // Using properties
     val props = new Properties
     props.put("user", "root")
     props.put("password", "helloworld")
@@ -54,18 +45,15 @@ object MySQLSparkExample extends App {
     println(s"The people_in table contains ${inDF.count} records.")
 
     val outDF = inDF
-    outDF.drop("age")
-    outDF.withColumnRenamed("job","occupation")
-    outDF.filter(outDF("occupation") === "Engineer")
+    val outDF_1 = outDF.drop("age")
+    val outDF_2 = outDF_1.withColumnRenamed("job","occupation")
+    val outDF_3 = outDF_2.filter(outDF_2("occupation") === "Engineer").coalesce(10)
 
-    println(s"The people_out table contains ${outDF.count} records.")
-    println(s"saving output to table people_out...")
 
-    println("partition of outDF:" + outDF.rdd.partitions.size)
-    outDF.coalesce(10).
-        write.mode(SaveMode.Overwrite).jdbc(mysqlURL, "people_out", props)
+    outDF_3.write.mode(SaveMode.Overwrite).jdbc(mysqlURL, "people_out", props)
 
-    println("partition of outDF:" + outDF.rdd.partitions.size)
+    println(s"The people_out table contains ${outDF_3.count} records.")
+    println("partition of outDF_3:" + outDF_3.rdd.partitions.size)
     println("done!")
 
 }
