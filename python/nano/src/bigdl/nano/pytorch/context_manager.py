@@ -74,6 +74,7 @@ class AutocastContextManager(BaseContextManager):
                 if compare_version("torch", operator.ge, "1.12.0"):
                     # onednn fusion be added to torch from version 1.12
                     torch.jit.enable_onednn_fusion(False)
+        if self.accelerator == "jit":
             # Disable AMP for JIT
             torch._C._jit_set_autocast_mode(False)
         self.autocast.__enter__()
