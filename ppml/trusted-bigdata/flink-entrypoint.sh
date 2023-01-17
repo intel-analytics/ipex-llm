@@ -26,9 +26,13 @@ CONF_FILE="${FLINK_HOME}/conf/flink-conf.yaml"
 SGX_ENABLED=$(cat $CONF_FILE | grep "kubernetes.sgx.enabled" | awk -F ' ' '{print $2}')
 
 # Set PCCS conf
-if [ "$PCCS_URL" != "" ]; then
+if [ -n "$PCCS_URL" ]; then
   echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' >/etc/sgx_default_qcnl.conf
   echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
+fi
+
+if [ -z "$FLINK_LOG_SAVE_PATH" ]; then
+    FLINK_LOG_SAVE_PATH="${FLINK_HOME}/log"
 fi
 
 drop_privs_cmd() {
@@ -206,7 +210,7 @@ else
             CLASS_TO_RUN=org.apache.flink.kubernetes.entrypoint.KubernetesSessionClusterEntrypoint
         fi
 
-        log="${FLINK_HOME}/log/${JOB_MANAGER_RPC_ADDRESS}.log"
+        log="${FLINK_LOG_SAVE_PATH}/${JOB_MANAGER_RPC_ADDRESS}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
@@ -223,10 +227,6 @@ else
             fi 
             ./init.sh && \
             gramine-sgx bash 1>&2
-        fi
-        if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
-            mkdir -p "$FLINK_LOG_SAVE_PATH"
-            cp $log $FLINK_LOG_SAVE_PATH
         fi
 
     elif [ "${params[0]}" = "kubernetes-taskmanager.sh" ]; then
@@ -284,7 +284,7 @@ else
         CLASS_TO_RUN=org.apache.flink.kubernetes.taskmanager.KubernetesTaskExecutorRunner
 
         #log="${FLINK_HOME}/log/${TASK_MANAGER_RPC_ADDRESS}.log"
-        log="${FLINK_HOME}/log/${JOB_MANAGER_RPC_ADDRESS}-${HOSTNAME}.log"
+        log="${FLINK_LOG_SAVE_PATH}/${JOB_MANAGER_RPC_ADDRESS}-${HOSTNAME}.log"
         log_setting=("-Dlog.file=${log}" "-Dlog4j.configuration=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlog4j.configurationFile=file:${FLINK_CONF_DIR}/log4j-console.properties" "-Dlogback.configurationFile=file:${FLINK_CONF_DIR}/logback-console.xml")
 
         classpath=$(echo ${FLINK_HOME}/lib/* | tr ' ' ':')
@@ -303,10 +303,6 @@ else
             gramine-sgx bash 1>&2
         fi
 
-        if [ -n "$FLINK_LOG_SAVE_PATH" ]; then
-            mkdir -p "$FLINK_LOG_SAVE_PATH"
-            cp $log $FLINK_LOG_SAVE_PATH
-        fi
     fi
 fi
 
