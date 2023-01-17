@@ -109,6 +109,9 @@ class TestTF2Estimator(TestCase):
                                                  label_cols="x", feature_cols=["y"],
                                                  data_config=data_config_args)
 
+        assert type(train_stats) == dict
+        assert type(end_eval_stats) == dict
+
         assert orca_estimator.get_model()
 
         dloss = end_eval_stats["validation_loss"] - start_eval_stats["validation_loss"]
