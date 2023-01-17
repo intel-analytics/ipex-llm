@@ -301,7 +301,6 @@ class TorchRunner(BaseRunner):
             with self.timers.record("validation"):
                 info = info or {}
                 validation_results = self._validate(val_loader,
-                                                    info=info,
                                                     metrics=self.metrics,
                                                     num_steps=val_steps,
                                                     callbacks=callbacks)
