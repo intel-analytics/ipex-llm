@@ -1,4 +1,4 @@
-name: BigDL Release Scala test
+name: BigDL Release Scala
 
 on:  
   workflow_dispatch:
