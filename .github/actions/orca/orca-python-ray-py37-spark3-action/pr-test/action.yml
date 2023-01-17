@@ -15,6 +15,7 @@ runs:
 
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip uninstall -y pyarrow
         chmod a+x python/orca/dev/test/run-pytests-ray
         python/orca/dev/test/run-pytests-ray
         source deactivate
