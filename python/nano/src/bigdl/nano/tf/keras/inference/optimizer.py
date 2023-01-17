@@ -27,6 +27,7 @@ from bigdl.nano.utils.inference.common.checker import available_acceleration_com
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
 from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
+from bigdl.nano.tf.utils import _ModuleWrapper
 from bigdl.nano.utils.log4Error import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
@@ -493,6 +494,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
+
+        if isinstance(model, _ModuleWrapper):
+            original_model = model.source_obj
+            model = model.target_obj
+        else:
+            original_model = model
+
         if precision == 'fp16':
             invalidInputError('GPU' in device or device == 'VPUX',
                               "fp16 is not supported on {} device.".format(device))
@@ -514,7 +522,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=openvino_config,
                                         logging=logging,
                                         **kwargs)
-            return patch_compiled_and_attrs(result, model)
+            return patch_compiled_and_attrs(result, original_model)
 
         elif precision == 'bf16':
             invalidInputError(accelerator == 'openvino' or accelerator is None,
@@ -534,10 +542,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             config=final_openvino_option,
                                             logging=logging,
                                             **kwargs)
-                return patch_compiled_and_attrs(result, model)
             elif accelerator is None:
                 result = BF16Model(model)
-                return patch_compiled_and_attrs(result, model)
+            return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
@@ -574,7 +581,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
                 openvino_model = model
-                openvino_model = openvino_model.target_obj
             else:
                 # For CPU: fp32 -> int8, for GPU: fp16 -> int8
                 _precision = 'fp16' if device != 'CPU' else 'fp32'
@@ -620,7 +626,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 onnx_model = InferenceOptimizer.trace(model=model, accelerator='onnxruntime',
                                                       input_spec=input_spec, thread_num=thread_num)
-            onnx_model = onnx_model.target_obj
 
             # trace onnx model
             method_map = {
@@ -649,7 +654,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        return patch_compiled_and_attrs(result, model)
+        return patch_compiled_and_attrs(result, original_model)
 
     @staticmethod
     def save(model: Model, path):
