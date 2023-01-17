@@ -16,38 +16,51 @@
 
 # Step 0: Import necessary libraries
 import math
+import pickle
+
 import tensorflow as tf
 
-from bigdl.orca.data import XShards
-from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.tf2 import Estimator
-
+from utils import *
 from process_xshards import get_feature_cols
+
+from bigdl.orca.data import XShards
+from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode="local")
+args = parse_args("TensorFlow NCF Training with Spark DataFrame")
+init_orca(args, extra_python_lib="tf_model.py")
 
 
 # Step 2: Read and process data using Xshards
-train_data = XShards.load_pickle("./train_processed_xshards")
-test_data = XShards.load_pickle("./test_processed_xshards")
+train_data = XShards.load_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
+test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 feature_cols = get_feature_cols()
 label_cols = ["label"]
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
 backend = 'ray'  # 'ray' or 'spark'
-est = Estimator.from_keras()
-est.load('NCF_model')
+est = Estimator.from_keras(backend=backend)
+est.load(os.path.join(args.model_dir, "NCF_model"))
 
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
+
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
+    if args.tensorboard else []
+
+if args.scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
+
+    with open(os.path.join(args.model_dir, 'lr_callback.pkl'), 'rb') as f:
+        lr_callback = pickle.load(f)
+    callbacks.append(lr_callback)
 
 est.fit(train_data,
-        epochs=2,
+        epochs=5,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
@@ -67,7 +80,7 @@ for r in result:
 
 
 # Step 5: Save the trained TensorFlow model
-est.save("NCF_resume_model")
+est.save(os.path.join(args.model_dir, "NCF_resume_model"))
 
 
 # Step 6: Stop Orca Context when program finishes
