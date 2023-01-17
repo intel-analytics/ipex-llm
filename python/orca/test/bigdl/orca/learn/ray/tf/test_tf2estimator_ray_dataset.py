@@ -109,8 +109,8 @@ class TestTF2Estimator(TestCase):
                                                  label_cols="x", feature_cols=["y"],
                                                  data_config=data_config_args)
 
-        assert isinstance(train_stats, dict)
-        assert isinstance(end_eval_stats, dict)
+        assert isinstance(train_stats, dict), "fit should return a dict"
+        assert isinstance(end_eval_stats, dict), "evaluate should return a dict"
 
         assert orca_estimator.get_model()
 
