@@ -17,16 +17,18 @@
 import os
 import copy
 import time
+import operator
 from pathlib import Path
 import numpy as np
 import traceback
+import inspect
 import tensorflow as tf
 from typing import Dict, Optional, List, Union
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
     throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled, patch_attrs
+from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
 from bigdl.nano.utils.log4Error import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
@@ -37,6 +39,8 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import KerasONNXRuntimeModel
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
+from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
+from bigdl.nano.utils.util import compare_version
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -311,7 +315,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           shape/dtype of the input.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -360,8 +364,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = KerasONNXRuntimeModel(model, input_spec, onnxruntime_session_options)
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def quantize(model: Model,
@@ -412,7 +415,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
+                           shape/dtype of the input.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
@@ -514,26 +517,30 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         config=openvino_config,
                                         logging=logging,
                                         **kwargs)
-            return patch_attrs(result, model)
+            return patch_compiled_and_attrs(result, model)
 
         elif precision == 'bf16':
-            invalidInputError(accelerator == 'openvino',
+            invalidInputError(accelerator == 'openvino' or accelerator is None,
                               "Accelerator {} is invalid for BF16.".format(accelerator))
             invalidInputError(device == 'CPU',
                               "Device {} don't support bfloat16.".format(device))
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
-            if openvino_config is not None:
-                final_openvino_option.update(openvino_config)
-            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
-            result = KerasOpenVINOModel(model,
-                                        input_spec=input_spec,
-                                        precision=precision,
-                                        thread_num=thread_num,
-                                        device=device,
-                                        config=final_openvino_option,
-                                        logging=logging,
-                                        **kwargs)
-            return patch_attrs(result, model)
+            if accelerator == 'openvino':
+                final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
+                if openvino_config is not None:
+                    final_openvino_option.update(openvino_config)
+                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
+                result = KerasOpenVINOModel(model,
+                                            input_spec=input_spec,
+                                            precision=precision,
+                                            thread_num=thread_num,
+                                            device=device,
+                                            config=final_openvino_option,
+                                            logging=logging,
+                                            **kwargs)
+                return patch_compiled_and_attrs(result, model)
+            elif accelerator is None:
+                result = BF16Model(model)
+                return patch_compiled_and_attrs(result, model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
 
@@ -555,6 +562,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataset = tf.data.Dataset.from_tensor_slices((x, y))
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
+
+            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
+            if not model.built and not saved_model_input_spec_set:
+                # model cannot be saved either because the input shape is not available
+                # or because the forward pass of the model is not defined
+                if input_spec is not None:
+                    if isinstance(input_spec, (tuple, list)):
+                        input_shape = (i.shape for i in input_spec)
+                    else:
+                        input_shape = input_spec.shape
+                    model.compute_output_shape(input_shape)
+            if model.inputs is None or model.outputs is None:
+                INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
+                # oly works for inc version >= 1.14
+                if not INC_LESS_14:
+                    # try to fake input and output for model
+                    signature = inspect.signature(model.call)
+                    input_names = []
+                    for param in signature.parameters.values():
+                        input_names.append(param.name)
+                    if inputs is None:
+                        inputs = input_names
+                    if outputs is None:
+                        outputs = "outputs"    # type: ignore
+
             result = inc_quantzie(model, dataloader=calib_dataset,
                                   metric=metric,
                                   framework='tensorflow',
@@ -645,8 +677,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
-        patch_compiled(result, model)
-        return patch_attrs(result, model)
+        return patch_compiled_and_attrs(result, model)
 
     @staticmethod
     def save(model: Model, path):
@@ -703,6 +734,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return patch_attrs(result, model)
         if model_type == 'KerasQuantizedModel':
             result = load_inc_model(path, model, framework='tensorflow')
+            return patch_attrs(result, model)
+        if model_type == 'BF16Model':
+            result = load_bf16_model(path)
             return patch_attrs(result, model)
         if isinstance(model, Model):
             # typically for keras Model

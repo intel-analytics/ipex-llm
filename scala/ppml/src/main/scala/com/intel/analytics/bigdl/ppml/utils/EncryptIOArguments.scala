@@ -39,7 +39,9 @@ case class EncryptIOArguments(
                                simpleAPPID: String = "simpleAPPID",
                                simpleAPIKEY: String = "simpleAPIKEY",
                                keyVaultName: String = "keyVaultName",
-                               managedIdentityClientId: String = "") {
+                               managedIdentityClientId: String = "",
+                               userName: String = "bigdlKMSUserName",
+                               userToken: String = "bigdlKMSUserToken") {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.kms.type") = kmsType
@@ -55,6 +57,11 @@ case class EncryptIOArguments(
       case KMS_CONVENTION.MODE_AZURE_KMS =>
         kmsArgs("spark.bigdl.kms.azure.vault") = keyVaultName
         kmsArgs("spark.bigdl.kms.azure.clientId") = managedIdentityClientId
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        kmsArgs("spark.bigdl.kms.bigdl.ip") = kmsServerIP
+        kmsArgs("spark.bigdl.kms.bigdl.port") = kmsServerPort
+        kmsArgs("spark.bigdl.kms.bigdl.user") = userName
+        kmsArgs("spark.bigdl.kms.bigdl.token") = userToken
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
@@ -125,5 +132,11 @@ object EncryptIOArguments {
     opt[String]('u', "clientId")
       .action((x, c) => c.copy(managedIdentityClientId = x))
       .text("keyVaultName")
+    opt[String]('z', "userName")
+      .action((x, c) => c.copy(userName = x))
+      .text("bigdlKMSUserName")
+    opt[String]('y', "userToken")
+      .action((x, c) => c.copy(userToken = x))
+      .text("bigdlKMSUserToken")
   }
 }

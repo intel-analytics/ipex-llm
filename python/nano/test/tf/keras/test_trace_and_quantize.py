@@ -15,6 +15,7 @@
 
 from unittest import TestCase
 import tempfile
+import operator
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanSquaredError
@@ -95,9 +96,7 @@ class TestTraceAndQuantize(TestCase):
                                                       accelerator="onnxruntime",
                                                       input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
                                                       x=np.random.random((100, 4)),
-                                                      y=np.random.random((100, 5)),
-                                                      accuracy_criterion = {'relative': 0,
-                                                                            'higher_is_better': True})
+                                                      y=np.random.random((100, 5)))
         # try to access some custom attributes
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
@@ -117,9 +116,30 @@ class TestTraceAndQuantize(TestCase):
                                                       accelerator="openvino",
                                                       input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
                                                       x=np.random.random((100, 4)),
-                                                      y=np.random.random((100, 5)),
-                                                      accuracy_criterion = {'relative': 0,
-                                                                            'higher_is_better': True})
+                                                      y=np.random.random((100, 5)))
+        # try to access some custom attributes
+        quantized_model.do_nothing()
+        assert quantized_model.get_x() == quantized_model.x == x
+        quantized_model(np.random.random((1, 4)).astype(np.float32))
+
+        # test save/load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, model)
+        new_model.do_nothing()
+        assert new_model.get_x() == quantized_model.x == x
+        
+        # for inc
+        from bigdl.nano.utils.util import compare_version
+        INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
+        if INC_LESS_14:
+            return
+        model = MyModel(x)
+        quantized_model = InferenceOptimizer.quantize(model,
+                                                      accelerator=None,
+                                                      input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32),
+                                                      x=np.random.random((100, 4)),
+                                                      y=np.random.random((100, 5)))
         # try to access some custom attributes
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
@@ -177,3 +197,19 @@ class TestTraceAndQuantize(TestCase):
                                                       input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
         outputs = quantized_model(x)
         assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
+
+    def test_quantize_bf16(self):
+        model = MyModel(100)
+        model.compile(loss='mse', metrics=MeanSquaredError())
+        x = np.random.random((100, 4))
+        model(x)
+
+        traced_model = InferenceOptimizer.quantize(model, precision="bf16")
+
+        from bigdl.nano.utils import CPUInfo
+        cpuinfo = CPUInfo()
+        if cpuinfo.has_bf16:
+            model(x)
+
+        InferenceOptimizer.save(model, "save_bf16")
+        model = InferenceOptimizer.load("save_bf16", model)

@@ -19,12 +19,12 @@ import tempfile
 import os
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
-from tensorflow.keras.applications.resnet import ResNet50
+from tensorflow.keras.applications import MobileNetV2
 
 
 class TestInferencePipeline(TestCase):
     def test_optimize_nano_model_without_accuracy(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -38,7 +38,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_without_accuracy(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -51,7 +51,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_nano_model_without_accuracy_large_batch(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -65,7 +65,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_with_accuracy(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -83,7 +83,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_without_dataset(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
 
         train_examples = np.random.random((100, 40, 40, 3))
         train_labels = np.random.randint(0, 10, size=(100,))
@@ -97,7 +97,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimize_model_with_only_x(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # test numpy array
         train_examples = np.random.random((100, 40, 40, 3))
         opt = InferenceOptimizer()
@@ -109,7 +109,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
         # test tf tensor
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         train_examples = tf.convert_to_tensor(train_examples)
         opt = InferenceOptimizer()
         opt.optimize(model=model,
@@ -120,7 +120,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
         # test dataset with only x
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         train_examples = np.random.random((100, 40, 40, 3))
         train_dataset = tf.data.Dataset.from_tensor_slices(train_examples)
         opt = InferenceOptimizer()
@@ -132,7 +132,7 @@ class TestInferencePipeline(TestCase):
         model = opt.get_best_model()
 
     def test_optimizer_save_load(self):
-        model = ResNet50(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         # prepare dataset
         train_examples = np.random.random((100, 40, 40, 3))
         # save load for original model

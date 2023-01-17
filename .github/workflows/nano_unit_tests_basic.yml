@@ -78,7 +78,7 @@ jobs:
           source $CONDA/bin/activate openvino-basic
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false basic
-          pip install pytest openvino-dev==2022.2.0
+          pip install pytest openvino-dev==2022.3.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-basic-openvino-tests.sh
           source $CONDA/bin/deactivate

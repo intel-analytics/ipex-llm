@@ -72,4 +72,30 @@ Run this example in spark local mode:
       --maxIter 100
   ```
 
+## LocalCryptoExample with BigDL KMS
+
+### Usage
+
+- for `BigDLKeyManagementService`
+
+  ```bash
+  /opt/jdk8/bin/java \
+      -cp ${BIGDL_HOME}/jars/*:${SPARK_HOME}/conf/:${SPARK_HOME}/jars/* \
+      -Xmx16g \
+      org.apache.spark.deploy.SparkSubmit \
+      --master local[4] \
+      --class com.intel.analytics.bigdl.ppml.examples.LocalCryptoExample \
+      --verbose \
+      --jars local:///ppml/trusted-big-data-ml/work/bigdl-${BIGDL_VERSION}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+      local:////ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar \
+      --inputPath input_data_file_to_encrypt_and_decrypt \
+      --primaryKeyPath specify_a_primary_key_name_like_BobPrimaryKey1 \
+      --dataKeyPath specify_a_primary_key_name_like_BobDataKey1 \
+      --kmsType BigDLKeyManagementService \
+      --kmsServerIP bkeywhiz_kms_server_ip \
+      --kmsServerPort bkewyhiz_kms_server_port \
+      --userName your_pre_created_bkeywhiz_user_name \
+      --userToken your_pre_created_bkeywhiz_user_token
+  ```
+
   

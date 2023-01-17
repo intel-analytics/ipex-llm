@@ -140,7 +140,7 @@ def setup_package():
                                "cryptography==3.3.2"]
 
     # default pytorch_dep
-    pytorch_requires = pytorch_112_requires + pytorch_common_requires
+    pytorch_requires = pytorch_113_requires + pytorch_common_requires
     pytorch_113_requires += pytorch_common_requires
     pytorch_112_requires += pytorch_common_requires
     pytorch_111_requires += pytorch_common_requires
@@ -153,7 +153,7 @@ def setup_package():
                           "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
-                          "neural-compressor==1.13.1",
+                          "neural-compressor==2.0",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; platform_machine=='x86_64' and \
                           platform_system=='Darwin'"]

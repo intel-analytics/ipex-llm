@@ -27,6 +27,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
+from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -154,7 +155,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                    'SparkDataFrame',
                                    Callable[[Dict, int], 'DataLoader'],
                                    None]=None,
-            callbacks: List['Callback']=[]) -> List:
+            callbacks: Optional[List['Callback']]=None) -> List:
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TorchRunner.train_epoch()` on N parallel workers simultaneously
@@ -180,7 +181,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param validation_data: validation data. Validation data type should be the same
                as train data.
-        :param callbacks: A list for all callbacks.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -193,6 +195,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
         batch_size = batch_size // self.num_workers  # Local batch size for each worker
         if batch_size <= 0:
             batch_size = 1
+
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
+
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -389,7 +397,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                  reduce_results: bool=True,
                  info: Dict=None,
                  feature_cols: Optional[List[str]]=None,
-                 label_cols:  Optional[List[str]]=None) -> Union[List[Dict], Dict]:
+                 label_cols:  Optional[List[str]]=None,
+                 callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
         """
         Evaluates a PyTorch model given validation data.
         Note that only accuracy for classification with zero-based label is supported by
@@ -416,6 +425,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
+        :param callbacks: A list for all callbacks. Note that only one MainCallback
+               is allowed among all callbacks.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom HookClass(after 2.2.0)
@@ -434,6 +445,19 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              mode="evaluate",
                                              num_workers=self.num_workers,
                                              shard_size=batch_size)
+
+        # Check uniqueness of the MainCallback
+        if not callbacks:
+            callbacks = []
+        make_only_mainCallback(callbacks)
+
+        params = dict(batch_size=batch_size,
+                      num_steps=num_steps,
+                      profile=profile,
+                      info=info,
+                      wrap_dataloader=False,
+                      callbacks=callbacks)
+
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
@@ -443,8 +467,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
             def transform_func(worker, partition_refs):
                 data_creator = partition_refs_to_creator(partition_refs)
                 # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
-                return worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                params["data_creator"] = data_creator
+                return worker.validate.remote(**params)
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
@@ -458,9 +482,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 return torch_datashard
 
             remote_worker_stats = []
+            params["data_creator"] = data_creator  # type:ignore
             for shard, worker in zip(shards, self.remote_workers):
-                stats = worker.validate.remote(
-                    data_creator, batch_size, num_steps, profile, info, False)
+                stats = worker.validate.remote(**params)
                 remote_worker_stats.append(stats)
             worker_stats = ray.get(remote_worker_stats)
         else:
@@ -468,11 +492,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params = dict(data_creator=reload_dataloader_creator(data),
-                          batch_size=batch_size, num_steps=num_steps,
-                          profile=profile, info=info)
-
+            params["data_creator"] = reload_dataloader_creator(data)
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
+
         if reduce_results:
             return process_stats(worker_stats)
         else:

@@ -67,6 +67,7 @@ jobs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca: ${{ steps.filter.outputs.orca }}
+      orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
@@ -122,7 +123,13 @@ jobs:
               - 'python/orca/**'
               - 'python/dllib/**'
               - '.github/actions/orca/**'
-                    
+
+            orca-tutorial:
+              - 'python/orca/tutorial/**'
+              - '.github/actions/orca/orca-tutorial-xshards/**'
+              - '.github/actions/orca/orca-notebook-xshards-action/**'
+              - '.github/actions/orca/orca-notebook-xshards-image-action/**'
+
   Friesian-Scala-UT:
     needs: changes
     if: ${{ needs.changes.outputs.friesian == 'true' }}
@@ -165,9 +172,9 @@ jobs:
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
 
-  Orca-Notebook-Test:
+  Orca-Notebook-Tutorial-Xshards-Test:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -180,6 +187,25 @@ jobs:
         uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
       - name: Run test
         uses: ./.github/actions/orca/orca-notebook-xshards-action
+      - name: Remove Env
+        if: ${{ always() }}
+        uses: ./.github/actions/remove-env
+
+  Orca-Notebook-Tutorial-Xshards-image-Test:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Setup env
+        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      - name: Run test
+        uses: ./.github/actions/orca/orca-notebook-xshards-image-action
       - name: Remove Env
         if: ${{ always() }}
         uses: ./.github/actions/remove-env
@@ -300,7 +326,7 @@ jobs:
 
   Orca-Tutorial-Xshards:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:

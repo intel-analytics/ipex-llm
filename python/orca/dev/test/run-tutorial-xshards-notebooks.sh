@@ -31,7 +31,7 @@ echo "#2 Running titanic"
 start=$(date "+%s")
 
 
-if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/titanic/titanic.csv ]
+if [ -f ${BIGDL_ROOT}/python/orca/tutorial/xshards/titanic.csv ]
 then
     echo "titanic.csv already exists"
 else

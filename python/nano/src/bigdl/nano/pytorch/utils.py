@@ -118,7 +118,8 @@ def save_model(model: pl.LightningModule, path):
         torch.save(model.state_dict(), checkpoint_path)
 
 
-def load_model(path, model: pl.LightningModule = None, inplace=False, device=None):
+def load_model(path, model: pl.LightningModule = None, input_sample=None,
+               inplace=False, device=None):
     """
     Load a model from local.
 
@@ -126,6 +127,8 @@ def load_model(path, model: pl.LightningModule = None, inplace=False, device=Non
     :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
             the model with accelerator=None by Trainer.trace/Trainer.quantize. model
             should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+    :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+            Only valid for inc ipex quantization model, otherwise will be ignored.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param device: A string represents the device of the inference. Default to None.
                    Only valid for openvino model, otherwise will be ignored.
@@ -150,7 +153,7 @@ def load_model(path, model: pl.LightningModule = None, inplace=False, device=Non
                           "Argument 'model' must be None for ONNX Runtime loading.")
         return load_onnxruntime_model(path)
     if model_type == 'PytorchQuantizedModel':
-        return load_inc_model(path, model, 'pytorch')
+        return load_inc_model(path, model, 'pytorch', input_sample=input_sample)
     if model_type == 'PytorchIPEXJITModel':
         return load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':

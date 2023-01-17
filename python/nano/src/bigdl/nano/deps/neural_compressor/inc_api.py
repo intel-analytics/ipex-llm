@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
+import operator
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.util import compare_version
 
 
-def load_inc_model(path, model, framework):
+def load_inc_model(path, model, framework, input_sample=None):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
-        return PytorchQuantizedModel._load(path, model)
+        # only ipex quantization needs example_inputs
+        return PytorchQuantizedModel._load(path, model, example_inputs=input_sample)
     elif framework == 'tensorflow':
         from .tensorflow.model import KerasQuantizedModel
         return KerasQuantizedModel._load(path, model)
@@ -73,3 +78,8 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         from .core import BaseQuantization
         quantizer = BaseQuantization(**not_none_kwargs)
     return quantizer.post_training_quantize(model, dataloader, metric)
+
+
+if compare_version("neural_compressor", operator.ge, "2.0"):
+    del quantize
+    from .inc_api_2 import quantize
