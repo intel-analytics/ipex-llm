@@ -21,8 +21,9 @@
 
 以下以阿里云环境为例，如果是基于裸金属机器搭建，请参考附录。
 首先，我们需要一个安装了SGX Plugin的K8S集群环境。在本例中，我们在阿里云申请了两台g7t的ECS实例（ecs.g7t.4xlarge），基本配置如下。
-CPU核数	内存	安全内存（EPC）	操作系统
-32	64GB	32GB	Ubuntu 20.04 LTS 2
+| CPU核数  | 内存 | 安全内存（EPC）| 操作系统 |
+| ------------- | ------------- | ------------- | ------------- |
+| 32  | 64GB  | 32GB | Ubuntu 20.04 LTS 2 |
 
 用户也可以根据自己的需求申请不同配置的ECS安全实例。
 VM OS选择Ubuntu20.04 LTS2, 这也是Occlum标准release所基于的操作系统。
@@ -36,9 +37,12 @@ sudo apt install --install-recommends linux-generic-hwe-20.04
 细节不再赘述，用户可以参考技术文档《在K8S上部署可扩展的基于Occlum的安全推理实例》或者附录的相关部分。
 
 ## 2. 快速上手
+
 本章会介绍PPML基本概念，以及如何用BigDL PPML occlum image在SGX中执行应用程序。
 需要注意的是：为了简化上手流程，我们会在运行环境中编译和运行SGX enclave；这种运行方式会有安全风险，仅能用于开发和测试，实际部署需要参照后面的生产环境部署章节。
-基本概念
+
+### 2.1 基本概念
+
 SGX应用需要编译(build)成SGX enclave，才能加载到SGX中运行。通常情况下，开发人员需要用SGX SDK重新编写应用，才能编译成合法的enclave，但这样的开发代价较大，维护成本也较高。为了避免上述问题，我们可以用Occlum实现应用的无缝迁移。Occlum是为SGX开发的LibOS应用，它可以将应用的系统调用翻译成SGX可以识别的调用，从而避免修改应用。BigDL PPML在Occlum的基础上，又进行了一次封装和优化，使得大数据应用，如Spark/Flink可以无缝的运行在SGX上。
  
 图 SGX enclave结构
@@ -52,11 +56,15 @@ PPML项目的核心功能是帮助用户迁移现有的应用，用户可以选�
 在剩下的章节中，我们以PySpark运行SQL和sklearn求线性回归方程为例，介绍如何
 * 通过docker部署单机PySpark应用。
 * 通过K8S部署分布式PySpark应用。
+
 前者主要针对小数据量的单机环境，后者主要针对大数据量的分布式环境。
-PySpark执行SQL任务
+
+### 2.2 PySpark执行SQL任务
+
 SparkSQL是Spark生态中的核心功能之一。通过Spark提供的SQL接口，数据分析师和开发人员可以通撰写简单的SQL语句实现对TB/PB级别数据的高效查询。在下面的例子中，我们将介绍如何通过Python格式的SQL文件，查询大规模数据。
-部署运行在docker容器中
-1.	配置合适的资源，启动运行脚本 start-spark-local.sh 进入docker image中。
+
+#### 2.2.1 部署运行在docker容器中
+1.	配置合适的资源，启动运行脚本`start-spark-local.sh`进入docker image中。
 
 ```bash
 # Clean up old container
@@ -108,28 +116,31 @@ bash  /opt/run_spark_on_occlum_glibc.sh pysql
 注： 脚本里的build_spark是做”occlum build”来生成Occlum可执行的镜像，这一步骤会耗费不少时间（数分钟左右），请耐心等待。
 非即时部署需提前配置源码和程序入口，并将步骤1的最后一行改为 bash /opt/run_spark_on_occlum_glibc.sh $1，即可直接通过运行bash start-spark-local.sh pysql 启动运行SQL example。
 
- 部署运行在k8s集群中
+#### 2.2.2 将PySpark SQL任务部署运行在k8s集群中
 
-前提条件：
+##### 前提条件：
 1.	阿里云实例上k8s集群已经配置好，k8s SGX device plugin已经安装好。
 设置环境变量 "kubernetes_master_url"。
 export kubernetes_master_url=${master_node_ip}
 
 2.	阿里云实例上安装spark client工具（以3.1.2版本为例），用于提交spark任务。
+```bash
 wget https://downloads.apache.org/spark/spark-3.1.2/spark-3.1.2-bin-hadoop3.2.tgz
 sudo mkdir /opt/spark
 sudo tar -xf spark*.tgz -C /opt/spark --strip-component 1
 sudo chmod -R 777 /opt/spark
 export SPARK_HOME=/opt/spark"
+```
 
 3.	下载BigDL的代码，为后续的修改做准备。
 git clone https://github.com/intel-analytics/BigDL.git
 
 接下来的改动位于路径 “BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes”。
 
-运行步骤：
+##### 运行步骤：
 1.	配置合适的资源在driver.yml和executor.yaml中
 
+```yaml
 #driver.yaml 同executor.yaml
     env:
     - name: DRIVER_MEMORY
@@ -142,7 +153,9 @@ git clone https://github.com/intel-analytics/BigDL.git
       value: "1GB"
     - name: SGX_KERNEL_HEAP
       value: "1GB"
+```
 2.	运行脚本 run_pyspark_sql_example.sh，需提前配置好Spark和K8s环境。
+
 ```bash
 #!/bin/bash
  
@@ -166,8 +179,9 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 注:若用云存储或HDFS或者云存储传入源文件则无需提前在image里传入源文件。
 
-PySpark运行sklearn LinearRegression
-部署运行在docker容器中
+### 2.3 PySpark运行sklearn LinearRegression
+
+#### 2.3.1 部署运行在docker容器中
 1.	配置合适的资源，启动运行脚本 start-spark-local.sh 进入docker image中。
 
 ```bash
@@ -253,10 +267,10 @@ bash  /opt/run_spark_on_occlum_glibc.sh pysklearn
 
 注： 脚本里的build_spark是做”occlum build”来生成Occlum可执行的镜像，这一步骤会耗费不少时间（数分钟左右），请耐心等待。
 非即时部署需提前配置源码和程序入口，并将步骤1的最后一行改为 bash /opt/run_spark_on_occlum_glibc.sh $1，即可直接通过运行bash start-spark-local.sh pysklearn 启动运行 sklearn example。
-部署运行在k8s集群中
 
-前提条件：
-参考前述章节的配置。
+#### 2.3.2 部署运行在k8s集群中
+
+**前提条件**参考前述章节的配置。
 运行步骤：
 1.	配置合适的资源在driver.yml和executor.yaml中
 ```yaml
@@ -297,13 +311,15 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 
 注:若用云存储或者HDFS传入源文件则无需提前在image里传入源文件。
+
 ## 3. 生产环境部署
+
 与快速上手阶段不同，生产部署需要考虑完整的数据流和密钥安全，并且需要根据现有的服务和设施进行对接。考虑到用户所用的服务有所差异，我们以开源和云服务为案例，介绍部署和配置KMS的基本过程；以及在安全环境中，构建生成环境中所需的image。
 安装和配置KMS
 KMS是SGX应用部署中的核心服务。用户可以直接使用阿里云提供的KMS，并配合云存储实现数据的透明加解密服务，详情请参照《对象存储客户端加密》。通过运行在SGX中的客户端加解密数据，可以保证明文数据只出现在SGX中。其他开源的分布式存储，例如HDFS也提供了类似的方案，请参考Hadoop官方文档配置HDFS透明加密，这里不再赘述。
-为了提升安全水位，我们提供了带TEE 保护的开源KMS的部署方式供用户参考。
-•	EHSM（运行在SGX中的KMS）
-安装和配置EHSM
+为了提升安全水位，我们提供了带TEE 保护的开源KMS的部署方式供用户参考。即EHSM（运行在SGX中的KMS）。
+
+### 3.1 安装和配置EHSM
 安装EHSM的教程请参照文档《Deploy BigDL-eHSM-KMS on Kubernetes》。
 使用PPMLContext和EHSM实现输入输出数据加解密
   用PPMLContext和EHSM实现SimpleQuery应用的数据加解密流程
@@ -381,7 +397,7 @@ bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{r
 3.	应用解密数据并进行计算
 4.	应用将计算结果加密后，写入到存储系统
 
-构建部署生产应用image
+### 3.2 构建部署生产应用image
  
 图 编译和部署PPML应用
 在开发新应用时，SGX程序程序在启动前需要经历occlum init和occlum build两个阶段，才能构建可执行的occlum instance（opt/occlum_spark文件夹，所有依赖和程序都存储在当中）。但是，将build放到部署环境中，会导致build阶段用到的用户密钥（user key）暴露到非安全环境中。为了进一步提高安全性，在实际部署中需要将build阶段和实际运行分开，既在安全环境中build所需的image，然后在部署和运行该image。
@@ -459,10 +475,18 @@ env:
           5.	在docker或k8s启动应用（同上），仅会在SGX中运行EHSM对应用程序进行验证（IV. attest MREnclave）。
 ```
 ## 4. 背景知识
-SGX
 
-Occlum
-2014 年正式成立的蚂蚁集团服务于超 10 亿用户，是全球领先的金融科技企业之一。蚂蚁集团一直积极探索隐私保护机器学习领域，并发起了开源项目 Occlum。Occlum 是用于英特尔® SGX 的内存安全多进程用户态操作系统（LibOS）。
+### 4.1 Intel SGX
+
+英特尔软件防护扩展（英语：Intel Software Guard Extensions，SGX）是一组安全相关的指令，它被内置于一些现代Intel 中央处理器（CPU）中。它们允许用户态及内核态代码定义将特定内存区域，设置为私有区域，此区域也被称作飞地（Enclaves）。其内容受到保护，不能被本身以外的任何进程存取，包括以更高权限级别运行的进程。
+
+CPU对受SGX保护的内存进行加密处理。受保护区域的代码和数据的加解密操作在CPU内部动态（on the fly）完成。因此，处理器可以保护代码不被其他代码窥视或检查。SGX使用的威胁模型如下：Enclaves是可信的，但Enclaves之外的任何进程都不可信（包括操作系统本身和任何虚拟化管理程序），所有这些不可信的主体都被视为有存在恶意行为的风险。Enclaves之外代码的任何代码读取受保护区域，只能得到加密后的内容。[3]由于SGX不能防止针对运行时间等侧信道信息的测量和观察，在SGX内部运行的程序本身必须能抵抗侧信道攻击。
+
+SGX被设计用于实现安全远程计算、安全网页浏览和数字版权管理（DRM）。其他应用也包括保护专有算法和加密密钥。
+
+### 4.2 Occlum
+
+2014年正式成立的蚂蚁集团服务于超10亿用户，是全球领先的金融科技企业之一。蚂蚁集团一直积极探索隐私保护机器学习领域，并发起了开源项目 Occlum。Occlum 是用于英特尔® SGX 的内存安全多进程用户态操作系统（LibOS）。
 使用 Occlum 后，机器学习工作负载等只需修改极少量（甚至无需修改）源代码即可在英特尔® SGX 上运行，以高度透明的方式保护了用户数据的机密性和完整性。用于英特尔® SGX 的 Occlum 架构如图所示。
 
  
@@ -476,7 +500,7 @@ Occlum有以下显著特征:
 * 支持多种语言开发的应用，包括但不限于c/c++，Java，Python，Go和Rust。
 * 易用性。 Occlum提供了类容器的用户友好的构建和命令行工具。 在SGX enclave内的Occlum上运行应用程序可以非常简单。
 
-BigDL PPML
+### 4.3 BigDL PPML
 在Occlum提供的安全内存运行环境上，英特尔和蚂蚁集团基于BigDL构建了一个分布式的隐私保护机器学习（Privacy Preserving Machine Learning, PPML）平台，能够保护端到端（包括数据输入、数据分析、机器学习、深度学习等各个阶段）的分布式人工智能应用。
  
 图 2.  BigDL PPML 软件栈
