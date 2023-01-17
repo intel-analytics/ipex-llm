@@ -24,7 +24,7 @@ import torch
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
                  use_jit=False, channels_last=None, channels_last_available=[],
-                 thread_num=None, from_load=False, inplace=False, jit_strict=True, 
+                 thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True):
         """
         This is the accelerated model for pytorch and ipex/jit.
