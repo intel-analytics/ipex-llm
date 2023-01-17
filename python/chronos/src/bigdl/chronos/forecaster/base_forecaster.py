@@ -1472,6 +1472,8 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = None
         # str indicates current accelerate method
         self.accelerate_method = None
+        self.cxt_manager = DummyForecasterContextManager()
+        self.context_enabled = False
         return self
 
     def get_model(self):
