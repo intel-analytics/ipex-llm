@@ -38,7 +38,7 @@ train_df = spark.read.parquet(os.path.join(args.data_dir,
 test_df = spark.read.parquet(os.path.join(args.data_dir,
                                           "test_processed_dataframe.parquet"))
 feature_cols = get_feature_cols()
-label_cols = ["label"]
+label_cols = get_label_col()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
