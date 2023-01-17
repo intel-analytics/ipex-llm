@@ -65,25 +65,16 @@ est.fit(train_df,
         epochs=5,
         batch_size=batch_size,
         feature_cols=feature_cols,
+        validation_data=test_df,
+        validation_steps=val_steps,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
         callbacks=callbacks)
 
 
-# Step 4: Distributed evaluation of the trained model
-result = est.evaluate(test_df,
-                      feature_cols=feature_cols,
-                      label_cols=label_cols,
-                      batch_size=batch_size,
-                      num_steps=val_steps)
-print('Evaluation results:')
-for r in result:
-    print("{}: {}".format(r, result[r]))
-
-
-# Step 5: Save the trained TensorFlow model
+# Step 4: Save the trained TensorFlow model
 est.save(os.path.join(args.model_dir, "NCF_resume_model"))
 
 
-# Step 6: Stop Orca Context when program finishes
+# Step 5: Stop Orca Context when program finishes
 stop_orca_context()
