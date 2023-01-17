@@ -64,7 +64,7 @@ kubectl describe pod <driver-pod-name>
 
 
 ### 1.3 Load Data from Volumes
-When you are running programs on K8s, please load data from [Volumes](https://kubernetes.io/docs/concepts/storage/volumes/) accessible to all K8s pods. We use Network File Systems (NFS) with path `/bigdl/nfsdata` in this tutorial as an example.
+When you are running programs on K8s, please load data from [Volumes](https://kubernetes.io/docs/concepts/storage/volumes/) accessible to all K8s pods. We use Network File Systems (NFS) with path `/bigdl/nfsdata` in this tutorial as an example. You are recommended to put your working directory in the Volume (NFS) as well.
 
 To load data from Volumes, please set the corresponding Volume configurations for spark using `--conf` option in Spark scripts or specifying `conf` in `init_orca_context`. Here we list the configurations for using NFS as Volume.
 
@@ -111,8 +111,6 @@ def train_data_creator(config, batch_size):
                                               shuffle=True, num_workers=0)
     return trainloader
 ```
-
-You are recommended to put your working directory in the Volume (NFS) as well.
 
 
 ---
@@ -213,12 +211,11 @@ Please download the Fashion-MNIST dataset manually on your __Develop Node__ and 
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-# Move the dataset to NFS under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion/* /bigdl/nfsdata/dataset/FashionMNIST/raw
+# Copy the dataset files to the folder FashionMNIST/raw in NFS
+cp /path/to/fashion-mnist/data/fashion/* /bigdl/nfsdata/dataset/FashionMNIST/raw
 
 # Extract FashionMNIST archives
-# May need to upgrade gzip before running the command
-gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
+gzip -d /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 
 In the given example, you can specify the argument `--remote_dir` to be the directory on NFS for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
