@@ -168,7 +168,7 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         runner = self.mmcv_runner_creator(self.config)
         self._wrap_from_ebr(runner)
         # add DistributedSampler for val data loader
-        for hook in runner._hooks:
+        for hook in self._hooks:
             if isinstance(hook, EvalHook):
                 hook.dataloader = self.with_sampler(hook.dataloader)
 
