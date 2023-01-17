@@ -74,15 +74,18 @@ val_steps = math.ceil(test_df.count() / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-est.fit(train_df,
-        epochs=2,
-        batch_size=batch_size,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        steps_per_epoch=train_steps,
-        validation_data=test_df,
-        validation_steps=2,
-        callbacks=callbacks)
+history = est.fit(train_df,
+                  epochs=2,
+                  batch_size=batch_size,
+                  feature_cols=feature_cols,
+                  label_cols=label_cols,
+                  steps_per_epoch=train_steps,
+                  validation_data=test_df,
+                  validation_steps=2,
+                  callbacks=callbacks)
+print("Train results:")
+for h in history:
+    print("{}: {}".format(h, history[h]))
 
 
 # Step 5: Distributed evaluation of the trained model

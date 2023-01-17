@@ -91,11 +91,16 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    "lr": 0.01,
                                    "model": "NeuMF-end",
                                    "sparse_feats_embed_dims": 8})
-est.fit(data=train_loader_func,
-        validation_data=test_loader_func,
-        epochs=2,
-        batch_size=10240,
-        callbacks=callbacks)
+history = est.fit(data=train_loader_func,
+                  validation_data=test_loader_func,
+                  epochs=2,
+                  batch_size=10240,
+                  callbacks=callbacks)
+print("Train results:")
+for epoch in history:
+    for e in epoch:
+        print("{}: {}".format(e, epoch[e]))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model

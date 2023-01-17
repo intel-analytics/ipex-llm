@@ -79,12 +79,17 @@ est = Estimator.from_torch(model=model_creator,
                                    "sparse_feats_input_dims": sparse_feats_input_dims,
                                    "sparse_feats_embed_dims": 8,
                                    "num_dense_feats": num_dense_feats})
-est.fit(data=train_data, epochs=2,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        batch_size=10240,
-        validation_data=test_data,
-        callbacks=callbacks)
+history = est.fit(data=train_data, epochs=2,
+                  feature_cols=feature_cols,
+                  label_cols=label_cols,
+                  batch_size=10240,
+                  validation_data=test_data,
+                  callbacks=callbacks)
+print("Train results:")
+for epoch in history:
+    for e in epoch:
+        print("{}: {}".format(e, epoch[e]))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model
