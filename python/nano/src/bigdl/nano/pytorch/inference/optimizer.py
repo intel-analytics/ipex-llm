@@ -691,6 +691,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    weights_prepack=weights_prepack)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
+                                           input_sample=input_sample,
                                            thread_num=thread_num)
                     return bf16_model
             elif accelerator == "openvino":
