@@ -16,6 +16,8 @@
 
 # Step 0: Import necessary libraries
 import math
+import pickle
+
 import tensorflow as tf
 
 from process_spark_dataframe import prepare_data
@@ -63,6 +65,7 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=args.backend,
@@ -73,6 +76,14 @@ train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
+    if args.tensorboard else []
+
+if args.scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
+    with open(os.path.join(args.model_dir, 'lr_callback.pkl'), 'wb')as f:
+        pickle.dump(lr_callback, f)
 
 train_stats = est.fit(train_df,
                       epochs=2,

@@ -20,52 +20,55 @@ import pickle
 
 import tensorflow as tf
 
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
-from bigdl.orca.learn.tf2 import Estimator
-
+from utils import *
 from process_spark_dataframe import get_feature_cols
 
+from bigdl.orca.learn.tf2 import Estimator
+
+
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode="local")
+args = parse_args("TensorFlow NCF Training with Spark DataFrame")
+init_orca(args, extra_python_lib="tf_model.py")
 spark = OrcaContext.get_spark_session()
 
+
 # Step 2: Read and process data using Spark DataFrame
-train_df = spark.read.parquet("./train_processed.parquet")
-test_df = spark.read.parquet("./test_processed.parquet")
+train_df = spark.read.parquet(os.path.join(args.data_dir,
+                                           "train_processed_dataframe.parquet"))
+test_df = spark.read.parquet(os.path.join(args.data_dir,
+                                          "test_processed_dataframe.parquet"))
 feature_cols = get_feature_cols()
 label_cols = ["label"]
 
+
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
-backend = 'spark'  # 'ray' or 'spark'
+backend = 'ray'  # 'ray' or 'spark'
 est = Estimator.from_keras(backend=backend)
-est.load('NCF_model_ray')
+est.load(os.path.join(args.model_dir, "NCF_model"))
 
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
 
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
+    if args.tensorboard else []
 
-def scheduler(epoch, lr):
-    if epoch < 1:
-        return lr
-    else:
-        return lr * 0.1
+if args.scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
 
-
-with open('lr_callback.pkl', 'rb') as f:
-    lr_callback = pickle.load(f)
-callbacks.append(lr_callback)
+    with open(os.path.join(args.model_dir, 'lr_callback.pkl'), 'rb')as f:
+        lr_callback = pickle.load(f)
+    callbacks.append(lr_callback)
 
 est.fit(train_df,
-        epochs=6,
+        epochs=5,
         batch_size=batch_size,
         feature_cols=feature_cols,
         label_cols=label_cols,
         steps_per_epoch=train_steps,
-        callbacks=callbacks,
-        # initial_epoch=3,
-        verbose=True)
+        callbacks=callbacks)
+
 
 # Step 4: Distributed evaluation of the trained model
 result = est.evaluate(test_df,
@@ -77,8 +80,10 @@ print('Evaluation results:')
 for r in result:
     print("{}: {}".format(r, result[r]))
 
+
 # Step 5: Save the trained TensorFlow model
-est.save("NCF_resume_model")
+est.save(os.path.join(args.model_dir, "NCF_resume_model"))
+
 
 # Step 6: Stop Orca Context when program finishes
 stop_orca_context()
