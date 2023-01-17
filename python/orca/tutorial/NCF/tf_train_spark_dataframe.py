@@ -16,12 +16,16 @@
 
 # Step 0: Import necessary libraries
 import math
+import pickle
+
 import tensorflow as tf
 
+from tf_model import ncf_model
 from process_spark_dataframe import prepare_data
 from tf_model import ncf_model
 from utils import *
 
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 
@@ -63,14 +67,26 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=args.backend,
                            workers_per_node=args.workers_per_node)
 
+
+def scheduler(epoch, lr):
+    if epoch < 1:
+        return lr
+    else:
+        return lr * 0.5
+
+
 batch_size = 10240
 train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
+lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+callbacks.append(lr_callback)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
@@ -92,6 +108,8 @@ result = est.evaluate(test_df,
 print("Evaluation results:")
 for r in result:
     print("{}: {}".format(r, result[r]))
+with open('lr_callback.pkl', 'wb')as f:
+    pickle.dump(lr_callback, f)
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
