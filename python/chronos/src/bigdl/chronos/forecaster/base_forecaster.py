@@ -90,8 +90,8 @@ class BasePytorchForecaster(Forecaster):
 
             self.accelerated_model = None  # accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
-            self.cxt_manager = DummyForecasterContextManager()
-            self.context_enabled = False
+        self.cxt_manager = DummyForecasterContextManager()
+        self.context_enabled = False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -966,7 +966,7 @@ class BasePytorchForecaster(Forecaster):
 
         self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
         if not self.context_enabled:
-            self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
