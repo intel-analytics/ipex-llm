@@ -111,7 +111,6 @@ class TestTF2Estimator(TestCase):
 
         assert isinstance(train_stats, dict), "fit should return a dict"
         assert isinstance(end_eval_stats, dict), "evaluate should return a dict"
-
         assert orca_estimator.get_model()
 
         dloss = end_eval_stats["validation_loss"] - start_eval_stats["validation_loss"]

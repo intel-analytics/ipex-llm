@@ -136,7 +136,6 @@ class TestTF2EstimatorTF2Backend(TestCase):
         end_eval_stats = orca_estimator.evaluate(data=test_dataset,
                                                  num_steps=test_step, batch_size=32)
 
-        
         assert isinstance(train_stats, dict), "fit should return a dict"
         assert isinstance(end_eval_stats, dict), "evaluate should return a dict"
         assert orca_estimator.get_model(sample_input={"item": np.array([[1]], dtype=np.float32)})
