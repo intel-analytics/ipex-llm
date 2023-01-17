@@ -35,8 +35,8 @@ def parse_args(description):
                         help="Whether to use TensorBoard as the train callback.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
-    parser.add_argument("--scheduler", action='store_true',
-                        help="Whether to use Scheduler as the train callback.")
+    parser.add_argument("--lr_scheduler", action='store_true',
+                        help="Whether to use learning rate scheduler for training.")
     args = parser.parse_args()
     return args
 
