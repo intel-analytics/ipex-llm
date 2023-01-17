@@ -309,7 +309,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
                                     for i in range(self.num_workers)])
         # TensorFlow automatically synchronizes results on all the workers
-        # thus only need to return the result of the first worker
+        # and thus only need to return the result of the first worker
         stats = worker_stats[0].copy()
         return stats
 
