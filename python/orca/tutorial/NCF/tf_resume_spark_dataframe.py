@@ -41,8 +41,7 @@ label_cols = get_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
-backend = 'ray'  # 'ray' or 'spark'
-est = Estimator.from_keras(backend=backend)
+est = Estimator.from_keras(backend=args.backend)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
 batch_size = 10240
