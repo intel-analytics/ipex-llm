@@ -23,10 +23,11 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
-
+import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.util import compare_version
 import tempfile
 
 batch_size = 256
@@ -198,23 +199,24 @@ class IPEXJITInference_gt_1_10:
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         # test dataloader contains x+y
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
-        model = InferenceOptimizer.quantize(model,
-                                            precision='int8',
-                                            accelerator=None,
-                                            method='ipex',
-                                            calib_data=data_loader)
+        inc_model = InferenceOptimizer.quantize(model,
+                                                precision='int8',
+                                                accelerator=None,
+                                                method='ipex',
+                                                calib_data=data_loader)
         # test context manager
-        with InferenceOptimizer.get_context(model):
-            model(self.data_sample)
+        with InferenceOptimizer.get_context(inc_model):
+            inc_model(self.data_sample)
 
-        # The save/load of ipex_int8 quanzation has konwn bug,
-        # will fix it in the future
         # test save & load
-        # with tempfile.TemporaryDirectory() as tmp_dir_name:
-        #     InferenceOptimizer.save(model, tmp_dir_name)
-        #     new_model = InferenceOptimizer.load(tmp_dir_name)
-        # with InferenceOptimizer.get_context(new_model):
-        #     new_model(self.data_sample)
+        import operator
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(inc_model, tmp_dir_name)
+                new_model = InferenceOptimizer.load(tmp_dir_name, model,
+                                                    input_sample=next(iter(data_loader))[0])
+            with InferenceOptimizer.get_context(new_model):
+                new_model(self.data_sample)
 
         # test dataloader only contains x
         from torchvision.models import resnet18

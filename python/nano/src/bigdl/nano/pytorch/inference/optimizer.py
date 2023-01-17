@@ -1089,7 +1089,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None, inplace=False, device=None):
+    def load(path, model: Optional[nn.Module] = None, input_sample=None,
+             inplace=False, device=None):
         """
         Load a model from local.
 
@@ -1098,13 +1099,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                the model with accelerator=None by InferenceOptimizer.trace/
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino"/"jit".
+        :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+               Only valid for inc ipex quantization model, otherwise will be ignored.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model, inplace=inplace, device=device)
+        return load_model(path, model, input_sample=input_sample,
+                          inplace=inplace, device=device)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,

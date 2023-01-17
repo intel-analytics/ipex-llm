@@ -20,10 +20,11 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.util import compare_version
 
 
-def load_inc_model(path, model, framework):
+def load_inc_model(path, model, framework, input_sample=None):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
-        return PytorchQuantizedModel._load(path, model)
+        # only ipex quantization needs example_inputs
+        return PytorchQuantizedModel._load(path, model, example_inputs=input_sample)
     elif framework == 'tensorflow':
         from .tensorflow.model import KerasQuantizedModel
         return KerasQuantizedModel._load(path, model)

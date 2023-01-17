@@ -46,7 +46,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def _load(path, model):
+    def _load(path, model, example_inputs=None):
         status = PytorchQuantizedModel._load_status(path)
         invalidInputError(
             model is not None,
@@ -59,7 +59,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
                                                                   operator.ge, "2.0"):
             qmodel = PyTorchModel(load(path, model.model))
         else:
-            qmodel = PyTorchModel(load(path, model))
+            qmodel = PyTorchModel(load(path, model, example_inputs=example_inputs))
         from packaging import version
         if version.parse(inc_version) < version.parse("1.11"):
             path = Path(path)
