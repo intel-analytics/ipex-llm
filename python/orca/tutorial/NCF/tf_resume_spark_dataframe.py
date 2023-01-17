@@ -21,7 +21,7 @@ import pickle
 import tensorflow as tf
 
 from utils import *
-from process_spark_dataframe import get_feature_cols, get_label_col
+from process_spark_dataframe import get_feature_cols, get_label_cols
 
 from bigdl.orca.learn.tf2 import Estimator
 
@@ -38,7 +38,7 @@ train_df = spark.read.parquet(os.path.join(args.data_dir,
 test_df = spark.read.parquet(os.path.join(args.data_dir,
                                           "test_processed_dataframe.parquet"))
 feature_cols = get_feature_cols()
-label_cols = get_label_col()
+label_cols = get_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
