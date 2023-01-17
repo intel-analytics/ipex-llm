@@ -136,6 +136,9 @@ class TestTF2EstimatorTF2Backend(TestCase):
         end_eval_stats = orca_estimator.evaluate(data=test_dataset,
                                                  num_steps=test_step, batch_size=32)
 
+        
+        assert isinstance(train_stats, dict)
+        assert isinstance(end_eval_stats, dict)
         assert orca_estimator.get_model(sample_input={"item": np.array([[1]], dtype=np.float32)})
 
         dloss = end_eval_stats["validation_loss"] - start_eval_stats["validation_loss"]

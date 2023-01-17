@@ -96,6 +96,9 @@ class TestTF2Estimator(TestCase):
 
         end_stats = estimator.evaluate(create_test_dataset, batch_size=32, num_steps=2)
         print("This is Val Results:", end_stats)
+
+        assert isinstance(train_stats, dict)
+        assert isinstance(end_stats, dict)
         assert estimator.get_model()
 
         dloss = end_stats["validation_loss"] - start_stats["validation_loss"]
