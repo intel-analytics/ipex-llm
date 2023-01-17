@@ -75,8 +75,7 @@ class MMCVRayEstimator(BaseRayEstimator):
                       max_epochs=max_epochs,
                       **kwargs)
 
-        if self.backend == 'ray' and not self.init_ddp_process:
-            self.setup_torch_ddp()
+        self.setup_torch_ddp()
 
         success, worker_stats = self._train_epochs(**params)
 

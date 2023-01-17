@@ -167,10 +167,6 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
     def setup_components(self) -> None:
         runner = self.mmcv_runner_creator(self.config)
         self._wrap_from_ebr(runner)
-        # add DistributedSampler for val data loader
-        for hook in self._hooks:
-            if isinstance(hook, EvalHook):
-                hook.dataloader = self.with_sampler(hook.dataloader)
 
     def setup_ddp_components(self) -> None:
         # MMDDP is implemented by MMCV, it has two main differences with PyTorch DDP:
