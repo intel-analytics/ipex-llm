@@ -138,8 +138,7 @@ def prepare_data(data_dir, neg_scale=4):
 
     occupation_num = df.agg({"occupation": "max"}).collect()[0]["max(occupation)"] + 1
     sparse_feats_input_dims.append(occupation_num)
-    feature_cols = get_feature_cols()
-    label_cols = get_label_cols()
+    feature_cols, label_cols = get_feature_label_cols()
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
@@ -148,12 +147,13 @@ def prepare_data(data_dir, neg_scale=4):
 
 
 def get_feature_cols():
-    feature_cols = ["user", "item"] + sparse_features + dense_features
-    return feature_cols
+    return ["user", "item"] + sparse_features + dense_features
 
 
-def get_label_cols():
-    return ['label']
+def get_feature_label_cols():
+    feature_cols = get_feature_cols()
+    return feature_cols, ['label']
+
 
 if __name__ == "__main__":
     from bigdl.orca import init_orca_context, stop_orca_context
