@@ -81,7 +81,7 @@ train_stats = est.fit(train_df,
                       label_cols=label_cols,
                       steps_per_epoch=train_steps,
                       validation_data=test_df,
-                      validation_steps=2,
+                      validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
 for t in train_stats:

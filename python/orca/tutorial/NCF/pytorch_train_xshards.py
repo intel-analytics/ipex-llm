@@ -98,8 +98,8 @@ eval_stats = est.evaluate(data=test_data,
                           label_cols=label_cols,
                           batch_size=10240)
 print("Evaluation results:")
-for e in eval_stats:
-    print("{}: {}".format(e, eval_stats[e]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction

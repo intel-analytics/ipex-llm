@@ -94,8 +94,8 @@ eval_stats = est.evaluate(test_data,
                           batch_size=batch_size,
                           num_steps=val_steps)
 print("Evaluation results:")
-for e in eval_stats:
-    print("{}: {}".format(e, eval_stats[e]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
