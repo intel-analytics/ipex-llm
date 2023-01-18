@@ -154,7 +154,10 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
         if [[ "${PERF_VAR}" == "1" ]]; then
             # experiment variable to speed up performance.
             export OPENMP=0
+            export PERF_MODE=1
             export KMP_AFFINITY=granularity=fine,compact,1,0
+        else
+            export PERF_MODE=0
         fi
 
     echo "Setting KMP_BLOCKTIME..."
@@ -263,5 +266,6 @@ echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
+echo "PERF_MODE=${PERF_MODE}"
 echo "+++++++++++++++++++++++++"
 echo "Complete."

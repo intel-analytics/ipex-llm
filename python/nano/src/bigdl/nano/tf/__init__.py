@@ -21,6 +21,11 @@ import warnings
 if platform.system() != "Darwin":
     # set tf settings
     import tensorflow as tf
+    if "PERF_MODE" in os.environ and os.environ["PERF_MODE"] == "1":
+        tf.config.threading.set_inter_op_parallelism_threads(1)
+        if "OMP_NUM_THREADS" in os.environ:
+            tf.config.threading.set_intra_op_parallelism_threads(int(os.environ["OMP_NUM_THREADS"]))
+
     tf.config.set_soft_device_placement(enabled=True)
 
 from .dispatcher import patch_tensorflow, unpatch_tensorflow
