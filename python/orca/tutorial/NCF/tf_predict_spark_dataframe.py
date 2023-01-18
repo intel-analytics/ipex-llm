@@ -29,12 +29,14 @@ spark = OrcaContext.get_spark_session()
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load("NCF_model")
-df = spark.read.parquet("./train_processed.parquet")
+df = spark.read.parquet("./test_processed_dataframe.parquet")
 feature_cols = get_feature_cols()
 
 
 # Step 3: Distributed inference of the loaded model
 predict_df = est.predict(df, batch_size=10240, feature_cols=feature_cols)
+print("Prediction results of the first 5 rows:")
+predict_df.show(5)
 
 
 # Step 4: Save the prediction results
