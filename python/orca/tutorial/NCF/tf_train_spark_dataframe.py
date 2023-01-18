@@ -84,8 +84,8 @@ train_stats = est.fit(train_df,
                       validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for t in train_stats:
-    print("{}: {}".format(t, train_stats[t]))
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 5: Distributed evaluation of the trained model
@@ -95,8 +95,8 @@ eval_stats = est.evaluate(test_df,
                           batch_size=batch_size,
                           num_steps=val_steps)
 print("Evaluation results:")
-for e in eval_stats:
-    print("{}: {}".format(e, eval_stats[e]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
