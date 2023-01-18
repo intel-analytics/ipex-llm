@@ -31,7 +31,7 @@ object MultiDataSourceExample extends Supportive {
     // get spark session and make ppml context
     val sparkSession = SparkSession.builder().getOrCreate
     val conf = sparkSession.sparkContext.getConf
-    val sc = PPMLContext.initPPMLContextMultiKMS(sparkSession)
+    val sc = PPMLContext.initPPMLMultiKMSContext(sparkSession)
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
