@@ -84,8 +84,8 @@ train_stats = est.fit(train_data,
                       validation_steps=2,
                       callbacks=callbacks)
 print("Train results:")
-for t in train_stats:
-    print("{}: {}".format(t, train_stats[t]))
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 # Step 5: Distributed evaluation of the trained model
 eval_stats = est.evaluate(test_data,
