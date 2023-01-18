@@ -153,7 +153,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
 
         if [[ "${PERF_VAR}" == "1" ]]; then
             # experiment variable to speed up performance.
-            export OPENMP=0
+            export OPENMP=1
             export KMP_AFFINITY=granularity=fine,compact,1,0
         fi
 
