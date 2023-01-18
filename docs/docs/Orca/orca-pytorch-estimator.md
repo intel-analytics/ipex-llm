@@ -42,7 +42,7 @@ Estimator.from_torch(*,
 * `optimizer`: Orca optimizer or PyTorch optimizer if `backend="bigdl"`, PyTorch optimizer creator if `backend="horovod" or "ray"`
 * `loss`: PyTorch loss if `backend="bigdl"`, PyTorch loss creator if `backend="horovod" or "ray"`
 * `metrics`: Orca validation methods for evaluate.
-* `scheduler_creator`: parameter for `spark`, `ray` and `horovod` backends. a learning rate scheduler wrapping the optimizer. By default a scheduler will increment automatically every epoch.
+* `scheduler_creator`: parameter for `spark`, `ray` and `horovod` backends. a learning rate scheduler wrapping the optimizer. By default a scheduler will take effect automatically every epoch.
 * `training_operator_cls`: parameter for `horovod` and `ray` backends. Custom training operator class that subclasses the TrainingOperator class. This class will be copied onto all remote workers and used to specify custom training and validation operations. Defaults to TrainingOperator.
 * `initialization_hook`: parameter for `horovod` and `ray` backends.
 * `config`: parameter for `horovod` and `ray` backends. Config dict, CfgNode or any class that plays a role of configuration to create model, optimizer loss and data.

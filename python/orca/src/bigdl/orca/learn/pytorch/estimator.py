@@ -73,7 +73,7 @@ class Estimator(object):
                Default: 1.
         :param scheduler_creator: A scheduler creator function that has two parameters "optimizer"
                and "config" and returns a PyTorch learning rate scheduler wrapping the optimizer.
-               By default a scheduler will increment automatically every epoch.
+               By default a scheduler will take effect automatically every epoch.
                Default: None if no scheduler is needed.
         :param use_tqdm: Whether to use tqdm to monitor the training progress.
                Default: False.
