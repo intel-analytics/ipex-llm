@@ -35,7 +35,7 @@ init_orca(args, extra_python_lib="pytorch_model.py")
 
 # Step 2: Read and process data using Spark DataFrame
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, neg_scale=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, neg_scale=4)
 
 
 # Step 3: Define the model, optimizer and loss
