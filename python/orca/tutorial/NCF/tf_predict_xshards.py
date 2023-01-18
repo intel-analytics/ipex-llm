@@ -29,12 +29,14 @@ init_orca_context(cluster_mode="local")
 # Step 2: Load the model and data
 est = Estimator.from_keras()
 est.load("NCF_model")
-data = XShards.load_pickle("./train_processed_xshards")
+data = XShards.load_pickle("./test_processed_xshards")
 feature_cols = get_feature_cols()
 
 
 # Step 3: Distributed inference of the loaded model
 predictions = est.predict(data, batch_size=10240, feature_cols=feature_cols)
+print("Prediction results of the first 5 rows:")
+print(predictions.head(n=5))
 
 
 # Step 4: Save the prediction results
