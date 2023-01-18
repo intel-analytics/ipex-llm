@@ -29,7 +29,8 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         if v is not None:
             not_none_kwargs[k] = v
 
-    q_model = _quantize(model=model, dataloader=dataloader, metric=metric, **not_none_kwargs)
+    q_model = _quantize(model=model, dataloader=dataloader, eval_func=kwargs['eval_func'],
+                        metric=metric, **not_none_kwargs)
 
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantized_model import PytorchQuantizedModel
@@ -81,9 +82,9 @@ def _quantize(
     conf=None,
     approach='static',
     tuning_strategy='bayesian',
-    accuracy_criterion={'relative': 0.99, 'higher_is_better': True},
+    accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
     timeout=0,
-    max_trials=1,
+    max_trials=5,
     inputs=[],
     outputs=[],
     **kwargs

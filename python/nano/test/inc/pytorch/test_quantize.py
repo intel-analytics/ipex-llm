@@ -257,24 +257,45 @@ class TestTrainer(TestCase):
                 pred = logits.argmax(dim=1)
                 acc += torch.eq(pred, label).sum().float().item()
             return acc
-
+        fp32_baseline = eval_func(pl_model)
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
                                              eval_func=eval_func,
-                                             max_trials=5,
+                                             accuracy_criterion={'relative': 0.2,
+                                                                 'higher_is_better': True},
+                                             timeout=0,
+                                             max_trials=10,
                                              thread_num=8)
         assert qmodel
 
         with InferenceOptimizer.get_context(qmodel):
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
-        
+        int8_value = eval_func(qmodel)
+        assert (fp32_baseline - int8_value)/fp32_baseline <= 0.2
+
         # 2. test eval_func with specified accuracy_criterion
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
                                              eval_func=eval_func,
-                                             max_trials=10,
                                              accuracy_criterion={'absolute': 20,
-                                                                'higher_is_better': True},
+                                                                 'higher_is_better': True},
+                                             timeout=0,
+                                             max_trials=10,
                                              thread_num=8)
         assert qmodel
+        int8_value = eval_func(qmodel)
+        assert int8_value - fp32_baseline <= 20
+        
+        # 3. test metric
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             metric=torchmetrics.F1Score('multiclass', num_classes=10),
+                                             accuracy_criterion={'absolute': 20,
+                                                                 'higher_is_better': True},
+                                             timeout=0,
+                                             max_trials=10,
+                                             thread_num=8)
+        assert qmodel
+        int8_value = eval_func(qmodel)
+        assert int8_value - fp32_baseline <= 20
