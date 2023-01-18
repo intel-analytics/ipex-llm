@@ -223,11 +223,11 @@ class Pytorch1_11:
         model = resnet18(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
         # test jit + ipex
-        model = InferenceOptimizer.trace(model, precision='bf16',
-                                         accelerator="jit",
-                                         use_ipex=True,
-                                         input_sample=x,
-                                         weights_prepack=False)
+        model = InferenceOptimizer.quantize(model, precision='bf16',
+                                            accelerator="jit",
+                                            use_ipex=True,
+                                            input_sample=x,
+                                            weights_prepack=False)
         with InferenceOptimizer.get_context(model):
             model(x)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -279,6 +279,25 @@ class Pytorch1_11:
             InferenceOptimizer.save(bf16_ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
+
+    def test_ipex_jit_inference_onednn(self):
+        model = resnet18(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        # test jit + ipex
+        model = InferenceOptimizer.quantize(model, precision='bf16',
+                                            accelerator="jit",
+                                            use_ipex=True,
+                                            input_sample=x,
+                                            enable_onednn=True)
+        with InferenceOptimizer.get_context(model):
+            model(x)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(x)
+            assert new_model.enable_onednn is True
+
 
 TORCH_VERSION_CLS = Pytorch1_11
 

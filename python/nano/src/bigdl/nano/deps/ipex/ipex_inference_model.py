@@ -24,8 +24,8 @@ import torch
 class PytorchIPEXJITModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, input_sample=None, use_ipex=False, dtype=None,
                  use_jit=False, channels_last=None, channels_last_available=[],
-                 thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
+                 thread_num=None, from_load=False, inplace=False, jit_strict=True,
+                 jit_method=None, weights_prepack=None, enable_onednn=True):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -56,6 +56,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                to avoid oneDNN weights reorder. The default value is None. Explicitly setting
                this knob overwrites the configuration set by level knob. Only valid when
                ``use_ipex=True``, otherwise will be ignored.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
+               API, which provides a flexible API for aggressive fusion. Default to
+               ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
         """
         super().__init__(model)
         if from_load:
@@ -68,9 +71,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             if self.channels_last:
                 self.model = self.model.to(memory_format=torch.channels_last)
                 self.channels_last_available = channels_last_available
-            self._nano_context_manager = generate_context_manager(accelerator=None,
+            self.enable_onednn = enable_onednn
+            _accelerator = "jit" if use_jit is True else None
+            self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                                   precision="fp32",
-                                                                  thread_num=thread_num)
+                                                                  thread_num=thread_num,
+                                                                  enable_onednn=enable_onednn)
             return
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
@@ -127,10 +133,13 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                         except Exception:
                             self.model = torch.jit.script(self.model)
                     self.model = torch.jit.freeze(self.model)
-        self._nano_context_manager = generate_context_manager(accelerator=None,
+        _accelerator = "jit" if use_jit is True else None
+        self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="fp32",
-                                                              thread_num=thread_num)
+                                                              thread_num=thread_num,
+                                                              enable_onednn=enable_onednn)
         self.thread_num = thread_num
+        self.enable_onednn = enable_onednn
 
     @property
     def forward_args(self):
@@ -178,8 +187,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
-                       'jit_method': self.jit_method,
-                       'weights_prepack': self.weights_prepack})
+                       "jit_method": self.jit_method,
+                       "weights_prepack": self.weights_prepack,
+                       "enable_onednn": self.enable_onednn})
         return status
 
     @staticmethod
@@ -212,7 +222,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    inplace=inplace,
                                    jit_strict=status.get('jit_strict', True),
                                    jit_method=status.get('jit_method', None),
-                                   weights_prepack=status.get('weights_prepack', None))
+                                   weights_prepack=status.get('weights_prepack', None),
+                                   enable_onednn=status.get('enable_onednn', True))
 
     def _save_model(self, path):
         if self.use_jit:
