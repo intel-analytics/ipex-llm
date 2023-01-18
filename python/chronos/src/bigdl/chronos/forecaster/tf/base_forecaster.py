@@ -42,6 +42,8 @@ class BaseTF2Forecaster(Forecaster):
             self.internal = self.model_creator({**self.model_config})
 
         self.fitted = False
+        self.accelerated_model = None  # accelerated model obtained from various accelerators
+        self.accelerate_method = None  # str indicates current accelerate method
 
     def fit(self, data, epochs=1, batch_size=32):
         """
@@ -109,8 +111,139 @@ class BaseTF2Forecaster(Forecaster):
                 self.internal.fit(data, epochs=epochs)
         self.fitted = True
 
-    def predict(self, data, batch_size=32):
+    def quantize(self, input_data=None,
+                 target_data=None,
+                 input_spec=None,
+                 metric=None,
+                 conf=None,
+                 framework='tensorflow',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 relative_drop=None,
+                 absolute_drop=None,
+                 timeout=0,
+                 max_trials=1,
+                 sess_options=None,
+                 thread_num=None):
         """
+        Quantize the forecaster.
+
+        :param input_data: Input data which is used for training. Support following formats:
+
+               | 1. a Numpy array (or array-like), or a list of arrays (in case the model
+               | has multiple inputs).
+               |
+               | 2. a TensorFlow tensor, or a list of tensors (in case the model has
+               | multiple inputs).
+               |
+               | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
+               |
+               | Input data will be used as calibration dataset for static quantization,
+               | as well as be used for generating input_sample to calculate latency.
+               | To avoid data leak during calibration, please use training dataset.
+
+        :param target_data: Target data. It could be either Numpy array(s) or TensorFlow tensor(s)
+               while the length should be consistent with `input_data`.
+               If `input_data` is dataset, `target_data` will be ignored.
+        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+                           shape/dtype of the input.
+        :param metric: A str represent the metrics for tunning the quality of
+               quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
+        :param conf: A path to conf yaml file for quantization. Default to None,
+               using default config.
+        :param framework: A str represent the framework for quantization. You may choose from
+               "tensorflow", "onnxrt_integerops", "onnxrt_qlinearops", "openvino".
+               Default: 'tensorflow'.
+        :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+               Only 'static' approach is supported now.
+        :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
+        :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
+        :param absolute_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 5 means that we can only accept metrics smaller than 5.
+        :param timeout: Tuning timeout (seconds). Default to 0, which means early stop.
+               Combine with max_trials field to decide when to exit.
+        :param max_trials: Max tune times. Default to 1. Combine with timeout field to
+               decide when to exit. "timeout=0, max_trials=1" means it will try quantization
+               only once and return satisfying best model.
+        :param sess_options: The session option for onnxruntime, only valid when
+               framework contains 'onnxrt_integerops' or 'onnxrt_qlinearops',
+               otherwise will be ignored.
+        :param thread_num: int, the num of thread limit, only valid when framework contains
+               'onnxrt_integerops' or 'onnxrt_qlinearops' or 'openvino'. The value is set to None
+               by default where no limit is set.
+        """
+        # check model support for quantization
+        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.tf.keras import InferenceOptimizer
+        if not self.quantize_available:
+            invalidInputError(False,
+                              "This model has not supported quantization.")
+
+        # Distributed forecaster does not support quantization
+        if self.distributed:
+            invalidInputError(False,
+                              "quantization has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+
+        try:
+            metric = _str2metric(metric)
+        except Exception:
+            invalidInputError(False, "Unable to recognize the metric string you passed in.")
+
+        # init acc criterion
+        accuracy_criterion = None
+        if relative_drop and absolute_drop:
+            invalidInputError(False, "Please unset either `relative_drop` or `absolute_drop`.")
+        if relative_drop:
+            accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
+        if absolute_drop:
+            accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
+
+        # quantize
+        if '_' in framework:
+            accelerator, method = framework.split('_')
+        else:
+            accelerator = framework
+        if accelerator == 'tensorflow':
+            accelerator = None
+            method = None
+        elif accelerator == 'openvino':
+            method = None
+        else:
+            accelerator = 'onnxruntime'
+            method = method[:-3]
+        q_model = InferenceOptimizer.quantize(self.internal,
+                                              x=input_data,
+                                              y=target_data,
+                                              input_spec=input_spec,
+                                              precision='int8',
+                                              accelerator=accelerator,
+                                              method=method,
+                                              metric=metric,
+                                              conf=conf,
+                                              approach=approach,
+                                              tuning_strategy=tuning_strategy,
+                                              accuracy_criterion=accuracy_criterion,
+                                              timeout=timeout,
+                                              max_trials=max_trials,
+                                              onnxruntime_session_options=sess_options,
+                                              thread_num=thread_num)
+        if accelerator == 'onnxruntime':
+            self.accelerated_model = q_model
+            self.accelerate_method = "onnxruntime_int8"
+        if accelerator == 'openvino':
+            self.accelerated_model = q_model
+            self.accelerate_method = "openvino_int8"
+        if accelerator is None:
+            self.accelerated_model = q_model
+            self.accelerate_method = "tensorflow_int8"
+
+    def predict(self, data, batch_size=32, quantize=False):
+        """
+        Predict using a trained forecaster.
+
         :params data: The data support following formats:
 
                 | 1. A numpy ndarray x:
@@ -135,6 +268,7 @@ class BaseTF2Forecaster(Forecaster):
                 result but will affect resources cost(e.g. memory and time).
                 The value default to 32. If set to None,
                 the model will be used directly for inference.
+        :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -163,12 +297,24 @@ class BaseTF2Forecaster(Forecaster):
             if isinstance(data, TSDataset):
                 data = data.to_tf_dataset(batch_size, batch_size)
             if batch_size or isinstance(data, tf.data.Dataset):
-                yhat = self.internal.predict(data)
+                if quantize:
+                    invalidInputError(self.accelerate_method == "tensorflow_int8",
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                    yhat = self.accelerated_model.predict(data)
+                else:
+                    yhat = self.internal.predict(data)
             else:
-                yhat = self.internal(data, training=False).numpy()
+                if quantize:
+                    invalidInputError(self.accelerate_method == "tensorflow_int8",
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                    yhat = self.accelerated_model(data, training=False).numpy()
+                else:
+                    yhat = self.internal(data, training=False).numpy()
         return yhat
 
-    def evaluate(self, data, batch_size=32, multioutput="raw_values"):
+    def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Please note that evaluate result is calculated by scaled y and yhat. If you scaled
         your data (e.g. use .scale() on the TSDataset) please follow the following code
@@ -207,6 +353,7 @@ class BaseTF2Forecaster(Forecaster):
                 String in ['raw_values', 'uniform_average']. The value defaults to
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
+        :param quantize: if use the quantized model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -233,7 +380,13 @@ class BaseTF2Forecaster(Forecaster):
             else:
                 input_data = data
                 target = np.asarray(tuple(map(lambda x: x[1], data.as_numpy_iterator())))
-            yhat = self.internal.predict(input_data, batch_size=batch_size)
+            if quantize:
+                invalidInputError(self.accelerate_method == "tensorflow_int8",
+                                  "Can't find the quantized model, "
+                                  "please call .quantize() method first")
+                yhat = self.accelerated_model.predict(input_data, batch_size=batch_size)
+            else:
+                yhat = self.internal.predict(input_data, batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, y_true=target, y_pred=yhat, aggregate=aggregate)
@@ -351,3 +504,17 @@ class BaseTF2Forecaster(Forecaster):
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,
                    **kwargs)
+
+def _str2metric(metric):
+    # map metric str to function
+    if isinstance(metric, str):
+        metric_name = metric
+        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
+        metric_func = REGRESSION_MAP[metric_name]
+
+        def metric(y_label, y_predict):
+            y_label = y_label.numpy()
+            y_predict = y_predict.numpy()
+            return metric_func(y_label, y_predict)
+        metric.__name__ = metric_name
+    return metric
