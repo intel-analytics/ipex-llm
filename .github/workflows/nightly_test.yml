@@ -2,7 +2,7 @@ name: Nightly Test
 
 on:
 
-  #pull_request:
+  pull_request:
     #branchs: [ main ]
 
   schedule:
@@ -960,7 +960,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Colab-Python-Py37-Pytorch:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Colab-Python-Py37-Pytorch' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
