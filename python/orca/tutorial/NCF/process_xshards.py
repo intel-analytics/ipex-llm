@@ -88,8 +88,8 @@ def prepare_data(dataset_dir, num_ng=4):
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
     item_set = set(items["item"].unique())
-    user_num = max(user_set) + 1
-    item_num = max(item_set) + 1
+    user_num = int(max(user_set) + 1)
+    item_num = int(max(item_set) + 1)
 
     print("Processing features...")
 
@@ -112,7 +112,7 @@ def prepare_data(dataset_dir, num_ng=4):
     for col in sparse_features:
         data = users if col in users.get_schema()["columns"] else items
         sparse_feat_set = set(data[col].unique())
-        sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
+        sparse_feats_input_dims.append(int(max(sparse_feat_set) + 1))
 
     # scale dense features
     def rename(df, col):
