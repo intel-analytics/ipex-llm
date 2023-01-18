@@ -15,6 +15,7 @@
 #
 
 # Step 0: Import necessary libraries
+import json
 import math
 import tensorflow as tf
 
@@ -101,6 +102,9 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
+with open(os.path.join(args.model_dir, "config.json"), "w") as f:
+    json.dump(config, f)
+
 train_df.write.parquet(os.path.join(args.data_dir,
                                     "train_processed_dataframe.parquet"), mode="overwrite")
 test_df.write.parquet(os.path.join(args.data_dir,
