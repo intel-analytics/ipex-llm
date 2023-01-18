@@ -1,6 +1,6 @@
 ARG JDK_VERSION=8u192
 ARG SPARK_VERSION=3.1.3
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0
 ARG http_proxy
 ARG https_proxy
 
@@ -104,7 +104,7 @@ RUN ./download-bigdl.sh && \
 
 ADD ./entrypoint.sh /opt/entrypoint.sh
 RUN chmod 777 /opt/entrypoint.sh
-# ADD ./bigdl-ppml-spark_3.1.3-2.2.0-SNAPSHOT-jar-with-dependencies.jar /opt/bigdl-${BIGDL_VERSION}/jars
+# ADD ./bigdl-ppml-spark_3.1.3-2.2.0-jar-with-dependencies.jar /opt/bigdl-${BIGDL_VERSION}/jars
 # RUN rm /opt/bigdl-${BIGDL_VERSION}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

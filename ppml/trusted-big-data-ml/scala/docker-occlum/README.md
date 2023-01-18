@@ -19,7 +19,7 @@ You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://g
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0
 ```
 
 Also, you can build the image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.

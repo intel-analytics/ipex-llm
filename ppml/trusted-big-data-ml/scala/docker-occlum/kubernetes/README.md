@@ -6,12 +6,12 @@ The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'sp
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0
 ```
 
 If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
