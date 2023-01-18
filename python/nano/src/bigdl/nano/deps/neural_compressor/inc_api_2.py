@@ -76,6 +76,7 @@ def _quantize(
     model,
     metric,
     dataloader,
+    eval_func,
     framework,
     conf=None,
     approach='static',
@@ -144,8 +145,7 @@ def _quantize(
         accuracy_criterion = AccuracyCriterion(
             higher_is_better=accuracy_criterion.get('higher_is_better', True),
             criterion=criterion,
-            # we calculate `tolerable_loss` by `1 - target_accuracy`
-            tolerable_loss=1.0 - accuracy_criterion[criterion]
+            tolerable_loss=float(accuracy_criterion[criterion])
         )
 
     tuning_criterion = TuningCriterion(
@@ -163,8 +163,7 @@ def _quantize(
         outputs=outputs,
         backend=backend
     )
-    # if metric is None and eval_dataloader is None:
-    if metric is None:
+    if metric is None and eval_func is None:
         config.performance_only = True
     config = Config(quantization=config, benchmark=None, pruning=None,
                     distillation=None, nas=None)
@@ -177,6 +176,8 @@ def _quantize(
         model=model,
         conf=q_conf,
         calib_dataloader=dataloader,
-        # todo: add eval
+        eval_func=eval_func,
+        eval_metric=metric,
+        eval_dataloader=dataloader  # use same dataloader as 1.0 API
     )
     return q_model

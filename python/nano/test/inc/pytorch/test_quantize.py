@@ -139,7 +139,6 @@ class TestTrainer(TestCase):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
         x = next(train_loader_iter)[0]
-        trainer = Trainer(max_epochs=1)
 
         qmodel = InferenceOptimizer.quantize(self.user_defined_pl_model,
                                              calib_data=self.train_loader)
@@ -179,7 +178,6 @@ class TestTrainer(TestCase):
     def test_quantize_inc_ptq_compiled_context_manager(self):
         # Test if a Lightning Module compiled by nano works
         train_loader_iter = iter(self.train_loader)
-        trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         x = next(train_loader_iter)[0]
 
@@ -244,3 +242,39 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
         InferenceOptimizer.quantize(pl_model,
                                     calib_data=self.train_loader)
+
+    def test_quantize_tuning(self):
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.fit(pl_model, self.train_loader)
+        train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
+        # 1. test eval_func with default accuracy_criterion
+        def eval_func(model):
+            acc = 0
+            for sample, label in self.train_loader:
+                logits = model(sample)
+                pred = logits.argmax(dim=1)
+                acc += torch.eq(pred, label).sum().float().item()
+            return acc
+
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             eval_func=eval_func,
+                                             max_trials=5,
+                                             thread_num=8)
+        assert qmodel
+
+        with InferenceOptimizer.get_context(qmodel):
+            out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+        
+        # 2. test eval_func with specified accuracy_criterion
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             eval_func=eval_func,
+                                             max_trials=10,
+                                             accuracy_criterion={'absolute': 20,
+                                                                'higher_is_better': True},
+                                             thread_num=8)
+        assert qmodel

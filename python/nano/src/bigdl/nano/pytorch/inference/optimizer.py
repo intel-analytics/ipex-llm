@@ -494,6 +494,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  use_ipex: bool = False,
                  calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
                  calib_dataloader: Union[DataLoader] = None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -547,6 +548,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   ``calib_dataloader`` will be deprecated in future release.
 
                   Please use ``calib_data`` instead.
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
@@ -783,6 +789,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 `quantized_model.model`.
                 """
                 inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                                          "eval_func": eval_func,
                                           "metric": metric, "thread_num": thread_num,
                                           "framework": framework, "conf": conf,
                                           "approach": approach,
