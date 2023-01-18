@@ -86,21 +86,27 @@ est = Estimator.from_torch(model=model_creator,
                            backend=backend,
                            use_tqdm=True,
                            config=config)
-est.fit(data=train_data, epochs=2,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        batch_size=10240,
-        callbacks=callbacks)
+train_stats = est.fit(data=train_data, epochs=2,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=10240,
+                      validation_data=test_data,
+                      callbacks=callbacks)
+print("Train results:")
+for epoch_stats in train_stats:
+    for k, v in epoch_stats.items():
+        print("{}: {}".format(k, v))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_data,
-                      feature_cols=feature_cols,
-                      label_cols=label_cols,
-                      batch_size=10240)
+eval_stats = est.evaluate(data=test_data,
+                          feature_cols=feature_cols,
+                          label_cols=label_cols,
+                          batch_size=10240)
 print("Evaluation results:")
-for r in result:
-    print("{}: {}".format(r, result[r]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
