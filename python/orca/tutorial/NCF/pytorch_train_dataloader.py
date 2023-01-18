@@ -97,9 +97,9 @@ train_stats = est.fit(data=train_loader_func,
                       batch_size=10240,
                       callbacks=callbacks)
 print("Train results:")
-for epoch in train_stats:
-    for e in epoch:
-        print("{}: {}".format(e, epoch[e]))
+for epoch_stats in train_stats:
+    for k, v in epoch_stats:
+        print("{}: {}".format(k, v))
     print()
 
 

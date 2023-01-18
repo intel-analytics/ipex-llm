@@ -86,9 +86,9 @@ train_stats = est.fit(data=train_data, epochs=2,
                       validation_data=test_data,
                       callbacks=callbacks)
 print("Train results:")
-for epoch in train_stats:
-    for e in epoch:
-        print("{}: {}".format(e, epoch[e]))
+for epoch_stats in train_stats:
+    for k, v in epoch_stats:
+        print("{}: {}".format(k, v))
     print()
 
 
