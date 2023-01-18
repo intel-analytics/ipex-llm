@@ -1,8 +1,8 @@
 name: BigDL Release Docker
 
 on:
-  pull_request:
-    branchs: [ main ]
+  #pull_request:
+    #branchs: [ main ]
   
   workflow_dispatch:
     inputs:
