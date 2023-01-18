@@ -51,7 +51,7 @@ def optimizer_creator(model, config):
 
 def scheduler_creator(optimizer, config):
     """Returns a learning rate scheduler wrapping the optimizer.
-    By default a scheduler will increment automatically every epoch,
+    By default a scheduler will take effect automatically every epoch,
     and you can update the scheduler at the right time through the hooks.
     If using a scheduler for validation loss, be sure to call
     ``trainer.update_scheduler(validation_loss)``.
