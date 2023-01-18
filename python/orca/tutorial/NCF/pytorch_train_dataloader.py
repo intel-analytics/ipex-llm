@@ -91,23 +91,23 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    "lr": 0.01,
                                    "model": "NeuMF-end",
                                    "sparse_feats_embed_dims": 8})
-history = est.fit(data=train_loader_func,
-                  validation_data=test_loader_func,
-                  epochs=2,
-                  batch_size=10240,
-                  callbacks=callbacks)
+train_stats = est.fit(data=train_loader_func,
+                      validation_data=test_loader_func,
+                      epochs=2,
+                      batch_size=10240,
+                      callbacks=callbacks)
 print("Train results:")
-for epoch in history:
+for epoch in train_stats:
     for e in epoch:
         print("{}: {}".format(e, epoch[e]))
     print()
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=10240)
+eval_stats = est.evaluate(data=test_loader_func, batch_size=10240)
 print("Evaluation results:")
-for r in result:
-    print("{}: {}".format(r, result[r]))
+for e in eval_stats:
+    print("{}: {}".format(e, eval_stats[e]))
 
 
 # Step 6: Save the trained PyTorch model

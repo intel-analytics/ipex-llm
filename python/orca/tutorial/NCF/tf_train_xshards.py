@@ -74,28 +74,28 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-history = est.fit(train_data,
-                  epochs=2,
-                  batch_size=batch_size,
-                  feature_cols=feature_cols,
-                  label_cols=label_cols,
-                  steps_per_epoch=train_steps,
-                  validation_data=test_data,
-                  validation_steps=2,
-                  callbacks=callbacks)
-print("Train results:")
-for h in history:
-    print("{}: {}".format(h, history[h]))
-
-# Step 5: Distributed evaluation of the trained model
-result = est.evaluate(test_data,
+train_stats = est.fit(train_data,
+                      epochs=2,
+                      batch_size=batch_size,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=batch_size,
-                      num_steps=val_steps)
+                      steps_per_epoch=train_steps,
+                      validation_data=test_data,
+                      validation_steps=2,
+                      callbacks=callbacks)
+print("Train results:")
+for t in train_stats:
+    print("{}: {}".format(t, train_stats[t]))
+
+# Step 5: Distributed evaluation of the trained model
+eval_stats = est.evaluate(test_data,
+                          feature_cols=feature_cols,
+                          label_cols=label_cols,
+                          batch_size=batch_size,
+                          num_steps=val_steps)
 print("Evaluation results:")
-for r in result:
-    print("{}: {}".format(r, result[r]))
+for e in eval_stats:
+    print("{}: {}".format(e, eval_stats[e]))
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
