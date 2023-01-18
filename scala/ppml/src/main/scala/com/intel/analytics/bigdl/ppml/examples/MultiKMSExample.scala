@@ -19,93 +19,80 @@ package com.intel.analytics.bigdl.ppml.examples
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
-import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive, DataSource, DataSink}
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, PLAIN_TEXT, AES_CBC_PKCS5PADDING}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.slf4j.LoggerFactory
 
-object MultiKMSExample extends Supportive {
+object MultiDataSourceExample extends Supportive {
   def main(args: Array[String]): Unit = {
     // get spark session and make ppml context
     val sparkSession = SparkSession.builder().getOrCreate
     val conf = sparkSession.sparkContext.getConf
     val sc = PPMLContext.initPPMLContextMultiKMS(sparkSession)
 
-    //
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
-      val simpleKMSDf = timing("1/3 loadInputs") {
-        sc.read(cryptoMode = CryptoMode.parse(
-          conf.get("spark.bigdl.kms.datasource1.inputEncryptMode")))
+      val amyDf = timing("1/3 read amy data source") {
+        val amyDataSource = DataSource("simpleKMS",
+                                       "./amyPrimaryKeyPath",
+                                       "./amyDataKeyPath",
+                                       AES_CBC_PKCS5PADDING)
+        sc.read(amyDataSource)
           .option("header", "true")
-          .csv(conf.get("spark.bigdl.kms.datasource1.inputpath"))
+          .csv("./amyDataSourcePath")
       }
 
-      val ehsmDf = timing("1/3 read data source 2") {
-        sc.read(cryptoMode = CryptoMode.parse(
-          conf.get("spark.bigdl.kms.datasource2.inputEncryptMode")))
+      val bobDf = timing("1/3 read bob data source") {
+        val bobDataSource = DataSource("ehsmKMS",
+                                       "./bobPrimaryKeyPath",
+                                       "./bobDataKeyPath",
+                                       AES_CBC_PKCS5PADDING)
+        sc.read(bobDataSource)
           .option("header", "true")
-          .csv(conf.get("spark.bigdl.kms.datasource2.inputpath"))
+          .csv("./bobDataSourcePath")
       }
 
 
-      val simpleKMSDevelopers = timing("2/3 doSQLOperations") {
+      val amyDevelopers = timing("2/3 doSQLOperations") {
         // Select only the "name" column
-        simpleKMSDf.select("name").count()
+        amyDf.select("name").count()
 
         // Select everybody, but increment the age by 1
-        simpleKMSDf.select(simpleKMSDf("name"), simpleKMSDf("age") + 1).show()
+        amyDf.select(amyDf("name"), amyDf("age") + 1).show()
 
-      // Select Developer and records count
-        val simpleKMSDevelopers = simpleKMSDf
-          .filter(simpleKMSDf("job") === "Developer" and simpleKMSDf("age").between(20, 40))
+        // Select Developer and records count
+        val amyDevelopers = amyDf.filter(
+          amyDf("job") === "Developer" and amyDf("age").between(20, 40))
           .toDF()
-        simpleKMSDevelopers.count()
+        amyDevelopers.count()
 
-        simpleKMSDevelopers
+        amyDevelopers
       }
 
-      val ehsmDevelopers = timing("2/3 datasource2 do SQL") {
-        ehsmDf.select("name").count
-        ehsmDf.select(ehsmDf("name"), ehsmDf("age") ).show()
-        val ehsmDevelopers = ehsmDf.filter(ehsmDf("job") === "Developer" and ehsmDf("age")
+      val bobDevelopers = timing("2/3 datasource2 do SQL") {
+        bobDf.select("name").count
+        bobDf.select(bobDf("name"), bobDf("age") ).show()
+        val bobDevelopers = bobDf.filter(bobDf("job") === "Developer" and bobDf("age")
           .between(20, 40)).toDF()
-        ehsmDevelopers.count()
-        ehsmDevelopers
+        bobDevelopers.count()
+        bobDevelopers
       }
 
 
       timing("3/3 encryptAndSaveOutputs") {
         // save data frame using spark kms context
-        Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource1.outputEncryptMode"),
-          "output encryput mode not found")
-
         // write encrypted data
-        var simpleKMSOutputPath : String = ""
-        if (conf.contains("spark.bigdl.kms.datasource1.outputpath")) {
-          simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.outputpath")
-        } else {
-          simpleKMSOutputPath = conf.get("spark.bigdl.kms.datasource1.inputpath") + ".output"
-        }
-        sc.write(simpleKMSDevelopers, cryptoMode = CryptoMode.parse(
-          conf.get("spark.bigdl.kms.datasource1.outputEncryptMode")))
+        val dataSink = DataSink("ehsmKMS",
+                                "./bobPrimaryKeyPath",
+                                "./bobDataKeyPath",
+                                AES_CBC_PKCS5PADDING)
+        sc.write(bobDevelopers, dataSink)
           .mode("overwrite")
           .option("header", true)
-          .csv(simpleKMSOutputPath, conf.get("spark.bigdl.kms.datasource1.data"))
-
-        var ehsmOutputPath: String = ""
-        if (conf.contains("spark.bigdl.kms.datasource2.outputpath")) {
-          ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.outputpath")
-        } else {
-          ehsmOutputPath = conf.get("spark.bigdl.kms.datasource2.inputpath") + ".output"
-        }
-        sc.write(ehsmDevelopers, cryptoMode = CryptoMode.parse(
-          conf.get("spark.bigdl.kms.datasource2.outputEncryptMode")))
-          .mode("overwrite")
-          .option("header", true)
-          .csv(ehsmOutputPath, conf.get("spark.bigdl.kms.datasource2.data"))
+          .csv("./outputPath")
       }
     }
   }
