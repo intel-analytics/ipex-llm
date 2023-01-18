@@ -170,6 +170,7 @@ COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+ADD ./scripts /ppml/scripts
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
