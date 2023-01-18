@@ -385,7 +385,8 @@ class SparkRunner:
         if history is None:
             stats = {}
         else:
-            stats = {k: v[-1] for k, v in history.history.items()}
+            stats = history.history
+            stats.update(history.params)
 
         if self.model_dir is not None:
             model_state = {

@@ -409,8 +409,8 @@ class TFRunner:
         if history is None:
             stats = {}
         else:
-            stats = history.params
-            stats.update(history.history)
+            stats = history.history
+            stats.update(history.params)
 
         self.epoch += epochs
         return stats
