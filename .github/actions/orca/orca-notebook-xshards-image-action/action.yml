@@ -30,6 +30,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} IPython
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
         pip list
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards-images.sh
