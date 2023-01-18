@@ -163,7 +163,7 @@ RUN cd /opt && bash ./install_python_with_conda.sh
 
 FROM occlum/occlum:0.29.3-ubuntu20.04 as ppml
 
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.2.0
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ENV HADOOP_VERSION=${HADOOP_VERSION}

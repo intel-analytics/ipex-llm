@@ -2,7 +2,7 @@
 export HTTP_PROXY=your_http_proxy
 export HTTPS_PROXY=your_https_proxy
 export IMAGE_NAME=intelanalytics/bigdl-attestation-service
-export IMAGE_VERSION=2.2.0-SNAPSHOT
+export IMAGE_VERSION=2.2.0
 export JDK_URL=your_jdk_url
 
 sudo docker build \

@@ -9,4 +9,4 @@ sudo docker build \
     --build-arg https_proxy=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=$JDK_URL \
-    -t intelanalytics/bigdl-kms:2.2.0-SNAPSHOT -f ./Dockerfile .
+    -t intelanalytics/bigdl-kms:2.2.0 -f ./Dockerfile .

@@ -14,8 +14,8 @@ bash bigdl-ppml-submit.sh \
         --executor-memory 10g \
         --executor-cores 8\
         --conf spark.cores.max=72 \
-        --conf spark.kubernetes.driver.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g:2.2.0-SNAPSHOT \
-        --conf spark.kubernetes.executor.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g:2.2.0-SNAPSHOT \
+        --conf spark.kubernetes.driver.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-64g:2.2.0 \
+        --conf spark.kubernetes.executor.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference-32g:2.2.0 \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --class "TPCDSBenchmark" \
         --conf spark.kubernetes.file.upload.path=file:///tmp \

@@ -90,10 +90,10 @@ BigDL PPML use EHSM as the reference type of KMS & AS, follow the document to de
 
 Pull Docker image from Dockerhub
     ```
-    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0
     ```
 
-**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
+**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
 ### (Optional) K8s Monitioring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md
