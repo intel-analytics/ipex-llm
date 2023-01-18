@@ -39,20 +39,20 @@ train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_fe
 
 
 # Step 3: Define the model, optimizer and loss
-config = {
-    "user_num": user_num,
-    "item_num": item_num,
-    "factor_num": 16,
-    "num_layers": 3,
-    "dropout": 0.5,
-    "lr": 0.01,
-    "model": "NeuMF-end",
-    "sparse_feats_input_dims": sparse_feats_input_dims,
-    "sparse_feats_embed_dims": 8,
-    "num_dense_feats": num_dense_feats,
-    "feature_cols": feature_cols,
-    "label_cols": label_cols
-}
+config = dict(
+    user_num=user_num,
+    item_num=item_num,
+    factor_num=16,
+    num_layers=3,
+    dropout=0.5,
+    lr=0.01,
+    model="NeuMF-end",
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    sparse_feats_embed_dims=8,
+    num_dense_feats=num_dense_feats,
+    feature_cols=feature_cols,
+    label_cols=label_cols
+)
 
 
 def model_creator(config):
