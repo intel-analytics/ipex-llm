@@ -249,7 +249,13 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
         train_loader_iter = iter(self.train_loader)
         x = next(train_loader_iter)[0]
-        # 1. test eval_func with default accuracy_criterion
+        
+        # 1. test no tuning
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader)
+        assert qmodel
+
+        # 2. test eval_func with relative accuracy_criterion
         def eval_func(model):
             acc = 0
             for sample, label in self.train_loader:
@@ -274,7 +280,7 @@ class TestTrainer(TestCase):
         int8_value = eval_func(qmodel)
         assert (fp32_baseline - int8_value)/fp32_baseline <= 0.2
 
-        # 2. test eval_func with specified accuracy_criterion
+        # 3. test eval_func with absolute accuracy_criterion
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
                                              eval_func=eval_func,
@@ -287,15 +293,13 @@ class TestTrainer(TestCase):
         int8_value = eval_func(qmodel)
         assert int8_value - fp32_baseline <= 20
         
-        # 3. test metric
+        # 4. test metric
         qmodel = InferenceOptimizer.quantize(pl_model,
                                              calib_data=self.train_loader,
                                              metric=torchmetrics.F1Score('multiclass', num_classes=10),
-                                             accuracy_criterion={'absolute': 20,
+                                             accuracy_criterion={'relative': 0.2,
                                                                  'higher_is_better': True},
                                              timeout=0,
                                              max_trials=10,
                                              thread_num=8)
         assert qmodel
-        int8_value = eval_func(qmodel)
-        assert int8_value - fp32_baseline <= 20

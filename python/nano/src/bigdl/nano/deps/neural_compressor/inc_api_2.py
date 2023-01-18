@@ -123,13 +123,28 @@ def _quantize(
         # So we construct a INC DataLoader from them
         dataloader = DataLoader(framework, dataloader)
 
+    inc_metric = metric
+
     if 'pytorch' in framework:
         # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
         from bigdl.nano.pytorch.lightning import LightningModule
         if isinstance(model, LightningModule):
             model = model.model
+        if metric is not None:
+            from .pytorch.metric import PytorchINCMetric
+            inc_metric = PytorchINCMetric()
+            inc_metric.metric = metric
     elif 'onnx' in framework:
         model = model.onnx_model
+        if metric is not None:
+            from .onnx.metric import ONNXRuntimeINCMetic
+            inc_metric = ONNXRuntimeINCMetic()
+            inc_metric.metric = metric
+    elif 'tensorflow' in framework:
+        if metric is not None:
+            from .tensorflow.metric import TensorflowINCMetric
+            inc_metric = TensorflowINCMetric()
+            inc_metric.metric = metric
 
     if 'relative' in accuracy_criterion:
         criterion = 'relative'
@@ -178,7 +193,7 @@ def _quantize(
         conf=q_conf,
         calib_dataloader=dataloader,
         eval_func=eval_func,
-        eval_metric=metric,
+        eval_metric=inc_metric,
         eval_dataloader=dataloader  # use same dataloader as 1.0 API
     )
     return q_model
