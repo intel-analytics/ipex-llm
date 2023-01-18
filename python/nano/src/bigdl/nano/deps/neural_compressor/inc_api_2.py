@@ -18,7 +18,8 @@
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
+def quantize(model, dataloader=None, eval_func=None, metric=None,
+             thread_num=None, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -29,7 +30,7 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         if v is not None:
             not_none_kwargs[k] = v
 
-    q_model = _quantize(model=model, dataloader=dataloader, eval_func=kwargs['eval_func'],
+    q_model = _quantize(model=model, dataloader=dataloader, eval_func=eval_func,
                         metric=metric, **not_none_kwargs)
 
     if 'pytorch' in not_none_kwargs['framework']:

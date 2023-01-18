@@ -98,3 +98,40 @@ class TestModelQuantize(TestCase):
         train_dataset = tf.data.Dataset.from_tensors(train_examples[0])
         q_model = InferenceOptimizer.quantize(model, x=train_dataset)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+    def test_model_quantize_tunning(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                      loss=tf.keras.losses.BinaryCrossentropy(),
+                      metrics=[tf.keras.metrics.CategoricalAccuracy()],)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_labels = to_categorical(train_labels, num_classes=10)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+        
+        # Case 1: absoulute accuracy_criterion for metric
+        q_model = InferenceOptimizer.quantize(model,
+                                              x=train_dataset,
+                                              metric=tf.keras.metrics.CategoricalAccuracy(),
+                                              tuning_strategy='basic',
+                                              accuracy_criterion={'relative': 0.99,
+                                                                  'higher_is_better': True})
+        assert q_model
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)
+        
+        # Case 2: absoulute accuracy_criterion for eval_func
+        def eval_func(model):
+            pred = model(train_examples)
+            acc = tf.keras.metrics.CategoricalAccuracy()(pred, train_labels)
+            return acc
+
+        q_model = InferenceOptimizer.quantize(model,
+                                              x=train_dataset,
+                                              eval_func=eval_func,
+                                              accuracy_criterion={'relative': 0.99,
+                                                                  'higher_is_better': True})
+        assert q_model
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)
