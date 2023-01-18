@@ -20,13 +20,13 @@ import math
 import tensorflow as tf
 
 from utils import *
-from process_spark_dataframe import get_feature_cols, get_label_cols
+from process_spark_dataframe import get_feature_label_cols
 
 from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Training with Spark DataFrame")
+args = parse_args("TensorFlow NCF Resume Training with Spark DataFrame")
 init_orca(args, extra_python_lib="tf_model.py")
 spark = OrcaContext.get_spark_session()
 
@@ -36,8 +36,7 @@ train_df = spark.read.parquet(os.path.join(args.data_dir,
                                            "train_processed_dataframe.parquet"))
 test_df = spark.read.parquet(os.path.join(args.data_dir,
                                           "test_processed_dataframe.parquet"))
-feature_cols = get_feature_cols()
-label_cols = get_label_cols()
+feature_cols, label_cols = get_feature_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
