@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  #pull_request:
-    #branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
 
   schedule:
     - cron: '0 15 * * *' # GMT time, 15:00 GMT == 23:00 China
@@ -54,6 +54,8 @@ on:
         - Python-AppTests-part1
         - Python-AppTests-part2
         - Scala-AppTests
+        - Dllib-Pythontest-Spark3
+        - Dllib-Python-Exampletests-Py37
 
       image:
         description: 'docker image name'
@@ -1131,6 +1133,60 @@ jobs:
         file-name: Scala-AppTests.json
         type: job
         job-name: Scala-AppTests
+        runner-hosted-on: 'Shanghai'
+
+  Dllib-Pythontest-Spark3:
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Pythontest-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run Test
+      uses: ./.github/actions/dllib/dllib-pythontest-spark3.1
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Dllib-Pythontest-Spark3.json
+        type: job
+        job-name: Dllib-Pythontest-Spark3
+        runner-hosted-on: 'Shanghai'
+
+  Dllib-Python-Exampletests-Py37:
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Python-Exampletests-Py37' || github.event.inputs.artifact == 'all' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run Test
+      uses: ./.github/actions/dllib/dllib-python-exampletests-py37
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Dllib-Python-Exampletests-Py37.json
+        type: job
+        job-name: Dllib-Python-Exampletests-Py37
         runner-hosted-on: 'Shanghai'
     
     

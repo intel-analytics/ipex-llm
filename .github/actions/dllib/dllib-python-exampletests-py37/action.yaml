@@ -1,0 +1,67 @@
+name: 'Run Dllib Python ExampleTests Py37'
+description: Run Dllib Python ExampleTests Py37'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y zip
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+
+    - name: Setup env
+      shell: bash
+      run: |
+        if [ -d "/opt/conda/envs/py37" ]
+        then
+          rm -rf /opt/conda/envs/py37
+        fi
+        conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+        source activate py37
+        pip install wheel
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        wget https://raw.githubusercontent.com/Romanticoseu/BigDL/patch-1/python/test/python-requirements/requirements-dllib-python.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-dllib-python.txt -y
+        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-dllib-python.txt
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run test
+      shell: bash
+      run: |
+        set -x
+        ulimit -a
+        export MAVEN_OPTS="-XX:MaxPermSize=3G -Xmx100G -XX:ReservedCodeCacheSize=512m"
+        export _JAVA_OPTIONS="-Xmx100G -XX:MaxPermSize=3G"
+        export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+        export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
+        export MASTER=local[4]
+        export SPARK_LOCAL_HOSTNAME=localhost
+        chmod a+x python/dllib/examples/run-example-tests-pip.sh 
+        echo "### start PY36 example tests"
+        source activate py37
+        export KERAS_BACKEND=tensorflow
+        pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+        pip uninstall -y bigdl-dllib bigdl-orca bigdl-orca-spark3 bigdl-dllib-spark3  bigdl-chronos-sparks bigdl-chronos
+        pip install --pre --upgrade bigdl-dllib -i https://pypi.python.org/simple
+        pip3 uninstall keras-nightly
+        pip3 install keras==2.1.6
+        pip3 install h5py==2.10.0
+        python/dllib/examples/run-example-tests-pip.sh 
+        pip uninstall -y bigdl-dllib 
+        source deactivate
+
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        BIGDL_HOME: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_HOME: ${{ github.workspace }}
