@@ -27,21 +27,4 @@ case class DataSink(
     val primaryKey: String,
     val dataKey: String,
     val encryptMode: CryptoMode = AES_CBC_PKCS5PADDING
-) extends DataStore 
-
-class DataStoreManagement extends Serializable {
-    var dataStores = new HashMap[String, DataStore]
-
-    def enrollDataStore(name: String, dataStore: DataStore): Unit = {
-        Log4Error.invalidInputError(!(dataStores.contains(name)),
-                                    s"dataStore with name $name are replicated.")
-        dataStores += (name -> dataStore)
-    }
-
-    def getDataStore(name: String): DataStore = {
-        Log4Error.invalidInputError(dataStores.contains(name),
-                                    s"cannot get a not-existing dataSource.")
-        dataStores.get(name).get
-    }
-
-}
+) extends DataStore
