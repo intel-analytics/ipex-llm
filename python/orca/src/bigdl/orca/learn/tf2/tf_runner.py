@@ -412,7 +412,7 @@ class TFRunner:
             stats = {k: v[:] for k, v in history.history.items()}
 
         self.epoch += epochs
-        return [stats]
+        return stats
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):

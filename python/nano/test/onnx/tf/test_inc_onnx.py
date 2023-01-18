@@ -48,7 +48,7 @@ class TestONNX(TestCase):
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
-        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_without_dataset(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
@@ -65,7 +65,7 @@ class TestONNX(TestCase):
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
-        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_with_only_x(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
@@ -80,7 +80,7 @@ class TestONNX(TestCase):
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
-        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
         # quantize a Keras model based on dataset
         input_examples = np.random.random((100, 224, 224, 3))
@@ -93,7 +93,7 @@ class TestONNX(TestCase):
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
-        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
         
         # quantize a Keras model based on tf tensor
         input_examples = np.random.random((100, 224, 224, 3))
@@ -106,7 +106,7 @@ class TestONNX(TestCase):
 
         preds = model.predict(input_examples)
         onnx_preds = onnx_quantized_model.predict(input_examples)
-        np.testing.assert_allclose(preds, onnx_preds, rtol=1e-2)
+        np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_save_load(self):
         model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)

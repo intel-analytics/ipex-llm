@@ -153,14 +153,19 @@ def _quantize(
         timeout=timeout,
         max_trials=max_trials,
     )
+    # For ipex quantization, we should set backend = "ipex"
+    backend = "default" if framework != "pytorch_ipex" else "ipex"
     config = PostTrainingQuantConfig(
         accuracy_criterion=accuracy_criterion,
         tuning_criterion=tuning_criterion,
         approach=approach,
         inputs=inputs,
         outputs=outputs,
+        backend=backend
     )
-    config.performance_only = True
+    # if metric is None and eval_dataloader is None:
+    if metric is None:
+        config.performance_only = True
     config = Config(quantization=config, benchmark=None, pruning=None,
                     distillation=None, nas=None)
 

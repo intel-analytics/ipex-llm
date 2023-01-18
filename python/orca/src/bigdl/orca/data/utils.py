@@ -411,6 +411,7 @@ def spark_df_to_rdd_pd(df: "DataFrame", squeeze: bool=False, index_col: Optional
     shard_size = OrcaContext._shard_size
 
     try:
+        import pyarrow as pa
         pd_rdd = to_pandas(df, squeeze, index_col, dtype, index_map,
                            batch_size=shard_size)
         return pd_rdd

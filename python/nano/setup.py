@@ -74,35 +74,35 @@ def download_libs(url: str):
 def setup_package():
 
     # all intel-tensorflow is only avaliable for linux now
-    tensorflow_27_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64' and \
+    tensorflow_27_requires = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.7.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.7.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.7.0; platform_machine=='x86_64'"]
+                              "keras==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_28_requires = ["intel-tensorflow==2.8.0; platform_machine=='x86_64' and \
+    tensorflow_28_requires = ["intel-tensorflow==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.8.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.8.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.8.0; platform_machine=='x86_64'"]
+                              "keras==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_29_requires = ["intel-tensorflow==2.9.1; platform_machine=='x86_64' and \
+    tensorflow_29_requires = ["intel-tensorflow==2.9.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.9.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.9.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.9.0; platform_machine=='x86_64'"]
+                              "keras==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_210_requires = ["intel-tensorflow==2.10.0; platform_machine=='x86_64' and \
+    tensorflow_210_requires = ["intel-tensorflow==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                                platform_system!='Darwin'",
                                "tensorflow==2.10.0; platform_machine=='x86_64' and \
                                platform_system=='Darwin'",
-                               "keras==2.10.0; platform_machine=='x86_64'",
-                               "tensorflow-estimator==2.10.0; platform_machine=='x86_64'"]
+                               "keras==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                               "tensorflow-estimator==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
+    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
     # default pytorch_dep
     tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
