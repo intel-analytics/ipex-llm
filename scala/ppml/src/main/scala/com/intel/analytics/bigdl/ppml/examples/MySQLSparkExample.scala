@@ -43,7 +43,9 @@ object MySQLSparkExample extends App {
     var inDF = spark.read.jdbc(mysqlURL, "people_in", props).coalesce(10)
     println(s"The people_in table contains ${inDF.count} records.")
 
-    val outDF = inDF.drop("age").filter(inDF("job") === "Engineer").withColumnRenamed("job", "occupation")
+    val outDF = inDF.drop("age")
+                    .filter(inDF("job") === "Engineer")
+                    .withColumnRenamed("job", "occupation")
 
     outDF.write.mode(SaveMode.Overwrite).jdbc(mysqlURL, "people_out", props)
 
