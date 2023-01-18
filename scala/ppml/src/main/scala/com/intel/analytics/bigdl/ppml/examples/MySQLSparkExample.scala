@@ -36,24 +36,18 @@ object MySQLSparkExample extends App {
 
     val props = new Properties
     props.put("user", "root")
-    props.put("password", "helloworld")
+    props.put("password", "password")
 
     val mysqlURL = s"jdbc:mysql://$dbUrl?rewriteBatchedStatements=true"
 
     var inDF = spark.read.jdbc(mysqlURL, "people_in", props).coalesce(10)
-    println("partition of inDF:" + inDF.rdd.partitions.size)
     println(s"The people_in table contains ${inDF.count} records.")
 
-    val outDF = inDF
-    val outDF_1 = outDF.drop("age")
-    val outDF_2 = outDF_1.withColumnRenamed("job", "occupation")
-    val outDF_3 = outDF_2.filter(outDF_2("occupation") === "Engineer").coalesce(10)
+    val outDF = inDF.drop("age").filter(inDF("job") === "Engineer").withColumnRenamed("job", "occupation")
 
+    outDF.write.mode(SaveMode.Overwrite).jdbc(mysqlURL, "people_out", props)
 
-    outDF_3.write.mode(SaveMode.Overwrite).jdbc(mysqlURL, "people_out", props)
-
-    println(s"The people_out table contains ${outDF_3.count} records.")
-    println("partition of outDF_3:" + outDF_3.rdd.partitions.size)
+    println(s"The people_out table contains ${outDF.count} records.")
     println("done!")
 
 }
