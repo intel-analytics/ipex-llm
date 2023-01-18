@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession,SaveMode}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession, SaveMode}
 import org.slf4j.LoggerFactory
 
 object MySQLSparkExample extends App {
@@ -46,7 +46,7 @@ object MySQLSparkExample extends App {
 
     val outDF = inDF
     val outDF_1 = outDF.drop("age")
-    val outDF_2 = outDF_1.withColumnRenamed("job","occupation")
+    val outDF_2 = outDF_1.withColumnRenamed("job", "occupation")
     val outDF_3 = outDF_2.filter(outDF_2("occupation") === "Engineer").coalesce(10)
 
 
