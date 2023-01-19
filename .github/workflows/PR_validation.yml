@@ -129,6 +129,8 @@ jobs:
 
             orca-tutorial:
               - 'python/orca/src/**'
+              - 'python/orca/dev/**'
+              - 'python/orca/test/**'
               - 'python/orca/tutorial/**'
               - '.github/actions/orca/orca-tutorial-xshards/**'
               - '.github/actions/orca/orca-notebook-xshards-action/**'
