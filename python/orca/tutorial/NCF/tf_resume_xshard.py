@@ -20,7 +20,7 @@ import math
 import tensorflow as tf
 
 from utils import *
-from process_xshards import get_feature_label_cols
+from process_xshards import get_feature_cols, get_label_cols
 
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
@@ -34,7 +34,7 @@ init_orca(args, extra_python_lib="tf_model.py")
 # Step 2: Read and process data using Xshards
 train_data = XShards.load_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
-feature_cols, label_cols = get_feature_label_cols()
+feature_cols, label_cols = get_feature_cols(), get_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
@@ -53,13 +53,13 @@ if args.lr_scheduler:
     callbacks.append(lr_callback)
 
 est.fit(train_data,
-        epochs=5,
+        epochs=2,
         batch_size=batch_size,
-        feature_cols=feature_cols,
+        steps_per_epoch=train_steps,
         validation_data=test_data,
         validation_steps=val_steps,
+        feature_cols=feature_cols,
         label_cols=label_cols,
-        steps_per_epoch=train_steps,
         callbacks=callbacks)
 
 

@@ -20,7 +20,7 @@ import math
 import tensorflow as tf
 
 from utils import *
-from process_spark_dataframe import get_feature_label_cols
+from process_spark_dataframe import get_feature_cols, get_label_cols
 
 from bigdl.orca.learn.tf2 import Estimator
 
@@ -36,7 +36,7 @@ train_df = spark.read.parquet(os.path.join(args.data_dir,
                                            "train_processed_dataframe.parquet"))
 test_df = spark.read.parquet(os.path.join(args.data_dir,
                                           "test_processed_dataframe.parquet"))
-feature_cols, label_cols = get_feature_label_cols()
+feature_cols, label_cols = get_feature_cols(), get_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator and load the model weight
@@ -55,13 +55,13 @@ if args.lr_scheduler:
     callbacks.append(lr_callback)
 
 est.fit(train_df,
-        epochs=5,
+        epochs=2,
         batch_size=batch_size,
-        feature_cols=feature_cols,
+        steps_per_epoch=train_steps,
         validation_data=test_df,
         validation_steps=val_steps,
+        feature_cols=feature_cols,
         label_cols=label_cols,
-        steps_per_epoch=train_steps,
         callbacks=callbacks)
 
 
