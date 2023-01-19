@@ -85,8 +85,9 @@ class TestImputeTimeSeries(TestCase):
         assert res_df['data'][2] == 1
 
     def test_linear_timeseries_dataframe(self):
-        data = {'data': [np.nan, 1, np.nan, 2, 3]}
+        data = {'data': [np.nan, 1, np.nan, 2, 3],
+                'datetime': pd.date_range('1/1/2019', periods=5)}
         df = pd.DataFrame(data)
-        res_df = _linear_impute_timeseries_dataframe(df)
+        res_df = _linear_impute_timeseries_dataframe(df, dt_col="datetime")
         assert res_df['data'][0] == 1
         assert res_df['data'][2] == 1.5

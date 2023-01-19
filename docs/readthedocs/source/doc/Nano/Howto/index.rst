@@ -58,6 +58,7 @@ OpenVINO
 
 * `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
 * `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
+* `How to accelerate a PyTorch / TensorFlow inference pipeline on Intel GPUs through OpenVINO <Inference/OpenVINO/accelerate_inference_openvino_gpu.html>`_
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,6 +83,8 @@ TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
 * `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
+* `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
+* `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
 
 Install
 -------------------------

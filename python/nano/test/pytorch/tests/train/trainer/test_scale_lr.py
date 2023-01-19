@@ -190,11 +190,11 @@ class TestScaleLr(TestCase):
 
     def test_scale_lr_spawn(self):
         model = ResNetWithScheduler()
-        trainer = Trainer(num_processes=4,
+        trainer = Trainer(num_processes=2,
                           distributed_backend='spawn',
                           auto_lr=True,
                           max_epochs=2,
-                          callbacks=[CheckLinearLRScaleCallback(4, [0.01, 0.02])]
+                          callbacks=[CheckLinearLRScaleCallback(2, [0.01, 0.02])]
                           )
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
@@ -221,11 +221,11 @@ class TestScaleLr(TestCase):
 
     def test_warmup_spawn(self):
         model = ResNetWith2Optimizers()
-        trainer = Trainer(num_processes=4,
+        trainer = Trainer(num_processes=2,
                           distributed_backend='spawn',
                           auto_lr={'warmup_epochs': 4},
                           max_epochs=10,
-                          callbacks=[CheckWarmupCallback(4, [0.01, 0.05], 10, 4, 4)])
+                          callbacks=[CheckWarmupCallback(2, [0.01, 0.05], 10, 4, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
 

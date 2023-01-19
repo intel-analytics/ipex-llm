@@ -57,7 +57,7 @@ statefulset.apps/keywhiz   1/1     4m56s
 
 ## Validate Status of BigDL KMS
 
-You can communicate with BKeywhiz KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BigDLManagementService.scala), or simply verify through requesting REST API like below:
+You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BigDLManagementService.scala), or simply verify through requesting REST API like below:
 
 ```
 curl -k -v "https://<kmsIP>:9876/" # default port of bigdl-kms is 9876 and can be configured in bigdl-kms.yaml
@@ -87,4 +87,5 @@ XY********Yw==
 ## Test KMS with PPML end-to-end example
 
 [LocalCryptoExample](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples#localcryptoexample-with-bigdl-kms)
-[PPMLContext]() (TODO)
+
+[PPMLContext](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext)

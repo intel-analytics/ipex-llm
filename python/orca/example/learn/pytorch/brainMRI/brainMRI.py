@@ -224,8 +224,7 @@ elif args.backend in ["ray", "spark"]:
                                           metrics=dice_coef_metric,
                                           config=config,
                                           use_tqdm=True,
-                                          scheduler_creator=scheduler_creator,
-                                          scheduler_step_freq='epoch')
+                                          scheduler_creator=scheduler_creator)
 
     orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size,
                        validation_data=val_loader_creator)
