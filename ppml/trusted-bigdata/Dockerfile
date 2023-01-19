@@ -170,6 +170,7 @@ COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+ADD ./scripts /ppml/scripts
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
@@ -185,6 +186,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /ppml/bigdl-ppml-submit.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
+    wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && \
 #flink
     env DEBIAN_FRONTEND=noninteractive apt-get install -y libsnappy1v5 gettext-base libjemalloc-dev && \
     rm -rf /var/lib/apt/lists/* && \
