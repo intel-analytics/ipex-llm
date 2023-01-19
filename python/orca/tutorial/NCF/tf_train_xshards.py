@@ -80,13 +80,18 @@ if args.scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
-est.fit(train_data,
-        epochs=2,
-        batch_size=batch_size,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        steps_per_epoch=train_steps,
-        callbacks=callbacks)
+train_stats = est.fit(train_data,
+                      epochs=2,
+                      batch_size=batch_size,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      steps_per_epoch=train_steps,
+                      validation_data=test_data,
+                      validation_steps=val_steps,
+                      callbacks=callbacks)
+print("Train results:")
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 5: Distributed evaluation of the trained model
