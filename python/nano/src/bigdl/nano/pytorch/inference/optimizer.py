@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pickle
+import subprocess
+import tempfile
 
+import cloudpickle
 import torch
 from torch import nn
 import time
@@ -46,6 +50,7 @@ from bigdl.nano.utils.util import spawn_new_process
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
+import _worker
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
@@ -145,7 +150,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     DEFAULT_INFERENCE_ACCELERATION_METHOD = {}
     for method in _default_methods:
         DEFAULT_INFERENCE_ACCELERATION_METHOD[method] = ALL_INFERENCE_ACCELERATION_METHOD[method]
-        
+
     ALL_ACCELERATION_ENV = {
         'tcmalloc': AccelerationEnv(tcmalloc=True),
         'jemalloc': AccelerationEnv(jemalloc=True)
@@ -394,15 +399,25 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         throughput_calculate_helper_with_env = spawn_new_process(throughput_calculate_helper)
         accuracy_calculate_helper_with_env = spawn_new_process(_accuracy_calculate_helper)
+        worker_path = _worker.__file__
 
         if search_env:
             env_result_map = {}
             for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
                 print(f"----------Start test {method} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
-                env_result_map[method], _ = throughput_calculate_helper_with_env(
-                    latency_sample_num, baseline_time, func_test, model, input_sample,
-                    env_var=env.get_env_dict())
+                with tempfile.TemporaryDirectory() as tmp_dir_path:
+                    param_file = os.path.join(tmp_dir_path, 'param')
+                    with open(param_file, 'wb') as f:
+                        cloudpickle.dump([throughput_calculate_helper, latency_sample_num, baseline_time,
+                                          func_test, model, input_sample], f)
+                    env_result_map[method], _ = pickle.loads(subprocess.run(["python", worker_path, param_file],
+                                                                            capture_output=True,
+                                                                            universal_newlines=True,
+                                                                            env=env.get_env_dict()))
+                # env_result_map[method], _ = throughput_calculate_helper_with_env(
+                #     latency_sample_num, baseline_time, func_test, model, input_sample,
+                #     env_var=env.get_env_dict())
             best_env = self.ALL_ACCELERATION_ENV[
                 min(env_result_map, key=env_result_map.get)].get_env_dict()
             print(f"----------Best environment variables----------")
