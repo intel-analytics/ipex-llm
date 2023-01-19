@@ -64,7 +64,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             # seed setting
             from pytorch_lightning import seed_everything
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             seed_everything(seed=self.seed)
 
             # Model preparation
@@ -157,7 +157,7 @@ class BasePytorchForecaster(Forecaster):
                               "You may specify search space in hyper parameters to enable it.")
 
         # prepare data
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
 
         # data transformation
         if isinstance(data, tuple):
@@ -354,7 +354,7 @@ class BasePytorchForecaster(Forecaster):
                                      epochs=epochs,
                                      batch_size=batch_size)
         else:
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             from bigdl.nano.utils.log4Error import invalidInputError
 
             # numpy data shape checking
@@ -1348,7 +1348,7 @@ class BasePytorchForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster.
         :param quantize_checkpoint_file: The location you want to save quantized forecaster.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
 
         if self.distributed:
             self.internal.save(checkpoint_file)
@@ -1376,13 +1376,12 @@ class BasePytorchForecaster(Forecaster):
         :param quantize_checkpoint_file: The checkpoint file location you want to
                load the quantized forecaster.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         if self.distributed:
             self.internal.load(checkpoint_file)
         else:
             from bigdl.nano.pytorch.lightning import LightningModule
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             if self.use_hpo:
                 ckpt = torch.load(checkpoint_file)
                 hparams = ckpt["hyper_parameters"]
@@ -1424,7 +1423,7 @@ class BasePytorchForecaster(Forecaster):
 
         :return: a forecaster instance.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
