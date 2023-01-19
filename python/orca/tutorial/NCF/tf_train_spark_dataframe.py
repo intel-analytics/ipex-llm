@@ -16,6 +16,7 @@
 
 # Step 0: Import necessary libraries
 import math
+
 import tensorflow as tf
 
 from process_spark_dataframe import prepare_data
@@ -28,7 +29,7 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Spark DataFrame")
 init_orca(args, extra_python_lib="tf_model.py")
-
+args.backend = 'ray'
 
 # Step 2: Read and process data using Spark DataFrame
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
@@ -63,6 +64,7 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
+backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
                            backend=args.backend,
@@ -73,6 +75,10 @@ train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
+
+if args.lr_scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
 
 train_stats = est.fit(train_df,
                       epochs=2,
