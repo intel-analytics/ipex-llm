@@ -120,11 +120,15 @@ jobs:
               - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
-              - 'python/orca/**'
+              - 'python/orca/src/**'
+              - 'python/orca/dev/**'
+              - 'python/orca/test/**'
+              - 'python/orca/colab-notebook/**'
               - 'python/dllib/**'
               - '.github/actions/orca/**'
 
             orca-tutorial:
+              - 'python/orca/src/**'
               - 'python/orca/tutorial/**'
               - '.github/actions/orca/orca-tutorial-xshards/**'
               - '.github/actions/orca/orca-notebook-xshards-action/**'
