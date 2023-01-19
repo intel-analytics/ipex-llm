@@ -385,8 +385,14 @@ class SparkRunner:
         if history is None:
             stats = {}
         else:
-            stats = history.history
+            stats = dict()
+            # history is a callbacks object
+            # see https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/History
+            # history.parmas is a dict, e.g. {'verbose':1, 'epochs':2, 'steps':77}
             stats.update(history.params)
+            # history.history contains train stats
+            # e.g. {'loss': [0.4, 0.3], 'accuracy': [..., ...], ...}
+            stats.update(history.history)
 
         if self.model_dir is not None:
             model_state = {
