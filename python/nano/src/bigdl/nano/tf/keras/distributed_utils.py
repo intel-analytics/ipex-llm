@@ -38,11 +38,18 @@ def _train_func(model_dir, ds_graph, elem_spec,
     from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
 
     strategy = tf.distribute.MultiWorkerMirroredStrategy()
+
+    # We must set `auto_shard_policy` to `DATA` or `OFF` when
+    # the number of dataset files is less than the number of processes
+    options = tf.data.Options()
+    options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
     with strategy.scope():
         new_model = tf.keras.models.load_model(os.path.join(model_dir, "temp_model"))
         train_dataset = deserialize_dataset_from_graph(ds_graph, elem_spec)
+        train_dataset = train_dataset.with_options(options)
         if val_ds_graph is not None:
             val_dataset = deserialize_dataset_from_graph(val_ds_graph, val_elem_sepc)
+            val_dataset = val_dataset.with_options(options)
         else:
             val_dataset = None
 
