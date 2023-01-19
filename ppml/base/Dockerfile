@@ -113,7 +113,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /ppml/ && \
     git clone https://github.com/intel-analytics/BigDL.git && \
     cd BigDL && \
-    git checkout branch-2.2 && \
     mkdir -p /ppml/bigdl-ppml/ && \
     cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
     rm -rf /ppml/BigDL && \
