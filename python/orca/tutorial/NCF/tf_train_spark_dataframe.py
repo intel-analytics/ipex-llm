@@ -75,8 +75,6 @@ train_steps = math.ceil(train_df.count() / batch_size)
 val_steps = math.ceil(test_df.count() / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
-    if args.tensorboard else []
 
 if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
