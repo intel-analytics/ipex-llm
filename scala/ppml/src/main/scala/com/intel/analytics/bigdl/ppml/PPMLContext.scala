@@ -36,9 +36,25 @@ import org.apache.hadoop.fs.Path
  * @param kms
  * @param sparkSession
  */
-class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSession) {
+class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null) {
 
   protected var dataKeyPlainText: String = ""
+  protected val multiKms = new scala.collection.mutable.HashMap[String, KeyManagementService]
+  protected val dataSources = new scala.collection.mutable.HashMap[String, String]
+
+  def addKMS(kmsName: String, kms: KeyManagementService): this.type = {
+    this.multiKms +=  (kmsName -> kms)
+    this
+  }
+
+  def addDataSource(dataSourceName: String, kmsName: String): this.type = {
+    this.dataSources += (dataSourceName->kmsName)
+    this
+  }
+
+  // def getKMS(dataSourceName:String): KeyManagementService{
+  //   this.multiKms.get(this.dataSources.get(dataSourceName))
+  // }
 
   /**
    * Load keys from a local file system.
@@ -46,11 +62,40 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @param dataKeyPath
    * @return
    */
+
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
+    val kmsType = sparkSession.sparkContext.getConf.get(
+                  "spark.bigdl.kms.type",
+                  defaultValue = "SimpleKeyManagementService"
+                  )
+    dataKeyPlainText = kmsType match {
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+      case _ =>
+        kms.retrieveDataKeyPlainText(
+          new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
+          sparkSession.sparkContext.hadoopConfiguration)
+    }
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
+    this
+  }
+
+  // specified one datasource to loadkeys
+  def loadKeys(primaryKeyPath: String,
+               dataKeyPath: String,
+               dataSourceName: String ): this.type = {
+    Log4Error.invalidInputError(this.dataSources.contains(dataSourceName),
+      "this.dataSources.get(dataSourceName).get==null, cant get kms of " + dataSourceName)
+    val kmsName = this.dataSources.get(dataSourceName).get
+    Log4Error.invalidInputError(this.multiKms.contains(kmsName),
+      " get kms == null, cant get kms of KMSname " + kmsName)
+    val kms = this.multiKms.get(kmsName).get
+    Log4Error.invalidInputError(kms != null, "LOAD KEYS: kms not found")
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       new Path(primaryKeyPath).toString, new Path(dataKeyPath).toString,
       sparkSession.sparkContext.hadoopConfiguration)
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms." + dataSourceName + ".key",
+      dataKeyPlainText)
     this
   }
 
@@ -250,7 +295,7 @@ object PPMLContext{
     conf.set("spark.hadoop.io.compression.codecs",
         "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     val sc = initNNContext(conf, appName)
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val sparkSession: SparkSession = SparkSession.builder().config(conf).getOrCreate()
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
@@ -288,6 +333,93 @@ object PPMLContext{
       ppmlSc.loadKeys(primaryKey, dataKey)
     }
     ppmlSc
+  }
+
+  // init ppmlContext with multi kms and multi datasource
+  def initPPMLContextMultiKMS(sparkSession: SparkSession): PPMLContext = {
+    // get sparkconf and init ppml context
+    val conf = sparkSession.sparkContext.getConf
+    val ppmlSc = new PPMLContext(sparkSession = sparkSession)
+
+    // init kms
+    Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.instance"),
+      "spark.bigdl.kms.multikms.instance not found, please provide instance of your KMS")
+    val instance = conf.getInt(s"spark.bigdl.kms.multikms.instance", defaultValue = 2)
+    for (i <- 1 to instance) {
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.type${i}"),
+        s"spark.bigdl.kms.multikms.type${i} not found.")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.multikms.name${i}"),
+        s"spark.bigdl.kms.multikms.name${i} not found.")
+      val kmsType = conf.get(s"spark.bigdl.kms.multikms.type${i}")
+      val kmsName = conf.get(s"spark.bigdl.kms.multikms.name${i}")
+      val kms = kmsType match {
+      case KMS_CONVENTION.MODE_EHSM_KMS =>
+        val ip = conf.get(s"spark.bigdl.kms.multikms.ehs.ip${i}",
+          defaultValue = "0.0.0.0")
+        val port = conf.get(s"spark.bigdl.kms.multikms.ehs.port${i}",
+          defaultValue = "5984")
+        val appId = conf.get(s"spark.bigdl.kms.multikms.ehs.id${i}",
+          defaultValue = "ehsmAPPID")
+        val apiKey = conf.get(s"spark.bigdl.kms.multikms.ehs.key${i}",
+          defaultValue = "ehsmAPIKEY")
+        new EHSMKeyManagementService(ip, port, appId, apiKey)
+      case KMS_CONVENTION.MODE_SIMPLE_KMS =>
+        val id = conf.get(s"spark.bigdl.kms.multikms.simple.id${i}",
+          defaultValue = "simpleAPPID")
+        // println(id + "=-------------------")
+        val key = conf.get(s"spark.bigdl.kms.multikms.simple.key${i}",
+          defaultValue = "simpleAPIKEY")
+        // println(key + "=-------------------")
+        SimpleKeyManagementService(id, key)
+      case KMS_CONVENTION.MODE_AZURE_KMS =>
+        val vaultName = conf.get(s"spark.bigdl.kms.multikms.azure.vault${i}",
+          defaultValue = "keyVaultName")
+        val clientId = conf.get(s"spark.bigdl.kms.multikms.azure.clientId${i}",
+          defaultValue = "")
+        new AzureKeyManagementService(vaultName, clientId)
+      case _ =>
+        throw new EncryptRuntimeException("Wrong kms type")
+     }
+     ppmlSc.addKMS(kmsName, kms)
+    }
+
+    // init data sources
+    Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.datasource.instance"),
+      "spark.bigdl.kms.datasource.instance not found" +
+      "please provide the instance of your data sources.")
+    val dataSourceInstance = conf.getInt("spark.bigdl.kms.datasource.instance", defaultValue = 2)
+    for (i <- 1 to dataSourceInstance) {
+      val dataSourceName = conf.get(s"spark.bigdl.kms.datasource${i}.name",
+        defaultValue = s"datasource${i}")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.kms"),
+        s"spark.bigdl.kms.datasource${i}.kms not found")
+      val kms = conf.get(s"spark.bigdl.kms.datasource${i}.kms")
+
+      // get input and output path
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.inputpath"),
+      s"input path of data source${i} not found, please provide input path")
+      // Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath"),
+      // s"output path of data source${i} not found, please provide output path")
+      val inputPath = conf.get(s"spark.bigdl.kms.datasource${i}.inputpath")
+      if (conf.contains(s"spark.bigdl.kms.datasource${i}.outputpath")) {
+        val outputPath = conf.get(s"spark.bigdl.kms.datasource${i}.outputpath")
+      } else {
+        val outputPath = inputPath + ".output"
+      }
+
+      // get primary key and data key
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.primary"),
+       s"Primary key${i} not found, please provide" +
+       s" both spark.bigdl.kms.datasource${i}.primary and spark.bigdl.kms.datasource${i}.data.")
+      Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.datasource${i}.data"),
+       s"Data key${i} not found, please provide" +
+       s" both spark.bigdl.kms.datasource${i}.primary and spark.bigdl.kms.datasource${i}.data.")
+      val primaryKey = conf.get(s"spark.bigdl.kms.datasource${i}.primary")
+      val dataKey = conf.get(s"spark.bigdl.kms.datasource${i}.data")
+      ppmlSc.addDataSource(dataSourceName, kms)
+      ppmlSc.loadKeys(primaryKey, dataKey, dataSourceName)
+    }
+  ppmlSc
   }
 
 }

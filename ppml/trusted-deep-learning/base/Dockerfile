@@ -81,7 +81,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
     sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
     sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    sed -i '/import json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
     cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /ppml/torchserve/start-backend-sgx.sh && \
     chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
@@ -106,16 +106,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
-# Install bigdl-ppml lib
-    cd /ppml/ && \
-    git clone https://github.com/intel-analytics/BigDL.git && \
-    cd BigDL && \
-    mkdir -p /ppml/bigdl-ppml/ && \
-    cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
-    rm -rf /ppml/BigDL && \
-    cd /ppml
-
-ENV PYTHONPATH        ${PYTHONPATH}:/ppml/bigdl-ppml/src
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

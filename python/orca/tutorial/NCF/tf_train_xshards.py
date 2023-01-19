@@ -18,21 +18,21 @@
 import math
 import tensorflow as tf
 
-from tf_model import ncf_model
 from process_xshards import prepare_data
+from tf_model import ncf_model
+from utils import *
 
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode="local")
+args = parse_args("TensorFlow NCF Training with Orca Xshards")
+init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
 
 
-# Step 2: Read and process data using Spark DataFrame
-dataset_dir = "./ml-1m"
+# Step 2: Read and process data using Orca Xshards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(dataset_dir, num_ng=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
 
 
 # Step 3: Define the NCF model
@@ -63,41 +63,45 @@ def model_creator(config):
 
 
 # Step 4: Distributed training with Orca TF2 Estimator
-backend = "ray"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config=config,
-                           backend=backend)
+                           backend=args.backend,
+                           workers_per_node=args.workers_per_node)
 
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
 val_steps = math.ceil(len(test_data) / batch_size)
-callbacks = [tf.keras.callbacks.TensorBoard(log_dir="./log")]
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
+    if args.tensorboard else []
 
-est.fit(train_data,
-        epochs=2,
-        batch_size=batch_size,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        steps_per_epoch=train_steps,
-        callbacks=callbacks)
-
-
-# Step 5: Distributed evaluation of the trained model
-result = est.evaluate(test_data,
+train_stats = est.fit(train_data,
+                      epochs=2,
+                      batch_size=batch_size,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=batch_size,
-                      num_steps=val_steps)
+                      steps_per_epoch=train_steps,
+                      validation_data=test_data,
+                      validation_steps=val_steps,
+                      callbacks=callbacks)
+print("Train results:")
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
+
+# Step 5: Distributed evaluation of the trained model
+eval_stats = est.evaluate(test_data,
+                          feature_cols=feature_cols,
+                          label_cols=label_cols,
+                          batch_size=batch_size,
+                          num_steps=val_steps)
 print("Evaluation results:")
-for r in result:
-    print("{}: {}".format(r, result[r]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-est.save("NCF_model")
-
-train_data.save_pickle("./train_processed_xshards")
-test_data.save_pickle("./test_processed_xshards")
+est.save(os.path.join(args.model_dir, "NCF_model"))
+train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
+test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
 # Step 7: Stop Orca Context when program finishes

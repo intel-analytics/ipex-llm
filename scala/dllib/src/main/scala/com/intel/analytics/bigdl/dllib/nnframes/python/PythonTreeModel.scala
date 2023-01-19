@@ -117,6 +117,33 @@ class PythonTreeModel[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     model.transform(dataset)
   }
 
+  def getFeatureScoreXGBClassifierModel(model: XGBClassifierModel,
+                                        featureMap: String = null): JMap[String, Integer] = {
+    model.model.nativeBooster.getFeatureScore(featureMap).asJava
+  }
+
+  def getScoreXGBClassifierModel(model: XGBClassifierModel,
+                                featureMap: String,
+                                importanceType: String): JMap[String, Double] = {
+    model.model.nativeBooster.getScore(featureMap, importanceType).asJava
+  }
+
+  def getFeatureImportanceXGBClassifierModel(model: XGBClassifierModel): JMap[String, Double] = {
+    val xgbModel = model.model
+    val booster = xgbModel.nativeBooster
+    // Currently we set importance type default value to "weight"
+    val score = booster.getScore("", "weight")
+    val total = score.foldLeft(0.0)(_ + _._2)
+    if(total == 0) {
+      return score.asJava
+    }
+    score.map(s => (s._1, s._2 / total)).asJava
+  }
+
+  def getXGBClassifierFeaturesCol(model: XGBClassifier): String = {
+    model.getFeaturesCol()
+  }
+
   def getXGBRegressor(xgbparamsin: JMap[String, Any]): XGBRegressor = {
     val xgbparams = if (xgbparamsin == null) Map[String, Any]() else xgbparamsin.asScala.toMap
     new XGBRegressor(xgbparams)

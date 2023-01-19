@@ -19,6 +19,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
 from distutils.version import LooseVersion
+import numpy as np
 
 if "FTP_URI" in os.environ:
     URI = os.environ['FTP_URI']
@@ -98,4 +99,3 @@ def test_fit_function():
                                                   num_processes=2, backend="multiprocessing")
     assert (history_default.history['accuracy'][-1]
             - history_multiprocess.history['accuracy'][-1]) <= 0.1
-

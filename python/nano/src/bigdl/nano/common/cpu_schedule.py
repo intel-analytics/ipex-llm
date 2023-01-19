@@ -90,6 +90,12 @@ def schedule_workers(num_workers: int,
 
     if cores_per_worker is None:
         cores_per_worker = len(p_cores) // num_workers
+        invalidInputError(cores_per_worker > 0,
+                          "The number of processes must be less "
+                          "or equal to the number of physical cores")
+    else:
+        invalidInputError(cores_per_worker > 0,
+                          "`cores_per_worker` must be greater than 0")
 
     msg = "total number of cores requested must be smaller or" \
           " equal than the physical cores available"

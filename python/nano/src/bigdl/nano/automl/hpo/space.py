@@ -420,10 +420,10 @@ class Categorical(NestedSpace):
         of provided options. The first value in the list of options
         will be the default value that gets tried first during HPO.
 
-        param: data : search space or python built-in objects.
+        :param data: search space or python built-in objects.
             The first value will be the default value tried first during HPO.
             e.g.space.Dict(hp1=space.Int(1,2), hp2=space.Int(4,5))
-        param: prefix: string (optional). This is useful for distinguishing
+        :param prefix: string (optional). This is useful for distinguishing
             the same hyperparameter in the same layer when a layer is
             used more than once in the model. Defaults to None.
         """

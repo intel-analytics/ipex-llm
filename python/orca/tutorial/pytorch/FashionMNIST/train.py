@@ -27,11 +27,12 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 
 from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca.data.file import get_remote_dir_to_local
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-from bigdl.orca.data.file import get_remote_dir_to_local
 
 from model import model_creator, optimizer_creator
+
 
 parser = argparse.ArgumentParser(description='PyTorch Example')
 parser.add_argument('--cluster_mode', type=str, default="spark-submit",

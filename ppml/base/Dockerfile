@@ -109,11 +109,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /ppml/encrypted-fsd && \
 # folder to contain the keys (primary key and data key)
     mkdir -p /ppml/encrypted_keys && \
-# kms client
-    mkdir -p /ppml/kms && \
-    git clone https://github.com/intel-analytics/BigDL.git /ppml/BigDL_KMS && \
-    cp /ppml/BigDL_KMS/python/ppml/src/bigdl/ppml/kms/* /ppml/kms && \
-    rm -rf /ppml/BigDL_KMS
+# Install bigdl-ppml lib
+    cd /ppml/ && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    cd BigDL && \
+    mkdir -p /ppml/bigdl-ppml/ && \
+    cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
+    rm -rf /ppml/BigDL && \
+    cd /ppml
 
 
 ADD ./download_jars.sh /ppml
@@ -123,6 +126,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
+ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]

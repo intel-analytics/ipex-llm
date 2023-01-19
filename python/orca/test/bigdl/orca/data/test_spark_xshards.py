@@ -549,5 +549,17 @@ class TestSparkXShards(TestCase):
         assert not lazy_shard2.is_cached()
         assert data_shard2.is_cached()
 
+    def test_stack_feature_labels(self):
+        sc = OrcaContext.get_spark_context()
+        data = sc.parallelize([(1, 2), (3, 4), (5, 6), (7, 8), (9, 10), (11, 12)])
+        repart1 = data.repartition(2)
+        stacked1 = SparkXShards(repart1).stack_feature_labels().collect()
+
+        repart2 = data.repartition(4)
+        stacked2 = SparkXShards(repart2).stack_feature_labels().collect()
+        assert(len(stacked1) == 2)
+        assert(len(stacked2) == 4)
+
+
 if __name__ == "__main__":
     pytest.main([__file__])

@@ -30,7 +30,7 @@ import torch.optim as optim
 import torch.utils.data.distributed
 from torchvision import datasets, transforms
 
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.horovod import HorovodRayRunner
 
@@ -206,6 +206,6 @@ if __name__ == "__main__":
     init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
                       memory=args.memory)
 
-    runner = HorovodRayRunner(RayContext.get())
+    runner = HorovodRayRunner(OrcaRayContext.get())
     runner.run(func=run_horovod)
     stop_orca_context()
