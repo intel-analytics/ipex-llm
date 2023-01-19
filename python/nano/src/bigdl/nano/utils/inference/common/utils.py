@@ -82,7 +82,8 @@ class AccelerationEnv(object):
 
     def get_env_dict(self):
         tmp_env_dict = {}
-        nano_dir = os.path.join(bigdl.__file__, 'nano')
+        tmp_env_dict.update(os.environ)
+        nano_dir = os.path.join(os.path.dirname(bigdl.__file__), 'nano')
         if self.get_malloc_lib() == 'jemalloc':
             tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libjemalloc.so')
             tmp_env_dict['MALLOC_CONF'] = 'oversize_threshold:1,background_thread:false,' \

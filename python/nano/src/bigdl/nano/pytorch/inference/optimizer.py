@@ -411,10 +411,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     with open(param_file, 'wb') as f:
                         cloudpickle.dump([throughput_calculate_helper, latency_sample_num, baseline_time,
                                           func_test, model, input_sample], f)
-                    env_result_map[method], _ = pickle.loads(subprocess.run(["python", worker_path, param_file],
-                                                                            capture_output=True,
-                                                                            universal_newlines=True,
-                                                                            env=env.get_env_dict()))
+                    subprocess.run(["python", worker_path, param_file],
+                                   check=True,
+                                   env=env.get_env_dict())
+                    with open(os.path.join(tmp_dir_path, 'return_value'), 'rb') as f:
+                        env_result_map[method], _ = pickle.load(f)
                 # env_result_map[method], _ = throughput_calculate_helper_with_env(
                 #     latency_sample_num, baseline_time, func_test, model, input_sample,
                 #     env_var=env.get_env_dict())
