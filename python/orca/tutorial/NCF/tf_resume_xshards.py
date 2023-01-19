@@ -63,6 +63,9 @@ train_stats = est.fit(train_data,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       callbacks=callbacks)
+print("Train results:")
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 4: Save the trained TensorFlow model
