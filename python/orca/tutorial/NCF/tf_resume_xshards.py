@@ -27,9 +27,9 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Resume Training with Spark DataFrame")
-init_orca(args, extra_python_lib="tf_model.py")
-args.backend = 'spark'
+args = parse_args("TensorFlow NCF Resume Training with Orca Xshards")
+args.backend = "spark"  # TODO: support initial_epoch for ray backend
+init_orca(args)
 
 
 # Step 2: Read and process data using Xshards
@@ -53,16 +53,19 @@ if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
-est.fit(train_data,
-        epochs=4,
-        batch_size=batch_size,
-        steps_per_epoch=train_steps,
-        validation_data=test_data,
-        validation_steps=val_steps,
-        feature_cols=feature_cols,
-        label_cols=label_cols,
-        initial_epoch=2,
-        callbacks=callbacks)
+train_stats = est.fit(train_data,
+                      initial_epoch=2,
+                      epochs=4,
+                      batch_size=batch_size,
+                      steps_per_epoch=train_steps,
+                      validation_data=test_data,
+                      validation_steps=val_steps,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      callbacks=callbacks)
+print("Train results:")
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 4: Save the trained TensorFlow model
