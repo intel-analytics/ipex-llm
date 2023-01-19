@@ -29,7 +29,7 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Spark DataFrame")
 init_orca(args, extra_python_lib="tf_model.py")
-
+args.backend = 'ray'
 
 # Step 2: Read and process data using Spark DataFrame
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
