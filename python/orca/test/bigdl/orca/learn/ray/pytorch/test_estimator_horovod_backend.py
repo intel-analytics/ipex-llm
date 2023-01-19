@@ -48,12 +48,7 @@ def optimizer_creator(model, config):
 
 
 def scheduler_creator(optimizer, config):
-    """Returns a learning rate scheduler wrapping the optimizer.
-    You will need to set ``TorchTrainer(scheduler_step_freq="epoch")``
-    for the scheduler to be incremented correctly.
-    If using a scheduler for validation loss, be sure to call
-    ``trainer.update_scheduler(validation_loss)``.
-    """
+    """Returns a learning rate scheduler wrapping the optimizer."""
     return torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.9)
 
 

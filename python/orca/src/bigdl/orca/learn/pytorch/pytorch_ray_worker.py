@@ -56,7 +56,6 @@ class PytorchRayWorker(TorchRunner):
                  scheduler_creator=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
         super().__init__(model_creator=model_creator,
@@ -66,7 +65,6 @@ class PytorchRayWorker(TorchRunner):
                          scheduler_creator=scheduler_creator,
                          config=config,
                          use_tqdm=use_tqdm,
-                         scheduler_step_freq=scheduler_step_freq,
                          sync_stats=sync_stats,
                          log_level=log_level)
 

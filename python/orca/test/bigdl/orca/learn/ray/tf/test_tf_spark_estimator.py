@@ -88,11 +88,13 @@ class TestTFEstimator(TestCase):
                               validation_data=df,
                               validation_steps=1)
 
+            assert isinstance(res, dict), "fit should return a dict"
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
+            assert isinstance(res, dict), "evaluate should return a dict"
             print("validation result: ", res)
 
             res = trainer.predict(df, feature_cols=["feature"]).collect()
@@ -181,11 +183,13 @@ class TestTFEstimator(TestCase):
             res = trainer.fit(data=xshards, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["user", "item"], label_cols=["label"])
 
+            assert isinstance(res, dict), "fit should return a dict"
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             res = trainer.evaluate(data=xshards, num_steps=25, batch_size=4,
                                    feature_cols=["user", "item"], label_cols=["label"])
+            assert isinstance(res, dict), "evaluate should return a dict"
             print("validation result: ", res)
             predictions = trainer.predict(data=xshards, batch_size=4,
                                           feature_cols=["user", "item"])

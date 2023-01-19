@@ -38,7 +38,7 @@ predict_df = est.predict(df, batch_size=10240, feature_cols=feature_cols)
 
 
 # Step 4: Save the prediction results
-predict_df.write.parquet("predictions.parquet", mode="overwrite")
+predict_df.write.parquet("test_predictions_dataframe.parquet", mode="overwrite")
 
 
 # Step 5: Stop Orca Context when program finishes

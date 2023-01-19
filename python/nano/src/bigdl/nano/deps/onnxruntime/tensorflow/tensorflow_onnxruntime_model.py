@@ -106,8 +106,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"ModelType": type(self.target_obj).__name__,
-                       "onnx_path": 'onnx_saved_model.onnx',
+        status.update({"onnx_path": 'onnx_saved_model.onnx',
                        "attr_path": "onnx_saved_model_attr.pkl",
                        "compile_path": "onnx_saved_model_compile.pkl",
                        "intra_op_num_threads": self.session_options.intra_op_num_threads,

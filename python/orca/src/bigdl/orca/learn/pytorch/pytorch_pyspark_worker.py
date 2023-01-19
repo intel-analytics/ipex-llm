@@ -62,7 +62,6 @@ class PytorchPysparkWorker(TorchRunner):
                  scheduler_creator=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None,
                  state_dict=None,
                  backend="torch-distributed",
                  mode="fit",
@@ -81,7 +80,6 @@ class PytorchPysparkWorker(TorchRunner):
                          scheduler_creator=scheduler_creator,
                          config=config,
                          use_tqdm=use_tqdm,
-                         scheduler_step_freq=scheduler_step_freq,
                          sync_stats=sync_stats,
                          log_level=log_level)
 
