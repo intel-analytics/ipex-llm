@@ -56,9 +56,8 @@ ray stop -f
 
 echo "Running orca automl tests"
 python -m pytest -v test/bigdl/orca/automl \
-      --ignore=test/bigdl/orca/automl/autoestimator/test_autoestimator_keras.py
-      --ignore=test/bigdl/orca/automl/autoestimator/test_autoestimator_pytorch.py
-      --ignore=test/bigdl/orca/automl/model/test_base_keras_model.py
+      --ignore=test/bigdl/orca/automl/model/test_base_keras_model.py \
+      --ignore=test/bigdl/orca/automl/autoestimator/
 
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
