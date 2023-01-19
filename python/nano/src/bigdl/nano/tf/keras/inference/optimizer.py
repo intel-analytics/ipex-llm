@@ -319,7 +319,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
                            ``input_spec`` is required. If ``accelerator='openvino'``,
                            ``input_spec`` is only required when you have a custom Keras model.
->>>>>>> 76154c3972 (Revise docstrings for inputspec)
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
