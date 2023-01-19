@@ -28,6 +28,7 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Spark DataFrame")
 init_orca(args, extra_python_lib="tf_model.py")
+args.backend = 'spark'
 spark = OrcaContext.get_spark_session()
 
 
@@ -55,13 +56,14 @@ if args.lr_scheduler:
     callbacks.append(lr_callback)
 
 est.fit(train_df,
-        epochs=2,
+        epochs=4,
         batch_size=batch_size,
         steps_per_epoch=train_steps,
         validation_data=test_df,
         validation_steps=val_steps,
         feature_cols=feature_cols,
         label_cols=label_cols,
+        initial_epoch=2,
         callbacks=callbacks)
 
 
