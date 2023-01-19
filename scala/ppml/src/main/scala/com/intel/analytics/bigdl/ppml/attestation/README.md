@@ -300,4 +300,9 @@ POST <bigdl_remote_attestation_address>/verifyQuote
 * Request Payload:
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| quote | String | EH_SHA_2_256 | A valid DCAP quote in BASE64 |
+| quote | String | AwACAAAAAAAJAA0Ak5py... | A valid DCAP quote in BASE64 |
+
+* Response Data:
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| result | Int | 0/1/-1 | 0 for success, 1 for warning, -1 for error |
