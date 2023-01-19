@@ -406,16 +406,15 @@ class TFRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
+        # history is a callbacks object
+        # see https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/History
+        # history.params is a dict with keys verbose, epochs and steps
+        # history.history contains train and val stats for each epoch
         if history is None:
             stats = {}
         else:
             stats = dict()
-            # history is a callbacks object
-            # see https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/History
-            # history.params is a dict with keys verbose, epochs and steps
             stats.update(history.params)
-            # history.history contains train and val stats for each epoch
-            # e.g. {'loss': [0.4, 0.3], 'accuracy': [..., ...], ...}
             stats.update(history.history)
 
         self.epoch += epochs
