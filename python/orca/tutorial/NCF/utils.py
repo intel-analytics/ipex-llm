@@ -29,7 +29,7 @@ def parse_args(description):
     parser.add_argument("--cluster_mode", type=str, default="local",
                         help="The cluster mode, such as local, yarn-client, yarn-cluster, "
                              "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
-    parser.add_argument("--backend", type=str, default="spark",
+    parser.add_argument("--backend", type=str, default="ray",
                         help="The backend of Orca Estimator, either ray or spark.")
     parser.add_argument("--tensorboard", action='store_true',
                         help="Whether to use TensorBoard as the train callback.")
