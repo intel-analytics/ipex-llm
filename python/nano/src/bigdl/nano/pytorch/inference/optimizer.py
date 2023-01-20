@@ -457,8 +457,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status = \
-                            throughput_calculate_helper_with_env(latency_sample_num, baseline_time,func_test,
-                                                                 acce_model, input_sample, env_var=best_env)
+                            throughput_calculate_helper(latency_sample_num, baseline_time, func_test,
+                                                        acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -486,9 +486,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             if method == "original":
                                 # test whether metric works
                                 try:
-                                    result_map[method]["accuracy"] =\
-                                        accuracy_calculate_helper_with_env(acce_model, metric,
-                                                                           validation_data, env_var=best_env)
+                                    result_map[method]["accuracy"] = \
+                                        _accuracy_calculate_helper(acce_model, metric, validation_data)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
@@ -506,8 +505,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         "validation_data is None).")
                             else:
                                 result_map[method]["accuracy"] = \
-                                    accuracy_calculate_helper_with_env(acce_model, metric,
-                                                                       validation_data, env_var=best_env)
+                                    _accuracy_calculate_helper(acce_model, metric, validation_data)
                     else:
                         result_map[method]["accuracy"] = None
 
