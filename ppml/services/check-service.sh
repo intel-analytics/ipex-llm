@@ -1,5 +1,5 @@
 #!/bin/bash
-# Acceptable arguments: attestation, bigDLkms, ehsm, kmsUtils, pccs, all
+# Acceptable arguments: attestation, bigdl-kms, ehsm, kms-utils, pccs, all
 
 attestation () {
     echo "Detecting bigdl-attestation-service..."
@@ -97,16 +97,16 @@ else
     do
         if [ "$arg" == attestation ]; then
             attestation
-        elif [ "$arg" == bigdlKMS ]; then
-            kms
+        elif [ "$arg" == bigdl-kms ]; then
+            bigdl-kms
         elif [ "$arg" == ehsm ]; then
             ehsm
-        elif [ "$arg" == kmsUtils ]; then
+        elif [ "$arg" == kms-utils ]; then
             kms-utils
         elif [ "$arg" == pccs ]; then
             pccs
         else 
-            echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigDLKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
+            echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigdl-kms\", \"ehsm\", \"kms-utils\", \"pccs\""
         fi
     done
 fi
