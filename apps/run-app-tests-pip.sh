@@ -231,8 +231,7 @@ echo "#5 image-augmentation time used:$time5 seconds"
 echo "#6 start app test for dogs-vs-cats"
 start=$(date "+%s")
 
-# # Conversion to py file and data preparation
-
+# Conversion to py file and data preparation
 ${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/dogs-vs-cats/transfer-learning
 
 sed "s/setBatchSize(40)/setBatchSize(56)/g; s/file:\/\/path\/to\/data\/dogs-vs-cats\/demo/demo/g;s/path\/to\/model\/bigdl_inception-v1_imagenet_0.4.0.model/demo\/bigdl_inception-v1_imagenet_0.4.0.model/g" ${BIGDL_HOME}/apps/dogs-vs-cats/transfer-learning.py >${BIGDL_HOME}/apps/dogs-vs-cats/tmp.py
@@ -264,7 +263,7 @@ if [ -f "$FILENAME" ]
     echo "Finished downloading images"
  fi
 
-# # Run the example
+# Run the example
 export SPARK_DRIVER_MEMORY=2g
 python ${BIGDL_HOME}/apps/dogs-vs-cats/tmp.py
 
