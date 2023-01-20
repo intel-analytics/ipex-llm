@@ -295,6 +295,7 @@ bash bigdl-ppml-submit.sh \
 
 <details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
 
+
 If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
 
 You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
@@ -363,13 +364,13 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
      
   val ppmlArgs: Map[String, String] = Map(
     "spark.bigdl.kms.amyKMS.type" -> "SimpleKeyManagementService",
-    "spark.bigdl.kms.amyKMS.appId" -> SimpleAPPID,
-    "spark.bigdl.kms.amyKMS.apiKey" -> "SimpleAPIKEY",
+    "spark.bigdl.kms.amyKMS.appId" -> simpleAPPID,
+    "spark.bigdl.kms.amyKMS.apiKey" -> simpleAPIKEY,
     "spark.bigdl.kms.bobKMS.type" -> "EHSMKeyManagementService",
-    "spark.bigdl.kms.bobKMS.ip" -> EHSMIP,
-    "spark.bigdl.kms.bobKMS.port" -> EHSMPORT,
-    "spark.bigdl.kms.bobKMS.appId" -> EHSMAPPID,
-    "spark.bigdl.kms.bobKMS.apiKey" -> EHSMAPIKEY
+    "spark.bigdl.kms.bobKMS.ip" -> ehsmIP,
+    "spark.bigdl.kms.bobKMS.port" -> ehsmPort,
+    "spark.bigdl.kms.bobKMS.appId" -> ehsmAPPID,
+    "spark.bigdl.kms.bobKMS.apiKey" -> ehsmAPIKEY
   )
      
   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -385,13 +386,19 @@ For read/write data frames, configure their KMS, keys and path etc parameters. f
 
 
 ```scala
-val (kms, primaryKey, dataKey, inputEncryptMode, inputPath) = ("amyKMS", "/amyPrimaryKeyPath","./amyDataKeyPath","AES/CBC/PKCS5Padding", "./amyInputPath.csv")
-val amyDf = sc.read(kms, primaryKey, dataKey, inputEncryptMode)
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+
+val (inputEncryptMode, kms, primaryKey, dataKey, inputPath) = (
+    AES_CBC_PKCS5PADDING, "amyKMS",
+    "/amyPrimaryKeyPath", "./amyDataKeyPath", "./amyInputPath.csv")
+
+val amyDf = sc.read(inputEncryptMode, kms, primaryKey, dataKey)
               .option("header", "true")
               .csv(inputPath)
-......
-val (outputEncryptMode, outputPath) = ("plain_text", "./amyOuputPath.csv")
-sc.write(kms, primaryKey, dataKey, outputEncryptMode)
+// ......
+val (outputEncryptMode, outputPath) = ("./amyOuputPath.csv", PLAIN_TEXT)
+
+sc.write(amyDf, outputEncryptMode, kms, primaryKey, dataKey)
           .mode("overwrite")
           .option("header", true)
           .csv(outputPath)
