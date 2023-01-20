@@ -619,10 +619,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-             "spark.bigdl.kms.simple.id" -> "your_app_id",
-             "spark.bigdl.kms.simple.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.appId" -> "your_app_id",
+             "spark.bigdl.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
          )
     
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -638,8 +638,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       from bigdl.ppml.ppml_context import *
 
       ppml_args = {"kms_type": "SimpleKeyManagementService",
-                   "simple_app_id": "your_app_id",
-                   "simple_api_key": "your_api_key",
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -659,12 +659,12 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
          
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
-             "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
-             "spark.bigdl.kms.ehs.port" -> "your_server_port",
-             "spark.bigdl.kms.ehs.id" -> "your_app_id",
-             "spark.bigdl.kms.ehs.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.ip" -> "your_server_ip",
+             "spark.bigdl.kms.port" -> "your_server_port",
+             "spark.bigdl.kms.appId" -> "your_app_id",
+             "spark.bigdl.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
       )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -681,8 +681,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       ppml_args = {"kms_type": "EHSMKeyManagementService",
                    "kms_server_ip": "your_server_ip",
                    "kms_server_port": "your_server_port"
-                   "ehsm_app_id": "your_app_id",
-                   "ehsm_api_key": "your_api_key",
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
                    "primary_key_path": "/your/primary/key/path/primaryKey",
                    "data_key_path": "/your/data/key/path/dataKey"
                   }
@@ -705,10 +705,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
          
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "AzureKeyManagementService",
-             "spark.bigdl.kms.azure.vault" -> "key_vault_name",
-             "spark.bigdl.kms.azure.clientId" -> "client_id",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.vault" -> "key_vault_name",
+             "spark.bigdl.kms.clientId" -> "client_id",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
          )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -723,8 +723,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
        from bigdl.ppml.ppml_context import *
    
        ppml_args = {"kms_type": "AzureKeyManagementService",
-                    "azure_vault": "your_azure_vault",
-                    "azure_client_id": "your_azure_client_id",
+                    "vault": "your_azure_vault",
+                    "client_id": "your_azure_client_id",
                     "primary_key_path": "/your/primary/key/path/primaryKey",
                     "data_key_path": "/your/data/key/path/dataKey"
                    }
@@ -745,12 +745,12 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "BigDLKeyManagementService",
-             "spark.bigdl.kms.bigdl.ip" -> "your_server_ip",
-             "spark.bigdl.kms.bigdl.port" -> "your_server_port",
-             "spark.bigdl.kms.bigdl.user" -> "your_user_name",
-             "spark.bigdl.kms.bigdl.token" -> "your_user_token",
-             "spark.bigdl.kms.key.primary" -> "your_precreated_primary_key_name",
-             "spark.bigdl.kms.key.data" -> "your_precreated_data_key_name"
+             "spark.bigdl.kms.ip" -> "your_server_ip",
+             "spark.bigdl.kms.port" -> "your_server_port",
+             "spark.bigdl.kms.user" -> "your_user_name",
+             "spark.bigdl.kms.token" -> "your_user_token",
+             "spark.bigdl.kms.primaryKey" -> "your_precreated_primary_key_name",
+             "spark.bigdl.kms.dataKey" -> "your_precreated_data_key_name"
       )
    
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -792,10 +792,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
    val ppmlArgs: Map[String, String] = Map(
        "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-       "spark.bigdl.kms.simple.id" -> "your_app_id",
-       "spark.bigdl.kms.simple.key" -> "your_api_key",
-       "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-       "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+       "spark.bigdl.kms.appId" -> "your_app_id",
+       "spark.bigdl.kms.apiKey" -> "your_api_key",
+       "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+       "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
    )
    
    val conf: SparkConf = new SparkConf().setMaster("local[4]")
@@ -813,8 +813,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    from pyspark import SparkConf
    
    ppml_args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "your_app_id",
-                "simple_api_key": "your_api_key",
+                "app_id": "your_app_id",
+                "api_key": "your_api_key",
                 "primary_key_path": "/your/primary/key/path/primaryKey",
                 "data_key_path": "/your/data/key/path/dataKey"
                }
