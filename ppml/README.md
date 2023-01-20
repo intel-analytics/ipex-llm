@@ -640,8 +640,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       ppml_args = {"kms_type": "SimpleKeyManagementService",
                    "app_id": "your_app_id",
                    "api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "primary_key": "/your/primary/key/path/primaryKey",
+                   "data_key": "/your/data/key/path/dataKey"
                   }
 
       sc = PPMLContext("MyApp", ppml_args)
@@ -683,8 +683,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
                    "kms_server_port": "your_server_port"
                    "app_id": "your_app_id",
                    "api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "primary_key": "/your/primary/key/path/primaryKey",
+                   "data_key": "/your/data/key/path/dataKey"
                   }
    
       sc = PPMLContext("MyApp", ppml_args)
@@ -725,8 +725,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
        ppml_args = {"kms_type": "AzureKeyManagementService",
                     "vault": "your_azure_vault",
                     "client_id": "your_azure_client_id",
-                    "primary_key_path": "/your/primary/key/path/primaryKey",
-                    "data_key_path": "/your/data/key/path/dataKey"
+                    "primary_key": "/your/primary/key/path/primaryKey",
+                    "data_key": "/your/data/key/path/dataKey"
                    }
    
        sc = PPMLContext("MyApp", ppml_args)
@@ -769,8 +769,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
                     "kms_server_port": "your_server_port",
                     "kms_user_name": "your_user_name",
                     "kms_user_token": "your_user_token",
-                    "primary_key_name": "your_precreated_primary_key_name",
-                    "data_key_name": "your_precreated_data_key_name"
+                    "primary_key": "your_precreated_primary_key_name",
+                    "data_key": "your_precreated_data_key_name"
                    }
 
        sc = PPMLContext("MyApp", ppml_args)
@@ -815,8 +815,8 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    ppml_args = {"kms_type": "SimpleKeyManagementService",
                 "app_id": "your_app_id",
                 "api_key": "your_api_key",
-                "primary_key_path": "/your/primary/key/path/primaryKey",
-                "data_key_path": "/your/data/key/path/dataKey"
+                "primary_key": "/your/primary/key/path/primaryKey",
+                "data_key": "/your/data/key/path/dataKey"
                }
    
    conf = SparkConf()

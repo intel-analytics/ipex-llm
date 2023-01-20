@@ -43,15 +43,15 @@ class PPMLContext(JavaValue):
             if kms_type == "SimpleKeyManagementService":
                 conf["spark.bigdl.kms.appId"] = check(ppml_args, "app_id")
                 conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "app_key")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key_path")
+                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
+                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             elif kms_type == "EHSMKeyManagementService":
                 conf["spark.bigdl.kms.ip"] = check(ppml_args, "kms_server_ip")
                 conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
                 conf["spark.bigdl.kms.id"] = check(ppml_args, "app_id")
                 conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "app_key")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key_path")
+                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
+                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             elif kms_type == "AzureKeyManagementService":
                 conf["spark.bigdl.kms.vault"] = check(ppml_args, "vault")
                 conf["spark.bigdl.kms.clientId"] = ppml_args.get("client_id", "")
@@ -62,8 +62,8 @@ class PPMLContext(JavaValue):
                 conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
                 conf["spark.bigdl.kms.user"] = check(ppml_args, "kms_user_name")
                 conf["spark.bigdl.kms.token"] = check(ppml_args, "kms_user_token")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key_name")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key_name")
+                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
+                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             else:
                 invalidInputError(False, "invalid KMS type")
 
