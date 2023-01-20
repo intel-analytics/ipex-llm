@@ -119,10 +119,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
     rm -rf /ppml/BigDL && \
     cd /ppml
-<<<<<<< HEAD
-=======
-
->>>>>>> 33935df3c (Change python version to 3.8)
 
 
 ADD ./download_jars.sh /ppml
@@ -132,10 +128,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-<<<<<<< HEAD
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
-=======
 ENV PYTHONPATH   /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
->>>>>>> 33935df3c (Change python version to 3.8)
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
