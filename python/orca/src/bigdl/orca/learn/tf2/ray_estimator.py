@@ -282,7 +282,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                       data_config)
                     remote_worker_stats.append(worker.step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
-                worker_stats = list(itertools.chain.from_iterable(worker_stats))
             else:
                 invalidInputError(isinstance(validation_data, ray.data.Dataset),
                                   "Validation data type should be the same as train data,"
@@ -302,7 +301,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                                  data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
-                worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -310,7 +308,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
                                     for i in range(self.num_workers)])
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
+        # TensorFlow automatically synchronizes results on all the workers
+        # and thus only need to return the result of the first worker
         stats = worker_stats[0].copy()
         return stats
 

@@ -116,7 +116,6 @@ class TorchRunner(BaseRunner):
                  scheduler_creator=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None,
                  sync_stats=True,
                  log_level=logging.INFO):
         logging.basicConfig(level=log_level,
@@ -141,7 +140,6 @@ class TorchRunner(BaseRunner):
         self.train_loader = None
         self.validation_loader = None
         self.use_tqdm = use_tqdm
-        self.scheduler_step_freq = scheduler_step_freq
         self.sync_stats = sync_stats
         self.epochs_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
@@ -295,9 +293,6 @@ class TorchRunner(BaseRunner):
         info = info or {}
         self._toggle_profiling(profile=profile)
 
-        info.update({
-            SCHEDULER_STEP: self.scheduler_step_freq
-        })
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
             train_stats = self._train_epoch(data_loader, info, callbacks)
@@ -306,7 +301,6 @@ class TorchRunner(BaseRunner):
             with self.timers.record("validation"):
                 info = info or {}
                 validation_results = self._validate(val_loader,
-                                                    info=info,
                                                     metrics=self.metrics,
                                                     num_steps=val_steps,
                                                     callbacks=callbacks)
@@ -333,8 +327,7 @@ class TorchRunner(BaseRunner):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
-        call ``self.train_batch`` over each batch. If ``scheduler_step_freq``
-        is set, this default method will also step the scheduler accordingly.
+        call ``self.train_batch`` over each batch.
 
         You do not need to call ``train_batch`` in this method if you plan
         to implement a custom optimization/training routine here.
@@ -396,28 +389,20 @@ class TorchRunner(BaseRunner):
         from torch.nn.parallel import DistributedDataParallel as DDP
         if isinstance(self.model, DDP):
             with self.model.join():
-                self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+                self._train_loop(iterator, _progress_bar, metric_meters, callbacks)
         else:
-            self._train_loop(iterator, info, _progress_bar, metric_meters, callbacks)
+            self._train_loop(iterator, _progress_bar, metric_meters, callbacks)
 
-        if self.scheduler and info.get(
-                SCHEDULER_STEP) == SCHEDULER_STEP_EPOCH:
-            # TODO: Totally abandon SCHEDULER_STEP
-            self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
+        self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
         return metric_meters.summary(sync_stats=self.sync_stats,
                                      dist_backend=self.dist_backend)
 
-    def _train_loop(self, iterator, info, _progress_bar, metric_meters, callbacks):
+    def _train_loop(self, iterator, _progress_bar, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
             self.batch_idx = batch_idx
-            batch_info = {
-                "batch_idx": batch_idx,
-                "global_step": self.global_step
-            }
-            batch_info.update(info)
 
-            self._train_batch(batch, callbacks=callbacks, batch_info=batch_info)
+            self._train_batch(batch, callbacks=callbacks)
 
             if self.use_tqdm and self.rank == 0:
                 _progress_bar.n = batch_idx + 1
@@ -426,18 +411,13 @@ class TorchRunner(BaseRunner):
                     postfix.update(loss=self.metrics_stats["train_loss"])
                 _progress_bar.set_postfix(postfix)
 
-            if self.scheduler and batch_info.get(
-                    SCHEDULER_STEP) == SCHEDULER_STEP_BATCH:
-                # TODO: Totally abandon SCHEDULER_STEP
-                self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
-
             metric_meters.update(self.metrics_stats, n=self.metrics_stats.pop(NUM_SAMPLES, 1))
             self.global_step += 1
 
             del self.batch_idx
             del self.metrics_stats
 
-    def _train_batch(self, batch, batch_info=None, callbacks=None):
+    def _train_batch(self, batch, callbacks=None):
         """Computes loss and updates the model over one batch.
 
         This method is responsible for computing the loss and gradient and
@@ -527,7 +507,6 @@ class TorchRunner(BaseRunner):
 
         with self.timers.record("validation"):
             validation_stats = self._validate(loader,
-                                              info=info,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
                                               callbacks=callbacks)
@@ -535,7 +514,7 @@ class TorchRunner(BaseRunner):
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
-    def _validate(self, val_iterator, info, metrics, num_steps=None, callbacks=None):
+    def _validate(self, val_iterator, metrics, num_steps=None, callbacks=None):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -567,16 +546,17 @@ class TorchRunner(BaseRunner):
         self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
+                self.batch_idx = batch_idx
                 if num_steps and batch_idx == num_steps:
                     break
-                batch_info = {"batch_idx": batch_idx}
-                batch_info.update(info)
-                output, target, loss = self.forward_batch(batch, batch_info, callbacks)
+                output, target, loss = self.forward_batch(batch, callbacks)
                 num_samples = get_batchsize(target)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():
                     metric(output, target)
+
+                del self.batch_idx
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
@@ -587,7 +567,7 @@ class TorchRunner(BaseRunner):
 
         return result
 
-    def forward_batch(self, batch, batch_info, callbacks=None):
+    def forward_batch(self, batch, callbacks=None):
         """Calculates the loss and accuracy over a given batch.
 
         You can override this method to provide arbitrary metrics.

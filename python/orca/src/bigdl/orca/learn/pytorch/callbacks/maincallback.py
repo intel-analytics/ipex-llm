@@ -75,7 +75,7 @@ class MainCallback(Callback):
         By default, this will step scheduler if there is scheduler in runner.
         Any behavior inconsistent with the default behavior should be overridden here.
         """
-        if runner.scheduler is not None:
+        if runner.scheduler:
             runner.scheduler.step()
 
     def on_train_forward(self, runner):

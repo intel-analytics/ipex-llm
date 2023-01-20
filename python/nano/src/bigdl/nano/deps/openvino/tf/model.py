@@ -92,8 +92,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"ModelType": type(self.target_obj).__name__,
-                       "xml_path": 'ov_saved_model.xml',
+        status.update({"xml_path": 'ov_saved_model.xml',
                        "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,

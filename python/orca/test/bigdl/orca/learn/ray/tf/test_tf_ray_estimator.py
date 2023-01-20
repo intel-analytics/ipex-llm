@@ -239,7 +239,7 @@ class TestTFRayEstimator(TestCase):
             verbose=True,
             backend="ray", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
-        assert stats["train_loss"] == 0.0
+        assert stats["loss"] == [0.0]
 
     def test_auto_shard_horovod(self):
         # file 1 contains all 0s, file 2 contains all 1s
@@ -258,7 +258,7 @@ class TestTFRayEstimator(TestCase):
             verbose=True,
             backend="horovod", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
-        assert stats["train_loss"] == 0.0
+        assert stats["loss"] == [0.0]
 
     # this needs horovod >= 0.19.2
     def test_horovod_learning_rate_schedule(self):
@@ -318,8 +318,10 @@ class TestTFRayEstimator(TestCase):
             config=config,
             workers_per_node=2)
 
-        trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
-        trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
+        stats = trainer.fit(train_data_shard, epochs=1, batch_size=4, steps_per_epoch=25)
+        assert isinstance(stats, dict), "fit should return a dict"
+        stats = trainer.evaluate(train_data_shard, batch_size=4, num_steps=25)
+        assert isinstance(stats, dict), "evaluate should return a dict"
 
     def test_less_partitition_than_workers(self):
 
@@ -376,12 +378,13 @@ class TestTFRayEstimator(TestCase):
             config=config,
             workers_per_node=2)
 
-        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
-                    feature_cols=["feature"],
-                    label_cols=["label"])
+        stats = trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                            feature_cols=["feature"],
+                            label_cols=["label"])
+        assert isinstance(stats, dict), "fit should return a dict"
         stats = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                  label_cols=["label"])
-        assert isinstance(stats, dict)
+        assert isinstance(stats, dict), "evaluate should return a dict"
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_dataframe_decimal_input(self):

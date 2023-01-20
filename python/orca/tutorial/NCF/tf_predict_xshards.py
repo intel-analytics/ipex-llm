@@ -38,7 +38,7 @@ predictions = est.predict(data, batch_size=10240, feature_cols=feature_cols)
 
 
 # Step 4: Save the prediction results
-predictions.save_pickle("predictions_xshards")
+predictions.save_pickle("test_predictions_xshards")
 
 
 # Step 5: Stop Orca Context when program finishes
