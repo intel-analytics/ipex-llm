@@ -105,11 +105,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-<<<<<<< HEAD
-    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
-=======
     patch /usr/local/lib/python3.8/dist-packages/datasets/utils/filelock.py /filelock.patch && \
->>>>>>> 33935df3c (Change python version to 3.8)
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
