@@ -28,6 +28,7 @@ from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -113,8 +114,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
+        self.use_tqdm = use_tqdm
         self.backend = backend
         self.workers_per_node = workers_per_node
 
@@ -194,9 +195,10 @@ class PyTorchRayEstimator(BaseRayEstimator):
             batch_size = 1
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(
             epochs=epochs,
@@ -444,9 +446,10 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              shard_size=batch_size)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(batch_size=batch_size,
                       num_steps=num_steps,
