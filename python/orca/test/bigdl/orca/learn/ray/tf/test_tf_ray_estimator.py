@@ -239,7 +239,7 @@ class TestTFRayEstimator(TestCase):
             verbose=True,
             backend="ray", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
-        assert stats["train_loss"] == 0.0
+        assert stats["loss"] == [0.0]
 
     def test_auto_shard_horovod(self):
         # file 1 contains all 0s, file 2 contains all 1s
@@ -258,7 +258,7 @@ class TestTFRayEstimator(TestCase):
             verbose=True,
             backend="horovod", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
-        assert stats["train_loss"] == 0.0
+        assert stats["loss"] == [0.0]
 
     # this needs horovod >= 0.19.2
     def test_horovod_learning_rate_schedule(self):
