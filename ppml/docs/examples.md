@@ -296,7 +296,7 @@ bash bigdl-ppml-submit.sh \
 <details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
 
 
-If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
+If you have multiple data sources that use different keys, you can also use the `initPPMLContext` method to automatically initialize PPML Context with support for multiple key management services and data sources.   
 
 You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
 
