@@ -1314,7 +1314,7 @@ class TestChronosModelTCNForecaster(TestCase):
     def test_tcn_forecaster_eval_shuffle_loader(self):
         from torch.utils.data import DataLoader, TensorDataset
         from numpy.testing import assert_almost_equal
-        train_data, val_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,
@@ -1340,7 +1340,7 @@ class TestChronosModelTCNForecaster(TestCase):
     def test_tcn_forecaster_dummy_encoder(self):
         from torch.utils.data import DataLoader, TensorDataset
         from numpy.testing import assert_almost_equal
-        train_data, val_data, test_data = create_data()
+        train_data, _, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,

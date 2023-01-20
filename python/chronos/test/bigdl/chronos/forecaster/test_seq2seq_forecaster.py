@@ -538,7 +538,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=1,
                                        loss="mse",
                                        lr=0.01)
-        forecaster.fitted = True
+        forecaster.fit(train_data, epochs=1)
         test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
                                                          torch.from_numpy(test_data[1])),
                                            batch_size=32,
@@ -550,30 +550,9 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         eval_f = forecaster.evaluate(test_loader_shuffle_f)
         eval_t = forecaster.evaluate(test_loader_shuffle_t)
         assert_almost_equal(eval_f, eval_t)
-
-    @op_inference
-    def test_s2s_forecaster_eval_with_onnx_shuffle_loader(self):
-        from torch.utils.data import DataLoader, TensorDataset
-        from numpy.testing import assert_almost_equal
-        train_data, val_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                       future_seq_len=5,
-                                       input_feature_num=1,
-                                       output_feature_num=1,
-                                       loss="mse",
-                                       lr=0.01)
-        forecaster.fitted = True
-        test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
-                                                         torch.from_numpy(test_data[1])),
-                                           batch_size=32,
-                                           shuffle=False)
-        test_loader_shuffle_t = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
-                                                         torch.from_numpy(test_data[1])),
-                                           batch_size=32,
-                                           shuffle=True)
-        eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
-        eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
-        assert_almost_equal(eval_f, eval_t)
+        onnx_eval_f = forecaster.evaluate_with_onnx(test_loader_shuffle_f)
+        onnx_eval_t = forecaster.evaluate_with_onnx(test_loader_shuffle_t)
+        assert_almost_equal(onnx_eval_f, onnx_eval_t)
 
     def test_s2s_forecaster_export_forecasting_pipeline(self):
         import shutil
