@@ -67,7 +67,6 @@ jobs:
       friesian: ${{ steps.filter.outputs.friesian }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca: ${{ steps.filter.outputs.orca }}
-      orca-pytest: ${{ steps.filter.output.orc-pytest }}
       orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
       orca-example: ${{ steps.filter.outputs.orca-example }}
       ppml: ${{ steps.filter.outputs.ppml }}
