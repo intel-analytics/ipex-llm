@@ -113,7 +113,7 @@ jobs:
               - 'python/ppml/**'
               - 'python/dllib/**'
               - '.github/actions/ppml/**'
-
+              
             orca:
               - 'python/orca/src/**'
               - 'python/orca/dev/**'
@@ -133,7 +133,7 @@ jobs:
               - 'scala/orca/pom.xml'
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
-            
+              
             orca-example:
               - 'python/orca/src/**'
               - 'python/orca/example/**'
