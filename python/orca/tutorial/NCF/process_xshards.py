@@ -88,7 +88,7 @@ def prepare_data(dataset_dir, num_ng=4):
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
     item_set = set(items["item"].unique())
-    user_num = int(max(user_set) + 1)
+    user_num = int(max(user_set) + 1)  # convert long to int to support json.dump()
     item_num = int(max(item_set) + 1)
 
     print("Processing features...")
