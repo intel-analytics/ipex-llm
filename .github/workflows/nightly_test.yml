@@ -439,7 +439,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Ray-Ctx-Example:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }}
+#    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
