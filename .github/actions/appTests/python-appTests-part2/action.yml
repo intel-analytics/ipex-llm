@@ -27,7 +27,6 @@ runs:
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
     
     - name: Run test
       shell: bash
@@ -55,6 +54,3 @@ runs:
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
-        BIGDL_HOME: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_HOME: ${{ github.workspace }}
