@@ -6,7 +6,7 @@ clear_up () {
     pip uninstall -y bigdl-orca
 }
 
-chmod +x ${BIGDL_HOME}/apps/ipynb2py.sh
+chmod +x ${BIGDL_ROOT}/apps/ipynb2py.sh
 RUN_PART1=0
 RUN_PART2=0
 
@@ -24,29 +24,29 @@ if [ $RUN_PART1 = 1 ]; then
 echo "#1 start app test for using_variational_autoencoder_and_deep_feature_loss_to_generate_faces"
 #timer
 start=$(date "+%s")
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces
- sed -i "s/data_files\[\:100000\]/data_files\[\:500\]/g; s/batch_size=batch_size/batch_size=100/g" ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces.py
-FILENAME="${BIGDL_HOME}/apps/variational-autoencoder/analytics-zoo_vgg-16_imagenet_0.1.0.model"
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces
+ sed -i "s/data_files\[\:100000\]/data_files\[\:500\]/g; s/batch_size=batch_size/batch_size=100/g" ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces.py
+FILENAME="${BIGDL_ROOT}/apps/variational-autoencoder/analytics-zoo_vgg-16_imagenet_0.1.0.model"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG model"
-   wget -P ${BIGDL_HOME}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/analytics-zoo_vgg-16_imagenet_0.1.0.model --no-host-directories
+   wget -P ${BIGDL_ROOT}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/analytics-zoo_vgg-16_imagenet_0.1.0.model --no-host-directories
    echo "Finished"
 fi
- FILENAME="${BIGDL_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
+ FILENAME="${BIGDL_ROOT}/apps/variational-autoencoder/img_align_celeba.zip"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading celeba images"
-   wget -P ${BIGDL_HOME}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
-   unzip -d ${BIGDL_HOME}/apps/variational-autoencoder/ ${BIGDL_HOME}/apps/variational-autoencoder/img_align_celeba.zip
+   wget -P ${BIGDL_ROOT}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
+   unzip -d ${BIGDL_ROOT}/apps/variational-autoencoder/ ${BIGDL_ROOT}/apps/variational-autoencoder/img_align_celeba.zip
    echo "Finished"
 fi
  export SPARK_DRIVER_MEMORY=200g
-python ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces.py
+python ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_and_deep_feature_loss_to_generate_faces.py
  exit_status=$?
 
 if [ $exit_status -ne 0 ];
@@ -76,12 +76,12 @@ if [[ ! -z "${FTP_URI}" ]]; then
 fi
 
 
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers
 
-sed "s/nb_epoch = 6/nb_epoch=2/g; s/batch_size=batch_size/batch_size=1008/g" ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers.py > ${BIGDL_HOME}/apps/variational-autoencoder/tmp_test.py
+sed "s/nb_epoch = 6/nb_epoch=2/g; s/batch_size=batch_size/batch_size=1008/g" ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_digital_numbers.py > ${BIGDL_ROOT}/apps/variational-autoencoder/tmp_test.py
 
 export SPARK_DRIVER_MEMORY=12g
-#python ${BIGDL_HOME}/apps/variational-autoencoder/tmp_test.py
+#python ${BIGDL_ROOT}/apps/variational-autoencoder/tmp_test.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -100,14 +100,14 @@ echo "#3 start app test for anomaly-detection-nyc-taxi"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi
-wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P ${BIGDL_HOME}/bin/data/NAB/nyc_taxi/
-sed "s/nb_epoch=20/nb_epoch=2/g; s/batch_size=1024/batch_size=1008/g" ${BIGDL_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py > ${BIGDL_HOME}/apps/anomaly-detection/tmp_test.py
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/anomaly-detection/anomaly-detection-nyc-taxi
+wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P ${BIGDL_ROOT}/bin/data/NAB/nyc_taxi/
+sed "s/nb_epoch=20/nb_epoch=2/g; s/batch_size=1024/batch_size=1008/g" ${BIGDL_ROOT}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py > ${BIGDL_ROOT}/apps/anomaly-detection/tmp_test.py
 
 # Run the example
 export SPARK_DRIVER_MEMORY=2g
-export BIGDL_HOME=${BIGDL_HOME}
-python ${BIGDL_HOME}/apps/anomaly-detection/tmp_test.py
+export BIGDL_ROOT=${BIGDL_ROOT}
+python ${BIGDL_ROOT}/apps/anomaly-detection/tmp_test.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -126,69 +126,69 @@ echo "#4 start app test for image-similarity"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/image-similarity/image-similarity
-sed "s/setBatchSize(20)/setBatchSize(56)/g;s/setMaxEpoch(2)/setMaxEpoch(1)/g;s%/tmp/images%${BIGDL_HOME}/apps/image-similarity%g;s%imageClassification%miniimageClassification%g;s%/googlenet_places365/deploy.prototxt%/googlenet_places365/deploy_googlenet_places365.prototxt%g;s%/vgg_16_places365/deploy.prototxt%/vgg_16_places365/deploy_vgg16_places365.prototxt%g;s%./samples%${BIGDL_HOME}/apps/image-similarity/samples%g" ${BIGDL_HOME}/apps/image-similarity/image-similarity.py >${BIGDL_HOME}/apps/image-similarity/tmp.py
-FILENAME="${BIGDL_HOME}/apps/image-similarity/miniimageClassification.tar.gz"
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/image-similarity/image-similarity
+sed "s/setBatchSize(20)/setBatchSize(56)/g;s/setMaxEpoch(2)/setMaxEpoch(1)/g;s%/tmp/images%${BIGDL_ROOT}/apps/image-similarity%g;s%imageClassification%miniimageClassification%g;s%/googlenet_places365/deploy.prototxt%/googlenet_places365/deploy_googlenet_places365.prototxt%g;s%/vgg_16_places365/deploy.prototxt%/vgg_16_places365/deploy_vgg16_places365.prototxt%g;s%./samples%${BIGDL_ROOT}/apps/image-similarity/samples%g" ${BIGDL_ROOT}/apps/image-similarity/image-similarity.py >${BIGDL_ROOT}/apps/image-similarity/tmp.py
+FILENAME="${BIGDL_ROOT}/apps/image-similarity/miniimageClassification.tar.gz"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
-   tar -zxvf ${BIGDL_HOME}/apps/image-similarity/miniimageClassification.tar.gz -C ${BIGDL_HOME}/apps/image-similarity
+   tar -zxvf ${BIGDL_ROOT}/apps/image-similarity/miniimageClassification.tar.gz -C ${BIGDL_ROOT}/apps/image-similarity
 else
    echo "Downloading images"
 
-   wget $FTP_URI/analytics-zoo-data/miniimageClassification.tar.gz -P ${BIGDL_HOME}/apps/image-similarity
-   tar -zxvf ${BIGDL_HOME}/apps/image-similarity/miniimageClassification.tar.gz -C ${BIGDL_HOME}/apps/image-similarity
+   wget $FTP_URI/analytics-zoo-data/miniimageClassification.tar.gz -P ${BIGDL_ROOT}/apps/image-similarity
+   tar -zxvf ${BIGDL_ROOT}/apps/image-similarity/miniimageClassification.tar.gz -C ${BIGDL_ROOT}/apps/image-similarity
 
    echo "Finished downloading images"
 fi
-FILENAME="${BIGDL_HOME}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
+FILENAME="${BIGDL_ROOT}/apps/image-similarity/googlenet_places365/deploy_googlenet_places365.prototxt"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 deploy model"
 
-   wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_googlenet_places365.prototxt -P ${BIGDL_HOME}/apps/image-similarity/googlenet_places365
+   wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_googlenet_places365.prototxt -P ${BIGDL_ROOT}/apps/image-similarity/googlenet_places365
 
    echo "Finished downloading model"
 fi
-FILENAME="${BIGDL_HOME}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
+FILENAME="${BIGDL_ROOT}/apps/image-similarity/googlenet_places365/googlenet_places365.caffemodel"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading places365 weight model"
 
-   wget $FTP_URI/analytics-zoo-models/image-similarity/googlenet_places365.caffemodel -P ${BIGDL_HOME}/apps/image-similarity/googlenet_places365
+   wget $FTP_URI/analytics-zoo-models/image-similarity/googlenet_places365.caffemodel -P ${BIGDL_ROOT}/apps/image-similarity/googlenet_places365
 
    echo "Finished downloading model"
 fi
-FILENAME="${BIGDL_HOME}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
+FILENAME="${BIGDL_ROOT}/apps/image-similarity/vgg_16_places365/deploy_vgg16_places365.prototxt"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG deploy model"
 
-   wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_vgg16_places365.prototxt -P ${BIGDL_HOME}/apps/image-similarity/vgg_16_places365
+   wget $FTP_URI/analytics-zoo-models/image-similarity/deploy_vgg16_places365.prototxt -P ${BIGDL_ROOT}/apps/image-similarity/vgg_16_places365
 
    echo "Finished downloading model"
 fi
-FILENAME="${BIGDL_HOME}/apps/image-similarity/vgg_16_places365/vgg16_places365.caffemodel"
+FILENAME="${BIGDL_ROOT}/apps/image-similarity/vgg_16_places365/vgg16_places365.caffemodel"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading VGG weight model"
 
-   wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel  -P ${BIGDL_HOME}/apps/image-similarity/vgg_16_places365
+   wget $FTP_URI/analytics-zoo-models/image-classification/vgg16_places365.caffemodel  -P ${BIGDL_ROOT}/apps/image-similarity/vgg_16_places365
 
    echo "Finished downloading model"
 fi
 
 # Run the example
 export SPARK_DRIVER_MEMORY=12g
-python ${BIGDL_HOME}/apps/image-similarity/tmp.py
+python ${BIGDL_ROOT}/apps/image-similarity/tmp.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -208,11 +208,11 @@ echo "#5 start app test for image-augmentation"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/image-augmentation/image-augmentation
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/image-augmentation/image-augmentation
 
 # Run the example
 export SPARK_DRIVER_MEMORY=1g
-cd ${BIGDL_HOME}/apps/image-augmentation/
+cd ${BIGDL_ROOT}/apps/image-augmentation/
 python image-augmentation.py
 
 exit_status=$?
@@ -232,11 +232,11 @@ echo "#6 start app test for dogs-vs-cats"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/dogs-vs-cats/transfer-learning
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/dogs-vs-cats/transfer-learning
 
-sed "s/setBatchSize(40)/setBatchSize(56)/g; s/file:\/\/path\/to\/data\/dogs-vs-cats\/demo/demo/g;s/path\/to\/model\/bigdl_inception-v1_imagenet_0.4.0.model/demo\/bigdl_inception-v1_imagenet_0.4.0.model/g" ${BIGDL_HOME}/apps/dogs-vs-cats/transfer-learning.py >${BIGDL_HOME}/apps/dogs-vs-cats/tmp.py
+sed "s/setBatchSize(40)/setBatchSize(56)/g; s/file:\/\/path\/to\/data\/dogs-vs-cats\/demo/demo/g;s/path\/to\/model\/bigdl_inception-v1_imagenet_0.4.0.model/demo\/bigdl_inception-v1_imagenet_0.4.0.model/g" ${BIGDL_ROOT}/apps/dogs-vs-cats/transfer-learning.py >${BIGDL_ROOT}/apps/dogs-vs-cats/tmp.py
 
-FILENAME="${BIGDL_HOME}/apps/dogs-vs-cats/bigdl_inception-v1_imagenet_0.4.0.model"
+FILENAME="${BIGDL_ROOT}/apps/dogs-vs-cats/bigdl_inception-v1_imagenet_0.4.0.model"
 if [ -f "$FILENAME" ]
  then
     echo "$FILENAME already exists."
@@ -248,24 +248,24 @@ if [ -f "$FILENAME" ]
     echo "Finished downloading model"
  fi
 
-FILENAME="${BIGDL_HOME}/apps/dogs-vs-cats/train.zip"
+FILENAME="${BIGDL_ROOT}/apps/dogs-vs-cats/train.zip"
 if [ -f "$FILENAME" ]
  then
     echo "$FILENAME already exists."
  else
     echo "Downloading dogs and cats images"
-    wget  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip  -P ${BIGDL_HOME}/apps/dogs-vs-cats
-    unzip -d ${BIGDL_HOME}/apps/dogs-vs-cats/ ${BIGDL_HOME}/apps/dogs-vs-cats/train.zip
+    wget  $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/train.zip  -P ${BIGDL_ROOT}/apps/dogs-vs-cats
+    unzip -d ${BIGDL_ROOT}/apps/dogs-vs-cats/ ${BIGDL_ROOT}/apps/dogs-vs-cats/train.zip
     mkdir -p demo/dogs
     mkdir -p demo/cats
-    cp ${BIGDL_HOME}/apps/dogs-vs-cats/train/cat.7* demo/cats
-    cp ${BIGDL_HOME}/apps/dogs-vs-cats/train/dog.7* demo/dogs
+    cp ${BIGDL_ROOT}/apps/dogs-vs-cats/train/cat.7* demo/cats
+    cp ${BIGDL_ROOT}/apps/dogs-vs-cats/train/dog.7* demo/dogs
     echo "Finished downloading images"
  fi
 
 # Run the example
 export SPARK_DRIVER_MEMORY=2g
-python ${BIGDL_HOME}/apps/dogs-vs-cats/tmp.py
+python ${BIGDL_ROOT}/apps/dogs-vs-cats/tmp.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -285,11 +285,11 @@ echo "#7 start app test for image-augmentation-3d"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/image-augmentation-3d/image-augmentation-3d
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/image-augmentation-3d/image-augmentation-3d
 
 # Run the example
 export SPARK_DRIVER_MEMORY=1g
-cd ${BIGDL_HOME}/apps/image-augmentation-3d/
+cd ${BIGDL_ROOT}/apps/image-augmentation-3d/
 python image-augmentation-3d.py
 
 exit_status=$?
@@ -311,20 +311,20 @@ if [ $RUN_PART2 = 1 ]; then
 echo "#8 start app test for using_variational_autoencoder_to_generate_faces"
 #timer
 start=$(date "+%s")
- ${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
- sed -i "s/data_files\[\:100000\]/data_files\[\:500\]/g; s/batch_size=batch_size/batch_size=100/g" ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
-FILENAME="${BIGDL_HOME}/apps/variational-autoencoder/img_align_celeba.zip"
+ ${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces
+ sed -i "s/data_files\[\:100000\]/data_files\[\:500\]/g; s/batch_size=batch_size/batch_size=100/g" ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
+FILENAME="${BIGDL_ROOT}/apps/variational-autoencoder/img_align_celeba.zip"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading celeba images"
-   wget -P ${BIGDL_HOME}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
-   unzip -d ${BIGDL_HOME}/apps/variational-autoencoder/ ${BIGDL_HOME}/apps/variational-autoencoder/img_align_celeba.zip
+   wget -P ${BIGDL_ROOT}/apps/variational-autoencoder/ $FTP_URI/analytics-zoo-data/apps/variational-autoencoder/img_align_celeba.zip --no-host-directories
+   unzip -d ${BIGDL_ROOT}/apps/variational-autoencoder/ ${BIGDL_ROOT}/apps/variational-autoencoder/img_align_celeba.zip
    echo "Finished"
 fi
  export SPARK_DRIVER_MEMORY=200g
-python ${BIGDL_HOME}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
+python ${BIGDL_ROOT}/apps/variational-autoencoder/using_variational_autoencoder_to_generate_faces.py
  exit_status=$?
 if [ $exit_status -ne 0 ];
 then
@@ -341,8 +341,8 @@ echo "#9 start app test for sentiment-analysis"
 start=$(date "+%s")
 
 # Conversion to py file and data preparation
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/sentiment-analysis/sentiment
-sed "s/batch_size = 64/batch_size = 84/g" ${BIGDL_HOME}/apps/sentiment-analysis/sentiment.py >${BIGDL_HOME}/apps/sentiment-analysis/tmp_test.py
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/sentiment-analysis/sentiment
+sed "s/batch_size = 64/batch_size = 84/g" ${BIGDL_ROOT}/apps/sentiment-analysis/sentiment.py >${BIGDL_ROOT}/apps/sentiment-analysis/tmp_test.py
 FILENAME="/tmp/.bigdl/dataset/glove.6B.zip"
 if [ -f "$FILENAME" ]
 then
@@ -355,7 +355,7 @@ fi
 
 # Run the example
 export SPARK_DRIVER_MEMORY=12g
-python ${BIGDL_HOME}/apps/sentiment-analysis/tmp_test.py
+python ${BIGDL_ROOT}/apps/sentiment-analysis/tmp_test.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -372,21 +372,21 @@ echo "#9 sentiment-analysis time used:$time9 seconds"
 echo "#10 start app test for anomaly-detection-hd"
 #timer
 start=$(date "+%s")
-FILENAME="${BIGDL_HOME}/apps/anomaly-detection-hd/realworld.zip"
+FILENAME="${BIGDL_ROOT}/apps/anomaly-detection-hd/realworld.zip"
 if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists"
 else
-    wget $FTP_URI/analytics-zoo-data/data/HiCS/realworld.zip  -P ${BIGDL_HOME}/apps/anomaly-detection-hd
+    wget $FTP_URI/analytics-zoo-data/data/HiCS/realworld.zip  -P ${BIGDL_ROOT}/apps/anomaly-detection-hd
 fi
-dataPath="${BIGDL_HOME}/bin/data/HiCS/"
+dataPath="${BIGDL_ROOT}/bin/data/HiCS/"
 rm -rf "$dataPath"
-mkdir -p ${BIGDL_HOME}/bin/data/HiCS/
-unzip ${BIGDL_HOME}/apps/anomaly-detection-hd/realworld.zip -d ${BIGDL_HOME}/bin/data/HiCS/  
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/anomaly-detection-hd/autoencoder-zoo
-sed -i '/get_ipython()/d' ${BIGDL_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
-sed -i '127,273d' ${BIGDL_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
-python ${BIGDL_HOME}/apps/anomaly-detection-hd/autoencoder-zoo.py
+mkdir -p ${BIGDL_ROOT}/bin/data/HiCS/
+unzip ${BIGDL_ROOT}/apps/anomaly-detection-hd/realworld.zip -d ${BIGDL_ROOT}/bin/data/HiCS/  
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/anomaly-detection-hd/autoencoder-zoo
+sed -i '/get_ipython()/d' ${BIGDL_ROOT}/apps/anomaly-detection-hd/autoencoder-zoo.py
+sed -i '127,273d' ${BIGDL_ROOT}/apps/anomaly-detection-hd/autoencoder-zoo.py
+python ${BIGDL_ROOT}/apps/anomaly-detection-hd/autoencoder-zoo.py
 exit_status=$?
 if [ $exit_status -ne 0 ];
 then
@@ -402,8 +402,8 @@ echo "#11 start app test for ray paramater-server"
 #timer
 start=$(date "+%s")
 
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/ray/parameter_server/sharded_parameter_server
-python ${BIGDL_HOME}/apps/ray/parameter_server/sharded_parameter_server.py
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/ray/parameter_server/sharded_parameter_server
+python ${BIGDL_ROOT}/apps/ray/parameter_server/sharded_parameter_server.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -420,52 +420,52 @@ echo "#11 ray paramater-server time used:$time11 seconds"
 echo "#12 start app test for image_classification_inference"
 #timer
 start=$(date "+%s")
-${BIGDL_HOME}/apps/ipynb2py.sh ${BIGDL_HOME}/apps/tfnet/image_classification_inference
+${BIGDL_ROOT}/apps/ipynb2py.sh ${BIGDL_ROOT}/apps/tfnet/image_classification_inference
 
-sed "s%/path/to/yourdownload%${BIGDL_HOME}/apps/tfnet%g;s%file:///path/toyourdownload/dogs-vs-cats/train%${BIGDL_HOME}/apps/tfnet/data/minitrain%g;s%test.jpg%${BIGDL_HOME}/apps/tfnet/test.jpg%g;s%imagenet_class_index.json%${BIGDL_HOME}/apps/tfnet/imagenet_class_index.json%g; s/setBatchSize(16)/setBatchSize(56)/g;" ${BIGDL_HOME}/apps/tfnet/image_classification_inference.py > ${BIGDL_HOME}/apps/tfnet/tmp.py
-FILENAME="${BIGDL_HOME}/apps/tfnet/models/*"
+sed "s%/path/to/yourdownload%${BIGDL_ROOT}/apps/tfnet%g;s%file:///path/toyourdownload/dogs-vs-cats/train%${BIGDL_ROOT}/apps/tfnet/data/minitrain%g;s%test.jpg%${BIGDL_ROOT}/apps/tfnet/test.jpg%g;s%imagenet_class_index.json%${BIGDL_ROOT}/apps/tfnet/imagenet_class_index.json%g; s/setBatchSize(16)/setBatchSize(56)/g;" ${BIGDL_ROOT}/apps/tfnet/image_classification_inference.py > ${BIGDL_ROOT}/apps/tfnet/tmp.py
+FILENAME="${BIGDL_ROOT}/apps/tfnet/models/*"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading model"
 
-    mkdir -p ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets
-    touch ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/__init__.py
-    touch ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/inception.py
-    echo "from nets.inception_v1 import inception_v1" >> ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/inception.py
-    echo "from nets.inception_v1 import inception_v1_arg_scope" >> ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/inception.py
-    wget $FTP_URI/analytics-zoo-models/image-classification/inception_utils.py -P ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/
-    wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1.py -P ${BIGDL_HOME}/apps/tfnet/models/research/slim/nets/
+    mkdir -p ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets
+    touch ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/__init__.py
+    touch ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/inception.py
+    echo "from nets.inception_v1 import inception_v1" >> ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/inception.py
+    echo "from nets.inception_v1 import inception_v1_arg_scope" >> ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/inception.py
+    wget $FTP_URI/analytics-zoo-models/image-classification/inception_utils.py -P ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/
+    wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1.py -P ${BIGDL_ROOT}/apps/tfnet/models/research/slim/nets/
 
    echo "Finished downloading model"
 fi
-FILENAME="${BIGDL_HOME}/apps/tfnet/checkpoint/inception_v1.ckpt"
+FILENAME="${BIGDL_ROOT}/apps/tfnet/checkpoint/inception_v1.ckpt"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading inception_v1 checkpoint"
 
-   wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1_2016_08_28.tar.gz -P ${BIGDL_HOME}/apps/tfnet/checkpoint
-   tar -zxvf ${BIGDL_HOME}/apps/tfnet/checkpoint/inception_v1_2016_08_28.tar.gz -C ${BIGDL_HOME}/apps/tfnet/checkpoint
+   wget $FTP_URI/analytics-zoo-models/image-classification/inception_v1_2016_08_28.tar.gz -P ${BIGDL_ROOT}/apps/tfnet/checkpoint
+   tar -zxvf ${BIGDL_ROOT}/apps/tfnet/checkpoint/inception_v1_2016_08_28.tar.gz -C ${BIGDL_ROOT}/apps/tfnet/checkpoint
 
    echo "Finished downloading checkpoint"
 fi
-FILENAME="${BIGDL_HOME}/apps/tfnet/data/minitrain.zip"
+FILENAME="${BIGDL_ROOT}/apps/tfnet/data/minitrain.zip"
 if [ -f "$FILENAME" ]
 then
    echo "$FILENAME already exists."
 else
    echo "Downloading dogs and cats images"
 
-   wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/minitrain.zip -P ${BIGDL_HOME}/apps/tfnet/data
-   unzip -d ${BIGDL_HOME}/apps/tfnet/data/minitrain ${BIGDL_HOME}/apps/tfnet/data/minitrain.zip
+   wget $FTP_URI/analytics-zoo-data/data/dogs-vs-cats/minitrain.zip -P ${BIGDL_ROOT}/apps/tfnet/data
+   unzip -d ${BIGDL_ROOT}/apps/tfnet/data/minitrain ${BIGDL_ROOT}/apps/tfnet/data/minitrain.zip
     echo "Finished downloading images"
 fi
 
 export SPARK_DRIVER_MEMORY=12g
-python ${BIGDL_HOME}/apps/tfnet/tmp.py
+python ${BIGDL_ROOT}/apps/tfnet/tmp.py
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
@@ -478,7 +478,7 @@ fi
 unset SPARK_DRIVER_MEMORY
 now=$(date "+%s")
 time12=$((now-start))
-rm ${BIGDL_HOME}/apps/tfnet/tmp.py
+rm ${BIGDL_ROOT}/apps/tfnet/tmp.py
 echo "#12 image_classification_inference time used:$time12 seconds"
 
 fi
