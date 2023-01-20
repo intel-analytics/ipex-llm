@@ -306,66 +306,102 @@ For ***KMS***, specify parameters for each named KMS instance:
 Type-specific parameters for each KMS instance:
 
  - For a Simple KMS:
-    
+
     **spark.bigdl.kms.[KMSName].appId:**  APPID of SimpleKMS.
 
     **spark.bigdl.kms.[KMSName].apiKey:**  APIKEY of SimpleKMS.
 
  - For an EHSM KMS:
-    
+
     **spark.bigdl.kms.[KMSName].ip:**  EHSM service IP.
-    
+
     **spark.bigdl.kms.[KMSName].port:**  EHSM port number.
-    
+
     **spark.bigdl.kms.[KMSName].appId:**  EHSM APPID.
-    
+
     **spark.bigdl.kms.[KMSName].apiKey:**  EHSM APIKEY.
 
  - For an Azure KMS:
-    
+
     **spark.bigdl.kms.[KMSName].vault:** Azure KMS KeyVault.
-    
+
     **spark.bigdl.kms.[KMSName].clientId:** Azure KMS clientId.
 
  - For a BigDL KMS:
 
     **spark.bigdl.kms.[KMSName].ip:**  BigDL KMS service IP.
-    
+
     **spark.bigdl.kms.[KMSName].port:**  BigDL KMS port number.
-    
+
     **spark.bigdl.kms.[KMSName].user:**  BigDL KMS user name.
-    
+
     **spark.bigdl.kms.[KMSName].token:**  BigDL KMS user token.
 
 
-For ***data sources***, configure according KMS, keys and paths etc. for each:
+You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** or **ppmlArgs at initPPMLContext**:
 
- - **spark.bigdl.kms.dataSource.[dataSourceName].kms:**  name of the KMS used by <dataSourceName>.
- 
- - **spark.bigdl.kms.dataSource.[dataSourceName].path:** input path of this data source, e.g. a HDFS/NFS path.
- 
- - **spark.bigdl.kms.dataSource.[dataSourceName].primaryKey:** path/name of the primary key  related to this data source.
- 
- - **spark.bigdl.kms.dataSource.[dataSourceName].dataKey:** path/name of the data key related to this data source.
- 
- - **spark.bigdl.dataSource.[dataSourceName].encryptMode**: Encrypt mode when applying data key, e.g. AES/CBC/PKCS5Padding or plain_text.
+- **bigdl-ppml-submit multi-kms conf**:
+
+  ```bash
+  bash bigdl-ppml-submit.sh \
+  ......
+  --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
+  --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
+  --conf spark.bigdl.kms.amyKMS.apiKey=${SimpleAPIKEY} \
+  --conf spark.bigdl.kms.bobKMS.type=EHSMKeyManagementService \
+  --conf spark.bigdl.kms.bobKMS.ip=${EHSMIP} \
+  --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
+  --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
+  --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
+  ...
+  ```
+
+- **ppmlArgs for initPPMLContext**:
+
+  ```scala
+  import com.intel.analytics.bigdl.ppml.PPMLContext
+     
+  val ppmlArgs: Map[String, String] = Map(
+    "spark.bigdl.kms.amyKMS.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.kms.amyKMS.appId" -> SimpleAPPID,
+    "spark.bigdl.kms.amyKMS.apiKey" -> "SimpleAPIKEY",
+    "spark.bigdl.kms.bobKMS.type" -> "EHSMKeyManagementService",
+    "spark.bigdl.kms.bobKMS.ip" -> EHSMIP,
+    "spark.bigdl.kms.bobKMS.port" -> EHSMPORT,
+    "spark.bigdl.kms.bobKMS.appId" -> EHSMAPPID,
+    "spark.bigdl.kms.bobKMS.apiKey" -> EHSMAPIKEY
+  )
+     
+  val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+  ```
+
+For read/write data frames, configure their KMS, keys and path etc parameters. for each:
+
+ - **kms:**  name of the KMS used by the data source/sink.
+ - **primaryKey:** path/name of the primary key  related to this data source/sink.
+ - **dataKey:** path/name of the data key related to this data source/sink.
+ - **encryptMode:** encryption mode when applying data key, e.g. `plain_text` for non-encrypted input files, `AES/CBC/PKCS5Padding` for encrypted CSV, JSON and other textfile, and `AES_GCM_CTR_V1` or `AES_GCM_V1`for encrypted parquet files.
+ - **path:** the file system path of the dataframe read from or write to.
 
 
-**Data sink** is the destination for data flow to store, each application should have one data sink:
+```scala
+val (kms, primaryKey, dataKey, inputEncryptMode, inputPath) = ("amyKMS", "/amyPrimaryKeyPath","./amyDataKeyPath","AES/CBC/PKCS5Padding", "./amyInputPath.csv")
+val amyDf = sc.read(kms, primaryKey, dataKey, inputEncryptMode)
+              .option("header", "true")
+              .csv(inputPath)
+......
+val (outputEncryptMode, outputPath) = ("plain_text", "./amyOuputPath.csv")
+sc.write(kms, primaryKey, dataKey, outputEncryptMode)
+          .mode("overwrite")
+          .option("header", true)
+          .csv(outputPath)
+```
 
- - **spark.bigdl.dataSink.kms:**  name of the KMS used by the unique data sink.
-
- - **spark.bigdl.kms.dataSink.path:** write path of this data sink, e.g. a HDFS/NFS path.
-
- - **spark.bigdl.dataSink.primaryKey:** path/name of the primary key  related to this data sink.
- 
- - **spark.bigdl.dataSink.dataKey:** path/name of the data key related to this data sink.
-
- - **spark.bigdl.dataSink.encryptMode**: Encrypt mode when applying data key, e.g. AES/CBC/PKCS5Padding or plain_text.
+**Multi-data source/KMS example:**
 
 ![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
 
-- Local mode example:
+- Local mode:
 
 
 ```bash 
@@ -398,27 +434,12 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
     --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
     --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.amyDataSource.kms=amyKMS \
-    --conf spark.bigdl.kms.amyDataSource.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/input/people.csv \
-    --conf spark.bigdl.kms.amyDataSource.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/primaryKey \
-    --conf spark.bigdl.kms.amyDataSource.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/dataKey \
-    --conf spark.bigdl.kms.amyDataSource.encryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.bobDataSource.kms=bobKMS \
-    --conf spark.bigdl.kms.bobDataSource.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/input/people.csv \
-    --conf spark.bigdl.kms.bobDataSource.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.bobDataSource.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/keys/ehsm/encrypted_data_key \
-    --conf spark.bigdl.kms.bobDataSource.encryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.dataSink.kms=bobKMS \
-    --conf spark.bigdl.dataSink.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/primaryKey \
-    --conf spark.bigdl.dataSink.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/dataKey \
-    --conf spark.bigdl.dataSink.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/output/simple_people_output.crc \
-    --conf spark.bigdl.dataSink.encryptMode=AES/CBC/PKCS5Padding \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar 
 ```
 
-- K8S cluster mode example:
+- K8S cluster mode:
 
 ```bash
 export SimpleAPPID=YOUR_SIMPLE_APPID
@@ -454,21 +475,6 @@ bash bigdl-ppml-submit.sh \
     --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
     --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
     --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.amyDataSource.kms=amyKMS \
-    --conf spark.bigdl.kms.amyDataSource.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/input/people.csv \
-    --conf spark.bigdl.kms.amyDataSource.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/primaryKey \
-    --conf spark.bigdl.kms.amyDataSource.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/dataKey \
-    --conf spark.bigdl.kms.amyDataSource.encryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.bobDataSource.kms=bobKMS \
-    --conf spark.bigdl.kms.bobDataSource.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/input/people.csv \
-    --conf spark.bigdl.kms.bobDataSource.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.bobDataSource.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/bob/keys/ehsm/encrypted_data_key \
-    --conf spark.bigdl.kms.bobDataSource.encryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.dataSink.kms=bobKMS \
-    --conf spark.bigdl.dataSink.primaryKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/primaryKey \
-    --conf spark.bigdl.dataSink.dataKey=/ppml/trusted-big-data-ml/work/data/multiKMSTest/amy/keys/dataKey \
-    --conf spark.bigdl.dataSink.path=/ppml/trusted-big-data-ml/work/data/multiKMSTest/output/simple_people_output.crc \
-    --conf spark.bigdl.dataSink.encryptMode=AES/CBC/PKCS5Padding \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
@@ -703,4 +709,5 @@ The result should be similar to:
 <details><summary>expand/fold</summary>
 content
 </details>
+
 

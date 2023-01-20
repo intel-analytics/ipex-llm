@@ -316,6 +316,7 @@ object PPMLContext{
         ppmlSc
       case "true" => // multi mode
         val ppmlSc = new PPMLContext(sparkSession = sparkSession)
+        ppmlSc.kmsManagement = new KMSManagement
         // init kmsManagement
         val kmsNames = getKmsNames(conf)
         kmsNames.foreach{
