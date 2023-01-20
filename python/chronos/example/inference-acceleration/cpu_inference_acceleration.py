@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 import torch
-from bigdl.chronos.pytorch import TSTrainer as Trainer
+from bigdl.chronos.pytorch import Trainer
 from bigdl.chronos.model.tcn import model_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+from bigdl.chronos.pytorch import InferenceOptimizer
 
 def gen_dataloader():
     tsdata_train, tsdata_val,\

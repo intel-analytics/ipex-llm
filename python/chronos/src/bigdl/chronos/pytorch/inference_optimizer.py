@@ -14,6 +14,10 @@
 # limitations under the License.
 #
 
+import torch
+from torch import nn
+from torch.utils.data import DataLoader
+from typing import Union, Tuple, List, Dict, Optional, Callable
 from bigdl.nano.pytorch import InferenceOptimizer as TSInferenceOptimizer
 
 class InferenceOptimizer(TSInferenceOptimizer):

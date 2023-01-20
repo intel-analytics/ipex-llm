@@ -20,5 +20,5 @@ import os
 if 'KMP_INIT_AT_FORK' in os.environ:
     del os.environ['KMP_INIT_AT_FORK']
 
-from .trainer import TSTrainer
-from .inference_optimizer import TSInferenceOptimizer
+from .trainer import Trainer
+from .inference_optimizer import InferenceOptimizer

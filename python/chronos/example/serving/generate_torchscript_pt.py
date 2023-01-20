@@ -17,7 +17,7 @@
 from bigdl.chronos.forecaster import TCNForecaster
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+from bigdl.chronos.pytorch import InferenceOptimizer
 import torch
 
 if __name__ == "__main__":

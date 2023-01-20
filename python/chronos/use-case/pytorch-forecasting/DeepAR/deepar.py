@@ -52,7 +52,7 @@ from pytorch_forecasting.data.examples import generate_ar_data
 from pytorch_forecasting.metrics import NormalDistributionLoss
 from pytorch_forecasting.models.deepar import DeepAR
 from pytorch_forecasting.utils import profile
-from bigdl.chronos.pytorch import TSTrainer
+from bigdl.chronos.pytorch import Trainer
 
 
 if __name__ == '__main__':
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     early_stop_callback = EarlyStopping(monitor="val_loss", min_delta=1e-4, patience=5, verbose=False, mode="min")
     lr_logger = LearningRateMonitor()
 
-    trainer = TSTrainer(
+    trainer = Trainer(
         max_epochs=10,
         gpus=0,
         gradient_clip_val=0.1,

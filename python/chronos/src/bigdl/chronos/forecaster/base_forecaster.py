@@ -615,7 +615,7 @@ class BasePytorchForecaster(Forecaster):
                     "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
         if not self.quantize_available:
             excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear"]
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
                      training_data=train_data,
@@ -1489,7 +1489,7 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             invalidInputError(False,
@@ -1536,7 +1536,7 @@ class BasePytorchForecaster(Forecaster):
                default where no limit is set. Besides, the environment variable
                `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
         '''
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
@@ -1612,7 +1612,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         :param quantized_dirname: The dir location you want to save the quantized onnx file.
         """
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1638,7 +1638,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the openvino file.
         :param quantized_dirname: The dir location you want to save the quantized openvino file.
         """
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1844,7 +1844,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         if not self.quantize_available:
             invalidInputError(False,
                               "This model has not supported quantization.")

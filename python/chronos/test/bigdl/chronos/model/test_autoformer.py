@@ -17,7 +17,7 @@
 from unittest import TestCase
 from bigdl.chronos.utils import LazyImport
 model_creator = LazyImport('bigdl.chronos.model.autoformer.model_creator')
-TSTrainer = LazyImport('bigdl.chronos.pytorch.TSTrainer')
+Trainer = LazyImport('bigdl.chronos.pytorch.Trainer')
 torch = LazyImport('torch')
 TensorDataset = LazyImport('torch.utils.data.TensorDataset')
 DataLoader = LazyImport('torch.utils.data.DataLoader')
@@ -61,5 +61,5 @@ class TestAutoformerPytorch(TestCase):
                        'c_out': 1,
                        'freq': 'd'}
         model = model_creator(config_dict)
-        trainer = TSTrainer(max_epochs=2)
+        trainer = Trainer(max_epochs=2)
         trainer.fit(model, dataloader)
