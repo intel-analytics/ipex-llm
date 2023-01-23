@@ -181,6 +181,40 @@ class TestSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    def test_s2s_from_tsdataset_normalization_decomposation(self):
+        train, _, test = create_tsdataset(roll=True)
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=2)
+        s2s.fit(train,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=32)
+        test.roll(lookback=s2s.model_config['past_seq_len'],
+                  horizon=s2s.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del s2s
+
+        train, _, test = create_tsdataset(roll=False)
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               past_seq_len=24,
+                                               future_seq_len=2,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=2,
+                                               normalization=True,
+                                               decomposition_kernel_size=3
+                                               )
+        s2s.fit(train,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=None)
+        test.roll(lookback=s2s.model_config['past_seq_len'],
+                  horizon=s2s.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
     @op_distributed
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context

@@ -17,6 +17,8 @@
 import tensorflow as tf
 from bigdl.nano.tf.keras import Sequential, Model
 from tensorflow.keras.layers import LSTM, Reshape, Dense, Input
+from bigdl.chronos.model.tf2.normalization import NormalizeTSModel
+from bigdl.chronos.model.tf2.decomposition import DecompositionTSModel
 
 
 class LSTMModel(Model):
@@ -75,6 +77,19 @@ def model_creator(config):
                       layer_num=layer_num,
                       dropout=dropout,
                       output_dim=config['output_feature_num'])
+
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernel_size = config.get("decomposition_kernel_size", 0)
+    if decomposition_kernel_size > 1:
+        model_copy = LSTMModel(input_dim=config["input_feature_num"],
+                               hidden_dim=hidden_dim,
+                               layer_num=layer_num,
+                               dropout=dropout,
+                               output_dim=config["output_feature_num"])
+        if config.get("normalization", False):
+            model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
+        model = DecompositionTSModel((model, model_copy), decomposition_kernel_size)
 
     learning_rate = config.get('lr', 1e-3)
     optimizer = getattr(tf.keras.optimizers, config.get('optim', "Adam"))(learning_rate)

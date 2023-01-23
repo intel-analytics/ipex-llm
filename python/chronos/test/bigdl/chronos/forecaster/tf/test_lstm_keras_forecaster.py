@@ -179,6 +179,39 @@ class TestLSTMForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
+    def test_lstm_from_tsdataset_normalization_decomposation(self):
+        train, _, test = create_tsdataset(roll=True)
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             hidden_dim=16,
+                                             layer_num=2)
+        lstm.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = lstm.predict(test, batch_size=32)
+        test.roll(lookback=lstm.model_config['past_seq_len'],
+                  horizon=lstm.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del lstm
+
+        train, _, test = create_tsdataset(roll=False)
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             past_seq_len=24,
+                                             hidden_dim=16,
+                                             layer_num=2,
+                                             normalization=True,
+                                             decomposition_kernel_size=3
+                                             )
+        lstm.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = lstm.predict(test, batch_size=None)
+        test.roll(lookback=lstm.model_config['past_seq_len'],
+                  horizon=lstm.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
     @op_distributed
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context

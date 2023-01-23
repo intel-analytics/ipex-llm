@@ -34,12 +34,11 @@ def create_data(tf_data=False, batch_size=32):
     output_feature_num = 2
     past_seq_len = 10
     future_seq_len = 2
-    
+
     def get_x_y(num_sample):
         x = np.random.randn(num_sample, past_seq_len, input_feature_num)
         y = np.random.randn(num_sample, future_seq_len, output_feature_num)
         return x, y
-    
     train_data = get_x_y(train_num_samples)
     val_data = get_x_y(test_num_samples)
     test_data = get_x_y(test_num_samples)
@@ -175,6 +174,70 @@ class TestTCNForecaster(TestCase):
         tcn = TCNForecaster.from_tsdataset(train,
                                             past_seq_len=24,
                                             future_seq_len=5,
+                                            num_channels=[16]*2)
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+    def test_tcn_from_tsdataset_dummy_encoder(self):
+        train, _, test = create_tsdataset(roll=True)
+
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            num_channels=[16]*2)
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+
+        train, _, test = create_tsdataset(roll=False)
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            past_seq_len=24,
+                                            future_seq_len=5,
+                                            num_channels=[16]*2,
+                                            dummy_encoder=True
+                                           )
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=None)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+    def test_tcn_from_tsdataset_normalization_decomposation(self):
+        train, _, test = create_tsdataset(roll=True)
+
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            num_channels=[16]*2)
+        tcn.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.model_config['past_seq_len'],
+                  horizon=tcn.model_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del tcn
+
+        train, _, test = create_tsdataset(roll=False)
+        tcn = TCNForecaster.from_tsdataset(train,
+                                            past_seq_len=24,
+                                            future_seq_len=5,
+                                            normalization=True,
+                                            decomposition_kernel_size=3,
                                             num_channels=[16]*2)
         tcn.fit(train,
                  epochs=2,
