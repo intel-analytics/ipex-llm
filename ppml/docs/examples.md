@@ -388,22 +388,30 @@ For read/write data frames, configure their KMS, keys and path etc parameters. f
 
 
 ```scala
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.AES_CBC_PKCS5PADDING
 
-val (inputEncryptMode, kms, primaryKey, dataKey, inputPath) = (
-    AES_CBC_PKCS5PADDING, "amyKMS",
-    "/amyPrimaryKeyPath", "./amyDataKeyPath", "./amyInputPath.csv")
-
-val amyDf = sc.read(inputEncryptMode, kms, primaryKey, dataKey)
+val amyDf = sc.read(AES_CBC_PKCS5PADDING,          // crypto mode
+                    "amyKms",                      // name of kms which data key is retrieved from
+                    "./amy_encrypted_primary_key", // primary key file path
+                    "./amy_encrypted_data_key")    // data key file path
               .option("header", "true")
-              .csv(inputPath)
-// ......
-val (outputEncryptMode, outputPath) = ("./amyOuputPath.csv", PLAIN_TEXT)
+              .csv("./amyDataSource.csv")          // input file path
 
-sc.write(amyDf, outputEncryptMode, kms, primaryKey, dataKey)
-          .mode("overwrite")
-          .option("header", true)
-          .csv(outputPath)
+val bobDf = sc.read(AES_CBC_PKCS5PADDING, "bobKms",
+                    "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
+          .option("header", "true")
+          .csv("./bobDataSource.csv")
+
+// ...
+sc.write(unionDf,                          // target data frame
+         AES_CBC_PKCS5PADDING,             // encrypt mode
+         "sharedKms",                      // kms name
+         "./shared_encrypted_primary_key", // primary key file path
+         "./shared_encrypted_data_key")    // data key file path
+  .mode("overwrite")
+  .option("header", true)
+  .csv("./output")
+
 ```
 
 **MultiPartySparkExample:**
