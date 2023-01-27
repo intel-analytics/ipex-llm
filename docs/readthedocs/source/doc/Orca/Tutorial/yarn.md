@@ -117,12 +117,11 @@ First, download the Fashion-MNIST dataset manually on your __Client Node__. Note
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-# Move the dataset under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
+# Copy the dataset files to the folder FashionMNIST/raw
+cp /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
-# May need to upgrade gzip before running the command
-gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
+gzip -d /path/to/local/data/FashionMNIST/raw/*
 ```
 Then upload it to a distributed storage. Sample command to upload data to HDFS is as follows:
 ```bash

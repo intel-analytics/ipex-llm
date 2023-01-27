@@ -406,13 +406,19 @@ class TFRunner:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
+        # history is a callbacks object
+        # see https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/History
+        # history.params is a dict with keys verbose, epochs and steps
+        # history.history contains train and val stats for each epoch
         if history is None:
             stats = {}
         else:
-            stats = {"train_" + k: v[-1] for k, v in history.history.items()}
+            stats = dict()
+            stats.update(history.params)
+            stats.update(history.history)
 
         self.epoch += epochs
-        return [stats]
+        return stats
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
                  steps=None, callbacks=None, data_config=None):

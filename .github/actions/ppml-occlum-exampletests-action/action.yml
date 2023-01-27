@@ -27,6 +27,7 @@ runs:
         export KEYS_PATH=/home/icx/glorysdj/keys
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
         export SGX_MEM_SIZE=60GB
+        export SGX_KERNEL_HEAP=2GB
         export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         docker pull $IMAGE
@@ -46,6 +47,7 @@ runs:
             --name=$CONTAINER_NAME \
             -e LOCAL_IP=$LOCAL_IP \
             -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+            -e SGX_KERNEL_HEAP=$SGX_KERNEL_HEAP \
             $IMAGE \
             bash  -c "tail -f /dev/null"
 

@@ -17,7 +17,7 @@
 import os
 import argparse
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 
 def parse_args(description):
@@ -35,6 +35,8 @@ def parse_args(description):
                         help="Whether to use TensorBoard as the train callback.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
+    parser.add_argument("--lr_scheduler", action='store_true',
+                        help="Whether to use learning rate scheduler for training.")
     args = parser.parse_args()
     return args
 
@@ -94,3 +96,10 @@ def init_orca(args, extra_python_lib=None):
              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
              "but got " + args.cluster_mode)
     return sc
+
+
+def scheduler(epoch, lr):
+    if epoch < 1:
+        return lr
+    else:
+        return lr * 0.5
