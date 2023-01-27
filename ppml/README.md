@@ -18,6 +18,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
 &ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files)
+&ensp;&ensp;[4.3 Create Multi-KMS PPMLContext](#43-create-multi-kms-ppmlcontext)
 
 
 
@@ -1116,3 +1117,8 @@ rdd2 = sc.textfile(path=encrypted_csv_path, crypto_mode=CryptoMode.AES_CBC_PKCS5
 </details>
 
 More usage with `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
+
+
+### 4.3 Create Multi-KMS PPMLContext
+
+Please refer to introductions in [MultiPartySparkExample](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery)

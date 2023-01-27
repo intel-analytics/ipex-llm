@@ -346,6 +346,7 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
   ```bash
   bash bigdl-ppml-submit.sh \
   ......
+  --conf spark.bigdl.enableMultiKms=true \
   --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
   --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
   --conf spark.bigdl.kms.amyKMS.apiKey=${SimpleAPIKEY} \
@@ -363,6 +364,7 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
   import com.intel.analytics.bigdl.ppml.PPMLContext
      
   val ppmlArgs: Map[String, String] = Map(
+    "spark.bigdl.enableMultiKms" -> "true",
     "spark.bigdl.kms.amyKMS.type" -> "SimpleKeyManagementService",
     "spark.bigdl.kms.amyKMS.appId" -> simpleAPPID,
     "spark.bigdl.kms.amyKMS.apiKey" -> simpleAPIKEY,
@@ -404,7 +406,7 @@ sc.write(amyDf, outputEncryptMode, kms, primaryKey, dataKey)
           .csv(outputPath)
 ```
 
-**Multi-data source/KMS example:**
+**MultiPartySparkExample:**
 
 ![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
 
@@ -412,12 +414,14 @@ sc.write(amyDf, outputEncryptMode, kms, primaryKey, dataKey)
 
 
 ```bash 
-export SimpleAPPID=YOUR_SIMPLE_APPID
-export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
-export EHSMIP=YOUR_EHSM_IP
-export EHSMPORT=YOUR_EHSM_PORT
-export EHSMAPPID=YOUR_EHSM_APPID
-export EHSMAPIKEY=YOUR_EHSM_APIKEY
+export amySimpleAppId=YOUR_SIMPLE_APPID_1
+export amySimpleApiKey=YOUR_SIMPLE_APIKEY_1
+export bobEhsmIP=YOUR_EHSM_IP
+export bobEhsmPort=YOUR_EHSM_PORT
+export bobEhsmAppId=YOUR_EHSM_APPID
+export bobEhsmApiKey=YOUR_EHSM_APIKEY
+export sharedSimpleAppId=YOUR_SIMPLE_APPID_2
+export sharedSimpleApiKey=YOUR_SIMPLE_APIKEY_2
 
 bash bigdl-ppml-submit.sh \
     --master local[2] \
@@ -430,17 +434,20 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=8 \
     --name simplequeryWithMultiKMS \
     --verbose \
-    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartyExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
-    --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
-    --conf spark.bigdl.kms.amyKMS.apiKey=${SimpleAPIKEY} \
-    --conf spark.bigdl.kms.bobKMS.type=EHSMKeyManagementService \
-    --conf spark.bigdl.kms.bobKMS.ip=${EHSMIP} \
-    --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
-    --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
-    --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
+    --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
+    --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
+    --conf spark.bigdl.kms.bobKms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.bobKms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.kms.bobKms.port=${bobEhsmPort} \
+    --conf spark.bigdl.kms.bobKms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.kms.bobKms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+    --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar 
@@ -449,12 +456,14 @@ bash bigdl-ppml-submit.sh \
 - K8S cluster mode:
 
 ```bash
-export SimpleAPPID=YOUR_SIMPLE_APPID
-export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
-export EHSMIP=YOUR_EHSM_IP
-export EHSMPORT=YOUR_EHSM_PORT
-export EHSMAPPID=YOUR_EHSM_APPID
-export EHSMAPIKEY=YOUR_EHSM_APIKEY
+export amySimpleAppId=YOUR_SIMPLE_APPID_1
+export amySimpleApiKey=YOUR_SIMPLE_APIKEY_1
+export bobEhsmIP=YOUR_EHSM_IP
+export bobEhsmPort=YOUR_EHSM_PORT
+export bobEhsmAppId=YOUR_EHSM_APPID
+export bobEhsmApiKey=YOUR_EHSM_APIKEY
+export sharedSimpleAppId=YOUR_SIMPLE_APPID_2
+export sharedSimpleApiKey=YOUR_SIMPLE_APIKEY_2
 export UPLOADPATH=YOUR_UPLOAD_PATH
   
 bash bigdl-ppml-submit.sh \
@@ -471,17 +480,20 @@ bash bigdl-ppml-submit.sh \
     --name simplequeryWithMultiKMS \
     --verbose \
     --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
-    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
-    --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
-    --conf spark.bigdl.kms.amyKMS.apiKey=${SimpleAPIKEY} \
-    --conf spark.bigdl.kms.bobKMS.type=EHSMKeyManagementService \
-    --conf spark.bigdl.kms.bobKMS.ip=${EHSMIP} \
-    --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
-    --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
-    --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
+    --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
+    --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
+    --conf spark.bigdl.kms.bobKms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.bobKms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.kms.bobKms.port=${bobEhsmPort} \
+    --conf spark.bigdl.kms.bobKms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.kms.bobKms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+    --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
     --verbose \
     --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
