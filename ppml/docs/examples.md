@@ -345,7 +345,7 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
 
   ```bash
   bash bigdl-ppml-submit.sh \
-  ......
+  ...
   --conf spark.bigdl.enableMultiKms=true \
   --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
   --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
@@ -399,8 +399,8 @@ val amyDf = sc.read(AES_CBC_PKCS5PADDING,          // crypto mode
 
 val bobDf = sc.read(AES_CBC_PKCS5PADDING, "bobKms",
                     "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
-          .option("header", "true")
-          .csv("./bobDataSource.csv")
+              .option("header", "true")
+              .csv("./bobDataSource.csv")
 
 // ...
 sc.write(unionDf,                          // target data frame
