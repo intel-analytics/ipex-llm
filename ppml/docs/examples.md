@@ -498,7 +498,6 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 4 \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
     --verbose \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
@@ -544,7 +543,6 @@ bash bigdl-ppml-submit.sh \
     --sgx-enabled false \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
     --verbose \
     --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
