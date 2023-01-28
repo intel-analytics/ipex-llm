@@ -20,7 +20,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Friesian](#friesian): End-to-End Recommendation Systems
 
-- [PPML](#ppml) (experimental): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml): Secure Big Data and AI (with SGX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
