@@ -445,8 +445,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status = \
-                            throughput_calculate_helper(latency_sample_num, baseline_time, func_test,
-                                                        acce_model, input_sample)
+                            exec_with_worker(throughput_calculate_helper, latency_sample_num, baseline_time, func_test,
+                                             acce_model, input_sample, env=best_env)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -475,7 +475,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 # test whether metric works
                                 try:
                                     result_map[method]["accuracy"] = \
-                                        _accuracy_calculate_helper(acce_model, metric, validation_data)
+                                        exec_with_worker(_accuracy_calculate_helper, acce_model, metric,
+                                                         validation_data, env=best_env)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
@@ -493,7 +494,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         "validation_data is None).")
                             else:
                                 result_map[method]["accuracy"] = \
-                                    _accuracy_calculate_helper(acce_model, metric, validation_data)
+                                    exec_with_worker(_accuracy_calculate_helper, acce_model, metric,
+                                                     validation_data, env=best_env)
                     else:
                         result_map[method]["accuracy"] = None
 
