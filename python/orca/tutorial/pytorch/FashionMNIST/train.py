@@ -26,11 +26,11 @@ import torchvision
 import torch.nn as nn
 import torchvision.transforms as transforms
 
+from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import get_remote_dir_to_local
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-from bigdl.dllib.utils.file_utils import is_local_path
 
 from model import model_creator, optimizer_creator
 
@@ -39,19 +39,20 @@ parser = argparse.ArgumentParser(description='PyTorch Example')
 parser.add_argument('--cluster_mode', type=str, default="spark-submit",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, '
                          'k8s-client, k8s-cluster, spark-submit or bigdl-submit.')
-parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources')
+parser.add_argument('--data_dir', type=str, help='The path to load data from local or remote resources')
 args = parser.parse_args()
 
 
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
-    if args.remote_dir is not None:
-        data_dir = args.remote_dir
-        print(is_local_path(data_dir))
+    if args.data_dir is not None:
+        if is_local_path(args.data_dir):
+            data_dir = args.data_dir
+        else:
+            data_dir = "/tmp/dataset"
+            get_remote_dir_to_local(remote_dir=args.data_dir, local_dir=data_dir)
         print(os.listdir(data_dir))
-        # data_dir = "/tmp/dataset"
-        # get_remote_dir_to_local(remote_dir=args.remote_dir, local_dir=data_dir)
         trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
                                                      download=False, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
