@@ -5,7 +5,7 @@ SGX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ## Before Running code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
 
 #### 1.1 Build BigDL Base Image
 
@@ -303,7 +303,7 @@ Configure the environment variables in the following script before running it. C
    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
    export LOCAL_IP=$LOCAL_IP
-   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+   export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
     
    sudo docker run -itd \
        --privileged \
