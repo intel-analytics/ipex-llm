@@ -503,6 +503,7 @@ bash bigdl-ppml-submit.sh \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
     --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
     --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
@@ -549,6 +550,7 @@ bash bigdl-ppml-submit.sh \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
     --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
     --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
