@@ -30,6 +30,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import get_remote_dir_to_local
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
+from bigdl.dllib.utils.file_utils import is_local_path
 
 from model import model_creator, optimizer_creator
 
@@ -46,8 +47,11 @@ def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
     if args.remote_dir is not None:
-        data_dir = "/tmp/dataset"
-        get_remote_dir_to_local(remote_dir=args.remote_dir, local_dir=data_dir)
+        data_dir = args.remote_dir
+        print(is_local_path(data_dir))
+        print(os.listdir(data_dir))
+        # data_dir = "/tmp/dataset"
+        # get_remote_dir_to_local(remote_dir=args.remote_dir, local_dir=data_dir)
         trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
                                                      download=False, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -112,6 +116,7 @@ def main():
                                           optimizer=optimizer_creator,
                                           loss=nn.CrossEntropyLoss(),
                                           metrics=[Accuracy()],
+                                          use_tqdm=True,
                                           backend="spark")
 
     train_stats = orca_estimator.fit(train_data_creator, epochs=1, batch_size=32)
