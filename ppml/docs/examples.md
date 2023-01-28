@@ -498,11 +498,11 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 4 \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
     --verbose \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
     --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
     --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
@@ -543,12 +543,12 @@ bash bigdl-ppml-submit.sh \
     --sgx-enabled false \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
     --verbose \
     --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
     --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
     --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
     --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
     --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
