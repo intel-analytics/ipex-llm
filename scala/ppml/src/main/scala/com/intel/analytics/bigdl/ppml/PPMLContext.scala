@@ -19,13 +19,13 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
-import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.utils.{Supportive, KMSManagement}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyManagementService, KMS_CONVENTION,
-KeyManagementService, SimpleKeyManagementService, BigDLKeyManagementService, KMSManagement}
+KeyManagementService, SimpleKeyManagementService, BigDLKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import org.apache.hadoop.fs.Path
 
@@ -56,8 +56,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
                cryptoMode: CryptoMode = PLAIN_TEXT,
                kmsName: String = "",
                primaryKey: String = "",
-               dataKey: String = "",
-               ): RDD[String] = {
+               dataKey: String = ""): RDD[String] = {
     cryptoMode match {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)

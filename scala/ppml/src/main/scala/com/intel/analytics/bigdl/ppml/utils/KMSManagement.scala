@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.kms
+package com.intel.analytics.bigdl.ppml.utils
 
 import java.io.Serializable
 import scala.collection.mutable.HashMap
