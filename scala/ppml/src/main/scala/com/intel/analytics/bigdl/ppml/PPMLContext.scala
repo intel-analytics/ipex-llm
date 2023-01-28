@@ -37,8 +37,7 @@ import org.apache.hadoop.fs.Path
  * @param sparkSession
  */
 class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null) {
-  
-  protected var dataKeyPlainText:String = "" // for single-data source/KMS mode
+  protected var dataKeyPlainText: String = "" // for single-data source/KMS mode
   protected var kmsManagement: KMSManagement = null // for multi-data source/KMS mode
 
   /**
@@ -70,7 +69,7 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
             loadKeys(primaryKey, dataKey, kms)
             PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
                                  cryptoMode, minPartitions)
-        } 
+        }
     }
   }
 
@@ -93,16 +92,16 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
         val kms = getKmsByName(kmsName)
         loadKeys(primaryKey, dataKey, kms)
         new EncryptedDataFrameReader(sparkSession, cryptoMode, dataKeyPlainText)
-    } 
+    }
   }
 
   /**
-   * Interface for saving the content of the non-streaming Dataset out into specific external storage.
+   * Interface for saving the content of the non-streaming Dataset out into external storage.
    * @param dataFrame dataframe to save.
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @param kmsName for multi-data source/KMS mode, name of kms which this data sink uses
-   * @param primaryKey for multi-data source/KMS mode, primaryKey path/name apply to the data sink
-   * @param dataKey for multi-data source/KMS mode, dataKey path/name apply to the data sink
+   * @param primaryKey for multi-data source/KMS mode, primaryKey path/name
+   * @param dataKey for multi-data source/KMS mode, dataKey path/name
    * @return a DataFrameWriter[Row]
    */
   def write(dataFrame: DataFrame,
@@ -126,16 +125,17 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    * Load unique key for both read and write from a local file system for single-kms/dataSource mode
    * @param primaryKey
    * @param dataKey
-   * @param kms optional, request dataKeyPlaintext from this kms if not null, 
+   * @param kms optional, request dataKeyPlaintext from this kms if not null,
    *            otherwiese from class member
    * @return
    */
   def loadKeys(primaryKey: String, dataKey: String, kms: KeyManagementService = null): this.type = {
-    dataKeyPlainText = kms match{
+    dataKeyPlainText = kms match {
       case null => getDataKeyPlainTextFromKms(primaryKey, dataKey, this.kms)
       case _ => getDataKeyPlainTextFromKms(primaryKey, dataKey, kms)
     }
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.dataKey.plaintext", dataKeyPlainText)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.dataKey.plaintext",
+                                                      dataKeyPlainText)
     this
   }
 
@@ -331,7 +331,7 @@ object PPMLContext{
 
   def getKmsNames(conf: SparkConf): Array[String] = {
     val prefix = "spark.bigdl.kms"
-    val properties: Array[Tuple2[String, String]] =  conf.getAllWithPrefix(prefix)
+    val properties: Array[Tuple2[String, String]] = conf.getAllWithPrefix(prefix)
     val names = for { v <- properties } yield v._1.split('.')(1)
     names.distinct
   }
