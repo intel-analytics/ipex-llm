@@ -403,15 +403,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 print(f"----------Start test {method} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
-                    env_result_map[method], _ = exec_with_worker(throughput_calculate_helper, latency_sample_num,
-                                                                 baseline_time, func_test, model, input_sample,
-                                                                 env=env.get_env_dict())
+                    env_result_map[method], _ = \
+                        exec_with_worker(throughput_calculate_helper, latency_sample_num,
+                                         baseline_time, func_test, model, input_sample,
+                                         env=env.get_env_dict())
                 except subprocess.CalledProcessError as e:
                     print("----------worker error info----------")
                     print(e.args)
                     traceback.print_exc()
                     print(f"----------Failed to run with {method} variables----------")
-            best_env = self.ALL_ACCELERATION_ENV[min(env_result_map, key=env_result_map.get)].get_env_dict()
+            best_env = self.ALL_ACCELERATION_ENV[
+                min(env_result_map, key=env_result_map.get)].get_env_dict()
             print(f"----------Best environment variables----------")
             for env_key, env_value in best_env.items():
                 print(f'export {env_key}=\'{env_value}\'')
@@ -445,8 +447,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status = \
-                            exec_with_worker(throughput_calculate_helper, latency_sample_num, baseline_time, func_test,
-                                             acce_model, input_sample, env=best_env)
+                            exec_with_worker(throughput_calculate_helper, latency_sample_num,
+                                             baseline_time, func_test, acce_model,
+                                             input_sample, env=best_env)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -475,8 +478,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 # test whether metric works
                                 try:
                                     result_map[method]["accuracy"] = \
-                                        exec_with_worker(_accuracy_calculate_helper, acce_model, metric,
-                                                         validation_data, env=best_env)
+                                        exec_with_worker(_accuracy_calculate_helper, acce_model,
+                                                         metric, validation_data, env=best_env)
                                 except Exception:
                                     traceback.print_exc()
                                     self._calculate_accuracy = False
