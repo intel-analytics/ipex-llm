@@ -500,7 +500,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=8 \
     --name simplequeryWithMultiKMS \
     --verbose \
-    --class com.intel.analytics.bigdl.ppml.examples.MultiPartyExample \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
     --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
