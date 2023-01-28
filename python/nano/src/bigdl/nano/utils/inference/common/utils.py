@@ -13,15 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import pickle
+import subprocess
+import tempfile
 from collections import namedtuple
 import os
 import time
 import numbers
+import cloudpickle
 import numpy as np
-from typing import Dict
+from typing import Dict, Callable, Optional
 from abc import abstractmethod
 import bigdl
+from . import _worker
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
@@ -93,6 +97,7 @@ class AccelerationEnv(object):
             tmp_env_dict['MALLOC_CONF'] = ''
             tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
         return tmp_env_dict
+
 
 def throughput_calculate_helper(iterrun, baseline_time, func, *args):
     '''
@@ -199,3 +204,19 @@ def format_optimize_result(optimize_result_dict: dict,
             repr_str += method_str
         repr_str += horizontal_line
     return repr_str
+
+
+def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
+    worker_path = _worker.__file__
+    tmp_env = {}
+    tmp_env.update(os.environ)
+    if env is not None:
+        tmp_env.update(env)
+    with tempfile.TemporaryDirectory() as tmp_dir_path:
+        param_file = os.path.join(tmp_dir_path, 'param')
+        with open(param_file, 'wb') as f:
+            cloudpickle.dump([func, *args], f)
+        subprocess.run(["python", worker_path, param_file],
+                       check=True, env=tmp_env)
+        with open(os.path.join(tmp_dir_path, _worker.RETURN_FILENAME), 'rb') as f:
+            return pickle.load(f)

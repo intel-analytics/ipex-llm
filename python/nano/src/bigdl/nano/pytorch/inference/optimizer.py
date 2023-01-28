@@ -46,11 +46,11 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_m
 from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
-from bigdl.nano.utils.util import spawn_new_process
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
-from . import _worker
+from bigdl.nano.utils.inference.common.utils import exec_with_worker
+
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
 warnings.filterwarnings('ignore', category=DeprecationWarning, module='pytorch_lightning')
@@ -397,33 +397,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 model(*input_sample)
 
-        throughput_calculate_helper_with_env = spawn_new_process(throughput_calculate_helper)
-        accuracy_calculate_helper_with_env = spawn_new_process(_accuracy_calculate_helper)
-        worker_path = _worker.__file__
-
         if search_env:
             env_result_map = {}
             for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
                 print(f"----------Start test {method} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
-                with tempfile.TemporaryDirectory() as tmp_dir_path:
-                    param_file = os.path.join(tmp_dir_path, 'param')
-                    with open(param_file, 'wb') as f:
-                        cloudpickle.dump([throughput_calculate_helper, latency_sample_num, baseline_time,
-                                          func_test, model, input_sample], f)
-                    tmp_env = {}
-                    tmp_env.update(os.environ)
-                    tmp_env.update(env.get_env_dict())
-                    subprocess.run(["python", worker_path, param_file],
-                                   check=True,
-                                   env=tmp_env)
-                    with open(os.path.join(tmp_dir_path, 'return_value'), 'rb') as f:
-                        env_result_map[method], _ = pickle.load(f)
-                # env_result_map[method], _ = throughput_calculate_helper_with_env(
-                #     latency_sample_num, baseline_time, func_test, model, input_sample,
-                #     env_var=env.get_env_dict())
-            best_env = self.ALL_ACCELERATION_ENV[
-                min(env_result_map, key=env_result_map.get)].get_env_dict()
+                try:
+                    env_result_map[method], _ = exec_with_worker(throughput_calculate_helper, latency_sample_num,
+                                                                 baseline_time, func_test, model, input_sample,
+                                                                 env=env.get_env_dict())
+                except subprocess.CalledProcessError as e:
+                    print("----------worker error info----------")
+                    print(e.args)
+                    traceback.print_exc()
+                    print(f"----------Failed to run with {method} variables----------")
+            best_env = self.ALL_ACCELERATION_ENV[min(env_result_map, key=env_result_map.get)].get_env_dict()
             print(f"----------Best environment variables----------")
             for env_key, env_value in best_env.items():
                 print(f'export {env_key}=\'{env_value}\'')
