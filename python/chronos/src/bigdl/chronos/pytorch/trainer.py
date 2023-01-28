@@ -17,16 +17,16 @@
 from bigdl.nano.pytorch.trainer import Trainer as TSTrainer
 from typing import Optional, List, Union, Any
 
+
 class Trainer(TSTrainer):
-    def __init__(self, num_processes: Optional[int] = None,
-                 use_ipex: bool = False,
+    def __init__(self, num_processes: Optional[int]=None,
+                 use_ipex: bool=False,
                  distributed_backend="subprocess",
-                 cpu_for_each_process: Optional[List[List[int]]] = None,
+                 cpu_for_each_process: Optional[List[List[int]]]=None,
                  use_hpo=False,
-                 auto_lr: Union[dict, bool] = True,
-                 precision: Union[str, int] = 32,
+                 auto_lr: Union[dict, bool]=True,
+                 precision: Union[str, int]=32,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(num_processes, use_ipex, distributed_backend,
                          cpu_for_each_process, use_hpo, False,
                          auto_lr, precision, *args, **kwargs)
-
