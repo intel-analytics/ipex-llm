@@ -470,7 +470,7 @@ sc.write(dataframe = unionDf, \
   .option("header", true)\
   .csv("./output")
 ```
-
+  </details>
   
 **MultiPartySparkExample:**
 
