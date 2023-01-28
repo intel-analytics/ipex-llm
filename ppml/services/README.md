@@ -10,7 +10,7 @@ export KMS_UTILS_IP=...          # for kms utils
 export PCCS_IP=...               # for pccs
 export PCCS_PORT=...             # for pccs
 ```
-To test a specific component, pass one or more argument to it among the following: "attestation", "bigdl-kms", "ehsm", "kms-uti", "pccs".
+To test a specific component, pass one or more argument to it among the following: "attestation", "bigdl-kms", "ehsm", "kms-utils", "pccs".
 
 For example, you can run the following command to check ehsm and pccs service.
 ```
