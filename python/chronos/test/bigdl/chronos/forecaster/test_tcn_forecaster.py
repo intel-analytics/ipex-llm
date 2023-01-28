@@ -1348,7 +1348,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    dummy_encoder=True,
                                    loss="mse",
                                    lr=0.01)
-        forecaster.fit(train_data, epochs=1)
+        forecaster.fit(train_data, epochs=2)
         test_loader_shuffle_f = DataLoader(TensorDataset(torch.from_numpy(test_data[0]),
                                                          torch.from_numpy(test_data[1])),
                                            batch_size=32,
