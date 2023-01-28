@@ -303,7 +303,7 @@ object PPMLContext{
    */
   def loadPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
-    val multiKmsEnabled = conf.get("spark.bigdl.multiKms", defaultValue = "false")
+    val multiKmsEnabled = conf.get("spark.bigdl.enableMultiKms", defaultValue = "false")
     val ppmlSc = multiKmsEnabled match {
       case "false" => // single mode
         val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
@@ -332,8 +332,8 @@ object PPMLContext{
 
   def getKmsNames(conf: SparkConf): Array[String] = {
     val prefix = "spark.bigdl.kms"
-    val  properties: Array[Tuple2[String, String]] =  conf.getAllWithPrefix(prefix)
-    val names = for { v <- properties } yield { v._1.substring(prefix.length + 1).split(".")(0) }
+    val properties: Array[Tuple2[String, String]] =  conf.getAllWithPrefix(prefix)
+    val names = for { v <- properties } yield v._1.split('.')(1)
     names.distinct
   }
 

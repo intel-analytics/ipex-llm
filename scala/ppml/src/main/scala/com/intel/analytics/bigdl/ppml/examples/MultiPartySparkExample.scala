@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, AES_CBC_PKCS5PADDING}
 import org.apache.spark.sql.SparkSession
 
-object MultiDataSourceExample extends Supportive {
+object MultiPartySparkExample extends Supportive {
   def main(args: Array[String]): Unit = {
 
     val sparkSession = SparkSession.builder().getOrCreate
