@@ -355,6 +355,9 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
   --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
   --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
   --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
+  --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+  --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+  --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
   ...
   ```
 
@@ -372,7 +375,10 @@ You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** o
     "spark.bigdl.kms.bobKMS.ip" -> ehsmIP,
     "spark.bigdl.kms.bobKMS.port" -> ehsmPort,
     "spark.bigdl.kms.bobKMS.appId" -> ehsmAPPID,
-    "spark.bigdl.kms.bobKMS.apiKey" -> ehsmAPIKEY
+    "spark.bigdl.kms.bobKMS.apiKey" -> ehsmAPIKEY,
+    "spark.bigdl.kms.sharedKms.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.kms.sharedKms.appId" -> "${sharedSimpleAppId}",
+    "spark.bigdl.kms.sharedKms.apiKey" -> "${sharedSimpleApiKey}"
   )
      
   val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -386,6 +392,8 @@ For read/write data frames, configure their KMS, keys and path etc parameters. f
  - **encryptMode:** encryption mode when applying data key, e.g. `plain_text` for non-encrypted input files, `AES/CBC/PKCS5Padding` for encrypted CSV, JSON and other textfile, and `AES_GCM_CTR_V1` or `AES_GCM_V1`for encrypted parquet files.
  - **path:** the file system path of the dataframe read from or write to.
 
+ <details open>
+    <summary>scala</summary>
 
 ```scala
 import com.intel.analytics.bigdl.ppml.crypto.AES_CBC_PKCS5PADDING
@@ -402,7 +410,8 @@ val bobDf = sc.read(AES_CBC_PKCS5PADDING, "bobKms",
               .option("header", "true")
               .csv("./bobDataSource.csv")
 
-// ...
+...
+
 sc.write(unionDf,                          // target data frame
          AES_CBC_PKCS5PADDING,             // encrypt mode
          "sharedKms",                      // kms name
@@ -413,7 +422,56 @@ sc.write(unionDf,                          // target data frame
   .csv("./output")
 
 ```
+  </details>
 
+  <details>
+    <summary>python</summary>
+
+```python
+from bigdl.ppml.ppml_context import *
+
+sparkConf =  {"spark.bigdl.enableMultiKms": "true",
+              "spark.bigdl.kms.amyKMS.type": "SimpleKeyManagementService",
+              "spark.bigdl.kms.amyKMS.appId": "simpleAPPID",
+              "spark.bigdl.kms.amyKMS.apiKey": "simpleAPIKEY",
+              "spark.bigdl.kms.bobKMS.type": "EHSMKeyManagementService",
+              "spark.bigdl.kms.bobKMS.ip": "ehsmIP",
+              "spark.bigdl.kms.bobKMS.port": "ehsmPort",
+              "spark.bigdl.kms.bobKMS.appId": "ehsmAPPID",
+              "spark.bigdl.kms.bobKMS.apiKey": "ehsmAPIKEY",
+              "spark.bigdl.kms.sharedKms.type": "SimpleKeyManagementService",
+              "spark.bigdl.kms.sharedKms.appId": "${sharedSimpleAppId}",
+              "spark.bigdl.kms.sharedKms.apiKey" "${sharedSimpleApiKey}"
+             }
+
+sc = PPMLContext("MyApp", None, sparkConf)
+```
+
+```python
+amyDf = sc.read(crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING, \
+                kms_name = "amyKms", \
+                primary_key = "./amy_encrypted_primary_key", \
+                data_key = "./amy_encrypted_data_key")\
+          .option("header", "true")\
+          .csv(path = "./amyDataSource.csv")
+
+bobDf = sc.read(CryptoMode.AES_CBC_PKCS5PADDING, "bobKms", \
+                "./bob_encrypted_primary_key", "./bob_encrypted_data_key")\
+          .option("header", "true")\
+          .csv("./bobDataSource.csv")
+
+...
+
+sc.write(dataframe = unionDf, \
+         crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING, \
+         kms_name = "sharedKms", \
+         primary_key = "./shared_encrypted_primary_key", \
+         data_key = "./shared_encrypted_data_key")\
+  .option("header", true)\
+  .csv("./output")
+```
+
+  
 **MultiPartySparkExample:**
 
 ![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)

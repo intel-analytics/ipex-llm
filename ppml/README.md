@@ -1121,4 +1121,4 @@ More usage with `PPMLContext` Python API, please refer to [PPMLContext Python AP
 
 ### 4.3 Create Multi-KMS PPMLContext
 
-Please refer to introductions in [MultiPartySparkExample](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery)
+Please refer to introductions about MultiPartySparkExample in [Trusted SimpleQuery With Multiple Data source/KMS](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery)
