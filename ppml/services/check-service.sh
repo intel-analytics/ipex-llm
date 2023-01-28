@@ -3,21 +3,32 @@
 
 attestation () {
     echo "Detecting bigdl-attestation-service..."
-    
+    ATTESTATIONSUCCESS=""
+    if [ -z "$ATTESTATION_ADDRESS" ] ; then 
+        ehco "ATTESTATION_ADDRESS not found, please pro vide your ATTESTATION_ADDRESS to check bigdl-attestation-service."
+    else 
+        ATTESTATIONSUCCESS=$(curl -k -s -i ${ATTESTATION_ADDRESS} || grep "200")
+        if [ -z "$ATTESTATIONSUCCESS" ]; then 
+            echo "bigdl-attestation-service initialization failed. Unable to connect bigdl-attestation-service."
+        fi
+        if [ -n "$ATTESTATIONSUCCESS" ]; then 
+            echo "bigdl-attestation-service initialization successful."
+        fi
+    fi
 }
 
 bigdl-kms () {
     echo "Detecting bigdl-kms..." 
     BIGDLKMSSUCCESS=""
     if [ -z "$BIGDL_KMS_IP" ] ; then 
-        echo "BIGDL_KMS_IP not found, please provide your BIGDL_KMS_IP to check bigdl-kms service"
+        echo "BIGDL_KMS_IP not found, please provide your BIGDL_KMS_IP to check bigdl-kms service."
     else   
         BIGDLKMSSUCCESS=$(curl -k -s "https://${BIGDL_KMS_IP}:9876/" || grep "welcome to BigDL KMS Frontend")
         if [ -z "$BIGDLKMSSUCCESS" ]; then 
-            echo "BigDL KMS initialization failed. Unable to connect BigDl KMS frontend"
+            echo "bigdl-kms initialization failed. Unable to connect BigDl KMS frontend."
         fi
         if [ -n "$BIGDLKMSSUCCESS" ]; then 
-            echo "BigDL KMS initialization successful"
+            echo "bigdl-kms initialization successful."
         fi
     fi
 }
@@ -26,14 +37,14 @@ ehsm () {
     echo "Detecting ehsm..."
     EHSMSUCCESS=""
     if [ -z "$EHSM_IP" ] ; then
-        echo "EHSM_IP not found, please provide your ehsm ip to check ehsm service."
+        echo "EHSM_IP not found, please provide your EHSM_IP to check ehsm service."
     else 
         EHSMSUCCESS=$(curl -k -G -s "https://${EHSM_IP}:9000/ehsm?Action=Enroll" || grep "\"code\":200" >/dev/null)
         if [ -z "$EHSMSUCCESS" ]; then 
-            echo "EHSM initialization failed. Unable to connect EHSM at " $EHSM_IP "."
+            echo "ehsm initialization failed. Unable to connect EHSM at " $EHSM_IP "."
         fi
         if [ -n "$EHSMSUCCESS" ]; then 
-            echo "EHSM initialization successful."
+            echo "ehsm initialization successful."
         fi
     fi
 }
@@ -49,7 +60,7 @@ kms-utils () {
             echo "kms-utils initialization failed. Unable to connect kms-utils at " $KMS_UTILS_IP "."
         fi
         if [ -n "$KMSUTILSSUCCESS" ]; then
-            echo "kms-utils initialization successful"
+            echo "kms-utils initialization successful."
         fi
     fi
 }
@@ -58,14 +69,14 @@ pccs () {
     echo "Detecting pccs..."
     PCCSSUCCESS=""
     if [ -z "$PCCS_IP" ] || [ -z "$PCCS_PORT" ] ; then
-        echo "PCCS_IP or PCCS_PORT not found, please provide your PCCS_IP & PCCS_PORT to check pccs service"
+        echo "PCCS_IP or PCCS_PORT not found, please provide your PCCS_IP & PCCS_PORT to check pccs service."
     else 
         PCCSSUCCESS=$(curl -k -G -s -i "https://${PCCS_IP}:${PCCS_PORT}/sgx/certification/v3/rootcacrl" || grep "200")
         if [ -z $"PCCSSUCCESS" ]; then 
             echo "pccs initalization failed. Unable to connect pccs at " $PCCS_IP "."
         fi
         if [ -n $"PCCSSUCCESS" ]; then 
-            echo "pccs initalization successful"
+            echo "pccs initalization successful."
         fi
     fi
 }
