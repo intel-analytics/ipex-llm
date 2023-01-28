@@ -42,14 +42,14 @@ class PPMLContext(JavaValue):
             conf["spark.bigdl.kms.type"] = kms_type
             if kms_type == "SimpleKeyManagementService":
                 conf["spark.bigdl.kms.appId"] = check(ppml_args, "app_id")
-                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "app_key")
+                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "api_key")
                 conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
                 conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             elif kms_type == "EHSMKeyManagementService":
                 conf["spark.bigdl.kms.ip"] = check(ppml_args, "kms_server_ip")
                 conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
                 conf["spark.bigdl.kms.id"] = check(ppml_args, "app_id")
-                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "app_key")
+                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "api_key")
                 conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
                 conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             elif kms_type == "AzureKeyManagementService":
@@ -168,8 +168,8 @@ class CryptoMode(Enum):
     AES_GCM_CTR_V1 = "AES_GCM_CTR_V1"
 
 
-def init_keys(app_id, app_key, primary_key_path, data_key_path):
-    return callBigDlFunc("float", "initKeys", app_id, app_key, primary_key_path, data_key_path)
+def init_keys(app_id, api_key, primary_key_path, data_key_path):
+    return callBigDlFunc("float", "initKeys", app_id, api_key, primary_key_path, data_key_path)
 
 
 def generate_encrypted_file(kms, primary_key_path, data_key_path, input_path, output_path):
