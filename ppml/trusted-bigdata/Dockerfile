@@ -155,7 +155,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
-
+ENV PYSPARK_PYTHON                      python
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
