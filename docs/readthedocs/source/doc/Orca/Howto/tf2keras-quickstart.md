@@ -38,7 +38,7 @@ Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md
 
 ### Step 2: Define the Model
 
-You can then define the Keras model in the _Creator Function_ using the standard TensorFlow 2 Keras APIs.
+You can then define and compile the Keras model in the _Creator Function_ using the standard TensorFlow 2 Keras APIs.
 
 ```python
 import tensorflow as tf
@@ -74,7 +74,6 @@ def preprocess(x, y):
 
 def train_data_creator(config, batch_size):
     (train_feature, train_label), _ = tf.keras.datasets.mnist.load_data()
-
     dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)
@@ -84,7 +83,6 @@ def train_data_creator(config, batch_size):
 
 def val_data_creator(config, batch_size):
     _, (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
-
     dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)

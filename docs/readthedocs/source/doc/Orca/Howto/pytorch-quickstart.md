@@ -75,7 +75,7 @@ def model_creator(config):
     return model
 
 def optim_creator(model, config):
-    return torch.optim.Adam(model.parameters(), lr=0.001)
+    return torch.optim.Adam(model.parameters(), lr=config.get("lr", 0.001))
 ```
 
 ### Step 3: Define Train Dataset
