@@ -97,6 +97,7 @@ RUN cd keywhiz && \
     cp docker/wizard.sh /usr/src/app && \
     cp docker/keywhiz-config.tpl /usr/src/app && \
     cp frontend-keywhiz-conf.yaml /usr/src/app && \
+    cp /usr/src/app/server/src/main/resources/dev_and_test_keystore.p12 /usr/src/app/cli/src/main/resources/dev_and_test_keystore.p12 && \
     chmod a+x /usr/src/app/entry.sh
 ADD ./start-https-frontend.sh /usr/src/app/start-https-frontend.sh
 RUN chmod a+x /usr/src/app/start-https-frontend.sh && \
