@@ -35,23 +35,22 @@ from bigdl.orca.learn.metrics import Accuracy
 from model import model_creator, optimizer_creator
 
 
-parser = argparse.ArgumentParser(description='PyTorch FashionMNIST Train Tutorial')
-parser.add_argument('--cluster_mode', type=str, default="spark-submit",
-                    help='The cluster mode, such as local, yarn-client, yarn-cluster, '
-                         'k8s-client, k8s-cluster, spark-submit or bigdl-submit.')
-parser.add_argument('--data_dir', type=str, required=True,
-                    help='The path to load data from local or remote resources')
+parser = argparse.ArgumentParser(description="PyTorch FashionMNIST Train Tutorial")
+parser.add_argument("--cluster_mode", type=str, default="spark-submit",
+                    help="The cluster mode, such as local, yarn-client, yarn-cluster, "
+                         "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
+parser.add_argument("--data_dir", type=str, required=True,
+                    help="The path to load data from local or remote resources.")
 args = parser.parse_args()
 
 
 def train_data_creator(config, batch_size):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5,), (0.5,))])
-    if is_local_path(args.data_dir):
-        data_dir = args.data_dir
-    else:
+    data_dir = config["data_dir"]
+    if not is_local_path(data_dir):
         data_dir = "/tmp/dataset"
-        get_remote_dir_to_local(remote_dir=args.data_dir, local_dir=data_dir)
+        get_remote_dir_to_local(remote_dir=config["data_dir"], local_dir=data_dir)
     trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
                                                  download=False, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
@@ -117,7 +116,8 @@ def main():
                                           loss=nn.CrossEntropyLoss(),
                                           metrics=[Accuracy()],
                                           use_tqdm=True,
-                                          backend="spark")
+                                          backend="spark",
+                                          config={"data_dir": args.data_dir, "lr": 0.001})
 
     train_stats = orca_estimator.fit(train_data_creator, epochs=1, batch_size=32)
     print("Train results:")
@@ -128,5 +128,6 @@ def main():
 
     stop_orca_context()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
