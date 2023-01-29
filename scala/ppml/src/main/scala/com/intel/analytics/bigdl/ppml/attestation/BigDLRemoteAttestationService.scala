@@ -88,6 +88,14 @@ object BigDLRemoteAttestationService {
     val params = cmdParser.parse(args, CmdParams()).get
 
     val route: Route =
+        get {
+          path("") {
+            val res = s"Welcome to BigDL Remote Attestation Service \n \n" +
+            "verify your quote like: " +
+            "POST <bigdl_remote_attestation_address>/verifyQuote \n"
+            complete(res)
+          }
+        } ~
         post {
           path("verifyQuote") {
             entity(as[Quote]) { quoteMsg =>
