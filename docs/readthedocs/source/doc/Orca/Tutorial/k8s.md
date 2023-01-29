@@ -50,7 +50,23 @@ For k8s-client, the Spark driver runs in the client process (outside the K8s clu
 
 Please see more details in [K8s-Cluster](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) and [K8s-Client](https://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
 
-For **k8s-cluster** mode, a `driver-pod-name` will be returned when the application is completed. You can retrieve the results on the __Develop Node__ following the commands below:
+For **k8s-cluster** mode, a `driver-pod-name` (`train-py-fc5bec85fca28cb3-driver` in the following log) will be returned when the application is completed.
+```
+23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Application status for spark-9341aa0ec6b249ad974676c696398b4e (phase: Succeeded)
+23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Container final statuses:
+         container name: spark-kubernetes-driver
+         container image: intelanalytics/bigdl-k8s:latest
+         container state: terminated
+         container started at: 2023-01-29T08:26:56Z
+         container finished at: 2023-01-29T08:35:07Z
+         exit code: 0
+         termination reason: Completed
+23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Application train.py with submission ID default:train-py-fc5bec85fca28cb3-driver finished
+23-01-29 08:34:47 INFO  ShutdownHookManager:57 - Shutdown hook called
+23-01-29 08:34:47 INFO  ShutdownHookManager:57 - Deleting directory /tmp/spark-fa8eeb45-bebf-4da9-9c0b-8bb59543842d
+```
+
+You can retrieve the results of the driver pod on the __Develop Node__ following the commands below:
 
 * Retrieve the logs on the driver pod:
 ```bash
@@ -306,11 +322,11 @@ conda pack -o environment.tar.gz
     ```bash
     docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
     ```
-2. Upload the example Python file to NFS.
+2. Upload the Python script (`train.py` in our example) to NFS.
     ```bash
     cp /path/to/train.py /bigdl/nfsdata
     ```
-3. Upload the extra Python dependency files to NFS.
+3. Upload the extra Python dependency files (`model.py` in our example) to NFS.
     ```bash
     cp /path/to/model.py /bigdl/nfsdata
     ```
