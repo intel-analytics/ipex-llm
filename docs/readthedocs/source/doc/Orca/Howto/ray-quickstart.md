@@ -27,11 +27,11 @@ The Ray cluster would be launched automatically by specifying `init_ray_on_spark
 from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
-    sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="local", cores=4, memory="4g", init_ray_on_spark=True)
 elif cluster_mode == "k8s":  # For K8s cluster
-    sc = init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1, init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g", init_ray_on_spark=True, master=..., container_image=...)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    sc = init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1, init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g", init_ray_on_spark=True)
 ```
 
 This is the only place where you need to specify local or distributed mode. See [here](../Overview/ray.md#initialize) for more RayOnSpark related arguments when you `init_orca_context`.
