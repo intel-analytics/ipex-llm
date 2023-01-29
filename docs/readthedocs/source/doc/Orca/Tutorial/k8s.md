@@ -50,7 +50,7 @@ For k8s-client, the Spark driver runs in the client process (outside the K8s clu
 
 Please see more details in [K8s-Cluster](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) and [K8s-Client](https://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
 
-For **k8s-cluster** mode, a `driver-pod-name` will be returned when the application is completed.
+For **k8s-cluster** mode, a `driver-pod-name` (`train-py-fc5bec85fca28cb3-driver` in the following log) will be returned when the application is completed.
 ```
 23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Application status for spark-9341aa0ec6b249ad974676c696398b4e (phase: Succeeded)
 23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Container final statuses:
