@@ -303,19 +303,19 @@ conda pack -o environment.tar.gz
 
 * On the __Develop Node__:
 1. Upload the conda archive to NFS.
-```bash
-docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
-```
+    ```bash
+    docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
+    ```
 2. Upload the example Python file to NFS.
-```bash
-cp /path/to/train.py /bigdl/nfsdata
-```
+    ```bash
+    cp /path/to/train.py /bigdl/nfsdata
+    ```
 3. Upload the extra Python dependency files to NFS.
-```bash
-cp /path/to/model.py /bigdl/nfsdata
-```
+    ```bash
+    cp /path/to/model.py /bigdl/nfsdata
+    ```
 
-Run the example with the following command by setting the cluster_mode to “k8s-cluster”:
+Run the example with the following command by setting the cluster_mode to "k8s-cluster":
 ```bash
 python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --remote_dir /bigdl/nfsdata/dataset
 ```
@@ -393,17 +393,17 @@ In the `spark-submit` script:
 
 * On the __Develop Node__:
 1. Upload the conda archive to NFS.
-```bash
-docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
-```
+    ```bash
+    docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
+    ```
 2. Upload the example Python file to NFS.
-```bash
-cp /path/to/train.py /bigdl/nfsdata
-```
+    ```bash
+    cp /path/to/train.py /bigdl/nfsdata
+    ```
 3. Upload the extra Python dependency files to NFS.
-```bash
-cp /path/to/model.py /bigdl/nfsdata
-```
+    ```bash
+    cp /path/to/model.py /bigdl/nfsdata
+    ```
 
 Submit and run the program for `k8s-cluster` mode following the `spark-submit` script below:
 ```bash
