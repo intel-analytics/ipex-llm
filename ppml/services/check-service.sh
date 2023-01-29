@@ -7,7 +7,7 @@ attestation () {
     if [ -z "$ATTESTATION_ADDRESS" ] ; then 
         ehco "ATTESTATION_ADDRESS not found, please pro vide your ATTESTATION_ADDRESS to check bigdl-attestation-service."
     else 
-        ATTESTATIONSUCCESS=$(curl -k -s -i ${ATTESTATION_ADDRESS} || grep "200")
+        ATTESTATIONSUCCESS=$(curl -s -i -k ${ATTESTATION_ADDRESS} | grep "Welcome to BigDL Remote Attestation Service")
         if [ -z "$ATTESTATIONSUCCESS" ]; then 
             echo "bigdl-attestation-service initialization failed. Unable to connect bigdl-attestation-service."
         fi
