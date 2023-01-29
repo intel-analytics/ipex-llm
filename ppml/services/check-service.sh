@@ -1,0 +1,123 @@
+#!/bin/bash
+# Acceptable arguments: attestation, bigdl-kms, ehsm, kms-utils, pccs, all
+
+attestation () {
+    echo "Detecting bigdl-attestation-service..."
+    ATTESTATIONSUCCESS=""
+    if [ -z "$ATTESTATION_ADDRESS" ] ; then 
+        ehco "ATTESTATION_ADDRESS not found, please pro vide your ATTESTATION_ADDRESS to check bigdl-attestation-service."
+    else 
+        ATTESTATIONSUCCESS=$(curl -s -i -k ${ATTESTATION_ADDRESS} | grep "Welcome to BigDL Remote Attestation Service")
+        if [ -z "$ATTESTATIONSUCCESS" ]; then 
+            echo "bigdl-attestation-service initialization failed. Unable to connect bigdl-attestation-service."
+        fi
+        if [ -n "$ATTESTATIONSUCCESS" ]; then 
+            echo "bigdl-attestation-service initialization successful."
+        fi
+    fi
+}
+
+bigdl-kms () {
+    echo "Detecting bigdl-kms..." 
+    BIGDLKMSSUCCESS=""
+    if [ -z "$BIGDL_KMS_IP" ] ; then 
+        echo "BIGDL_KMS_IP not found, please provide your BIGDL_KMS_IP to check bigdl-kms service."
+    else   
+        BIGDLKMSSUCCESS=$(curl -k -s "https://${BIGDL_KMS_IP}:9876/" || grep "welcome to BigDL KMS Frontend")
+        if [ -z "$BIGDLKMSSUCCESS" ]; then 
+            echo "bigdl-kms initialization failed. Unable to connect BigDl KMS frontend."
+        fi
+        if [ -n "$BIGDLKMSSUCCESS" ]; then 
+            echo "bigdl-kms initialization successful."
+        fi
+    fi
+}
+
+ehsm () {
+    echo "Detecting ehsm..."
+    EHSMSUCCESS=""
+    if [ -z "$EHSM_IP" ] ; then
+        echo "EHSM_IP not found, please provide your EHSM_IP to check ehsm service."
+    else 
+        EHSMSUCCESS=$(curl -k -G -s "https://${EHSM_IP}:9000/ehsm?Action=Enroll" || grep "\"code\":200" >/dev/null)
+        if [ -z "$EHSMSUCCESS" ]; then 
+            echo "ehsm initialization failed. Unable to connect EHSM at " $EHSM_IP "."
+        fi
+        if [ -n "$EHSMSUCCESS" ]; then 
+            echo "ehsm initialization successful."
+        fi
+    fi
+}
+
+kms-utils () {
+    echo "Detecting kms-utils..."
+    KMSUTILSSUCCESS=""
+    if [ -z "$KMS_UTILS_IP" ] ; then 
+        echo "KMS_UTILS_IP not found, please provide your KMS_UTILS_IP to check kms-utils service."
+    else 
+        KMSUTILSSUCCESS=$(curl -k -G -s "https://${KMS_UTILS_IP}:9000/ehsm?Action=Enroll" || grep "\"code\":200" >/dev/null)
+        if [ -z "$KMSUTILSSUCCESS" ]; then
+            echo "kms-utils initialization failed. Unable to connect kms-utils at " $KMS_UTILS_IP "."
+        fi
+        if [ -n "$KMSUTILSSUCCESS" ]; then
+            echo "kms-utils initialization successful."
+        fi
+    fi
+}
+
+pccs () {
+    echo "Detecting pccs..."
+    PCCSSUCCESS=""
+    if [ -z "$PCCS_IP" ] || [ -z "$PCCS_PORT" ] ; then
+        echo "PCCS_IP or PCCS_PORT not found, please provide your PCCS_IP & PCCS_PORT to check pccs service."
+    else 
+        PCCSSUCCESS=$(curl -k -G -s -i "https://${PCCS_IP}:${PCCS_PORT}/sgx/certification/v3/rootcacrl" || grep "200")
+        if [ -z $"PCCSSUCCESS" ]; then 
+            echo "pccs initalization failed. Unable to connect pccs at " $PCCS_IP "."
+        fi
+        if [ -n $"PCCSSUCCESS" ]; then 
+            echo "pccs initalization successful."
+        fi
+    fi
+}
+
+all=0
+if [ "$#" -lt 1 ]; then
+    echo "No argument passed, detecting all component statuses."
+    all=$((all+1))
+else
+    for arg in "$@"
+    do
+        if [ "$arg" == all ]; then
+            echo "Detecting all component statuses."
+            all=$((all+1))
+        fi
+    done
+fi
+
+if [ "$#" -gt 5 ]; then
+    echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigdlKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
+elif [ "$all" -eq 1 ]; then 
+    attestation
+    bigdl-kms
+    ehsm
+    kms-utils
+    pccs
+else 
+    for arg in "$@"
+    do
+        if [ "$arg" == attestation ]; then
+            attestation
+        elif [ "$arg" == bigdl-kms ]; then
+            bigdl-kms
+        elif [ "$arg" == ehsm ]; then
+            ehsm
+        elif [ "$arg" == kms-utils ]; then
+            kms-utils
+        elif [ "$arg" == pccs ]; then
+            pccs
+        else 
+            echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigdl-kms\", \"ehsm\", \"kms-utils\", \"pccs\""
+        fi
+    done
+fi
