@@ -163,7 +163,7 @@ if [ -f "${LIB_DIR}/libiomp5.so" ]; then
     echo "Setting KMP_AFFINITY..."
     export KMP_AFFINITY=granularity=fine,none
 
-    if [[ "${PERF_VAR}" == "1" ]]; then
+    if [[ "${PERF_VAR}" -eq "1" ]]; then
         # experiment variable to speed up performance.
         export OPENMP=0
         export KMP_AFFINITY=granularity=fine,compact,1,0
@@ -207,7 +207,7 @@ elif [[ ! -z "${ENABLE_TCMALLOC_VAR:-}" ]]; then
 fi
 
 # Clean up perf var
-if [[ "${PERF_VAR}" == "1" ]]; then
+if [[ "${PERF_VAR}" -eq "1" ]]; then
     unset PERF_VAR
 fi
 
