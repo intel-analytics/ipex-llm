@@ -64,7 +64,6 @@ class LeNet(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
-
 loss = nn.NLLLoss()
 ```
 
