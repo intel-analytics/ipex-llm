@@ -13,22 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
+import operator
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.util import compare_version
 
 
-def load_inc_model(path, model, framework):
+def load_inc_model(path, model, framework, input_sample=None):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
-        return PytorchQuantizedModel._load(path, model)
+        # only ipex quantization needs example_inputs
+        return PytorchQuantizedModel._load(path, model, example_inputs=input_sample)
     elif framework == 'tensorflow':
-        invalidInputError(False, "QuantizedTensorflowModel loading is not implemented yet.")
+        from .tensorflow.model import KerasQuantizedModel
+        return KerasQuantizedModel._load(path, model)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def quantize(model, dataloader=None, metric=None, **kwargs):
+def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -47,14 +53,23 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
     onnxruntime_session_options = not_none_kwargs.pop('onnxruntime_session_options', None)
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantization import PytorchQuantization
-        quantizer = PytorchQuantization(**not_none_kwargs)
+        quantizer = PytorchQuantization(thread_num=thread_num, **not_none_kwargs)
     if 'onnx' in not_none_kwargs['framework']:
-        invalidInputError('torch' in str(type(dataloader)),
-                          errMsg="ONNXRuntime quantization only support in Pytorch.")
-        from .onnx.pytorch.quantization import PytorchONNXRuntimeQuantization
-        quantizer =\
-            PytorchONNXRuntimeQuantization(onnxruntime_session_options=onnxruntime_session_options,
-                                           **not_none_kwargs)
+        onnx_option = not_none_kwargs.pop('onnx_option', None)
+        if onnxruntime_session_options is None:
+            import onnxruntime
+            onnxruntime_session_options = onnxruntime.SessionOptions()
+        if thread_num is not None:
+            onnxruntime_session_options.intra_op_num_threads = thread_num
+            onnxruntime_session_options.inter_op_num_threads = thread_num
+        if onnx_option == 'tensorflow':
+            from .onnx.tensorflow.quantization import KerasONNXRuntimeQuantization
+            quantizer = KerasONNXRuntimeQuantization(
+                onnxruntime_session_options=onnxruntime_session_options, **not_none_kwargs)
+        else:
+            from .onnx.pytorch.quantization import PytorchONNXRuntimeQuantization
+            quantizer = PytorchONNXRuntimeQuantization(
+                onnxruntime_session_options=onnxruntime_session_options, **not_none_kwargs)
     if 'tensorflow' in not_none_kwargs['framework']:
         from .tensorflow.quantization import TensorflowQuantization
         quantizer = TensorflowQuantization(**not_none_kwargs)
@@ -63,3 +78,8 @@ def quantize(model, dataloader=None, metric=None, **kwargs):
         from .core import BaseQuantization
         quantizer = BaseQuantization(**not_none_kwargs)
     return quantizer.post_training_quantize(model, dataloader, metric)
+
+
+if compare_version("neural_compressor", operator.ge, "2.0"):
+    del quantize
+    from .inc_api_2 import quantize

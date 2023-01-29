@@ -1,5 +1,10 @@
 name: Nano Unit Tests Basic
 
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -41,9 +46,7 @@ jobs:
           $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
-          bash python/nano/dev/release_default_linux.sh default false
-          whl_name=`ls python/nano/dist`
-          pip install python/nano/dist/${whl_name}
+          bash python/nano/dev/build_and_install.sh linux default false basic
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
@@ -74,10 +77,8 @@ jobs:
           $CONDA/bin/conda create -n openvino-basic -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate openvino-basic
           $CONDA/bin/conda info
-          bash python/nano/dev/release_default_linux.sh default false
-          whl_name=`ls python/nano/dist`
-          pip install python/nano/dist/${whl_name}
-          pip install pytest openvino-dev
+          bash python/nano/dev/build_and_install.sh linux default false basic
+          pip install pytest openvino-dev==2022.3.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-basic-openvino-tests.sh
           source $CONDA/bin/deactivate

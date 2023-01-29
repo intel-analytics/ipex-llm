@@ -13,26 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import math
 import os.path
 
 from pyspark.sql import DataFrame
+import ray
 
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
 from bigdl.dllib.nncontext import init_nncontext
+from bigdl.orca.data.utils import spark_df_to_pd_sparkxshards
+from bigdl.orca.learn.utils import process_xshards_of_pandas_dataframe,\
+    add_predict_to_pd_xshards
 
 from openvino.inference_engine import IECore
 import numpy as np
-from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.learn.utils import openvino_output_to_sdf
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import (List, Optional, Union)
 
 
 class Estimator(object):
     @staticmethod
-    def from_openvino(*, model_path):
+    def from_openvino(*, model_path: str) -> "OpenvinoEstimator":
         """
         Load an openVINO Estimator.
 
@@ -44,7 +51,7 @@ class Estimator(object):
 class OpenvinoEstimator(SparkEstimator):
     def __init__(self,
                  *,
-                 model_path):
+                 model_path: str) -> None:
         self.load(model_path)
 
     def fit(self, data, epochs, batch_size=32, feature_cols=None, label_cols=None,
@@ -54,7 +61,12 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def predict(self, data, feature_cols=None, batch_size=4, input_cols=None):
+    def predict(self,  # type: ignore[override]
+                data: Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]],
+                feature_cols: Optional[List[str]] = None,
+                batch_size: Optional[int] = 4,
+                input_cols: Optional[Union[str, List[str]]]=None
+                ) -> Optional[Union["SparkXShards", "DataFrame", "np.ndarray", List["np.ndarray"]]]:
         """
         Predict input data
 
@@ -220,21 +232,32 @@ class OpenvinoEstimator(SparkEstimator):
                                   "x in each shard should be a ndarray or a list of ndarray.")
             return feature_data
 
+        def update_result_shard(data):
+            shard, y = data
+            shard["prediction"] = y
+            return shard
+
         if isinstance(data, DataFrame):
+            # TODO: merge changes
             is_df = True
             schema = data.schema
             result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
             result_df = openvino_output_to_sdf(data, result, outputs,
                                                list(self.output_dict.values()))
             return result_df
+#             xshards = spark_df_to_pd_sparkxshards(data)
+#             pd_sparkxshards = process_xshards_of_pandas_dataframe(xshards,
+#                                                                   feature_cols=feature_cols)
+#
+#             transformed_data = pd_sparkxshards.transform_shard(predict_transform, batch_size)
+#             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
+#
+#             pred_shards = SparkXShards(pd_sparkxshards.rdd.zip(result_rdd).map(update_result_shard))
+#             res_shards = add_predict_to_pd_xshards(xshards, pred_shards)
+#             return res_shards.to_spark_df()
         elif isinstance(data, SparkXShards):
             transformed_data = data.transform_shard(predict_transform, batch_size)
             result_rdd = transformed_data.rdd.mapPartitions(lambda iter: partition_inference(iter))
-
-            def update_result_shard(data):
-                shard, y = data
-                shard["prediction"] = y
-                return shard
             return SparkXShards(result_rdd)
         elif isinstance(data, (np.ndarray, list)):
             if isinstance(data, np.ndarray):
@@ -245,7 +268,7 @@ class OpenvinoEstimator(SparkEstimator):
             elif isinstance(data, list):
                 flattened = nest.flatten(data)
                 data_length = len(flattened[0])
-                data_to_be_rdd = []
+                data_to_be_rdd = []  # type: ignore
                 split_num = math.ceil(flattened[0].shape[0]/batch_size)
                 num_slices = min(split_num, self.node_num)
                 for i in range(split_num):
@@ -280,6 +303,7 @@ class OpenvinoEstimator(SparkEstimator):
                               "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
                               " arrays are supported as input data, but"
                               " get " + data.__class__.__name__)
+        return None
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
@@ -293,13 +317,13 @@ class OpenvinoEstimator(SparkEstimator):
         """
         invalidInputError(False, "not implemented")
 
-    def save(self, model_path):
+    def save(self, model_path: str):
         """
         Save is not supported in OpenVINOEstimator
         """
         invalidInputError(False, "not implemented")
 
-    def load(self, model_path):
+    def load(self, model_path: str) -> None:
         """
         Load an openVINO model.
 
@@ -325,7 +349,7 @@ class OpenvinoEstimator(SparkEstimator):
         del net
         del ie
 
-    def set_tensorboard(self, log_dir, app_name):
+    def set_tensorboard(self, log_dir: str, app_name: str):
         """
         Set_tensorboard is not supported in OpenVINOEstimator
         """

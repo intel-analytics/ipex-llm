@@ -16,12 +16,18 @@
 
 import pytest
 import numpy as np
-from bigdl.chronos.forecaster.tcmf_forecaster import TCMFForecaster
+
+from bigdl.chronos.utils import LazyImport
+TCMFForecaster=LazyImport('bigdl.chronos.forecaster.tcmf_forecaster.TCMFForecaster')
 from unittest import TestCase
 import tempfile
 import pandas as pd
 
+from .. import op_distributed, op_torch, op_diff_set_all
 
+
+@op_torch
+@op_distributed
 class TestChronosModelTCMFForecaster(TestCase):
 
     def setUp(self):
@@ -288,6 +294,7 @@ class TestChronosModelTCMFForecaster(TestCase):
         assert final_df.shape == (300 * horizon, 3)
         OrcaContext.pandas_read_backend = "spark"
 
+    @op_diff_set_all
     def test_forecast_tcmf_distributed(self):
         input = dict({'id': self.id, 'y': self.data})
 

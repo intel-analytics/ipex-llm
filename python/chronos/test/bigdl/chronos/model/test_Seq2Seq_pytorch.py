@@ -14,11 +14,13 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from bigdl.chronos.model.Seq2Seq_pytorch import Seq2SeqPytorch
+from .. import op_torch, op_distributed
 import numpy as np
 import tempfile
 import os
 import random
+from bigdl.chronos.utils import LazyImport
+Seq2SeqPytorch = LazyImport('bigdl.chronos.model.Seq2Seq_pytorch.Seq2SeqPytorch')
 
 
 def create_data():
@@ -41,6 +43,8 @@ def create_data():
     return train_data, val_data, test_data
 
 
+@op_torch
+@op_distributed
 class TestSeq2SeqPytorch(TestCase):
     train_data, val_data, test_data = create_data()
 

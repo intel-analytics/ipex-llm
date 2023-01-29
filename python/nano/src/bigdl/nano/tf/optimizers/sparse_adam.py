@@ -21,6 +21,7 @@ from tensorflow.python.util.tf_export import keras_export
 import tensorflow
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_9
+from tensorflow.keras.optimizers import Adam
 
 if KERAS_VERSION_LESS_2_9:
     from keras.optimizer_v2 import optimizer_v2
@@ -28,7 +29,7 @@ else:
     from keras.optimizers.optimizer_v2 import optimizer_v2
 
 
-class SparseAdam(tensorflow.keras.optimizers.Adam):
+class SparseAdam(Adam):
     """
     A variant of the Adam optimizer that handles sparse updates more efficiently.
 

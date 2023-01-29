@@ -17,15 +17,17 @@
 import pytest
 
 from unittest import TestCase
-from bigdl.chronos.model.prophet import ProphetModel
+from .. import op_diff_set_all
 import numpy as np
 import os
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
+from bigdl.chronos.utils import LazyImport
+ProphetModel = LazyImport('bigdl.chronos.model.prophet.ProphetModel')
 
 
+@op_diff_set_all
 class TestProphetModel(TestCase):
-
     def setup_method(self, method):
         self.seq_len = 480
         self.config = {

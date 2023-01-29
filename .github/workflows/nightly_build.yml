@@ -1,8 +1,10 @@
 name: Nightly Build
 
 on:
+  #pull_request:
+    #branchs: [ main ]
   schedule:
-    - cron: '0 12 * * *' # GMT time, 12:00 GMT == 20:00 China
+    - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
     inputs:
       artifact:
@@ -21,6 +23,8 @@ on:
         required: true
         default: 'latest'
         type: string
+env:
+  GIST_ID: 48dbd87983219d4fe264adfea701815a
 
 permissions:
   contents: read
@@ -156,7 +160,7 @@ jobs:
       if: ${{ always() }}
       with:
         secret: ${{ secrets.GIST_SECRET}}
-        gist-id: 7495dccc42118020c12de5a095cfa2a6
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-scala-build.json
         type: job
@@ -174,7 +178,7 @@ jobs:
       env:
         DEFAULT_TAG: 'latest'
       run: |
-        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }} " >> $GITHUB_ENV
+        echo "TAG=${{ github.event.inputs.bigdlTag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -224,7 +228,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: aaee1abb17ed9aad37e19256787c52b2
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-docker-build-bigdl.json
         type: job
@@ -247,7 +251,7 @@ jobs:
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.7.15'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -258,7 +262,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.2.0
+        export PYPI_VERSION=2.3.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -276,7 +280,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 983672c70e351381418fdf6f9076637a
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-python-build.json
         type: job
@@ -296,7 +300,7 @@ jobs:
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.7.10'
     
     - name: Install dependencies
       run: |
@@ -308,7 +312,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.2.0
+        export PYPI_VERSION=2.3.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update
@@ -316,84 +320,85 @@ jobs:
         #spark2
         ## linux ##
         bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
- 
+        
         # upload
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py
 
-        #sshpass -p 'abcd1234!@#$QWER' \
+        #sshpass -p "${SOURCEFORGE_PW}" \
         #scp ./python/serving/src/dist/bigdl_serving*-py2.py3-none-any.whl \
         #intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/cluster-serving-py
-
+        echo "test mac build"
+        
         ## mac ##
         bash python/dev/release_default_mac_spark246.sh ${nb_version} false false
 
         # upload
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py
 
         #spark3
         ## linux ##
-        bash python/dev/release_default_linux_spark313.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
         # upload
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-manylinux1_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
         ## mac ##
-        bash python/dev/release_default_mac_spark313.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
         # upload
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/dllib-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/orca-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/friesian/src/dist/bigdl_friesian*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/friesian-py-spark3
 
-        sshpass -p 'abcd1234!@#$QWER' \
+        sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
@@ -402,7 +407,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 6d878630c0c8f50c388bb7e196354ca8
+        gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
         file-name: nb-python-sourceforge-build.json
         type: job
@@ -418,7 +423,7 @@ jobs:
       uses: ./.github/actions/create-job-status-badge
       with:
         secret: ${{ secrets.GIST_SECRET }}
-        gist-id: 48dbd87983219d4fe264adfea701815a
+        gist-id: ${{env.GIST_ID}}
         file-name: nightly-build.json
         type: workflow
 

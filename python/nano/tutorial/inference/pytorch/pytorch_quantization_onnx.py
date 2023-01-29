@@ -17,7 +17,7 @@
 # Required Dependecies
 
 # ```bash
-# pip install neural-compressor==1.11.0 onnx onnxruntime onnxruntime_extensions
+# pip install --pre --upgrade bigdl-nano[pytorch,inference]
 # ```
 
 
@@ -27,7 +27,7 @@ from torchvision.datasets import OxfordIIITPet
 from torch.utils.data.dataloader import DataLoader
 from torchvision.models import resnet18
 from bigdl.nano.pytorch import Trainer
-from torchmetrics import Accuracy
+from torchmetrics.classification import MulticlassAccuracy
 
 
 def finetune_pet_dataset(model_ft):
@@ -70,7 +70,8 @@ def finetune_pet_dataset(model_ft):
     optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
 
     # Compile our model with loss function, optimizer.
-    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, metrics=[Accuracy()])
+    model = Trainer.compile(model_ft, loss_ft, optimizer_ft, 
+                            metrics=[MulticlassAccuracy(num_classes=37)])
     trainer = Trainer(max_epochs=1)
     trainer.fit(model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
@@ -99,13 +100,14 @@ if __name__ == "__main__":
                                  calib_dataloader=DataLoader(train_dataset, batch_size=32))
 
     # Inference with Quantized Model
-    y_hat = q_model(x)
-    predictions = y_hat.argmax(dim=1)
-    print(predictions)
+    with InferenceOptimizer.get_context(q_model):
+        y_hat = q_model(x)
+        predictions = y_hat.argmax(dim=1)
+        print(predictions)
 
     # Save Quantized Model
-    Trainer.save(q_model, "./quantized_model")
+    InferenceOptimizer.save(q_model, "./quantized_model")
 
     # Load the Quantized Model
-    # loaded_model = Trainer.load("./quantized_model")
+    # loaded_model = InferenceOptimizer.load("./quantized_model")
     # print(loaded_model(x).argmax(dim=1))

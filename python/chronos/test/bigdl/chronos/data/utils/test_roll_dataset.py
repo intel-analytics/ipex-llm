@@ -19,7 +19,9 @@ import numpy as np
 import pandas as pd
 import random
 from bigdl.chronos.data import TSDataset
-from bigdl.chronos.data.utils.roll_dataset import RollDataset
+from bigdl.chronos.utils import LazyImport
+RollDataset = LazyImport('bigdl.chronos.data.utils.roll_dataset.RollDataset')
+from ... import op_torch
 
 
 def get_ts_df():
@@ -41,6 +43,7 @@ def get_multi_id_ts_df():
     return train_df
 
 
+@op_torch
 class TestRollDataset:
 
     @staticmethod
@@ -52,9 +55,13 @@ class TestRollDataset:
         # get results rolled by tsdata.roll
         extra_feature_col = None if feature_num == 0 else ["extra feature"]
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=extra_feature_col, id_col="id")
+                                       extra_feature_col=extra_feature_col,
+                                       id_col="id", repair=False)
         tsdata.roll(lookback=lookback, horizon=horizon)
-        x, y = tsdata.to_numpy()
+        if horizon == 0:
+            x = tsdata.to_numpy()
+        else:
+            x, y = tsdata.to_numpy()
 
         # get results rolled by RollDataset
         roll_dataset = RollDataset(df=df,
@@ -75,7 +82,7 @@ class TestRollDataset:
                 np.testing.assert_array_almost_equal(xi, roll_dataset_xi.detach().numpy())
                 np.testing.assert_array_almost_equal(yi, roll_dataset_yi.detach().numpy())
             else:
-                # for test, y is None.
+                # for test, only x.
                 xi = x[i]
                 roll_dataset_xi = roll_dataset[i]
                 np.testing.assert_array_almost_equal(xi, roll_dataset_xi.detach().numpy())

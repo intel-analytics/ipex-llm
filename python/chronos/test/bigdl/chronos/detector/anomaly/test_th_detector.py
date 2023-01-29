@@ -19,10 +19,13 @@ import numpy as np
 import pandas as pd
 from unittest import TestCase
 
-from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
+from bigdl.chronos.utils import LazyImport
+LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from bigdl.chronos.detector.anomaly import ThresholdDetector
+from ... import op_torch
 
 
+@op_torch
 class TestThresholdDetector(TestCase):
 
     def setUp(self):
@@ -77,7 +80,7 @@ class TestThresholdDetector(TestCase):
                                     hidden_dim=32,
                                     layer_num=2)
         forecaster.fit(data=(x_train, y_train), batch_size=1024, epochs=50)
-        y_predict = forecaster.predict(x_test)
+        y_predict = forecaster.predict(x_test, acceleration=False)
         y_predict = np.squeeze(y_predict, axis=1)
 
         # find anomaly using a manual set threshold

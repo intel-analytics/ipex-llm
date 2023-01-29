@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-executor
+    env:
+      - name: ATTESTATION
+        value: false
+      - name: ATTESTATION_URL
+        value: your_attestation_url
+      #- name: PCCS_URL
+      #  value: your_pccs_url
+      #- name: APP_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: API_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
+      #- name: ATTESTATION_POLICYID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: policy_id
+    volumeMounts:
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: nfs-storage
+        mountPath: /ppml/trusted-big-data-ml/work/data
+    resources:
+      requests:
+        cpu: 8
+        memory: 32Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
+      limits:
+        cpu: 10
+        memory: 40Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
+  volumes:
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket
+    - name: nfs-storage
+      persistentVolumeClaim:
+        claimName: nfsvolumeclaim

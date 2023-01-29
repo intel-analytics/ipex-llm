@@ -24,6 +24,8 @@ import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
 
+import scala.collection.mutable
+
 object RecallNearlineUtils {
   private val logger: Logger = LogManager.getLogger(classOf[RecallInitializer].getName)
 
@@ -43,12 +45,29 @@ object RecallNearlineUtils {
       var df = spark.read.parquet(parquetFiles: _*)
       df = df.select(itemFeatureColumns.map(col): _*).distinct()
       val data = df.rdd.map(row => {
-        val id = row.getInt(0)
-        val data = row.getAs[DenseVector](1).toArray.map(_.toFloat)
+        val id = row.get(0)
+        val data = row.get(1)
         (id, data)
       }).collect()
-      val resultFlattenArr = data.flatMap(_._2)
-      val idList = data.map(_._1)
+
+      val resultFlattenArr = if (data.length > 0) {
+        val tmpDataArr = data.map(_._2)
+        tmpDataArr(0) match {
+          case _: DenseVector =>
+            tmpDataArr.flatMap(_.asInstanceOf[DenseVector].toArray.map(_.toFloat))
+          case _: mutable.WrappedArray[Any] =>
+            tmpDataArr.flatMap(
+              _.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
+          case _ =>
+            Log4Error.invalidInputError(condition = false,
+              "Recall's initialData parquet files contain unsupported Dtype. ",
+              "Make sure ID's type is int and ebd's type is DenseVector or array.")
+            new Array[Float](0)
+        }
+      } else {
+        new Array[Float](0)
+      }
+      val idList = data.map(_._1).map(_.toString.toInt)
       indexService.addWithIds(resultFlattenArr, idList)
     }
     val end = System.currentTimeMillis()

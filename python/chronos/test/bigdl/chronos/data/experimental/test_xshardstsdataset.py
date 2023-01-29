@@ -22,9 +22,13 @@ import os
 
 from unittest import TestCase
 from bigdl.chronos.data import TSDataset
-from bigdl.chronos.data.experimental import XShardsTSDataset
-from bigdl.orca.data.pandas import read_csv
-from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.chronos.utils import LazyImport
+XShardsTSDataset = LazyImport('bigdl.chronos.data.experimental.XShardsTSDataset')
+read_csv = LazyImport('bigdl.orca.data.pandas.read_csv')
+init_orca_context = LazyImport('bigdl.orca.common.init_orca_context')
+stop_orca_context = LazyImport('bigdl.orca.common.stop_orca_context')
+OrcaContext = LazyImport('bigdl.orca.common.OrcaContext')
+from ... import op_torch, op_distributed
 
 from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
@@ -57,6 +61,8 @@ def get_ugly_ts_df():
     df["id"] = np.array(['00']*50 + ['01']*50)
     return df
 
+@op_torch
+@op_distributed
 class TestXShardsTSDataset(TestCase):
 
     def setUp(self):

@@ -1,0 +1,62 @@
+# pccs Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: pccs
+  namespace: bigdl-pccs
+  labels:
+    app: pccs
+spec:
+  type: ClusterIP
+  ports:
+    - name: pccs
+      port: 18081
+      targetPort: 18081
+  selector:
+    app: pccs
+  externalIPs:
+  - $pccsIP 
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pccs
+  namespace: bigdl-pccs
+spec:
+  selector:
+    matchLabels:
+      app: pccs
+  serviceName: "pccs"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pccs
+    spec:
+      containers:
+      - name: pccs
+        image:  $pccsImageName
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: API_KEY
+          value:  $apiKey 
+        - name: PCCS_PORT
+          value: "18081"
+        - name: HTTPS_PROXY_URL
+          value:  $httpsProxyUrl 
+        - name: COUNTRY_NAME
+          value:  $countryName 
+        - name: CITY_NAME
+          value:  $cityName 
+        - name: ORGANIZATION_NAME
+          value:  $organizaitonName 
+        - name: COMMON_NAME
+          value: $commonName 
+        - name: EMAIL_ADDRESS
+          value: $emailAddress 
+        - name: PASSWORD
+          value: $serverPassword 
+        ports:
+        - containerPort: 18081
+          name: pccs-port
+---

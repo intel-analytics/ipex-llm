@@ -2,7 +2,7 @@
 
 **In this guide we'll demonstrate how to use BigDL-Nano to accelerate custom train loop easily with very few changes.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -15,7 +15,7 @@ pip install --pre --upgrade bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
 
-### **Step 1: Load the Data**
+### Step 1: Load the Data
 
 Import Cifar10 dataset from torch_vision and modify the train transform. You could access [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) for a view of the whole dataset.
 
@@ -49,7 +49,7 @@ def create_dataloader(data_path, batch_size):
     return train_loader
 ```
 
-### **Step 2: Define the Model**
+### Step 2: Define the Model
 
 You may define your model in the same way as the standard PyTorch models.
 
@@ -70,7 +70,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 ```
 
-### **Step 3: Define Train Loop**
+### Step 3: Define Train Loop
 
 Suppose the custom train loop is as follows:
 
@@ -149,7 +149,7 @@ class MyNano(TorchNano):
             print(f'avg_loss: {total_loss / num}')
 ```
 
-### **Step 4: Run with Nano TorchNano**
+### Step 4: Run with Nano TorchNano
 
 ```python
 MyNano().train()
@@ -160,15 +160,15 @@ At this stage, you may already experience some speedup due to the optimized envi
 #### Increase the number of processes in distributed training to accelerate training.
 
 ```python
-MyNano(num_processes=2, strategy="subprocess").train()
+MyNano(num_processes=2, distributed_backend="subprocess").train()
 ```
 
-- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' strategies for distributed training, but only the 'subprocess' strategy can be used in interactive environment.
+- Note: BigDL-Nano now support 'spawn', 'subprocess' and 'ray' backends for distributed training, but only the 'subprocess' backend can be used in interactive environment.
 
 #### Intel Extension for Pytorch (a.k.a. [IPEX](https://github.com/intel/intel-extension-for-pytorch))
 
 IPEX extends Pytorch with optimizations on intel hardware. BigDL-Nano also integrates IPEX into the `TorchNano`, you can turn on IPEX optimization by setting `use_ipex=True`.
 
 ```python
-MyNano(use_ipex=True, num_processes=2, strategy="subprocess").train()
+MyNano(use_ipex=True, num_processes=2, distributed_backend="subprocess").train()
 ```

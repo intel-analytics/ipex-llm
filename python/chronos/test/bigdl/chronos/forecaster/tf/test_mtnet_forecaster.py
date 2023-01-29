@@ -16,11 +16,13 @@
 
 import pytest
 import numpy as np
-import tensorflow as tf
 import pandas as pd
 
 from bigdl.chronos.data import TSDataset
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
 from unittest import TestCase
+from test.bigdl.chronos import op_tf2
 
 
 def create_data():
@@ -48,7 +50,8 @@ def create_data():
         tsdata.roll(lookback=lookback, horizon=horizon)
     return tsdata_train, tsdata_test
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
+
+@op_tf2
 class TestChronosModelMTNetForecaster(TestCase):
 
     def setUp(self):

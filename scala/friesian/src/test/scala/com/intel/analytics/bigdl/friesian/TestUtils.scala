@@ -17,8 +17,10 @@
 package com.intel.analytics.bigdl.friesian
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
+import org.apache.spark.ml.linalg.DenseVector
 
+import scala.collection.mutable
 import scala.util.Random
 
 object TestUtils {
@@ -32,5 +34,19 @@ object TestUtils {
     T.array(
       Array.fill(length)(
         Tensor[Float](Array.fill(dim)(Random.nextFloat()), Array(dim))))
+  }
+
+  def toFloatArray(obj: Any): Array[Float] = {
+    obj match {
+      case vector: DenseVector =>
+        vector.toArray.map(_.toFloat)
+      case array: mutable.WrappedArray[Any] =>
+        array.array.map(_.toString.toFloat)
+      case _ =>
+        Log4Error.invalidInputError(condition = false,
+          "Recall's initialData parquet files contain unsupported Dtype. ",
+          "Make sure ID's type is int and ebd's type is DenseVector or array.")
+        new Array[Float](0)
+    }
   }
 }

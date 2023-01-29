@@ -66,9 +66,8 @@ class RollDataset(Dataset):
                This parameter should be set to True only when you are using Autoformer model. This
                indicates the length of overlap area of output(y) and input(x) on time axis.
         :param is_predict: bool,
-               This parameter should be set to True only when you are using Autoformer model. This
-               indicates if the dataset will be sampled as a prediction dataset(without groud
-               truth).
+               This parameter indicates if the dataset will be sampled as a prediction dataset
+               (without groud truth).
 
         :return:
 
@@ -76,6 +75,8 @@ class RollDataset(Dataset):
         # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
         # shape change when the dataset is for prediction.
         self.horizon_time = horizon
+        if horizon == 0:
+            is_predict = True
         if is_predict:
             horizon = 0
 
@@ -93,6 +94,7 @@ class RollDataset(Dataset):
         self.lookback = lookback
         self.horizon = horizon
         self.target_num = len(target_col)
+        self.is_predict = is_predict
 
         # time_enc
         self.time_enc = time_enc
@@ -117,7 +119,7 @@ class RollDataset(Dataset):
         # cal x
         x = self.arr[start_idx: start_idx + self.lookback]
         x = torch.from_numpy(x).float()
-        if self.horizon == 0 and not self.time_enc:
+        if self.is_predict is True and not self.time_enc:
             return x
 
         # cal y

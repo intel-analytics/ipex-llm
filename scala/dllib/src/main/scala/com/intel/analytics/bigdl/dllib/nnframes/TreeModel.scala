@@ -105,6 +105,11 @@ class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
     estimator.setTimeoutRequestWorkers(value)
     this
   }
+
+  def getFeaturesCol(): String = {
+    estimator.getFeaturesCol
+  }
+
 }
 /**
  * [[XGBClassifierModel]] is a trained XGBoost classification model.
@@ -162,9 +167,9 @@ object XGBClassifierModel {
 /**
  * [[XGBRegressor]] xgboost wrapper of XGBRegressor.
  */
-class XGBRegressor () {
+class XGBRegressor (val xgboostParams: Map[String, Any] = Map()) {
 
-  private val estimator = new XGBoostRegressor()
+  private val estimator = new XGBoostRegressor(xgboostParams)
   estimator.setNthread(Engine.coreNumber())
   estimator.setMaxBins(256)
 

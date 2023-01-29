@@ -18,11 +18,19 @@ import re
 import zipfile
 import tarfile
 import requests
+import logging
 
-import tqdm
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
 import pandas as pd
 import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
@@ -46,7 +54,9 @@ BASE_URL = \
      'uci_electricity':
      ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip'],
      'uci_electricity_wide':
-     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip']}
+     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip'],
+     "tsinghua_electricity":
+     None}
 
 
 class PublicDataset:
@@ -58,6 +68,7 @@ class PublicDataset:
         self.val_ratio = kwargs.get('val_ratio', 0.1)
         self.test_ratio = kwargs.get('test_ratio', 0.1)
 
+        self.path = path
         self.url = BASE_URL[self.name]
         self.dir_path = os.path.join(os.path.expanduser(path), self.name)
         self.final_file_path = os.path.join(self.dir_path, self.name + '_data.csv')
@@ -67,7 +78,6 @@ class PublicDataset:
         Complete path stitching and download files.
         param chunk_size: Byte size of a single read, preferably an integer multiple of 2.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(isinstance(chunk_size, int), "chunk_size must be int.")
         if not os.path.exists(self.dir_path):
             os.makedirs(self.dir_path)
@@ -232,16 +242,27 @@ class PublicDataset:
                                   .astype(np.float32)
         return self
 
+    def preprocess_tsinghua_electricity(self):
+        self.final_file_path = os.path.join(os.path.expanduser(self.path), "electricity.csv")
+        invalidInputError(os.path.exists(self.final_file_path),
+                          "tsinghua_electricity does not support automatic downloading, "
+                          "users should download manually from "
+                          "https://github.com/thuml/Autoformer#get-started")
+        self.df = pd.read_csv(self.final_file_path, parse_dates=["date"])
+        return self
+
     def get_tsdata(self,
                    dt_col,
                    target_col,
                    extra_feature=None,
-                   id_col=None):
+                   id_col=None,
+                   repair=False):
         """
         param dt_col: same as tsdata.from_pandas.
         param target_col: same as tsdata.from_pandas.
         param extra_feature: same as tsdata.from_pandas.
         param id_col: same as tsdata.from_pandas.
+        param repair: same as tsdata.from_pandas.
         return tsdata.
         """
         if self.with_split:
@@ -252,13 +273,15 @@ class PublicDataset:
                                          id_col=id_col,
                                          with_split=self.with_split,
                                          val_ratio=self.val_ratio,
-                                         test_ratio=self.test_ratio)
+                                         test_ratio=self.test_ratio,
+                                         repair=repair)
         else:
             return TSDataset.from_pandas(self.df,
                                          dt_col=dt_col,
                                          target_col=target_col,
                                          extra_feature_col=extra_feature,
-                                         id_col=id_col)
+                                         id_col=id_col,
+                                         repair=repair)
 
 
 def download(url, path, chunk_size):
@@ -268,14 +291,21 @@ def download(url, path, chunk_size):
     """
     from bigdl.nano.utils.log4Error import invalidInputError
     req = requests.get(url, stream=True)
-    file_size = int(req.headers['content-length'])
+    file_size = bytes_convert(int(req.headers['content-length']))
     invalidInputError(req.status_code == 200, "download failure, please check the network.")
     file_name = url.split('/')[-1]
-    pbar = tqdm.tqdm(total=file_size, unit='B', unit_scale=True, desc=file_name)
+    logger.info(f"Start download {file_name.partition('.')[0]}, file size: {file_size}")
     with open(os.path.join(path, file_name), 'wb') as f:
         for chunk in req.iter_content(chunk_size):
             if chunk:
                 f.write(chunk)
-                pbar.update(chunk_size)
                 f.flush()
-    pbar.close()
+
+
+def bytes_convert(size: int):
+    if size / 1024 < 1024:
+        return f"{(size / 1024):<.2f}K"
+    if size / 1024 ** 2 < 1024:
+        return f"{(size / 1024**2):<.2f}M"
+    else:
+        return f"{(size / 1024**3):<.2f}G"

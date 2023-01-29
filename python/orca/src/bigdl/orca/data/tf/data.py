@@ -19,7 +19,13 @@ from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
 from bigdl.dllib.utils import log4Error
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from typing import TYPE_CHECKING, Callable, Optional, Any
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.rdd import RDD
+    from bigdl.friesian.feature import FeatureTable
 
 
 class Dataset(object):
@@ -30,12 +36,15 @@ class Dataset(object):
     on each partitions.
     """
 
-    def __init__(self, xshards, create_dataset_fn, xshards_transform_fn=None):
+    def __init__(self,
+                 xshards: "SparkXShards",
+                 create_dataset_fn: Callable,
+                 xshards_transform_fn: Optional[Callable]=None) -> None:
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
         self.xshards_transform_fn = xshards_transform_fn
 
-    def as_graph_rdd(self, batch_per_shard, drop_remainder=True):
+    def as_graph_rdd(self, batch_per_shard: int, drop_remainder: bool=True) -> "RDD[Any]":
 
         create_dataset_fn = self.create_dataset_fn
 
@@ -88,7 +97,7 @@ class Dataset(object):
         graph_rdd_and_meta = self.xshards.rdd.mapPartitions(to_dataset)
         return graph_rdd_and_meta
 
-    def as_tf_dataset_rdd(self):
+    def as_tf_dataset_rdd(self) -> "RDD[Any]":
         create_dataset_fn = self.create_dataset_fn
 
         def to_dataset(iter):
@@ -108,7 +117,7 @@ class Dataset(object):
         tf_dataset_rdd = self.xshards.rdd.mapPartitions(to_dataset)
         return tf_dataset_rdd
 
-    def get_xshards(self):
+    def get_xshards(self) -> "SparkXShards":
         if self.xshards_transform_fn is None:
             return self.xshards
         else:
@@ -116,11 +125,11 @@ class Dataset(object):
             return new_shards
 
     @staticmethod
-    def from_tensor_slices(xshards):
+    def from_tensor_slices(xshards: "SparkXShards") -> "TensorSliceDataset":
         return TensorSliceDataset(xshards)
 
     @staticmethod
-    def from_feature_table(tbl):
+    def from_feature_table(tbl: "FeatureTable") -> "TensorSliceDataset":
         from bigdl.friesian.feature import FeatureTable
         from bigdl.friesian.feature.utils import featuretable_to_xshards
         log4Error.invalidInputError(isinstance(tbl, FeatureTable),
@@ -128,14 +137,14 @@ class Dataset(object):
         xshards = featuretable_to_xshards(tbl)
         return TensorSliceDataset(xshards)
 
-    def map(self, map_func):
+    def map(self, map_func: Callable) -> "MapDataset":
 
         return MapDataset(self, map_func)
 
 
 class TensorSliceDataset(Dataset):
 
-    def __init__(self, xshards):
+    def __init__(self, xshards: "SparkXShards") -> None:
         invalidInputError(isinstance(xshards, SparkXShards),
                           "only datasets backed by a SparkXShards are supported")
 
@@ -148,7 +157,7 @@ class TensorSliceDataset(Dataset):
 
 class MapDataset(Dataset):
 
-    def __init__(self, input_dataset, map_func):
+    def __init__(self, input_dataset: "Dataset", map_func: Callable) -> None:
 
         create_pre_dataset_fn = input_dataset.create_dataset_fn
         xshards_pre_transform_fn = input_dataset.xshards_transform_fn

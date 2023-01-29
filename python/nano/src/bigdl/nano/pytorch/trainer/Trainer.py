@@ -24,19 +24,26 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
+    DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
-from bigdl.nano.deps.ray.ray_api import distributed_ray
+from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.common import check_avx512
 from bigdl.nano.utils import deprecated
 
-distributed_backends = ["spawn", "ray", "subprocess"]
+distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
+
+backends_class_map = {
+    "spawn": DDPSpawnStrategy,
+    "subprocess": DDPSubprocessStrategy,
+    "ray": create_ray_strategy,
+    "k8s": DDPK8sStrategy
+}
 
 
 class Trainer(pl.Trainer):
@@ -47,26 +54,36 @@ class Trainer(pl.Trainer):
     various options to accelerate pytorch training.
     """
 
-    def __init__(self, num_processes: int = 1,
+    def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
-                 auto_lr: Union[int, bool] = True,
+                 auto_lr: Union[dict, bool] = True,
                  precision: Union[str, int] = 32,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
 
-        :param num_processes: number of processes in distributed training. default: 4.
-        :param use_ipex: whether we use ipex as accelerator for trainer. default: False.
-        :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
-            indices of cpus each process will be using. default: None, and the cpu will be
+        :param num_processes: number of processes in distributed training. default: ``1``.
+        :param use_ipex: whether we use ipex as accelerator for trainer. default: ``False``.
+        :param distributed_backend: use which backend in distributed mode, defaults to
+            ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param cpu_for_each_process: A list of length ``num_processes``, each containing a list of
+            indices of cpus each process will be using. default: ``None``, and the cpu will be
             automatically and evenly distributed among processes.
-        :param precision: Double precision (64), full precision (32), half precision (16)
-            or bfloat16 precision (bf16), defaults to 32.
-            Enable ipex bfloat16 weight prepack when `use_ipex=True` and `precision='bf16'`
+        :param channels_last: whether convert input to channels last memory formats,
+            defaults to ``False``.
+        :param auto_lr: whether to scale the learning rate linearly by ``num_processes`` times.
+            Defaults to ``True``.
+            A dict with ``warmup_epochs`` as key is also accepted to control the number of epochs
+            needed for the learning rate to be scaled by ``num_processes`` times.
+            If ``auto_lr=Ture``, ``warmup_epochs`` will by default be ``max_epochs // 10``.
+            If ``num_processes=1`` or other ``lr_scheduler`` is set, ``auto_lr`` will be ignored.
+        :param precision: Double precision (``64``), full precision (``32``),
+            half precision (``16``) or bfloat16 precision (``'bf16'``), defaults to ``32``.
+            Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
         """
         # Check keyword arguments
         if "accelerator" in kwargs:
@@ -85,8 +102,6 @@ class Trainer(pl.Trainer):
                                   f"The length of `cpu_for_each_process` ("
                                   f"{len(cpu_for_each_process)}) is not equal to the number of"
                                   f" processes {num_processes}.")
-
-        accelerator = None
 
         if "algorithms" in kwargs:
             kwargs = self._add_algorithms(kwargs)
@@ -120,13 +135,13 @@ class Trainer(pl.Trainer):
 
         kwargs['precision'] = precision
 
+        if num_processes is None and distributed_backend != "k8s":
+            num_processes = 1
+
         if num_processes == 1:
-            from bigdl.nano.pytorch.strategies import create_IPEXStrategy
-            strategy = create_IPEXStrategy(dtype=dtype) if self.use_ipex else None
-            kwargs["strategy"] = strategy
+            kwargs["strategy"] = IPEXStrategy(dtype=dtype) if self.use_ipex else None
             super().__init__(*args, **kwargs)
         else:
-            plugin = None
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
@@ -136,26 +151,14 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if distributed_backend == "spawn":
-                from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
-                strategy = DDPSpawnStrategy(num_processes=num_processes,
-                                            cpu_for_each_process=cpu_for_each_process,
-                                            use_ipex=self.use_ipex,
-                                            dtype=dtype,
-                                            auto_lr=auto_lr)
-            elif distributed_backend == "subprocess":
-                from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
-                strategy = DDPSubprocessStrategy(num_processes=num_processes,
-                                                 cpu_for_each_process=cpu_for_each_process,
-                                                 use_ipex=self.use_ipex,
-                                                 dtype=dtype,
-                                                 auto_lr=auto_lr)
-            elif distributed_backend == "ray":
-                from bigdl.nano.pytorch.strategies import create_RayStrategy
-                strategy = create_RayStrategy(num_workers=num_processes,
-                                              use_ipex=self.use_ipex,
-                                              dtype=dtype,
-                                              auto_lr=auto_lr)
+
+            strategy_cls = backends_class_map[distributed_backend]
+            strategy = strategy_cls(num_processes=num_processes,
+                                    cpu_for_each_process=cpu_for_each_process,
+                                    use_ipex=self.use_ipex,
+                                    dtype=dtype,
+                                    auto_lr=auto_lr)
+
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)
 
@@ -215,6 +218,7 @@ class Trainer(pl.Trainer):
                model,
                resume: bool = False,
                target_metric=None,
+               mode: str = 'best',
                n_parallels=1,
                acceleration=False,
                input_sample=None,
@@ -227,6 +231,8 @@ class Trainer(pl.Trainer):
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param mode: use last epoch's result as trial's score or use best epoch's.
+            defaults to 'best', you can change it to 'last'.
         :param n_parallels: the number of parallel processes for running trials.
         :param acceleration: Whether to automatically consider the model after
             inference acceleration in the search process. It will only take
@@ -242,6 +248,7 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search(model,
                                        resume=resume,
                                        target_metric=target_metric,
+                                       mode=mode,
                                        n_parallels=n_parallels,
                                        acceleration=acceleration,
                                        input_sample=input_sample,
@@ -429,18 +436,3 @@ class Trainer(pl.Trainer):
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model)
-
-    def save_checkpoint(    # type: ignore[override]
-        self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None
-    ) -> None:
-        """Save checkpoint after one train epoch."""
-        # When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to
-        # False,`save_checkpoint` method will report an error of 'Unsupport storage type'
-        # because the model is in 'xpu', so we temporarily move it to 'cpu',
-        # then move it back after `save_checkpoint`.
-        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
-            self.model.to('cpu')
-
-        super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
-        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
-            self.model.to(self.strategy.root_device)    # type: ignore

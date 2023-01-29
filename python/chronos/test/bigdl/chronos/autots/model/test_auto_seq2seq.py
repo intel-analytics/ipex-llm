@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from torch.utils.data import Dataset, DataLoader
-import torch
-import tensorflow as tf
+
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+tf = LazyImport('tensorflow')
 import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
 
-from ... import op_all, op_onnxrt16
+from ... import op_torch, op_tf2, op_distributed, op_inference
 
-from bigdl.chronos.autots.model.auto_seq2seq import AutoSeq2Seq
-from bigdl.orca.automl import hp
+AutoSeq2Seq = LazyImport('bigdl.chronos.autots.model.auto_seq2seq.AutoSeq2Seq')
+hp = LazyImport('bigdl.orca.automl.hp')
 
 input_feature_dim = 10
 output_feature_dim = 2
@@ -38,26 +39,36 @@ def get_x_y(size):
     return x.astype(np.float32), y.astype(np.float32)
 
 
-class RandomDataset(Dataset):
-    def __init__(self, size=1000):
-        x, y = get_x_y(size)
-        self.x = torch.from_numpy(x).float()
-        self.y = torch.from_numpy(y).float()
+def gen_RandomDataset():
+    import torch
+    from torch.utils.data import Dataset
+    class RandomDataset(Dataset):
+        def __init__(self, size=1000):
+            x, y = get_x_y(size)
+            self.x = torch.from_numpy(x).float()
+            self.y = torch.from_numpy(y).float()
 
-    def __len__(self):
-        return self.x.shape[0]
+        def __len__(self):
+            return self.x.shape[0]
 
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
+        def __getitem__(self, idx):
+            return self.x[idx], self.y[idx]
+    return RandomDataset
 
 
 def train_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=1000),
                       batch_size=config["batch_size"],
                       shuffle=True)
 
 
 def valid_dataloader_creator(config):
+    import torch
+    from torch.utils.data import DataLoader
+    RandomDataset = gen_RandomDataset()
     return DataLoader(RandomDataset(size=400),
                       batch_size=config["batch_size"],
                       shuffle=True)
@@ -84,6 +95,7 @@ def get_auto_estimator(backend='torch'):
     return auto_seq2seq
 
 
+@op_distributed
 class TestAutoSeq2Seq(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -93,6 +105,7 @@ class TestAutoSeq2Seq(TestCase):
         from bigdl.orca import stop_orca_context
         stop_orca_context()
 
+    @op_torch
     def test_fit_np(self):
         # torch
         auto_seq2seq = get_auto_estimator(backend='torch')
@@ -109,7 +122,7 @@ class TestAutoSeq2Seq(TestCase):
         assert best_config['lstm_hidden_dim'] in (32, 64, 128)
         assert best_config['lstm_layer_num'] in (1, 2, 3, 4)
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    @op_tf2
     def test_fit_np_keras(self):
         # keras
         keras_auto_s2s = get_auto_estimator(backend='keras')
@@ -125,6 +138,7 @@ class TestAutoSeq2Seq(TestCase):
         assert best_config['lstm_hidden_dim'] in (32, 64, 128)
         assert best_config['lstm_layer_num'] in (1, 2, 3, 4)
 
+    @op_torch
     def test_fit_data_creator(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator,
@@ -140,6 +154,7 @@ class TestAutoSeq2Seq(TestCase):
         assert best_config['lstm_hidden_dim'] in (32, 64, 128)
         assert best_config['lstm_layer_num'] in (1, 2, 3, 4)
 
+    @op_torch
     def test_predict_evaluation(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -150,8 +165,8 @@ class TestAutoSeq2Seq(TestCase):
         auto_seq2seq.predict(test_data_x)
         auto_seq2seq.evaluate((test_data_x, test_data_y))
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_onnx_methods(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -171,8 +186,8 @@ class TestAutoSeq2Seq(TestCase):
         except ImportError:
             pass
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_save_load(self):
         auto_seq2seq = get_auto_estimator()
         auto_seq2seq.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -195,7 +210,7 @@ class TestAutoSeq2Seq(TestCase):
         except ImportError:
             pass
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    @op_tf2
     def test_save_load_keras(self):
         auto_keras_s2s = get_auto_estimator(backend='keras')
         auto_keras_s2s.fit(data=get_x_y(size=1000),

@@ -136,7 +136,7 @@ ppl.load_server_model(server_model_path) # trigger model loading on server
 ppl.fit(x, y, epoch=5)
 result = ppl.predict(x)
 ```
-## 3 Run FGBoost
+## 3 Run Pytorch NN Application
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX
 

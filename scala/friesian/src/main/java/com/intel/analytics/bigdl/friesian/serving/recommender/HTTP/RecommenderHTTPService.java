@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 
 @Path("recommender")
 public class RecommenderHTTPService {
-    private final RecommenderImpl impl = RecommenderImpl.getInstance();
     private static final Histogram requestLatency = Histogram.build()
             .namespace("http")
             .name("requests_latency_seconds")
@@ -27,6 +26,8 @@ public class RecommenderHTTPService {
             .labelNames("http_service", "http_method")
             .register();
 
+    private final RecommenderImpl impl = RecommenderImpl.getInstance();
+
     @GET
     @Path("recommend/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -34,14 +35,11 @@ public class RecommenderHTTPService {
                                   @DefaultValue("50") @QueryParam("canK") int canK,
                                   @DefaultValue("10") @QueryParam("k") int k) {
         requests.labels("recommender", "getRecommendIDs").inc();
-        Histogram.Timer requestTimer = requestLatency.
-                labels("recommender", "getRecommendIDs").startTimer();
-        try {
+        try (Histogram.Timer requestTimer = requestLatency.labels(
+                "recommender", "getRecommendIDs").startTimer();) {
             JacksonJsonSerializer jacksonJsonSerializer = new JacksonJsonSerializer();
             IDProbList recommendList = impl.getRecommendIDs(id, canK, k);
             return jacksonJsonSerializer.serialize(recommendList);
-        } finally {
-            requestTimer.observeDuration();
         }
     }
 
@@ -50,7 +48,10 @@ public class RecommenderHTTPService {
     @Produces(MediaType.APPLICATION_JSON)
     public String getMetrics() {
         requests.labels("recommender", "getMetrics").inc();
-        return impl.getMetrics(null);
+        try (Histogram.Timer requestTimer = requestLatency.labels(
+                "recommender", "getMetrics").startTimer();) {
+            return impl.getMetrics(null);
+        }
     }
 
     @GET
@@ -58,8 +59,11 @@ public class RecommenderHTTPService {
     @Produces(MediaType.APPLICATION_JSON)
     public String resetMetrics() {
         requests.labels("recommender", "resetMetrics").inc();
-        impl.resetMetrics();
-        return "{success: true}";
+        try (Histogram.Timer requestTimer = requestLatency.labels(
+                "recommender", "resetMetrics").startTimer();) {
+            impl.resetMetrics();
+            return "{success: true}";
+        }
     }
 
     @GET
@@ -67,13 +71,20 @@ public class RecommenderHTTPService {
     @Produces(MediaType.APPLICATION_JSON)
     public String getClientMetrics() {
         requests.labels("recommender", "getClientMetrics").inc();
-        return impl.getClientMetrics();
+        try (Histogram.Timer requestTimer = requestLatency.labels(
+                "recommender", "getClientMetrics").startTimer();) {
+            return impl.getClientMetrics();
+        }
     }
+
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String hello(){
+    public String hello() {
         requests.labels("recommender", "hello").inc();
-        return "Hello";
+        try (Histogram.Timer requestTimer = requestLatency.labels(
+                "recommender", "hello").startTimer();) {
+            return "Hello";
+        }
     }
 }

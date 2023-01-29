@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.forecaster.tcn_forecaster import TCNForecaster
+from bigdl.chronos.forecaster import TCNForecaster
 import pandas as pd
-from bigdl.chronos.data import TSDataset
+from bigdl.chronos.data import TSDataset, get_public_dataset
 from sklearn.preprocessing import StandardScaler
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from torch.utils.data.dataloader import DataLoader
 import torch
 import time
 import numpy as np
@@ -28,19 +27,10 @@ look_back = 96
 horizon = 720
 
 def generate_data():
-    raw_df = pd.read_csv("electricity.csv")
-    df = pd.DataFrame(pd.to_datetime(raw_df.date))
-    for i in range(0, 320):
-        df[str(i)] = raw_df[str(i)]
-    df["OT"] = raw_df["OT"]
-
-    target = []
-    for i in range(0, 320):
-        target.append(str(i))
-    target.append("OT")
-
-    tsdata_train, tsdata_val, tsdata_test = TSDataset.from_pandas(df, dt_col="date", target_col=target,
-                                                                  with_split=True, test_ratio=0.2, val_ratio=0.1)
+    tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='tsinghua_electricity',
+                                                               with_split=True,
+                                                               val_ratio=0.1,
+                                                               test_ratio=0.2)
     standard_scaler = StandardScaler()
     for tsdata in [tsdata_train, tsdata_test]:
         tsdata.impute(mode="last")\
@@ -56,24 +46,22 @@ if __name__ == '__main__':
     train_loader, test_loader = generate_data()
    
     forecaster = TCNForecaster(past_seq_len = look_back,
-                            future_seq_len = horizon,
-                            input_feature_num = 321,
-                            output_feature_num = 321,
-                            num_channels = [30] * 7,
-                            repo_initialization = False,
-                            kernel_size = 3, 
-                            dropout = 0.1, 
-                            lr = 0.001,
-                            seed = 1)
+                               future_seq_len = horizon,
+                               input_feature_num = 321,
+                               output_feature_num = 321,
+                               dummy_encoder=True,
+                               num_channels = [30] * 7,
+                               repo_initialization = False,
+                               kernel_size = 3, 
+                               dropout = 0.1, 
+                               lr = 0.001,
+                               seed = 1)
     forecaster.num_processes = 1
     forecaster.fit(train_loader, epochs=30, batch_size=32) 
     
 
-    metric = []
-    for x, y in test_loader:
-        yhat = forecaster.predict(x.numpy())
-        metric.append(Evaluator.evaluate("mse", y.detach().numpy(), yhat))
-    print("MSE is:", np.mean(metric))
+    metrics = forecaster.evaluate(test_loader, multioutput='uniform_average')
+    print("MSE is:", metrics[0])
 
     torch.set_num_threads(1)
     latency = []
@@ -82,7 +70,9 @@ if __name__ == '__main__':
             st = time.time()
             yhat = forecaster.predict(x.numpy())
             latency.append(time.time()-st)
-    print("Inference latency is:", np.median(latency))
+    # latency is calculated the mean after ruling out the first 10% and last 10%
+    latency = latency[int(0.1*len(latency)):int(0.9*len(latency))]
+    print("Inference latency is:", np.mean(latency))
 
     forecaster.build_onnx(thread_num=1)
     onnx_latency = []
@@ -91,4 +81,6 @@ if __name__ == '__main__':
             st = time.time()
             y_pred = forecaster.predict_with_onnx(x.numpy())
             onnx_latency.append(time.time()-st)
-    print("Inference latency with onnx is:", np.median(onnx_latency))
+    # latency is calculated the mean after ruling out the first 10% and last 10%
+    onnx_latency = onnx_latency[int(0.1*len(onnx_latency)):int(0.9*len(onnx_latency))]
+    print("Inference latency with onnx is:", np.mean(onnx_latency))

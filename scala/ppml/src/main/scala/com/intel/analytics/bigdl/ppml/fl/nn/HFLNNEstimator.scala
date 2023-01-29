@@ -64,7 +64,7 @@ class HFLNNEstimator(algorithm: String,
       localEstimator.fit(trainSet.toSeq, size.toInt, valSet.toSeq)
       logger.debug(s"Local train step ends, syncing version: $iteration with server.")
       val weights = getModelWeightTable(model, iteration)
-      val serverWeights = flClient.nnStub.train(weights, algorithm).getData
+      val serverWeights = flClient.nnStub.train(weights, algorithm)
 
       // model replace
       updateModel(model, serverWeights)

@@ -44,10 +44,10 @@ output of Cluster Serving job information should be displayed, if not, go to [Pr
 
 1. `Duplicate registration of device factory for type XLA_CPU with the same priority 50`
 
-This error is caused by Flink ClassLoader. Please put cluster serving related jars into `${FLINK_HOME}/lib`.
+   This error is caused by Flink ClassLoader. Please put cluster serving related jars into `${FLINK_HOME}/lib`.
 
 2. `servable Manager config dir not exist`
 
-Check if `servables.yaml` exists in current directory. If not, download from [github](https://github.com/intel-analytics/bigdl/blob/master/ppml/trusted-realtime-ml/scala/docker-graphene/servables.yaml).
+   Check if `servables.yaml` exists in current directory. If not, download from [github](https://github.com/intel-analytics/bigdl/blob/master/ppml/trusted-realtime-ml/scala/docker-graphene/servables.yaml).
 ### Still, I get no result
 If you still get empty result, raise issue [here](https://github.com/intel-analytics/bigdl/issues) and post the output/log of your serving job.

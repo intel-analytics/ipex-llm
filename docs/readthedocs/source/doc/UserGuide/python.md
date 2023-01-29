@@ -1,9 +1,9 @@
 # Python User Guide
 
 ---
-Supported Platforms: Linux and macOS.   _**Note:** Windows is currently not supported._
- 
-### **1. Install**
+Supported Platforms: Linux and macOS. For Windows, Refer to [Windows User Guide](./win.md).
+
+### 1. Install
 - We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment as follows:
 
   ```bash
@@ -28,7 +28,7 @@ Supported Platforms: Linux and macOS.   _**Note:** Windows is currently not supp
   java -version  # Verify the version of JDK.
   ```
 
-#### **1.1 Official Release**
+#### 1.1 Official Release
 
 You can install the latest release version of BigDL (built on top of Spark 2.4.6 by default) as follows:
 ```bash
@@ -37,7 +37,7 @@ pip install bigdl
 _**Note:** Installing BigDL will automatically install all the BigDL packages including
 `bigdl-nano`, `bigdl-dllib`, `bigdl-orca`, `bigdl-chronos`, `bigdl-friesian`, `bigdl-serving` and their dependencies if they haven't been detected in your conda environment._
 
-#### **1.2 Nightly Build**
+#### 1.2 Nightly Build
 
 You can install the latest nightly build of BigDL as follows:
 
@@ -51,7 +51,7 @@ Alternatively, you can find the list of the nightly build versions [here](https:
 pip install bigdl==version
 ```
 
-_**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi. 
+_**Note:** If you are using a custom URL of Python Package Index, you may need to check whether the latest packages have been sync'ed with pypi.
 Or you can add the option `-i https://pypi.python.org/simple` when pip install to use pypi as the index-url._
 
 You could uninstall all the packages of BigDL as follows:
@@ -60,14 +60,14 @@ You could uninstall all the packages of BigDL as follows:
 pip uninstall bigdl-dllib bigdl-core bigdl-tf bigdl-math bigdl-orca bigdl-chronos bigdl-friesian bigdl-nano bigdl-serving bigdl
 ```
 
-#### **1.3 BigDL on Spark 3**
+#### 1.3 BigDL on Spark 3
 
-You can install BigDL built on top of Spark 3.1.2 as follows:
+You can install BigDL built on top of Spark 3.1.3 as follows:
 ```bash
 pip install bigdl-spark3  # Install the latest release version
 pip install --pre --upgrade bigdl-spark3  # Install the latest nightly build version
 ```
-You can find the list of the nightly build versions built on top of Spark 3.1.2 [here](https://pypi.org/project/bigdl-spark3/#history).
+You can find the list of the nightly build versions built on top of Spark 3.1.3 [here](https://pypi.org/project/bigdl-spark3/#history).
 
 You could uninstall all the packages of BigDL on Spark3 as follows:
 
@@ -76,12 +76,12 @@ pip uninstall bigdl-dllib-spark3 bigdl-core bigdl-tf bigdl-math bigdl-orca-spark
 ```
 
 ---
-### **2. Run**
+### 2. Run
 
 _**Note:** Installing BigDL from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to  **unset the environment variable `SPARK_HOME`**  if it exists in your environment._
 
 
-#### **2.1 Interactive Shell**
+#### 2.1 Interactive Shell
 
 You may test if the installation is successful using the interactive Python shell as follows:
 
@@ -94,7 +94,7 @@ You may test if the installation is successful using the interactive Python shel
   sc = init_orca_context()  # Initiation of bigdl on the underlying cluster.
   ```
 
-#### **2.2 Jupyter Notebook**
+#### 2.2 Jupyter Notebook
 
 You can start the Jupyter notebook as you normally do using the following command and run BigDL programs directly in a Jupyter notebook:
 
@@ -102,7 +102,7 @@ You can start the Jupyter notebook as you normally do using the following comman
 jupyter notebook --notebook-dir=./ --ip=* --no-browser
 ```
 
-#### **2.3 Python Script**
+#### 2.3 Python Script
 
 You can directly write BigDL programs in a Python file (e.g. script.py) and run in the command line as a normal Python program:
 
@@ -111,19 +111,19 @@ python script.py
 ```
 
 ---
-### **3. Python Dependencies**
+### 3. Python Dependencies
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to manage your Python dependencies. Libraries installed in the current conda environment will be automatically distributed to the cluster when calling `init_orca_context`. You can also add extra dependencies as `.py`, `.zip` and `.egg` files by specifying `extra_python_lib` argument in `init_orca_context`. 
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to manage your Python dependencies. Libraries installed in the current conda environment will be automatically distributed to the cluster when calling `init_orca_context`. You can also add extra dependencies as `.py`, `.zip` and `.egg` files by specifying `extra_python_lib` argument in `init_orca_context`.
 
 For more details, please refer to [Orca Context](../Orca/Overview/orca-context.md).
 
 ---
-### **4. Compatibility**
+### 4. Compatibility
 
 BigDL has been tested on __Python 3.6 and 3.7__ with the following library versions:
 
 ```bash
-pyspark==2.4.6 or 3.1.2
+pyspark==2.4.6 or 3.1.3
 ray==1.9.2
 tensorflow==1.15.0 or >2.0
 pytorch>=1.5.0
@@ -155,18 +155,18 @@ Theano==1.0.4
 ```
 
 ---
-### **5. Known Issues**
+### 5. Known Issues
 
 - If you meet the following error when `pip install bigdl`:
-```
-ERROR: Could not find a version that satisfies the requirement pypandoc (from versions: none)
-ERROR: No matching distribution found for pypandoc
-Could not import pypandoc - required to package PySpark
-Traceback (most recent call last):
-  File "/root/anaconda3/lib/python3.8/site-packages/setuptools/installer.py", line 126, in fetch_build_egg
-    subprocess.check_call(cmd)
-  File "/root/anaconda3/lib/python3.8/subprocess.py", line 364, in check_call
-    raise CalledProcessError(retcode, cmd)
-subprocess.CalledProcessError: Command '['/root/anaconda3/bin/python', '-m', 'pip', '--disable-pip-version-check', 'wheel', '--no-deps', '-w', '/tmp/tmprefr87ue', '--quiet', 'pypandoc']' returned non-zero exit status 1.
-```
-This is actually caused by `pip install pyspark` in your Python environment. You can fix it by running `pip install pypandoc` first and then `pip install bigdl`.
+  ```
+  ERROR: Could not find a version that satisfies the requirement pypandoc (from versions: none)
+  ERROR: No matching distribution found for pypandoc
+  Could not import pypandoc - required to package PySpark
+  Traceback (most recent call last):
+    File "/root/anaconda3/lib/python3.8/site-packages/setuptools/installer.py", line 126, in fetch_build_egg
+      subprocess.check_call(cmd)
+    File "/root/anaconda3/lib/python3.8/subprocess.py", line 364, in check_call
+      raise CalledProcessError(retcode, cmd)
+  subprocess.CalledProcessError: Command '['/root/anaconda3/bin/python', '-m', 'pip', '--disable-pip-version-check', 'wheel', '--no-deps', '-w', '/tmp/tmprefr87ue', '--quiet', 'pypandoc']' returned non-zero exit status 1.
+  ```
+  This is actually caused by `pip install pyspark` in your Python environment. You can fix it by running `pip install pypandoc` first and then `pip install bigdl`.

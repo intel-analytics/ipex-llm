@@ -13,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
 import shutil
 
 import pytest
-
 from unittest import TestCase
-from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
 from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
-import tensorflow as tf
 from numpy.testing import assert_array_almost_equal
+from ... import op_tf2
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+MTNetKeras = LazyImport('bigdl.chronos.model.tf2.MTNet_keras.MTNetKeras')
 
 
 def create_data():
@@ -52,7 +54,7 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0")
+@op_tf2
 class TestMTNetKeras(TestCase):
 
     def setup_method(self, method):
@@ -89,7 +91,8 @@ class TestMTNetKeras(TestCase):
                             **self.config)
         y_pred = self.model.predict(self.x_test)
         assert y_pred.shape == (self.x_test.shape[0], self.y_val.shape[-1])
-        dirname = "/tmp"
+        dirname = Path("savedroot")
+        dirname.mkdir(exist_ok=True)
         restored_model = MTNetKeras()
         ckpt = os.path.join(dirname, "mtnet.ckpt")
         self.model.save(checkpoint_file=ckpt)

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import json
-import logging
 import os
 import tempfile
 import shutil
@@ -22,13 +21,10 @@ import copy
 
 import tensorflow as tf
 
-from pyspark import BarrierTaskContext, TaskContext
-
-from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.data.utils import partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path, get_rank, \
-    process_tensorboard_in_callbacks, save_model, load_model, \
+    get_rank, process_tensorboard_in_callbacks, save_model, load_model, \
     replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
@@ -51,6 +47,9 @@ class DatasetHandler:
         config, local_batch_size = self._handle_batch_size(config)
         config['rank'] = self.rank
         config['size'] = self.size
+        # Use global batch size here for data_creator since TensorFlow
+        # will shard the dataset.
+        # batch_size won't be used in data_creator for SparkXShards.
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
            all([isinstance(x, dict) for x in train_dataset]):
@@ -73,7 +72,8 @@ class DatasetHandler:
                 test_dataset = self._handle_xshards(test_dataset,
                                                     steps=validation_steps,
                                                     local_batch_size=local_batch_size,
-                                                    shuffle=False)
+                                                    shuffle=False
+                                                    )
             else:
                 test_dataset = self._handle_sharding(test_dataset)
         else:
@@ -125,9 +125,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
 
         def dataset_fn(input_context):
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
@@ -152,7 +152,12 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_batch_size(self, config):
         invalidInputError("batch_size" in config, "batch_size must be set in config")
-        local_batch_size = config["batch_size"] // self.size
+        if config["batch_size"]:
+            local_batch_size = config["batch_size"] // self.size
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:  # batch_size default to be None for predict
+            local_batch_size = None
         return config, local_batch_size
 
 
@@ -160,9 +165,9 @@ class LocalDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        data, label = partition_get_data_label(dataset,
+                                               allow_tuple=True,
+                                               allow_list=False)
         dataset = tf.data.Dataset.from_tensor_slices((data, label))
         dataset = dataset.repeat()
         dataset = dataset.take(steps * local_batch_size)
@@ -180,9 +185,12 @@ class LocalDatasetHandler(DatasetHandler):
 
 
 class SparkRunner:
-    def __init__(self, model_creator, compile_args_creator,
-                 size,
-                 cluster_info,
+    def __init__(self,
+                 model_creator=None,
+                 model_load=None,
+                 compile_args_creator=None,
+                 size=None,
+                 cluster_info=None,
                  config=None,
                  verbose=False,
                  model_weights=None,
@@ -203,6 +211,7 @@ class SparkRunner:
                 """
 
         self.model_creator = model_creator
+        self.model_load = model_load
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
@@ -215,8 +224,10 @@ class SparkRunner:
         self.setup()
         self.cluster = cluster_info
         if mode == "fit" or mode == "evaluate":
+            from pyspark import BarrierTaskContext
             self.partition_id = BarrierTaskContext.get().partitionId()
         else:
+            from pyspark import TaskContext
             self.partition_id = TaskContext.get().partitionId()
         self.need_to_log_to_driver = need_to_log_to_driver
         if need_to_log_to_driver:
@@ -228,12 +239,45 @@ class SparkRunner:
                                              driver_port=driver_port,
                                              log_path=self.log_path,
                                              partition_id=self.partition_id)
-
-        if self.backend == "tf-distributed":
-            if mode == "fit" or mode == "evaluate":
-                self.setup_distributed(self.cluster)
         self.model_dir = model_dir
         self.application_id = application_id
+
+        if self.model_creator is None:
+            from pyspark import SparkFiles
+            self.model_load = self.model_load.split("/")[-1]
+            self.model_load = SparkFiles.get(self.model_load)
+        # create model
+        if mode == "fit" or mode == "evaluate":
+            if self.backend == 'tf-distributed':
+                self.setup_distributed(self.cluster)
+                if mode == 'fit':
+                    with self.strategy.scope():
+                        if self.model_dir is not None and exists(self._model_saved_path):
+                            # for continous training
+                            self.model = load_model(self._model_saved_path)
+                        else:
+                            if self.model_creator is not None:
+                                self.model = self.model_creator(self.config)
+                                if self.model_weights:
+                                    self.model.set_weights(self.model_weights.value)
+                            else:
+                                self.model = tf.keras.models.load_model(self.model_load)
+
+                        if not self.model._is_compiled and self.compile_args_creator:
+                            self.model.compile(**self.compile_args_creator(config))
+                else:
+                    with self.strategy.scope():
+                        if self.model_creator is not None:
+                            self.model = self.model_creator(self.config)
+                        else:
+                            self.model = tf.keras.models.load_model(self.model_load)
+                        if self.model_weights:
+                            self.model.set_weights(self.model_weights.value)
+            else:
+                self.setup_local()
+        else:
+            # create local model for predict
+            self.setup_local()
 
     def setup(self):
         import tensorflow as tf
@@ -241,6 +285,18 @@ class SparkRunner:
         tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
+
+    def setup_local(self):
+        self.size = 1
+        self.rank = 0
+        if self.model_creator is not None:
+            self.model = self.model_creator(self.config)
+        else:
+            self.model = tf.keras.models.load_model(self.model_load)
+        if self.model_weights:
+            self.model.set_weights(self.model_weights.value)
+        from tensorflow.python.distribute import distribution_strategy_context as ds_context
+        self.strategy = ds_context.get_strategy()
 
     def setup_distributed(self, cluster):
         """
@@ -260,9 +316,6 @@ class SparkRunner:
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
 
-        # For use in model.evaluate()
-        self.local_model = None
-
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,
                                class_weight=None, steps_per_epoch=None, validation_steps=None,
@@ -272,17 +325,6 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            if self.model_dir is not None and exists(self._model_saved_path):
-                # for continous training
-                model = load_model(self._model_saved_path)
-            else:
-                model = self.model_creator(self.config)
-                if self.model_weights:
-                    model.set_weights(self.model_weights.value)
-
-            if not model._is_compiled:
-                model.compile(**self.compile_args_creator(config))
-
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
                 .handle_datasets_train(data_creator=data_creator,
@@ -298,22 +340,22 @@ class SparkRunner:
 
             replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
-        history = model.fit(train_dataset,
-                            epochs=epochs,
-                            verbose=verbose,
-                            callbacks=callbacks,
-                            validation_data=test_dataset,
-                            class_weight=class_weight,
-                            initial_epoch=initial_epoch,
-                            steps_per_epoch=steps_per_epoch,
-                            validation_steps=validation_steps,
-                            validation_freq=validation_freq)
+        history = self.model.fit(train_dataset,
+                                 epochs=epochs,
+                                 verbose=verbose,
+                                 callbacks=callbacks,
+                                 validation_data=test_dataset,
+                                 class_weight=class_weight,
+                                 initial_epoch=initial_epoch,
+                                 steps_per_epoch=steps_per_epoch,
+                                 validation_steps=validation_steps,
+                                 validation_freq=validation_freq)
 
         if callbacks:
             if replaced_log_dir and os.path.exists(replaced_log_dir):
                 shutil.rmtree(replaced_log_dir)
 
-        return (model, history)
+        return history
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
@@ -328,47 +370,55 @@ class SparkRunner:
         config["batch_size"] = batch_size
         val_data_creator = validation_data_creator
 
-        model, history = self.distributed_train_func(data_creator,
-                                                     config,
-                                                     epochs=epochs,
-                                                     verbose=verbose,
-                                                     callbacks=callbacks,
-                                                     steps_per_epoch=steps_per_epoch,
-                                                     class_weight=class_weight,
-                                                     initial_epoch=initial_epoch,
-                                                     validation_data_creator=val_data_creator,
-                                                     validation_steps=validation_steps,
-                                                     validation_freq=validation_freq
-                                                     )
+        history = self.distributed_train_func(data_creator,
+                                              config,
+                                              epochs=epochs,
+                                              verbose=verbose,
+                                              callbacks=callbacks,
+                                              steps_per_epoch=steps_per_epoch,
+                                              class_weight=class_weight,
+                                              initial_epoch=initial_epoch,
+                                              validation_data_creator=val_data_creator,
+                                              validation_steps=validation_steps,
+                                              validation_freq=validation_freq
+                                              )
+        # history is a callbacks object
+        # see https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/History
+        # history.params is a dict with keys verbose, epochs and steps
+        # history.history contains train and val stats for each epoch
         if history is None:
             stats = {}
         else:
-            stats = {k: v[-1] for k, v in history.history.items()}
-        if self.rank == 0:
-            if self.model_dir is not None:
-                save_model(model, self._model_saved_path, save_format="h5")
-                model_state = {
-                    "weights": model.get_weights(),
-                    "optimizer_weights": model.optimizer.get_weights()
-                }
-                save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
-            else:
-                weights = model.get_weights()
+            stats = dict()
+            stats.update(history.params)
+            stats.update(history.history)
 
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+        if self.model_dir is not None:
+            model_state = {
+                "weights": self.model.get_weights(),
+                "optimizer_weights": self.model.optimizer.get_weights()
+            }
+            if self.rank == 0:
+                # only chef save model to destination location
+                save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+                save_model(self.model, self._model_saved_path, save_format="h5")
+                self._stop_log_monitor()
+            else:
+                temp_dir = tempfile.mkdtemp()
+                try:
+                    save_model(self.model, os.path.join(temp_dir, "model.h5"))
+                finally:
+                    shutil.rmtree(temp_dir)
+                    self._stop_log_monitor()
+        else:
+            weights = self.model.get_weights()
+            self._stop_log_monitor()
+        if self.rank == 0:
             if self.model_dir is not None:
                 return [stats]
             else:
-                return [stats], weights
+                return [stats, weights]
         else:
-            temp_dir = tempfile.mkdtemp()
-            try:
-                save_model(model, os.path.join(temp_dir, "model.h5"))
-            finally:
-                shutil.rmtree(temp_dir)
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -380,11 +430,6 @@ class SparkRunner:
         if data_config is not None:
             config.update(data_config)
         config["batch_size"] = batch_size
-
-        with self.strategy.scope():
-            model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
 
         with self.strategy.scope():
             dataset_handler = DatasetHandler.get_handler(self.backend,
@@ -403,10 +448,13 @@ class SparkRunner:
             steps=steps,
             callbacks=callbacks,
         )
-        results = model.evaluate(dataset, **params)
+        results = self.model.evaluate(dataset, **params)
 
         if results is None:
-            local_model = self.model_creator(self.config)
+            if self.model_creator is not None:
+                local_model = self.model_creator(self.config)
+            else:
+                local_model = tf.keras.models.load_model(self.model_load)
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
@@ -414,10 +462,10 @@ class SparkRunner:
         if isinstance(results, list):
             stats = {
                 "validation_" + k: v
-                for k, v in zip(model.metrics_names, results)
+                for k, v in zip(self.model.metrics_names, results)
             }
         else:
-            stats = {"results": results}
+            stats = {"validation_" + self.model.metrics_names[0]: results}
 
         # clean temporary dir for tensorboard
         if callbacks:
@@ -425,45 +473,42 @@ class SparkRunner:
                 shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+            self._stop_log_monitor()
             return [stats]
         else:
-            if self.need_to_log_to_driver:
-                LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
+            self._stop_log_monitor()
             return []
 
     def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
+        config["batch_size"] = batch_size
+        dataset_handler = DatasetHandler.get_handler(self.backend,
+                                                     0,  # no rank for predict
+                                                     self.size)
+        config, local_batch_size = dataset_handler._handle_batch_size(config)
 
-        dataset = data_creator(config, batch_size)
-        partition = dataset
+        dataset = data_creator(config, local_batch_size)
         params = dict(
-            batch_size=batch_size,
+            batch_size=local_batch_size,
             verbose=verbose,
             steps=steps,
             callbacks=callbacks,
         )
 
-        if self.backend == "tf-distributed":
-            local_model = self.model_creator(self.config)
-            if self.model_weights:
-                local_model.set_weights(self.model_weights.value)
-        else:
-            local_model = self.model_creator(self.config)
-
         def predict_fn(shard):
-            y = local_model.predict(shard["x"], **params)
+            y = self.model.predict(shard["x"], **params)
             return {"prediction": y}
-
-        new_part = [predict_fn(shard) for shard in partition]
-
-        if self.need_to_log_to_driver:
-            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
-        return new_part
+        for shard in dataset:
+            yield predict_fn(shard)
+        self._stop_log_monitor()
 
     @property
     def _model_saved_path(self):
         return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))
+
+    def _stop_log_monitor(self):
+        if self.need_to_log_to_driver:
+            print("stop log monitor")
+            LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)

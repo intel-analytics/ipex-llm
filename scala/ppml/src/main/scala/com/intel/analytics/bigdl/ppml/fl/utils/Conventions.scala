@@ -19,4 +19,5 @@ package com.intel.analytics.bigdl.ppml.fl.utils
 
 object Conventions {
   val MAX_MSG_SIZE = Int.MaxValue
+  val MAX_REC_NUM = 1 * 1024 * 1024
 }

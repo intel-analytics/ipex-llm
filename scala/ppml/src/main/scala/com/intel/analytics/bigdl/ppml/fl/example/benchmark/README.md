@@ -12,7 +12,7 @@ If package fails due to some dependencies of PPML, try `cd BigDL/scala && ./make
 
 Start FLServer by
 ```bash
-java -cp path/to/jar com.intel.analytics.bigdl.ppml.fl.FLServer
+java -cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.FLServer
 ```
 This starts FLServer with default config, if you need to use custom config, copy `ppml-conf.yaml` from [here]() and overwrite.
 
@@ -22,7 +22,7 @@ This starts FLServer with default config, if you need to use custom config, copy
 * dataDum: dimension of dummy data
 * numRound: tree boost round
 ```bash
-java cp path/to/jar com.intel.analytics.bigdl.ppml.fl.example.benchmark.FGBoostBenchmark --dataSize 100 --dataDim 100 --numRound 100
+java cp bigdl-assembly-[version]-jar-with-all-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.benchmark.FGBoostBenchmark --dataSize 100 --dataDim 100 --numRound 100
 ```
 
 ## Python API Benchmark Test

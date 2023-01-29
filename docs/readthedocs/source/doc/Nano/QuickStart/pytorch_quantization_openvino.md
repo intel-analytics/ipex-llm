@@ -2,7 +2,7 @@
 
 **In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 4 simple steps**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
@@ -19,7 +19,7 @@ The POT(Post-training Optimization Tools) is provided by OpenVINO toolkit. To us
 pip install openvino-dev
 ```
 
-### **Step 1: Load the data**
+### Step 1: Load the data
 ```python
 import torch
 from torchvision.io import read_image
@@ -48,7 +48,7 @@ val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
 train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
 
-### **Step 2: Prepare the Model**
+### Step 2: Prepare the Model
 ```python
 import torch
 from torchvision.models import resnet18
@@ -73,11 +73,11 @@ y_hat = model_ft(x)
 y_hat.argmax(dim=1)
 ```
 
-### **Step 3: Quantization using Post-training Optimization Tools**
+### Step 3: Quantization using Post-training Optimization Tools
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
-from torchmetrics import Accuracy
-ov_q_model = trainer.quantize(model, accelerator="openvino", calib_dataloader=data_loader)
+from bigdl.nano.pytorch import InferenceOptimizer
+ov_q_model = InferenceOptimizer.quantize(model, accelerator="openvino", calib_data=data_loader)
 
 # run simple prediction
 batch = torch.stack([data_set[0][0], data_set[1][0]])

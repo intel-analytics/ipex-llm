@@ -1,5 +1,5 @@
 # PyTorch BrainMRI example
-We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in [BigDL](https://github.com/intel-analytics/BigDL). We use a simple Unet model to train on BrainMRI Segmentation dataset, which is a dataset for image segmentation. See [here](https://www.kaggle.com/s0mnaths/brain-mri-unet-pytorch/notebook) for the original single-node version.
+We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in BigDL. We use a simple Unet model to train on BrainMRI Segmentation dataset, which is a dataset for image segmentation. See [here](https://www.kaggle.com/s0mnaths/brain-mri-unet-pytorch/notebook) for the original single-node version.
 
 
 ## Prepare the environment
@@ -26,7 +26,7 @@ pip install --pre --upgrade bigdl-orca
 ```
 
 ## Prepare the dataset
-You can download the dataset [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download). Put the downloaded data in the current working directory.
+You can download the dataset from [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download). Put the downloaded data in the current working directory.
 
 
 ```

@@ -21,9 +21,9 @@ from tensorflow.keras.layers import Embedding as TFEmbedding
 
 class Embedding(TFEmbedding):
     """
-    A slightly modified version of tf.keras.Embedding layer.
+    A slightly modified version of tf.keras Embedding layer.
 
-    This embedding layer only apply regularizer to the output of the embedding
+    This embedding layer only applies regularizer to the output of the embedding
     layers, so that the gradient to embeddings is sparse.
     """
 
@@ -38,15 +38,7 @@ class Embedding(TFEmbedding):
                  input_length=None,
                  **kwargs):
         """
-        Create a slightly modified version of tf.keras.Embedding layer.
-
-        This embedding layer only applies regularizer to the output of the embedding
-        layer, so that the gradient to embeddings is sparse.
-
-        :param input_sample: torch.Tensor or a list for the model tracing.
-        :param file_path: The path to save onnx model file.
-        :param sess_options: ortsess options in ort.SessionOptions type
-        :param **kwargs: will be passed to torch.onnx.export function.
+        Create a slightly modified version of tf.keras Embedding layer.
 
         :param input_dim: Integer. Size of the vocabulary,
             i.e. maximum integer index + 1.
@@ -69,10 +61,11 @@ class Embedding(TFEmbedding):
             If mask_zero is set to True, as a consequence, index 0 cannot be
             used in the vocabulary (input_dim should equal size of
             vocabulary + 1).
-        param: input_length: Length of input sequences, when it is constant.
+        :param input_length: Length of input sequences, when it is constant.
             This argument is required if you are going to connect
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
+        :param kwargs: Keyword arguments passed to tf.keras.layers.Embedding
         """
         if embeddings_regularizer is not None and activity_regularizer is None:
             warnings.warn(

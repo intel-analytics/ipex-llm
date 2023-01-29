@@ -33,7 +33,6 @@ import org.apache.logging.log4j.LogManager
 /**
  *
  * @param model
- * @param optimMethod
  * @param criterion loss function, HFL takes loss at estimator, VFL takes loss at aggregator
  * @param validationMethods
  */

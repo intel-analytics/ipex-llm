@@ -76,6 +76,28 @@ class TestTreeModel():
         predicts = xgbmodel.transform(df)
         assert predicts.count() == 14
 
+    def test_XGBClassfier_feature_importances(self):
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
+        path = os.path.join(self.resource_path, "xgbclassifier/")
+        modelPath = path + "XGBClassifer.bin"
+        filePath = path + "test.csv"
+
+        df = self.sqlContext.read.csv(filePath, sep=",", inferSchema=True, header=True)
+        df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
+        params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
+                  "num_round": 100}
+        classifier = XGBClassifier(params)
+        xgbmodel = classifier.fit(df)
+        xgbmodel.setFeaturesCol("features")
+        fscore = xgbmodel.getFScore()
+        score = xgbmodel.getScore(importance_type="gain")
+        feature_importances = xgbmodel.feature_importances
+        assert len(fscore) == len(score)
+        assert len(feature_importances) >= len(score)
+
     def test_XGBRegressor(self):
         from sys import platform
         if platform in ("darwin", "win32"):
@@ -95,7 +117,8 @@ class TestTreeModel():
             assembledf = vecasembler.transform(df).select("features", "label").cache()
             assembledf.printSchema()
             testdf = vecasembler.transform(df).select("features", "label").cache()
-            xgbRf0 = XGBRegressor()
+            params = {"eta": 0.2, "max_depth": 4, "max_leaf_nodes": 8}
+            xgbRf0 = XGBRegressor(params)
             xgbRf0.setNthread(1)
             xgbRf0.setNumRound(10)
             xgbmodel = xgbRf0.fit(assembledf)

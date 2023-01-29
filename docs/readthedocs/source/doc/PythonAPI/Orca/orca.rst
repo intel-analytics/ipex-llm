@@ -1,4 +1,4 @@
-Orca API 
+Orca Learn
 =========
 
 orca.learn.bigdl.estimator
@@ -88,12 +88,3 @@ orca.learn.openvino.estimator
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-AutoML
-------------------------------
-
-.. toctree::
-    :maxdepth: 2
-
-    automl.rst

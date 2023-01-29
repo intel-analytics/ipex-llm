@@ -91,7 +91,9 @@ def get_bigdl_packages():
             print("including", package)
     return bigdl_packages
 
-
+# The requirement list contains the main dependencies for users of orca. This list
+# should be carefully curated. If you change it, please reflect
+# the change in the matching file of python/requirements/orca.
 def setup_package():
     metadata = dict(
         name='bigdl-orca',
@@ -105,7 +107,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['packaging', 'filelock',
-                          'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
+                          'bigdl-tf==2.3.0.dev0', 'bigdl-math==2.3.0.dev0',
                           'bigdl-dllib=='+VERSION, 'pyzmq'],
         extras_require={'ray': RAY_DEP,
                         'automl': AUTOML_DEP,

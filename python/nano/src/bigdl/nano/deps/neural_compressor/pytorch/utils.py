@@ -22,6 +22,9 @@ def _check_data_type(data):
         return
     else:
         for x in data:
+            if isinstance(x, tuple):
+                _check_data_type(x)
+                continue
             if not isinstance(x, torch.Tensor):
                 invalidInputError(False, "expect torch.Tensor here")
 

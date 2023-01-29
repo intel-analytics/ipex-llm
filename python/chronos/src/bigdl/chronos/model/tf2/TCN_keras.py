@@ -197,7 +197,7 @@ def model_creator(config):
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True))
-    inputs = Input(shape=(config["past_seq_len"], config["input_feature_num"]))
+    inputs = np.zeros(shape=(1, config["past_seq_len"], config["input_feature_num"]))
     # init weights matrix
     model(inputs)
     learning_rate = config.get('lr', 1e-3)

@@ -1,8 +1,8 @@
 # Nano Known Issues
 
-## **PyTorch Issues**
+## PyTorch Issues
 
-### **AttributeError: module 'distutils' has no attribute 'version'**
+### AttributeError: module 'distutils' has no attribute 'version'
 
 This usually is because the latest setuptools does not compatible with PyTorch 1.9.
 
@@ -14,7 +14,7 @@ For example, if your `setuptools` is installed by conda, you can run:
 conda install setuptools==58.0.4
 ```
 
-### **error while loading shared libraries: libunwind.so.8**
+### error while loading shared libraries: libunwind.so.8
 
 You may see this error message when running `source bigdl-nano-init`
 ```
@@ -24,7 +24,7 @@ You can use the following command to fix this issue.
 
 * `apt-get install libunwind8-dev` 
 
-### **Bus error (core dumped) in multi-instance training with spawn distributed backend**
+### Bus error (core dumped) in multi-instance training with spawn distributed backend
 
 This usually is because you did not set enough shared memory size in your docker container.
 
@@ -46,14 +46,26 @@ spec:
     name: cache-volume
 ```
 
-## **TensorFlow Issues**
+## TensorFlow Issues
 
-### **Nano keras multi-instance training currently does not suport tensorflow dataset.from_generators, numpy_function, py_function**
+### ValueError: Calling `Model.xxx` in graph mode is not supported when the `Model` instance was constructed with eager mode enabled.
+
+Nano keras only supports running in eager mode, if you are using graph mode, please make sure not to import anything from `bigdl.nano.tf`.
+
+### Nano keras multi-instance training currently does not suport tensorflow dataset.from_generators, numpy_function, py_function
 
 Nano keras multi-instance training will serialize TensorFlow dataset object into a `graph.pb` file, which does not work with `dataset.from_generators`, `dataset.numpy_function`, `dataset.py_function` due to limitations in TensorFlow.
 
-## **Ray Issues**
+### RuntimeError: A keras.Model for quantization must include Input layers.
 
-### **protobuf version error**
+You may meet this error when running quantization, INC quantization doesn't support model without `Input` layer, you can use OpenVINO or ONNXRuntime in this case, i.e. `InferenceOptimizer.quantize(model, accelerator="openvino", ...)` or `InferenceOptimizer.quantize(model, accelerator="onnxruntime", ...)`
 
-Now `pip install ray[default]==1.11.0` will install `google-api-core==2.10.0`, which depends on `protobuf>=3.20.1`. However, nano depends on `protobuf==3.19.4`, so if we install `ray` after installing `bigdl-nano`, pip will reinstall `protobuf==4.21.5`, which causes error.
+### RuntimeError: Inter op parallelism cannot be modified after initialization
+
+If you meet this error when import `bigdl.nano.tf`, it could be that you have already run some TensorFlow code that set the inter/intra op parallelism, such as `tfds.load`. You can try to workaround this issue by trying to import `bigdl.nano.tf` first before running TensorFlow code. See https://github.com/tensorflow/tensorflow/issues/57812 for more information.
+
+## Ray Issues
+
+### protobuf version error
+
+Now `pip install ray[default]==1.11.0` will install `google-api-core>=2.10.0`, which depends on `protobuf>=3.20.1`. However, nano depends on `protobuf==3.19.4`, so you will meet this error if you install `ray` after `bigdl-nano`. The solution is `pip install google-api-core==2.8.2` before installing `ray`.

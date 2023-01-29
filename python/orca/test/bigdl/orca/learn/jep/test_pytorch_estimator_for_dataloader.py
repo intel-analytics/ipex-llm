@@ -62,7 +62,7 @@ class TestEstimatorForSparkDataLoader(TestCase):
 
         estimator = Estimator.from_torch(model=model, loss=nn.BCELoss(),
                                          metrics=[Accuracy()],
-                                         optimizer=Adam())
+                                         optimizer=Adam(), backend="bigdl")
 
         inputs = torch.Tensor([[1, 2], [1, 3], [3, 2], [5, 6], [8, 9], [1, 9]])
         targets = torch.Tensor([[0], [0], [0], [1], [1], [1]])

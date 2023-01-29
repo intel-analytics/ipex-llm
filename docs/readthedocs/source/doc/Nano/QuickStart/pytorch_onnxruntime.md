@@ -2,7 +2,7 @@
 
 **In this guide we will describe how to apply ONNXRuntime Acceleration on inference pipeline with the APIs delivered by BigDL-Nano in 4 simple steps**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
 ```bash
@@ -18,7 +18,7 @@ Before you start with ONNXRuntime accelerator, you need to install some ONNX pac
 ```bash
 pip install onnx onnxruntime
 ```
-### **Step 1: Load the data**
+### Step 1: Load the data
 ```python
 import torch
 from torchvision.io import read_image
@@ -45,7 +45,7 @@ val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
 train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
 
-### **Step 2: Prepare the Model**
+### Step 2: Prepare the Model
 ```python
 import torch
 from torchvision.models import resnet18
@@ -70,7 +70,7 @@ y_hat = model_ft(x)
 y_hat.argmax(dim=1)
 ```
 
-### **Step 3: Apply ONNXRumtime Acceleration**
+### Step 3: Apply ONNXRumtime Acceleration
 When you're ready, you can simply append the following part to enable your ONNXRuntime acceleration.
 ```python
 # trace your model as an ONNXRuntime model
@@ -78,8 +78,8 @@ When you're ready, you can simply append the following part to enable your ONNXR
 # you have run `trainer.fit` before trace
 # Model has `example_input_array` set
 # Model is a LightningModule with any dataloader attached.
-from bigdl.nano.pytorch import Trainer
-ort_model = Trainer.trace(model_ft, accelerator="onnxruntime", input_sample=torch.rand(1, 3, 224, 224))
+from bigdl.nano.pytorch import InferenceOptimizer
+ort_model = InferenceOptimizer.trace(model_ft, accelerator="onnxruntime", input_sample=torch.rand(1, 3, 224, 224))
 
 # The usage is almost the same with any PyTorch module
 y_hat = ort_model(x)

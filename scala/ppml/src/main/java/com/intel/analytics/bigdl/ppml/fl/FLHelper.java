@@ -28,6 +28,7 @@ public class FLHelper {
     String certChainFilePath = null;
     String privateKeyFilePath = null;
 
+    String ckksSercetPath = "";
     String fgBoostServerModelPath = null;
 
     public void setPsiSalt(String psiSalt) { this.psiSalt = psiSalt; }
@@ -50,6 +51,10 @@ public class FLHelper {
 
     public void setCertChainFilePath(String certChainFilePath) {
        this.certChainFilePath = certChainFilePath;
+    }
+
+    public void setCkksSercetPath(String ckksSercetPath) {
+        this.ckksSercetPath = ckksSercetPath;
     }
     
     public void setPrivateKeyFilePath(String privateKeyFilePath) {

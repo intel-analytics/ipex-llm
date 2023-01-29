@@ -76,7 +76,7 @@ class TestEstimatorForSaveAndLoad(TestCase):
 
         # epoch 1
         est = Estimator.from_torch(model=model, optimizer=adam, loss=criterion,
-                                   metrics=[Accuracy()])
+                                   metrics=[Accuracy()], backend="bigdl")
 
         est.fit(data=train_loader, epochs=1, validation_data=test_loader,
                 checkpoint_trigger=EveryEpoch())

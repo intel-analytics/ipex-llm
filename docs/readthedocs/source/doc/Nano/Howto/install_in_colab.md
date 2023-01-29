@@ -56,7 +56,7 @@ To enable OpenVINO acceleration, or use POT for quantization, you need to instal
 
 ```eval_rst
 .. note::
-    If you meet ``ValueError: numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject`` when using ``Trainer.trace`` or ``Trainer.quantize`` function, you could try to solve it by upgrading ``numpy`` through:
+    If you meet ``ValueError: numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject`` when using ``InferenceOptimizer.trace`` or ``InferenceOptimizer.quantize`` function, you could try to solve it by upgrading ``numpy`` through:
     
     .. code-block:: python
 

@@ -230,29 +230,30 @@ Follow the guide below to run Spark on Kubernetes manually. Alternatively, you c
 
 1. Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, keys and passwords](#2221-start-ppml-container). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
 
-```bash
-kubectl apply -f keys/keys.yaml
-kubectl apply -f password/password.yaml
-cd kubernetes
-bash enclave-key-to-secret.sh
-```
+   ```bash
+   kubectl apply -f keys/keys.yaml
+   kubectl apply -f password/password.yaml
+   cd kubernetes
+   bash enclave-key-to-secret.sh
+   ```
 2. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
 
-```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-```
+   ```bash
+   kubectl create serviceaccount spark
+   kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+   ```
 
 3. Generate K8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
-```bash
-kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
-```
+   ```bash
+   kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+   ```
+
 4. Create K8s secret, the secret created `YOUR_SECRET` should be the same as the password you specified in step 1:
 
-```bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-```
+   ```bash
+   kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+   ```
 
 ##### 2.2.3.2  Start the client container
 
@@ -309,75 +310,75 @@ sudo docker run -itd \
 
 1. Run `docker exec -it spark-local-k8s-client bash` to enter the container. Then run the following command to init the Spark local K8s client.
 
-```bash
-./init.sh
-```
+   ```bash
+   ./init.sh
+   ```
 
 2. We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS. Please prepare the following and put them in your NFS directory:
 
-- The data (in a directory called `data`)
-- The kubeconfig file.
+   - The data (in a directory called `data`)
+   - The kubeconfig file.
 
 3. Run the following command to start Spark-Pi example. When the application runs in `cluster` mode, you can run ` kubectl get pod ` to get the name and status of your K8s pod(e.g., driver-xxxx). Then you can run ` kubectl logs -f driver-xxxx ` to get the output of your application.
 
-```bash
-#!/bin/bash
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
-export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-  export SPARK_LOCAL_IP=$LOCAL_IP && \
-  /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx8g \
-    org.apache.spark.deploy.SparkSubmit \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode $SPARK_MODE \
-    --name spark-pi-sgx \
-    --conf spark.driver.host=$SPARK_LOCAL_IP \
-    --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
-    --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
-    --conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
-    --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
-    --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
-    --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
-    --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
-    --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
-    --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
-    --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
-    --conf spark.authenticate=true \
-    --conf spark.authenticate.secret=$secure_password \
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.authenticate.enableSaslEncryption=true \
-    --conf spark.network.crypto.enabled=true \
-    --conf spark.network.crypto.keyLength=128 \
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-    --conf spark.io.encryption.enabled=true \
-    --conf spark.io.encryption.keySizeBits=128 \
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-    --conf spark.ssl.enabled=true \
-    --conf spark.ssl.port=8043 \
-    --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.keyStorePassword=$secure_password \
-    --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.trustStorePassword=$secure_password \
-    --conf spark.ssl.trustStoreType=JKS \
-    --class org.apache.spark.examples.SparkPi \
-    --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
-```
+   ```bash
+   #!/bin/bash
+   secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
+   export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+     export SPARK_LOCAL_IP=$LOCAL_IP && \
+     /opt/jdk8/bin/java \
+       -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+       -Xmx8g \
+       org.apache.spark.deploy.SparkSubmit \
+       --master $RUNTIME_SPARK_MASTER \
+       --deploy-mode $SPARK_MODE \
+       --name spark-pi-sgx \
+       --conf spark.driver.host=$SPARK_LOCAL_IP \
+       --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+       --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
+       --conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
+       --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
+       --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
+       --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
+       --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+       --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+       --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
+       --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+       --conf spark.kubernetes.executor.deleteOnTermination=false \
+       --conf spark.network.timeout=10000000 \
+       --conf spark.executor.heartbeatInterval=10000000 \
+       --conf spark.python.use.daemon=false \
+       --conf spark.python.worker.reuse=false \
+       --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
+       --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
+       --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
+       --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
+       --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
+       --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
+       --conf spark.authenticate=true \
+       --conf spark.authenticate.secret=$secure_password \
+       --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+       --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+       --conf spark.authenticate.enableSaslEncryption=true \
+       --conf spark.network.crypto.enabled=true \
+       --conf spark.network.crypto.keyLength=128 \
+       --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+       --conf spark.io.encryption.enabled=true \
+       --conf spark.io.encryption.keySizeBits=128 \
+       --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+       --conf spark.ssl.enabled=true \
+       --conf spark.ssl.port=8043 \
+       --conf spark.ssl.keyPassword=$secure_password \
+       --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+       --conf spark.ssl.keyStorePassword=$secure_password \
+       --conf spark.ssl.keyStoreType=JKS \
+       --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+       --conf spark.ssl.trustStorePassword=$secure_password \
+       --conf spark.ssl.trustStoreType=JKS \
+       --class org.apache.spark.examples.SparkPi \
+       --verbose \
+       local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+   ```
 
 You can run your own Spark application after changing `--class` and jar path.
 

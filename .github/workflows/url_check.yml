@@ -1,0 +1,28 @@
+name: Check download URL in docs/readthedocs/source/doc/Orca/Overview/install.md
+
+on:
+  push:
+    paths: 'docs/readthedocs/source/doc/Orca/Overview/install.md'
+
+  pull_request:
+    paths: 'docs/readthedocs/source/doc/Orca/Overview/install.md'
+
+jobs:
+  checkDownloadURL:
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a url check script
+        run: |
+            url_list=$(grep -wio "https://oss[0-9_a-zA-Z\/.\-]*" docs/readthedocs/source/doc/Orca/Overview/install.md)
+            for line in $url_list
+            do
+              wget --spider -T 5 -q -t 2 $line
+              res=$?
+              if [ $res -ne 0 ]; 
+                then
+                    echo "URL:$line ERROR!"
+                    exit
+              fi
+            done
+            echo "all url is valids"

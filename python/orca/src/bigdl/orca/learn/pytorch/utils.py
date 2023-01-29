@@ -28,16 +28,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file is adapted from
+# Some code in this file is adapted from
 # https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/utils.py
 
-import collections
-from contextlib import closing, contextmanager
-import logging
-import numpy as np
-import socket
 import time
-import torch.distributed as dist
+import numbers
+import socket
+import collections
+import numpy as np
+from contextlib import closing, contextmanager
+
+
 import torch
 from bigdl.dllib.utils.log4Error import *
 
@@ -289,3 +290,31 @@ def get_batchsize(input):
         return get_batchsize(list(input.values())[0])
     else:
         return input.size(0)
+
+
+def process_stats(worker_stats):
+    stats = {
+        "num_samples": sum(
+            stats.pop("num_samples", np.nan) for stats in worker_stats)
+    }
+
+    stats = mean_reduce_stats(worker_stats, stats)
+
+    return stats
+
+
+def mean_reduce_stats(worker_stats, res_stats=None):
+    if not res_stats:
+        res_stats = {}
+    for stat_key, stat_value in worker_stats[0].items():
+        if isinstance(stat_value, numbers.Number):  # loss
+            res_stats[stat_key] = np.nanmean(
+                [s.get(stat_key, np.nan) for s in worker_stats])
+        elif isinstance(stat_value, torch.Tensor):  # Accuracy
+            res_stats[stat_key] = torch.mean(
+                torch.stack([stats[stat_key] for stats in worker_stats]))
+        elif isinstance(stat_value, dict):  # profile
+            res_stats[stat_key] = mean_reduce_stats([stats[stat_key] for stats in worker_stats])
+        else:
+            res_stats[stat_key] = stat_value
+    return res_stats

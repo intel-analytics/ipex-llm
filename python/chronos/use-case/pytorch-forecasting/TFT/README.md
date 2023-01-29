@@ -10,7 +10,7 @@ pip install --pre --upgrade bigdl-chronos[all]
 pip install pytorch_forecasting
 pip install torch==1.11.0  # if your pytorch_forecasting version is 0.10.0 or above, you need to reinstall torch, otherwise you don't need this.
 ```
-Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
 ## Prepare data
 We are using the [Stallion dataset from Kaggle](https://www.kaggle.com/datasets/utathya/future-volume-prediction). The data will be loaded as pandas dataframe automatically.

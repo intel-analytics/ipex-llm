@@ -18,7 +18,7 @@ import numpy as np
 import argparse
 from sklearn.preprocessing import StandardScaler
 
-from bigdl.chronos.data.repo_dataset import get_public_dataset
+from bigdl.chronos.data import get_public_dataset
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from bigdl.orca.automl import hp
 from bigdl.orca import init_orca_context, stop_orca_context

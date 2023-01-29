@@ -14,7 +14,7 @@ pip install --pre --upgrade analytics-zoo
 
 ## Prepare Dataset
 1. Get the pre-trained Inception-V1 model
-Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model),
+Download the pre-trained Inception-V1 model from [BigDL](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model),
 and put it in `/tmp/zoo` or other path.
 
 2. Prepare predict dataset

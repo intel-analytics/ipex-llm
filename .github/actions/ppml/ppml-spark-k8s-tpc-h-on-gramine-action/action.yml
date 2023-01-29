@@ -1,0 +1,70 @@
+name: 'PPML-Spark-K8S-TPC-H-On-Gramine'
+description: 'PPML-Spark-K8S-TPC-H-On-Gramine'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_SGX_MEM_SIZE: 32G
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        echo "CONTAINER_NAME=spark-k8s-tpc-h-gramine" >> $GITHUB_ENV
+        echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
+        echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        docker pull ${IMAGE}
+        docker rm -f ${CONTAINER_NAME}
+        docker run -id \
+        --privileged \
+        --net=host \
+        --name ${CONTAINER_NAME} \
+        --cpus=10 \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e SGX_MEM_SIZE=32G \
+        -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
+        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+        -e RUNTIME_DRIVER_PORT=54321 \
+        -e RUNTIME_EXECUTOR_INSTANCES=2 \
+        -e RUNTIME_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_MEMORY=20g \
+        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_DRIVER_CORES=4 \
+        -e RUNTIME_DRIVER_MEMORY=10g \
+        -e SGX_MEM_SIZE=64G \
+        -e SGX_DRIVER_MEM=64g \
+        -e SGX_DRIVER_JVM_MEM=12g \
+        -e SGX_EXECUTOR_MEM=64g \
+        -e SGX_EXECUTOR_JVM_MEM=12g \
+        -e SGX_ENABLED=true \
+        -e SGX_LOG_LEVEL=error \
+        $IMAGE bash
+    - name: Spark K8S TPC-H Test
+      shell: bash
+      run: |
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-tpc-h-on-k8s-cluster-sgx.sh"
+        docker rm -f ${CONTAINER_NAME}

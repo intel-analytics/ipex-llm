@@ -19,12 +19,15 @@ import os
 from collections import namedtuple
 from io import BytesIO
 import numpy as np
-import pyarrow as pa
 from itertools import chain, islice
 
 from enum import Enum
 import json
 from bigdl.dllib.utils.log4Error import *
+from typing import Any, Dict, Iterator, List, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from numpy import ndarray
 
 
 class DType(Enum):
@@ -63,7 +66,7 @@ PUBLIC_ENUMS = {
 
 class SchemaField(namedtuple("SchemaField", ("feature_type", "dtype", "shape"))):
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "feature_type": self.feature_type,
             "dtype": self.dtype,
@@ -71,18 +74,18 @@ class SchemaField(namedtuple("SchemaField", ("feature_type", "dtype", "shape")))
         }
 
     @classmethod
-    def from_dict(cls, d):
+    def from_dict(cls, d: Dict[str, Union[FeatureType, DType, List[int]]]) -> "SchemaField":
         return cls(**d)
 
 
 class EnumEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: Union[FeatureType, DType]) -> Dict[str, str]:
         if type(obj) in PUBLIC_ENUMS.values():
             return {"__enum__": str(obj)}
         return json.JSONEncoder.default(self, obj)
 
 
-def as_enum(d):
+def as_enum(d: Dict[str, Any]) -> Any:
     if "__enum__" in d:
         name, member = d["__enum__"].split(".")
         return getattr(PUBLIC_ENUMS[name], member)
@@ -90,17 +93,17 @@ def as_enum(d):
         return d
 
 
-def encode_schema(schema):
+def encode_schema(schema: Dict[str, SchemaField]) -> str:
 
     copy_schema = schema.copy()
 
     for k, v in copy_schema.items():
-        copy_schema[k] = v.to_dict()
+        copy_schema[k] = v.to_dict()  # type: ignore
 
     return json.dumps(copy_schema, cls=EnumEncoder)
 
 
-def decode_schema(j_str):
+def decode_schema(j_str: str) -> Dict[str, SchemaField]:
     schema_dict = json.loads(j_str, object_hook=as_enum)
     schema = {}
     for k, v in schema_dict.items():
@@ -156,13 +159,15 @@ def decode_feature_type_ndarray(df, schema):
     return df
 
 
-def chunks(iterable, size=10):
+def chunks(iterable: List[Dict[str, Union[str, int, float, "ndarray"]]],
+           size: int=10) -> Iterator[chain]:
     iterator = iter(iterable)
     for first in iterator:
         yield chain([first], islice(iterator, size - 1))
 
 
 def pa_fs(path):
+    import pyarrow as pa
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
         fs = pa.hdfs.connect()
         path = path[len("hdfs://"):]

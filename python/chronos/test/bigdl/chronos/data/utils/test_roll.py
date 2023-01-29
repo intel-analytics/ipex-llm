@@ -21,8 +21,11 @@ import random
 
 from unittest import TestCase
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from ... import op_torch, op_tf2
 
 
+@op_torch
+@op_tf2
 class TestRollTimeSeries(TestCase):
     def setup_method(self, method):
         self.easy_data = pd.DataFrame({"A": np.random.randn(10),

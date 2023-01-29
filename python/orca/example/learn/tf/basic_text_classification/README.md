@@ -1,6 +1,6 @@
 # Orca Tensorflow Text Classification example with movie reviews
 
-We demonstrate how to easily run synchronous distributed Tensorflow training using Tensorflow Estimator of Project Orca in Analytics Zoo. This example classifies movie reviews as positive or negative using the text of the review. See [here](https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/keras/basic_text_classification.ipynb) for the original single-node version of this example provided by Tensorflow.
+We demonstrate how to easily run synchronous distributed TensorFlow training using TensorFlow Estimator of Project Orca in BigDL. This example classifies movie reviews as positive or negative using the text of the review. See [here](https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/keras/basic_text_classification.ipynb) for the original single-node version of this example provided by Tensorflow.
 
 ## Prepare environments
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster(yarn-client mode only).

@@ -60,10 +60,8 @@ class PytorchPysparkWorker(TorchRunner):
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
-                 training_operator_cls=None,
                  config=None,
                  use_tqdm=False,
-                 scheduler_step_freq=None,
                  state_dict=None,
                  backend="torch-distributed",
                  mode="fit",
@@ -75,8 +73,14 @@ class PytorchPysparkWorker(TorchRunner):
                  driver_log_port=None,
                  driver_tcp_store_port=None
                  ):
-        super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
-                         training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
+        super().__init__(model_creator=model_creator,
+                         optimizer_creator=optimizer_creator,
+                         loss_creator=loss_creator,
+                         metrics=metrics,
+                         scheduler_creator=scheduler_creator,
+                         config=config,
+                         use_tqdm=use_tqdm,
+                         sync_stats=sync_stats,
                          log_level=log_level)
 
         self.state_dict = state_dict
@@ -114,6 +118,7 @@ class PytorchPysparkWorker(TorchRunner):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
+            self.setup_components()
             self.setup_torch_distribute(tcp_store_host=driver_ip,
                                         tcp_store_port=driver_tcp_store_port,
                                         world_rank=self.rank,
@@ -121,7 +126,8 @@ class PytorchPysparkWorker(TorchRunner):
         else:
             self.rank = 0
             self.setup_components()
-            self.setup_operator(self.models)
+            if self.model_creator:
+                self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      info=None, wrap_dataloader=None, callbacks=None,
@@ -147,14 +153,14 @@ class PytorchPysparkWorker(TorchRunner):
         if self.model_dir is not None:
             return [stats_list]
         else:
-            return state_dict, [stats_list]
+            return [state_dict, stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None):
+                 info=None, wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
-                                            wrap_dataloader)
+                                            wrap_dataloader, callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]

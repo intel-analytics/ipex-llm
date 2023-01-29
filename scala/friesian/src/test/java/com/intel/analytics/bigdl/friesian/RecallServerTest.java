@@ -30,12 +30,10 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -103,7 +101,10 @@ public class RecallServerTest {
     public void testAddItem() {
         insertedItemID = (int) (Math.random() * 1000) + 30000;
         RecallProto.Item.Builder itemBuilder = RecallProto.Item.newBuilder().setItemID(insertedItemID);
-        Arrays.stream(((DenseVector) userDataRow.get(1)).toArray()).forEach(x -> itemBuilder.addItemVector((float) x));
+        float[] insertedItemEbd = TestUtils.toFloatArray(userDataRow.get(1));
+        for (float x : insertedItemEbd) {
+            itemBuilder.addItemVector(x);
+        }
         Empty empty = recallBlockingStub.addItem(itemBuilder.build());
         assertNotNull(empty);
     }
@@ -111,7 +112,9 @@ public class RecallServerTest {
     @Test
     @Order(2)
     public void testSearchCandidates() {
-        RecallProto.Query query = RecallProto.Query.newBuilder().setUserID(userDataRow.getInt(0)).setK(4).build();
+        RecallProto.Query query = RecallProto.Query.newBuilder().
+                setUserID(Integer.parseInt(userDataRow.get(0).toString()))
+                .setK(4).build();
         RecallProto.Candidates itemIDs = recallBlockingStub.searchCandidates(query);
         assertEquals(itemIDs.getCandidate(0), insertedItemID);
         assertEquals(itemIDs.getCandidateCount(), 4);

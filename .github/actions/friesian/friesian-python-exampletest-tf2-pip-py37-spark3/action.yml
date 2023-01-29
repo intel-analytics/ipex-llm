@@ -1,0 +1,27 @@
+name: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
+description: 'Run Friesian Python ExampleTest Tf2 Pip Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        #pip install wheel
+        chmod a+x python/dev/release_default_linux_spark313.sh
+        ./python/dev/release_default_linux_spark313.sh default false false
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca_spark3-*-py3-none-manylinux1_x86_64.whl
+        # install friesian
+        pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
+
+        cd python/friesian/dev/test
+        bash run-example-tests-tf2.6.0.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

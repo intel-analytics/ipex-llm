@@ -28,6 +28,7 @@ import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
 import opencv_transforms.transforms as cv_t
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_14
 
 
 __all__ = [
@@ -69,6 +70,17 @@ __all__ = [
     'RandomEqualize',
     'InterpolationMode'
 ]
+
+if not TORCHVISION_VERSION_LESS_1_14:
+    __all__.extend(['ElasticTransform'])
+
+    class ElasticTransform(tv_t.ElasticTransform):
+
+        def __call__(self, img):
+            if type(img) == np.ndarray:
+                img = tv_t.ToTensor()(img)
+
+            return super(ElasticTransform, self).__call__(img)
 
 _cv_strToModes_mapping = {
     'nearest': cv2.INTER_NEAREST,
@@ -192,6 +204,8 @@ class ToTensor(object):
         self.cv_F = cv_t.ToTensor()
 
     def __call__(self, pic):
+        if type(pic) == torch.Tensor:
+            return pic
         if type(pic) == np.ndarray:
             return self.cv_F.__call__(pic)
         else:
@@ -452,13 +466,17 @@ class RandomResizedCrop(object):
         self.size = size
         self.scale = scale
         self.ratio = ratio
+        self.cv_F = None
 
         if isinstance(interpolation, int):
             warnings.warn(
                 "Argument interpolation should be of type InterpolationMode instead of int."
                 "Please, use InterpolationMode enum."
             )
-            self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio, interpolation)
+            # note: the RandomResizedCrop class only accepts a single number as size,
+            # and uses self.size = (size, size) as the target size
+            # this maybe a bug of opencv_transforms, but we have to change our code for now
+            self.cv_F = cv_t.RandomResizedCrop(self.size[0], self.scale, self.ratio, interpolation)
             interpolation = _torch_intToModes_mapping[interpolation]
 
         if isinstance(interpolation, str):
@@ -473,10 +491,10 @@ class RandomResizedCrop(object):
 
         if self.cv_F is None:
             if self.interpolation in _modes_torchToCV2_mapping:
-                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio,
+                self.cv_F = cv_t.RandomResizedCrop(self.size[0], self.scale, self.ratio,
                                                    _modes_torchToCV2_mapping[self.interpolation])
             else:
-                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio,
+                self.cv_F = cv_t.RandomResizedCrop(self.size[0], self.scale, self.ratio,
                                                    cv2.INTER_LINEAR)
 
     def __call__(self, img):
@@ -605,6 +623,8 @@ class RandomRotation(object):
             )
             self.resample = resample
             interpolation = _torch_intToModes_mapping(resample)
+        else:
+            self.resample = False
 
         if isinstance(interpolation, int):
             warnings.warn(
@@ -835,7 +855,7 @@ class RandomPerspective(tv_t.RandomPerspective):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomPerspective, self).__call__(img)
 
@@ -844,7 +864,7 @@ class RandomErasing(tv_t.RandomErasing):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomErasing, self).__call__(img)
 
@@ -853,7 +873,7 @@ class GaussianBlur(tv_t.GaussianBlur):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(GaussianBlur, self).__call__(img)
 
@@ -862,7 +882,7 @@ class RandomInvert(tv_t.RandomInvert):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomInvert, self).__call__(img)
 
@@ -871,7 +891,7 @@ class RandomPosterize(tv_t.RandomPosterize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomPosterize, self).__call__(img)
 
@@ -880,7 +900,7 @@ class RandomSolarize(tv_t.RandomSolarize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomSolarize, self).__call__(img)
 
@@ -889,7 +909,7 @@ class RandomAdjustSharpness(tv_t.RandomAdjustSharpness):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomAdjustSharpness, self).__call__(img)
 
@@ -898,7 +918,7 @@ class RandomAutocontrast(tv_t.RandomAutocontrast):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomAutocontrast, self).__call__(img)
 
@@ -907,6 +927,6 @@ class RandomEqualize(tv_t.RandomEqualize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            img = tv_t.ToTensor()(img)
 
         return super(RandomEqualize, self).__call__(img)

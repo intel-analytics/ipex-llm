@@ -9,7 +9,7 @@ dependency=$1
 set -e
 
 # the number of batches to run is limited for testing purposes
-sed -i 's/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/' $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb
+sed -i 's/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/' $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 
 # comment out the install commands
 sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
@@ -19,8 +19,10 @@ start=$(date "+%s")
 
 if [ ${dependency} == 'openvino' ]; then
     python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/accelerate_pytorch_inference_openvino.ipynb ${NANO_HOWTO_GUIDES_TEST_DIR}/quantize_pytorch_inference_pot.ipynb
-else
+elif [ ${dependency} == 'onnx' ]; then
     python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/accelerate_pytorch_inference_onnx.ipynb ${NANO_HOWTO_GUIDES_TEST_DIR}/quantize_pytorch_inference_inc.ipynb
+else
+    python -m pytest -s --nbmake --nbmake-timeout=1200 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
 fi 
 
 now=$(date "+%s")

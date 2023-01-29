@@ -39,14 +39,14 @@ import ray
 from ray.util.ml_utils.util import find_free_port
 
 import torch
-from torch import Tensor
 from torch.optim.lr_scheduler import _LRScheduler
+from torch.nn.parallel.distributed import DistributedDataParallel
+
 import pytorch_lightning as pl
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.apply_func import move_data_to_device
-from pytorch_lightning.utilities.distributed import ReduceOp
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
@@ -56,11 +56,9 @@ from pytorch_lightning.core.optimizer import LightningOptimizer
 
 from .ray_envbase import RayEnvironment
 from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.strategies.ipex.ipex_api import ipex_device, ipex_optimize, \
-    create_IPEXAccelerator, to_cpu
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-
-_STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 
 @ray.remote     # type: ignore
@@ -124,10 +122,12 @@ class _RayLauncher(_SpawnLauncher):
             torch_backend = "nccl" if strategy.use_gpu else "gloo"
         strategy._process_group_backend = torch_backend
 
+        patch_status = _get_patch_status()
+
         futures = [
             strategy.workers[i].execute.remote(
                 self._wrapping_function,
-                (i, trainer, strategy, function, args, kwargs)
+                (i, trainer, strategy, function, args, kwargs, patch_status)
             )
             for i in range(strategy.num_workers)
         ]
@@ -146,10 +146,15 @@ class _RayLauncher(_SpawnLauncher):
 
     @staticmethod
     def _wrapping_function(args_pack: tuple) -> Any:   # type: ignore[override]
-        global_rank, trainer, strategy, function, args, kwargs = args_pack
+        global_rank, trainer, strategy, function, args, kwargs, patch_status = args_pack
         invalidInputError(isinstance(strategy, RayStrategy), "expect ray strategy here")
         invalidInputError(isinstance(strategy.cluster_environment, RayEnvironment),
                           "expect ray environment here")
+
+        # patch Pytorch and CUDA in subprocess
+        if patch_status['patch_torch']:
+            from bigdl.nano.pytorch import patch_torch
+            patch_torch(cuda_to_cpu=patch_status['patch_cuda'])
 
         strategy.cluster_environment.set_global_rank(global_rank)
         strategy.cluster_environment.set_remote_execution(True)
@@ -172,7 +177,8 @@ class RayStrategy(DDPSpawnStrategy):
     strategy_name = "ray"
 
     def __init__(self,
-                 num_workers: int = 1,
+                 num_processes: int = 1,
+                 cpu_for_each_process: Optional[List[List[int]]] = None,
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,
@@ -193,17 +199,11 @@ class RayStrategy(DDPSpawnStrategy):
         if not ray.is_initialized():    # type: ignore
             print(ray.init())   # type: ignore
 
-        if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in ddp_kwargs:
-            super().__init__(accelerator=create_IPEXAccelerator(),
-                             parallel_devices=[],
-                             cluster_environment=RayEnvironment(world_size=num_workers),
-                             **ddp_kwargs)
-        else:
-            super().__init__(parallel_devices=[],
-                             cluster_environment=RayEnvironment(world_size=num_workers),
-                             **ddp_kwargs)
+        super().__init__(parallel_devices=[],
+                         cluster_environment=RayEnvironment(world_size=num_processes),
+                         **ddp_kwargs)
 
-        self.num_workers = num_workers
+        self.num_workers = num_processes
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
         self.use_ipex = use_ipex
@@ -326,17 +326,8 @@ class RayStrategy(DDPSpawnStrategy):
                     scheduler.base_lrs = [  # type: ignore
                         lr * self.world_size for lr in scheduler.base_lrs  # type: ignore
                     ]
-
-        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
-            num_optimizers = len(self.optimizers)
-            if num_optimizers == 1:
-                optimizer = self.optimizers[0]
-                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=self.dtype)
-            elif num_optimizers == 0:
-                ipex_optimize(self.model, inplace=True, dtype=self.dtype)
-            else:
-                warnings.warn(f"IPEX currently only support single optimizers, "
-                              f"but got {num_optimizers}. Skip IPEX")
+        if self.use_ipex:
+            ipex_optimize(self.model, optimizers=optimizer, inplace=True, dtype=self.dtype)
 
         # some operations in `configure_ddp` do not support XPU,
         # which is used by ipex==1.9, so we move this line here
@@ -345,18 +336,15 @@ class RayStrategy(DDPSpawnStrategy):
     @property
     def root_device(self):
         """Return the root device."""
-        if self.use_ipex and TORCH_VERSION_LESS_1_10:
-            # Add ipex option.
-            return torch.device(ipex_device())
-        else:
-            return torch.device("cpu")
+        return torch.device("cpu")
 
-    def determine_ddp_device_ids(self):
-        """Return the index of root device."""
-        # For ipex case, we also should not return any optional device id.
-        if self.root_device.type == "cpu" or self.root_device.type == "xpu":
-            return None
-        return [self.root_device.index]
+    def _setup_model(self, model: torch.nn.Module) -> DistributedDataParallel:
+        """Wraps the model into a 'DistributedDataParallel' module."""
+        # we should override this method to change the creation of `DistributedDataParallel`
+        # we need to set `find_unused_parameters` to True to fix mult-instance training,
+        # `Trainer` will set it automatically, but `TorchNano` won't, so we set it manually
+        self._ddp_kwargs['find_unused_parameters'] = True
+        return DistributedDataParallel(model, **self._ddp_kwargs)
 
     @property
     def distributed_sampler_kwargs(self):
@@ -364,17 +352,6 @@ class RayStrategy(DDPSpawnStrategy):
         distributed_sampler_kwargs = dict(
             num_replicas=self.num_workers, rank=self.global_rank)
         return distributed_sampler_kwargs
-
-    def reduce(self, tensor, group: Optional[Any] = None,   # type: ignore[override]
-               reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
-        """Reduces a tensor from several distributed processes to one aggregated tensor."""
-        # some operations in `super.reduce()` method do not support XPU,
-        # which will cause error when using ipex==1.9, however, these operations
-        # seems not necessary, so we just ignore these errors
-        try:
-            return super().reduce(tensor, group, reduce_op)
-        except Exception as _e:
-            return tensor
 
     def on_train_start(self) -> None:
         """Setup warmup lr_schedulers after resetting the train dataloaders."""
@@ -449,52 +426,3 @@ class RayStrategy(DDPSpawnStrategy):
             _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
             _validate_scheduler_api(lr_scheduler_configs, self.lightning_module)
             self.lr_scheduler_configs = lr_scheduler_configs
-
-    def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
-        """
-        A hook to do something at the end of the train step.
-
-        For ipex xpu tensor do not support `tensor.storage()` right now,
-        which is a required operation by pytorch_lightning,
-        so just move output to cpu to store it, and move it back when doing backward.
-        """
-        if self.use_ipex and TORCH_VERSION_LESS_1_10:
-            output = to_cpu(output)
-
-        return super().training_step_end(output)
-
-    def test_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
-            Optional[_STEP_OUTPUT_TYPE]:
-        """
-        A hook to do something at the end of the test step.
-
-        :param output: the output of the test step
-        """
-        if self.use_ipex and TORCH_VERSION_LESS_1_10:
-            output = to_cpu(output)
-
-        return super().test_step_end(output)
-
-    def validation_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
-            Optional[_STEP_OUTPUT_TYPE]:
-        """
-        A hook to do something at the end of the validation step.
-
-        :param output: the output of the validation step
-        """
-        if self.use_ipex and TORCH_VERSION_LESS_1_10:
-            output = to_cpu(output)
-
-        return super().validation_step_end(output)
-
-    def backward(self,  # type: ignore
-                 closure_loss: torch.Tensor,
-                 *args,
-                 **kwargs) -> torch.Tensor:
-        """Moving back loss to xpu device."""
-        closure_loss = closure_loss.to(self.root_device)
-        return super().backward(
-            closure_loss,
-            *args,
-            **kwargs,
-        )

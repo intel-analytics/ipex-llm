@@ -16,14 +16,12 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
 from torchvision import transforms
 from torchvision.models import resnet18
 from torchvision.datasets import OxfordIIITPet
-from torchmetrics import Accuracy
 
 from pytorch_lightning import seed_everything
-from bigdl.nano.pytorch.torch_nano import TorchNano
+from bigdl.nano.pytorch import TorchNano
 
 
 class MyPytorchModule(nn.Module):

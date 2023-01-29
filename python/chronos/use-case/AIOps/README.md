@@ -14,7 +14,7 @@ This use case example contains two notebooks:
 
 ### Install
 
-You can refer to Chronos installation document [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install).
+You can refer to Chronos installation document [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html).
 
 ### Prepare dataset
 * run `get_data.sh` to download the full dataset. It will download the resource usage of each machine from m_1932 to m_2085. 

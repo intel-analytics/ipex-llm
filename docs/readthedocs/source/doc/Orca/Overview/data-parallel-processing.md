@@ -4,7 +4,7 @@
 
 **Orca provides efficient support of distributed data-parallel processing pipeline, a critical component for large-scale AI applications.**
 
-### **1. TensorFlow Dataset and PyTorch DataLoader**
+### 1. TensorFlow Dataset and PyTorch DataLoader
 
 Orca will seamlessly parallelize the standard `tf.data.Dataset` or `torch.utils.data.DataLoader` pipelines across a large cluster in a data-parallel fashion, which can be directly used for distributed deep learning training, as shown below:
 
@@ -52,7 +52,7 @@ and `tf.numpy_function` are currently not supported._
 2. _TensorFlow Dataset pipeline created from generators, such as `Dataset.from_generators` are currently not supported._
 3. _For TensorFlow Dataset and Pytorch DataLoader pipelines that read from files (including `tf.data.TFRecordDataset` and `tf.data.TextLineDataset`), one needs to ensure that the same file paths can be accessed on every node in the cluster._
 
-#### **1.1. Data Creator Function**
+#### 1.1. Data Creator Function
 Alternatively, the user may also pass a *Data Creator Function* as the input to the distributed training and inference. Inside the *Data Creator Function*, the user needs to create and return a `tf.data.Dataset` or `torch.utils.data.DataLoader` object, as shown below.
 
 TensorFlow:
@@ -84,7 +84,7 @@ def train_data_creator(config, batch_size):
     return train_loader
 ```
 
-### **2. Spark Dataframes**
+### 2. Spark Dataframes
 Orca supports Spark Dataframes as the input to the distributed training, and as the input/output of the distributed inference. Consequently, the user can easily process large-scale dataset using Apache Spark, and directly apply AI models on the distributed (and possibly in-memory) Dataframes without data conversion or serialization. 
 
 ```python
@@ -95,7 +95,7 @@ est.fit(data=df,
         label_cols=['label']) # specifies which column(s) to be used as labels
 ```
 
-### **3. XShards (Distributed Data-Parallel Python Processing)**
+### 3. XShards (Distributed Data-Parallel Python Processing)
 
 `XShards` in Orca allows the user to process large-scale dataset using *existing* Python codes in a distributed and data-parallel fashion, as shown below. 
 
@@ -117,7 +117,7 @@ In essence, an `XShards` contains an automatically sharded (or partitioned) Pyth
 
 View the related [Python API doc](./data) for more details.
  
-#### **3.1 Data-Parallel Pandas**
+#### 3.1 Data-Parallel Pandas
 The user may use `XShards` to efficiently process large-size Pandas Dataframes in a distributed and data-parallel fashion.
 
 First, the user can read CVS, JSON or Parquet files (stored on local disk, HDFS, AWS S3, etc.) to obtain an `XShards` of Pandas Dataframe, as shown below:

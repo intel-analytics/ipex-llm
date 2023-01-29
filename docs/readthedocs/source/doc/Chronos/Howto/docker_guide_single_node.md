@@ -11,11 +11,53 @@ Then `cd` to the root directory of `BigDL`, and copy the Dockerfile to it.
 cd BigDL
 cp docker/chronos-nightly/Dockerfile ./Dockerfile
 ```
-Then build your docker image with Dockerfile:
+When building image, you can specify some build args to install chronos with necessary dependencies according to your own needs.
+The build args are similar to the install options in [Chronos documentation](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html).
+
+```
+model: which model or framework you want. 
+       value: pytorch (default)
+              tensorflow
+              prophet
+              arima
+              ml (for machine learning models).
+
+auto_tuning: whether to enable auto tuning.
+             value: y (for yes)
+                    n (default, for no).
+
+hardware: run chronos on a single machine or a cluster.
+          value: single (default)
+                 cluster
+
+inference: whether to install dependencies for inference optimization (e.g. onnx, openvino, ...).
+           value: y (for yes)
+                  n (default, for no)
+
+extra_dep: whether to install some extra dependencies.
+           value: y (for yes)
+                  n (default, for no)
+           if specified to y, the following dependencies will be installed:
+           tsfresh, pyarrow, prometheus_pandas, xgboost, jupyter, matplotlib
+```
+
+If you want to build image with the default options, you can simply use the following command:
 ```bash
 sudo docker build -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
 ```
-(Optional) Or build with a proxy:
+
+You can also build with other options by specifying the build args:
+```bash
+sudo docker build \
+    --build-arg model=pytorch \
+    --build-arg auto_tuning=y \
+    --build-arg hardware=single \
+    --build-arg inference=n \
+    --build-arg extra_dep=n \
+     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+```
+
+(Optional) If you need a proxy, you can add two additional build args to specify it:
 ```bash
 # typically, you need a proxy for building since there will be some downloading.
 sudo docker build \
@@ -33,15 +75,17 @@ sudo docker run -it --rm --net=host chronos-nightly:b1 bash
 ```
 
 ## Use Chronos
-A conda environment is created for you automatically. `bigdl-chronos` and all of its depenencies are installed inside this environment.
+A conda environment is created for you automatically. `bigdl-chronos` and the necessary depenencies (based on the build args) are installed inside this environment.
 ```bash
 (chronos) root@cpx-3:/opt/work#
 ```
 
-## Run unitest examples on Jupyter Notebook for a quick use
+## Run unittest examples on Jupyter Notebook for a quick use
+> Note: To use jupyter notebook, you need to specify the build arg `extra_dep` to `y`.
+
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
-(chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unitest examples are here.
+(chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unittest examples are here.
 ```
 ```bash
 (chronos) root@cpx-3:/opt/work# jupyter notebook --notebook-dir=./ --ip=* --allow-root #Start the Jupyter Notebook services.
@@ -57,15 +101,15 @@ After the Jupyter Notebook service is successfully started, you can connect to t
 You should shut down the BigDL Docker container after using it.
 1. First, use `ctrl+p+q` to quit the container when you are still in it. 
 2. Then, you can list all the active Docker containers by command line:
-```bash
-sudo docker ps
-```
-You will see your docker containers:
-```bash
-CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        chronos-nightly:b1         "/opt/work/"   3 hours ago         Up 3 hours                              upbeat_al
-```
+   ```bash
+   sudo docker ps
+   ```
+   You will see your docker containers:
+   ```bash
+   CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+   40de2cdad025        chronos-nightly:b1         "/opt/work/"   3 hours ago         Up 3 hours                              upbeat_al
+   ```
 3. Shut down the corresponding docker container by its ID:
-```bash
-sudo docker rm -f 40de2cdad025
-```
+   ```bash
+   sudo docker rm -f 40de2cdad025
+   ```

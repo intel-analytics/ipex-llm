@@ -1,7 +1,7 @@
 # BigDL-Nano TensorFlow SparseEmbedding and SparseAdam
 **In this guide we demonstrates how to use `SparseEmbedding` and `SparseAdam` to obtain stroger performance with sparse gradient.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -15,13 +15,13 @@ source bigdl-nano-init
 pip install tensorflow-datasets
 ```
 
-### **Step 1: Import BigDL-Nano**
+### Step 1: Import BigDL-Nano
 The optimizations in BigDL-Nano are delivered through BigDL-Nano’s `Model` and `Sequential` classes. For most cases, you can just replace your `tf.keras.Model` to `bigdl.nano.tf.keras.Model` and `tf.keras.Sequential` to `bigdl.nano.tf.keras.Sequential` to benefits from BigDL-Nano.
 ```python
 from bigdl.nano.tf.keras import Model, Sequential
 ```
 
-### **Step 2: Load the data**
+### Step 2: Load the data
 We demonstrate with imdb_reviews, a large movie review dataset.
 ```python
 import tensorflow_datasets as tfds
@@ -35,7 +35,7 @@ import tensorflow_datasets as tfds
 )
 ```
 
-### **Step 3: Parepre the Data**
+### Step 3: Parepre the Data
 In particular, we remove <br /> tags.
 ```python
 import tensorflow as tf
@@ -82,7 +82,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=10)
 test_ds = test_ds.cache().prefetch(buffer_size=10)
 ```
 
-### **Step 4: Build Model**
+### Step 4: Build Model
 `bigdl.nano.tf.keras.Embedding` is a slightly modified version of `tf.keras.Embedding` layer, this embedding layer only applies regularizer to the output of the embedding layer, so that the gradient to embeddings is sparse. `bigdl.nano.tf.optimzers.Adam` is a variant of the `Adam` optimizer that handles sparse updates more efficiently. 
 Here we create two models, one using normal Embedding layer and Adam optimizer, the other using `SparseEmbedding` and `SparseAdam`.
 ```python
@@ -119,7 +119,7 @@ model = Model(inputs, predictions)
 model.compile(loss="binary_crossentropy", optimizer=SparseAdam(), metrics=["accuracy"])
 ```
 
-### **Step 5: Training**
+### Step 5: Training
 ```python
 # Fit the model using the train and val datasets.
 model.fit(train_ds, validation_data=val_ds, epochs=3)

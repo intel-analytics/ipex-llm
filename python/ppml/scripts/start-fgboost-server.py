@@ -18,10 +18,13 @@ import click
 import fnmatch
 import sys
 
-for files in os.listdir('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/'):
-    if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
-        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files)
-        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files + '/bigdl/ppml/fl/nn/generated')
+for dirs in os.listdir('/ppml/trusted-big-data-ml/work'):
+    if fnmatch.fnmatch(dirs, 'bigdl-*'):
+        path = '/ppml/trusted-big-data-ml/work/' + dirs + '/python/'
+        for files in os.listdir(path):
+            if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
+                sys.path.append(path + files)
+                sys.path.append(path + files + '/bigdl/ppml/fl/nn/generated')
 
 from bigdl.ppml.fl.fl_server import FLServer
 

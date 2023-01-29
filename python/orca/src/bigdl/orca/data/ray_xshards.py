@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
 from collections import defaultdict
 
 import ray
@@ -25,7 +26,28 @@ from bigdl.orca.data import XShards
 from bigdl.orca.ray import OrcaRayContext
 
 import logging
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+from numpy import ndarray
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    no_type_check
+)
+
+
+if TYPE_CHECKING:
+    from bigdl.orca.data.shard import SparkXShards
+    from pyspark.rdd import PipelinedRDD, RDD
+    from ray._raylet import ObjectRef
+    from ray.actor import ActorHandle
+
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +107,11 @@ def init_ray_if_not(redis_address, redis_password):
     if not ray.is_initialized():
         init_params = dict(
             address=redis_address,
-            ignore_reinit_error=True
+            ignore_reinit_error=True,
+            namespace="bigdl"
         )
         if redis_password:
-            init_params["_redis_password"] = self.redis_password
-        if version.parse(ray.__version__) >= version.parse("1.4.0"):
-            init_params["namespace"] = "az"
+            init_params["_redis_password"] = redis_password
         ray.init(**init_params)
 
 
@@ -134,7 +155,8 @@ def get_from_ray(idx, redis_address, redis_password, idx_to_store_name):
 
 class RayXShards(XShards):
 
-    def __init__(self, uuid, id_ip_store_rdd, partition_stores):
+    def __init__(self, uuid: str, id_ip_store_rdd: "RDD[Any]",
+                 partition_stores: Dict[str, "ActorHandle"]) -> None:
         self.uuid = uuid
         self.rdd = id_ip_store_rdd
         self.partition_stores = partition_stores
@@ -145,16 +167,16 @@ class RayXShards(XShards):
     def transform_shard(self, func, *args):
         invalidInputError(False, "Transform is not supported for RayXShards")
 
-    def num_partitions(self):
+    def num_partitions(self) -> int:
         return len(self.partition2ip)
 
-    def collect(self):
+    def collect(self) -> List[Dict[str, ndarray]]:
         # return a list of shards
         partitions = self.collect_partitions()
         data = [item for part in partitions for item in part]
         return data
 
-    def get_partition_refs(self):
+    def get_partition_refs(self) -> List[Union["ObjectRef", List["ObjectRef"]]]:
         """
         Get a list of partition_refs, each partition_ref is a list of shard_refs or a partition_ref
         """
@@ -167,37 +189,34 @@ class RayXShards(XShards):
             result.update(part)
         return [result[idx] for idx in range(self.num_partitions())]
 
-    def get_refs(self):
+    def get_refs(self) -> List["ObjectRef"]:
         """
         Flatten get_partition_refs. Get a list of partition_refs or shard_refs
         """
         partition_refs = self.get_partition_refs()
-        return [ref for partition_ref in partition_refs for ref in partition_ref]
+        return [ref for partition_ref in partition_refs for ref in partition_ref]  # type:ignore
 
-    def collect_partitions(self):
+    def collect_partitions(self) -> List[List[Dict[str, ndarray]]]:
         part_refs = self.get_partition_refs()
         return [ray.get(part_ref) for part_ref in part_refs]
 
-    def to_spark_xshards(self):
+    def to_spark_xshards(self) -> "SparkXShards":
         from bigdl.orca.data import SparkXShards
         ray_ctx = OrcaRayContext.get()
-        sc = ray_ctx.sc
-        address = ray_ctx.redis_address
-        password = ray_ctx.redis_password
-        num_parts = self.num_partitions()
+        address = ray_ctx.redis_address  # type: ignore
+        password = ray_ctx.redis_password  # type: ignore
         partition2store = self.partition2store_name
         rdd = self.rdd.mapPartitionsWithIndex(
             lambda idx, _: get_from_ray(idx, address, password, partition2store))
 
         # the reason why we trigger computation here is to ensure we get the data
         # from ray before the RayXShards goes out of scope and the data get garbage collected
-        from pyspark.storagelevel import StorageLevel
         rdd = rdd.cache()
         result_rdd = rdd.map(lambda x: x)  # sparkxshards will uncache the rdd when gc
         spark_xshards = SparkXShards(result_rdd)
         return spark_xshards
 
-    def _get_multiple_partition_refs(self, ids):
+    def _get_multiple_partition_refs(self, ids: List[int]) -> List["ObjectRef"]:
         refs = []
         for idx in ids:
             local_store_handle = self.partition_stores[self.partition2store_name[idx]]
@@ -205,7 +224,8 @@ class RayXShards(XShards):
             refs.append(partition_ref)
         return refs
 
-    def transform_shards_with_actors(self, actors, func):
+    def transform_shards_with_actors(self, actors: List["ActorHandle"],
+                                     func: Callable) -> "RayXShards":
         """
         Assign each partition_ref (referencing a list of shards) to an actor,
         and run func for each actor and partition_ref pair.
@@ -235,7 +255,10 @@ class RayXShards(XShards):
 
         return RayXShards.from_partition_refs(actor_ip2part_id, new_part_id_refs, self.rdd)
 
-    def reduce_partitions_for_actors(self, actors, reduce_partitions_func, return_refs=False):
+    # TODO: ADD UT
+    def reduce_partitions_for_actors(self, actors: List["ActorHandle"],
+                                     reduce_partitions_func: Callable,
+                                     return_refs: bool=False) -> List[Any]:
         """
         Evenly allocate partitions for actors and run `reduce_partitions_func` on partitions of each
         worker.
@@ -249,9 +272,8 @@ class RayXShards(XShards):
         list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
         """
         invalidInputError(self.num_partitions() >= len(actors),
-                          f"Get number of partitions ({self.num_partitions()}) smaller than "
-                          f"number of actors ({len(actors)}). Please submit an issue to"
-                          f" BigDL.")
+                          f"Get the number of partitions ({self.num_partitions()}) smaller than "
+                          f"the number of workers ({len(actors)}).")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
@@ -263,8 +285,12 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def zip_reduce_shards_with_actors(self, xshards, actors, reduce_partitions_func,
-                                      return_refs=False):
+    # TODO: ADD UT
+    def zip_reduce_shards_with_actors(self,
+                                      xshards: "RayXShards",
+                                      actors: List["ActorHandle"],
+                                      reduce_partitions_func: Callable,
+                                      return_refs: bool=False) -> List[Any]:
         invalidInputError(self.num_partitions() == xshards.num_partitions(),
                           "the rdds to be zipped must have the same number of partitions")
         invalidInputError(self.num_partitions() >= len(actors),
@@ -284,7 +310,8 @@ class RayXShards(XShards):
         results = ray.get(result_refs)
         return results
 
-    def assign_partitions_to_actors(self, actors):
+    def assign_partitions_to_actors(self, actors: List["ActorHandle"]) \
+            -> Tuple[List[List[int]], List[str], List["ActorHandle"]]:
         num_parts = self.num_partitions()
         if num_parts < len(actors):
             logger.warning(f"this rdd has {num_parts} partitions, which is smaller "
@@ -307,16 +334,16 @@ class RayXShards(XShards):
         # todo extract this algorithm to other functions for unit tests.
         actor_ips = []
         for actor in actors:
-            invalidInputError(hasattr(actor, "get_node_ip"),
+            invalidInputError(hasattr(actor, "get_node_ip"),  # type:ignore
                               "each actor should have a get_node_ip method")
             actor_ip = actor.get_node_ip.remote()
             actor_ips.append(actor_ip)
 
         actor_ips = ray.get(actor_ips)
 
-        actor2assignments = [[] for i in range(len(actors))]
+        actor2assignments = [[] for i in range(len(actors))]  # type:ignore
 
-        ip2actors = {}
+        ip2actors = {}  # type:ignore
         for idx, ip in enumerate(actor_ips):
             if ip not in ip2actors:
                 ip2actors[ip] = []
@@ -366,9 +393,11 @@ class RayXShards(XShards):
         else:
             return actor2assignments, actor_ips, actors
 
+    @no_type_check
     @staticmethod
-    def from_partition_refs(ip2part_id, part_id2ref, old_rdd):
-        ray_ctx = OrcaRayContext.get()
+    def from_partition_refs(ip2part_id: DefaultDict[str, List[int]],
+                            part_id2ref: Dict[int, "ObjectRef"],
+                            old_rdd: "RDD[Any]") -> "RayXShards":
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
         partition_stores = {}
@@ -389,11 +418,12 @@ class RayXShards(XShards):
         return RayXShards(uuid_str, new_id_ip_store_rdd, partition_stores)
 
     @staticmethod
-    def from_spark_xshards(spark_xshards):
+    def from_spark_xshards(spark_xshards: "SparkXShards") -> "RayXShards":
         return RayXShards._from_spark_xshards_ray_api(spark_xshards)
 
+    @no_type_check
     @staticmethod
-    def _from_spark_xshards_ray_api(spark_xshards):
+    def _from_spark_xshards_ray_api(spark_xshards: "SparkXShards") -> "RayXShards":
         ray_ctx = OrcaRayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password
@@ -413,25 +443,14 @@ class RayXShards(XShards):
         partition_stores = {}
         for node in nodes:
             name = f"partition:{uuid_str}:{node}"
-            if version.parse(ray.__version__) >= version.parse("1.4.0"):
-                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
-                    .options(name=name, lifetime="detached").remote()
-            else:
-                store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore) \
-                    .options(name=name).remote()
+            store = ray.remote(num_cpus=0, resources={node: 1e-4})(LocalStore)\
+                .options(name=name, lifetime="detached").remote()
             partition_stores[name] = store
 
-        # actor creation is aync, this is to make sure they all have been started
+        # actor creation is async, this is to make sure they all have been started
         ray.get([v.get_partitions_refs.remote() for v in partition_stores.values()])
         partition_store_names = list(partition_stores.keys())
         result_rdd = spark_xshards.rdd.mapPartitionsWithIndex(lambda idx, part: write_to_ray(
             idx, part, address, password, partition_store_names)).cache()
-        result = result_rdd.collect()
-
-        id2ip = {}
-        id2store_name = {}
-        for idx, ip, local_store_name in result:
-            id2ip[idx] = ip
-            id2store_name[idx] = local_store_name
 
         return RayXShards(uuid_str, result_rdd, partition_stores)

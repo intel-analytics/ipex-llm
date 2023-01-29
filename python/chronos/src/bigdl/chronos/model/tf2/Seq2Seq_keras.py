@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from bigdl.nano.tf.keras import Model
@@ -150,7 +151,26 @@ def model_creator(config):
                         lstm_layer_num=config.get("lstm_layer_num", 2),
                         dropout=config.get("dropout", 0.25),
                         teacher_forcing=config.get("teacher_forcing", False))
-    inputs = Input(shape=(None, config['input_feature_num']))
+    learning_rate = config.get('lr', 1e-3)
+    model.compile(optimizer=getattr(tf.keras.optimizers,
+                                    config.get("optim", "Adam"))(learning_rate),
+                  loss=config.get("loss", "mse"),
+                  metrics=[config.get("metics", "mse")])
+    return model
+
+
+def model_creator_auto(config):
+    """
+    Add model(inputs) in this model creator to initialize the weights
+    """
+    model = LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
+                        output_feature_num=config["output_feature_num"],
+                        future_seq_len=config["future_seq_len"],
+                        lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
+                        lstm_layer_num=config.get("lstm_layer_num", 2),
+                        dropout=config.get("dropout", 0.25),
+                        teacher_forcing=config.get("teacher_forcing", False))
+    inputs = np.zeros(shape=(1, 1, config["input_feature_num"]))
     model(inputs)
     learning_rate = config.get('lr', 1e-3)
     model.compile(optimizer=getattr(tf.keras.optimizers,

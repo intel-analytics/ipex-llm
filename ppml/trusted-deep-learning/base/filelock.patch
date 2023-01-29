@@ -1,0 +1,9 @@
+407c407
+<             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+---
+>             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+421c421
+<         fcntl.flock(fd, fcntl.LOCK_UN)
+---
+>         fcntl.lockf(fd, fcntl.LOCK_UN)
+

@@ -1,0 +1,47 @@
+name: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
+description: 'PPML-Spark-PySpark-Local-Sql-UT-On-Gramine'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        echo "CONTAINER_NAME=spark-pyspark-ut-test-gramine" >> $GITHUB_ENV
+        echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        docker pull ${IMAGE}
+        docker rm -f ${CONTAINER_NAME}
+        docker run -id \
+        --privileged \
+        --net=host \
+        --name ${CONTAINER_NAME} \
+        --cpuset-cpus=$CPUSET \
+        --oom-kill-disable \
+        --device=/dev/sgx/enclave \
+        --device=/dev/sgx/provision \
+        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -e http_proxy=$HTTP_PROXY \
+        -e https_proxy=$HTTPS_PROXY \
+        $IMAGE bash
+    - name: Spark Examples Test
+      shell: bash
+      run: |
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-ut-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-ut-on-local-sgx.sh"

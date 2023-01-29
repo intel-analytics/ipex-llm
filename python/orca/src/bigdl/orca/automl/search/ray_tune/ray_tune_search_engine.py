@@ -410,12 +410,12 @@ def trial_dirname_creator(trial):
 
 
 def get_data_from_part_refs(part_refs):
-    from bigdl.orca.data.utils import ray_partitions_get_data_label
+    from bigdl.orca.data.utils import partitions_get_data_label
 
     partitions = [ray.get(part_ref) for part_ref in part_refs]
 
-    data, label = ray_partitions_get_data_label(partitions,
-                                                allow_tuple=True,
-                                                allow_list=False,
-                                                )
+    data, label = partitions_get_data_label(partitions,
+                                            allow_tuple=True,
+                                            allow_list=False,
+                                            )
     return data, label

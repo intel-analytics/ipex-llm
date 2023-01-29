@@ -1,7 +1,7 @@
 ## BigDL-Nano TensorFLow Quantization Quickstart
 **In this guide we will demonstrates how to apply post-training quantization on a keras model with BigDL-Nano in 4 simple steps.**
 
-### **Step 0: Prepare Environment**
+### Step 0: Prepare Environment
 
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
 
@@ -19,10 +19,10 @@ By default, [Intel Neural Compressor](https://github.com/intel/neural-compressor
 pip install neural-compressor==1.11.0
 ```
 
-BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. The Keras Model(`bigdl.nano.tf.keras.Model`) and Sequential(`bigdl.nano.tf.keras.Sequential`) provides the APIs for all optimizations you need for inference.
+BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. The Keras Model(`bigdl.nano.tf.keras.Model`) and InferenceOptimizer(`bigdl.nano.tf.keras.InferenceOptimizer`) provides the APIs for all optimizations you need for inference.
 
 ```python
-from bigdl.nano.tf.keras import Model, Sequential
+from bigdl.nano.tf.keras import Model, InferenceOptimizer
 ```
 
 ### Step 1: Loading Data
@@ -71,14 +71,15 @@ model.fit(train_ds, epochs=1)
 ```
 
 ### Step 3: Quantization with Intel Neural Compressor
-[`Model.quantize()`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.Model) return a Keras module with desired precision and accuracy. Taking Resnet50 as an example, you can add quantization as below.
+[`InferenceOptimizer.quantize()`](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/tensorflow.html#bigdl.nano.tf.keras.InferenceOptimizer.quantize) return a Keras module with desired precision and accuracy. Taking Resnet50 as an example, you can add quantization as below.
 
 ```python
 from tensorflow.keras.metrics import CategoricalAccuracy
-q_model = model.quantize(calib_dataset=dataset,
-                         metric=CategoricalAccuracy(),
-                         tuning_strategy='basic'
-                         )
+q_model = InferenceOptimizer.quantize(model,
+                                      calib_dataset=dataset,
+                                      metric=CategoricalAccuracy(),
+                                      tuning_strategy='basic'
+                                      )
 ```
 The quantized model can be called to do inference as normal keras model.
 ```python

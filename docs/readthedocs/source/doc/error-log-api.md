@@ -1,7 +1,7 @@
 BigDL provides error handling api. Please don't use `assert`, `raise`, `throw` to fail the application.
 Use the error handling api instead, it will provide useful message for debugging.
 
-## **Error handling API**
+## Error handling API
 
 **Scala**
 
@@ -69,7 +69,7 @@ invalidOperationError(condition, errMsg, fixMsg=None, cause=None)
 * `cause`: Exception need to throw.
 
 ---
-## **Examples**
+## Examples
 **Scala**
 
 If you want to use:

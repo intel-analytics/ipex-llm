@@ -1,0 +1,129 @@
+# NFS PersistentVolume used by mysql
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: $nfsPath
+    server: $nfsServerIp
+---
+# keywhiz Service exposed to bigdl kms frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: keywhiz-service
+  namespace: bigdl-kms
+  labels:
+    app: keywhiz
+spec:
+  clusterIP: None
+  ports:
+    - name: keywhiz-port
+      port: 4444
+      targetPort: 4444
+  selector:
+    app: keywhiz
+---
+# keywhiz StatefuleSet: encrypted secret storage and secret engine
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: keywhiz
+  namespace: bigdl-kms
+spec:
+  selector:
+    matchLabels:
+      app: keywhiz
+  serviceName: "keywhiz"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: keywhiz
+    spec:
+      containers:
+      - name: mysql
+        image: $mysqlImage
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-persitent-storage
+        env:
+        - name: MYSQL_ALLOW_EMPTY_PASSWORD
+          value: "true"
+        - name: MYSQL_DATABASE
+          value: "keywhizdb_development"
+      - name: keywhiz-server
+        image: $keywhizServerImage
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - "bash /usr/src/app/entry.sh migrate; bash /usr/src/app/entry.sh server"
+  volumeClaimTemplates:
+      - metadata:
+          name: mysql-persitent-storage
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: "nfs"
+          resources:
+            requests:
+              storage: 10Gi
+---
+# bigdl kms frontend Service exposed to bigdl kms client
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-kms-frontend-service
+  namespace: bigdl-kms
+  labels:
+    app: bigdl-kms-frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: bigdl-kms-frontend-port
+      port: 9876
+      targetPort: 9876
+      # nodeport:xxxx if internal port is not targetport
+  selector:
+    app: bigdl-kms-frontend
+  sessionAffinity: ClientIP
+  externalIPs:
+  - $kmsIP
+---
+# bigdl kms frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-kms-frontend
+  namespace: bigdl-kms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-kms-frontend
+  template:
+    metadata:
+      labels:
+        app: bigdl-kms-frontend
+    spec:
+      containers:
+      - name: bigdl-kms-frontend
+        image: $bigdlKMSFrontendImage
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: KEYWHIZ_PORT
+          value: "4444"
+        - name: HTTPS_SECURE_PASSWORD
+          value: "ponies"
+        command:
+        - sh
+        - -c
+        - "bash /usr/src/app/start-https-frontend.sh"

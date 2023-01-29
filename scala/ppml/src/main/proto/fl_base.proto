@@ -37,9 +37,16 @@ message FloatTensor {
 message TensorMap {
     MetaData metaData = 1;
     map<string, FloatTensor> tensorMap = 2;
+    map<string, EncryptedTensor> encryptedTensorMap = 3;
 }
 //
 message MetaData {
     string name = 1;
     int32 version = 2;
+}
+
+message EncryptedTensor {
+    repeated int32 shape = 1;
+    bytes tensor = 2;
+    string dtype = 3;
 }

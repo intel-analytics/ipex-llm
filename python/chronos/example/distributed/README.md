@@ -1,14 +1,9 @@
 # Use Chronos forecasters in a distributed fashion
-LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed fashion to handle extra large dataset and speed up the process (training and data processing) by utilizing a cluster or pseudo-distribution on a single node. The functionality is powered by Project Orca.
+LSTM, TCN, NBeats and Seq2seq users can easily train their forecasters in a distributed fashion to handle extra large dataset and speed up the process (training and data processing) by utilizing a cluster or pseudo-distribution on a single node. The functionality is powered by Project Orca.
 
 ## Prepare the environment
-We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
-```bash
-conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
-conda activate my_env
-pip install --pre --upgrade bigdl-chronos[all]
-```
-Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster.
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
 ## Prepare data
 Users may utilize data from different source (local file, file on HDFS, spark dataframe, etc.)
@@ -17,13 +12,9 @@ we use the publicly available `network traffic` data repository maintained by th
 
 `get_public_dataset` automatically download the specified data set and return the tsdata that can be used directly after preprocessing.
 ```python
-# Just specify the name and path, (e.g. network_traffic)
+# Just specify the name, (e.g. network_traffic)
 name = 'network_traffic'
-path = '~/.chronos/dataset/'
-tsdata_train, _, tsdata_test = get_public_dataset(name, path,
-                                                  redownload=False,
-                                                  with_split=True,
-                                                  test_ratio=0.1)
+tsdata_train, _, tsdata_test = get_public_dataset(name)
 minmax = MinMaxScaler()
 for tsdata in [tsdata_train, tsdata_test]:
     tsdata.gen_dt_feature(one_hot_features=["HOUR", "WEEK"])\

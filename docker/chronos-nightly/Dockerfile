@@ -20,6 +20,23 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
+# model: select from pytorch (default), tensorflow, prophet, arima, ml
+ARG model=pytorch
+
+# auto_tuning: y (for yes) or n (default, for no)
+ARG auto_tuning=n
+
+# hardware: single (default) or cluster
+ARG hardware=single
+
+# inference: install dependencies for inference optimization (e.g. onnxruntime, openvino, ...)
+#            y (for yes) or n (default, for no)
+ARG inference=n
+
+# extra_dep: install extra dependencies (e.g. jupyter, matplotlib, ...)
+#            y (for yes) or n (default, for no)
+ARG extra_dep=n
+
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
 ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
 RUN chmod a+x /opt/install-python-env.sh
@@ -39,9 +56,8 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
 # python
-    /opt/install-python-env.sh
+    /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
 
 RUN echo "source activate chronos" > ~/.bashrc
 RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
 ENV PATH /usr/local/envs/chronos/bin:$PATH
-

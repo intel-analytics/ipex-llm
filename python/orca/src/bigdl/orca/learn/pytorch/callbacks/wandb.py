@@ -60,33 +60,33 @@ class WandbLoggerCallback(Callback):
         self.kwargs = kwargs
         super().__init__()
 
-    def on_epoch_end(self, epoch, logs=None):
+    def after_train_epoch(self, runner):
         """
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
-        @param epoch:  Integer, index of epoch.
-        @param logs: Dict, metric results for this training epoch, and for the validation epoch if
+        :param epoch:  Integer, index of epoch.
+        :param logs: Dict, metric results for this training epoch, and for the validation epoch if
             validation is performed. Validation result keys are prefixed with val_. For training
             epoch, the values of the Model's metrics are returned.
             Example : {'loss': 0.2, 'accuracy': 0.7}
         """
-        self.run.log(logs)
+        self.run.log(runner.epochs_stats)
 
-    def on_train_begin(self):
+    def before_run(self, runner):
         """
         Called at the beginning of training.
         Subclasses should override for any actions to run.
-        @param logs: Dict. Currently, no data is passed to this argument for this method
+        :param logs: Dict. Currently, no data is passed to this argument for this method
           but that may change in the future.
         """
-        is_rank_zero = self._is_rank_zero()
+        is_rank_zero = self._is_rank_zero(runner)
         if "config" in self.kwargs:
             config = self.kwargs.pop("configs")
         else:
             config = {}
         if self.log_config:
-            trainer_config = copy.copy(self.trainer.config)
+            trainer_config = copy.copy(runner.config)
             config.update(trainer_config)
 
         if is_rank_zero:
@@ -100,7 +100,7 @@ class WandbLoggerCallback(Callback):
         else:
             self.run = None
 
-    def on_train_end(self, logs=None):
+    def after_run(self, runner):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
@@ -109,10 +109,7 @@ class WandbLoggerCallback(Callback):
         """
         self.run.finish()
 
-    def set_trainer(self, trainer):
-        self.trainer = trainer
-
-    def _is_rank_zero(self):
-        invalidInputError(self.trainer, "Sanity check failed. Must call set_trainer first!")
-        rank = self.trainer.rank
+    def _is_rank_zero(self, runner):
+        invalidInputError(runner, "Sanity check failed. Runner must not be None!")
+        rank = runner.rank
         return rank == 0

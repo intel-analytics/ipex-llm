@@ -71,6 +71,7 @@ public abstract class Aggregator {
             if (storageHolder.getClientDataSize() >= clientNum) {
                 logger.debug("Server start aggregate: " + flPhase);
                 aggregate(flPhase);
+                logger.debug("Server aggregate finished: " + flPhase);
                 notifyAll();
             } else {
                 wait();

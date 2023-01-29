@@ -1,0 +1,21 @@
+includes:
+  - base.yaml
+targets:
+  # for attestation
+  - target: /bin
+    copy:
+      - files:
+          - /opt/occlum/toolchains/busybox/glibc/busybox
+  - target: /opt/occlum/glibc/lib
+    copy:
+      - files:
+          - /usr/lib/x86_64-linux-gnu/libdcap_quoteprov.so.1
+  - target: /bin
+    createlinks:
+      - src: /opt/python-occlum/bin/python3
+        linkname: python3
+  # python packages
+  - target: /opt
+    copy:
+      - dirs:
+          - /opt/python-occlum

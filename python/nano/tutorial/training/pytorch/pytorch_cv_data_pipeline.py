@@ -17,9 +17,8 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision.models import resnet18
-from torchmetrics import Accuracy
 
-from bigdl.nano.pytorch.torch_nano import TorchNano
+from bigdl.nano.pytorch import TorchNano
 
 
 class MyPytorchModule(nn.Module):

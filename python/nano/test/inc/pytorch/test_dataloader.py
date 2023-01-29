@@ -16,17 +16,19 @@
 
 from unittest import TestCase
 
+import operator
 import pytest
 import torch
 from torch.utils.data import TensorDataset, DataLoader, Dataset
 from torch import nn
 import torchmetrics
 from bigdl.nano.pytorch import Trainer
+from bigdl.nano.utils.util import compare_version
 
 input1 = TensorDataset(torch.ones(10, 3))
 input2 = TensorDataset(torch.ones(10, 4))
-label1 = TensorDataset(torch.ones(10))
-label2 = TensorDataset(torch.ones(10))
+label1 = TensorDataset(torch.ones(10, dtype=torch.int))
+label2 = TensorDataset(torch.ones(10, dtype=torch.int))
 
 
 def illegal_func(data):
@@ -95,18 +97,19 @@ class TestDataloader(TestCase):
         assert isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor) \
             and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
 
-        trainer.quantize(model, calib_dataloader=loader)
+        trainer.quantize(model, calib_data=loader)
 
-    def test_illegal_data_format(self):
-        # illegal dataloader: torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
-        dataset = ChainTensorDataset(input1, input2, label1, label2)
+    def test_legal_data_format(self):
+        # we can now easily support this test!
+        dataset = ChainTensorDataset(input1, input2, label1)
         dataloader = DataLoader(dataset, batch_size=5)
         trainer = Trainer()
         model = ModelWithMultipleInputs()
 
-        with pytest.raises(RuntimeError, match="Dataloader for quantization should yield data *"):
-            trainer.quantize(model, calib_dataloader=dataloader, metric=torchmetrics.F1(10))
+        trainer.quantize(model, calib_data=dataloader, 
+                         metric=torchmetrics.F1Score('multiclass', num_classes=10))
 
+    @pytest.mark.skipif(compare_version("neural_compressor", operator.ge, "2.0"), reason="")
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray
         dataset = TensorDataset(torch.ones(10, 3), torch.ones(10))
@@ -117,11 +120,11 @@ class TestDataloader(TestCase):
         model = trainer.compile(model, loss,
                                 optimizer=torch.optim.SGD(params=model.parameters(), lr=0.01))
         # no tuning
-        trainer.quantize(model, calib_dataloader=loader)
+        trainer.quantize(model, calib_data=loader)
         # tuning
         with pytest.raises(RuntimeError):
-            trainer.quantize(model, calib_dataloader=loader,
-                             metric=torchmetrics.F1(10))
+            trainer.quantize(model, calib_data=loader,
+                             metric=torchmetrics.F1Score('multiclass', num_classes=10))
 
 
 if __name__ == '__main__':

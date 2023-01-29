@@ -11,7 +11,7 @@
 
     > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_pytorch_nano]
 
-    In this guide we'll describe how to use BigDL-Nano to accelerate custom training loop easily with very few changes
+    In this guide we will describe how to use BigDL-Nano to accelerate custom training loop easily with very few changes
 
 ---------------------------
 

@@ -26,7 +26,9 @@ from bigdl.chronos.data import TSDataset
 
 from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
-import tensorflow as tf
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+from .. import op_torch, op_tf2, op_diff_set_all
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -44,6 +46,19 @@ def get_multi_id_ts_df():
                              "extra feature": np.random.randn(sample_num)})
     train_df["datetime"] = pd.date_range('1/1/2019', periods=sample_num)
     train_df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
+    return train_df
+
+
+def get_multi_id_ts_df_interval():
+    sample_num = 100
+    train_df = pd.DataFrame({"value": np.random.randn(sample_num),
+                             "id": np.array(['00']*50 + ['01']*50),
+                             "extra feature": np.random.randn(sample_num)})
+    train_df["datetime"] = pd.date_range('1/1/2019', periods=sample_num)
+    train_df.loc[49, "datetime"] = '1/1/2020'
+    train_df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
+    train_df.loc[99, "datetime"] = '1/1/2020'
+    train_df["datetime"] = train_df["datetime"].astype('datetime64')
     return train_df
 
 
@@ -97,6 +112,46 @@ def get_not_aligned_df():
     return df
 
 
+def get_missing_df():
+    data = np.random.random_sample((50, 5))
+    mask = np.random.random_sample((50, 5))
+    mask[mask >= 0.4] = 2
+    mask[mask < 0.4] = 1
+    mask[mask < 0.2] = 0
+    data[mask == 0] = None
+    data[mask == 1] = np.nan
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df['a'] = np.nan  # make sure column 'a' has are all N/A
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    return df
+
+
+def get_abnormal_df():
+    data = np.random.random_sample((50, 5))
+    # two abnormal data
+    data[ data == data.max()] = 5
+    data[ data == data.min()] = -5
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    return df
+
+
+def get_multi_interval_df():
+    data = np.random.random_sample((50, 5))
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = pd.date_range('1/1/2019', periods=50)
+    # modify datetime to generate a different interval
+    df["datetime"][25:] = pd.date_range('1/1/2020', periods=25)
+    return df
+
+
+def get_non_std_dt_df():
+    data = np.random.random_sample((50, 5))
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df["datetime"] = ["2022-1-1"]*50
+    return df
+
+
 class TestTSDataset(TestCase):
     def setup_method(self, method):
         pass
@@ -104,6 +159,7 @@ class TestTSDataset(TestCase):
     def teardown_method(self, method):
         pass
 
+    @op_torch
     def test_tsdataset_initialization(self):
         df = get_ts_df()
 
@@ -149,6 +205,8 @@ class TestTSDataset(TestCase):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
+    @op_torch
+    @op_diff_set_all
     def test_tsdataset_from_parquet(self):
         df = get_ts_df()
 
@@ -170,11 +228,13 @@ class TestTSDataset(TestCase):
         finally:
             shutil.rmtree(temp)
 
+    @op_torch
     def test_tsdataset_initialization_multiple(self):
         df = get_multi_id_ts_df()
         # legal input
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         assert tsdata._id_list == ['00', '01']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -182,7 +242,8 @@ class TestTSDataset(TestCase):
         assert tsdata._is_pd_datetime
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
-                                       extra_feature_col="extra feature", id_col="id")
+                                       extra_feature_col="extra feature",
+                                       id_col="id", repair=False)
         assert tsdata._id_list == ['00', '01']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -190,7 +251,8 @@ class TestTSDataset(TestCase):
         assert tsdata._is_pd_datetime
 
         tsdata = TSDataset.from_pandas(df.drop(columns=["id"]), dt_col="datetime",
-                                       target_col=["value"], extra_feature_col="extra feature")
+                                       target_col=["value"],
+                                       extra_feature_col="extra feature", repair=False)
         assert tsdata._id_list == ['0']
         assert tsdata.feature_col == ["extra feature"]
         assert tsdata.target_col == ["value"]
@@ -200,20 +262,26 @@ class TestTSDataset(TestCase):
         # illegael input
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
-                                           extra_feature_col="extra feature", id_col=0)
+                                           extra_feature_col="extra feature",
+                                           id_col=0, repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
-                                           extra_feature_col="extra feature", id_col="id")
+                                           extra_feature_col="extra feature",
+                                           id_col="id", repair=False)
 
+    @op_torch
     def test_tsdataset_roll_single_id(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -266,23 +334,23 @@ class TestTSDataset(TestCase):
         lookback = random.randint(1, 20)
 
         tsdata.roll(lookback=lookback, horizon=horizon)
-        x, y = tsdata.to_numpy()
+        x = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
-        assert y is None
 
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
-        x, y = tsdata.to_numpy()
+        x = tsdata.to_numpy()
         assert x.shape == (len(df)-lookback-horizon+1, lookback, 2)
-        assert y is None
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_roll_multi_id(self):
         df = get_multi_id_ts_df()
         horizon = random.randint(1, 10)
         lookback = random.randint(1, 20)
 
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
 
         # test train
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=True)
@@ -312,7 +380,8 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        dt_col="datetime",
                                        target_col=["value", "extra feature"],
-                                       id_col="id")
+                                       id_col="id",
+                                       repair=False)
         tsdata.roll(lookback=lookback, horizon=horizon, id_sensitive=False)
         x, y = tsdata.to_numpy()
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
@@ -320,6 +389,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_roll_order(self):
         df = pd.DataFrame({"datetime": np.array(['1/1/2019', '1/1/2019', '1/2/2019', '1/2/2019']),
                            "value": np.array([1.9, 2.3, 2.4, 2.6]),
@@ -341,6 +411,7 @@ class TestTSDataset(TestCase):
         assert np.array_equal(x, np.array([[[1.9, 2.3, 1, 2, 0, 9]]], dtype=np.float32))
         assert np.array_equal(y, np.array([[[2.4, 2.6]]], dtype=np.float32))
 
+    @op_torch
     def test_tsdata_roll_int_target(self):
         horizon = random.randint(1, 10)
         lookback = random.randint(1, 20)
@@ -352,6 +423,7 @@ class TestTSDataset(TestCase):
         assert y.dtype == np.float32
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdata_roll_timeenc(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
@@ -381,6 +453,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (lookback, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0]
 
+    @op_torch
     def test_tsdata_roll_timeenc_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
@@ -396,6 +469,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (15, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
 
+    @op_torch
     def test_tsdata_roll_timeenc_to_torch_data_loader(self):
         horizon = random.randint(1, 9)
         lookback = random.randint(10, 20)
@@ -428,6 +502,7 @@ class TestTSDataset(TestCase):
         # white box check
         assert dataloader.dataset.data_stamp_arr.shape[0] == dataloader.dataset.arr.shape[0]
 
+    @op_torch
     def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
         horizon = 10
         lookback = random.randint(10, 20)
@@ -443,6 +518,7 @@ class TestTSDataset(TestCase):
         assert y_time.shape[1:] == (15, 3)
         assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
 
+    @op_torch
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
         df_multi_id = get_multi_id_ts_df()
@@ -509,6 +585,7 @@ class TestTSDataset(TestCase):
                 assert tuple(y_batch.size()) == (batch_size, horizon, 2)
                 break
 
+    @op_torch
     def test_tsdataset_to_torch_loader(self):
         df = get_ts_df()
         horizon = random.randint(1, 10)
@@ -531,6 +608,7 @@ class TestTSDataset(TestCase):
             assert tuple(y_batch.size()) == (batch_size, horizon, 1)
             break
 
+    @op_torch
     def test_tsdataset_to_torch_loader_lessthansample(self):
         lookback = 96
         horizon = 48
@@ -540,7 +618,7 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata.to_torch_data_loader(lookback=lookback, horizon=horizon)
 
-
+    @op_torch
     def test_tsdata_multi_unscale_numpy_torch_load(self):
         lookback = random.randint(1, 10)
         horizon = random.randint(1, 20)
@@ -588,7 +666,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_tsdata_to_tf_dataset(self):
         df = get_ts_df()
         batch_size, lookback, horizon = 32, 10, 1
@@ -599,27 +677,32 @@ class TestTSDataset(TestCase):
         assert val[0].numpy().shape == (batch_size, lookback, 2)
         assert val[1].numpy().shape == (batch_size, horizon, 1)
 
+    @op_torch
     def test_tsdataset_imputation(self):
         for val in ["last", "const", "linear"]:
             df = get_ugly_ts_df()
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
-                                           extra_feature_col=["a", "b", "c", "d"], id_col="id")
+                                           extra_feature_col=["a", "b", "c", "d"],
+                                           id_col="id", repair=False)
             tsdata.impute(mode=val)
             assert tsdata.to_pandas().isna().sum().sum() == 0
             assert len(tsdata.to_pandas()) == 100
             tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_deduplicate(self):
         df = get_ugly_ts_df()
         for _ in range(20):
             df.loc[len(df)] = df.loc[np.random.randint(0, 99)]
         assert len(df) == 120
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="e",
-                                       extra_feature_col=["a", "b", "c", "d"], id_col="id")
+                                       extra_feature_col=["a", "b", "c", "d"],
+                                       id_col="id", repair=False)
         tsdata.deduplicate()
         assert len(tsdata.to_pandas()) == 100
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_datetime_feature(self):
         df = get_ts_df()
         # interval = day
@@ -684,6 +767,7 @@ class TestTSDataset(TestCase):
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_datetime_feature_multiple(self):
         df = get_multi_id_ts_df()
         # interval = day
@@ -748,6 +832,7 @@ class TestTSDataset(TestCase):
                                            'extra feature'}
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_scale_unscale(self):
         df = get_ts_df()
         df_test = get_ts_df()
@@ -776,6 +861,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_unscale_numpy(self):
         df = get_multi_id_ts_df()
         df_test = get_multi_id_ts_df()
@@ -820,6 +906,7 @@ class TestTSDataset(TestCase):
 
             tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_resample(self):
         df = get_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -851,15 +938,18 @@ class TestTSDataset(TestCase):
         assert set(before_sampling) == set(tsdata.df.columns)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_resample_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.resample('2D', df["datetime"][0], df["datetime"][df.shape[0]-1])
         assert len(tsdata.to_pandas()) == df.shape[0] // 2
         tsdata._check_basic_invariants()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.resample('2D')
         assert len(tsdata.to_pandas()) == 50
         tsdata._check_basic_invariants()
@@ -871,7 +961,8 @@ class TestTSDataset(TestCase):
         df["datetime"] = pd.date_range('1/1/2019', periods=100)
         df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         with pytest.raises(RuntimeError):
             tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
         tsdata._check_basic_invariants()
@@ -881,12 +972,14 @@ class TestTSDataset(TestCase):
         df.value = df.value.astype(np.object)
         df['extra feature'] = df['extra feature'].astype(np.object)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         before_sampling = tsdata.df.columns
         tsdata.resample('2S', df.datetime[0], df.datetime[df.shape[0]-1])
         assert set(before_sampling) == set(tsdata.df.columns)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_tsdataset_split(self):
         df = get_ts_df()
         # only train and test
@@ -917,12 +1010,14 @@ class TestTSDataset(TestCase):
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
 
+    @op_torch
     def test_tsdataset_split_multiple(self):
         df = get_multi_id_ts_df()
         tsdata_train, tsdata_valid, tsdata_test =\
             TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                   extra_feature_col=["extra feature"], id_col="id",
-                                  with_split=True, val_ratio=0.1, test_ratio=0.1)
+                                  with_split=True, val_ratio=0.1, test_ratio=0.1,
+                                  repair=False)
 
         assert set(np.unique(tsdata_train.to_pandas()["id"])) == {"00", "01"}
         assert set(np.unique(tsdata_valid.to_pandas()["id"])) == {"00", "01"}
@@ -947,6 +1042,8 @@ class TestTSDataset(TestCase):
         assert tsdata_valid.target_col[0] != "new value"
         assert tsdata_test.target_col[0] != "new value"
 
+    @op_torch
+    @op_diff_set_all
     def test_tsdataset_global_feature(self):
         for val in ["minimal"]:
             df = get_ts_df()
@@ -955,6 +1052,8 @@ class TestTSDataset(TestCase):
             tsdata.gen_global_feature(settings=val)
             tsdata._check_basic_invariants()
 
+    @op_torch
+    @op_diff_set_all
     def test_tsdataset_global_feature_multiple(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
@@ -966,16 +1065,20 @@ class TestTSDataset(TestCase):
         tsdata.gen_global_feature(settings="minimal", n_jobs=2)
         tsdata._check_basic_invariants()
 
+    @op_torch
+    @op_diff_set_all
     def test_tsdataset_rolling_feature_multiple(self):
         df = get_multi_id_ts_df()
         horizon = random.randint(2, 10)
         lookback = random.randint(2, 20)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.gen_rolling_feature(settings="minimal", window_size=lookback)
         tsdata._check_basic_invariants()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
-                                       extra_feature_col=["extra feature"], id_col="id")
+                                       extra_feature_col=["extra feature"],
+                                       id_col="id", repair=False)
         tsdata.gen_rolling_feature(settings="minimal", window_size=lookback, n_jobs=2)
         tsdata._check_basic_invariants()
 
@@ -993,6 +1096,7 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_check_scale_sequence(self):
         df = get_multi_id_ts_df()
         # with split is True.
@@ -1016,6 +1120,7 @@ class TestTSDataset(TestCase):
         #     tsdata.gen_global_feature(settings="minimal")\
         #           .gen_rolling_feature(settings="minimal", window_size=5)
 
+    @op_torch
     def test_non_pd_datetime(self):
         df = get_non_dt()
         tsdata = TSDataset.from_pandas(df, dt_col="datetime",
@@ -1032,16 +1137,19 @@ class TestTSDataset(TestCase):
 
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_not_aligned(self):
         df = get_not_aligned_df()
         tsdata = TSDataset.from_pandas(df, target_col="value",
                                        dt_col="datetime",
                                        extra_feature_col="extra feature",
-                                       id_col="id")
+                                       id_col="id",
+                                       repair=False)
         with pytest.raises(RuntimeError):
             tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
         tsdata._check_basic_invariants()
 
+    @op_torch
     def test_dt_sorted(self):
         df = pd.DataFrame({"datetime": np.array(['20000101', '20000102', '20000102', '20000101']),
                            "value": np.array([1.9, 2.3, 2.4, 2.6]),
@@ -1052,6 +1160,8 @@ class TestTSDataset(TestCase):
         with pytest.raises(RuntimeError):
             tsdata._check_basic_invariants(strict_check=True)
 
+    @op_torch
+    @op_diff_set_all
     def test_cycle_length_est(self):
         df = get_multi_id_ts_df()
         tsdata = TSDataset.from_pandas(df,
@@ -1090,5 +1200,412 @@ class TestTSDataset(TestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
+        # not meaningful, but no error should be raised.
+        tsdata.get_cycle_length(aggregate='min', top_k=3)
+
+    @op_torch
+    def test_lookback_equal_to_one(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = 1
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+    @op_torch
+    def test_is_predict_for_roll_and_numpy(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True).to_numpy()
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        data = tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True).to_numpy()
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+    @op_torch
+    def test_is_predict_for_roll_and_to_loader(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        tsdata.roll(lookback=lookback, horizon=horizon, is_predict=True)
+        loader = tsdata.to_torch_data_loader(batch_size=32,
+                                             roll=False,)
+        data = next(iter(loader))
+        assert len(data) == 1
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        tsdata.roll(lookback=lookback, horizon=horizon, time_enc=True, is_predict=True)
+        loader = tsdata.to_torch_data_loader(batch_size=32,
+                                             roll=False)
+        data = next(iter(loader))
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+
+    @op_torch
+    def test_is_predict_for_to_loader(self):
+        df = get_ts_df()
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for BaseForecaster
+        loader = tsdata.to_torch_data_loader(lookback=lookback,
+                                             horizon=horizon,
+                                             roll=True,
+                                             is_predict=True)
+        data = next(iter(loader))
+        assert not isinstance(data, (list, tuple))
+
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+
+        # for AutoformerForecaster
+        loader = tsdata.to_torch_data_loader(lookback=lookback,
+                                             horizon=horizon,
+                                             roll=True,
+                                             time_enc=True,
+                                             is_predict=True)
+        data = next(iter(loader))
+        assert len(data) == 4
+        assert data[1].shape[1] == max(lookback // 2, 1)
+        assert data[3].shape[1] == max(lookback // 2, 1) + horizon
+
+    @op_torch
+    def test_tsdataset_missing_check_and_repair(self):
+        df = get_missing_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        missing_value = tsdata.df.isna().sum().sum()
+        assert missing_value == 0
+
+    @op_torch
+    def test_tsdataset_non_std_dt_check_and_repair(self):
+        df = get_non_std_dt_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        _is_pd_datetime = pd.api.types.is_datetime64_any_dtype(tsdata.df["datetime"].dtypes)
+        assert _is_pd_datetime is True
+
+    @op_torch
+    def test_tsdataset_interval_check_and_repair(self):
+        df = get_multi_interval_df()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['a', 'b', 'c', 'd', 'e'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        interval = dt_col.shift(-1) - dt_col
+        unique_intervals = interval[:-1].unique()
+        assert len(unique_intervals) == 1
+
+    @op_torch
+    def test_tsdataset_interval_repair_for_single_and_multi_id(self):
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366
+        df = get_multi_id_ts_df_interval()
+        tsdata = TSDataset.from_pandas(df,
+                                       id_col="id",
+                                       dt_col="datetime",
+                                       target_col=['value'],
+                                       extra_feature_col=None,
+                                       repair=True)
+        dt_col = tsdata.df["datetime"]
+        assert len(dt_col) == 366*2
+
+    @op_torch
+    def test_tsdataset_interval_check_and_repair_for_multi_id(self):
+        df_multi_id = get_multi_id_ts_df()
+        horizon = 10
+        lookback = 20
+        batch_size = 32
+
+        tsdata = TSDataset.from_pandas(df_multi_id, dt_col="datetime", target_col="value",
+                                        extra_feature_col=["extra feature"], id_col="id",
+                                        repair=True)
+
+        # train
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=horizon)
+        for x_batch, y_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 2)
+            assert tuple(y_batch.size()) == (batch_size, horizon, 1)
+            break
+
+        # test
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=0)
+        for x_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 2)
+            break
+
+        # specify feature_col
+        torch_loader = tsdata.to_torch_data_loader(batch_size=batch_size,
+                                                    lookback=lookback,
+                                                    horizon=horizon,
+                                                    feature_col=[])
+        for x_batch, y_batch in torch_loader:
+            assert tuple(x_batch.size()) == (batch_size, lookback, 1)
+            assert tuple(y_batch.size()) == (batch_size, horizon, 1)
+            break
+
+        # Non-subset relationship
+        with pytest.raises(ValueError):
+            tsdata.to_torch_data_loader(batch_size=batch_size,
+                                        lookback=lookback,
+                                        horizon=horizon,
+                                        target_col=['value', 'extra feature'])
+
+
+    @op_torch
+    def test_tsdataset_abnormal_check_and_repair(self):
+        from bigdl.chronos.data.utils.quality_inspection import _abnormal_value_check
+        for val in ['absolute', 'relative']:
+            df = get_abnormal_df()
+            tsdata = TSDataset.from_pandas(df, dt_col="datetime",
+                                           target_col=['a', 'b', 'c', 'd', 'e'],
+                                           extra_feature_col=None,
+                                           repair=False)
+            flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+            assert flag == False
+
+            if val is 'relative':
+                tsdata = tsdata.repair_abnormal_data()
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
+            else:
+                tsdata = tsdata.repair_abnormal_data(mode=val, threshold=(-1, 2))
+                flag = _abnormal_value_check(tsdata.df, tsdata.dt_col, threshold=3)
+                assert flag == True
+
+    @op_torch
+    def test_from_prometheus(self):
+        '''
+        The selected query str is just for getting data from Prometheus server.
+        '''
+        import time
+        endtime = time.time()
+        starttime = endtime - 1000
+        prometheus_url = os.getenv("PROMETHEUS_URL")
+        tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                           query='prometheus_ready',
+                                           starttime=starttime,
+                                           endtime=endtime,
+                                           step="1s")
+        assert tsdata.to_pandas().shape[0] == 1001
+        assert tsdata.to_pandas().shape[1] == 3
+        assert tsdata._id_list == ['0']
+        assert tsdata.target_col == ['prometheus_ready'+
+                                     '{instance="localhost:9090",job="prometheus"}']
+        assert tsdata.dt_col == "datetime"
+
+        tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                           query=['prometheus_ready',
+                                                  'process_cpu_seconds_total',
+                                                  'process_virtual_memory_bytes',
+                                                  'process_virtual_memory_max_bytes'],
+                                           starttime=starttime,
+                                           endtime=endtime,
+                                           step="1s",
+                                           target_col=['process_cpu_seconds_total{instance'+
+                                                       '="localhost:9090",job="prometheus"}',
+                                                       'process_virtual_memory_bytes{instance'+
+                                                       '="localhost:9090",job="prometheus"}'],
+                                           id_col='prometheus_ready{instance'+
+                                                  '="localhost:9090",job="prometheus"}',
+                                           extra_feature_col='process_virtual_memory_max_bytes'+
+                                                             '{instance="localhost:9090",'+
+                                                             'job="prometheus"}')
+        assert tsdata.to_pandas().shape[0] == 1001
+        assert tsdata.to_pandas().shape[1] == 5
+        assert tsdata._id_list == [1.0]
+        assert tsdata.target_col == ['process_cpu_seconds_total{instance'+
+                                     '="localhost:9090",job="prometheus"}',
+                                     'process_virtual_memory_bytes{instance'+
+                                     '="localhost:9090",job="prometheus"}']
+        assert tsdata.feature_col == ['process_virtual_memory_max_bytes'+
+                                      '{instance="localhost:9090",job="prometheus"}']
+        assert tsdata.dt_col == "datetime"
+
+        # Check the validity of `target_col/id_col/extra_feature_col`
         with pytest.raises(RuntimeError):
-            tsdata.get_cycle_length(aggregate='min', top_k=3)
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               target_col='process_cpu_seconds_total')
+
+        with pytest.raises(RuntimeError):
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               id_col='process_cpu_seconds_total')
+
+        with pytest.raises(RuntimeError):
+            tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
+                                               query='prometheus_ready',
+                                               starttime=starttime,
+                                               endtime=endtime,
+                                               step="1s",
+                                               extra_feature_col='process_cpu_seconds_total')
+
+    @op_torch
+    def test_export_jit(self):
+        from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
+        import torch
+
+        temp_dir = tempfile.mkdtemp()
+        csv_path = os.path.join(temp_dir, "inference_data.csv")
+        df_single_id = get_ts_df()
+        sample_num = len(df_single_id)
+        df_single_id["id"] = np.array([0] * sample_num)
+        df_multi_id = get_multi_id_ts_df()
+        df_multi_id["id"] = np.array([0]*50 + [1]*50)
+
+        lookback = random.randint(1, 20)
+        horizon = random.randint(1, 10)
+
+        for df in [df_single_id, df_multi_id]:
+            df.to_csv(csv_path, index=False)
+            # drop_dt_col=True
+            for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
+                tsdata = TSDataset.from_pandas(df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
+
+                tsdata.scale(scaler, fit=True)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                tsdata.export_jit(path_dir=temp_dir, drop_dt_col=True)
+
+                # deployment
+                deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
+                tsdata = TSDataset.from_pandas(deployment_df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=True)
+                # drop datetime col since it can't be converted to Pytorch tensor
+                tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
+                preprocess_path = os.path.join(temp_dir, "tsdata_preprocessing.pt")
+                preprocess_module = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess_module.forward(input_tensor)
+
+                tsdata.scale(scaler=scaler, fit=False)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
+
+                postprocess_path = os.path.join(temp_dir, "tsdata_postprocessing.pt")
+                postprocess_module = torch.jit.load(postprocess_path)
+                postprocess_output = postprocess_module.forward(preprocess_output)
+
+                unscale_data = tsdata.unscale_numpy(tsdata.to_numpy())
+                assert_array_almost_equal(unscale_data, postprocess_output.numpy())
+
+            # drop_dt_col=False
+            for scaler in [StandardScaler(), MaxAbsScaler(), MinMaxScaler(), RobustScaler()]:
+                tsdata = TSDataset.from_pandas(df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=False)
+
+                tsdata.scale(scaler, fit=True)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                preprocess_module, postprocess_module = tsdata.export_jit(drop_dt_col=False)
+                preprocess_path = os.path.join(temp_dir, "preprocess_module.pt")
+                torch.jit.save(preprocess_module, preprocess_path)
+                postprocess_path = os.path.join(temp_dir, "postprocess_module.pt")
+                torch.jit.save(postprocess_module, postprocess_path)
+
+                # deployment
+                deployment_df = pd.read_csv(csv_path, parse_dates=["datetime"])
+                tsdata = TSDataset.from_pandas(deployment_df,
+                                               dt_col="datetime",
+                                               target_col="value",
+                                               id_col="id",
+                                               extra_feature_col="extra feature",
+                                               repair=False,
+                                               deploy_mode=True)
+                # give datetime an integer value to convert the dataframe to Pytorch tensor
+                # since datetime col will not be used in scale and roll, so we can give it
+                # a meaningless value
+                tsdata.df["datetime"] = np.array([1000]*len(tsdata.df))
+                input_tensor = torch.from_numpy(tsdata.df.values).type(torch.float64)
+                preprocess = torch.jit.load(preprocess_path)
+                preprocess_output = preprocess.forward(input_tensor)
+
+                tsdata.scale(scaler=scaler, fit=False)\
+                      .roll(lookback=lookback, horizon=horizon)
+
+                assert_array_almost_equal(tsdata.to_numpy(), preprocess_output.numpy())
+
+                postprocess_module = torch.jit.load(postprocess_path)
+                postprocess_output = postprocess_module.forward(preprocess_output)
+
+                unscale_data = tsdata.unscale_numpy(tsdata.to_numpy())
+                assert_array_almost_equal(unscale_data, postprocess_output.numpy())
+
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)

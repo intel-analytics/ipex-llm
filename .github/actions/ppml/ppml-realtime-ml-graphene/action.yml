@@ -1,0 +1,116 @@
+name: 'PPML RealTime ML Graphene'
+description: 'PPML RealTime ML Graphene'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        export LOCAL_IP=172.168.0.205
+        export CONTAINER_NAME=flink-graphene-jenkins
+
+        export ENCLAVE_KEY_PATH=/home/icx/glorysdj/enclave-key.pem
+        export DATA_PATH=/home/icx/glorysdj/data
+        export KEYS_PATH=/home/icx/glorysdj/keys
+        export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
+        export SGX_MEM_SIZE=32GB
+        export HTTP_PROXY_HOST=child-prc.intel.com
+        export HTTP_PROXY_PORT=912
+        export HTTPS_PROXY_HOST=child-prc.intel.com
+        export HTTPS_PROXY_PORT=912
+        export SGXMODE=sgx
+
+        echo "Install SGX..."
+        docker pull ${IMAGE}
+        echo "Check whether ports has been used:"
+        echo "Check redis port 6379:"
+        #netstat -anp |grep 6379
+        echo ""
+        echo "check job manager port 6123:"
+        #netstat -anp |grep 6123
+        echo ""
+        echo "check task manager port 6125:"
+        #netstat -anp |grep 6125
+        echo ""
+        echo "If there is conflict above, please refer to kill command."
+        echo ""
+        echo "Check whether there is remaining container:"
+        export container_check=$(docker ps|grep ${CONTAINER_NAME})
+        if [ "$container_check" != "" ];then
+          docker stop /${CONTAINER_NAME}
+          docker rm /${CONTAINER_NAME}
+        fi
+        
+        echo ""
+        docker run -itd \
+            --privileged \
+            --net=host \
+            --cpuset-cpus="0-30" \
+            --oom-kill-disable \
+            --device=/dev/gsgx \
+            --device=/dev/sgx/enclave \
+            --device=/dev/sgx/provision \
+            -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+            -v $ENCLAVE_KEY_PATH:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
+            -v $KEYS_PATH:/ppml/trusted-realtime-ml/redis/work/keys \
+            -v $KEYS_PATH:/ppml/trusted-realtime-ml/java/work/keys \
+            -v $SECURE_PASSWORD_PATH:/ppml/trusted-realtime-ml/redis/work/password \
+            -v $SECURE_PASSWORD_PATH:/ppml/trusted-realtime-ml/java/work/password \
+            --name=${CONTAINER_NAME} \
+            -e LOCAL_IP=$LOCAL_IP \
+            -e CORE_NUM=30 \
+            $IMAGE \
+            bash  -c "export LOCAL_IP=172.168.0.208 && \
+            export FLINK_JOB_MANAGER_IP=$LOCAL_IP && \
+            export FINK_TASK_MANAGER_IP=$LOCAL_IP && \
+            export SGX_MODE=$SGXMODE && \
+            cd /ppml/trusted-realtime-ml/ && \
+            ./start-all.sh && \
+            tail -f /dev/null"
+
+        echo "Run Started."
+        echo "wait 300s"
+        sleep 300
+
+
+        echo "## Checking redis"
+        docker exec -i $CONTAINER_NAME \
+            bash -c "bash /ppml/trusted-realtime-ml/check-status.sh redis"
+        echo "## Checking flinkjm"
+        docker exec -i $CONTAINER_NAME \
+            bash -c "bash /ppml/trusted-realtime-ml/check-status.sh flinkjm"
+        echo "## Checking flinktm"
+        docker exec -i $CONTAINER_NAME \
+            bash -c "bash /ppml/trusted-realtime-ml/check-status.sh flinktm"
+        echo "## Checking frontend"
+        docker exec -i $CONTAINER_NAME \
+            bash -c "bash /ppml/trusted-realtime-ml/check-status.sh frontend"
+        echo "## Checking serving"
+        docker exec -i $CONTAINER_NAME \
+            bash -c "bash /ppml/trusted-realtime-ml/check-status.sh serving"
+        echo "## Checked."
+
+        exit 0           
+
+            
+    

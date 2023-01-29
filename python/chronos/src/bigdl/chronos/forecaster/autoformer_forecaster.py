@@ -18,6 +18,7 @@ import torch
 import numpy as np
 from pandas import Timedelta
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.forecaster.utils import read_csv, delete_folder
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
@@ -32,6 +33,8 @@ from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModu
 
 from .utils_hpo import _format_metric_str
 import warnings
+from tempfile import TemporaryDirectory
+import os
 
 
 class AutoformerForecaster(Forecaster):
@@ -104,6 +107,8 @@ class AutoformerForecaster(Forecaster):
         :param kwargs: other hyperparameter please refer to
                https://github.com/zhouhaoyi/Informer2020#usage
         """
+        invalidInputError(past_seq_len > 1,
+                          "past_seq_len of Autoformer must exceeds one.")
 
         # config setting
         self.data_config = {
@@ -295,16 +300,20 @@ class AutoformerForecaster(Forecaster):
 
         if self.trainer.hposearcher.objective.mo_hpo:
             return self.internal
-        else:
+        # else:
             # reset train and validation datasets
-            self.trainer.reset_train_val_dataloaders(self.internal)
+            # self.trainer.reset_train_val_dataloaders(self.internal)
 
     def search_summary(self):
+        """
+        Return search summary of HPO.
+        """
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    def fit(self, data, epochs=1, batch_size=32, use_trial_id=None):
+    def fit(self, data, validation_data=None, epochs=1, batch_size=32, validation_mode='output',
+            earlystop_patience=1, use_trial_id=None):
         """
         Fit(Train) the forecaster.
 
@@ -316,10 +325,37 @@ class AutoformerForecaster(Forecaster):
                     be sure to set label_len > 0 and time_enc = True
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
 
+        :param validation_data: Validation sample for validation loop. Defaults to 'None'.
+               If you do not input data for 'validation_data', the validation_step will be skipped.
+               The validation_data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 2. pytorch dataloader: generate from `TSDataset.to_torch_data_loader`,
+                    be sure to set label_len > 0 and time_enc = True
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
+
         :param epochs: Number of epochs you want to train. The value defaults to 1.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
                if you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.
+        :param validation_mode:  A str represent the operation mode while having 'validation_data'.
+               Defaults to 'output'. The validation_mode includes the following types:
+
+               | 1. output:
+               | If you choose 'output' for validation_mode, it will return a dict that records the
+               | average validation loss of each epoch.
+               |
+               | 2. earlystop:
+               | Monitor the val_loss and stop training when it stops improving.
+               |
+               | 3. best_epoch:
+               | Monitor the val_loss. And load the checkpoint of the epoch with the smallest
+               | val_loss after the training.
+
+        :param earlystop_patience: Number of checks with no improvement after which training will
+               be stopped. It takes effect when 'validation_mode' is 'earlystop'. Under the default
+               configuration, one check happens after every training epoch.
         :param use_trail_id: choose a internal according to trial_id, which is used only
                in multi-objective search.
         """
@@ -349,12 +385,7 @@ class AutoformerForecaster(Forecaster):
                                              shuffle=True)
 
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-        # Trainer init and fitting
-        if not self.use_hpo:
-            self.trainer = Trainer(logger=False, max_epochs=epochs,
-                                   checkpoint_callback=self.checkpoint_callback, num_processes=1,
-                                   use_ipex=self.use_ipex, distributed_backend="spawn")
-        else:
+        if self.use_hpo is True:
             # check whether the user called the tune function
             invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
                                   "should call .tune() before .fit()")
@@ -368,8 +399,74 @@ class AutoformerForecaster(Forecaster):
                 trial = self.trainer.hposearcher.study.trials[use_trial_id]
                 self.internal = self.tune_internal._model_build(trial)
 
-        self.trainer.fit(self.internal, data)
-        self.fitted = True
+        with TemporaryDirectory() as forecaster_log_dir:
+            with TemporaryDirectory() as validation_ckpt_dir:
+                from pytorch_lightning.loggers import CSVLogger
+                logger = False if validation_data is None else CSVLogger(
+                    save_dir=forecaster_log_dir,
+                    flush_logs_every_n_steps=10,
+                    name="forecaster_tmp_log")
+                from pytorch_lightning.callbacks import EarlyStopping
+                early_stopping = EarlyStopping('val_loss', patience=earlystop_patience)
+                from pytorch_lightning.callbacks import ModelCheckpoint
+                checkpoint_callback = ModelCheckpoint(monitor="val_loss",
+                                                      dirpath=validation_ckpt_dir,
+                                                      filename='best',
+                                                      save_on_train_epoch_end=True)
+                if validation_mode == 'earlystop':
+                    callbacks = [early_stopping]
+                elif validation_mode == 'best_epoch':
+                    callbacks = [checkpoint_callback]
+                else:
+                    callbacks = None
+
+                # Trainer init
+                self.trainer = Trainer(logger=logger, max_epochs=epochs, callbacks=callbacks,
+                                       enable_checkpointing=self.checkpoint_callback,
+                                       num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                       log_every_n_steps=10)
+
+                # fitting
+                if validation_data is None:
+                    self.trainer.fit(self.internal, data)
+                    self.fitted = True
+                else:
+                    if isinstance(validation_data, tuple):
+                        validation_data = DataLoader(
+                            TensorDataset(torch.from_numpy(validation_data[0]),
+                                          torch.from_numpy(validation_data[1]),
+                                          torch.from_numpy(validation_data[2]),
+                                          torch.from_numpy(validation_data[3])),
+                            batch_size=batch_size,
+                            shuffle=False)
+                    # transform a TSDataset instance to dataloader
+                    if isinstance(validation_data, TSDataset):
+                        _rolled = validation_data.numpy_x is None
+                        validation_data = validation_data.to_torch_data_loader(
+                            batch_size=batch_size,
+                            roll=_rolled,
+                            lookback=self.data_config['past_seq_len'],
+                            horizon=self.data_config['future_seq_len'],
+                            label_len=self.data_config['label_len'],
+                            time_enc=True,
+                            feature_col=validation_data.roll_feature,
+                            target_col=validation_data.roll_target,
+                            shuffle=False)
+                    self.trainer.fit(self.internal, data, validation_data)
+                    self.fitted = True
+                    fit_csv = os.path.join(forecaster_log_dir,
+                                           "forecaster_tmp_log/version_0/metrics.csv")
+                    best_path = os.path.join(validation_ckpt_dir, "best.ckpt")
+                    fit_out = read_csv(fit_csv, loss_name='val_loss')
+                    if validation_mode == 'best_epoch':
+                        self.load(best_path)
+                    # modify logger attr in trainer, otherwise predict will report error
+                    self.trainer._logger_connector.on_trainer_init(
+                        False,
+                        self.trainer.flush_logs_every_n_steps,
+                        self.trainer.log_every_n_steps,
+                        self.trainer.move_metrics_to_cpu)
+                    return fit_out
 
     def predict(self, data, batch_size=32):
         """
@@ -496,7 +593,6 @@ class AutoformerForecaster(Forecaster):
                               "You must call fit or restore first before calling predict_interval!")
 
         # step1, according to validation dataset, calculate inherent noise
-        # which should be done during fit
         if not hasattr(self, "data_noise"):
             invalidInputError(validation_data is not None,
                               "When call predict_interval for the first time, you must pass in "
@@ -529,7 +625,7 @@ class AutoformerForecaster(Forecaster):
             self.data_noise = Evaluator.evaluate(["mse"], target,
                                                  val_yhat, aggregate=None)[0]  # 2d array
 
-        # step3: calculate model uncertainty based MC Dropout
+        # step2: calculate model uncertainty based MC Dropout
         def apply_dropout(m):
             if type(m) == torch.nn.Dropout:
                 m.train()
@@ -581,6 +677,14 @@ class AutoformerForecaster(Forecaster):
         std_deviation = np.sqrt(self.data_noise + model_bias)
 
         return y_hat_mean, std_deviation
+
+    def get_model(self):
+        """
+        Returns the learned PyTorch Lightning model.
+
+        :return: a pytorch lightning model instance
+        """
+        return self.internal
 
     def load(self, checkpoint_file):
         """
@@ -665,7 +769,7 @@ class AutoformerForecaster(Forecaster):
                               "the history time step and output time step.")
 
         if label_len is None:
-            label_len = past_seq_len//2
+            label_len = max(past_seq_len//2, 1)
 
         invalidInputError(tsdataset.label_len == label_len or tsdataset.label_len is None,
                           f"Expected label_len to be {tsdataset.label_len}, "

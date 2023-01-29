@@ -19,10 +19,12 @@ import pandas as pd
 import tempfile
 import os
 
-from bigdl.chronos.forecaster.autoformer_forecaster import AutoformerForecaster
+from bigdl.chronos.utils import LazyImport
+AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 import pytest
+from .. import op_torch, op_automl
 
 
 def get_ts_df():
@@ -45,19 +47,20 @@ def create_data(loader=False, extra_feature=False):
     tsdata_train, tsdata_val, tsdata_test =\
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target, extra_feature_col=extra,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
-    if loader:
-        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5,
+    if loader is True:
+        train_loader = tsdata_train.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                         time_enc=True, label_len=12)
-        val_loader = tsdata_val.to_torch_data_loader(lookback=24, horizon=5,
+        val_loader = tsdata_val.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                     time_enc=True, label_len=12, shuffle=False)
-        test_loader = tsdata_test.to_torch_data_loader(lookback=24, horizon=5,
+        test_loader = tsdata_test.to_torch_data_loader(lookback=24, horizon=5, roll=True,
                                                     time_enc=True, label_len=12, shuffle=False,
                                                     is_predict=True)
         return train_loader, val_loader, test_loader
     else:
         train_data = tsdata_train.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
         val_data = tsdata_val.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
-        test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
+        test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12,
+                                     is_predict=True).to_numpy()
         train_data = tuple(map(lambda x: x.astype(np.float32), train_data))
         val_data = tuple(map(lambda x: x.astype(np.float32), val_data))
         test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
@@ -94,7 +97,7 @@ def create_tsdataset(val_ratio=0):
                         label_len=12)
         return train, val, test
 
-
+@op_torch
 class TestChronosModelAutoformerForecaster(TestCase):
 
     def setUp(self):
@@ -139,6 +142,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         evaluate = forecaster.evaluate(val)
         pred = forecaster.predict(test)
 
+    @op_automl
     def test_autoformer_forecaster_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -155,6 +159,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.fit(train_data, epochs=3, batch_size=32)
         evaluate = forecaster.evaluate(val_data)
 
+    @op_automl
     def test_autoformer_forecaster_fit_without_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -173,6 +178,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
         assert error_msg == "There is no trainer, and you " \
                             "should call .tune() before .fit()"
 
+    @op_automl
     def test_autoformer_forecaster_multi_objective_tune(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, test_data = create_data(loader=False)
@@ -227,6 +233,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
             evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
 
+    @op_automl
     def test_autoformer_forecaster_tune_save_load(self):
         import bigdl.nano.automl.hpo.space as space
         train_data, val_data, _ = create_data(loader=False)
@@ -291,8 +298,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s',
-                                          seed=0,
-                                          moving_avg=20) # even
+                                          seed=0)
         forecaster.fit(train_loader, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_loader,
@@ -309,8 +315,7 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                           output_feature_num=2,
                                           label_len=12,
                                           freq='s',
-                                          seed=0,
-                                          moving_avg=20) # even
+                                          seed=0)
         forecaster.fit(train_data, epochs=3, batch_size=32)
         # only the first time needs val_data
         y_pred, std = forecaster.predict_interval(data=test_data,
@@ -359,3 +364,100 @@ class TestChronosModelAutoformerForecaster(TestCase):
                                                          past_seq_len=24,
                                                          future_seq_len=5)
         forecaster.fit(train_loader, epochs=1, batch_size=32)
+
+    def test_autoformer_forecaster_lookback_equals_to_one(self):
+        # from tsdataset
+        df = get_ts_df()
+        target = ["value", "extra feature"]
+        tsdata_train, tsdata_val, tsdata_test =\
+            TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
+                                with_split=True, test_ratio=0.1, val_ratio=0.1)
+        with pytest.raises(RuntimeError):
+            forecaster = AutoformerForecaster.from_tsdataset(tsdata_train,
+                                                             past_seq_len=1,
+                                                             future_seq_len=5)
+
+        # normal definition
+        with pytest.raises(RuntimeError):
+            forecaster = AutoformerForecaster(past_seq_len=1,
+                                            future_seq_len=5,
+                                            input_feature_num=2,
+                                            output_feature_num=2,
+                                            label_len=12,
+                                            freq='s')
+
+    def test_autoformer_forecaster_fit_val(self):
+        train_data, val_data, _ = create_data()
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_data, val_data, epochs=10)
+
+    def test_autoformer_forecaster_fit_loader_val(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+
+    def test_autoformer_forecaster_fit_val_best_epoch(self):
+        train_loader, val_loader, _ = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        val_loss = forecaster.fit(train_loader, val_loader, epochs=10,
+                                  validation_mode='best_epoch')
+
+    def test_autoformer_forecaster_fit_val_tsdataset(self):
+        train, val, test = create_tsdataset(val_ratio=0.1)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s',
+                                          seed=0)
+        forecaster.fit(train, val, epochs=3, batch_size=32)
+        forecaster.predict(test)
+
+    @op_automl
+    def test_autoformer_forecaster_tune_multi_processes(self):
+        name = "parallel-example-torch"
+        storage = "sqlite:///example_autoformer.db"  # take sqlite for test, recommand to use mysql
+        if os.path.exists("./example_autoformer.db"):
+            os.remove("./example_autoformer.db")
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, test_data = create_data(loader=False)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          d_model=space.Categorical(32, 64, 128, 256, 512, 1024),
+                                          freq='s',
+                                          loss="mse",
+                                          metrics=['mae', 'mse', 'mape'],
+                                          lr=0.001)
+        from bigdl.nano.automl.hpo.backend import SamplerType
+        forecaster.tune(train_data, validation_data=val_data, n_trials=5,
+                        study_name=name, sampler=SamplerType.Grid,
+                        storage=storage, n_parallels=2)
+        forecaster.fit(train_data, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val_data)
+        os.remove("./example_autoformer.db")
+        # test remove
+        forecaster.tune(train_data, validation_data=val_data, n_trials=2,
+                        study_name=name, sampler=SamplerType.Grid,
+                        storage=storage, n_parallels=2)

@@ -1,0 +1,28 @@
+name: 'Run Orca Jep UT Py37 Spark2'
+description: 'Run Orca Jep UT Py37 Spark2'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+        pip install tensorflow==2.8.0 ray[default]==1.9.2
+        ./python/dllib/dev/release/release.sh linux default false false
+        pip install -i https://pypi.python.org/simple ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+
+        #build orca whl without make_dist
+        ./python/orca/dev/release/release.sh linux default true false
+        pip install -i https://pypi.python.org/simple ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} ray[default]==1.9.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.15.3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} Pillow
+        
+        chmod a+x python/orca/dev/test/run-pytests-tf2-rayonspark.sh
+        python/orca/dev/test/run-pytests-tf2-rayonspark.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

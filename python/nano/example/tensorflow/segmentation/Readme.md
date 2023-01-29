@@ -9,7 +9,7 @@ This example describes how to use BigDL Nano to optimize a TensorFlow image segm
     Install the BigDL-Nano with Tensorflow support with `pip` in a conda environment. 
 
     ```
-    pip install bigdl-nano[tensorflow]
+    pip install --pre --upgrade bigdl-nano[tensorflow] # install the nightly-bulit version
     ```
 
     Then install Tensorflow Examples for `pix2pix` model and Tensorflow Datasets for `oxford_iiit_pet` dataset support. 

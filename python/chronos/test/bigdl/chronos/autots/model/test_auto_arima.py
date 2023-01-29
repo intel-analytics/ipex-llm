@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.autots.model.auto_arima import AutoARIMA
-
+from bigdl.chronos.utils import LazyImport
+AutoARIMA = LazyImport('bigdl.chronos.autots.model.auto_arima.AutoARIMA')
+hp = LazyImport('bigdl.orca.automl.hp')
 import numpy as np
 from unittest import TestCase
-from bigdl.orca.automl import hp
+from ... import op_distributed, op_diff_set_all
 
 
 def get_data():
@@ -30,6 +31,8 @@ def get_data():
     return data, validation_data
 
 
+@op_distributed
+@op_diff_set_all
 class TestAutoARIMA(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context

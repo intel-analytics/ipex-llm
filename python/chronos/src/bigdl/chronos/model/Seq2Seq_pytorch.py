@@ -20,6 +20,8 @@ import torch.nn as nn
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
 from pytorch_lightning import seed_everything
+from bigdl.chronos.pytorch.model_wrapper.normalization import NormalizeTSModel
+from bigdl.chronos.pytorch.model_wrapper.decomposition import DecompositionTSModel
 
 
 class LSTMSeq2Seq(nn.Module):
@@ -70,14 +72,30 @@ class LSTMSeq2Seq(nn.Module):
 
 
 def model_creator(config):
-    return LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
-                       output_feature_num=config["output_feature_num"],
-                       future_seq_len=config["future_seq_len"],
-                       lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
-                       lstm_layer_num=config.get("lstm_layer_num", 2),
-                       dropout=config.get("dropout", 0.25),
-                       teacher_forcing=config.get("teacher_forcing", False),
-                       seed=config.get("seed", None))
+    model = LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
+                        output_feature_num=config["output_feature_num"],
+                        future_seq_len=config["future_seq_len"],
+                        lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
+                        lstm_layer_num=config.get("lstm_layer_num", 2),
+                        dropout=config.get("dropout", 0.25),
+                        teacher_forcing=config.get("teacher_forcing", False),
+                        seed=config.get("seed", None))
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
+    decomposition_kernel_size = config.get("decomposition_kernel_size", 0)
+    if decomposition_kernel_size > 1:
+        model_copy = LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
+                                 output_feature_num=config["output_feature_num"],
+                                 future_seq_len=config["future_seq_len"],
+                                 lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
+                                 lstm_layer_num=config.get("lstm_layer_num", 2),
+                                 dropout=config.get("dropout", 0.25),
+                                 teacher_forcing=config.get("teacher_forcing", False),
+                                 seed=config.get("seed", None))
+        if config.get("normalization", False):
+            model_copy = NormalizeTSModel(model_copy, config["output_feature_num"])
+        model = DecompositionTSModel((model, model_copy), decomposition_kernel_size)
+    return model
 
 
 def optimizer_creator(model, config):

@@ -13,6 +13,8 @@ echo "#1 start test for tf2_lenet_mnist.ipynb"
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist
 sed -i '/get_ipython/s/^/#/' $ANALYTICS_ZOO_HOME/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.py
+sed -i 's/!update-alternatives/#&/g' $ANALYTICS_ZOO_HOME/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.py
+sed -i 's/^[^#].*environ*/#&/g' $ANALYTICS_ZOO_HOME/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.py
 python ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/tf2_keras_lenet_mnist.py
 
 exit_status=$?
@@ -29,6 +31,8 @@ echo "#2 start test for ncf_dataframe.ipynb"
 start=$(date "+%s")
 ${ANALYTICS_ZOO_HOME}/python/orca/dev/colab-notebook/ipynb2py.sh ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe
 sed -i '/get_ipython/s/^/#/' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
+sed -i 's/!update-alternatives/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
+sed -i 's/^[^#].*environ*/#&/g' ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
 python ${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart/ncf_dataframe.py
 
 exit_status=$?

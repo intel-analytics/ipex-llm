@@ -64,10 +64,10 @@ def create_data_loader(dir, batch_size, num_workers, transform, subset=50, shuff
     if sampler:
         sampler_set = SequentialSampler(train_subset)
         data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
-                             num_workers=num_workers, sampler=sampler_set)
+                                 num_workers=num_workers, sampler=sampler_set)
     else:
         data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
-                             num_workers=num_workers)
+                                 num_workers=num_workers)
     return data_loader
 
 

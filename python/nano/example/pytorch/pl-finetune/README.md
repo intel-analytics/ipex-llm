@@ -5,12 +5,12 @@ This example illustrates how to apply bigdl-nano optimizations on a fine-tuning 
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment.
-```
+```bash
 conda create -n nano python=3.7  # "nano" is conda environment name, you can use any name you like.
 conda activate nano
 pip install jsonargparse[signatures]
 
-pip install bigdl-nano[pytorch]
+pip install --pre --upgrade bigdl-nano[pytorch] # install the nightly-bulit version
 ```
 Initialize environment variables with script `bigdl-nano-init` installed with bigdl-nano.
 ```

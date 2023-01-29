@@ -17,36 +17,35 @@
 package com.intel.analytics.bigdl.friesian;
 
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
-import com.intel.test.TestValidationgObjectInputStream;
-import org.junit.Test;
-import java.io.InvalidClassException;
+import com.intel.test.TestValidatingObjectInputStream;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 
 public class EncodeUtilsTest {
 
-    @Test(expected = InvalidClassException.class)
-    public void testBytesToObjNotAccept() throws InvalidClassException {
+    @Test
+    public void testBytesToObjNotAccept() {
         // not accept class
-        TestValidationgObjectInputStream test = new TestValidationgObjectInputStream();
+        TestValidatingObjectInputStream test = new TestValidatingObjectInputStream();
         System.out.println(test.name);
         byte[] bytes = EncodeUtils.objToBytes(test);
-        //should return null
+        // should return null
         Object result = EncodeUtils.bytesToObj(bytes);
-        if (result == null) {
-            throw new InvalidClassException("objToBytes fail");
-        }
+        assertNull(result, "objToBytes didn't fail as expected");
     }
 
     @Test
-    public void testBytesToObjAccept () throws InvalidClassException {
+    public void testBytesToObjAccept() {
         // accept class
         String test = "test";
         System.out.println(test);
         byte[] bytes = EncodeUtils.objToBytes(test);
-        //should not return null
+        // should not return null
         Object result = EncodeUtils.bytesToObj(bytes);
-        if (result == null) {
-            throw new InvalidClassException("accept class objToBytes fail");
-        }
+        assertNotNull(result, "objToBytes failed");
     }
 }
 

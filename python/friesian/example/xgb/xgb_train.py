@@ -39,7 +39,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.app.name": "recsys-xgb"}
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Deep FM Training')
+    parser = argparse.ArgumentParser(description='XGBoost Training')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn or standalone.')
     parser.add_argument('--master', type=str, default=None,
@@ -130,9 +130,9 @@ if __name__ == '__main__':
               "min_child_weight": 30, "reg_lambda": 1, "scale_pos_weight": 2,
               "subsample": 1, "objective": "binary:logistic"}
 
-    for eta in [0.1, 0.15, 0.2, 0.25, 0.3]:
-        for max_depth in [6, 8, 10, 12]:
-            for num_round in [200, 400, 600, 800, 1000]:
+    for eta in [0.1]:
+        for max_depth in [6]:
+            for num_round in [200]:
                 params.update({"eta": eta, "max_depth": max_depth, "num_round": num_round})
                 classifier = XGBClassifier(params)
                 xgbmodel = classifier.fit(train.df)
@@ -141,6 +141,7 @@ if __name__ == '__main__':
                 xgbmodel.setFeaturesCol("features")
                 predicts = xgbmodel.transform(test.df).drop("features")
                 predicts.cache()
+                predicts.show(5, False)
 
                 evaluator = BinaryClassificationEvaluator(labelCol="label",
                                                           rawPredictionCol="rawPrediction")

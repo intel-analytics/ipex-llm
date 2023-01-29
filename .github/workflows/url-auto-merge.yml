@@ -1,0 +1,45 @@
+name: Create PR to update nightly build download URL in docs/readthedocs/source/doc/Orca/Overview/install.md and auto merge
+on:
+  schedule:
+    - cron: '0 13 * * 0' # GMT time, 13:00 GMT == 21:00 China
+
+  workflow_dispatch:
+
+
+jobs:
+  createPRandAutoMerge:
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update time
+        run: |
+          BIGDL_VERSION="2.2.0-SNAPSHOT"
+          SPARK_VERSION="3.1.3"
+          NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+          echo $SPARK_VERSION-$BIGDL_VERSION
+          sed -i "s:\(spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-\)[0-9]*.[0-9]*.[0-9]*-[0-9]*\.[0-9]*-[0-9]*\(-fat-jars.zip\):\1$NIGHTLY_VERSION\2:g" docs/readthedocs/source/doc/Orca/Overview/install.md
+          SPARK_VERSION="2.4.6"
+          NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+          echo $SPARK_VERSION-$BIGDL_VERSION
+          sed -i "s:\(spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-\)[0-9]*.[0-9]*.[0-9]*-[0-9]*\.[0-9]*-[0-9]*\(-fat-jars.zip\):\1$NIGHTLY_VERSION\2:g" docs/readthedocs/source/doc/Orca/Overview/install.md
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.AUTOMERGE_TOKEN }}
+          commit-message: update url
+          title: Update nightly build download URL in docs/readthedocs/source/doc/Orca/Overview/install.md
+          body: Update download URL
+          branch: update-orca-download-url
+      - run: |
+          echo ${{ steps.cpr.outputs.pull-request-number }}
+          echo ${{ steps.cpr.outputs.pull-request-operation }}
+
+      - name: Auto Merge
+        if: ${{ steps.cpr.outputs.pull-request-number && steps.cpr.outputs.pull-request-operation == 'created'}}
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          token: ${{ secrets.AUTOMERGE_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}

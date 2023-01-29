@@ -39,7 +39,7 @@ def get_bigdl_packages():
     bigdl_packages = []
     source_dir = os.path.join(bigdl_python_home, "bigdl")
     for dirpath, dirs, files in os.walk(source_dir):
-        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+        package = dirpath.split(bigdl_python_home)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
@@ -61,30 +61,37 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
-        install_requires=['pandas>=1.0.5, <1.3.0', 'scikit-learn>=0.22.0, <=1.0.2',
-                          'bigdl-nano==' + VERSION],
+        install_requires=['pandas>=1.0.5, <=1.3.5', 'scikit-learn>=0.22.0, <=1.0.2',
+                          'bigdl-nano==' + VERSION, 'numpy<=1.23.5'],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
-                        # 'tensorflow': ['bigdl-nano[tensorflow]=='+VERSION],
-                        'automl': ['optuna<=2.10.1', 'configspace<=0.5.0'],
-                        'distributed': ['bigdl-orca[automl]==' + VERSION],
+                        'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
+                        'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
+                        'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION,
+                                                                   'pyarrow==6.0.1'],
+                        'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
-                                # 'bigdl-nano[tensorflow]=='+VERSION,
+                                'bigdl-nano[tensorflow_27]=='+VERSION,
                                 'optuna<=2.10.1', 'configspace<=0.5.0',
-                                'bigdl-orca[automl]==' + VERSION, 'pmdarima==1.8.5',
-                                'prophet==1.1.0', 'tsfresh==0.17.0',
-                                'pyarrow==6.0.1', 'onnx>=1.8.0, <=1.11.0',
-                                'onnxruntime>=1.6.0, <=1.11.1',
-                                # 'openvino-dev==2022.1.0',
-                                'neural-compressor>=1.8.1, <=1.11',
-                                'onnxruntime-extensions==0.4.2']},
+                                'bigdl-orca[automl]==' + VERSION + ';platform_system!="Windows"',
+                                'pmdarima==1.8.5',
+                                'prophet==1.1.0',
+                                'tsfresh==0.17.0',
+                                'pyarrow==6.0.1',
+                                'matplotlib',
+                                'bigdl-nano[inference]==' + VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                "benchmark-chronos=bigdl.chronos.benchmark.benchmark_chronos:main",
+            ]
+        },
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: Implementation :: CPython'],
-        platforms=['mac', 'linux']
+        platforms=['mac', 'linux', 'windows']
     )
 
     setup(**metadata)

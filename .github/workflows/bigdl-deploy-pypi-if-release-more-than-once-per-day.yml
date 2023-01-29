@@ -1,0 +1,57 @@
+name: BigDL Release Pypi More Than Once Per Day
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'pypi version (e.g. 2.1.0, 2.2.0)'
+        required: true
+        default: '2.2.0'
+        type: string
+
+env:
+  PYPI_VERSION: ${{ github.event.inputs.version }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  bigdl-release-python-pypi:
+    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    if: ${{ github.actor == 'Le-Zheng' }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build
+        pip install wheel
+        pip install twine
+    
+    - name: Build package
+      run: |
+        export TIMESTAMP=`date '+%Y%m%d%H'`
+        echo ${PYPI_VERSION}
+        
+        nb_version=${PYPI_VERSION}b${TIMESTAMP}
+        echo ${nb_version}
+
+        ## windows ##
+        bash python/dev/release_default_windows.sh ${nb_version} false true
+
+        ## linux ##
+        bash python/dev/release_default_linux.sh ${nb_version} true
+
+        ## mac ##
+        bash python/dev/release_default_mac.sh ${nb_version} true

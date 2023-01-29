@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
+import types
 import itertools
-import logging
 import pickle
 import shutil
 import tempfile
-
-import numpy as np
+import logging
 import ray
 
 from bigdl.dllib.utils import log4Error
-from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save, \
-    is_local_path
-
+from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca import OrcaContext
+from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
 from bigdl.orca.learn.tf2.tf_runner import TFRunner
@@ -34,28 +34,44 @@ from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
-from bigdl.orca.data.file import put_local_file_to_remote, put_local_dir_tree_to_remote, \
-    put_local_files_with_prefix_to_remote
+from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
+    is_file
 from bigdl.orca.data.utils import process_spark_xshards
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.ray import OrcaRayContext
+
+from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
+if TYPE_CHECKING:
+    import numpy as np
+    import tensorflow as tf
+    from tensorflow import Tensor
+    from tensorflow.python.saved_model.save_options import SaveOptions
+    from tensorflow.python.keras.callbacks import Callback
+    from tensorflow.python.keras.engine.training import Model
+    from pyspark.sql import DataFrame as SparkDataFrame
+    from bigdl.orca.data.tf.data import Dataset as TFDataset
+    from bigdl.orca.data import SparkXShards
 
 logger = logging.getLogger(__name__)
 
 
 class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,
-                 model_creator,
-                 compile_args_creator=None,
-                 config=None,
-                 verbose=False,
-                 backend="ray",
-                 workers_per_node=1,
-                 cpu_binding=False):
+                 model_creator: Optional["Callable"]=None,
+                 compile_args_creator: Optional["Callable"]=None,
+                 config: Optional[Dict]=None,
+                 verbose: bool=False,
+                 backend: str="ray",
+                 workers_per_node: int=1,
+                 cpu_binding: bool=False) -> None:
         self.model_creator = model_creator
         self.compile_args_creator = compile_args_creator
         self.config = {} if config is None else config
         self.verbose = verbose
+
+        if self.model_creator is None:
+            logger.warning("Please use load function of the estimator to load model when"
+                           " model_creator is None.")
 
         ray_ctx = OrcaRayContext.get()
         if "batch_size" in self.config:
@@ -67,23 +83,24 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             self.config["inter_op_parallelism"] = 1
 
         if "intra_op_parallelism" not in self.config:
-            self.config["intra_op_parallelism"] = ray_ctx.ray_node_cpu_cores // workers_per_node
+            ray_node_cpu_cores = ray_ctx.ray_node_cpu_cores  # type:ignore
+            self.config["intra_op_parallelism"] = ray_node_cpu_cores // workers_per_node
 
         if backend == "horovod":
             invalidInputError(compile_args_creator is not None,
                               "compile_args_creator should not be None,"
-                              " when backend is set to horovod")
+                              " when backend is set to horovod.")
 
         params = {
-            "model_creator": model_creator,
-            "compile_args_creator": compile_args_creator,
+            "model_creator": self.model_creator,
+            "compile_args_creator": self.compile_args_creator,
             "config": self.config,
             "verbose": self.verbose,
         }
 
         if backend == "ray":
-            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
-            num_nodes = ray_ctx.num_ray_nodes * workers_per_node
+            cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node  # type:ignore
+            num_nodes = ray_ctx.num_ray_nodes * workers_per_node  # type:ignore
 
             self.cluster = RayDLCluster(
                 num_workers=num_nodes,
@@ -125,11 +142,29 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         self.num_workers = len(self.remote_workers)
 
-    def fit(self, data, epochs=1, batch_size=32, verbose=1,
-            callbacks=None, validation_data=None, class_weight=None,
-            steps_per_epoch=None, validation_steps=None, validation_freq=1,
-            data_config=None, feature_cols=None,
-            label_cols=None):
+    def fit(self,
+            data: Union["SparkXShards",
+                        "SparkDataFrame",
+                        "TFDataset",
+                        "ray.data.Dataset",
+                        Callable],
+            epochs: int=1,
+            batch_size: int=32,
+            verbose: Union[str, int]=1,
+            callbacks: Optional[List["Callback"]]=None,
+            validation_data: Optional[Union["SparkXShards",
+                                            "SparkDataFrame",
+                                            "TFDataset",
+                                            "ray.data.Dataset",
+                                            Callable]]=None,
+            class_weight: Optional[Dict[int, float]]=None,
+            steps_per_epoch: Optional[int]=None,
+            validation_steps: Optional[int]=None,
+            validation_freq: int=1,
+            data_config: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None) -> Union[List[Dict[str, float]],
+                                                           Dict[str, float]]:
         """
         Train this tensorflow model with train data.
 
@@ -139,7 +174,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
         :param epochs: Number of epochs to train the model. Default: 1.
-        :param batch_size: Batch size used for training. Default: 32.
+        :param batch_size: Total batch size for all workers used for training. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param callbacks: List of Keras compatible callbacks to apply during training.
         :param validation_data: validation data. Validation data type should be the same
@@ -171,6 +207,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -190,18 +241,23 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
-                                                           accept_str_col=True)
+                                                           accept_str_col=True,
+                                                           shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
+            # Make sure each worker can get at least one data partition
+            if data.num_partitions() < self.num_workers:
+                data = data.repartition(self.num_workers)
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
                                                                             validation_data,
                                                                             "fit")
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+            ray_xshards = process_spark_xshards(data, self.num_workers)  # type:ignore
             val_ray_xshards = None
             if validation_data is not None:
-                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
+                val_ray_xshards = process_spark_xshards(validation_data,  # type:ignore
+                                                        self.num_workers)
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
         elif isinstance(data, Dataset):
@@ -211,7 +267,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 invalidInputError(isinstance(validation_data, Dataset),
                                   "Validation data type should be the same as train data,"
                                   " but got type: {}".format(type(validation_data)))
-                val_ray_xshards = TF2Dataset(validation_data).get_ray_xshards(self.num_workers)
+                val_ray_xshards = TF2Dataset(
+                    validation_data).get_ray_xshards(self.num_workers)  # type:ignore
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
@@ -225,7 +282,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                       data_config)
                     remote_worker_stats.append(worker.step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
-                worker_stats = list(itertools.chain.from_iterable(worker_stats))
             else:
                 invalidInputError(isinstance(validation_data, ray.data.Dataset),
                                   "Validation data type should be the same as train data,"
@@ -236,7 +292,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
                 for i in range(self.num_workers):
                     params["data_creator"] = self.process_ray_dataset(shards[i],
-                                                                      label_cols, feature_cols,
+                                                                      label_cols,
+                                                                      feature_cols,
                                                                       data_config)
                     params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
                                                                                  label_cols,
@@ -244,7 +301,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                                  data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
-                worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -252,7 +308,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
                                     for i in range(self.num_workers)])
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
+        # TensorFlow automatically synchronizes results on all the workers
+        # and thus only need to return the result of the first worker
         stats = worker_stats[0].copy()
         return stats
 
@@ -276,9 +333,20 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                       zip_func)
         return worker_stats
 
-    def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
-                 sample_weight=None, callbacks=None, data_config=None,
-                 feature_cols=None, label_cols=None):
+    def evaluate(self,
+                 data: Union["SparkXShards",
+                             "SparkDataFrame",
+                             "TFDataset",
+                             "ray.data.Dataset",
+                             Callable],
+                 batch_size: int=32,
+                 num_steps: Optional[int]=None,
+                 verbose: Union[str, int]=1,
+                 sample_weight: Optional["np.ndarray"]=None,
+                 callbacks: Optional[List["Callback"]]=None,
+                 data_config: Optional[Dict]=None,
+                 feature_cols: Optional[List[str]]=None,
+                 label_cols: Optional[List[str]]=None) -> Dict:
         """
         Evaluates the model on the validation data set.
 
@@ -287,7 +355,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
-        :param batch_size: Batch size used for evaluation. Default: 32.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param num_steps: Total number of steps (batches of samples) before declaring the evaluation
                round finished. Ignored with the default value of `None`.
         :param verbose: Prints output of one model if true.
@@ -309,6 +378,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return: validation result
         """
+        if not isinstance(data, types.FunctionType):
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+        else:
+            # batch_size can be None if the return of data_creator already generates batches
+            if batch_size:
+                invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                                  "batch_size should be a positive integer")
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting validation step.")
         params = dict(
             batch_size=batch_size,
@@ -328,16 +412,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              label_cols=label_cols,
                                              mode="evaluate",
                                              num_workers=self.num_workers,
-                                             accept_str_col=True)
+                                             accept_str_col=True,
+                                             shard_size=local_batch_size)
 
         if isinstance(data, SparkXShards):
+            # Make sure each worker can get at least one data partition
+            if data.num_partitions() < self.num_workers:
+                data = data.repartition(self.num_workers)
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-
-            if data.num_partitions() != self.num_workers:
-                data = data.repartition(self.num_workers)
-
-            ray_xshards = RayXShards.from_spark_xshards(data)
+            ray_xshards = RayXShards.from_spark_xshards(data)  # type:ignore
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, Dataset):
             ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
@@ -353,14 +437,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                   data_config)
                 remote_worker_stats.append(worker.validate.remote(**params))
             worker_stats = ray.get(remote_worker_stats)
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([w.validate.remote(**params_list[i])
                                     for i, w in enumerate(self.remote_workers)])
-            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
 
@@ -407,9 +489,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         spark_xshards = pred_shards.to_spark_xshards()
         return spark_xshards
 
-    def predict(self, data, batch_size=None, verbose=1,
-                steps=None, callbacks=None, data_config=None,
-                feature_cols=None, min_partition_num=None):
+    def predict(self,
+                data: Union["SparkXShards", "SparkDataFrame", "TFDataset"],
+                batch_size: Optional[int]=32,
+                verbose: Union[str, int]=1,
+                steps: Optional[int]=None,
+                callbacks: Optional[List["Callback"]]=None,
+                data_config: Optional[Dict]=None,
+                feature_cols: Optional[List[str]]=None,
+                min_partition_num: Optional[int]=None) -> Union["SparkXShards",
+                                                                "SparkDataFrame"]:
         """
         Predict the input data
 
@@ -417,7 +506,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                orca.data.tf.data.Dataset. If data is XShards, each partition can be a Pandas
                DataFrame or a dictionary of {'x': feature}, where feature is a numpy array or a
                tuple of numpy arrays.
-        :param batch_size: Batch size used for inference. Default: None.
+        :param batch_size: Total batch size for all workers used for evaluation. Each worker's batch
+               size would be this value divide the total number of workers. Default: 32.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
                round finished. Ignored with the default value of None.
@@ -436,6 +526,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                Default: None.
         :return:
         """
+        # Use the local batch size for each worker to convert to XShards
+        if batch_size:
+            invalidInputError(isinstance(batch_size, int) and batch_size > 0,
+                              "batch_size should be a positive integer")
+            local_batch_size = batch_size // self.num_workers
+            if local_batch_size <= 0:
+                local_batch_size = 1
+        else:
+            local_batch_size = None
         logger.info("Starting predict step.")
         params = dict(
             verbose=verbose,
@@ -454,7 +553,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               feature_cols=feature_cols,
                                               label_cols=None,
                                               mode="predict",
-                                              accept_str_col=True)
+                                              accept_str_col=True,
+                                              shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
@@ -477,7 +577,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         return result
 
-    def get_model(self, sample_input=None):
+    def get_model(self, sample_input: Optional["Tensor"]=None) -> "Model":
         """
         Returns the learned model.
 
@@ -488,7 +588,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return self._get_model_from_state(state, sample_input=sample_input)
 
     @enable_multi_fs_save
-    def save_checkpoint(self, checkpoint):
+    def save_checkpoint(self, checkpoint: str) -> str:
         """
         Saves the model at the provided checkpoint.
 
@@ -510,7 +610,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return checkpoint
 
     @enable_multi_fs_load
-    def load_checkpoint(self, checkpoint, **kwargs):
+    def load_checkpoint(self, checkpoint: str, **kwargs) -> None:
         """
         Loads the model from the provided checkpoint.
 
@@ -524,12 +624,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])
 
     def save(self,
-             filepath,
-             overwrite=True,
-             include_optimizer=True,
-             save_format=None,
-             signatures=None,
-             options=None):
+             filepath: str,
+             overwrite: bool=True,
+             include_optimizer: bool=True,
+             save_format: Optional[str]=None,
+             signatures: Optional[str]=None,
+             options: Optional["SaveOptions"]=None) -> None:
         """
         Saves the model to Tensorflow SavedModel or a single HDF5 file.
 
@@ -548,32 +648,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                `tf.saved_model.SaveOptions` object that specifies options for
                saving to SavedModel.
         """
-        # get current trained model
-        model = self.get_model()
-
-        if is_local_path(filepath):
-            model.save(filepath, overwrite, include_optimizer, save_format, signatures, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
-                           options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    put_local_dir_tree_to_remote(temp_path, filepath)
-            finally:
-                shutil.rmtree(temp_dir)
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            include_optimizer=include_optimizer,
+            save_format=save_format,
+            signatures=signatures,
+            options=options
+        )
+        ray.get([w.save_model.remote(**params) for w in self.remote_workers])
 
     def load(self,
-             filepath,
-             custom_objects=None,
-             compile=True,
-             options=None):
+             filepath: str,
+             custom_objects: Optional[Dict]=None,
+             compile: bool=True,
+             options: Optional["SaveOptions"]=None) -> None:
         """
         Loads a model saved via `estimator.save()
 
@@ -586,20 +675,24 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                options for loading from SavedModel.
 
         """
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
         if is_local_path(filepath):
-            ray.get([worker.load_model.remote(**params)
+            ray.get([worker.load_model.remote(**self.load_params)
                      for worker in self.remote_workers])
         else:
-            ray.get([worker.load_remote_model.remote(**params)
+            ray.get([worker.load_remote_model.remote(**self.load_params)
                      for worker in self.remote_workers])
 
-    def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
+    def save_weights(self,
+                     filepath: str,
+                     overwrite: bool=True,
+                     save_format: Optional[str]=None,
+                     options: Optional["SaveOptions"]=None) -> None:
         """
         Save the model weights at the provided filepath.
         param filepath: String or PathLike, path to the file to save the weights to.
@@ -615,27 +708,19 @@ class TensorFlow2Estimator(OrcaRayEstimator):
               weights.
         :return:
         """
-        model = self.get_model()
+        params = dict(
+            filepath=filepath,
+            overwrite=overwrite,
+            save_format=save_format,
+            options=options
+        )
+        ray.get([w.save_weights.remote(**params) for w in self.remote_workers])
 
-        if is_local_path(filepath):
-            model.save_weights(filepath, overwrite, save_format, options)
-        else:
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            try:
-                model.save_weights(temp_path, overwrite, save_format, options)
-                if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
-                    # hdf5 format
-                    put_local_file_to_remote(temp_path, filepath)
-                else:
-                    # tf format
-                    remote_dir = os.path.dirname(filepath)
-                    put_local_files_with_prefix_to_remote(temp_path, remote_dir)
-            finally:
-                shutil.rmtree(temp_dir)
-
-    def load_weights(self, filepath, by_name=False, skip_mismatch=False, options=None):
+    def load_weights(self,
+                     filepath=str,
+                     by_name: bool=False,
+                     skip_mismatch: bool=False,
+                     options: Optional["SaveOptions"]=None) -> None:
         """
         Load tensorflow keras model weights from the provided path.
         param filepath: String, path to the weights file to load. For weight files in TensorFlow
@@ -663,7 +748,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             ray.get([worker.load_remote_weights.remote(**params)
                      for worker in self.remote_workers])
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """
         Shuts down workers and releases resources.
         """
@@ -673,9 +758,28 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def _get_model_from_state(self, state, sample_input=None):
         """Creates model and load weights from state"""
+        import tensorflow as tf
 
         # keep the same behavior as `set_state` in `load` do
-        model = self.model_creator(self.config)
+        if self.model_creator is not None:
+            model = self.model_creator(self.config)
+        else:
+            file_name = os.path.basename(self.load_params["filepath"])
+            temp_dir = tempfile.mkdtemp()
+            temp_path = os.path.join(temp_dir, file_name)
+
+            if is_file(self.load_params["filepath"]):
+                get_remote_file_to_local(self.load_params["filepath"], temp_path)
+            else:
+                if os.path.exists(temp_path):
+                    os.makedirs(temp_path)
+                get_remote_dir_to_local(self.load_params["filepath"], temp_path)
+            try:
+                self.load_params["filepath"] = temp_path
+                model = tf.keras.models.load_model(**self.load_params)
+            finally:
+                shutil.rmtree(temp_dir)
+
         if sample_input:
             model(sample_input)
         try:

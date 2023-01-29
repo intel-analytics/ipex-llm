@@ -31,6 +31,20 @@ spec:
       value: "512MB"
     - name: SGX_KERNEL_HEAP
       value: "1GB"
+    - name: ATTESTATION
+      value: false
+    - name: PCCS_URL
+      value: "https://PCCS_IP:PCCS_PORT"
+    - name: ATTESTATION_URL
+      value: "ESHM_IP:EHSM_PORT"
+    - name: APP_ID
+      value: your_app_id
+    - name: API_KEY
+      value: your_api_key
+    - name: CHALLENGE
+      value: cHBtbAo=
+    - name: REPORT_DATA
+      value: ppml
   volumes:
 #    - name: device-plugin
 #      hostPath:

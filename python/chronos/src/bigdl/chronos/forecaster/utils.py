@@ -15,6 +15,7 @@
 #
 
 import torch
+import torch.nn as nn
 import warnings
 import random
 import numpy
@@ -22,6 +23,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import multiprocessing as mp
 import warnings
+import math
 
 __all__ = ['loader_to_creator',
            'np_to_creator',
@@ -33,7 +35,9 @@ __all__ = ['loader_to_creator',
            'read_csv',
            'delete_folder',
            'is_main_process',
-           'xshard_expand_dim']
+           'xshard_expand_dim',
+           'get_exported_module',
+           'set_pytorch_thread']
 
 
 def loader_to_creator(loader):
@@ -84,9 +88,13 @@ def xshard_expand_dim(yhat, expand_dim=None):
     return yhat
 
 
-def np_to_xshard(x, prefix="x"):
+def np_to_xshard(x, workers_num, prefix="x"):
     from bigdl.orca.data import XShards
     x = XShards.partition(x)
+    if math.floor(math.sqrt(math.sqrt(x.num_partitions()))) > workers_num:
+        warnings.warn("Too many partitions and too few workers will reduce inference performance, "
+                      "we recommend setting 'workers_per_node' to a large number and",
+                      "not larger than the number of partitions.", category=RuntimeWarning)
 
     def transform_to_dict(train_data):
         return {prefix: train_data}
@@ -156,14 +164,14 @@ def np_to_dataloader(data, batch_size, num_processes):
                       shuffle=True)
 
 
-def read_csv(filename):
+def read_csv(filename, loss_name='val/loss'):
     import codecs
     import csv
     fit_out = {}
     with codecs.open(filename, encoding='utf-8-sig') as f:
         for row in csv.DictReader(f, skipinitialspace=True):
-            if row['val/loss']:
-                fit_out[row['epoch']] = {'val_loss': row['val/loss']}
+            if row[loss_name]:
+                fit_out[row['epoch']] = {'val_loss': row[loss_name]}
     return fit_out
 
 
@@ -174,3 +182,49 @@ def delete_folder(path):
 
 def is_main_process():
     return mp.current_process().name == "MainProcess"
+
+
+class ExportForecastingPipeline(nn.Module):
+    def __init__(self, preprocess: nn.Module,
+                 inference: nn.Module, postprocess: nn.Module) -> None:
+        super().__init__()
+        self.preprocess = preprocess
+        self.inference = inference
+        self.postprocess = postprocess
+
+    def forward(self, data):
+        preprocess_output = self.preprocess(data)
+        inference_output = self.inference(preprocess_output)
+        postprocess_output = self.postprocess(inference_output)
+        return postprocess_output
+
+
+def get_exported_module(tsdata, forecaster_path, drop_dtcol):
+    from bigdl.chronos.data.utils.export_torchscript \
+        import get_processing_module_instance, get_index
+
+    if drop_dtcol:
+        tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
+
+    id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,
+                                               tsdata.target_col, tsdata.feature_col)
+
+    preprocess = get_processing_module_instance(tsdata.scaler, tsdata.lookback,
+                                                id_index, target_feature_index,
+                                                tsdata.scaler_index, "preprocessing")
+
+    postprocess = get_processing_module_instance(tsdata.scaler, tsdata.lookback,
+                                                 id_index, target_feature_index,
+                                                 tsdata.scaler_index, "postprocessing")
+
+    inference = torch.jit.load(forecaster_path)
+
+    return torch.jit.script(ExportForecastingPipeline(preprocess, inference, postprocess))
+
+
+def set_pytorch_thread(optimized_model_thread_num, thread_num):
+    # optimized_model_thread_num is None means no limit is set, just keep current thread num
+    if optimized_model_thread_num is not None and optimized_model_thread_num != thread_num:
+        thread_num = optimized_model_thread_num
+        torch.set_num_threads(thread_num)
+    return thread_num

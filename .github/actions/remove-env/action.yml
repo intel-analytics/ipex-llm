@@ -6,6 +6,7 @@ runs:
     - name: Remove Env
       shell: bash
       run: |
+        unset PYTHONHOME 
         source activate py37
         pip uninstall -y pyspark bigdl-friesian bigdl bigdl-dllib-spark3 bigdl-orca-spark3 bigdl-tf bigdl-math bigdl-orca  bigdl-dllib bigdl-tf bigdl-chronos bigdl-nano
         source deactivate

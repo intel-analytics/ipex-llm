@@ -46,6 +46,7 @@ abstract class NNModel() {
       VFLTensorUtils.featureLabelToMiniBatch(xTrain, yTrain, batchSize),
       VFLTensorUtils.featureLabelToMiniBatch(xValidate, yValidate, batchSize))
   }
+
   /**
    *
    * @param trainData DataFrame of training data
@@ -117,6 +118,7 @@ abstract class NNModel() {
   def predict(x: Tensor[Float], batchSize: Int = 4): Array[Activity] = {
     estimator.predict(VFLTensorUtils.featureLabelToMiniBatch(x, null, batchSize))
   }
+
   /**
    *
    * @param data DataFrame of prediction data

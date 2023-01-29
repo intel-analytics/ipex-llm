@@ -26,7 +26,8 @@ def roll_timeseries_dataframe(df,
                               target_col,
                               id_col=None,
                               label_len=0,
-                              contain_id=False):
+                              contain_id=False,
+                              deploy_mode=False):
     """
     roll dataframe into numpy ndarray sequence samples.
 
@@ -44,11 +45,23 @@ def roll_timeseries_dataframe(df,
     :param id_col: str, indicate the id col name, only needed when contain_id is True.
     :param label_len: This parameter is only for transformer-based model.
     :param contain_id: This parameter is only for XShardsTSDataset
+    :param deploy_mode: a bool indicates whether to use deploy mode, which will be used in
+           production environment to reduce the latency of data processing. The value
+           defaults to False.
     :return: x, y
         x: 3-d numpy array in format (no. of samples, lookback, feature_col length)
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
     Note: Specially, if `horizon` is set to 0, then y will be None.
     """
+    if deploy_mode:
+        return _roll_timeseries_dataframe_test(df,
+                                               roll_feature_df,
+                                               lookback,
+                                               feature_col,
+                                               target_col,
+                                               id_col=id_col,
+                                               contain_id=contain_id)
+
     from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(isinstance(df, pd.DataFrame), "df is expected to be pandas dataframe")
     invalidInputError(isinstance(lookback, int), "lookback is expected to be int")

@@ -20,14 +20,13 @@ We recommend you to use conda to prepare the environment.
 ```bash
 conda create -n my_env python=3.7 setuptools=58.0.4 # "my_env" is conda environment name, you can use any name you like.
 conda activate my_env
-pip install --pre --upgrade bigdl-chronos[all]
-pip install torch==1.11.0 # for better performance
+pip install --pre --upgrade bigdl-chronos[pytorch,inference]
 source bigdl-nano-init # accelerate the environment
 ```
 
 
 
-For more detailed information, please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+For more detailed information, please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
 
 
@@ -61,37 +60,38 @@ python autoformer.py # for autoformer forecaster
 ### TCNForecaster
 After you run the code, the training process is shown like this:
 ```bash
-Epoch 0:  17%|████████▏                                       | 94/550 [00:08<00:39, 11.61it/s, loss=0.95]
+Epoch 0:  22%|█████████████████████████████████▎                                                                                                                   | 123/550 [00:04<00:15, 28.05it/s, loss=0.355]
 ```
 
 After training 30 epochs, MSE is shown like this,
 ```bash
-MSE is: [array(0.48502076, dtype=float32)]
+MSE is: 0.25367737
 ```
 
 and the inference latency is shown like this:
 ```bash
-Inference latency is: 0.0060901641845703125
-Inference latency with onnx is: 0.0030126571655273438
+Inference latency is: 0.0007678081938332728
+Inference latency with onnx is: 0.0009106415060963754
 ```
+*Note: After using `dummy_encoder` to turn TCNForecaster to a Linear Model, predicting with ONNXRuntime suffers overhead on electricity dataset.*
 
 ### AutoformerForecaster
 
 After you run the code, the training process is shown like this:
 ```bash
-Epoch 0:   2%|██▏                                                                                                                   | 10/550 [00:02<02:08,  4.19it/s, loss=1.18]
+Epoch 0:   4%|████                                                                                         | 24/550 [00:09<03:34,  2.46it/s, loss=1.01]
 ```
 
 After training 3 epochs, MSE is shown like this,
 ```bash
-MSE on test dataset: [{'val_loss': 0.2887305021286011}]
+MSE on test dataset: [{'val_loss': 0.30125972628593445}]
 ```
 *Note: Autoformer suffers overfitting problem on electricity dataset.*
 
 and the inference latency is shown like this:
 ```bash
-latency(8 cores): 0.013892467462774168
-latency(1 cores): 0.022499848716141295
+latency(8 cores): 0.010854396792372106
+latency(1 cores): 0.019527499927325033
 ```
 
 

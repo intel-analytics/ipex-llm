@@ -6,15 +6,15 @@ The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'sp
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 ```
 
-If Dockerhub is not accessable, we can build docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
+If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
 
 ``` bash
 cd ..
@@ -22,9 +22,9 @@ bash build-docker-image.sh
 ```
 
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
-3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master url in `run_spark_xxx.sh`.
+3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master URL in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
-   In our demo example, we mount SGX devices into container or pod. Mount device requires privileged: true. In production deployment, please use K8S SGX device plugin with device-plugin setting in yaml.
+   In our demo example, we mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
 
 ## Examples
 
@@ -122,15 +122,15 @@ Parameters:
 
 * -I means max_Iter : Int
 * -d means max_depth: Int.
-We recommend to use hdfs to read input-data and write output-result instead of mouting data.
+We recommend using hdfs to read input-data and write output-result instead of mouting data.
 
 #### Source code
-You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
+You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
 
 ### Run Spark TPC-H example
 
-Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just excute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
-"hdfs:///input/dbgen hdfs:///output/dbgen 13" means excute query 13.
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just execute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+"hdfs:///input/dbgen hdfs:///output/dbgen 13" means execute query 13.
 
 Modify the following configuration in 'driver.yaml' and 'executor.yaml' and 'run_spark_tpch.sh'.
 
@@ -147,8 +147,6 @@ env:
   value: "1GB"
 - name: SGX_KERNEL_HEAP
   value: "2GB"
-- name: META_SPACE
-  value: "1024m"
 ```
 
 ```yaml
@@ -177,7 +175,6 @@ Or you can directly add the following configuration in [run_spark_tpch.sh](https
 #run_spark_tpch.sh
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
@@ -197,9 +194,124 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+## PySpark Example
+The following three simple PySpark examples can run directly.
+If you want to run another example, please make sure that PPML-Occlum image have installed the relevant dependencies.
+```bash
+#default dependencies
+-y python=3.8.10 numpy=1.21.5 scipy=1.7.3 scikit-learn=1.0 pandas=1.3 Cython
+```
+And upload source file by hdfs in the last line to replace local file.For example:
+```bash
+#run_pyspark_sql_example.sh
+    #local:/py-examples/sql_example.py
+    hdfs://${IP}:${PORT}/${PATH}/sql_example.py
+```
+### PySparkPi example
+
+```bash
+./run_pyspark_pi.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "512m"
+    - name: SGX_MEM_SIZE
+      value: "10GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "10GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+### PySpark SQL example
+
+```bash
+./run_pyspark_sql_example.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "1g"
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+### PySpark sklearn LinearRegression example
+
+```bash
+./run_pyspark_sklearn_example.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "1g"
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "1024"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
 ### [Deprecated] Spark XGBoost example
 
-> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (contains gradient, split, and env) is not protected.
+> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (which contains gradient, split, and env) is not protected.
 
 #### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
 
@@ -236,7 +348,6 @@ Add these configurations to [script](https://github.com/intel-analytics/BigDL/bl
     --conf spark.executor.instances=2 \
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="12GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
@@ -279,3 +390,29 @@ Parameters:
 ## How to debug
 
 Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `debug or trace` in `run_spark_xx.sh`.
+
+## Using BigDL PPML Occlum EHSM Attestation Server in k8s
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
+We assume you have already set up environment and enroll yourself on EHSM.
+
+In driver.yaml and executor.yaml. Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
+and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then you can change `CHALLENGE` and
+`REPORT_DATA` for attestation. But now in k8s it's not perfect, causing each executor need to register again unnecessarily.
+
+``` yaml
+#*.yaml
+- name: ATTESTATION   #set to true to start attestation.
+  value: false   
+- name: PCCS_URL   #PCCS URL, obtained from KMS services or a self-deployed one. Should match the format https://<ip_address>:<port>.
+  value: "https://PCCS_IP:PCCS_PORT"  
+- name: ATTESTATION_URL   #URL of attestation service. Should match the format <ip_address>:<port>.
+  value: "ESHM_IP:EHSM_PORT"
+- name: APP_ID   #The appId generated by your attestation service.
+  value: your_app_id
+- name: API_KEY   #The apiKey generated by your attestation service.
+  value: your_api_key
+- name: CHALLENGE   #Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command echo ppml|base64.
+  value: cHBtbAo=
+- name: REPORT_DATA   #A random String to generator a quote which will be send to attestation service and use for attest.
+  value: ppml
+```

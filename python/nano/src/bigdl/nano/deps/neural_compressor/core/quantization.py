@@ -128,14 +128,13 @@ class BaseQuantization(Quantization):
         for quantization.
         """
         if self.cfg.quantization.approach == 'post_training_static_quant':
-            invalidInputError(calib_dataloader,
-                              "calib_calib_dataloader must not be None"
+            invalidInputError(calib_dataloader is not None,
+                              "calib_dataloader must not be None"
                               " when approach is post-training static quantization.")
-
         if self.cfg.quantization.approach == 'post_training_dynamic_quant':
             if not metric:
                 invalidInputError(calib_dataloader is None,
-                                  "calib_calib_dataloader should be None when approach is"
+                                  "calib_dataloader should be None when approach is"
                                   " post-training dynamic quantization and metric is None.")
 
         if metric and not calib_dataloader:

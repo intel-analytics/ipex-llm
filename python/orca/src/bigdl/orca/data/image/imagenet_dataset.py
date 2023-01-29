@@ -34,12 +34,18 @@ from datetime import datetime
 import math
 import os
 import random
-from typing import Iterable, List, Mapping, Union, Tuple
+from typing import TYPE_CHECKING, Iterable, List, Mapping, Union, Tuple
 import sys
 import threading
 
 import numpy as np
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+
+if TYPE_CHECKING:
+    from numpy import ndarray
+    import tensorflow as tf
+    from tensorflow.core.example.example_pb2 import Example
+    from tensorflow.core.example.feature_pb2 import Feature
 
 TRAINING_SHARDS = 1024
 VALIDATION_SHARDS = 128
@@ -52,7 +58,7 @@ VALIDATION_LABELS = 'synset_labels.txt'
 
 def convert_imagenet_to_tf_records(
         raw_data_dir: str,
-        output_dir: str) -> Tuple[List[str], List[str]]:
+        output_dir: str) -> None:
     """Converts the Imagenet dataset into TF-Record dumps."""
     import tensorflow as tf
     # Shuffle training records to ensure we are distributing classes
@@ -107,7 +113,7 @@ def convert_imagenet_to_tf_records(
 class ImageCoder(object):
     """Helper class that provides TensorFlow image coding utilities."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         import tensorflow as tf
         # Create a single Session to run all image coding calls.
         self._sess = tf.Session()
@@ -126,17 +132,17 @@ class ImageCoder(object):
         self._decode_jpeg_data = tf.placeholder(dtype=tf.string)
         self._decode_jpeg = tf.image.decode_jpeg(self._decode_jpeg_data, channels=3)
 
-    def png_to_jpeg(self, image_data: bytes):
+    def png_to_jpeg(self, image_data: bytes) -> "tf.Tensor":
         """Converts a PNG compressed image to a JPEG Tensor."""
         return self._sess.run(self._png_to_jpeg,
                               feed_dict={self._png_data: image_data})
 
-    def cmyk_to_rgb(self, image_data: bytes):
+    def cmyk_to_rgb(self, image_data: bytes) -> "tf.Tensor":
         """Converts a CMYK image to RGB Tensor."""
         return self._sess.run(self._cmyk_to_rgb,
                               feed_dict={self._cmyk_data: image_data})
 
-    def decode_jpeg(self, image_data: bytes):
+    def decode_jpeg(self, image_data: bytes) -> "tf.Tensor":
         """Decodes a JPEG image."""
         image = self._sess.run(self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
@@ -146,8 +152,8 @@ class ImageCoder(object):
 
 
 def _process_dataset(
-        filenames: Iterable[str],
-        synsets: Iterable[str],
+        filenames: List[str],
+        synsets: List[str],
         labels: Mapping[str, int],
         output_directory: str,
         prefix: str,
@@ -228,9 +234,9 @@ def _process_image(
 def _process_image_files_batch(
         coder: ImageCoder,
         output_file: str,
-        filenames: Iterable[str],
-        synsets: Iterable[Union[str, bytes]],
-        labels: Mapping[str, int]):
+        filenames: List[str],
+        synsets: List[str],
+        labels: Mapping[str, int]) -> None:
     """
     Processes and saves a list of images as TFRecords.
 
@@ -255,22 +261,22 @@ def _process_image_files_batch(
     writer.close()
 
 
-def _check_or_create_dir(directory: str):
+def _check_or_create_dir(directory: str) -> None:
     import tensorflow as tf
     """Checks if directory exists otherwise creates it."""
     if not tf.gfile.Exists(directory):
         tf.gfile.MakeDirs(directory)
 
 
-def _int64_feature(value: Union[int, Iterable[int]]):
+def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
     """Inserts int64 features into Example proto."""
     import tensorflow as tf
     if not isinstance(value, list):
-        value = [value]
+        value = [value]  # type: ignore
     return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
 
 
-def _bytes_feature(value: Union[bytes, str]):
+def _bytes_feature(value: Union[bytes, str]) -> "Feature":
     """Inserts bytes features into Example proto."""
     import tensorflow as tf
     if isinstance(value, str):
@@ -283,7 +289,7 @@ def _convert_to_example(filename: str,
                         label: int,
                         synset: str,
                         height: int,
-                        width: int):
+                        width: int) -> "Example":
     """
     Builds an Example proto for an ImageNet example.
 

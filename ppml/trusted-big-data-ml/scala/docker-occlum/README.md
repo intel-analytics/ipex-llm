@@ -19,10 +19,10 @@ You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://g
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
 ```
 
-Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
+Also, you can build the image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
 
 Build the docker image:
 
@@ -30,10 +30,10 @@ Build the docker image:
 bash build-docker-image.sh
 ```
 
-## Before run example
+## Before running the example
 
 ### Check Device
-Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
+Before running any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
 ```
@@ -45,7 +45,7 @@ or:
   --device=/dev/sgx/provision
 ```
 
-## Spark 3.1.2 Pi example
+## Spark 3.1.3 Pi example
 
 To run Spark Pi example, start the docker container with:
 
@@ -72,7 +72,7 @@ Pi is roughly 3.1436957184785923
 
 To train a model with PPML in BigDL, you need to prepare the data first. You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). There are 5 files in total. `train-images-idx3-ubyte` contains train images; `train-labels-idx1-ubyte` is the train label file; `t10k-images-idx3-ubyte` has validation images; `t10k-labels-idx1-ubyte` contains validation labels. Unzip all the files and put them in a new directory `data`.
 
-**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change data path in `start-spark-local.sh`.**
+**By default, `data` dir will be mounted to `/opt/occlum_spark/data` in container (become `/host/data` in occlum). You can change the data path in `start-spark-local.sh`.**
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
@@ -209,7 +209,7 @@ And the log files will be saved to `data/olog` folder.
 ## BigDL XGBoost Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
@@ -223,9 +223,10 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
-You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh xgboost in docker container.
 ``` bash
-#start-spark-local.sh
+#run_spark_on_occlum_glibc.sh
+#run_spark_xgboost()
 -i /host/data        // -i means inputpath of training data
 -s /host/data/model  // -s means savepath of model
 -t 2                 // -t means threads num
@@ -239,14 +240,14 @@ Start run BigDL Spark XGBoost example:
 bash start-spark-local.sh xgboost
 ```
 
-The console output looks like:
+The console output looks like this:
 ```
 [INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 [INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 ```
 
-You can find XGBoost model under folder `/path/to/data/`.
+You can find XGBoost model under the folder `/path/to/data/`.
 ```
 /path/to/data/
 ├── data
@@ -259,7 +260,7 @@ You can find XGBoost model under folder `/path/to/data/`.
 ## BigDL GBT Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/1g_data:/opt/occlum_spark/data
 ```
@@ -273,9 +274,10 @@ You can enlarge the configuration in [start-spark-local.sh](https://github.com/i
 -e SGX_KERNEL_HEAP=1GB \
 ```
 
-You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh gbt in docker container.
 ``` bash
 #start-spark-local.sh
+#run_spark_gbt()
 -i /host/data        // -i means inputpath of training data
 -s /host/data/model  // -s means savepath of model
 -I 100               // -r means maxInter
@@ -297,24 +299,288 @@ You can find GBT result under folder `/path/to/data/`.
     └── _SUCCESS
 ```
 
+## BigDL GBT e2e Example
+
+### Download data
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/1g_data:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+-e APP_ID=your_app_id \
+-e API_KEY=your_api_key \
+```
+
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh gbt_e2e in docker container.
+``` bash
+#start-spark-local.sh
+-i /host/data/encrypt  // -i means inputpath of encrypt training data
+-s /host/data/model  // -s means savepath of model
+-I 100               // -r means maxInter
+-d 5                 // -d means maxDepth
+```
+
+Start run BigDL Spark GBT e2e example:
+
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate keys for encrypt and decrypt.
+```
+bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+```
+3.To encrypt input data. For example, you mount a file called day_0_1g.csv.
+```
+bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/day_0_1g.csv
+```
+4.Change the suffix of the encrypted file to cbc and move to right place.
+```
+mv /opt/occlum_spark/data/day_0_1g.csv.encrypted /opt/occlum_spark/data/encrypt/day_0_1g.csv.encrypted.cbc
+```
+5.To run the BigDL GBT e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh gbt_e2e
+```
+You can find GBT result under folder `/path/to/data/`.
+```
+/path/to/data/
+├── data
+├── treesMetadata
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```
+
+## BigDL SimpleQuery e2e Example
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+-e APP_ID=your_app_id \
+-e API_KEY=your_api_key \
+```
+
+Start run BigDL Spark SimpleQuery e2e example:
+
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate keys for encrypt and decrypt.
+```
+bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
+```
+4.To encrypt input data. For example, you mount a file called people.csv.
+```
+bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+```
+5.Change the suffix of the encrypted file to cbc and move to right place.
+```
+mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
+```
+6.To run the BigDL SimpleQuery e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
+```
+7.To decrypt the result.You can find sql result under folder `/opt/occlum_spark/data/model`.
+```
+bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
+```
+
+## PySpark 3.1.3 Pi example
+
+To run PySpark Pi example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pypi
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=10GB \
+-e SGX_THREAD=512 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can see Pi result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
+
+```bash
+Pi is roughly 3.1436957184785923
+```
+
+## PySpark 3.1.3 SQL example
+
+To run PySpark SQL example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pysql
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+## PySpark sklearn LinearRegression example
+
+To run PySpark sklearn example, start the docker container with:
+
+``` bash
+bash start-spark-local.sh pysklearn
+```
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can see result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
+
 ## How to debug
-Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `start-spark-local.sh`. 
+Modify the `SGX_LOG_LEVEL` to one of `off, debug and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.
 When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.
 
-## Start BigDL PPML Occlum Attestation Server
-Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
-```commandline
-bash start-occlum-attestation-server.sh
+## How to enabled hdfs encryption service
+You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information.
+### How to start hadoop KMS service
+1.	Make sure you can correctly start and use hdfs
+2.	To config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.), for example:
+```xml
+<property>
+    <name>hadoop.security.key.provider.path</name>
+    <value>kms://http@172.168.0.205:9600/kms</value>
+    <description>
+        The KeyProvider to use when interacting with encryption keys used
+        when reading and writing to an encryption zone.
+    </description>
+</property>
 ```
-You will see:
+3. To config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file. 
+```xml
+<property>
+    <name>hadoop.kms.key.provider.uri</name>
+    <value>jceks://file@/${user.home}/kms.keystore</value>
+</property>
 ```
-Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
+4. Restart you hdfs server. 
+```bash
+sbin/stop-dfs.sh  sbin/start-dfs.sh
+```
+5. Start KMS server. 
+```bash
+hadoop --daemon start|stop kms
+```
+6. Run this bash command to check if the KMS started 
+```bash
+hadoop key list
 ```
 
-Get `image_key`:
-```commandline
-docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
+### How to use KMS to encrypt and decrypt data
+1. Create a new encryption key for an encryption zone
+```bash
+hadoop key create mykey
+```
+2.	Create a new empty directory(must) and make it an encryption zone
+```bash
+hdfs crypto -createZone -keyName mykey -path /empty_zone
+```
+3.	Get encryption information from the file
+```bash
+hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
+```
+4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml. It will be hotbooted after every update. For example:
+```xml
+<property>
+    <name>key.acl.mykey.ALL</name>
+    <value>use_a group_a</value>
+</property>
+```
+5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone.view encrypted zone:
+```bash
+hdfs  crypto -listZones
 ```
 
-## Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`. We have already done it for you.
+## Using BigDL Orca pytorch and tensorflow in SGX
+Introduction to [BigDL-Orca](https://bigdl.readthedocs.io/en/latest/doc/Orca/index.html).
+Using a new image to test,and Occlum instance is already built in it. image_name:intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:orca-test-build.
+```bash
+#test.sh
+bash /opt/mount.sh
+occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "/opt/spark/conf/:/opt/spark/jars/*:/bin/jars/*" \
+                -Xmx3g org.apache.spark.deploy.SparkSubmit \
+                --conf "spark.pyspark.python=/bin/python3" \
+                /py-examples/$1
+```
+### [Orca-pytorch quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html)
+1.Set PROXY and enter the container according to the previous steps
+
+2.Runnig Orca-pytorch quickstart example
+```bash
+cd /opt/occlum_spark && bash test.sh orca-pytorch.py
+```
+
+### [Orca-tensorflow quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html)
+1.Set PROXY and Enter the container according to the previous steps
+
+2.Runnig Orca-tensorflow quickstart example
+```bash
+cd /opt/occlum_spark && bash test.sh orca-tf.py
+```
+## Using BigDL PPML Occlum EHSM Attestation Server
+Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following the [guide](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts)
+We assume you have already set up environment and enroll yourself on EHSM.
+
+In [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh). Set `ATTESTATION` = true and modify `PCCL_URL`, `ATTESTATION_URL` to the env value you have set,
+and modify `APP_ID`, `API_KEY` to the value you have get  when enroll, and then you can change `CHALLENGE` and
+`REPORT_DATA` for attestation.
+
+``` bash
+#start-spark-local.sh
+-e ATTESTATION=false \   set to true to start attestation.
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \  PCCS URL, obtained from KMS services or a self-deployed one. Should match the format https://<ip_address>:<port>.
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \  URL of attestation service. Should match the format <ip_address>:<port>.
+-e APP_ID=your_app_id \ The appId generated by your attestation service.
+-e API_KEY=your_api_key \ The apiKey generated by your attestation service.
+-e CHALLENGE=cHBtbAo= \ Challenge is optional. Challenge is to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command echo ppml|base64.
+-e REPORT_DATA=ppml \ A random String to generator a quote which will be send to attestation service and use for attest. Default is ppml.
+```

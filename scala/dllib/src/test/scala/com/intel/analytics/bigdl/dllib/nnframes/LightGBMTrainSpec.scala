@@ -19,11 +19,14 @@ package com.intel.analytics.bigdl.dllib.nnframes
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMClassifier => MLightGBMClassifier}
 import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMRegressor => MLightGBMRegressor}
+import ml.dmlc.xgboost4j.scala.spark.TrackerConf
 import org.apache.spark.SparkConf
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
+import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
 
 
 class LightGBMTrainSpec extends ZooSpecHelper {
@@ -296,5 +299,61 @@ class LightGBMTrainSpec extends ZooSpecHelper {
     })
   }
 
+ /* "comparison with xgb" should "work" in {
+    val inputPath = "/Users/guoqiong/intelWork/data/iris/iris.data"
+    Engine.init
+    val spark = SparkSession.builder().getOrCreate()
+    val schema = new StructType(Array(
+      StructField("sepal length", DoubleType, true),
+      StructField("sepal width", DoubleType, true),
+      StructField("petal length", DoubleType, true),
+      StructField("petal width", DoubleType, true),
+      StructField("class", StringType, true)))
+    val df = spark.read.schema(schema).csv(inputPath)
+
+    val stringIndexer = new StringIndexer()
+      .setInputCol("class")
+      .setOutputCol("classIndex")
+      .fit(df)
+    val labelTransformed = stringIndexer.transform(df).drop("class")
+    // compose all feature columns as vector
+    val vectorAssembler = new VectorAssembler().
+      setInputCols(Array("sepal length", "sepal width", "petal length", "petal width")).
+      setOutputCol("features")
+    val xgbInput = vectorAssembler.transform(labelTransformed).select("features",
+      "classIndex")
+
+    val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
+
+    val xgbParam = Map("tracker_conf" -> TrackerConf(60*60, "scala"),
+      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2))
+
+    val xgbClassifier = new XGBClassifier(xgbParam)
+    xgbClassifier.setFeaturesCol("features")
+    xgbClassifier.setLabelCol("classIndex")
+    xgbClassifier.setNumClass(3)
+    xgbClassifier.setObjective("multi:softprob")
+    val xgbClassificationModel = xgbClassifier.fit(train)
+    xgbClassificationModel.setFeaturesCol("features")
+    val xgbpredictions = xgbClassificationModel.transform(test)
+
+    val classifier = new LightGBMClassifier()
+    classifier.setFeaturesCol("features")
+    classifier.setLabelCol("classIndex")
+    classifier.setObjective("multiclass")
+    val model = classifier.fit(train)
+    val predictions = model.transform(test)
+
+    val evaluatorMulti = new MulticlassClassificationEvaluator()
+      .setLabelCol("classIndex")
+      .setMetricName("accuracy")
+
+    val xgbacc = evaluatorMulti.evaluate(xgbpredictions)
+    val acc = evaluatorMulti.evaluate(predictions)
+    println("xgbacc: " + xgbacc)
+    println("acc:", acc)
+    sc.stop()
+  }
+*/
 }
 

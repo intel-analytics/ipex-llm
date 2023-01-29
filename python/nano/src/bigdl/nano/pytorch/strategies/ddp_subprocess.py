@@ -41,12 +41,11 @@ from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
 
 import pytorch_lightning as pl
-from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
 from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 import logging
 
@@ -81,15 +80,6 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 "PROCESS_IDX": str(i),
             } for i in range(self._strategy.num_processes)]
 
-        # fix bug, see ddp_spawn strategy for details
-        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
-            if isinstance(args[1], LightningDataModule):
-                args[1].trainer = None
-            elif isinstance(args[3], LightningDataModule):
-                args[3].trainer = None
-            elif isinstance(args[4], LightningDataModule):
-                args[4].trainer = None
-
         # the `return_queue` is necessary for recovering child process's state, we need
         # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in
         # `ddp_spawn.py` cannot be dumped, so we use `multiprocessing.Manager().Queue()` here,
@@ -120,6 +110,9 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             with open(os.path.join(temp_dir, "sys_path.pkl"), "wb") as f:
                 cloudpickle.dump(sys.path, f)
 
+            with open(os.path.join(temp_dir, "patch_status.pkl"), "wb") as f:
+                cloudpickle.dump(_get_patch_status(), f)
+
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
             for i in range(self._strategy.num_processes):
@@ -134,7 +127,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             for _, process in enumerate(processes):
                 process.wait()
             for _, process in enumerate(processes):
-                invalidInputError(process.returncode == 0, "subprocess exits incorrectly")
+                if process.returncode != 0:
+                    if not error_queue.empty():
+                        invalidInputError(False, f"{error_queue.get()}")
+                    else:
+                        invalidInputError(False, "subprocess exits incorrectly")
 
             # restore the state of child process
             spawn_output = return_queue.get()

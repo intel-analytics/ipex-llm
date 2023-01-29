@@ -19,6 +19,8 @@ from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
 from bigdl.nano.utils.log4Error import invalidInputError
+from keras.engine.training import Model as V2Model
+from keras.engine.training_v1 import Model as V1Model
 
 
 class TrainingUtils:
@@ -53,6 +55,7 @@ class TrainingUtils:
         tf.keras.Model.fit.
 
         Additional parameters:
+
         :param num_processes: when num_processes is not None, it specifies how many sub-processes
                        to launch to run pseudo-distributed training; when num_processes is None,
                        training will run in the current process.
@@ -81,6 +84,13 @@ class TrainingUtils:
             workers=workers,
             use_multiprocessing=use_multiprocessing,
         )
+
+        # adapt the different default param values of training_v1.Model and training.Model
+        if isinstance(self, V1Model):
+            if validation_batch_size is None:
+                fit_kwargs.pop("validation_batch_size")
+            if verbose == "auto":
+                fit_kwargs["verbose"] = 1
 
         if num_processes is not None:
             if validation_data is not None:

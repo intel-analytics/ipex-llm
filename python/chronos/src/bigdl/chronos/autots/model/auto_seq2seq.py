@@ -101,7 +101,7 @@ class AutoSeq2Seq(BaseAutomodel):
         if self.backend.startswith("torch"):
             from bigdl.chronos.model.Seq2Seq_pytorch import model_creator
         elif self.backend.startswith("keras"):
-            from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator
+            from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator_auto as model_creator
         else:
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,

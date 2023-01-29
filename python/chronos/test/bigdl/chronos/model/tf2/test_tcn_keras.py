@@ -17,10 +17,14 @@
 import tempfile
 import numpy as np
 import pytest
-import tensorflow as tf
+from ... import op_tf2
 
 from unittest import TestCase
-from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet, TemporalBlock
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+model_creator = LazyImport('bigdl.chronos.model.tf2.TCN_keras.model_creator')
+TemporalConvNet = LazyImport('bigdl.chronos.model.tf2.TCN_keras.TemporalConvNet')
+TemporalBlock = LazyImport('bigdl.chronos.model.tf2.TCN_keras.TemporalBlock')
 
 
 def create_data():
@@ -39,7 +43,7 @@ def create_data():
     test_data = get_x_y(test_num_samples)
     return train_data, test_data
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
+@op_tf2
 class TestTcnKeras(TestCase):
 
     def setUp(self):
@@ -85,7 +89,9 @@ class TestTcnKeras(TestCase):
         model_res = model.evaluate(test_data[0], test_data[1])
         restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
-        assert isinstance(restore_model, TemporalConvNet)
+        temp_TemporalConvNet = TemporalConvNet(past_seq_len=20, future_seq_len=10,
+                                               input_feature_num=10, output_feature_num=2).__class__
+        assert isinstance(restore_model, temp_TemporalConvNet)
 
 
 if __name__ == '__main__':

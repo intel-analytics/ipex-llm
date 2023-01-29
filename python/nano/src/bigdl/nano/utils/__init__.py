@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-
 from .util import deprecated
+from .util import CPUInfo

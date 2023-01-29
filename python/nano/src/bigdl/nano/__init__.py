@@ -16,6 +16,7 @@
 import os
 from logging import warning
 
+
 envs_checklist = ["LD_PRELOAD", "OMP_NUM_THREADS", "KMP_AFFINITY",
                   "KMP_BLOCKTIME"]
 
@@ -38,3 +39,10 @@ def _check_nano_envs():
 
 # disable env check for now, as it does not work for tf and windows
 # _check_nano_envs()
+
+
+import atexit
+from bigdl.nano.utils.log4warning import output_suggestions
+
+
+atexit.register(output_suggestions)

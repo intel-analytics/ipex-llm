@@ -6,7 +6,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --name spark-gbt \
     --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
     --conf spark.rpc.netty.dispatcher.numThreads=32 \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \
@@ -15,7 +15,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.sgx.log.level=off \
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="15GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
@@ -33,5 +32,5 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="3G" \
     --conf spark.rpc.askTimeout=600s \
     --conf spark.executor.heartbeatInterval=100s \
-    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.2.jar \
+    local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar \
     -i /host/data/gbt_data -s /host/data/path_to_save -I 20 -d 5

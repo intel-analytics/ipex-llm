@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: flink-main-container
+    volumeMounts:
+      - name: kubeconf
+        mountPath: /root/.kube
+      - name: device-plugin
+        mountPath: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: secure-keys
+        mountPath: /ppml/keys
+    resources:
+      requests:
+        cpu: 8
+        memory: 32Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
+      limits:
+        cpu: 10
+        memory: 40Gi
+        sgx.intel.com/epc: 34359738368
+        sgx.intel.com/enclave: 1
+        sgx.intel.com/provision: 1
+  volumes:
+    - name: device-plugin
+      hostPath:
+        path: /var/lib/kubelet/device-plugins
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket
+    - name: secure-keys
+      secret:
+        secretName: ssl-keys
+    - name: kubeconf
+      secret:
+        secretName: kubeconf

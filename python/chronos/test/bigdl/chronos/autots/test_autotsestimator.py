@@ -17,17 +17,17 @@
 from unittest import TestCase
 import pytest
 
-import torch
-import torch.nn as nn
-from torch.utils.data import TensorDataset, DataLoader
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
+tf = LazyImport('tensorflow')
+AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
+hp = LazyImport('bigdl.orca.automl.hp')
 import numpy as np
-from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
-from bigdl.orca.automl import hp
 import pandas as pd
-import tensorflow as tf
 
-from .. import op_all, op_onnxrt16
+from .. import op_torch, op_tf2, op_distributed, op_inference
 
 def get_ts_df():
     sample_num = np.random.randint(100, 200)
@@ -52,6 +52,8 @@ def get_tsdataset():
 def get_data_creator(backend="torch"):
     if backend == "torch":
         def data_creator(config):
+            import torch
+            from torch.utils.data import TensorDataset, DataLoader
             tsdata = get_tsdataset()
             x, y = tsdata.roll(lookback=7, horizon=1).to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
@@ -68,39 +70,44 @@ def get_data_creator(backend="torch"):
         return data_creator
 
 
-class CustomizedNet(nn.Module):
-    def __init__(self,
-                 dropout,
-                 input_size,
-                 input_feature_num,
-                 hidden_dim,
-                 output_size):
-        '''
-        Simply use linear layers for multi-variate single-step forecasting.
-        '''
-        super().__init__()
-        self.fc1 = nn.Linear(input_size*input_feature_num, hidden_dim)
-        self.dropout = nn.Dropout(dropout)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_dim, output_size)
+def gen_CustomizedNet():
+    import torch
+    import torch.nn as nn
+    class CustomizedNet(nn.Module):
+        def __init__(self,
+                     dropout,
+                     input_size,
+                     input_feature_num,
+                     hidden_dim,
+                     output_size):
+            '''
+            Simply use linear layers for multi-variate single-step forecasting.
+            '''
+            super().__init__()
+            self.fc1 = nn.Linear(input_size*input_feature_num, hidden_dim)
+            self.dropout = nn.Dropout(dropout)
+            self.relu1 = nn.ReLU()
+            self.fc2 = nn.Linear(hidden_dim, output_size)
 
-    def forward(self, x):
-        # x.shape = (num_sample, input_size, input_feature_num)
-        x = x.view(-1, x.shape[1]*x.shape[2])
-        x = self.fc1(x)
-        x = self.dropout(x)
-        x = self.relu1(x)
-        x = self.fc2(x)
-        # x.shape = (num_sample, output_size)
-        x = torch.unsqueeze(x, 1)
-        # x.shape = (num_sample, 1, output_size)
-        return x
+        def forward(self, x):
+            # x.shape = (num_sample, input_size, input_feature_num)
+            x = x.view(-1, x.shape[1]*x.shape[2])
+            x = self.fc1(x)
+            x = self.dropout(x)
+            x = self.relu1(x)
+            x = self.fc2(x)
+            # x.shape = (num_sample, output_size)
+            x = torch.unsqueeze(x, 1)
+            # x.shape = (num_sample, 1, output_size)
+            return x
+    return CustomizedNet
 
 
 def model_creator_pytorch(config):
     '''
     Pytorch customized model creator
     '''
+    CustomizedNet = gen_CustomizedNet()
     return CustomizedNet(dropout=config["dropout"],
                          input_size=config["past_seq_len"],
                          input_feature_num=config["input_feature_num"],
@@ -127,6 +134,7 @@ def model_creator_keras(config):
     return model
 
 
+@op_distributed
 class TestAutoTrainer(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -136,6 +144,7 @@ class TestAutoTrainer(TestCase):
         from bigdl.orca import stop_orca_context
         stop_orca_context()
 
+    @op_torch
     def test_fit_third_party_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -165,13 +174,14 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -195,7 +205,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_fit_third_party_feature_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
@@ -220,6 +230,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_fit_third_party_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
@@ -249,7 +260,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
-    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
+    @op_tf2
     def test_fit_third_party_data_creator_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
@@ -274,8 +285,10 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_fit_customized_metrics(self):
         from sklearn.preprocessing import StandardScaler
+        import torch
         from torchmetrics.functional import mean_squared_error
         import random
 
@@ -308,8 +321,8 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -335,13 +348,14 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -376,8 +390,8 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -404,13 +418,14 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -445,8 +460,8 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
-    @op_all
-    @op_onnxrt16
+    @op_torch
+    @op_inference
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -473,13 +488,14 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+        from bigdl.chronos.autots import TSPipeline
         assert isinstance(ts_pipeline, TSPipeline)
 
         # use raw base model to predic and evaluate
         tsdata_valid.roll(lookback=best_config["past_seq_len"],
                           horizon=0,
                           feature_col=best_config["selected_features"])
-        x_valid, y_valid = tsdata_valid.to_numpy()
+        x_valid = tsdata_valid.to_numpy()
         y_pred_raw = best_model.predict(x_valid)
         y_pred_raw = tsdata_valid.unscale_numpy(y_pred_raw)
 
@@ -514,6 +530,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @op_torch
     def test_fit_lstm_data_creator(self):
         input_feature_dim = 4
         output_feature_dim = 2  # 2 targets are generated in get_tsdataset
@@ -544,6 +561,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @op_torch
     def test_select_feature(self):
         sample_num = np.random.randint(100, 200)
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
@@ -584,6 +602,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config['past_seq_len'] == 6
 
+    @op_torch
     def test_future_list_input(self):
         sample_num = np.random.randint(100, 200)
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
@@ -618,6 +637,7 @@ class TestAutoTrainer(TestCase):
         assert config['future_seq_len'] == 2
         assert auto_estimator._future_seq_len == [1, 3]
 
+    @op_torch
     def test_autogener_best_cycle_length(self):
         sample_num = 100
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),

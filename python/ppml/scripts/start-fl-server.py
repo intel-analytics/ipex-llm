@@ -19,24 +19,26 @@ import os
 import fnmatch
 import getopt
 
-for files in os.listdir('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/'):
-    if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
-        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files)
-        sys.path.append('/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/' + files + '/bigdl/ppml/fl/nn/generated')
+for dirs in os.listdir('/ppml/trusted-big-data-ml/work'):
+    if fnmatch.fnmatch(dirs, 'bigdl-*'):
+        path = '/ppml/trusted-big-data-ml/work/' + dirs + '/python/'
+        for files in os.listdir(path):
+            if fnmatch.fnmatch(files, 'bigdl-ppml-*-python-api.zip'):
+                sys.path.append(path + files)
+                sys.path.append(path + files + '/bigdl/ppml/fl/nn/generated')
 
 from bigdl.ppml.fl.nn.fl_server import FLServer
 
 if __name__ == '__main__':
 
     client_num = 2
-    port = 8980
-    
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "hc:p:", ["client-num=", "port="])
     except getopt.GetoptError:
         print("start_fl_server.py -c <client-num> -p <port>")
         sys.exit(2)
-    
+
     for opt, arg in opts:
         if opt == '-h':
             print("start_fl_server.py -c <client-num> -p <port>")
@@ -51,3 +53,4 @@ if __name__ == '__main__':
     fl_server.start()
 
     fl_server.wait_for_termination()
+

@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.ppml.examples
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -46,7 +45,7 @@ object SimpleQuerySparkExample extends Supportive {
       // load csv file to data frame with ppmlcontext.
       val df = timing("1/3 loadInputs") {
         sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
-          .csv(arguments.inputPath + "/people.csv")
+          .csv(arguments.inputPath)
       }
 
       val developers = timing("2/3 doSQLOperations") {

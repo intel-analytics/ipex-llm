@@ -9,7 +9,7 @@ conda activate my_env
 pip install --pre --upgrade bigdl-chronos[all]
 pip install pytorch_forecasting  # note: you need to install a version >= 0.10.0
 ```
-Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
+Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html)
 
 ## Prepare data
 We use ``pytorch_forecasting.data.example.generate_ar_data`` to generate our data automatically.

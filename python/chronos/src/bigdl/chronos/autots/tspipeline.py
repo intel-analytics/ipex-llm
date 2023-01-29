@@ -15,7 +15,8 @@
 #
 
 import os
-import torch
+from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 import types
 import numpy as np
 
@@ -152,7 +153,7 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         # predict with onnx
@@ -165,9 +166,10 @@ class TSPipeline:
                                                   batch_size=batch_size)
             else:
                 if self._onnxruntime_fp32 is None:
-                    self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                           input_sample=torch.from_numpy(x[0:1]),
-                                                           accelerator="onnxruntime")
+                    self._onnxruntime_fp32 =\
+                        InferenceOptimizer.trace(self._best_model,
+                                                 input_sample=torch.from_numpy(x[0:1]),
+                                                 accelerator="onnxruntime")
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                   input_data=x,
                                                   batch_size=batch_size)
@@ -185,9 +187,10 @@ class TSPipeline:
                                                       batch_size=batch_size)
                 else:
                     if self._onnxruntime_fp32 is None:
-                        self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                               input_sample=x[0:1],
-                                                               accelerator="onnxruntime")
+                        self._onnxruntime_fp32 =\
+                            InferenceOptimizer.trace(self._best_model,
+                                                     input_sample=x[0:1],
+                                                     accelerator="onnxruntime")
                     yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                       input_data=x.numpy(),
                                                       batch_size=batch_size)
@@ -219,7 +222,7 @@ class TSPipeline:
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
                                                   input_data=x,
@@ -261,11 +264,11 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
-            x, _ = self._tsdataset_to_numpy(data, is_predict=True)
+            x = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
@@ -273,9 +276,10 @@ class TSPipeline:
                                                   batch_size=batch_size)
             else:
                 if self._onnxruntime_fp32 is None:
-                    self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                           input_sample=torch.from_numpy(x[0:1]),
-                                                           accelerator="onnxruntime")
+                    self._onnxruntime_fp32 =\
+                        InferenceOptimizer.trace(self._best_model,
+                                                 input_sample=torch.from_numpy(x[0:1]),
+                                                 accelerator="onnxruntime")
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                   input_data=x,
                                                   batch_size=batch_size)
@@ -291,9 +295,10 @@ class TSPipeline:
                                                       batch_size=batch_size)
                 else:
                     if self._onnxruntime_fp32 is None:
-                        self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                               input_sample=x[0:1],
-                                                               accelerator="onnxruntime")
+                        self._onnxruntime_fp32 =\
+                            InferenceOptimizer.trace(self._best_model,
+                                                     input_sample=x[0:1],
+                                                     accelerator="onnxruntime")
                     yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                       input_data=x.numpy(),
                                                       batch_size=batch_size)
@@ -565,11 +570,12 @@ class TSPipeline:
     def _tsdataset_to_numpy(self, data, is_predict=False):
         self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
-        horizon = 0 if is_predict else self._best_config["future_seq_len"]
+        horizon = self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
         data.roll(lookback=lookback,
                   horizon=horizon,
-                  feature_col=selected_features)
+                  feature_col=selected_features,
+                  is_predict=is_predict)
         return data.to_numpy()
 
     def _check_mixed_data_type_usage(self):

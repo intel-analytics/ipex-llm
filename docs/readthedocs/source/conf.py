@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -31,18 +31,38 @@ sys.path.insert(0, os.path.abspath("../../../python/serving/src/"))
 sys.path.insert(0, os.path.abspath("../../../python/nano/src/"))
 
 # -- Project information -----------------------------------------------------
-import sphinx_rtd_theme
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-#html_theme = "sphinx_book_theme"
+html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-    "repository_url": "https://github.com/intel-analytics/BigDL",
-    "use_repository_button": True,
-    "use_issues_button": True,
-    "use_edit_page_button": True,
-    "path_to_docs": "doc/source",
-    "home_page_in_toc": True,
+  "header_links_before_dropdown": 8,
+  "icon_links": [
+        {
+            "name": "GitHub Repository for BigDL",
+            "url": "https://github.com/intel-analytics/BigDL",
+            "icon": "fa-brands fa-square-github",
+            "type": "fontawesome",
+        }
+   ],
+   "navbar_start": ["navbar-logo.html", "version_badge.html"],
+   "navbar_end": ["navbar-icon-links.html"], # remove dark mode for now
 }
+
+# add search bar to side bar
+html_sidebars = {
+    "index": [
+        "sidebar_quicklinks.html"
+    ],
+    "**": ["sidebar_backbutton.html","sidebar-nav-bs.html"]
+}
+
+# remove dark mode for now
+html_context = {
+    "default_mode": "light" 
+}
+
+html_logo = "../image/bigdl_logo.png"
+
+# hard code it for now, may change it to read from installed bigdl
+release = "latest"
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser
@@ -92,7 +112,9 @@ extensions = [
     'sphinx_external_toc',
     'sphinx_design',
     'nbsphinx',
-    'nbsphinx_link'
+    'nbsphinx_link',
+    'sphinx.ext.graphviz', # for embedded graphviz diagram
+    'sphinxcontrib.mermaid' # for Mermaid diagram
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -136,6 +158,13 @@ exclude_patterns = ['_build']
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+# add js/css for customizing each page
+html_js_files = [
+    'js/custom.js'
+]
+html_css_files = [
+    'css/custom.css',
+]
 
 # Custom sidebar templates, must be a dictionary that maps document namesan
 # to template names.
@@ -247,3 +276,9 @@ def setup(app):
 
 # disable notebook execution
 nbsphinx_execute = 'never'
+
+# make output of graphviz diagram to svg
+graphviz_output_format = 'svg'
+
+# disable automatically included mermaid.js from sphinxcontrib-mermaid to load it before require.js
+mermaid_version=""

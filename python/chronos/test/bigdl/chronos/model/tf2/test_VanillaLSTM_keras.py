@@ -16,11 +16,14 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel, model_creator
-import tensorflow as tf
+from ... import op_tf2
 import numpy as np
 import tempfile
 import os
+from bigdl.chronos.utils import LazyImport
+tf = LazyImport('tensorflow')
+LSTMModel = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras.LSTMModel')
+model_creator = LazyImport('bigdl.chronos.model.tf2.VanillaLSTM_keras.model_creator')
 
 
 def create_data():
@@ -43,8 +46,9 @@ def create_data():
     return train_data, val_data, test_data
 
 
-@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+@op_tf2
 class TestVanillaLSTM(TestCase):
+
     def setUp(self):
         pass
 
@@ -84,7 +88,10 @@ class TestVanillaLSTM(TestCase):
         model_res = model.evaluate(test_data[0], test_data[1])
         restore_model_res = restore_model.evaluate(test_data[0], test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)        
-        assert isinstance(restore_model, LSTMModel)
+        temp_LSTMModel = LSTMModel(input_dim=4, hidden_dim=[32, 32],
+                                   layer_num=2, dropout=[0.2, 0.2],
+                                   output_dim=test_data[-1].shape[-1]).__class__
+        assert isinstance(restore_model, temp_LSTMModel)
 
     def test_lstm_freeze_training(self):
         # freeze dropout in layers

@@ -13,29 +13,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def PytorchONNXRuntimeModel(model, input_sample=None,
                             onnxruntime_session_options=None,
+                            simplification=True,
+                            dynamic_axes=True,
                             **export_kwargs):
     """
         Create a ONNX Runtime model from pytorch.
 
-        :param model: 1. Pytorch model to be converted to ONNXRuntime for inference
+        :param model: 1. Pytorch model to be converted to ONNXRuntime for inference.
                       2. Path to ONNXRuntime saved model.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
         :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param simplification: whether we use onnxsim to simplify the ONNX model, only valid when
+                               accelerator='onnxruntime', otherwise will be ignored. If this option
+                               is set to True, new dependency 'onnxsim' need to be installed.
+        :param dynamic_axes: dict or boolean, default to True. By default the exported onnx model
+                             will have the first dim of each Tensor input as a dynamic batch_size.
+                             If dynamic_axes=False, the exported model will have the shapes of all
+                             input and output tensors set to exactly match those given in
+                             input_sample. To specify axes of tensors as dynamic (i.e. known only
+                             at run-time), set dynamic_axes to a dict with schema:
+
+                             | KEY (str): an input or output name. Each name must also be provided
+                             | in input_names or output_names.
+                             |
+                             | VALUE (dict or list): If a dict, keys are axis indices and values
+                             | are axis names. If a list, each element is an axis index.
+
+                             If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
     return PytorchONNXRuntimeModel(model, input_sample,
                                    onnxruntime_session_options=onnxruntime_session_options,
+                                   simplification=simplification,
+                                   dynamic_axes=dynamic_axes,
                                    **export_kwargs)
 
 
-def load_onnxruntime_model(path):
-    from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
-    return PytorchONNXRuntimeModel._load(path)
+def load_onnxruntime_model(path, framework='pytorch'):
+    if framework == 'pytorch':
+        from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
+        return PytorchONNXRuntimeModel._load(path)
+    elif framework == 'tensorflow':
+        from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
+        return KerasONNXRuntimeModel._load(path)
+    else:
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")
+
+
+def KerasONNXRuntimeModel(model, input_spec,
+                          onnxruntime_session_options=None,
+                          **export_kwargs):
+    """
+    Create a ONNX Runtime model from tensorflow.
+
+    :param model: 1. Keras model to be converted to ONNXRuntime for inference
+                  2. Path to ONNXRuntime saved model
+    :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining
+                       the shape/dtype of the input
+    :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
+    """
+    from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
+    return KerasONNXRuntimeModel(model, input_spec,
+                                 onnxruntime_session_options=onnxruntime_session_options,
+                                 **export_kwargs)

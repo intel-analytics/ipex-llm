@@ -14,26 +14,26 @@
 # limitations under the License.
 #
 
-import contextlib
-import subprocess
-from logging import info, warning
 
 from ...utils.log4Error import invalidInputError
 
 from .ipex_inference_model import PytorchIPEXJITModel
-from bigdl.nano.pytorch.amp.bfloat16 import autocast
+from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.utils import CPUInfo
 import torch
 
 
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
-                 use_jit=False, channels_last=None, from_load=False):
+                 use_jit=False, channels_last=None, channels_last_available=[],
+                 thread_num=None, from_load=False, inplace=False, jit_strict=True,
+                 jit_method=None, weights_prepack=None, enable_onednn=True):
         '''
         This is the accelerated model for pytorch and ipex/jit.
-        All the external API is based on Trainer, so what we have here is
+        All the external API is based on InferenceOptimizer, so what we have here is
         basically internal APIs and subject to change.
 
-        This PytorchIPEXJITModel will serve for fp32 and ipex>1.9 models.
+        This PytorchIPEXJITBF16Model will serve for bf16 and ipex>1.9 models.
         :param model: the model(nn.module) to be transform if from_load is False
                the accelerated model if from_load is True.
         :param input_sample: torch tensor indicate the data sample to be used
@@ -42,7 +42,19 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param use_jit: if use jit to accelerate the model
         :param channels_last: if set model and data to be channels-last mode.
                the parameter will be ignored if use_ipex is False.
+        :param thread_num: the thread num allocated for this model.
         :param from_load: this will only be set by _load method.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param jit_strict: Whether recording your mutable container types.
+        :param jit_method: use ``jit.trace`` or ``jit.script`` to
+               convert a model to TorchScript.
+        :param weights_prepack: Whether to perform weight prepack for convolution and linear
+               to avoid oneDNN weights reorder. The default value is None. Explicitly setting
+               this knob overwrites the configuration set by level knob. Only valid when
+               ``use_ipex=True``, otherwise will be ignored.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
+               API, which provides a flexible API for aggressive fusion. Default to
+               ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
         '''
         if use_ipex:
             invalidInputError(
@@ -50,32 +62,61 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                 errMsg="Applying IPEX BF16 optimization needs the cpu support avx512.",
                 fixMsg="Please set use_ipex to False or not set precision to bf16."
             )
+
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
-                                     channels_last=channels_last, from_load=from_load)
+                                     channels_last=channels_last,
+                                     channels_last_available=channels_last_available,
+                                     from_load=from_load, inplace=inplace, jit_strict=jit_strict,
+                                     jit_method=jit_method, weights_prepack=weights_prepack)
+        _accelerator = "jit" if use_jit is True else None
+        self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
+                                                              precision="bf16",
+                                                              thread_num=thread_num,
+                                                              enable_onednn=enable_onednn)
 
     @property
     def _check_cpu_isa(self):
         """Indicator to verify if cpu supports avx512"""
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        return 'avx512' in msg or 'amx' in msg
-
-    def autocast_context_manager(self):
-        """Create autocast context"""
-        return autocast(enabled=self._check_cpu_isa)
-
-    @contextlib.contextmanager
-    def forward_context(self):
-        """Enable autocast context"""
-        with self.autocast_context_manager():
-            yield
-
-    def forward_step(self, *inputs):
-        with self.forward_context():
-            return super().forward_step(*inputs)
+        cpuinfo = CPUInfo()
+        return cpuinfo.has_avx512
 
     @property
     def status(self):
         status = super().status
         status.update({"precision": "bfloat16"})
         return status
+
+    @staticmethod
+    def _load(path, model, inplace=False):
+        status = PytorchIPEXJITBF16Model._load_status(path)
+        checkpoint_path = path / status['checkpoint']
+        if status["use_jit"]:
+            if status["use_ipex"]:
+                import intel_extension_for_pytorch as ipex
+            model = torch.jit.load(checkpoint_path)
+            model.eval()
+            if status["use_ipex"]:
+                model = torch.jit.freeze(model)
+            from_load = True
+        else:
+            state_dict = torch.load(checkpoint_path)
+            model.eval()
+            model.load_state_dict(state_dict)
+            from_load = False
+        thread_num = status.get('thread_num', None)
+        if thread_num == {}:
+            thread_num = None
+        if thread_num is not None:
+            thread_num = int(status['thread_num'])
+        return PytorchIPEXJITBF16Model(model, use_ipex=status['use_ipex'],
+                                       use_jit=status['use_jit'],
+                                       channels_last=status['channels_last'],
+                                       channels_last_available=status['channels_last_available'],
+                                       from_load=from_load,
+                                       thread_num=thread_num,
+                                       inplace=inplace,
+                                       jit_strict=status.get('jit_strict', True),
+                                       jit_method=status.get('jit_method', None),
+                                       weights_prepack=status.get('weights_prepack', None),
+                                       enable_onednn=status.get('enable_onednn', True))

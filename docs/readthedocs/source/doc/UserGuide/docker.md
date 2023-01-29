@@ -2,7 +2,7 @@
 
 ---
 
-### **1. Pull Docker Image**
+### 1. Pull Docker Image
 
 You may pull a Docker image from the  [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl/tags).
 
@@ -43,7 +43,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
-### **2. Launch Docker Container**
+### 2. Launch Docker Container
 
 After pulling the BigDL Docker image, you can launch an BigDL Docker container:
 ```
@@ -70,11 +70,11 @@ The /opt/work directory contains:
 * BigDL is cloned from https://github.com/intel-analytics/BigDL.git, contains apps, examples using BigDL.
 * opt/download-bigdl.sh is used for downloading BigDL distributions.
 
-### **3. Run Jupyter Notebook Examples in the Container**
+### 3. Run Jupyter Notebook Examples in the Container
 
 After a Docker container is launched and user login into the container, you can start the Jupyter Notebook service inside the container.
 
-#### **3.1 Start the Jupyter Notebook services**
+#### 3.1 Start the Jupyter Notebook services
 
 In the `/opt/work` directory, run this command line to start the Jupyter Notebook service:
 ```
@@ -90,7 +90,7 @@ You will see the output message like below. This means the Jupyter Notebook serv
 [I 07:40:39.355 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 ```
 
-#### **3.2 Connect to Jupyter Notebook service from a browser**
+#### 3.2 Connect to Jupyter Notebook service from a browser
 
 After the Jupyter Notebook service is successfully started, you can connect to the Jupyter Notebook service from a browser.
 
@@ -100,7 +100,7 @@ As a result, you will see the Jupyter Notebook like this:
 
 ![](images/notebook1.jpg)
 
-#### **3.3 Run BigDL Jupyter Notebooks**
+#### 3.3 Run BigDL Jupyter Notebooks
 
 After connecting to the Jupyter Notebook in the browser, you can run multiple BigDL Jupyter Notebook examples. The example shown below is the “dogs-vs-cats”.
 
@@ -120,22 +120,22 @@ After connecting to the Jupyter Notebook in the browser, you can run multiple Bi
 
 ![](images/notebook5.jpg)
 
-### **4. Shut Down Docker Container**
+### 4. Shut Down Docker Container
 
 You should shut down the BigDL Docker container after using it.
 
 1. You can list all the active Docker containers by command line:
-```
-sudo docker ps
-```
+   ```
+   sudo docker ps
+   ```
 
 2. You will see your docker containers:
-```
-CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-40de2cdad025        intelanalytics/bigdl:2.1.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
-```
+   ```
+   CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
+   40de2cdad025        intelanalytics/bigdl:2.1.0-SNAPSHOT         "/opt/work/start-n..."   3 hours ago         Up 3 hours                              upbeat_al
+   ```
 
 3. Shut down the corresponding docker container by its ID:
-```
-$sudo docker rm -f 40de2cdad025
-```
+   ```
+   $sudo docker rm -f 40de2cdad025
+   ```
