@@ -52,7 +52,6 @@ def train_data_creator(config, batch_size):
         else:
             data_dir = "/tmp/dataset"
             get_remote_dir_to_local(remote_dir=args.data_dir, local_dir=data_dir)
-        print(os.listdir(data_dir))
         trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
                                                      download=False, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
