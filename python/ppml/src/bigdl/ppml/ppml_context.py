@@ -79,15 +79,15 @@ class PPMLContext(JavaValue):
         self.value = callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
 
     def read(self, crypto_mode, kms_name = "", primary_key = "", data_key = ""):
-        if isinstance(crypto_mode, CryptoMode):
-            crypto_mode = crypto_mode.value
+        #if isinstance(crypto_mode, CryptoMode):
+        #    crypto_mode = crypto_mode.value
         df_reader = callBigDlFunc(self.bigdl_type, "read", self.value, crypto_mode,
                                       kms_name, primary_key, data_key)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
     def write(self, dataframe, crypto_mode, kms_name = "", primary_key = "", data_key = ""):
-        if isinstance(crypto_mode, CryptoMode):
-            crypto_mode = crypto_mode.value
+        #if isinstance(crypto_mode, CryptoMode):
+        #    crypto_mode = crypto_mode.value
         df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode,
                                       kms_name, primary_key, data_key)
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
@@ -96,8 +96,8 @@ class PPMLContext(JavaValue):
                  kms_name = "", primary_key = "", data_key = ""):
         if min_partitions is None:
             min_partitions = self.spark.sparkContext.defaultMinPartitions
-        if isinstance(crypto_mode, CryptoMode):
-            crypto_mode = crypto_mode.value
+        #if isinstance(crypto_mode, CryptoMode):
+        #    crypto_mode = crypto_mode.value
         return callBigDlFunc(self.bigdl_type, "textFile", self.value,
                              path, min_partitions, crypto_mode,
                              kms_name, primary_key, data_key)
