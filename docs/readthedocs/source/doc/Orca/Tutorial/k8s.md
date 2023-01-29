@@ -54,8 +54,6 @@ For **k8s-cluster** mode, a `driver-pod-name` (`train-py-fc5bec85fca28cb3-driver
 ```
 23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Application status for spark-9341aa0ec6b249ad974676c696398b4e (phase: Succeeded)
 23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Container final statuses:
-
-
          container name: spark-kubernetes-driver
          container image: intelanalytics/bigdl-k8s:latest
          container state: terminated
@@ -324,11 +322,11 @@ conda pack -o environment.tar.gz
     ```bash
     docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
     ```
-2. Upload the Python script (train.py in our example) to NFS.
+2. Upload the Python script (`train.py` in our example) to NFS.
     ```bash
     cp /path/to/train.py /bigdl/nfsdata
     ```
-3. Upload the extra Python dependency files (model.py in our example) to NFS.
+3. Upload the extra Python dependency files (`model.py` in our example) to NFS.
     ```bash
     cp /path/to/model.py /bigdl/nfsdata
     ```
