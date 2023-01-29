@@ -10,12 +10,13 @@
 
 ### Step 0: Prepare Environment
 
-[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) is needed to prepare the Python environment for running this example. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/install.md) for more details.
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
-pip install --pre --upgrade bigdl-orca 
+
+pip install bigdl-orca 
 pip install torch torchvision
 pip install tqdm
 ```
@@ -24,18 +25,17 @@ pip install tqdm
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
-cluster_mode = "local"
 if cluster_mode == "local":  # For local machine
-    init_orca_context(cores=4, memory="10g")
+    init_orca_context(cores=4, memory="4g")
 elif cluster_mode == "k8s":  # For K8s cluster
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g", master=..., container_image=...)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g")
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](../../UserGuide/hadoop.md) for more details.
+Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 ### Step 2: Define the Model
 
@@ -63,8 +63,12 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+
+loss = nn.NLLLoss()
 ```
-After defining your model, you need to define a *Model Creator Function* that takes the parameter `config` and returns an instance of your model, and a *Optimizer Creator Function* that has two parameters `model` and `config` and returns a PyTorch optimizer.
+
+You need to define a *Model Creator Function* that takes the parameter `config` and returns an instance of your PyTorch model, and an *Optimizer Creator Function* that takes two parameters `model` and `config` and returns an instance of your PyTorch optimizer.
 
 ```python
 def model_creator(config):
@@ -77,13 +81,11 @@ def optim_creator(model, config):
 
 ### Step 3: Define Train Dataset
 
-You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html). Orca also supports [Spark DataFrames](../Overview/data-parallel-processing.html#spark-dataframes) and [XShards](../Overview/data-parallel-processing.html#xshards-distributed-data-parallel-python-processing).
+You can define the dataset using a *Data Creator Function* that has two parameters `config` and `batch_size` and returns a [Pytorch DataLoader](https://pytorch.org/docs/stable/data.html). Orca also supports [Spark DataFrame](./spark-dataframe.md) and [Orca XShards](./xshards-pandas.md).
 
 ```python
-import torch
 from torchvision import datasets, transforms
 
-batch_size = 64
 dir = '/tmp/dataset'
 
 def train_loader_creator(config, batch_size):
@@ -109,22 +111,24 @@ def test_loader_creator(config, batch_size):
 
 ### Step 4: Fit with Orca Estimator
 
-First, Create an Estimator
+First, Create an Orca Estimator for PyTorch.
 
 ```python
 from bigdl.orca.learn.pytorch import Estimator 
 from bigdl.orca.learn.metrics import Accuracy
 
-est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=nn.NLLLoss(), metrics=[Accuracy()], use_tqdm=True)
+est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=loss,
+                           metrics=[Accuracy()], use_tqdm=True)
 ```
 
-Next, fit and evaluate using the Estimator
+Next, fit and evaluate using the Estimator.
 
 ```python
-est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
-result = est.evaluate(data=test_loader_creator, batch_size=batch_size)
-for r in result:
-    print(r, ":", result[r])
+batch_size = 64
+
+train_stats = est.fit(data=train_loader_creator, epochs=1, batch_size=batch_size)
+eval_stats = est.evaluate(data=test_loader_creator, batch_size=batch_size)
+print(eval_stats)
 ```
 
 ### Step 5: Save and Load the Model
@@ -141,3 +145,5 @@ est.load("mnist_model")
 ```
 
 **Note:** You should call `stop_orca_context()` when your application finishes.
+
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
