@@ -18,7 +18,7 @@
 import tempfile
 from unittest import TestCase
 import tensorflow as tf
-from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications import MobileNetV2
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
 from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -27,7 +27,7 @@ from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
 
 class TestONNX(TestCase):
     def test_model_trace_onnx(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
 
@@ -47,7 +47,7 @@ class TestONNX(TestCase):
         np.testing.assert_allclose(preds, onnx_preds, rtol=1e-5)
 
     def test_tf_onnx_save_load(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = MobileNetV2(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
 
