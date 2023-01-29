@@ -63,8 +63,8 @@ class TestONNX(TestCase):
         assert new_onnx_model.session_options.intra_op_num_threads == 1
         assert new_onnx_model.session_options.inter_op_num_threads == 1
 
-        preds1 = onnx_model(input_examples).numpy()
-        preds2 = new_onnx_model(input_examples).numpy()
+        preds1 = onnx_model.predict(input_examples, batch_size=5)
+        preds2 = new_onnx_model.predict(input_examples, batch_size=5)
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
         
@@ -75,7 +75,7 @@ class TestONNX(TestCase):
         assert new_onnx_model.session_options.intra_op_num_threads == 1
         assert new_onnx_model.session_options.inter_op_num_threads == 1
 
-        preds1 = onnx_model(input_examples).numpy()
-        preds2 = new_onnx_model(input_examples).numpy()
+        preds1 = onnx_model.predict(input_examples, batch_size=5)
+        preds2 = new_onnx_model.predict(input_examples, batch_size=5)
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
