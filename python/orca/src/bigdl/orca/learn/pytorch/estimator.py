@@ -109,7 +109,6 @@ class Estimator(object):
                                          loss=loss,
                                          optimizer=optimizer,
                                          config=config,
-                                         use_tqdm=use_tqdm,
                                          metrics=metrics,
                                          model_dir=model_dir,
                                          bigdl_type="float")
