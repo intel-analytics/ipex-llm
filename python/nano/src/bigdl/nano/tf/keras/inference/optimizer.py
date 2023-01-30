@@ -133,7 +133,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
+        :param input_spec: A (tuple or list of) ``tf.TensorSpec`` defining the
                            shape/dtype of the input.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
@@ -315,7 +315,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param model: The Keras model to trace.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec`` or numpy array
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
                            defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
                            ``input_spec`` is required. If ``accelerator='openvino'``,
                            ``input_spec`` is only required when you have a custom Keras model.
@@ -418,7 +418,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec`` or numpy array
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
                            defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
                            ``input_spec`` is required. If ``accelerator='openvino'``, or
                            ``accelerator=None`` and ``precision='int8'``, ``input_spec``
