@@ -51,12 +51,11 @@ def model_creator(config):
 
 
 # Step 4: Create Orca PyTorch Estimator and load the model
-backend = "spark"  # "ray" or "spark"
 with open(os.path.join(args.model_dir, "config.json"), "r") as f:
     config = json.load(f)
 
 est = Estimator.from_torch(model=model_creator,
-                           backend=backend,
+                           backend=args.backend,
                            config=config)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
