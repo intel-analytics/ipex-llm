@@ -15,10 +15,15 @@
 #
 
 import operator
+import os
+import subprocess
+import tempfile
+
+import cloudpickle
 from pytorch_lightning.utilities.imports import _compare_version
 from types import MethodType
 import pytorch_lightning as pl
-from typing import Optional
+from typing import Optional, Callable
 import torch
 import torch.nn as nn
 import copy
@@ -33,6 +38,7 @@ from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from pathlib import Path
+from . import _worker
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
@@ -195,6 +201,22 @@ def patch_attrs_from_model_to_object(model: nn.Module, instance):
     :param instance: a instance of any object
     """
     for attr in dir(model):
-        if attr not in dir(instance) and not attr.startswith('_') and not\
+        if attr not in dir(instance) and not attr.startswith('_') and not \
                 isinstance(getattr(model, attr), torch.nn.Module):
             setattr(instance, attr, getattr(model, attr))
+
+
+def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
+    worker_path = _worker.__file__
+    tmp_env = {}
+    tmp_env.update(os.environ)
+    if env is not None:
+        tmp_env.update(env)
+    with tempfile.TemporaryDirectory() as tmp_dir_path:
+        param_file = os.path.join(tmp_dir_path, 'param')
+        with open(param_file, 'wb') as f:
+            cloudpickle.dump([func, *args], f)
+        subprocess.run(["python", worker_path, param_file],
+                       check=True, env=tmp_env)
+        with open(os.path.join(tmp_dir_path, _worker.RETURN_FILENAME), 'rb') as f:
+            return cloudpickle.load(f)
