@@ -20,18 +20,20 @@ import torch.nn as nn
 import torch.optim as optim
 
 from pytorch_model import NCF
+from utils import *
 
 from bigdl.orca import OrcaContext, init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context(cluster_mode="local")
+args = parse_args("PyTorch NCF Predicting with Spark DataFrame")
+init_orca(args, extra_python_lib="pytorch_model.py")
 spark = OrcaContext.get_spark_session()
 
 
 # Step 2: Load the processed data
-df = spark.read.parquet("./test_processed_dataframe.parquet")
+df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.parquet"))
 
 
 # Step 3: Define the model
@@ -50,13 +52,13 @@ def model_creator(config):
 
 # Step 4: Create Orca PyTorch Estimator and load the model
 backend = "spark"  # "ray" or "spark"
-with open("config.json", "r") as f:
+with open(os.path.join(args.model_dir, "config.json"), "r") as f:
     config = json.load(f)
 
 est = Estimator.from_torch(model=model_creator,
                            backend=backend,
                            config=config)
-est.load("NCF_model")
+est.load(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 5: Distributed inference of the loaded model
@@ -68,7 +70,8 @@ predict_df.show(5)
 
 
 # Step 6: Save the prediction results
-predict_df.write.parquet("./test_predictions_dataframe.parquet", mode="overwrite")
+predict_df.write.parquet(os.path.join(args.data_dir, "test_predictions_dataframe.parquet"),
+                         mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
