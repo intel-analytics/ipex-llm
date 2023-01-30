@@ -38,7 +38,7 @@ from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from pathlib import Path
-from . import _worker
+from bigdl.nano.utils.inference.pytorch import _worker
 
 TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
 TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
