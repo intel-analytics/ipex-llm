@@ -31,7 +31,7 @@ object MultiPartySparkExample extends Supportive {
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
-      val amyDf = timing("1/6 read Amy's data source into data frame") {
+      val amyDf = timing("1/8 read Amy's data source into data frame") {
         // read encrypted data
         sc.read(AES_CBC_PKCS5PADDING, // crypto mode
                 "amyKms", // name of kms which data key is retrieved from
@@ -41,14 +41,14 @@ object MultiPartySparkExample extends Supportive {
           .csv("./amyDataSource.csv") // input file path
       }
 
-      val bobDf = timing("2/6 read Bob's data source") {
+      val bobDf = timing("2/8 read Bob's data source") {
         sc.read(AES_CBC_PKCS5PADDING, "bobKms",
                 "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
           .option("header", "true")
           .csv("./bobDataSource.csv")
       }
 
-      val amyDevelopers = timing("3/6 do SQL operations on Amy data frame") {
+      val amyDevelopers = timing("3/8 do SQL operations on Amy data frame") {
         // Select only the "name" column
         amyDf.select("name").count()
         // Select everybody, but increment the age by 1
@@ -61,7 +61,7 @@ object MultiPartySparkExample extends Supportive {
         amyDevelopers
       }
 
-      val bobDevelopers = timing("4/6 do SQL operations on Bob data frame") {
+      val bobDevelopers = timing("4/8 do SQL operations on Bob data frame") {
         bobDf.select(bobDf("name"), bobDf("age") ).show()
         val bobDevelopers = bobDf.filter(
           bobDf("job") === "Developer" and bobDf("age").between(20, 40))
@@ -69,11 +69,11 @@ object MultiPartySparkExample extends Supportive {
         bobDevelopers
       }
 
-      val unionDf = timing("5/6 union Amy developers and Bob developers") {
+      val unionDf = timing("5/8 union Amy developers and Bob developers") {
         amyDevelopers.union(bobDevelopers)
       }
 
-      timing("6/6 encrypt and save outputs") {
+      timing("6/8 encrypt and save union outputs") {
         // save data frame using spark kms context
         // write encrypted data
         sc.write(unionDf, // target data frame
@@ -83,7 +83,17 @@ object MultiPartySparkExample extends Supportive {
                  "./shared_encrypted_data_key") // data key file path
           .mode("overwrite")
           .option("header", true)
-          .csv("./output")
+          .csv("./union_output")
+      }
+
+      val joinDf = timing("7/8 join Amy developers and Bob developers on age") {
+        amyDevelopers.join(bobDevelopers, amyDevelopers("age") == bobDevelopers("age"), "'inner'")
+      }
+
+      timing("6/8 encrypt and save join outputs") {
+        sc.write(joinDf, AES_CBC_PKCS5PADDING, "sharedKms",
+                 "./shared_encrypted_primary_key", "./shared_encrypted_data_key")
+          .mode("overwrite").option("header", true).csv("./join_output")
       }
     }
   }
