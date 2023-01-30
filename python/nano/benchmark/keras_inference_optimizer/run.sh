@@ -25,6 +25,10 @@ set -e
 # install dependencies
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false tensorflow,inference --force-reinstall
 
+# fix bug, line 26 will install latest setuptools (>=67),
+# but INC requires setuptools < 66
+pip install setuptools==65
+
 # set nano's environment variables
 source bigdl-nano-unset-env
 source bigdl-nano-init
