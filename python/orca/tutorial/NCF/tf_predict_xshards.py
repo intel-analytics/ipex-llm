@@ -20,16 +20,18 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
 
 from process_xshards import get_feature_cols
+from utils import *
 
 
 # Step 1: Init Orca Context
-init_orca_context(cluster_mode="local")
+args = parse_args("TensorFlow NCF Predicting with Orca Xshards")
+init_orca(args)
 
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
-est.load("NCF_model")
-data = XShards.load_pickle("./test_processed_xshards")
+est.load(os.path.join(args.model_dir, "NCF_model"))
+data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 feature_cols = get_feature_cols()
 
 
@@ -40,7 +42,7 @@ print(predictions.head(n=5))
 
 
 # Step 4: Save the prediction results
-predictions.save_pickle("test_predictions_xshards")
+predictions.save_pickle(os.path.join(args.data_dir, "test_predictions_xshards"))
 
 
 # Step 5: Stop Orca Context when program finishes
