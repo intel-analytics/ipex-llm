@@ -170,7 +170,7 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
 
     feature_cols, label_cols = get_feature_cols(), get_label_cols()
     return train_data, test_data, user_num, item_num, \
-        sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+        sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
 
 def get_feature_cols():
