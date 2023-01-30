@@ -164,7 +164,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             optimizer_creator=optimizer_creator,
             loss_creator=loss_creator,
             scheduler_creator=scheduler_creator,
-            use_tqdm=use_tqdm,
             config=copy.copy(self.config),
             metrics=metrics,
             size=self.num_workers,

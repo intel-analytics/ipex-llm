@@ -126,7 +126,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
             scheduler_creator=self.scheduler_creator,
-            use_tqdm=self.use_tqdm,
             config=worker_config,
             metrics=metrics,
             sync_stats=sync_stats,
