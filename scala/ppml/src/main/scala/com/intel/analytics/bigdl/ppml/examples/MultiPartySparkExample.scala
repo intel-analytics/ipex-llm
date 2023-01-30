@@ -87,7 +87,7 @@ object MultiPartySparkExample extends Supportive {
       }
 
       val joinDf = timing("7/8 join Amy developers and Bob developers on age") {
-        amyDevelopers.join(bobDevelopers, amyDevelopers("age") == bobDevelopers("age"), "'inner'")
+        amyDevelopers.join(bobDevelopers, amyDevelopers("age") === bobDevelopers("age"), "inner")
       }
 
       timing("6/8 encrypt and save join outputs") {
