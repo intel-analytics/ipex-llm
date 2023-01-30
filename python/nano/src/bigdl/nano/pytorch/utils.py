@@ -207,6 +207,13 @@ def patch_attrs_from_model_to_object(model: nn.Module, instance):
 
 
 def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
+    """
+    Call func on subprocess with provided environment variables.
+
+    :param func: a Callable object
+    :param args: arguments for the func call
+    :param env: a mapping that defines the environment variables for the subprocess
+    """
     worker_path = _worker.__file__
     tmp_env = {}
     tmp_env.update(os.environ)
