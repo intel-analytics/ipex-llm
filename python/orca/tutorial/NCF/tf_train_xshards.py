@@ -29,7 +29,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Orca Xshards")
-args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
+#args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
 init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
 
 
@@ -77,7 +77,7 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-if args.scheduler:
+if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
