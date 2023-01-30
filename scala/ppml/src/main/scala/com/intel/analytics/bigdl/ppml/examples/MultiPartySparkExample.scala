@@ -87,7 +87,13 @@ object MultiPartySparkExample extends Supportive {
       }
 
       val joinDf = timing("7/8 join Amy developers and Bob developers on age") {
-        amyDevelopers.join(bobDevelopers, amyDevelopers("age") === bobDevelopers("age"), "inner")
+        val (amyColNames, bobColNames) = (Seq("amyDeveloperName", "amyDeveloperAge", "amyDeveloperJob"),
+                                         Seq("bobDeveloperName", "bobDeveloperAge", "bobDeveloperJob"))
+        val (amyDevRenamedCol, bobDevRenamedCol) = (amyDevelopers.toDF(amyColNames: _*),
+                                                    bobDevelopers.toDF(bobColNames: _*)) 
+        amyDevRenamedCol.join(bobDevRenamedCol,
+                              amyDevRenamedCol("amyDeveloperAge") === bobDevRenamedCol("bobDeveloperAge"),
+                              "inner")
       }
 
       timing("6/8 encrypt and save join outputs") {
