@@ -25,6 +25,7 @@ class BaseQuantization(Quantization):
                  approach='post_training_static_quant',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
+                 eval_func=None,
                  timeout=0,
                  max_trials=1,
                  inputs=None,
@@ -49,6 +50,11 @@ class BaseQuantization(Quantization):
                                      allows relative accuracy loss: 1%. accuracy_criterion = {
                                      'absolute': 0.99, 'higher_is_better':False} means accuracy
                                      < 0.99 must be satisfied.
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             combine with max_trials field to decide when to exit.
         :param max_trials:  Max tune times. Default: 1.
@@ -73,6 +79,9 @@ class BaseQuantization(Quantization):
         cfg.model.inputs = inputs
         cfg.model.outputs = outputs
         super().__init__(qconf)
+        if eval_func is not None:
+            self._eval_func = eval_func
+            self._eval_func.builtin = True
 
     def post_training_quantize(self, model, calib_dataloader=None, metric=None):
         self.sanity_check_before_execution(model, calib_dataloader, metric)

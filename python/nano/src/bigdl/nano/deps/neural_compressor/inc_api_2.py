@@ -16,6 +16,7 @@
 
 
 from bigdl.nano.utils.log4Error import invalidInputError
+from .core.base_metric import BaseINCMetric
 
 
 def quantize(model, dataloader=None, eval_func=None, metric=None,
@@ -83,9 +84,9 @@ def _quantize(
     conf=None,
     approach='static',
     tuning_strategy='bayesian',
-    accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
+    accuracy_criterion={'relative': 0.99, 'higher_is_better': True},
     timeout=0,
-    max_trials=5,
+    max_trials=1,
     inputs=[],
     outputs=[],
     **kwargs
@@ -125,7 +126,6 @@ def _quantize(
         dataloader = DataLoader(framework, dataloader)
 
     inc_metric = metric
-
     if 'pytorch' in framework:
         # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
         from bigdl.nano.pytorch.lightning import LightningModule
@@ -136,16 +136,44 @@ def _quantize(
             inc_metric = PytorchINCMetric()
             inc_metric.metric = metric
     elif 'onnx' in framework:
+        onnx_option = kwargs.pop('onnx_option', None)
         model = model.onnx_model
         if metric is not None:
-            from .onnx.metric import ONNXRuntimeINCMetic
-            inc_metric = ONNXRuntimeINCMetic()
+            if onnx_option == 'tensorflow':
+                from .onnx.tensorflow.metric import KerasONNXRuntimeINCMetic
+                inc_metric = KerasONNXRuntimeINCMetic()
+            else:
+                from .onnx.pytorch.metric import PytorchONNXRuntimeINCMetic
+                inc_metric = PytorchONNXRuntimeINCMetic()
             inc_metric.metric = metric
     elif 'tensorflow' in framework:
         if metric is not None:
             from .tensorflow.metric import TensorflowINCMetric
             inc_metric = TensorflowINCMetric()
             inc_metric.metric = metric
+
+    custom_inc_metric = None
+    # use metric_id and new custom_inc_metric to solve the same registered metric name
+    if metric is not None:
+        metric_id = str(inc_metric.get_next_metric_id())
+        if 'tensorflow' in framework:
+            # works for Tensorflow
+            custom_inc_metric = type(type(inc_metric).__name__ + metric_id,
+                                     (object, ),
+                                     {"stack": inc_metric.stack,
+                                      "to_scalar": inc_metric.to_scalar,
+                                      "result": inc_metric.result,
+                                      "update": inc_metric.update,
+                                      "stack": inc_metric.stack,
+                                      "reset": inc_metric.reset})
+        else:
+            # works for PyTorch
+            custom_inc_metric = type(type(inc_metric).__name__ + metric_id,
+                                     (BaseINCMetric, ),
+                                     {"stack": inc_metric.stack,
+                                      "to_scalar": inc_metric.to_scalar})
+        custom_inc_metric = custom_inc_metric()
+        custom_inc_metric.metric = metric
 
     if 'relative' in accuracy_criterion:
         criterion = 'relative'
@@ -194,7 +222,8 @@ def _quantize(
         conf=q_conf,
         calib_dataloader=dataloader,
         eval_func=eval_func,
-        eval_metric=inc_metric,
-        eval_dataloader=dataloader  # use same dataloader as 1.0 API
+        eval_metric=custom_inc_metric,
+        # use same dataloader as 1.0 API
+        eval_dataloader=dataloader if metric is not None else None,
     )
     return q_model
