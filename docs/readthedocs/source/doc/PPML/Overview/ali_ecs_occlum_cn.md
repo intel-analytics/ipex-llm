@@ -46,13 +46,16 @@ sudo apt install --install-recommends linux-generic-hwe-20.04
 SGX应用需要编译(build)成SGX enclave，才能加载到SGX中运行。通常情况下，开发人员需要用SGX SDK重新编写应用，才能编译成合法的enclave，但这样的开发代价较大，维护成本也较高。为了避免上述问题，我们可以用Occlum实现应用的无缝迁移。Occlum是为SGX开发的LibOS应用，它可以将应用的系统调用翻译成SGX可以识别的调用，从而避免修改应用。BigDL PPML在Occlum的基础上，又进行了一次封装和优化，使得大数据应用，如Spark/Flink可以无缝的运行在SGX上。
  
 图 SGX enclave结构
+
 作为硬件级的可信执行环境，SGX的攻击面非常小，攻击者即使攻破操作系统和BIOS也无法获取SGX中的应用和数据。但在端到端的应用中，用户还需要确保其他阶段的安全性。简而言之，用户需要确保数据或者文件在SGX外部是加密的，仅在SGX内部被解密和计算，如下图所示。为了实现这个目的，我们往往需要借助密钥管理服务 (Key Management Service, KMS) 的帮助。用户可以将密钥托管到KMS，等应用在SGX中启动后，再从KMS申请和下载密钥。
  
 图 SGX应用设计原则
+
 PPML项目的核心功能是帮助用户迁移现有的应用，用户可以选择迁移现有的大数据AI应用，也可以选择开发全新的应用。PPML应用的开发和常规应用基本相同。例如PySpark的应用代码和常规应用并没有区别。但在设计、编译和部署时有一定的差异。具体表现为：
 * 设计时需要考虑加解密流程，确保明文数据只出现在SGX内部
 * 编译时，需要通过Occlum将应用编译成SGX enclave
 * 部署时，需要将SGX enclave部署到有SGX环境的节点
+
 在剩下的章节中，我们以PySpark运行SQL和sklearn求线性回归方程为例，介绍如何
 * 通过docker部署单机PySpark应用。
 * 通过K8S部署分布式PySpark应用。
@@ -69,7 +72,9 @@ SparkSQL是Spark生态中的核心功能之一。通过Spark提供的SQL接口�
 ```bash
 # Clean up old container
 sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum
- 
+```
+
+```bash
 # Run new command in container
 sudo docker run -it --rm \
 --net=host \
@@ -85,15 +90,17 @@ sudo docker run -it --rm \
 -e SGX_KERNEL_HEAP=1GB \
 -e SGX_LOG_LEVEL=off \intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
 bash
+```
 2.	编写python源码，如sql_example.py 并将其放置在image的目录py-examples下
 3.	修改/opt/run_spark_on_occlum_glibc.sh文件，设置程序启动入口。
+```bash
 run_pyspark_sql_example() {
     init_instance spark  #执行occlum init初始化occlum文件结构并设置对应配置
     build_spark #拷贝依赖并执行occlum build 构建可执行程序
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark SQL example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -111,7 +118,9 @@ run_pyspark_sql_example() {
 ```
 
 4.	运行PySpark SQL example在container里
+```bash
 bash  /opt/run_spark_on_occlum_glibc.sh pysql
+```
 
 注： 脚本里的build_spark是做”occlum build”来生成Occlum可执行的镜像，这一步骤会耗费不少时间（数分钟左右），请耐心等待。
 非即时部署需提前配置源码和程序入口，并将步骤1的最后一行改为 bash /opt/run_spark_on_occlum_glibc.sh $1，即可直接通过运行bash start-spark-local.sh pysql 启动运行SQL example。
@@ -133,9 +142,11 @@ export SPARK_HOME=/opt/spark"
 ```
 
 3.	下载BigDL的代码，为后续的修改做准备。
+```bash
 git clone https://github.com/intel-analytics/BigDL.git
+```
 
-接下来的改动位于路径 “BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes”。
+接下来的改动位于路径“BigDL/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes”。
 
 ##### 运行步骤：
 1.	配置合适的资源在driver.yml和executor.yaml中
@@ -157,8 +168,6 @@ git clone https://github.com/intel-analytics/BigDL.git
 2.	运行脚本 run_pyspark_sql_example.sh，需提前配置好Spark和K8s环境。
 
 ```bash
-#!/bin/bash
- 
 ${SPARK_HOME}/bin/spark-submit \
     --master k8s://https://${kubernetes_master_url}:6443 \
     --deploy-mode cluster \
@@ -187,7 +196,9 @@ ${SPARK_HOME}/bin/spark-submit \
 ```bash
 # Clean up old container
 sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum
- 
+```
+
+```bash
 # Run new command in container
 sudo docker run -it --rm \
 --net=host \
@@ -245,7 +256,7 @@ run_pyspark_sklearn_example() {
     cd /opt/occlum_spark
     echo -e "${BLUE}occlum run pyspark sklearn example${NC}"
     occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
@@ -263,7 +274,9 @@ run_pyspark_sklearn_example() {
 ```
 
 4.	运行PySpark sklearn example在container里
-bash  /opt/run_spark_on_occlum_glibc.sh pysklearn
+```bash
+bash /opt/run_spark_on_occlum_glibc.sh pysklearn
+```
 
 注： 脚本里的build_spark是做”occlum build”来生成Occlum可执行的镜像，这一步骤会耗费不少时间（数分钟左右），请耐心等待。
 非即时部署需提前配置源码和程序入口，并将步骤1的最后一行改为 bash /opt/run_spark_on_occlum_glibc.sh $1，即可直接通过运行bash start-spark-local.sh pysklearn 启动运行 sklearn example。
@@ -289,8 +302,6 @@ bash  /opt/run_spark_on_occlum_glibc.sh pysklearn
 ```
 2.	运行脚本 run_pyspark_sklearn_example.sh,需配置Spark和K8s环境。
 ```bash
-#!/bin/bash
- 
 ${SPARK_HOME}/bin/spark-submit \
     --master k8s://https://${kubernetes_master_url}:6443 \
     --deploy-mode cluster \
@@ -332,11 +343,16 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 ......
 
 {"code":200,"message":"successful","result":{"apikey":"E8QKpBBapaknprx44FaaTY20rptg54Sg","appid":"8d5dd3b8-3996-40f5-9785-dcb8265981ba"}}
+```
 3.	填入相关参数，启动运行脚本 start-spark-local.sh 进入docker image。
+
 其中，参数PCCS_URL可以根据阿里云安全增强型实例所在区域，设置为相对应的地址，细节请参考阿里云文档。
+```bash
 # Clean up old container
 sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum
- 
+ ```
+
+```bash
 # Run new command in container
 sudo docker run -it \
 --net=host \
@@ -363,30 +379,30 @@ intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT \
 bash
 ```
 
-4.	生成加解密相关的密钥
+4. 生成加解密相关的密钥
 ```bash
 bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
 ```
 
-5.	用提供的generate_people_csv.py 生成原始输入数据
+5. 用提供的generate_people_csv.py 生成原始输入数据
 ```bash
 python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
 ```
 
-6.	用密钥加密原始输入数据
+6. 用密钥加密原始输入数据
 ```bash
 bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
 ```
 
-7.	修改加密的文件后缀并移动到合适的位置
+7. 修改加密的文件后缀并移动到合适的位置
 ```bash
 mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
 ```
-8.	运行 BigDL SimpleQuery e2e Example（同上开发步骤，已提前写好程序入口，程序源码已打成jar包）
+8. 运行 BigDL SimpleQuery e2e Example（同上开发步骤，已提前写好程序入口，程序源码已打成jar包）
 ```bash
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-9.	解密计算结果
+9. 解密计算结果
 ```bash
 bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
 ```
