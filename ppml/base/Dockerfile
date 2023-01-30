@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 
 FROM ubuntu:20.04
@@ -79,17 +79,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install sgxsdk and dcap, which is used for remote attestation
     mkdir -p /opt/intel/ && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
-    chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
-    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.18.100.3.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.18.100.3.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.18.100.3.bin && \
     . /opt/intel/sgxsdk/environment && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
     tar xzf sgx_debian_local_repo.tgz && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
     apt-get update && \
-    apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi && \
+    apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi libtdx-attest libtdx-attest-dev && \
 # java
     cd /opt && \
     wget $JDK_URL && \
@@ -109,11 +109,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /ppml/encrypted-fsd && \
 # folder to contain the keys (primary key and data key)
     mkdir -p /ppml/encrypted_keys && \
-# kms client
-    mkdir -p /ppml/kms && \
-    git clone https://github.com/intel-analytics/BigDL.git /ppml/BigDL_KMS && \
-    cp /ppml/BigDL_KMS/python/ppml/src/bigdl/ppml/kms/* /ppml/kms && \
-    rm -rf /ppml/BigDL_KMS
+# Install bigdl-ppml lib
+    cd /ppml/ && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    cd BigDL && \
+    mkdir -p /ppml/bigdl-ppml/ && \
+    cp -r /ppml/BigDL/python/ppml/src/ /ppml/bigdl-ppml && \
+    rm -rf /ppml/BigDL && \
+    cd /ppml
 
 
 ADD ./download_jars.sh /ppml
@@ -123,6 +126,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
+ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]

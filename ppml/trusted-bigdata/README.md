@@ -738,3 +738,103 @@ In the picture, memory is allocated from bottom to top. First, 10% of **total pr
 
 > The value and proportion of each memory component can be specified by parameters, for more information please refer to flink memory configuration.
 
+## For Spark Task in TDXVM
+
+1. Deploy PCCS
+You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
+2. Deploy BigDL Remote Attestation Service 
+[Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
+3. Start BigDL bigdata client 
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT 
+```bash
+export NFS_INPUT_PATH=/disk1/nfsdata/default-nfsvolumeclaim-pvc-decb9dcf-dc7a-4dd0-8bd2-e2c669fd50af
+sudo docker run -itd --net=host \
+    --privileged \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube/config:/root/.kube/config \
+    -v $NFS_INPUT_PATH:/bigdl/nfsdata \
+    -v /dev/tdx-attest:/dev/tdx-attest \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT  \
+    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+    -e RUNTIME_EXECUTOR_INSTANCES=2 \
+    -e RUNTIME_EXECUTOR_CORES=2 \
+    -e RUNTIME_DRIVER_HOST=172.29.19.131 \
+    -e RUNTIME_EXECUTOR_MEMORY=5g \
+    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+    -e RUNTIME_DRIVER_CORES=4 \
+    -e RUNTIME_DRIVER_MEMORY=5g \
+    --name tdx-attestation-test \
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT bash
+```
+4. Enable Attestation in configuration
+Upload `appid` and `apikey` to kubernetes as secrets:
+```bash
+kubectl create secret generic kms-secret \
+                  --from-literal=app_id=YOUR_APP_ID \
+                  --from-literal=api_key=YOUR_API_KEY 
+```
+Configure `spark-driver-template-for-tdxvm.yaml` and `spark-executor-template-for-tdxvm.yaml` to enable Attestation as follows:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true 
+      - name: ATTESTATION_URL
+        value: your_attestation_url # 127.0.0.1:9875 for example
+      - name: PCCS_URL
+        value: your_pccs_url # https://127.0.0.1:8081 for example
+      - name: APP_ID
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_id
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: api_key
+      - name: ATTESTATION_TYPE
+        value: BigDLRemoteAttestationService
+      - name: QUOTE_TYPE
+        value: TDX
+```
+5. Submit spark task
+```bash
+${SPARK_HOME}/bin/spark-submit \
+     --master k8s://https://172.29.19.131:6443 \
+    --deploy-mode cluster \
+    --name sparkpi-tdx \
+    --conf spark.driver.host=172.29.19.131 \
+    --conf spark.driver.port=54321 \
+    --conf spark.driver.memory=2g \
+    --conf spark.executor.cores=4 \
+    --conf spark.executor.memory=10g \
+    --conf spark.executor.instances=2 \
+    --conf spark.cores.max=32 \
+    --conf spark.kubernetes.memoryOverheadFactor=0.6 \
+    --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT  \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.sql.shuffle.partitions=64 \
+    --conf spark.io.compression.codec=lz4 \
+    --conf spark.sql.autoBroadcastJoinThreshold=-1 \
+    --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.file.upload.path=file:///tmp \
+    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+```

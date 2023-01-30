@@ -77,24 +77,6 @@ class EncryptedDataFrameWriter(
     }
   }
 
-  def csv(path: String, key: String): Unit = {
-    encryptMode match {
-      case PLAIN_TEXT =>
-        df.write.options(extraOptions).mode(mode).csv(path)
-      case AES_CBC_PKCS5PADDING =>
-        sparkSession.sparkContext.hadoopConfiguration
-          .set("hadoop.io.compression.codecs",
-          "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-        sparkSession.sparkContext.hadoopConfiguration
-          .set("bigdl.kms.data.key", key)
-        df.write
-          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-          .options(extraOptions).mode(mode).csv(path)
-      case _ =>
-        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
-    }
-  }
-
   def json(path: String): Unit = {
     encryptMode match {
       case PLAIN_TEXT =>
