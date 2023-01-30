@@ -71,7 +71,7 @@ def setup_package():
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow_27]=='+VERSION,
-                                'optuna<=2.10.1', 'configspace<=0.5.0',
+                                'optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27',
                                 'bigdl-orca[automl]==' + VERSION + ';platform_system!="Windows"',
                                 'pmdarima==1.8.5',
                                 'prophet==1.1.0',
