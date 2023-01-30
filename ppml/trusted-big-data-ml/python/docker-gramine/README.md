@@ -2,6 +2,9 @@
 SGX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and Intel BigDL model training with spark local and distributed cluster on Gramine-SGX.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
+
+> **Warning**: This page has been deprecated, please refer to `bigdl-ppml-trusted-bigdata:2.3.0-SNAPSHOT` instead.
+
 ## Before Running code
 ### 1. Build Docker Images
 
