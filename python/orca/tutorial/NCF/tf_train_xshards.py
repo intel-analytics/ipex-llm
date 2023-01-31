@@ -16,6 +16,7 @@
 
 # Step 0: Import necessary libraries
 import math
+
 import tensorflow as tf
 
 from process_xshards import prepare_data
@@ -27,6 +28,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Orca Xshards")
+args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
 init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
 
 
@@ -74,6 +76,10 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
+if args.scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
+
 train_stats = est.fit(train_data,
                       epochs=2,
                       batch_size=batch_size,
@@ -86,6 +92,7 @@ train_stats = est.fit(train_data,
 print("Train results:")
 for k, v in train_stats.items():
     print("{}: {}".format(k, v))
+
 
 # Step 5: Distributed evaluation of the trained model
 eval_stats = est.evaluate(test_data,
