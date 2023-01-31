@@ -41,6 +41,12 @@ import threading
 import numpy as np
 from bigdl.dllib.utils.log4Error import invalidInputError
 
+try:
+    from tensorflow.gfile import Glob, Exists, MakeDirs, FastGFile as GFile
+except:
+    # tensorflow 2.0 changes the api
+    from tensorflow.io.gfile import glob as Glob, exists as Exists, makedirs as MakeDirs, GFile
+
 if TYPE_CHECKING:
     from numpy import ndarray
     import tensorflow as tf
@@ -60,7 +66,6 @@ def convert_imagenet_to_tf_records(
         raw_data_dir: str,
         output_dir: str) -> None:
     """Converts the Imagenet dataset into TF-Record dumps."""
-    import tensorflow as tf
     # Shuffle training records to ensure we are distributing classes
     # across the batches.
     random.seed(0)
@@ -71,7 +76,7 @@ def convert_imagenet_to_tf_records(
         return order
 
     # Glob all the training files
-    training_files = tf.gfile.Glob(
+    training_files = Glob(
         os.path.join(raw_data_dir, TRAINING_DIRECTORY, '*', '*.JPEG'))
 
     # Get training file synset labels from the directory name
@@ -84,11 +89,11 @@ def convert_imagenet_to_tf_records(
     training_synsets = [training_synsets[i] for i in training_shuffle_idx]
 
     # Glob all the validation files
-    validation_files = sorted(tf.gfile.Glob(
+    validation_files = sorted(Glob(
         os.path.join(raw_data_dir, VALIDATION_DIRECTORY, '*.JPEG')))
 
     # Get validation file synset labels from labels.txt
-    validation_synsets = tf.gfile.FastGFile(
+    validation_synsets = GFile(
         os.path.join(raw_data_dir, VALIDATION_LABELS), 'rb').read().splitlines()
 
     # Create unique ids for all synsets
@@ -204,9 +209,8 @@ def _process_image(
     width: integer, image width in pixels.
 
     """
-    import tensorflow as tf
     # Read the image file.
-    with tf.gfile.FastGFile(filename, 'rb') as f:
+    with GFile(filename, 'rb') as f:
         image_data = f.read()
 
     # Clean the dirty data.
@@ -262,10 +266,9 @@ def _process_image_files_batch(
 
 
 def _check_or_create_dir(directory: str) -> None:
-    import tensorflow as tf
     """Checks if directory exists otherwise creates it."""
-    if not tf.gfile.Exists(directory):
-        tf.gfile.MakeDirs(directory)
+    if not Exists(directory):
+        MakeDirs(directory)
 
 
 def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
