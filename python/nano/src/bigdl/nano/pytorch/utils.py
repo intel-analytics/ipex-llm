@@ -220,10 +220,11 @@ def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
     if env is not None:
         tmp_env.update(env)
     with tempfile.TemporaryDirectory() as tmp_dir_path:
-        param_file = os.path.join(tmp_dir_path, 'param')
-        with open(param_file, 'wb') as f:
-            cloudpickle.dump([func, *args], f)
-        subprocess.run(["python", worker_path, param_file],
-                       check=True, env=tmp_env)
-        with open(os.path.join(tmp_dir_path, _worker.RETURN_FILENAME), 'rb') as f:
-            return cloudpickle.load(f)
+        with torch.inference_mode(mode=False):
+            param_file = os.path.join(tmp_dir_path, 'param')
+            with open(param_file, 'wb') as f:
+                cloudpickle.dump([func, *args], f)
+            subprocess.run(["python", worker_path, param_file],
+                           check=True, env=tmp_env)
+            with open(os.path.join(tmp_dir_path, _worker.RETURN_FILENAME), 'rb') as f:
+                return cloudpickle.load(f)

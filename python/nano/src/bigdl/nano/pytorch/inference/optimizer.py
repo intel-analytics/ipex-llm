@@ -397,6 +397,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 model(*input_sample)
 
+        def torch_throughput_calculate_helper(*args, **kwargs):
+            with torch.inference_mode():
+                throughput_calculate_helper(*args, **kwargs)
+
+        def torch_accuracy_calculate_helper(*args, **kwargs):
+            with torch.inference_mode():
+                _accuracy_calculate_helper(*args, **kwargs)
+
         if search_env:
             env_result_map = {}
             for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
@@ -404,7 +412,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
                     env_result_map[method], _ = \
-                        exec_with_worker(throughput_calculate_helper, latency_sample_num,
+                        exec_with_worker(torch_throughput_calculate_helper, latency_sample_num,
                                          baseline_time, func_test, model, input_sample,
                                          env=env.get_env_dict())
                 except subprocess.CalledProcessError as e:
@@ -413,7 +421,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     traceback.print_exc()
                     print(f"----------Failed to run with {method} variables----------")
             for method, latency in env_result_map.items():
-                print(f"{method}\t{latency}ms")
+                print(f"{method}\t{latency} ms")
             best_env = self.ALL_ACCELERATION_ENV[
                 min(env_result_map, key=env_result_map.get)].get_env_dict()
             print(f"----------Best environment variables----------")
@@ -449,7 +457,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status = \
-                            exec_with_worker(throughput_calculate_helper, latency_sample_num,
+                            exec_with_worker(torch_throughput_calculate_helper, latency_sample_num,
                                              baseline_time, func_test, acce_model,
                                              input_sample, env=best_env)
                         if status is False and method != "original":
@@ -480,7 +488,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 # test whether metric works
                                 try:
                                     result_map[method]["accuracy"] = \
-                                        exec_with_worker(_accuracy_calculate_helper, acce_model,
+                                        exec_with_worker(torch_accuracy_calculate_helper, acce_model,
                                                          metric, validation_data, env=best_env)
                                 except Exception:
                                     traceback.print_exc()
@@ -499,7 +507,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         "validation_data is None).")
                             else:
                                 result_map[method]["accuracy"] = \
-                                    exec_with_worker(_accuracy_calculate_helper, acce_model, metric,
+                                    exec_with_worker(torch_accuracy_calculate_helper, acce_model, metric,
                                                      validation_data, env=best_env)
                     else:
                         result_map[method]["accuracy"] = None
