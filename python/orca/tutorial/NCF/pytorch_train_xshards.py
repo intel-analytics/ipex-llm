@@ -15,7 +15,6 @@
 #
 
 # Step 0: Import necessary libraries
-import json
 import torch.nn as nn
 import torch.optim as optim
 
@@ -35,24 +34,24 @@ init_orca(args, extra_python_lib="pytorch_model.py,process_xshards.py")
 
 # Step 2: Read and process data using Orca XShards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, num_ng=4)
 
 
 # Step 3: Define the model, optimizer and loss
-config = dict(
-    user_num=user_num,
-    item_num=item_num,
-    factor_num=16,
-    num_layers=3,
-    dropout=0.5,
-    lr=0.01,
-    model="NeuMF-end",
-    sparse_feats_input_dims=sparse_feats_input_dims,
-    sparse_feats_embed_dims=8,
-    num_dense_feats=num_dense_feats,
-    feature_cols=feature_cols,
-    label_cols=label_cols
-)
+config = {
+    "user_num": user_num,
+    "item_num": item_num,
+    "factor_num": 16,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "model": "NeuMF-end",
+    "sparse_feats_input_dims": sparse_feats_input_dims,
+    "sparse_feats_embed_dims": 8,
+    "num_dense_feats": num_dense_feats,
+    "feature_cols": feature_cols,
+    "label_cols": label_cols
+}
 
 
 def model_creator(config):
@@ -87,34 +86,26 @@ est = Estimator.from_torch(model=model_creator,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node,
                            config=config)
-train_stats = est.fit(data=train_data, epochs=2,
-                      feature_cols=feature_cols,
-                      label_cols=label_cols,
-                      batch_size=10240,
-                      validation_data=test_data,
-                      callbacks=callbacks)
-print("Train results:")
-for epoch_stats in train_stats:
-    for k, v in epoch_stats.items():
-        print("{}: {}".format(k, v))
-    print()
+est.fit(data=train_data, epochs=2,
+        feature_cols=feature_cols,
+        label_cols=label_cols,
+        batch_size=10240,
+        callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_data,
-                          feature_cols=feature_cols,
-                          label_cols=label_cols,
-                          batch_size=10240)
+result = est.evaluate(data=test_data,
+                      feature_cols=feature_cols,
+                      label_cols=label_cols,
+                      batch_size=10240)
 print("Evaluation results:")
-for k, v in eval_stats.items():
-    print("{}: {}".format(k, v))
+for r in result:
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
-with open(os.path.join(args.model_dir, "config.json"), "w") as f:
-    json.dump(config, f)
-
+save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
