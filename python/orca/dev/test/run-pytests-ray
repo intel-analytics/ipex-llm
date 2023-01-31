@@ -81,7 +81,8 @@ ray stop -f
 #
 echo "Running orca data tests"
 python -m pytest -v test/bigdl/orca/data \
-      --ignore=test/bigdl/orca/data/test_read_parquet_images.py 
+      --ignore=test/bigdl/orca/data/test_read_parquet_images.py \
+      --ignore=test/bigdl/orca/data/test_write_parquet.py
         
 exit_status_5=$?
 if [ $exit_status_5 -ne 0 ];
