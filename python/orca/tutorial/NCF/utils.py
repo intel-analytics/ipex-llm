@@ -127,12 +127,13 @@ def save_model_config(config, model_dir, file_name="config.json"):
 def load_model_config(model_dir, file_name="config.json"):
     if is_local_path(model_dir):
         local_path = os.path.join(model_dir, file_name)
+        with open(local_path, "r") as f:
+            config = json.load(f)
     else:
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)
             get_remote_file_to_local(remote_path=remote_path, local_path=local_path)
-
-    with open(local_path, "r") as f:
-        config = json.load(f)
+            with open(local_path, "r") as f:
+                config = json.load(f)
     return config
