@@ -264,7 +264,6 @@ class TFRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = 0
         self.verbose = verbose
 
     def setup(self):
@@ -417,7 +416,6 @@ class TFRunner:
             stats.update(history.params)
             stats.update(history.history)
 
-        self.epoch += epochs - initial_epoch
         return stats
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -562,14 +560,12 @@ class TFRunner:
                           "Please input a model_creator when creating estimator "
                           "or use load function of the estimator to load a model.")
         return {
-            "epoch": self.epoch,
             "weights": self.model.get_weights(),
             "optimizer_weights": self.model.optimizer.get_weights()
         }
 
     def set_state(self, state, sample_input=None):
         """Sets the state of the model."""
-        self.epoch = state["epoch"]
         if sample_input:
             self.model(sample_input)
         try:
