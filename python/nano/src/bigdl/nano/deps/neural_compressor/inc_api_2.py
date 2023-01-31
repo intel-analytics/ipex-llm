@@ -98,6 +98,14 @@ def _quantize(
     from neural_compressor.conf.config import QuantConf
     from neural_compressor.data import DataLoader
 
+    if 'pytorch' in framework:
+        # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
+        from bigdl.nano.pytorch.lightning import LightningModule
+        if isinstance(model, LightningModule):
+            model = model.model
+    elif 'onnx' in framework:
+        model = model.onnx_model
+
     if approach == "dynamic":
         dataloader = None
     elif 'onnx' in framework:

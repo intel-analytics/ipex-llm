@@ -34,7 +34,8 @@ class _ModuleWrapper:
     def __init__(self, target_obj, source_obj):
         self.__dict__["target_obj"] = target_obj
         self.__dict__["source_obj"] = source_obj
-        self.__dict__["support_operations"] = ["predict", "evaluate"]
+        self.__dict__["support_operations"] = ["predict", "evaluate",
+                                               "_save", "_load"]
 
     def __getattr__(self, name):
         # We only support `predict`, `evaluate`,
