@@ -247,7 +247,8 @@ class PublicDataset:
         invalidInputError(os.path.exists(self.final_file_path),
                           "tsinghua_electricity does not support automatic downloading, "
                           "users should download manually from "
-                          "https://github.com/thuml/Autoformer#get-started")
+                          "https://github.com/thuml/Autoformer#get-started and put to "
+                          f"{self.path}/electricity.csv")
         self.df = pd.read_csv(self.final_file_path, parse_dates=["date"])
         return self
 
