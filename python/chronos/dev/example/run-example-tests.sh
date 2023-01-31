@@ -88,8 +88,8 @@ time8=$?
 execute_ray_test tcmf_elctricity "${BIGDL_ROOT}/python/chronos/example/tcmf/run_electricity.py --use_dummy_data --smoke"
 time9=$?
 
-if [ ! -f  ~/.chronos/dataset/tsinghua_electricity/electricity.csv ]; then
-  wget -nv $FTP_URI/analytics-zoo-data/apps/network-traffic/electricity.csv -P ~/.chronos/dataset/tsinghua_electricity/
+if [ ! -f  ~/.chronos/dataset/electricity.csv ]; then
+  wget -nv $FTP_URI/analytics-zoo-data/apps/network-traffic/electricity.csv -P ~/.chronos/dataset/
 fi
 
 chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
