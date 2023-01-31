@@ -34,11 +34,12 @@ class _ModuleWrapper:
     def __init__(self, target_obj, source_obj):
         self.__dict__["target_obj"] = target_obj
         self.__dict__["source_obj"] = source_obj
-        self.support_operations = ["predict", "evaluate"]
+        self.__dict__["support_operations"] = ["predict", "evaluate"]
 
     def __getattr__(self, name):
-        # We only support `predict`, `evaluate`, and custom attributes
-        # which are not in `tf.keras.Model`
+        # We only support `predict`, `evaluate`,
+        # our `_save`, `_load`,
+        # and user custom attributes which are not in `tf.keras.Model`
         if name in self.support_operations:
             return getattr(self.target_obj, name)
         elif not hasattr(Model, name):
