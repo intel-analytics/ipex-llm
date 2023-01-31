@@ -46,10 +46,12 @@ class BaseQuantization(Quantization):
                             Default: 'post_training_static_quant'.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
         :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better':True}
-                                     allows relative accuracy loss: 1%. accuracy_criterion = {
-                                     'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                     < 0.99 must be satisfied.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param eval_func:       A evaluation function which only accepts model as input and return
                                 evaluation value. This parameter provides a higher degree of
                                 freedom than using eval_loader and metric. Default to None meaning

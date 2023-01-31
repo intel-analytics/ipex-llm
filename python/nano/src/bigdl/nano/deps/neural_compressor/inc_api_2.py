@@ -84,7 +84,7 @@ def _quantize(
     conf=None,
     approach='static',
     tuning_strategy='bayesian',
-    accuracy_criterion={'relative': 0.99, 'higher_is_better': True},
+    accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
     timeout=0,
     max_trials=1,
     inputs=[],

@@ -529,6 +529,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param use_ipex:        Whether we use ipex as accelerator for inferencing.
+                                If precision != bf16, it will be ignored. Default: ``False``.
         :param calib_data:      Calibration data is required for static quantization.
                                 It's also used as validation dataloader.
                                 calib_data support following formats:
@@ -556,10 +558,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
@@ -919,7 +925,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: Whether we use ipex as accelerator for inferencing. Default: False.
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. Only valid when
+                         accelerator='jit'/None, otherwise will be ignored. Default: ``False``.
         :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
