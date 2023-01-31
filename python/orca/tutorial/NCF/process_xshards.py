@@ -168,7 +168,6 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     print("Split data...")
     train_data, test_data = data.transform_shard(split_dataset).split()
 
-    feature_cols, label_cols = get_feature_cols(), get_label_cols()
     return train_data, test_data, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
