@@ -16,7 +16,11 @@
 
 import os
 import argparse
+import json
+import tempfile
 
+from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_local
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 
@@ -108,18 +112,27 @@ def scheduler(epoch, lr):
 
 
 def save_model_config(config, model_dir, file_name="config.json"):
-    import json
-    from bigdl.dllib.utils.file_utils import is_local_path
-    from bigdl.orca.data.file import put_local_file_to_remote
-
     if is_local_path(model_dir):
         with open(os.path.join(model_dir, file_name), "w") as f:
             json.dump(config, f)
     else:
-        import tempfile
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)
             with open(local_path, "w") as f:
                 json.dump(config, f)
             put_local_file_to_remote(local_path, remote_path)
+
+
+def load_model_config(model_dir, file_name="config.json"):
+    if is_local_path(model_dir):
+        local_path = os.path.join(model_dir, file_name)
+    else:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_path = os.path.join(tmpdirname, file_name)
+            remote_path = os.path.join(model_dir, file_name)
+            get_remote_file_to_local(remote_path=remote_path, local_path=local_path)
+
+    with open(local_path, "r") as f:
+        config = json.load(f)
+    return config
