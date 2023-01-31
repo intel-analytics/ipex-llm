@@ -88,10 +88,11 @@ time8=$?
 execute_ray_test tcmf_elctricity "${BIGDL_ROOT}/python/chronos/example/tcmf/run_electricity.py --use_dummy_data --smoke"
 time9=$?
 
-if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ]; then
+if [ ! -f  ~/.chronos/dataset/tsinghua_electricity/electricity.csv ]; then
   wget -nv $FTP_URI/analytics-zoo-data/apps/network-traffic/electricity.csv -P ~/.chronos/dataset/tsinghua_electricity/
 fi
 
+chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial
 sed -i 's/path="."//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
 execute_ray_test muti_objective_hpo_with_builtin_latency_tutorial "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
@@ -106,5 +107,6 @@ echo "#6 onnx_forecaster_network_traffic used:$time6 seconds"
 echo "#7 quantization_tcnforecaster_nyc_taxi used:$time7 seconds"
 echo "#8 sparkdf_training_nyc_taxi used:$time8 seconds"
 echo "#9 chronos tcmf example time used:$time9 seconds"
+echo "#10 chronos muti_objective_hpo_with_builtin_latency_tutorial example time used:$time10 seconds"
 
 clear_up
