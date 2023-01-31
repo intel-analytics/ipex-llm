@@ -88,6 +88,15 @@ time8=$?
 execute_ray_test tcmf_elctricity "${BIGDL_ROOT}/python/chronos/example/tcmf/run_electricity.py --use_dummy_data --smoke"
 time9=$?
 
+if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ]; then
+  wget -nv $FTP_URI/analytics-zoo-data/apps/network-traffic/electricity.csv -P ~/.chronos/dataset/tsinghua_electricity/
+fi
+
+${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial
+sed -i 's/path="."//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+execute_ray_test muti_objective_hpo_with_builtin_latency_tutorial "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+time10=$?
+
 echo "#1 autolstm_nyc_taxi time used:$time1 seconds"
 echo "#2 autoprophet_nyc_taxi time used:$time2 seconds"
 echo "#3 dpgansimulator_wwt time used:$time3 seconds"
