@@ -19,9 +19,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
-
-KERAS_VERSION_LESS_2_9 = _compare_version("keras", operator.lt, "2.9")
-KERAS_VERSION_LESS_2_10 = _compare_version("keras", operator.lt, "2.10")
+from bigdl.nano.utils.log4Error import invalidOperationError
 
 
 class _NanoPartial(partial):
@@ -32,13 +30,18 @@ class _ModuleWrapper:
     def __init__(self, target_obj, source_obj):
         self.__dict__["target_obj"] = target_obj
         self.__dict__["source_obj"] = source_obj
+        self.support_operations = ["predict", "evaluate"]
 
     def __getattr__(self, name):
-        try:
+        # We only support `predict`, `evaluate`, and custom attributes
+        # which are not in `tf.keras.Model`
+        if name in self.support_operations:
             return getattr(self.target_obj, name)
-        except AttributeError as _e:
-            pass
-        return getattr(self.source_obj, name)
+        elif not hasattr(Model, name):
+            return getattr(self.source_obj, name)
+        else:
+            invalidOperationError(False,
+                                  f"This optimized model does not support {name} method !")
 
     def __setattr__(self, name: str, value) -> None:
         return setattr(self.target_obj, name, value)
