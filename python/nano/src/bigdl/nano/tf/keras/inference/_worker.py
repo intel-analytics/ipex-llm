@@ -42,7 +42,7 @@ if __name__ == "__main__":
     thread_num = sys.argv[2]
     if thread_num != 'None':
         thread_num = int(thread_num)  # type: ignore
-        tf.config.threading.set_inter_op_parallelism_threads(1)
+        tf.config.threading.set_inter_op_parallelism_threads(0)
         tf.config.threading.set_intra_op_parallelism_threads(thread_num)
     params = pickle.load(open(param_file, "rb"))
     latency = throughput_calculate_helper(**params)

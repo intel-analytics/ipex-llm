@@ -242,7 +242,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    if method == "original":
+                    if method == "original" and thread_num is not None:
+                        _flag = True  # represent whether subprocess works
                         # for original keras model, as tf.config.threading can't set thread
                         # during running, so here we use subprocess to calculate throughput
                         params = {"iterrun": latency_sample_num,
@@ -252,21 +253,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         with tempfile.TemporaryDirectory() as temp_dir:
                             _filename = os.path.join(temp_dir, "params")
                             cloudpickle.dump(params, open(_filename, "wb"))
-                            if thread_num is not None:
-                                my_env = os.environ.copy()
-                                my_env["OMP_NUM_THREADS"] = str(thread_num)
-                            else:
-                                my_env = None
-                            worker_file = os.path.join(os.path.split(os.path.realpath(__file__))[0],
-                                                       "_worker.py")
-                            result = subprocess.run(["python", worker_file,
-                                                     _filename, str(thread_num)],  # two params
-                                                    capture_output=True,
-                                                    universal_newlines=True,
-                                                    env=my_env)
-                            latency = float(result.stdout.strip())
-                        result_map[method]["latency"] = latency
-                    else:
+                            my_env = os.environ.copy()
+                            my_env["OMP_NUM_THREADS"] = str(thread_num)
+                            worker_file = os.path.join(
+                                os.path.split(os.path.realpath(__file__))[0], "_worker.py")
+                            try:
+                                result = subprocess.run(["python", worker_file,
+                                                         _filename, str(thread_num)],
+                                                        capture_output=True,
+                                                        universal_newlines=True,
+                                                        env=my_env)
+                                latency = float(result.stdout.strip())
+                                result_map[method]["latency"] = latency
+                            except Exception:
+                                _flag = False
+                    if method != "original" or thread_num is None or _flag is False:
                         result_map[method]["latency"], status =\
                             throughput_calculate_helper(latency_sample_num, baseline_time,
                                                         func_test, acce_model, input_sample)
