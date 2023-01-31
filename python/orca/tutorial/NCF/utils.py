@@ -22,8 +22,10 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 def parse_args(description):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str, default="./ml-1m",
+    parser.add_argument("--data_dir", type=str, default="./",
                         help="The path to load data from local or remote resources.")
+    parser.add_argument("--dataset", type=str, default="ml-1m",
+                        help="The name of dataset. ml-1m or ml-100k")
     parser.add_argument("--model_dir", type=str, default="./",
                         help="The path to save model and logs.")
     parser.add_argument("--cluster_mode", type=str, default="local",
@@ -103,3 +105,21 @@ def scheduler(epoch, lr):
         return lr
     else:
         return lr * 0.5
+
+
+def save_model_config(config, model_dir, file_name="config.json"):
+    import json
+    from bigdl.dllib.utils.file_utils import is_local_path
+    from bigdl.orca.data.file import put_local_file_to_remote
+
+    if is_local_path(model_dir):
+        with open(os.path.join(model_dir, file_name), "w") as f:
+            json.dump(config, f)
+    else:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            local_path = os.path.join(tmpdirname, file_name)
+            remote_path = os.path.join(model_dir, file_name)
+            with open(local_path, "w") as f:
+                json.dump(config, f)
+            put_local_file_to_remote(local_path, remote_path)
