@@ -40,10 +40,10 @@ class BaseTF2Forecaster(Forecaster):
                                                  backend=self.remote_distributed_backend)
         else:
             self.internal = self.model_creator({**self.model_config})
+            self.accelerated_model = None  # accelerated model obtained from various accelerators
+            self.accelerate_method = None  # str indicates current accelerate method
 
         self.fitted = False
-        self.accelerated_model = None  # accelerated model obtained from various accelerators
-        self.accelerate_method = None  # str indicates current accelerate method
 
     def fit(self, data, epochs=1, batch_size=32):
         """
@@ -504,6 +504,7 @@ class BaseTF2Forecaster(Forecaster):
                    input_feature_num=input_feature_num,
                    output_feature_num=output_feature_num,
                    **kwargs)
+
 
 def _str2metric(metric):
     # map metric str to function
