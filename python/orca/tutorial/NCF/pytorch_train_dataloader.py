@@ -17,6 +17,7 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 import torch.utils.data as data
 
 from pytorch_dataset import load_dataset, process_users_items, get_input_dims
@@ -35,14 +36,14 @@ init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config["dataset_dir"], config["num_ng"])
+    train_dataset, _ = load_dataset(config["data_dir"], config["dataset"], config["num_ng"])
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config["dataset_dir"], config["num_ng"])
+    _, test_dataset = load_dataset(config["data_dir"], config["dataset"], config["num_ng"])
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -51,7 +52,7 @@ def test_loader_func(config, batch_size):
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(config["dataset_dir"])
+        total_cols = process_users_items(config["data_dir"], config["dataset"])
     sparse_feats_input_dims, num_dense_feats = get_input_dims(users, items,
                                                               sparse_features, dense_features)
     model = NCF(user_num=user_num,
@@ -70,20 +71,30 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config["lr"])
 
+
+def scheduler_creator(optimizer, config):
+    scheduler = StepLR(optimizer, step_size=1)
+    return scheduler
+
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
+scheduler = scheduler_creator if args.lr_scheduler else None
 
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
+                           scheduler_creator=scheduler,
+                           scheduler_step_freq='epoch',
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node,
-                           config={"dataset_dir": args.data_dir,
+                           config={"data_dir": args.data_dir,
+                                   "dataset": args.dataset,
                                    "num_ng": 4,
                                    "factor_num": 16,
                                    "num_layers": 3,
@@ -91,23 +102,14 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    "lr": 0.01,
                                    "model": "NeuMF-end",
                                    "sparse_feats_embed_dims": 8})
-train_stats = est.fit(data=train_loader_func,
-                      validation_data=test_loader_func,
-                      epochs=2,
-                      batch_size=10240,
-                      callbacks=callbacks)
-print("Train results:")
-for epoch_stats in train_stats:
-    for k, v in epoch_stats.items():
-        print("{}: {}".format(k, v))
-    print()
+est.fit(data=train_loader_func, epochs=2, batch_size=10240, callbacks=callbacks)
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_loader_func, batch_size=10240)
+result = est.evaluate(data=test_loader_func, batch_size=10240)
 print("Evaluation results:")
-for k, v in eval_stats.items():
-    print("{}: {}".format(k, v))
+for r in result:
+    print("{}: {}".format(r, result[r]))
 
 
 # Step 6: Save the trained PyTorch model
