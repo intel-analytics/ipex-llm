@@ -399,12 +399,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model(*input_sample)
 
         def torch_model_throughput_calculate_helper(iterrun, baseline_time, func, model, *args):
-            with torch.inference_mode():
-                throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
+            with InferenceOptimizer.get_context(model):
+                return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
 
         def torch_accuracy_calculate_helper(model, metric, data):
-            with torch.inference_mode():
-                _accuracy_calculate_helper(model, metric, data)
+            with InferenceOptimizer.get_context(model):
+                return _accuracy_calculate_helper(model, metric, data)
 
         if search_env:
             env_result_map = {}
