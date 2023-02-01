@@ -28,7 +28,6 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Orca Xshards")
-args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
 init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
 
 
@@ -90,10 +89,8 @@ train_stats = est.fit(train_data,
                       validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for epoch_stats in train_stats:
-    for k, v in epoch_stats.items():
-        print("{}: {}".format(k, v))
-    print()
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 5: Distributed evaluation of the trained model
@@ -108,7 +105,7 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-est.save(os.path.join(args.model_dir, "NCF_model"))
+save_tf_model(est, args.model_dir, "NCF_model")
 save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
