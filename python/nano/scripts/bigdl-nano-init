@@ -20,9 +20,9 @@ function enable-jemalloc-var {
 }
 
 function enable-tcmalloc-var {
-	echo "Option: Enable tcmalloc and set related variables"
-	ENABLE_TCMALLOC_VAR=1
-	unset ENABLE_JEMALLOC_VAR
+    echo "Option: Enable tcmalloc and set related variables"
+    ENABLE_TCMALLOC_VAR=1
+    unset ENABLE_JEMALLOC_VAR
 }
 
 function disable-allocator {
@@ -53,7 +53,7 @@ function set-allocator {
     fi
 
     if [ $OS = "linux" ]; then
-        # if `LD_PRELOAD` or `JEMLLOC_PATH` is empty, there will be
+        # if `LD_PRELOAD` or `lib_path` is empty, there will be
         # extra space on the left or right sides, use echo to remove them
         export LD_PRELOAD=$(echo ${LD_PRELOAD} ${lib_path})
     elif [ $OS = "macos" ] && [ ! -z $lib_path ]; then
