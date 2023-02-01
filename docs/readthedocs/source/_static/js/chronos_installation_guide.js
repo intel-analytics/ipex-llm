@@ -92,13 +92,6 @@ function refresh_cmd(){
         enable(hardwares);
         enable(automls);
 
-    if(version!="nightly"){
-        disable(inferences);
-    }
-    else{
-        enable(inferences);
-    }
-
         //change cmd according to different choices
         if(model=="Deep_learning_models"){
             if(ai=="pytorch"){
@@ -162,7 +155,7 @@ function refresh_cmd(){
                                     cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
                                 }
                                 else{
-                                    cmd="pip install bigdl-chronos[pytorch]";
+                                    cmd="pip install bigdl-chronos[pytorch,inference]";
                                 }
                             }
                         }else if(hardware=="cluster"){
