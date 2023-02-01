@@ -5,7 +5,7 @@ var releases=["stable", "nightly"];
 
 var inference="inferenceyes";
 var framework="pytorch";
-var version="pytorch_112";
+var version="pytorch_113";
 var release="nightly";
 
 function refresh_cmd(){
@@ -62,9 +62,9 @@ function refresh_cmd(){
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
                     }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch,inference]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_112,inference]";
                     }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113,inference]  pip install neural_compressor==1.14";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch,inference]";
                     }
                 }else if(inference="inferenceno"){
                     if(version=="pytorch_110"){
@@ -72,9 +72,9 @@ function refresh_cmd(){
                     }else if(version=="pytorch_111"){
                         cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
                     }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_112]";
                     }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_113]";
+                        cmd="pip install --pre --upgrade bigdl-nano[pytorch]";
                     }
                 }
             }
@@ -180,7 +180,7 @@ $(document).on('click',"button",function(){
         if (framework=="tensorflow"){
             version="tf2_29";
         }else{
-            version="pytorch_112";
+            version="pytorch_113";
         }
     }
     else if (releases.indexOf(id)>=0){
