@@ -98,14 +98,6 @@ def _quantize(
     from neural_compressor.conf.config import QuantConf
     from neural_compressor.data import DataLoader
 
-    if 'pytorch' in framework:
-        # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
-        from bigdl.nano.pytorch.lightning import LightningModule
-        if isinstance(model, LightningModule):
-            model = model.model
-    elif 'onnx' in framework:
-        model = model.onnx_model
-
     if approach == "dynamic":
         dataloader = None
     elif 'onnx' in framework:
@@ -125,7 +117,7 @@ def _quantize(
             # `dataloader` is tensorflow (x,y)
             # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
             from .onnx.tensorflow.quantization import KerasNumpyDataset
-            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
+            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         # INC requires a batched dataloader,
         # A torch.Dataset doesn't have `batch_size` attribute,
