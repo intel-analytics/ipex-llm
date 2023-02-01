@@ -1,7 +1,7 @@
 export CUSTOM_IMAGE_NAME=bigdl-ppmltrusted-big-data-ml-python-gramine-custom
-export CUSTOM_IMAGE_TAG=2.1.0-SNAPSHOT
+export CUSTOM_IMAGE_TAG=2.3.0-SNAPSHOT
 export BASE_IMAGE_NAME=bigdl-ppml-trusted-big-data-ml-python-gramine-base
-export BASE_IMAGE_TAG=2.1.0-SNAPSHOT
+export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
 export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
 export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
 
