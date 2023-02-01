@@ -18,7 +18,7 @@ import os
 import sys
 
 import cloudpickle
-import torch
+import pickle
 
 RETURN_FILENAME = 'return_value'
 
@@ -26,7 +26,7 @@ RETURN_FILENAME = 'return_value'
 def main():
     param_file = sys.argv[1]
     with open(param_file, "rb") as f:
-        params = cloudpickle.load(f)
+        params = pickle.load(f)
     tmp_dir = os.path.dirname(param_file)
     return_value = params[0](*(params[1:]))
     with open(os.path.join(tmp_dir, RETURN_FILENAME), 'wb') as f:
