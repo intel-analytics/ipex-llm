@@ -36,6 +36,7 @@ class TestInferencePipeline(TestCase):
                      latency_sample_num=10,
                      thread_num=8)
         model = opt.get_best_model()
+        assert isinstance(opt.optimized_model_dict["original"]["latency"], float)
 
     def test_optimize_model_without_accuracy(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
