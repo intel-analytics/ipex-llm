@@ -1,12 +1,11 @@
 Inference Optimization
 =========================
 
-Here you could find detailed guides on how to apply BigDL-Nano to optimize your inference workloads. Select the use cases below for further navigation:
+Here you could find detailed guides on how to apply BigDL-Nano to optimize your inference workloads. Select your desired use case below for further navigation:
 
 .. grid:: 1 2 2 2
 
     .. grid-item::
-        :columns: 12
 
         .. button-link:: OpenVINO/index.html
             :color: primary

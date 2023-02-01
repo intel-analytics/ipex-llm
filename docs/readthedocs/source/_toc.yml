@@ -104,7 +104,11 @@ subtrees:
                   - file: doc/Nano/Howto/Preprocessing/index
                     subtrees:
                       - entries:
-                        - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
+                        - file: doc/Nano/Howto/Preprocessing/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries:      
+                              - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
                   - file: doc/Nano/Howto/Training/index
                     subtrees:
                       - entries:

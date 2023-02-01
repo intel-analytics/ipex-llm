@@ -1,7 +1,7 @@
 Training Optimization
 =========================
 
-Here you could find detailed guides on how to apply BigDL-Nano to optimize your training workloads. Select the use cases below for further navigation:
+Here you could find detailed guides on how to apply BigDL-Nano to optimize your training workloads. Select your desired use case below for further navigation:
 
 .. grid:: 1 2 2 2
 
