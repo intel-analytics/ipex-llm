@@ -262,8 +262,8 @@ def _process_image_files_batch(
 
 
 def _check_or_create_dir(directory: str) -> None:
-    """Checks if directory exists otherwise creates it."""
     import tensorflow as tf
+    """Checks if directory exists otherwise creates it."""
     if not tf.io.gfile.exists(directory):
         tf.io.gfile.makedirs(directory)
 
