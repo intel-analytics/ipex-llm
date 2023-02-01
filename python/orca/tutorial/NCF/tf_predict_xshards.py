@@ -25,6 +25,7 @@ from utils import *
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Predicting with Orca Xshards")
+args.backend = "ray"
 init_orca(args)
 
 
