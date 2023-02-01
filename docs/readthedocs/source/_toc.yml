@@ -108,20 +108,36 @@ subtrees:
                   - file: doc/Nano/Howto/Training/index
                     subtrees:
                       - entries:
-                        - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
-                        - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
-                        - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
-                        - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
-                        - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
-                        - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
-                        - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
-                        - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
-                        - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
-                        - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
-                        - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
-                        - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
-                        - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
-                        - file: doc/Nano/Howto/Training/General/choose_num_processes_training
+                        - file: doc/Nano/Howto/Training/PyTorchLightning/index
+                          title: "PyTorch Lightning"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
+                        - file: doc/Nano/Howto/Training/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
+                              - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
+                              - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
+                        - file: doc/Nano/Howto/Training/TensorFlow/index
+                          title: "TensorFlow"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+                              - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
+                              - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
+                        - file: doc/Nano/Howto/Training/General/index
+                          title: "General"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/General/choose_num_processes_training
                   - file: doc/Nano/Howto/Inference/index
                     subtrees:
                       - entries:
