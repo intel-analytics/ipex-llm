@@ -64,7 +64,8 @@ jobs:
     name: Paths filter
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
-      friesian: ${{ steps.filter.outputs.friesian }}
+      friesian-pytest: ${{ steps.filter.outputs.friesian-pytest }}
+      friesian-example: ${{ steps.filter.outputs.friesian-example }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
       orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
@@ -76,20 +77,28 @@ jobs:
         id: filter
         with:
           filters: |
-            friesian:
-              - 'scala/serving/pom.xml'
-              - 'scala/ppml/pom.xml'
+            friesian-pytest:
               - 'scala/orca/pom.xml'
               - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
-              - 'python/friesian/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
+              - 'python/friesian/test/**'
+              - '.github/actions/friesian/**'
+
+            friesian-example: 
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'python/friesian/example/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
               - '.github/actions/friesian/**'
               - 'python/orca/src/bigdl/orca/data/**'
-              - 'python/orca/src/bigdl/orca/learn/**'
-              
+
             dllib:
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
@@ -143,7 +152,7 @@ jobs:
 
   Friesian-Scala-UT:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
@@ -418,7 +427,7 @@ jobs:
   
   Friesian-Python-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -437,7 +446,7 @@ jobs:
     
   Friesian-Python-Py37-Spark3-Pip:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -456,7 +465,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -475,7 +484,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -494,7 +503,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Tf2-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -513,7 +522,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
