@@ -29,7 +29,7 @@ export PYSPARK_DRIVER_PYTHON=python
 
 #python -m pytest -v --doctest-modules ../../../../orca/src/bigdl/orca/tfpark
 python_version=$(python --version | awk '{print$2}')
-if [ $python_verson == 3.7.13 ];then
+if [ $python_verson == 3.7.10 ];then
   python -m pytest -v test/bigdl/orca/tfpark
   python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
 fi

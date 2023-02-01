@@ -53,7 +53,7 @@ then
 fi
 
 python_verson=$(python --version | awk '{print$2}')
-if [ $python_verson == 3.7.13 ];then
+if [ $python_verson == 3.7.10 ];then
     ray stop -f
     echo "Running orca automl tests"
     python -m pytest -v test/bigdl/orca/automl
