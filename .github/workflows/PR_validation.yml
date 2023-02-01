@@ -258,6 +258,44 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+  
+  Orca-Python-Py38-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-py38-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env/remove-env-py38
+
+  Orca-Python-Ray-Py38-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-py38-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env/remove-env-py38
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     needs: changes
