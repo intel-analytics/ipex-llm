@@ -397,13 +397,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 model(*input_sample)
 
-        def torch_throughput_calculate_helper(*args, **kwargs):
-            with torch.inference_mode():
-                throughput_calculate_helper(*args, **kwargs)
+        def torch_model_throughput_calculate_helper(iterrun, baseline_time, func, model, *args):
+            with InferenceOptimizer.get_context(model):
+                throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
 
-        def torch_accuracy_calculate_helper(*args, **kwargs):
-            with torch.inference_mode():
-                _accuracy_calculate_helper(*args, **kwargs)
+        def torch_accuracy_calculate_helper(model, metric, data):
+            with InferenceOptimizer.get_context(model):
+                _accuracy_calculate_helper(model, metric, data)
 
         if search_env:
             env_result_map = {}
@@ -412,7 +412,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
                     env_result_map[method], _ = \
-                        exec_with_worker(torch_throughput_calculate_helper, latency_sample_num,
+                        exec_with_worker(torch_model_throughput_calculate_helper, latency_sample_num,
                                          baseline_time, func_test, model, input_sample,
                                          env=env.get_env_dict())
                 except subprocess.CalledProcessError as e:
@@ -456,7 +456,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 try:
                     result_map[method]["latency"], status = \
-                        exec_with_worker(torch_throughput_calculate_helper, latency_sample_num,
+                        exec_with_worker(torch_model_throughput_calculate_helper, latency_sample_num,
                                          baseline_time, func_test, acce_model,
                                          input_sample, env=best_env)
                     if status is False and method != "original":
