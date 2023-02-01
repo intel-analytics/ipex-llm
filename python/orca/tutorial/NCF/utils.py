@@ -20,7 +20,7 @@ import json
 import tempfile
 
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_local \
+from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_local, \
     put_local_dir_to_remote, get_remote_dir_to_local
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
