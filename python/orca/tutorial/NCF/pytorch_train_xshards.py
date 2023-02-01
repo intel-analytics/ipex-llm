@@ -17,6 +17,7 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
@@ -71,15 +72,23 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config["lr"])
 
+
+def scheduler_creator(optimizer, config):
+    scheduler = StepLR(optimizer, step_size=1)
+    return scheduler
+
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
+scheduler = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
+                           scheduler_creator=scheduler,
+                           scheduler_step_freq='epoch',
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=args.backend,
