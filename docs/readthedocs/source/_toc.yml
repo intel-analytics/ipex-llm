@@ -141,26 +141,38 @@ subtrees:
                   - file: doc/Nano/Howto/Inference/index
                     subtrees:
                       - entries:
-                        - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
-                        - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
-                        - file: doc/Nano/Howto/Inference/OpenVINO/accelerate_inference_openvino_gpu
-                        - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
-                        - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
-                        - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
-                        - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
-                        - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
-                        - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
-                        - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
-                        - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
-                        - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
-                        - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
-                        - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
-                        - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
-                        - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
-                        - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
-                        - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_bf16
-                        - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
-                        - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
+                        - file: doc/Nano/Howto/Inference/OpenVINO/index
+                          title: "OpenVINO"
+                          subtrees:
+                            - entries:    
+                              - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
+                              - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
+                              - file: doc/Nano/Howto/Inference/OpenVINO/accelerate_inference_openvino_gpu
+                        - file: doc/Nano/Howto/Inference/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries: 
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
+                              - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
+                              - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
+                              - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
+                              - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                        - file: doc/Nano/Howto/Inference/TensorFlow/index
+                          title: "TensorFlow"
+                          subtrees:
+                            - entries: 
+                              - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
+                              - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_bf16
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
                   - file: doc/Nano/Howto/Install/index
                     subtrees:
                       - entries:
