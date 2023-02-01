@@ -25,13 +25,13 @@ from utils import *
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Predicting with Orca Xshards")
-args.backend = "ray"
 init_orca(args)
 
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
-est.load(os.path.join(args.model_dir, "NCF_model"))
+load_tf_model(est, args.model_dir, "NCF_model")
+
 data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 feature_cols = get_feature_cols()
 
