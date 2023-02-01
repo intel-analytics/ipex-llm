@@ -17,6 +17,7 @@
 import operator
 import os
 import subprocess
+import sys
 import tempfile
 
 import cloudpickle
@@ -219,6 +220,10 @@ def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
     tmp_env.update(os.environ)
     if env is not None:
         tmp_env.update(env)
+    if 'PYTHONPATH' in tmp_env:
+        tmp_env['PYTHONPATH'] = ":".join([tmp_env['PYTHONPATH'], *sys.path])
+    else:
+        tmp_env['PYTHONPATH'] = ":".join(sys.path)
     with tempfile.TemporaryDirectory() as tmp_dir_path:
         param_file = os.path.join(tmp_dir_path, 'param')
         with open(param_file, 'wb') as f:
