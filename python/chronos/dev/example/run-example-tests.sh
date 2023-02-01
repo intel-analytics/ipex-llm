@@ -95,6 +95,8 @@ fi
 chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial
 sed -i 's/path="."//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+sed -i 's/import optuna//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+sed -i 's/optuna/# optuna/' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
 execute_ray_test muti_objective_hpo_with_builtin_latency_tutorial "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
 time10=$?
 
