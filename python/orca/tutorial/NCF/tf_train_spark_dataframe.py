@@ -90,8 +90,10 @@ train_stats = est.fit(train_df,
                       validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for k, v in train_stats.items():
-    print("{}: {}".format(k, v))
+for epoch_stats in train_stats:
+    for k, v in epoch_stats.items():
+        print("{}: {}".format(k, v))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model
