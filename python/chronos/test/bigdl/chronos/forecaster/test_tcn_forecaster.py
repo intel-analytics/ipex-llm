@@ -151,14 +151,18 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
-                            framework='pytorch_fx')
+                            framework='pytorch_fx',
+                            relative_drop=0.1,
+                            max_trials=3)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
-                            framework='onnxrt_qlinearops')
+                            framework='onnxrt_qlinearops',
+                            relative_drop=0.1,
+                            max_trials=3)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
@@ -182,14 +186,18 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
-                            framework='pytorch_fx')
+                            framework='pytorch_fx',
+                            relative_drop=0.1,
+                            max_trials=3)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         forecaster.quantize(calib_data=train_loader,
                             val_data=val_loader,
                             metric="mae",
-                            framework='onnxrt_qlinearops')
+                            framework='onnxrt_qlinearops',
+                            relative_drop=0.1,
+                            max_trials=3)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
