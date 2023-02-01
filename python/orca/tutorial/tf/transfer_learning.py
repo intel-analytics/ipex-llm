@@ -17,15 +17,18 @@
 # Step 0: Import necessary libraries
 import math
 
-from model import xception_model
 import tensorflow as tf
+import tensorflow_datasets as tfds
+
+from model import model_creator
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
-import tensorflow_datasets as tfds
+
 
 # Step 1: Init Orca Context
 init_orca_context(memory='4g')
+
 
 # Step 2: Read and process data
 def data_process():
@@ -43,6 +46,8 @@ def data_process():
     print("Number of test samples: %d" % tf.data.experimental.cardinality(test_ds))
 
     return train_ds, validation_ds, test_ds
+
+
 train_ds, validation_ds, test_ds = data_process()
 
 
@@ -75,15 +80,8 @@ def test_data_creator(config, batch_size):
     return dataset
 
 
-# Step 3: Define model
-config = dict(
-    dropout=0.2
-)
-
-
-def model_creator(config):
-    model = xception_model(config['dropout'])
-    return model
+# Step 3: Define model config
+config = dict(dropout=0.2)
 
 
 # Step 4: Distributed training with Orca keras Estimator
@@ -104,15 +102,20 @@ est.fit(data=train_data_creator,
         validation_steps=val_steps,
         data_config=config)
 
+
 # Step 5: Distributed evaluation of the trained model
-stats = est.evaluate(test_data_creator,
-                     batch_size=batch_size,
-                     num_steps=test_steps,
-                     data_config=config)
-print("Evaluation results:", stats)
+eval_stats = est.evaluate(test_data_creator,
+                          batch_size=batch_size,
+                          num_steps=test_steps,
+                          data_config=config)
+print("Evaluation results:")
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
+
 
 # Step 6: Save the trained Tensorflow model
 est.save("model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()

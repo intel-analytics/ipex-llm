@@ -41,3 +41,8 @@ def xception_model(dropout):
         metrics=[keras.metrics.BinaryAccuracy()],
     )
     return model
+
+
+def model_creator(config):
+    model = xception_model(config['dropout'])
+    return model
