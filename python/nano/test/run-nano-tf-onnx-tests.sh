@@ -7,7 +7,8 @@ export INC_TF_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/onnx/tf
 set -e
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${INC_TF_NANO_TEST_DIR}
+python -m pytest -s ${INC_TF_NANO_TEST_DIR}/test_inc_onnx.py
+python -m pytest -s ${INC_TF_NANO_TEST_DIR}/test_onnx.py
 
 now=$(date "+%s")
 time=$((now-start))
