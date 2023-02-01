@@ -55,6 +55,12 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 if input_spec is None:
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
+                if hasattr(model, "output_shape"):
+                    self._output_shape = model.output_shape
+                elif isinstance(input_spec, (tuple, list)):
+                    self._output_shape = model.compute_output_shape((i.shape for i in input_spec))
+                else:
+                    self._output_shape = model.compute_output_shape(input_spec.shape)
                 if not isinstance(input_spec, (tuple, list)):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
@@ -152,7 +158,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
                  "_inputs_dtypes": self._inputs_dtypes,
-                 "_nesting_level": self._nesting_level}
+                 "_nesting_level": self._nesting_level,
+                 "_output_shape": self._output_shape}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
         if self._is_compiled:
