@@ -1921,7 +1921,7 @@ class BasePytorchForecaster(Forecaster):
                                               precision='int8',
                                               accelerator=accelerator,
                                               method=method,
-                                              calib_dataloader=calib_data,
+                                              calib_data=calib_data,
                                               metric=metric,
                                               conf=conf,
                                               approach=approach,

@@ -280,3 +280,31 @@ Then you can start your server with command:
 ```bash
 java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s true -h key/server.p12 -t <your_token_of_server_key>
 ```
+
+## How to attest with a BigDL Remote Attestation Service
+You can do attestation via REST API of BigDL Remote Attestation Service. Currently supported REST API are listed:
+
+### Quick Check
+
+* REST API format:
+```
+GET <bigdl_remote_attestation_address>/
+```
+
+### Verify SGX/TDX Quote
+
+* REST API format:
+```
+POST <bigdl_remote_attestation_address>/verifyQuote
+```
+* Request Payload:
+
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| quote | String | AwACAAAAAAAJAA0Ak5py... | A valid DCAP quote in BASE64 |
+
+* Response Data:
+
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| result | Int | 0/1/-1 | 0 for success, 1 for warning, -1 for error |
