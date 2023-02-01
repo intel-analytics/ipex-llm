@@ -34,6 +34,8 @@ runs:
         HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
         pip uninstall -y opencv-python-headless
         pip uninstall -y opencv-python
+        pip uninstall -y torch
+        pip uninstall -y torchvision
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} opencv-python-headless
         
       env:
