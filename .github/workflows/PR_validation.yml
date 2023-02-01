@@ -78,8 +78,6 @@ jobs:
         with:
           filters: |
             friesian:
-              - 'scala/serving/pom.xml'
-              - 'scala/ppml/pom.xml'
               - 'scala/orca/pom.xml'
               - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
@@ -90,12 +88,8 @@ jobs:
               - 'python/friesian/dev/**'
               - 'python/friesian/test/**'
               - '.github/actions/friesian/**'
-              - 'python/orca/src/bigdl/orca/data/**'
-              - 'python/orca/src/bigdl/orca/learn/**'
 
             friesian-example: 
-              - 'scala/serving/pom.xml'
-              - 'scala/ppml/pom.xml'
               - 'scala/orca/pom.xml'
               - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
@@ -103,6 +97,7 @@ jobs:
               - 'python/friesian/src/**'
               - 'python/friesian/dev/**'
               - '.github/actions/friesian/**'
+              - 'python/orca/src/bigdl/orca/data/**'
 
             dllib:
               - 'scala/serving/pom.xml'
