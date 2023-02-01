@@ -15,115 +15,103 @@
 #
 
 # Step 0: Import necessary libraries
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
+import math
+
+import tensorflow as tf
 
 from process_spark_dataframe import prepare_data
-from pytorch_model import NCF
+from tf_model import ncf_model
 from utils import *
 
-from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
-from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
+from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Training with Spark DataFrame")
-init_orca(args, extra_python_lib="pytorch_model.py")
+args = parse_args("TensorFlow NCF Training with Spark DataFrame")
+args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
+init_orca(args, extra_python_lib="tf_model.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, neg_scale=4)
 
 
-# Step 3: Define the model, optimizer and loss
-config = {
-    "user_num": user_num,
-    "item_num": item_num,
-    "factor_num": 16,
-    "num_layers": 3,
-    "dropout": 0.5,
-    "lr": 0.01,
-    "model": "NeuMF-end",
-    "sparse_feats_input_dims": sparse_feats_input_dims,
-    "sparse_feats_embed_dims": 8,
-    "num_dense_feats": num_dense_feats,
-    "feature_cols": feature_cols,
-    "label_cols": label_cols
-}
+# Step 3: Define the NCF model
+config = dict(
+    factor_num=16,
+    lr=1e-2,
+    item_num=item_num,
+    user_num=user_num,
+    dropout=0.5,
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    num_dense_feats=num_dense_feats,
+    sparse_feats_embed_dims=8,
+    num_layers=3
+)
 
 
 def model_creator(config):
-    model = NCF(user_num=config["user_num"],
-                item_num=config["item_num"],
-                factor_num=config["factor_num"],
-                num_layers=config["num_layers"],
-                dropout=config["dropout"],
-                model=config["model"],
-                sparse_feats_input_dims=config["sparse_feats_input_dims"],
-                sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
-                num_dense_feats=config["num_dense_feats"])
-    model.train()
+    model = ncf_model(user_num=config["user_num"],
+                      item_num=config["item_num"],
+                      num_layers=config["num_layers"],
+                      factor_num=config["factor_num"],
+                      dropout=config["dropout"],
+                      lr=config["lr"],
+                      sparse_feats_input_dims=config["sparse_feats_input_dims"],
+                      sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
+                      num_dense_feats=config["num_dense_feats"])
     return model
 
 
-def optimizer_creator(model, config):
-    return optim.Adam(model.parameters(), lr=config["lr"])
-
-
-def scheduler_creator(optimizer, config):
-    scheduler = StepLR(optimizer, step_size=1)
-    return scheduler
-
-loss = nn.BCEWithLogitsLoss()
-
-
-# Step 4: Distributed training with Orca PyTorch Estimator
-callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
-                                 freq=1000)] if args.tensorboard else []
-scheduler = scheduler_creator if args.lr_scheduler else None
-
-est = Estimator.from_torch(model=model_creator,
-                           optimizer=optimizer_creator,
-                           scheduler_creator=scheduler,
-                           loss=loss,
-                           metrics=[Accuracy(), Precision(), Recall()],
+# Step 4: Distributed training with Orca TF2 Estimator
+est = Estimator.from_keras(model_creator=model_creator,
+                           config=config,
                            backend=args.backend,
-                           use_tqdm=True,
-                           workers_per_node=args.workers_per_node,
-                           config=config)
-train_stats = est.fit(data=train_data, epochs=2,
+                           workers_per_node=args.workers_per_node)
+
+batch_size = 10240
+train_steps = math.ceil(train_df.count() / batch_size)
+val_steps = math.ceil(test_df.count() / batch_size)
+callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
+    if args.tensorboard else []
+
+if args.lr_scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    callbacks.append(lr_callback)
+
+train_stats = est.fit(train_df,
+                      epochs=2,
+                      batch_size=batch_size,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=10240,
-                      validation_data=test_data,
+                      steps_per_epoch=train_steps,
+                      validation_data=test_df,
+                      validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for epoch_stats in train_stats:
-    for k, v in epoch_stats.items():
-        print("{}: {}".format(k, v))
-    print()
+for k, v in train_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_data,
+eval_stats = est.evaluate(test_df,
                           feature_cols=feature_cols,
                           label_cols=label_cols,
-                          batch_size=10240)
+                          batch_size=batch_size,
+                          num_steps=val_steps)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
 
 
-# Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
-est.save(os.path.join(args.model_dir, "NCF_model"))
+# Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
+save_tf_model(est, args.model_dir, "NCF_model")
 save_model_config(config, args.model_dir, "config.json")
-train_data.write.parquet(os.path.join(args.data_dir,
-                                      "train_processed_dataframe.parquet"), mode="overwrite")
-test_data.write.parquet(os.path.join(args.data_dir,
-                                     "test_processed_dataframe.parquet"), mode="overwrite")
+train_df.write.parquet(os.path.join(args.data_dir,
+                                    "train_processed_dataframe.parquet"), mode="overwrite")
+test_df.write.parquet(os.path.join(args.data_dir,
+                                   "test_processed_dataframe.parquet"), mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
