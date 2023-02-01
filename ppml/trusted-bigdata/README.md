@@ -745,7 +745,7 @@ You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. 
 2. Deploy BigDL Remote Attestation Service 
 [Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
 3. Start BigDL bigdata client 
-docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT 
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT
 ```bash
 export NFS_INPUT_PATH=/disk1/nfsdata/default-nfsvolumeclaim-pvc-decb9dcf-dc7a-4dd0-8bd2-e2c669fd50af
 sudo docker run -itd --net=host \
@@ -756,7 +756,7 @@ sudo docker run -itd --net=host \
     -v /dev/tdx-attest:/dev/tdx-attest \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT  \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_EXECUTOR_INSTANCES=2 \
     -e RUNTIME_EXECUTOR_CORES=2 \
@@ -766,7 +766,7 @@ sudo docker run -itd --net=host \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=5g \
     --name tdx-attestation-test \
-    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT bash
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT bash
 ```
 4. Enable Attestation in configuration
 Upload `appid` and `apikey` to kubernetes as secrets:
@@ -822,7 +822,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.memoryOverheadFactor=0.6 \
     --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.2.0-SNAPSHOT  \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
     --class org.apache.spark.examples.SparkPi \
