@@ -65,6 +65,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
       friesian: ${{ steps.filter.outputs.friesian }}
+      friesian-example: ${{ steps.filter.outputs.friesian-example }}
       dllib: ${{ steps.filter.outputs.dllib }}
       orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
       orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
@@ -85,7 +86,9 @@ jobs:
               - 'scala/pom.xml'
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
-              - 'python/friesian/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
+              - 'python/friesian/test/**'
               - '.github/actions/friesian/**'
               - 'python/orca/src/bigdl/orca/data/**'
               - 'python/orca/src/bigdl/orca/learn/**'
@@ -95,7 +98,10 @@ jobs:
               - 'scala/ppml/pom.xml'
               - 'scala/orca/pom.xml'
               - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
               - 'python/friesian/example/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
               - '.github/actions/friesian/**'
 
             dllib:
