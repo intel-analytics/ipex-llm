@@ -6,12 +6,12 @@ The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'sp
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.2.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT
 ```
 
 If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
@@ -147,8 +147,6 @@ env:
   value: "1GB"
 - name: SGX_KERNEL_HEAP
   value: "2GB"
-- name: META_SPACE
-  value: "1024m"
 ```
 
 ```yaml
@@ -177,7 +175,6 @@ Or you can directly add the following configuration in [run_spark_tpch.sh](https
 #run_spark_tpch.sh
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.kubernetes.driverEnv.SGX_THREAD="1024" \
@@ -351,7 +348,6 @@ Add these configurations to [script](https://github.com/intel-analytics/BigDL/bl
     --conf spark.executor.instances=2 \
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="12GB" \
-    --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
     --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
     --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
     --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \

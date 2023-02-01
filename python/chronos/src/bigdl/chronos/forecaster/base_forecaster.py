@@ -608,6 +608,13 @@ class BasePytorchForecaster(Forecaster):
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
+        # remove channels_last methods and temporarily disable bf16
+        excludes = ["fp32_channels_last", "fp32_ipex_channels_last", "bf16_channels_last",
+                    "bf16_ipex_channels_last", "jit_fp32_channels_last", "jit_bf16_channels_last",
+                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last",
+                    "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
+        if not self.quantize_available:
+            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear"]
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
@@ -616,6 +623,7 @@ class BasePytorchForecaster(Forecaster):
                      metric=metric,
                      direction="min",
                      thread_num=thread_num,
+                     excludes=excludes,
                      input_sample=dummy_input)
         try:
             optim_model, option = opt.get_best_model(
@@ -627,6 +635,7 @@ class BasePytorchForecaster(Forecaster):
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
+        self.optimized_model_thread_num = thread_num
 
     def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
@@ -675,6 +684,9 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
+
+        if quantize or acceleration:
+            self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -779,6 +791,9 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
+
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -799,6 +814,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -850,6 +867,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -871,6 +890,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -922,6 +943,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -943,6 +966,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "jit_fp32":
                 self.build_jit()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -1245,6 +1270,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         # step1, according to validation dataset, calculate inherent noise
         if not hasattr(self, "data_noise"):
             invalidInputError(validation_data is not None,
@@ -1493,6 +1520,7 @@ class BasePytorchForecaster(Forecaster):
                                                           accelerator="onnxruntime",
                                                           onnxruntime_session_options=sess_options)
         self.accelerate_method = "onnxruntime_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def build_openvino(self, thread_num=1):
         '''
@@ -1531,6 +1559,7 @@ class BasePytorchForecaster(Forecaster):
                                                           accelerator="openvino",
                                                           thread_num=thread_num)
         self.accelerate_method = "openvino_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def build_jit(self, thread_num=1, use_ipex=False):
         '''
@@ -1575,6 +1604,7 @@ class BasePytorchForecaster(Forecaster):
                                                           channels_last=False,
                                                           thread_num=thread_num)
         self.accelerate_method = "jit_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
@@ -1628,15 +1658,83 @@ class BasePytorchForecaster(Forecaster):
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_torchscript_file(self, dirname="fp32_torchscript",
-                                quantized_dirname=None):
+                                quantized_dirname=None,
+                                save_pipeline=False,
+                                tsdata=None,
+                                drop_dtcol=True):
         """
-        Save the torchscript model file to the disk.
+        Save the torchscript model file and the whole forecasting pipeline to the disk.
+
+        When the whole forecasting pipeline is saved, it can be used without Python environment.
+        For example, when you finish developing a forecaster, you could call this method with
+        "save_pipeline=True" to save the whole pipeline (data preprocessing, inference, data
+        postprocessing) to torchscript (the forecaster will be saved as torchscript model too),
+        then you could deploy the pipeline in C++ using libtorch APIs.
+
+        Currently the pipeline is similar to the following code:
+
+        >>> # preprocess
+        >>> tsdata.scale(scaler, fit=False) \\
+        >>>       .roll(lookback, horizon, is_predict=True)
+        >>> preprocess_output = tsdata.to_numpy()
+        >>> # inference using trained forecaster
+        >>> # forecaster_module is the saved torchscript model
+        >>> inference_output = forecaster_module.forward(preprocess_output)
+        >>> # postprocess
+        >>> postprocess_output = tsdata.unscale_numpy(inference_output)
+
+        When deploying, the pipeline can be used by:
+
+        >>> // deployment in C++
+        >>> #include <torch/torch.h>
+        >>> #include <torch/script.h>
+        >>> // create input tensor from your data
+        >>> // The data to create the input tensor should have the same format as the
+        >>> // data used in developing
+        >>> torch::Tensor input = create_input_tensor(data);
+        >>> // load the pipeline
+        >>> torch::jit::script::Module forecasting_pipeline;
+        >>> forecasting_pipeline = torch::jit::load(path);
+        >>> // run pipeline
+        >>> torch::Tensor output = forecasting_pipeline.forward(input_tensor).toTensor();
+
+        The limitations of exporting the forecasting pipeline is same as limitations in
+        TSDataset.export_jit():
+            1. Please make sure the value of each column can be converted to Pytorch tensor,
+               for example, id "00" is not allowed because str can not be converted to a tensor,
+               you should use integer (0, 1, ..) as id instead of string.
+            2. Some features in tsdataset.scale and tsdataset.roll are unavailable in this
+               pipeline:
+                    a. If self.roll_additional_feature is not None, it can't be processed in scale
+                       and roll
+                    b. id_sensitive, time_enc and label_len parameter is not supported in roll
+            3. Users are expected to call .scale(scaler, fit=True) before calling export_jit.
+               Single roll operation is not supported for converting now.
 
         :param dirname: The dir location you want to save the torchscript file.
-        :param quantized_dirname: The dir location you want to save the quantized torchscript file.
+        :param quantized_dirname: The dir location you want to save the quantized torchscript model.
+        :param save_pipeline: Whether to save the whole forecasting pipeline, defaluts to False.
+               If set to True, the whole forecasting pipeline will be saved in
+               "dirname/chronos_forecasting_pipeline.pt", if set to False, only the torchscript
+               model will be saved.
+        :param tsdata: The TSDataset instance used when developing the forecaster. The parameter
+               should be used only when save_pipeline is True.
+        :param drop_dtcol: Whether to delete the datetime column, defaults to True. The parameter
+               is valid only when save_pipeline is True.
+               Since datetime value (like "2022-12-12") can't be converted to Pytorch tensor, you
+               can choose different ways to workaround this. If set to True, the datetime column
+               will be deleted, then you also need to skip the datetime column when reading data
+               from data source (like csv files) in deployment environment to keep the same
+               structure as the data used in development; if set to False, the datetime column will
+               not be deleted, and you need to make sure the datetime colunm can be successfully
+               converted to Pytorch tensor when reading data in deployment environment. For
+               example, you can set each data in datetime column to an int (or other vaild types)
+               value, since datetime column is not necessary in preprocessing and postprocessing,
+               the value can be arbitrary.
         """
         from bigdl.nano.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
+        from pathlib import Path
         if self.distributed:
             invalidInputError(False,
                               "export_torchscript_file has not been supported for distributed "
@@ -1652,6 +1750,12 @@ class BasePytorchForecaster(Forecaster):
             if self.accelerate_method != "jit_fp32":
                 self.build_jit()
             InferenceOptimizer.save(self.accelerated_model, dirname)
+
+            if save_pipeline:
+                forecaster_path = Path(dirname) / "ckpt.pth"
+                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
+                saved_path = Path(dirname) / "chronos_forecasting_pipeline.pt"
+                torch.jit.save(exproted_module, saved_path)
 
     def quantize(self, calib_data=None,
                  val_data=None,
@@ -1817,7 +1921,7 @@ class BasePytorchForecaster(Forecaster):
                                               precision='int8',
                                               accelerator=accelerator,
                                               method=method,
-                                              calib_dataloader=calib_data,
+                                              calib_data=calib_data,
                                               metric=metric,
                                               conf=conf,
                                               approach=approach,
@@ -1836,6 +1940,7 @@ class BasePytorchForecaster(Forecaster):
         if accelerator is None:
             self.accelerated_model = q_model
             self.accelerate_method = "pytorch_int8"
+        self.optimized_model_thread_num = thread_num
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):

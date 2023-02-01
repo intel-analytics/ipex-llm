@@ -63,7 +63,9 @@ case class Params(
                    simpleAPIKEY: String = "simpleAPIKEY",
                    modelSavePath: String = "/host/data/model",
                    maxIter: Int = 100,
-                   maxDepth: Int = 2
+                   maxDepth: Int = 2,
+                   userName: String = "bigdlKMSUserName",
+                   userToken: String = "bigdlKMSUserToken"
                  ) {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
@@ -77,6 +79,9 @@ case class Params(
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
         kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
+      case KMS_CONVENTION.MODE_BIGDL_KMS =>
+        kmsArgs("spark.bigdl.kms.bigdl.user") = userName
+        kmsArgs("spark.bigdl.kms.bigdl.token") = userToken
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
@@ -254,6 +259,14 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     opt[Int]('d', "maxDepth")
       .text("maxDepth")
       .action((v, p) => p.copy(maxDepth = v))
+
+    opt[String]('z', "userName")
+      .action((x, c) => c.copy(userName = x))
+      .text("bigdlKMSUserName")
+
+    opt[String]('y', "userToken")
+      .action((x, c) => c.copy(userToken = x))
+      .text("bigdlKMSUserToken")
 
   }
 }

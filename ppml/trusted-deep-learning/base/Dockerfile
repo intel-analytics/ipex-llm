@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
 ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
@@ -41,12 +41,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # Small examples for PyTorch
-ADD ./mnist.py       /ppml/examples/mnist.py
-ADD ./pert.py        /ppml/examples/pert.py
-ADD ./pert_ipex.py   /ppml/examples/pert_ipex.py
+ADD ./mnist.py                   /ppml/examples/mnist.py
+ADD ./pert.py                    /ppml/examples/pert.py
+ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
+ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch
-ADD ./bash.manifest.template.patch /bash.manifest.template.patch
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
@@ -69,6 +69,23 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+# Torchserve
+    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
+    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+    mkdir -p ${JAVA_HOME} && \
+    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
+    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
+    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
+    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    sed -i '/import json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
+    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
+    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
 # PyTorch
     rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
@@ -89,24 +106,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
     patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
-    patch /ppml/bash.manifest.template /bash.manifest.template.patch && \
-# Torchserve
-    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
-    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
-    mkdir -p ${JAVA_HOME} && \
-    cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-torchserve-sgx.sh
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

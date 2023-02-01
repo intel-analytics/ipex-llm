@@ -46,10 +46,10 @@ class TestPPMLContext(unittest.TestCase):
         conf = {"spark.app.name": "PPML TEST",
                 "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
                 "spark.bigdl.kms.type": "SimpleKeyManagementService",
-                "spark.bigdl.kms.simple.id": cls.app_id,
-                "spark.bigdl.kms.simple.key": cls.app_key,
-                "spark.bigdl.kms.key.primary": primary_key_path,
-                "spark.bigdl.kms.key.data": data_key_path
+                "spark.bigdl.kms.appId": cls.app_id,
+                "spark.bigdl.kms.apiKey": cls.app_key,
+                "spark.bigdl.kms.primaryKey": primary_key_path,
+                "spark.bigdl.kms.dataKey": data_key_path
                 }
         init_spark_on_local(conf=conf)
 
@@ -58,10 +58,10 @@ class TestPPMLContext(unittest.TestCase):
                   primary_key_path, data_key_path)
 
         args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": cls.app_id,
-                "simple_app_key": cls.app_key,
-                "primary_key_path": primary_key_path,
-                "data_key_path": data_key_path
+                "app_id": cls.app_id,
+                "api_key": cls.app_key,
+                "primary_key": primary_key_path,
+                "data_key": data_key_path
                 }
 
         # init a PPMLContext

@@ -39,7 +39,7 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip
 
 
 lib_urls = [
-    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.2.3/libjemalloc.so",
     "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
     "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
 ]
@@ -74,35 +74,35 @@ def download_libs(url: str):
 def setup_package():
 
     # all intel-tensorflow is only avaliable for linux now
-    tensorflow_27_requires = ["intel-tensorflow==2.7.0; platform_machine=='x86_64' and \
+    tensorflow_27_requires = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.7.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.7.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.7.0; platform_machine=='x86_64'"]
+                              "keras==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_28_requires = ["intel-tensorflow==2.8.0; platform_machine=='x86_64' and \
+    tensorflow_28_requires = ["intel-tensorflow==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.8.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.8.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.8.0; platform_machine=='x86_64'"]
+                              "keras==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_29_requires = ["intel-tensorflow==2.9.1; platform_machine=='x86_64' and \
+    tensorflow_29_requires = ["intel-tensorflow==2.9.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.9.0; platform_machine=='x86_64' and \
                               platform_system=='Darwin'",
-                              "keras==2.9.0; platform_machine=='x86_64'",
-                              "tensorflow-estimator==2.9.0; platform_machine=='x86_64'"]
+                              "keras==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                              "tensorflow-estimator==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_210_requires = ["intel-tensorflow==2.10.0; platform_machine=='x86_64' and \
+    tensorflow_210_requires = ["intel-tensorflow==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                                platform_system!='Darwin'",
                                "tensorflow==2.10.0; platform_machine=='x86_64' and \
                                platform_system=='Darwin'",
-                               "keras==2.10.0; platform_machine=='x86_64'",
-                               "tensorflow-estimator==2.10.0; platform_machine=='x86_64'"]
+                               "keras==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
+                               "tensorflow-estimator==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
     
-    tensorflow_common_requires = ["tf2onnx==1.13.0; platform_machine=='x86_64'"]
+    tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
     # default pytorch_dep
     tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
@@ -133,13 +133,14 @@ def setup_package():
                                 "torchvision~=0.15.0.dev"]
 
     pytorch_common_requires = ["pytorch_lightning==1.6.4",
-                               "torchmetrics==0.7.2",
+                               "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
-                               "opencv-transforms"]
+                               "opencv-transforms",
+                               "cryptography==3.3.2"]
 
     # default pytorch_dep
-    pytorch_requires = pytorch_112_requires + pytorch_common_requires
+    pytorch_requires = pytorch_113_requires + pytorch_common_requires
     pytorch_113_requires += pytorch_common_requires
     pytorch_112_requires += pytorch_common_requires
     pytorch_111_requires += pytorch_common_requires
@@ -151,8 +152,8 @@ def setup_package():
                           "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
                           platform_system=='Darwin'",
-                          "openvino-dev==2022.2.0",
-                          "neural-compressor==1.13.1",
+                          "openvino-dev==2022.3.0",
+                          "neural-compressor==2.0",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; platform_machine=='x86_64' and \
                           platform_system=='Darwin'"]

@@ -31,10 +31,10 @@ class EncryptDataFrameHadoopSpec extends DataFrameHelper {
 
 
   val ppmlArgs = Map(
-      "spark.bigdl.kms.simple.id" -> appid,
-      "spark.bigdl.kms.simple.key" -> apikey,
-      "spark.bigdl.kms.key.primary" -> (s"file://" + primaryKeyPath),
-      "spark.bigdl.kms.key.data" -> (s"file://" + dataKeyPath)
+      "spark.bigdl.kms.appId" -> appid,
+      "spark.bigdl.kms.apiKeu" -> apikey,
+      "spark.bigdl.kms.primaryKey" -> (s"file://" + primaryKeyPath),
+      "spark.bigdl.kms.dataKey" -> (s"file://" + dataKeyPath)
   )
   val sparkConf = new SparkConf().setMaster("local[4]")
   val sc = PPMLContext.initPPMLContext(sparkConf, "SimpleQuery", ppmlArgs)

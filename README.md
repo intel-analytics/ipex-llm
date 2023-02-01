@@ -20,7 +20,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Friesian](#friesian): End-to-End Recommendation Systems
 
-- [PPML](#ppml) (experimental): Secure Big Data and AI (with SGX Hardware Security)
+- [PPML](#ppml): Secure Big Data and AI (with SGX Hardware Security)
 
 For more information, you may [read the docs](https://bigdl.readthedocs.io/).
 
@@ -110,7 +110,7 @@ flowchart TD;
 
   </details> 
 
-  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-tf-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/orca-pytorch-quickstart.html) quickstart, for more details.*
+  *See Orca [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/orca.html), as well as [TensorFlow](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/tf2keras-quickstart.html) and [PyTorch](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/pytorch-quickstart.html) quickstarts, for more details.*
 
 - In addition, you can also run standard **Ray** programs on Spark cluster using _**RayOnSpark**_ in Orca.
 
@@ -147,7 +147,7 @@ flowchart TD;
 
   </details>  
   
-  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/QuickStart/ray-quickstart.html) for more details.*
+  *See RayOnSpark [user guide](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/ray.html) and [quickstart](https://bigdl.readthedocs.io/en/latest/doc/Orca/Howto/ray-quickstart.html) for more details.*
 ### Nano
 You can transparently accelerate your TensorFlow or PyTorch programs on your laptop or server using *Nano*. With minimum code changes, *Nano* automatically applies modern CPU optimizations (e.g., SIMD,  multiprocessing, low precision, etc.) to standard TensorFlow and PyTorch code, with up-to 10x speedup.
 
@@ -176,7 +176,7 @@ optimizer.summary()
 The output of `optimizer.summary()` will be something like:
 ```
  -------------------------------- ---------------------- -------------- ----------------------
-|             method             |        status        | latency(ms)  |       accuracy       |
+|             method             |        status        | latency(ms)  |     metric value     |
  -------------------------------- ---------------------- -------------- ----------------------
 |            original            |      successful      |    45.145    |        0.975         |
 |              bf16              |      successful      |    27.549    |        0.975         |
@@ -190,7 +190,7 @@ The output of `optimizer.summary()` will be something like:
 |        onnxruntime_fp32        |      successful      |    20.838    |        0.975*        |
 |    onnxruntime_int8_qlinear    |      successful      |    7.123     |        0.981         |
  -------------------------------- ---------------------- -------------- ----------------------
-* means we assume the precision of the traced model does not change, so we don't recompute accuracy to save time.
+* means we assume the metric value of the traced model does not change, so we don't recompute metric value to save time.
 Optimization cost 60.8s in total.
 ```
 

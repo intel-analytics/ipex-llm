@@ -15,6 +15,7 @@
 #
 import inspect
 import operator
+import tensorflow as tf
 from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
@@ -27,30 +28,23 @@ class _NanoPartial(partial):
     pass
 
 
-def _create_wrapper_type(parent_type, target_obj, source_obj):
-    def _getattr(self, name):
+class _ModuleWrapper:
+    def __init__(self, target_obj, source_obj):
+        self.__dict__["target_obj"] = target_obj
+        self.__dict__["source_obj"] = source_obj
+
+    def __getattr__(self, name):
         try:
             return getattr(self.target_obj, name)
         except AttributeError as _e:
             pass
         return getattr(self.source_obj, name)
 
-    def _setattr(self, name, value):
+    def __setattr__(self, name: str, value) -> None:
         return setattr(self.target_obj, name, value)
 
-    def _call(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         return self.target_obj(*args, **kwargs)
-
-    return type(
-        f"wrapped_{parent_type.__class__.__name__}", (parent_type,),
-        {
-            'target_obj': target_obj,
-            'source_obj': source_obj,
-            '__getattr__': _getattr,
-            '__setattr__': _setattr,
-            '__call__': _call,
-        }
-    )
 
 
 def patch_attrs(target_obj: object, source_obj: object) -> object:
@@ -63,8 +57,7 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
     """
     if inspect.ismethod(target_obj.__setattr__):
         # `target_obj` has custom `__setattr__`
-        wrapper_type = _create_wrapper_type(type(target_obj), target_obj, source_obj)
-        wrapper_obj = wrapper_type.__new__(wrapper_type)
+        wrapper_obj = _ModuleWrapper(target_obj, source_obj)
         return wrapper_obj
     else:
         # `target_obj` has no custom `__setattr__`
@@ -96,3 +89,26 @@ def patch_compiled(target_model: Model, source_model: Model):
             kwargs["weighted_metrics"] = source_model.compiled_metrics._user_weighted_metrics
         target_model.compile(**kwargs)
     return target_model
+
+
+def patch_compiled_and_attrs(target_obj: object, source_obj: object) -> object:
+    """
+    Patch compile attributes and other attributes of `source_obj` to `target_obj`.
+
+    :param target_obj: target object
+    :param source_obj: source object
+    :return: `target_obj`
+    """
+    patch_compiled(target_obj, source_obj)
+    return patch_attrs(target_obj, source_obj)
+
+
+def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
+    """Fake a `Tensor` from `TensorSpec`."""
+    shape = tensor_spec.shape
+    dtype = tensor_spec.dtype
+    shape = tuple(dim if dim is not None else 1 for dim in shape)
+    if shape == () and dtype == tf.bool:
+        # This may be the `training` parameter, we should assume it is False
+        return False
+    return tf.ones(shape=shape, dtype=dtype)

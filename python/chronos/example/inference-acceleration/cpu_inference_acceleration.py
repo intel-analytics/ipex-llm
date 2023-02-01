@@ -16,7 +16,7 @@
 import torch
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.chronos.model.tcn import model_creator
-from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.metric import Evaluator
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
 from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
@@ -36,14 +36,14 @@ def gen_dataloader():
             .scale(stand, fit=tsdata is tsdata_train)\
             .roll(lookback=48,horizon=1)
 
-    tsdata_traindataloader = tsdata_train.to_torch_data_loader(batch_size=32)
-    tsdata_valdataloader = tsdata_val.to_torch_data_loader(batch_size=32, shuffle=False)
-    tsdata_testdataloader = tsdata_test.to_torch_data_loader(batch_size=32, shuffle=False)
+    tsdata_traindataloader = tsdata_train.to_torch_data_loader(batch_size=32, roll=False)
+    tsdata_valdataloader = tsdata_val.to_torch_data_loader(batch_size=32, roll=False, shuffle=False)
+    tsdata_testdataloader = tsdata_test.to_torch_data_loader(batch_size=32, roll=False, shuffle=False)
 
     return tsdata_traindataloader, tsdata_valdataloader, tsdata_testdataloader
 
 def predict_wraper(model, input_sample):
-    with InferenceOptimizer.get_context(model):
+    with torch.no_grad():
         model(input_sample)
 
 if __name__ == '__main__':
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     for x, _ in tsdata_traindataloader:
         break
     input_sample = x[0].unsqueeze(0)
-    
+
     # speed up the model using Chronos InferenceOptimizer
     speed_model = InferenceOptimizer.trace(lit_model, accelerator="onnxruntime", input_sample=input_sample)
 

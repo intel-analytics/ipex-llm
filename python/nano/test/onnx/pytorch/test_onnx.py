@@ -23,7 +23,6 @@ import tempfile
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset, DataLoader
-import torchmetrics
 
 import numpy as np
 

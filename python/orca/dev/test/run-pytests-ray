@@ -52,37 +52,56 @@ then
    exit $exit_status_2
 fi
 
-ray stop -f
+python_version=$(python --version | awk '{print$2}')
+if [ $python_version == 3.7.10 ];then
+    ray stop -f
+    echo "Running orca automl tests"
+    python -m pytest -v test/bigdl/orca/automl
+    exit_status_3=$?
+    if [ $exit_status_3 -ne 0 ];
+    then
+        exit $exit_status_3
+    fi
 
-echo "Running orca automl tests"
-python -m pytest -v test/bigdl/orca/automl
-exit_status_3=$?
-if [ $exit_status_3 -ne 0 ];
-then
-    exit $exit_status_3
+    ray stop -f
+
+    echo "Running orca data tests"
+    python -m pytest -v test/bigdl/orca/data \
+          --ignore=test/bigdl/orca/data/test_read_parquet_images.py
+    exit_status_5=$?
+    if [ $exit_status_5 -ne 0 ];
+    then
+    exit $exit_status_5
+    fi
+
+    ray stop -f
+
+else
+    ray stop -f
+    echo "Running orca automl tests"
+    python -m pytest -v test/bigdl/orca/automl \
+          --ignore=test/bigdl/orca/automl/model/test_base_keras_model.py \
+          --ignore=test/bigdl/orca/automl/autoestimator/
+
+    exit_status_3=$?
+    if [ $exit_status_3 -ne 0 ];
+    then
+        exit $exit_status_3
+    fi
+
+    ray stop -f
+
+    echo "Running orca data tests"
+    python -m pytest -v test/bigdl/orca/data \
+          --ignore=test/bigdl/orca/data/test_read_parquet_images.py \
+          --ignore=test/bigdl/orca/data/test_write_parquet.py \
+          --ignore=test/bigdl/orca/data/test_spark_backend.py
+            
+    exit_status_5=$?
+    if [ $exit_status_5 -ne 0 ];
+    then
+    exit $exit_status_5
+    fi
+
+    ray stop -f
 fi
-
-ray stop -f
-
-#
-#echo "Running chronos tests"
-#python -m pytest -v ../test/zoo/chronos \
-#       -k "not test_forecast_tcmf_distributed"
-#exit_status_4=$?
-#if [ $exit_status_4 -ne 0 ];
-#then
-#    exit $exit_status_4
-#fi
-#
-#ray stop -f
-#
-echo "Running orca data tests"
-python -m pytest -v test/bigdl/orca/data \
-      --ignore=test/bigdl/orca/data/test_read_parquet_images.py
-exit_status_5=$?
-if [ $exit_status_5 -ne 0 ];
-then
-   exit $exit_status_5
-fi
-
-ray stop -f

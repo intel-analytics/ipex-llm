@@ -107,3 +107,11 @@ footer.bd-footer{
 #bd-toc-nav ul li {
     word-break: break-word;
 }
+
+/* for quoteblocks, especially for the ones inside notebooks*/
+blockquote {
+    margin: 1.5em auto;
+    box-shadow: 0 0.2rem 0.5rem var(--pst-color-shadow);
+    border-color: var(--pst-color-primary);
+    background-color: var(--pst-color-on-background);
+}

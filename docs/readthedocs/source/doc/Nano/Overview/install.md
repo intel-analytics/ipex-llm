@@ -48,7 +48,7 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
 .. note::
     Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features.
 
-    For stable version, please refer to the document and installation guide `here <https://bigdl.readthedocs.io/en/v2.1.0/doc/Nano/Overview/nano.html>`_ .
+    For stable version, please refer to the document and installation guide `here <https://bigdl.readthedocs.io/en/v2.2.0/doc/Nano/Overview/install.html>`_ .
 ```
 
 ## Environment Management
@@ -74,8 +74,11 @@ In a conda environment, when you run `source bigdl-nano-init` manually, this com
 
 In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
+## Other PyTorch/Tensorflow Version Support
+We support a wide range of PyTorch and Tensorflow. We only care the MAJOR.MINOR in [Semantic Versioning](https://semver.org/). If you have a specific PyTorch/Tensorflow version want to use, e.g. PyTorch 1.11.0+cpu, you may select corresponding MAJOR.MINOR (i.e., PyTorch 1.11 in this case) and install PyTorch again after installing nano.
+
 ## Python Version
-`bigdl-nano` is validated on Python 3.7.x.
+`bigdl-nano` is validated on Python 3.7-3.9.
 
 
 ## Operating System

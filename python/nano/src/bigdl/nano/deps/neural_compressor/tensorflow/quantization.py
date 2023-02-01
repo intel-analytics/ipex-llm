@@ -18,6 +18,8 @@ from ..core import BaseQuantization
 from .metric import TensorflowINCMetric
 from .model import KerasQuantizedModel
 from .utils import Dataloader
+from bigdl.nano.utils.util import compare_version
+import operator
 
 
 class TensorflowQuantization(BaseQuantization):
@@ -50,7 +52,6 @@ class TensorflowQuantization(BaseQuantization):
         return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
-        # TODO: Need to wrapp q_model similar to Pytorch
         return KerasQuantizedModel(q_model)
 
     @property
@@ -62,10 +63,13 @@ class TensorflowQuantization(BaseQuantization):
         return ('post_training_static_quant')
 
     def sanity_check_before_execution(self, model, calib_dataloader, metric):
-        invalidInputError(model.inputs is not None and model.outputs is not None,
-                          "A keras.Model for quantization must include Input layers. "
-                          "Please create the model by functional API"
-                          " keras.Model(inputs=.., outputs=..).\n"
-                          "More details in https://keras.io/api/models/model/")
+        INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
+        if INC_LESS_14:
+            invalidInputError(model.inputs is not None and model.outputs is not None,
+                              "A keras.Model for quantization must include Input layers. "
+                              "Please create the model by functional API"
+                              " keras.Model(inputs=.., outputs=..).\n"
+                              "More details in https://keras.io/api/models/model/."
+                              "Or you can upgrade your INC version to 1.14 or higher.")
 
         super().sanity_check_before_execution(model, calib_dataloader, metric)

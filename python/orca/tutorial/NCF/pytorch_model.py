@@ -34,7 +34,7 @@ class NCF(nn.Module):
         factor_num: number of predictive factors;
         num_layers: the number of layers in MLP model;
         dropout: dropout rate between fully connected layers;
-        model: 'MLP', 'GMF', 'NeuMF-end', and 'NeuMF-pre';
+        model: "MLP", "GMF", "NeuMF-end", and "NeuMF-pre";
         GMF_model: pre-trained GMF weights;
         MLP_model: pre-trained MLP weights;
         sparse_feats_input_dims: the list of input dimensions of sparse features;
@@ -76,7 +76,7 @@ class NCF(nn.Module):
 
         self.MLP_layers = nn.Sequential(*MLP_modules)
 
-        if self.model in ['MLP', 'GMF']:
+        if self.model in ["MLP", "GMF"]:
             predict_size = factor_num
         else:
             predict_size = factor_num * 2
@@ -86,7 +86,7 @@ class NCF(nn.Module):
 
     def _init_weight_(self):
         """ We leave the weights initialization here. """
-        if not self.model == 'NeuMF-pre':
+        if not self.model == "NeuMF-pre":
             nn.init.normal_(self.embed_user_GMF.weight, std=0.01)
             nn.init.normal_(self.embed_user_MLP.weight, std=0.01)
             nn.init.normal_(self.embed_item_GMF.weight, std=0.01)
@@ -97,7 +97,7 @@ class NCF(nn.Module):
             for m in self.MLP_layers:
                 if isinstance(m, nn.Linear):
                     nn.init.xavier_uniform_(m.weight)
-            nn.init.kaiming_uniform_(self.predict_layer.weight, a=1, nonlinearity='sigmoid')
+            nn.init.kaiming_uniform_(self.predict_layer.weight, a=1, nonlinearity="sigmoid")
 
             for m in self.modules():
                 if isinstance(m, nn.Linear) and m.bias is not None:
@@ -130,11 +130,11 @@ class NCF(nn.Module):
 
     def forward(self, user, item, *args):
         # args should be in the order of sparse feats and dense feats
-        if not self.model == 'MLP':
+        if not self.model == "MLP":
             embed_user_GMF = self.embed_user_GMF(user)
             embed_item_GMF = self.embed_item_GMF(item)
             output_GMF = embed_user_GMF * embed_item_GMF
-        if not self.model == 'GMF':
+        if not self.model == "GMF":
             embed_user_MLP = self.embed_user_MLP(user)
             embed_item_MLP = self.embed_item_MLP(item)
             interaction = torch.cat((embed_user_MLP, embed_item_MLP), -1)
@@ -145,9 +145,9 @@ class NCF(nn.Module):
                 interaction = torch.cat((interaction, args[i+self.num_sparse_feats]), -1)
             output_MLP = self.MLP_layers(interaction)
 
-        if self.model == 'GMF':
+        if self.model == "GMF":
             concat = output_GMF
-        elif self.model == 'MLP':
+        elif self.model == "MLP":
             concat = output_MLP
         else:
             concat = torch.cat((output_GMF, output_MLP), -1)

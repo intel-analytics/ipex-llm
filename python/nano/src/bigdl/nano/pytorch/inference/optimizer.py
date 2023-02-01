@@ -227,7 +227,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                inference. This parameter only controls the usage of thread number in the process
                of latency calculation as well as later inference process of your obtained
                accelerated model. In other words, the process of model conversion and optional
-               accuracy calculation won't be restricted by this parameter.
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param accelerator: (optional) A string tuple that specifys the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
@@ -384,7 +385,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 print(f"----------Start test {method} model "
                       f"({idx+1}/{len(available_dict)})----------")
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
-                precision = option.get_precision()
+                _precision = option.get_precision()
                 try:
                     acce_model = option.optimize(model, training_data=training_data,
                                                  input_sample=input_sample,
@@ -428,7 +429,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if self._calculate_accuracy:
                         # here we suppose trace don't change accuracy,
                         # so we jump it to reduce time cost of optimize
-                        if precision == "fp32" and method != "original":
+                        if _precision == "fp32" and method != "original":
                             _accuracy = result_map["original"]["accuracy"]
                             if isinstance(_accuracy, torch.Tensor):
                                 _accuracy = _accuracy.item()
@@ -494,6 +495,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  use_ipex: bool = False,
                  calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
                  calib_dataloader: Union[DataLoader] = None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -505,6 +507,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  input_sample=None,
                  channels_last: bool = False,
                  thread_num: Optional[int] = None,
+                 device: Optional[str] = 'CPU',
                  onnxruntime_session_options=None,
                  openvino_config=None,
                  simplification: bool = True,
@@ -515,8 +518,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = True,
                  inplace: bool = False,
                  weights_prepack: Optional[bool] = None,
+                 enable_onednn: bool = True,
                  q_config=None,
-                 **export_kwargs):
+                 **kwargs):
         """
         Calibrate a torch.nn.Module for post-training quantization.
 
@@ -526,6 +530,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param use_ipex:        Whether we use ipex as accelerator for inferencing.
+                                If precision != bf16, it will be ignored. Default: ``False``.
         :param calib_data:      Calibration data is required for static quantization.
                                 It's also used as validation dataloader.
                                 calib_data support following formats:
@@ -545,13 +551,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   ``calib_dataloader`` will be deprecated in future release.
 
                   Please use ``calib_data`` instead.
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
@@ -584,6 +599,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                        only valid when accelerator='openvino', otherwise will be ignored.
+                        'CPU', 'GPU' and 'VPUX' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -627,6 +645,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to
+                              ``True``, only valid when accelerator='jit', otherwise will
+                              be ignored. For more details, please refer https://github.com/
+                              pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -637,9 +661,37 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          https://pytorch.org/docs/1.13/generated/torch.quantization.qconfig.
                          QConfig.html#torch.quantization.qconfig.QConfig .
                          This parameter only works for native ipex quantization.
-        :param **export_kwargs: will be passed to torch.onnx.export function.
+        :param **kwargs: Other extra advanced settings include:
+                         1. those be passed to ``torch.onnx.export`` function,
+                         only valid when accelerator='onnxruntime'/'openvino',
+                         otherwise will be ignored.
+                         Possible arguments are: input_names, output_names, opset_version,
+                         et al. For more details, please refer
+                         https://pytorch.org/docs/stable/onnx.html#torch.onnx.export.
+                         2. those be passed to ``model optimizer`` function of openvino,
+                         only valid when accelerator='openvino',
+                         otherwise will be ignored.
+                         Possible arguments are: mean_values, layout, input, output, et al.
+                         For more details about model optimizer, you can see mo --help .
+                         If you want to quantize with openvino on VPUX device,
+                         you must specify  ``mean_value`` for model optimizer function.
+                         Here ``mean_value`` represents mean values to be used for the input image
+                         per channel. Values to be provided in the (R,G,B) or [R,G,B] format.
+                         Can be defined for desired input of the model, for example:
+                         "--mean_values data[255,255,255],info[255,255,255]". The exact meaning
+                         and order of channels depend on how the original model was trained.
         :return:            A accelerated torch.nn.Module if quantization is sucessful.
         """
+        invalidInputError(precision in ['int8', 'fp16', 'bf16'],
+                          "Only support 'int8', 'bf16', 'fp16' now, "
+                          "no support for {}.".format(precision))
+        # device name might be: CPU, GPU, GPU.0, VPUX ...
+        invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
+                          "Now we only support CPU, GPU and VPUX, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator"
+                              "is openvino.".format(device))
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -656,11 +708,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
                                                    jit_method=jit_method,
-                                                   weights_prepack=weights_prepack)
+                                                   weights_prepack=weights_prepack,
+                                                   enable_onednn=enable_onednn)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
+                                           input_sample=input_sample,
                                            thread_num=thread_num)
                     return bf16_model
+            elif accelerator == "openvino":
+                invalidInputError(device == 'CPU',
+                                  "Device {} don't support bfloat16.".format(device))
+                final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
+                if openvino_config is not None:
+                    final_openvino_option.update(openvino_config)
+                return PytorchOpenVINOModel(model, input_sample,
+                                            thread_num=thread_num,
+                                            device=device,
+                                            dynamic_axes=dynamic_axes,
+                                            logging=logging,
+                                            config=final_openvino_option,
+                                            **kwargs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid for BF16.".format(accelerator))
@@ -712,20 +779,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if input_sample is None:
                             # input_sample can be a dataloader
                             input_sample = calib_dataloader
-                        if onnxruntime_session_options is None:
-                            import onnxruntime
-                            onnxruntime_session_options = onnxruntime.SessionOptions()
-                            if thread_num is not None:
-                                onnxruntime_session_options.intra_op_num_threads = thread_num
-                                onnxruntime_session_options.inter_op_num_threads = thread_num
                         model = InferenceOptimizer.trace(
                             model,
                             input_sample=input_sample,
                             accelerator='onnxruntime',
+                            thread_num=thread_num,
                             onnxruntime_session_options=onnxruntime_session_options,
                             simplification=simplification,
                             dynamic_axes=dynamic_axes,
-                            **export_kwargs)
+                            **kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
                 which is defined by neural-compressor containing a `GraphModule` for inference.
@@ -734,6 +796,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 `quantized_model.model`.
                 """
                 inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                                          "eval_func": eval_func,
                                           "metric": metric, "thread_num": thread_num,
                                           "framework": framework, "conf": conf,
                                           "approach": approach,
@@ -764,16 +827,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
-                    model = InferenceOptimizer.trace(model,
-                                                     input_sample=input_sample,
-                                                     accelerator='openvino',
-                                                     thread_num=thread_num,
-                                                     dynamic_axes=dynamic_axes,
-                                                     logging=logging,
-                                                     **export_kwargs)
+                    # For CPU: fp32 -> int8, for GPU/VPUX: fp16 -> int8
+                    _precision = 'fp16' if device != 'CPU' else 'fp32'
+                    if device == 'VPUX':
+                        # for fp16 on VPUX, must specify mean_value.
+                        invalidInputError('mean_value' in kwargs,
+                                          "If you want to quantize with openvino on VPUX device, "
+                                          "you must specify mean_value for model optimizer "
+                                          "function. For more details about model optimizer, you "
+                                          "can see mo --help .")
+                    model = PytorchOpenVINOModel(model, input_sample,
+                                                 precision=_precision,
+                                                 thread_num=thread_num,
+                                                 device=device,
+                                                 dynamic_axes=dynamic_axes,
+                                                 logging=logging,
+                                                 config=openvino_config,
+                                                 **kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                                   "Invalid model to quantize. Please use a nn.Module or a model "
-                                  "from trainer.trance(accelerator=='openvino')")
+                                  "from InferenceOptimizer.trace(accelerator=='openvino')")
                 drop_type = None
                 higher_is_better = None
                 maximal_drop = None
@@ -800,6 +873,27 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
+        if precision == 'fp16':
+            invalidInputError('GPU' in device or device == 'VPUX',
+                              "fp16 is not supported on {} device.".format(device))
+            invalidInputError(accelerator == 'openvino',
+                              "fp16 is not supported on {} accelerator.".format(accelerator))
+            if device == 'VPUX':
+                # for fp16 on VPUX, must specify mean_value.
+                invalidInputError('mean_value' in kwargs,
+                                  "If you want to quantize with openvino float16 precision on "
+                                  "VPUX device, you must specify mean_value for model optimizer "
+                                  "function. For more details about model optimizer, you can "
+                                  "see mo --help .")
+            return PytorchOpenVINOModel(model, input_sample,
+                                        precision=precision,
+                                        thread_num=thread_num,
+                                        device=device,
+                                        dynamic_axes=dynamic_axes,
+                                        logging=logging,
+                                        config=openvino_config,
+                                        **kwargs)
+
         invalidInputError(False,
                           "Precision {} is invalid.".format(precision))
 
@@ -810,6 +904,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               use_ipex: bool = False,
               channels_last: bool = False,
               thread_num: Optional[int] = None,
+              device: Optional[str] = 'CPU',
               onnxruntime_session_options=None,
               openvino_config=None,
               simplification: bool = True,
@@ -819,7 +914,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               logging: bool = True,
               inplace: bool = False,
               weights_prepack: Optional[bool] = None,
-              **export_kwargs):
+              enable_onednn: bool = True,
+              **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
 
@@ -830,7 +926,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: Whether we use ipex as accelerator for inferencing. Default: False.
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. Only valid when
+                         accelerator='jit'/None, otherwise will be ignored. Default: ``False``.
         :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
@@ -840,6 +937,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            later inference process of your obtained accelerated model. In other
                            words, the process of model conversion won't be restricted by this
                            parameter.
+        :param device: (optional) A string represents the device of the inference. Default to 'CPU',
+                                  only valid when accelerator='openvino', otherwise will be ignored.
+                                  'CPU', 'GPU' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -878,10 +978,24 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
-        :param **export_kwargs: Other extra advanced settings include those be passed to
-                                torch.onnx.export function, only valid when
-                                accelerator='onnxruntime'/'openvino', otherwise
-                                will be ignored.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to
+                              ``True``, only valid when accelerator='jit', otherwise will be
+                              ignored. For more details, please refer https://github.com/pytorch/
+                              pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
+        :param **kwargs: Other extra advanced settings include:
+                         1. those be passed to torch.onnx.export function,
+                         only valid when accelerator='onnxruntime'/'openvino',
+                         otherwise will be ignored.
+                         Possible arguments are: input_names, output_names, opset_version,
+                         et al. For more details, please refer
+                         https://pytorch.org/docs/stable/onnx.html#torch.onnx.export.
+                         2. those be passed to model optimizer function of openvino,
+                         only valid when accelerator='openvino',
+                         otherwise will be ignored.
+                         Possible arguments are: mean_values, layout, input, output, et al.
+                         For more details about model optimizer, you can see mo --help .
         :return: Model with different acceleration.
         """
         invalidInputError(
@@ -889,28 +1003,36 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
+        # device name might be: CPU, GPU, GPU.0 ...
+        invalidInputError(device == 'CPU' or 'GPU' in device,
+                          "Now we only support fp32 for CPU and GPU, not {}".format(device))
+        if device != 'CPU' and accelerator != 'openvino':
+            invalidInputError(False,
+                              "Now we only support {} device when accelerator "
+                              "is openvino.".format(device))
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             return PytorchOpenVINOModel(model, input_sample,
                                         thread_num=thread_num,
+                                        device=device,
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
                                         config=final_openvino_option,
-                                        **export_kwargs)
+                                        **kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
                 import onnxruntime
                 onnxruntime_session_options = onnxruntime.SessionOptions()
-                if thread_num is not None:
-                    onnxruntime_session_options.intra_op_num_threads = thread_num
-                    onnxruntime_session_options.inter_op_num_threads = thread_num
+            if thread_num is not None:
+                onnxruntime_session_options.intra_op_num_threads = thread_num
+                onnxruntime_session_options.inter_op_num_threads = thread_num
             return PytorchONNXRuntimeModel(model, input_sample,
                                            onnxruntime_session_options,
                                            simplification=simplification,
                                            dynamic_axes=dynamic_axes,
-                                           **export_kwargs)
+                                           **kwargs)
         if accelerator == 'jit' or use_ipex is True or channels_last is True:
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
@@ -923,7 +1045,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
                                        jit_strict=jit_strict, jit_method=jit_method,
-                                       weights_prepack=weights_prepack)
+                                       weights_prepack=weights_prepack,
+                                       enable_onednn=enable_onednn)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -998,7 +1121,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None, inplace=False):
+    def load(path, model: Optional[nn.Module] = None, input_sample=None,
+             inplace=False, device=None):
         """
         Load a model from local.
 
@@ -1007,11 +1131,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                the model with accelerator=None by InferenceOptimizer.trace/
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino"/"jit".
+        :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+               Only valid for inc ipex quantization model, otherwise will be ignored.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model, inplace=inplace)
+        return load_model(path, model, input_sample=input_sample,
+                          inplace=inplace, device=device)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,
@@ -1030,9 +1159,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         """
         invalidInputError(isinstance(num_processes, int) and num_processes > 0,
                           "num_processes must be a positive integer")
+        # if num_processes == 1 and no core specification, we will use current process directly
+        if num_processes == 1 and cpu_for_each_process is None and cores_per_process is None:
+            warnings.warn("Will run inference in current process directly "
+                          "because the `num_processes` is 1")
+            return _MultiInstanceModel(model, None, None, None, None)
+
         p_num = num_processes if cpu_for_each_process is None else len(cpu_for_each_process)
+
+        # else we will start multiple sub-processes
         send_queue = mp.Queue()
         recv_queue = mp.Queue()
+        next_idx = mp.Value('i', 0, lock=True)
 
         KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
@@ -1059,13 +1197,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
 
             p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queue, recv_queue), daemon=True)
+                           args=(model, send_queue, recv_queue, next_idx), daemon=True)
             p.start()
             ps.append(p)
         os.environ["KMP_AFFINITY"] = KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
-        return _MultiInstanceModel(model, ps, send_queue, recv_queue)
+        return _MultiInstanceModel(model, ps, send_queue, recv_queue, next_idx)
 
 
 def _signature_check(function):

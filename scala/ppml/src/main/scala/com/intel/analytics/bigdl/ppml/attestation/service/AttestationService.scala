@@ -15,7 +15,7 @@
  */
 
 
-package com.intel.analytics.bigdl.ppml.attestation
+package com.intel.analytics.bigdl.ppml.attestation.service
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.json.JSONObject
@@ -26,6 +26,7 @@ object ATTESTATION_CONVENTION {
   val MODE_EHSM_KMS = "EHSMAttestationService"
   val MODE_AMBER = "AMBERService"
   val MODE_AZURE = "AzureAttestationService"
+  val MODE_BIGDL = "BigDLRemoteAttestationService"
 }
 
 trait AttestationService extends Supportive {

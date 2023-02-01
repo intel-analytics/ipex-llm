@@ -18,6 +18,7 @@
 from logging import warning
 import torch
 import os
+from bigdl.nano.utils.inference.pytorch.model_utils import generate_channels_last_available
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
@@ -33,12 +34,14 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, channels_last=None, thread_num=None):  # noqa
+    def __init__(self, model, input_sample=None, channels_last=None, channels_last_available=[], thread_num=None):  # noqa
         """
         This is the accelerated model for BFloat16 with auto mixed precision.
 
         :param model: the model(nn.module) to be transform.
         :param channels_last: if set model and data to be channels-last mode.
+        :param channels_last_available: only passed by _load method,
+               to decide which input can be converted to channels-last mode.
         :param thread_num: the thread num allocated for this model.
         """
         super().__init__(model)
@@ -48,6 +51,13 @@ class BF16Model(AcceleratedLightningModule):
         self.thread_num = thread_num
         if self.channels_last is True:
             self.model = self.model.to(memory_format=torch.channels_last)
+            if channels_last_available:  # init from load
+                self.channels_last_available = channels_last_available
+            else:  # init without channels_last_available loaded
+                self.channels_last_available = generate_channels_last_available(input_sample)
+        else:
+            self.channels_last_available = []
+
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="bf16",
                                                               thread_num=thread_num)
@@ -106,7 +116,15 @@ class BF16Model(AcceleratedLightningModule):
 
     def forward_step(self, *inputs):
         if self.channels_last is True:
-            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
+            if self.channels_last_available:
+                for idx, input in enumerate(inputs):
+                    if self.channels_last_available[idx]:
+                        input.to(memory_format=torch.channels_last)
+            else:
+                self.channels_last_available = generate_channels_last_available(inputs)
+                for idx, input in enumerate(inputs):
+                    if self.channels_last_available[idx]:
+                        input.to(memory_format=torch.channels_last)
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):
@@ -166,6 +184,7 @@ class BF16Model(AcceleratedLightningModule):
     def status(self):
         status = super().status
         status.update({"channels_last": self.channels_last,
+                       "channels_last_available": self.channels_last_available,
                        "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num})
         return status
@@ -183,6 +202,7 @@ class BF16Model(AcceleratedLightningModule):
         if thread_num is not None:
             thread_num = int(status['thread_num'])
         return BF16Model(model, channels_last=status['channels_last'],
+                         channels_last_available=status['channels_last_available'],
                          thread_num=thread_num)
 
     def _save_model(self, path):

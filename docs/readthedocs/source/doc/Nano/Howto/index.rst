@@ -5,6 +5,14 @@ Nano How-to Guides
 
 In Nano How-to Guides, you could expect to find multiple task-oriented, bite-sized, and executable examples. These examples will show you various tasks that BigDL-Nano could help you accomplish smoothly.
 
+Preprocessing Optimization
+---------------------------
+
+PyTorch
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a computer vision data processing pipeline <Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline.html>`_
+
+
 Training Optimization
 -------------------------
 
@@ -14,12 +22,15 @@ PyTorch Lightning
 * `How to accelerate a PyTorch Lightning application on training workloads through multiple instances <Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance.html>`_
 * `How to use the channels last memory format in your PyTorch Lightning application for training <Training/PyTorchLightning/pytorch_lightning_training_channels_last.html>`_
 * `How to conduct BFloat16 Mixed Precision training in your PyTorch Lightning application <Training/PyTorchLightning/pytorch_lightning_training_bf16.html>`_
-* `How to accelerate a computer vision data processing pipeline <Training/PyTorchLightning/pytorch_lightning_cv_data_pipeline.html>`_
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * |convert_pytorch_training_torchnano|_
 * |use_nano_decorator_pytorch_training|_
+* `How to accelerate a PyTorch application on training workloads through Intel® Extension for PyTorch* <Training/PyTorch/accelerate_pytorch_training_ipex.html>`_
+* `How to accelerate a PyTorch application on training workloads through multiple instances <Training/PyTorch/accelerate_pytorch_training_multi_instance.html>`_
+* `How to use the channels last memory format in your PyTorch application for training <Training/PyTorch/pytorch_training_channels_last.html>`_
+* `How to conduct BFloat16 Mixed Precision training in your PyTorch application <Training/PyTorch/accelerate_pytorch_training_bf16.html>`_
 
 .. |use_nano_decorator_pytorch_training| replace:: How to accelerate your PyTorch training loop with ``@nano`` decorator
 .. _use_nano_decorator_pytorch_training: Training/PyTorch/use_nano_decorator_pytorch_training.html
@@ -30,6 +41,7 @@ TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 * |tensorflow_training_embedding_sparseadam_link|_
+* `How to conduct BFloat16 Mixed Precision training in your TensorFlow Keras application <Training/TensorFlow/tensorflow_training_bf16.html>`_
 
 .. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
 .. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
@@ -46,6 +58,7 @@ OpenVINO
 
 * `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
 * `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
+* `How to accelerate a PyTorch / TensorFlow inference pipeline on Intel GPUs through OpenVINO <Inference/OpenVINO/accelerate_inference_openvino_gpu.html>`_
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,6 +78,14 @@ PyTorch
 
 .. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
 .. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
+
+TensorFlow
+~~~~~~~~~~~~~~~~~~~~~~~~~
+* `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
+* `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
+* `How to conduct BFloat16 Mixed Precision inference in a TensorFlow Keras application <Inference/TensorFlow/tensorflow_inference_bf16.html>`_
+* `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
+* `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
 
 Install
 -------------------------
