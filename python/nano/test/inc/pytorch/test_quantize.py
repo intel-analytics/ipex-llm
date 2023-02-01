@@ -139,7 +139,6 @@ class TestTrainer(TestCase):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
         x = next(train_loader_iter)[0]
-        trainer = Trainer(max_epochs=1)
 
         qmodel = InferenceOptimizer.quantize(self.user_defined_pl_model,
                                              calib_data=self.train_loader)
@@ -179,7 +178,6 @@ class TestTrainer(TestCase):
     def test_quantize_inc_ptq_compiled_context_manager(self):
         # Test if a Lightning Module compiled by nano works
         train_loader_iter = iter(self.train_loader)
-        trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         x = next(train_loader_iter)[0]
 
@@ -244,3 +242,74 @@ class TestTrainer(TestCase):
         trainer.fit(pl_model, self.train_loader)
         InferenceOptimizer.quantize(pl_model,
                                     calib_data=self.train_loader)
+
+    def test_quantize_tuning(self):
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.fit(pl_model, self.train_loader)
+        train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
+        
+        # 1. test no tuning
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader)
+        assert qmodel
+
+        # 2. test eval_func with relative accuracy_criterion
+        def eval_func(model):
+            acc = 0
+            for sample, label in self.train_loader:
+                logits = model(sample)
+                pred = logits.argmax(dim=1)
+                acc += torch.eq(pred, label).sum().float().item()
+            return acc
+
+        fp32_baseline = eval_func(pl_model)
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             eval_func=eval_func,
+                                             accuracy_criterion={'relative': 0.8,
+                                                                 'higher_is_better': True},
+                                             timeout=0,
+                                             max_trials=10,
+                                             thread_num=8)
+        assert qmodel
+
+        with InferenceOptimizer.get_context(qmodel):
+            out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+        int8_value = eval_func(qmodel)
+        assert (fp32_baseline - int8_value)/fp32_baseline <= 0.8
+
+        # 3. test eval_func with absolute accuracy_criterion
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            # for inc 1.x, the value of accuracy_criterion is limited to [0, 1),
+            # this ut will always fail for current eval function
+            # for inc 2.0, the value of accuracy_criterion is not limited
+            # so here just test inc 2.0
+            qmodel = InferenceOptimizer.quantize(pl_model,
+                                                 calib_data=self.train_loader,
+                                                 eval_func=eval_func,
+                                                 accuracy_criterion={'absolute': 100,
+                                                                     'higher_is_better': True},
+                                                 timeout=0,
+                                                 max_trials=10,
+                                                 thread_num=8)
+            assert qmodel
+            int8_value = eval_func(qmodel)
+            assert int8_value - fp32_baseline <= 100
+
+        # 4. test metric
+        if compare_version("torchmetrics", operator.ge, "0.11.0"):
+            metric = torchmetrics.F1Score('multiclass', num_classes=10)
+        else:
+            metric = torchmetrics.F1Score(10)
+        qmodel = InferenceOptimizer.quantize(pl_model,
+                                             calib_data=self.train_loader,
+                                             metric=metric,
+                                             accuracy_criterion={'relative': 0.99,
+                                                                 'higher_is_better': True},
+                                             timeout=0,
+                                             max_trials=10,
+                                             thread_num=8)
+        assert qmodel

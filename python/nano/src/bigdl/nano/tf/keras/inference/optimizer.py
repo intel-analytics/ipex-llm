@@ -26,7 +26,7 @@ import numpy as np
 import traceback
 import inspect
 import tensorflow as tf
-from typing import Dict, Optional, List, Union
+from typing import Dict, Optional, List, Union, Callable
 from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
 from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
 from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
@@ -408,6 +408,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
                  input_spec=None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -455,12 +456,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            ``input_spec`` is required. If ``accelerator='openvino'``, or
                            ``accelerator=None`` and ``precision='int8'``, ``input_spec``
                            is required when you have a custom Keras model.
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
-        :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
+                                    accuracy control.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
@@ -633,6 +644,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         outputs = "outputs"    # type: ignore
 
             result = inc_quantzie(model, dataloader=calib_dataset,
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework='tensorflow',
                                   conf=conf,
@@ -701,6 +713,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             }
             framework = method_map.get(method, None)
             result = inc_quantzie(onnx_model, dataloader=(x, y),
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework=framework,
                                   thread_num=thread_num,
