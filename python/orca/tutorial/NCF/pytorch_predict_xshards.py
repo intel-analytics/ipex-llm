@@ -21,7 +21,6 @@ import torch.optim as optim
 from pytorch_model import NCF
 from utils import *
 
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import XShards
 
