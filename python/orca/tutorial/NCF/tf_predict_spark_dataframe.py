@@ -24,6 +24,7 @@ from utils import *
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Predicting with Spark DataFrame")
+args.backend = "ray"
 init_orca(args)
 spark = OrcaContext.get_spark_session()
 
