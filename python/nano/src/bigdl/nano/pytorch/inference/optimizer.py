@@ -460,62 +460,62 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                try:
-                    result_map[method]["latency"], status = \
-                        exec_with_worker(torch_model_throughput_calculate_helper,
-                                         latency_sample_num, baseline_time, func_test, acce_model,
-                                         input_sample, env=best_env)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        # save model even early stop
-                        result_map[method]["model"] = acce_model
+                with InferenceOptimizer.get_context(acce_model):
+                    try:
+                        result_map[method]["latency"], status = \
+                            throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            # save model even early stop
+                            result_map[method]["model"] = acce_model
+                            torch.set_num_threads(default_threads)
+                            continue
+                    except Exception:
+                        traceback.print_exc()
+                        result_map[method]["status"] = "fail to forward"
+                        print(f"----------{method} failed to forward----------")
                         torch.set_num_threads(default_threads)
                         continue
-                except Exception:
-                    traceback.print_exc()
-                    result_map[method]["status"] = "fail to forward"
-                    print(f"----------{method} failed to forward----------")
-                    torch.set_num_threads(default_threads)
-                    continue
 
-                torch.set_num_threads(default_threads)
-                if self._calculate_accuracy:
-                    # here we suppose trace don't change accuracy,
-                    # so we jump it to reduce time cost of optimize
-                    if _precision == "fp32" and method != "original":
-                        _accuracy = result_map["original"]["accuracy"]
-                        if isinstance(_accuracy, torch.Tensor):
-                            _accuracy = _accuracy.item()
-                        _accuracy = round(_accuracy, 3)
-                        result_map[method]["accuracy"] = str(_accuracy) + '*'
-                    else:
-                        if method == "original":
-                            # test whether metric works
-                            try:
-                                result_map[method]["accuracy"] = \
-                                    exec_with_worker(torch_accuracy_calculate_helper, acce_model,
-                                                     metric, validation_data, env=best_env)
-                            except Exception:
-                                traceback.print_exc()
-                                self._calculate_accuracy = False
-                                invalidInputError(
-                                    False,
-                                    "Your metric is incompatible with validation_data or don't "
-                                    "follow our given pattern. Our expected metric pattern is "
-                                    "as follows:\n1. a torchmetrics.Metric object\n2. a "
-                                    "callable object which takes prediction and target then "
-                                    "returns a value in this calling method: `metric(pred, "
-                                    "target)`\n3. a callable object that takes model and "
-                                    "validation_data (if validation_data is not None) as input,"
-                                    "and returns an accuracy value in this calling method: "
-                                    "metric(model, data_loader) (or metric(model) if "
-                                    "validation_data is None).")
+                    torch.set_num_threads(default_threads)
+                    if self._calculate_accuracy:
+                        # here we suppose trace don't change accuracy,
+                        # so we jump it to reduce time cost of optimize
+                        if _precision == "fp32" and method != "original":
+                            _accuracy = result_map["original"]["accuracy"]
+                            if isinstance(_accuracy, torch.Tensor):
+                                _accuracy = _accuracy.item()
+                            _accuracy = round(_accuracy, 3)
+                            result_map[method]["accuracy"] = str(_accuracy) + '*'
                         else:
-                            result_map[method]["accuracy"] = \
-                                exec_with_worker(torch_accuracy_calculate_helper, acce_model,
-                                                 metric, validation_data, env=best_env)
-                else:
-                    result_map[method]["accuracy"] = None
+                            if method == "original":
+                                # test whether metric works
+                                try:
+                                    result_map[method]["accuracy"] = \
+                                        _accuracy_calculate_helper(acce_model, metric,
+                                                                   validation_data)
+                                except Exception:
+                                    traceback.print_exc()
+                                    self._calculate_accuracy = False
+                                    invalidInputError(
+                                        False,
+                                        "Your metric is incompatible with validation_data or don't "
+                                        "follow our given pattern. Our expected metric pattern is "
+                                        "as follows:\n1. a torchmetrics.Metric object\n2. a "
+                                        "callable object which takes prediction and target then "
+                                        "returns a value in this calling method: `metric(pred, "
+                                        "target)`\n3. a callable object that takes model and "
+                                        "validation_data (if validation_data is not None) as input,"
+                                        "and returns an accuracy value in this calling method: "
+                                        "metric(model, data_loader) (or metric(model) if "
+                                        "validation_data is None).")
+                            else:
+                                result_map[method]["accuracy"] = \
+                                    _accuracy_calculate_helper(acce_model, metric,
+                                                               validation_data)
+                    else:
+                        result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
