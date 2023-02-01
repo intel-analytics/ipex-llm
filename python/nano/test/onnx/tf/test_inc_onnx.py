@@ -17,7 +17,7 @@
 from unittest import TestCase
 import tempfile
 import tensorflow as tf
-from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications import EfficientNetB0
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
 from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
@@ -26,7 +26,7 @@ from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
 
 class TestONNX(TestCase):
     def test_model_quantize_onnx(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
         input_features = np.random.randint(0, 10, size=100)
@@ -51,7 +51,7 @@ class TestONNX(TestCase):
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_without_dataset(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
         input_features = np.random.randint(0, 10, size=100)
@@ -68,7 +68,7 @@ class TestONNX(TestCase):
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_with_only_x(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
         # quantize a Keras model based on numpy array
@@ -109,7 +109,7 @@ class TestONNX(TestCase):
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_save_load(self):
-        model = ResNet50(weights=None, input_shape=[224, 224, 3], classes=10)
+        model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
         input_features = np.random.randint(0, 10, size=100)

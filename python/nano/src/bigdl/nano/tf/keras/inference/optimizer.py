@@ -15,6 +15,9 @@
 #
 
 import os
+import subprocess
+import tempfile
+import cloudpickle
 import copy
 import time
 import operator
@@ -116,6 +119,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: A keras.Model to be optimized
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -132,16 +136,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
+        :param input_spec: A (tuple or list of) ``tf.TensorSpec`` defining the
+                           shape/dtype of the input.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-               inference.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+               inference. This parameter only controls the usage of thread number in the process
+               of latency calculation as well as later inference process of your obtained
+               accelerated model. In other words, the process of model conversion and optional
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -178,7 +185,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if os.getenv('OMP_NUM_THREADS') is not None:
             default_threads: int = int(os.getenv('OMP_NUM_THREADS'))  # type: ignore
         else:
-            # TODO: how to get and control thread num in tf?
             default_threads = None  # type: ignore
         thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
@@ -240,12 +246,38 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        continue
+                    if method == "original" and thread_num is not None:
+                        _flag = True  # represent whether subprocess works
+                        # for original keras model, as tf.config.threading can't set thread
+                        # during running, so here we use subprocess to calculate throughput
+                        params = {"iterrun": latency_sample_num,
+                                  "func": func_test,
+                                  "model": acce_model,
+                                  "input_sample": input_sample}
+                        with tempfile.TemporaryDirectory() as temp_dir:
+                            _filename = os.path.join(temp_dir, "params")
+                            cloudpickle.dump(params, open(_filename, "wb"))
+                            my_env = os.environ.copy()
+                            my_env["OMP_NUM_THREADS"] = str(thread_num)
+                            worker_file = os.path.join(
+                                os.path.split(os.path.realpath(__file__))[0], "_worker.py")
+                            try:
+                                result = subprocess.run(["python", worker_file,
+                                                         _filename, str(thread_num)],
+                                                        capture_output=True,
+                                                        universal_newlines=True,
+                                                        env=my_env)
+                                latency = float(result.stdout.strip())
+                                result_map[method]["latency"] = latency
+                            except Exception:
+                                _flag = False
+                    if method != "original" or thread_num is None or _flag is False:
+                        result_map[method]["latency"], status =\
+                            throughput_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            continue
                 except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
@@ -315,8 +347,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param model: The Keras model to trace.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'``,
+                           ``input_spec`` is only required when you have a custom Keras model.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -397,6 +431,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: The Keras model to quantize.
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -415,8 +450,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'``, or
+                           ``accelerator=None`` and ``precision='int8'``, ``input_spec``
+                           is required when you have a custom Keras model.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}

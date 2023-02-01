@@ -35,6 +35,10 @@ def load_inc_model(path, model, framework, input_sample=None):
 
 
 def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
+    if compare_version("neural_compressor", operator.ge, "2.0"):
+        from .inc_api_2 import quantize
+        return quantize(model, dataloader, metric, thread_num, **kwargs)
+
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -78,8 +82,3 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         from .core import BaseQuantization
         quantizer = BaseQuantization(**not_none_kwargs)
     return quantizer.post_training_quantize(model, dataloader, metric)
-
-
-if compare_version("neural_compressor", operator.ge, "2.0"):
-    del quantize
-    from .inc_api_2 import quantize

@@ -239,7 +239,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                inference. This parameter only controls the usage of thread number in the process
                of latency calculation as well as later inference process of your obtained
                accelerated model. In other words, the process of model conversion and optional
-               accuracy calculation won't be restricted by this parameter.
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param accelerator: (optional) A string tuple that specifys the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
