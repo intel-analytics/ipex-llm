@@ -413,9 +413,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
                     env_result_map[method], _ = \
-                        exec_with_worker(torch_model_throughput_calculate_helper, latency_sample_num,
-                                         baseline_time, func_test, model, input_sample,
-                                         env=env.get_env_dict())
+                        exec_with_worker(torch_model_throughput_calculate_helper,
+                                         latency_sample_num, baseline_time, func_test, model,
+                                         input_sample, env=env.get_env_dict())
                 except subprocess.CalledProcessError as e:
                     print("----------worker error info----------")
                     print(e.args)
@@ -462,8 +462,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 try:
                     result_map[method]["latency"], status = \
-                        exec_with_worker(torch_model_throughput_calculate_helper, latency_sample_num,
-                                         baseline_time, func_test, acce_model,
+                        exec_with_worker(torch_model_throughput_calculate_helper,
+                                         latency_sample_num, baseline_time, func_test, acce_model,
                                          input_sample, env=best_env)
                     if status is False and method != "original":
                         result_map[method]["status"] = "early stopped"
@@ -512,14 +512,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                     "validation_data is None).")
                         else:
                             result_map[method]["accuracy"] = \
-                                exec_with_worker(torch_accuracy_calculate_helper, acce_model, metric,
-                                                 validation_data, env=best_env)
+                                exec_with_worker(torch_accuracy_calculate_helper, acce_model,
+                                                 metric, validation_data, env=best_env)
                 else:
                     result_map[method]["accuracy"] = None
 
                 result_map[method]["model"] = acce_model
                 print(f"----------Finish test {method} model "
-                      f"({idx+1}/{len(available_dict)})----------")
+                      f"({idx + 1}/{len(available_dict)})----------")
 
         self.optimized_model_dict: Dict = result_map
         print("\n\n==========================Optimization Results==========================")
