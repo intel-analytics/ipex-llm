@@ -595,7 +595,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             logging=logging,
                                             **kwargs)
             elif accelerator is None:
-                result = BF16Model(model)
+                return BF16Model(model)
             return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
