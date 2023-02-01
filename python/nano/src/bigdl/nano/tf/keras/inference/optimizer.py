@@ -116,6 +116,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: A keras.Model to be optimized
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -132,16 +133,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
+        :param input_spec: A (tuple or list of) ``tf.TensorSpec`` defining the
+                           shape/dtype of the input.
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-               inference.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+               inference. This parameter only controls the usage of thread number in the process
+               of latency calculation as well as later inference process of your obtained
+               accelerated model. In other words, the process of model conversion and optional
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -315,8 +319,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param model: The Keras model to trace.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'``,
+                           ``input_spec`` is only required when you have a custom Keras model.
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -397,6 +403,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: The Keras model to quantize.
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -415,8 +422,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
+                           ``input_spec`` is required. If ``accelerator='openvino'``, or
+                           ``accelerator=None`` and ``precision='int8'``, ``input_spec``
+                           is required when you have a custom Keras model.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}

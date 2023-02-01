@@ -43,6 +43,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         
 
         wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-orca-python.txt -O ${{ github.workspace }}/requirements-orca-python.txt
