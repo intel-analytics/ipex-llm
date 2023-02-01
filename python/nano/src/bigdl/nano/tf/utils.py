@@ -34,16 +34,18 @@ class _ModuleWrapper:
     def __init__(self, target_obj, source_obj):
         self.__dict__["target_obj"] = target_obj
         self.__dict__["source_obj"] = source_obj
-        self.__dict__["support_operations"] = ["predict", "evaluate", "compile",
-                                               "_save", "_load", "onnx_model"]
+        self.__dict__["support_operations"] = ["predict", "evaluate", "compile"]
 
     def __getattr__(self, name):
         # We only support tf's `predict`, `evaluate`, `compile`,
-        # our `_save`, `_load`, `onnx_model`,
         # and user custom attributes which are not in `tf.keras.Model`
         if name in self.support_operations:
             return getattr(self.target_obj, name)
         elif not hasattr(Model, name):
+            try:
+                return getattr(self.target_obj, name)
+            except AttributeError as _e:
+                pass
             return getattr(self.source_obj, name)
         else:
             invalidOperationError(False,
