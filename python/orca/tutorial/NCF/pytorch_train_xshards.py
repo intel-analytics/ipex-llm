@@ -88,7 +88,6 @@ scheduler = scheduler_creator if args.lr_scheduler else None
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            scheduler_creator=scheduler,
-                           scheduler_step_freq='epoch',
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=args.backend,
