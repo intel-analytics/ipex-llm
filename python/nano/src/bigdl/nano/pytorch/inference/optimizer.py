@@ -421,6 +421,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     print(e.args)
                     traceback.print_exc()
                     print(f"----------Failed to run with {method} variables----------")
+                except Exception as e:
+                    print("----------worker creation failed----------")
+                    print(e.args)
+                    traceback.print_exc()
+                    print(f"----------Failed to run with {method} variables----------")
             for method, latency in env_result_map.items():
                 print(f"{method}\t{latency} ms")
             best_env = self.ALL_ACCELERATION_ENV[
