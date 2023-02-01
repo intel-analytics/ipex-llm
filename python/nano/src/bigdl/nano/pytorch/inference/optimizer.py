@@ -402,10 +402,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             with InferenceOptimizer.get_context(model):
                 return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
 
-        def torch_accuracy_calculate_helper(model, metric, data):
-            with InferenceOptimizer.get_context(model):
-                return _accuracy_calculate_helper(model, metric, data)
-
         if search_env:
             env_result_map = {}
             for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
