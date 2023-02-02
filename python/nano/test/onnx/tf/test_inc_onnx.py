@@ -46,8 +46,8 @@ class TestONNX(TestCase):
         y_hat = onnx_quantized_model.predict(input_examples, batch_size=5)
         assert y_hat.shape == (100, 10)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_quantized_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_without_dataset(self):
@@ -63,8 +63,8 @@ class TestONNX(TestCase):
                                                            y=input_features,
                                                            thread_num=8)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_quantized_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_with_only_x(self):
@@ -78,8 +78,8 @@ class TestONNX(TestCase):
                                                            y=None,
                                                            thread_num=8)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_quantized_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
         # quantize a Keras model based on dataset
@@ -91,8 +91,8 @@ class TestONNX(TestCase):
                                                            y=None,
                                                            thread_num=8)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_quantized_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
         
         # quantize a Keras model based on tf tensor
@@ -104,8 +104,8 @@ class TestONNX(TestCase):
                                                            y=None,
                                                            thread_num=8)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_quantized_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
     def test_model_quantize_onnx_save_load(self):
