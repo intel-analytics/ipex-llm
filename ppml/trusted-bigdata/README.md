@@ -558,7 +558,8 @@ If you get the following results, then the thrift server is functioning normally
 To ensure data security, we need to encrypt and store data. For ease of use, we adopt transparent encryption. Here are a few ways to achieve transparent encryption:
 #### 2.1 HDFS Transparent Encryption
 
-If you use hdfs as warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information.
+If you use hdfs as warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
+![thrift_server_hdfs_encryption](pictures/thrift_server_hdfs_encryption.png)
 ##### 2.1.1 Start hadoop KMS(Key Management Service)
 1.	Make sure you can correctly start and use hdfs
 ```
@@ -630,7 +631,9 @@ spark.sql.warehouse.dir         hdfs://host:ip/path #encryption zone
 7. Start thrift server as above.
 #### 2.2 Gramine file system encryption
 Gramine also has the ability to encrypt and decrypt data. You can see more information [here][fsdGuide].
-In this case, hdfs is not supported. If it is a stand-alone environment, the data can be directly stored locally. If it is a distributed environment, then the data can be stored on a distributed file system such as nfs. Let's take nfs as an example.
+In this case, hdfs is not supported. If it is a stand-alone environment, the data can be directly stored locally. If it is a distributed environment, then the data can be stored on a distributed file system such as nfs. Let's take nfs as an example. The architecture diagram is as follows:
+![thrift_server_encrypted_fsd](pictures/thrift_server_encrypted_fsd.png)
+
 1. Set `spark.sql.warehouse.dir`.
 ```conf
 spark.sql.warehouse.dir         /ppml/encrypted-fsd
@@ -667,7 +670,8 @@ volumeMounts:
 ```
 5. Start Thrift Server as above.
 #### 2.3 Bigdl PPML Codec
-The jar package of bigdl ppml contains codec, which can realize transparent encryption. Just need to go through some settings to start.
+The jar package of bigdl ppml contains codec, which can realize transparent encryption. Just need to go through some settings to start. The architecture diagram is as follows:
+![thrift_server_codec](pictures/thrift_server_codec.png)
 **attention:**This method is under development. The following content can only be used as an experimental demo and cannot be put into production.
 1. Start Thrift Server as above.
 2. Start beeline and set environment variables.
