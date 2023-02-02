@@ -16,7 +16,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         
-        pip uninstall -y pyarrow
+        pip uninstall -y h5py
         chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
         python/orca/dev/test/run-pytests-horovod-tf.sh
         ray stop
