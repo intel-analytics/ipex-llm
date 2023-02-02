@@ -34,6 +34,6 @@ if [ $python_version == 3.7.10 ];then
   python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
 
 fi
-  python -m pytest -v test/bigdl/orca/learn/test_metrics.py
-  python -m pytest -v test/bigdl/orca/learn/test_utils.py
-  python -m pytest -v test/bigdl/orca/inference
+python -m pytest -v test/bigdl/orca/learn/test_metrics.py
+python -m pytest -v test/bigdl/orca/learn/test_utils.py
+python -m pytest -v test/bigdl/orca/inference
