@@ -117,7 +117,7 @@ def _quantize(
             # `dataloader` is tensorflow (x,y)
             # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
             from .onnx.tensorflow.quantization import KerasNumpyDataset
-            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
+            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         # INC requires a batched dataloader,
         # A torch.Dataset doesn't have `batch_size` attribute,
