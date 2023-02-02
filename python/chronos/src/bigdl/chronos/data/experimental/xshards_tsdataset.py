@@ -23,6 +23,8 @@ from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+from bigdl.chronos.data.utils.feature import generate_dt_features
+import pandas as pd
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -351,6 +353,39 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
                                                   self.scaler_dict, self.feature_col,
                                                   self.target_col)
+        return self
+
+    def gen_dt_feature(self,
+                       features):
+        '''
+        Generate datetime feature(s) for each record.
+        :param features: list, states which feature(s) will be generated.
+                The list should contain the features you want to generate.
+                A table of all datatime features and their description is listed below.
+
+        | "MINUTE": The minute of the time stamp.
+        | "DAY": The day of the time stamp.
+        | "DAYOFYEAR": The ordinal day of the year of the time stamp.
+        | "HOUR": The hour of the time stamp.
+        | "WEEKDAY": The day of the week of the time stamp, Monday=0, Sunday=6.
+        | "WEEKOFYEAR": The ordinal week of the year of the time stamp.
+        | "MONTH": The month of the time stamp.
+        | "YEAR": The year of the time stamp.
+        | "IS_AWAKE": Bool value indicating whether it belongs to awake hours for the time stamp,
+        | True for hours between 6A.M. and 1A.M.
+        | "IS_BUSY_HOURS": Bool value indicating whether it belongs to busy hours for the time
+        | stamp, True for hours between 7A.M. and 10A.M. and hours between 4P.M. and 8P.M.
+        | "IS_WEEKEND": Bool value indicating whether it belongs to weekends for the time stamp,
+        | True for Saturdays and Sundays.
+
+        :return: the xshards instance.
+        '''
+        features_generated = []
+        self.shards = self.shards.transform_shard(generate_dt_features, self.dt_col, features,
+                                                  None, None, features_generated)
+        features_generated = [fe for fe in features if fe not in
+                              self.target_col + [self.dt_col, self.id_col]]
+        self.feature_col += features_generated
         return self
 
     def unscale_xshards(self, data, key=None):
