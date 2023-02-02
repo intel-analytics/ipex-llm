@@ -182,8 +182,8 @@ object BigDLRemoteAttestationService {
             complete(res)
           } ~
           path("enroll") {
-            var app_id = Random.alphanumeric.take(12).mkString
-            var api_key = Random.alphanumeric.take(16).mkString
+            var app_id = Random.alphanumeric.take(32).mkString
+            var api_key = Random.alphanumeric.take(32).mkString
             val basePath = params.basePath
             val userContent = Await.result(loadFile(basePath), 5.seconds)
             var userMap = stringToMap(userContent)
