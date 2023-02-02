@@ -130,6 +130,23 @@ object BigDLRemoteAttestationService {
     }
   }
 
+  def checkAppIDAndApiKey(filename: String, map: Map[String, Any]): Boolean = {
+    if (!map.contains("app_id") || !map.contains("api_key")) {
+      false
+    } else {
+      val appID = map.get("app_id").mkString
+      val apiKey = map.get("api_key").mkString
+      val userContent = Await.result(loadFile(filename), 5.seconds)
+      val userMap = stringToMap(userContent)
+      val userMapRes = userMap.get(appID).mkString
+      if ((userMapRes != "") && apiKey == userMapRes) {
+        true
+      } else {
+        false
+      }
+    }
+  }
+
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger(getClass)
@@ -170,6 +187,7 @@ object BigDLRemoteAttestationService {
         
     }
     val params = cmdParser.parse(args, CmdParams()).get
+    secretKey = params.secretKey
 
     val route: Route =
         get {
@@ -182,37 +200,69 @@ object BigDLRemoteAttestationService {
             complete(res)
           } ~
           path("enroll") {
-            var app_id = Random.alphanumeric.take(32).mkString
-            var api_key = Random.alphanumeric.take(32).mkString
+            var appID = Random.alphanumeric.take(32).mkString
+            var apiKey = Random.alphanumeric.take(32).mkString
             val basePath = params.basePath
             val userContent = Await.result(loadFile(basePath), 5.seconds)
             var userMap = stringToMap(userContent)
-            while (userMap.contains(app_id)) {
-              app_id = Random.alphanumeric.take(32).mkString
-              api_key = Random.alphanumeric.take(32).mkString
+            while (userMap.contains(appID)) {
+              appID = Random.alphanumeric.take(32).mkString
+              apiKey = Random.alphanumeric.take(32).mkString
             }
-            userMap += (app_id -> api_key)
+            userMap += (appID -> apiKey)
             saveFile(basePath, mapToString(userMap))
-            val res = "{\"app_id\":\"" + app_id + ",\"api_key\":\"" + api_key + "\"}"
+            val res = "{\"app_id\":\"" + appID + ",\"api_key\":\"" + apiKey + "\"}"
             complete(res)
           }
         } ~
         post {
+          path("registePolicy") {
+            entity(as[String]) { jsonMsg =>
+              logger.info(jsonMsg)
+              val msg = stringToMap(jsonMsg)
+              if (!checkAppIDAndApiKey(params.basePath, msg)) {
+                complete(400, "Invalid app_id and api_key.")
+              } else {
+                if (!msg.contains("TDX") || msg.get("TDX").mkString == "false") {
+                  if (!msg.contains("mr_enclave") || !msg.contains("mr_signer")) {
+                    complete(400, "Required parameters are not provided.")
+                  }
+                  val appID = msg.get("app_id").mkString
+                  val mrEnclave = msg.get("mr_enclave").mkString
+                  val mrSigner = msg.get("mr_signer").mkString
+                  val policyContent = Await.result(loadFile(params.policyPath), 5.seconds)
+                  var policyMap = stringToMap(policyContent)
+                  var policyID = Random.alphanumeric.take(48).mkString
+                  while (policyMap.contains(policyID)) {
+                    policyID = Random.alphanumeric.take(48).mkString
+                  }
+                  val curContent = Map[String, Any] (
+                    "app_id" -> appID,
+                    "mr_enclave" -> mrEnclave,
+                    "mr_signer" -> mrSigner
+                  )
+                  policyMap += (policyID -> curContent)
+                  saveFile(params.policyPath, mapToString(policyMap))
+                  val res = mapToString(Map("policy_id" -> policyID))
+                  complete(200, res)
+                } else {
+                  //TODO: TDX policy
+                  complete(400, "Not Implemented.")
+                }
+              }
+            }
+          } ~
           path("verifyQuote") {
             entity(as[String]) { jsonMsg =>
               logger.info(jsonMsg)
               val msg = stringToMap(jsonMsg)
-              if (!msg.contains("app_id") || !msg.contains("api_key") || !msg.contains("quote")) {
-                complete(400, "Required parameters are not provided.")
+              if (!checkAppIDAndApiKey(params.basePath, msg)) {
+                complete(400, "Invalid app_id and api_key.")
               } else {
-                val appID = msg.get("app_id").mkString
-                val apiKey = msg.get("api_key").mkString
-                val quote = msg.get("quote").mkString
-                val basePath = params.basePath
-                val userContent = Await.result(loadFile(basePath), 5.seconds)
-                val userMap = stringToMap(userContent)
-                val userMapRes = userMap.get(appID).mkString
-                if (userMapRes != "" && apiKey == userMapRes) {
+                if (!msg.contains("quote")) {
+                  complete(400, "Required parameters are not provided.")
+                } else {
+                  val quote = msg.get("quote").mkString
                   val verifyQuoteResult = quoteVerifier.verifyQuote(
                     Base64.getDecoder().decode(quote.getBytes))
                   val res = new Result(verifyQuoteResult)
@@ -221,9 +271,6 @@ object BigDLRemoteAttestationService {
                   } else {
                     complete(400, res)
                   }
-                } else {
-                  print(userMap.get(appID).toString())
-                  complete(400, "Invalid app_id and api_key.")
                 }
               }
             }
