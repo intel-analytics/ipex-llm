@@ -27,7 +27,6 @@ cd ../..
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-#python -m pytest -v --doctest-modules ../../../../orca/src/bigdl/orca/tfpark
 python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
   python -m pytest -v test/bigdl/orca/tfpark
