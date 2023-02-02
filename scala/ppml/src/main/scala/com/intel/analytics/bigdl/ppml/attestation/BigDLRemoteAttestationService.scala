@@ -24,6 +24,7 @@ import javax.crypto.{Cipher, SecretKey, SecretKeyFactory}
 import javax.crypto.spec.{PBEKeySpec, SecretKeySpec}
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import java.util.Base64
+import java.math.BigInteger
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{ConnectionContext, Http, HttpsConnectionContext}
@@ -36,6 +37,9 @@ import akka.util.Timeout
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
+
+import org.json4s.jackson.Serialization
+import org.json4s._
 
 import scala.io.{Source, StdIn}
 import scala.util.Random
@@ -57,11 +61,7 @@ object BigDLRemoteAttestationService {
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
-  final case class Quote(quote: String)
-  implicit val quoteFormat = jsonFormat1(Quote)
-
-  final case class Result(result: Int)
-  implicit val resultFormat = jsonFormat1(Result)
+  implicit val formats = DefaultFormats
 
   val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
 
@@ -120,7 +120,8 @@ object BigDLRemoteAttestationService {
   }
 
   def mapToString(map: Map[String, Any]): String = {
-    JSONObject(map).toString()
+    // JSONObject(map).toString()
+    Serialization.write(map)
   }
 
   def stringToMap(str: String): Map[String, Any] = {
@@ -136,8 +137,8 @@ object BigDLRemoteAttestationService {
     } else {
       val appID = map.get("app_id").mkString
       val apiKey = map.get("api_key").mkString
-      val userContent = Await.result(loadFile(filename), 5.seconds)
-      val userMap = stringToMap(userContent)
+      val fileContent = Await.result(loadFile(filename), 5.seconds)
+      val userMap = stringToMap(fileContent)
       val userMapRes = userMap.get(appID).mkString
       if ((userMapRes != "") && apiKey == userMapRes) {
         true
@@ -145,6 +146,14 @@ object BigDLRemoteAttestationService {
         false
       }
     }
+  }
+
+  def getMREnclaveFromQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(112, 144)).toString(16)
+  }
+
+  def getMRSignerFromQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(176, 208)).toString(16)
   }
 
   def main(args: Array[String]): Unit = {
@@ -262,13 +271,39 @@ object BigDLRemoteAttestationService {
                 if (!msg.contains("quote")) {
                   complete(400, "Required parameters are not provided.")
                 } else {
-                  val quote = msg.get("quote").mkString
-                  val verifyQuoteResult = quoteVerifier.verifyQuote(
-                    Base64.getDecoder().decode(quote.getBytes))
-                  val res = new Result(verifyQuoteResult)
+                  val quoteBase64 = msg.get("quote").mkString
+                  val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
+                  
+                  val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
+                  
                   if (verifyQuoteResult >= 0) {
-                    complete(200, res)
+                    if (msg.contains("policy_id")) {
+                      val appID = msg.get("app_id").mkString
+                      val mrEnclave = getMREnclaveFromQuote(quote)
+                      val mrSigner = getMRSignerFromQuote(quote)
+
+                      val policyID = msg.get("policy_id").mkString
+                      val fileContent = Await.result(loadFile(params.policyPath), 5.seconds)
+                      val policyMap = stringToMap(fileContent)
+                      val policyContent: Map[String, Any] = policyMap.get(policyID) match {
+                        case Some(map: Map[String, Any]) => map
+                        case None => Map.empty
+                      }
+                      if (appID == policyContent.get("app_id").mkString &&
+                        mrEnclave == policyContent.get("mr_enclave").mkString &&
+                        mrSigner == policyContent.get("mr_signer").mkString) {
+                        val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+                        complete(200, res)
+                      } else {
+                        val res = "{\"result\": -1}"
+                        complete(400, res)
+                      }
+                    } else {
+                      val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
+                      complete(200, res)
+                    }
                   } else {
+                    val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
                     complete(400, res)
                   }
                 }
