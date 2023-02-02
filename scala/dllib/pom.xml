@@ -283,7 +283,7 @@
         </dependency>
 	<dependency>
             <groupId>ml.dmlc</groupId>
-            <artifactId>xgboost4j_${scala.major.version}</artifactId>
+            <artifactId>xgboost4j_2.12</artifactId>
             <version>1.1.2</version>
             <exclusions>
                 <exclusion>
@@ -298,7 +298,7 @@
         </dependency>
         <dependency>
             <groupId>ml.dmlc</groupId>
-            <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
+            <artifactId>xgboost4j-spark_2.12</artifactId>
             <version>1.1.2</version>
             <exclusions>
                 <exclusion>
@@ -344,7 +344,7 @@
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scala.major.version}</artifactId>
-            <version>3.5.0</version>
+            <version>${scopt.version}</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>

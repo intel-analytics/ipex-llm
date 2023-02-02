@@ -149,7 +149,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val embeddingDim = param.embeddingDim
     val trainingSplit = param.trainingSplit
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
-    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
+    val dataRdd = sc.parallelize(loadRawData().toSeq, param.partitionNum)
     val (word2Meta, word2Vec) = analyzeTexts(dataRdd)
     val word2MetaBC = sc.broadcast(word2Meta)
     val word2VecBC = sc.broadcast(word2Vec)
@@ -200,7 +200,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val trainingSplit = param.trainingSplit
 
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
-    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum).persist()
+    val dataRdd = sc.parallelize(loadRawData().toSeq, param.partitionNum).persist()
     val (word2Meta, word2Vec) = analyzeTexts(dataRdd)
     val word2MetaBC = sc.broadcast(word2Meta)
     val word2VecBC = sc.broadcast(word2Vec)
@@ -215,8 +215,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
         label = label)
     }.persist()
 
-    val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
-      Array(trainingSplit, 1 - trainingSplit))
+    val Array(trainingRDD, valRDD): Array[RDD[Sample[Float]]] =
+      sampleRDD.randomSplit(Array(trainingSplit, 1 - trainingSplit))
 
     val optimizer = Optimizer(
       model = buildModel(classNum),

@@ -181,6 +181,7 @@
         <spark-version.project>2.0</spark-version.project>
         <spark.version>2.4.6</spark.version>
         <breeze.version>0.13.2</breeze.version>
+        <scopt.version>3.5.0</scopt.version>
         <spark-scope>provided</spark-scope>
         <bigdl.basedir>${project.basedir}</bigdl.basedir>
 	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
@@ -583,13 +584,13 @@
                     </args>
                     <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                          by Spark SQL for code generation. -->
-                    <compilerPlugins>
-                        <compilerPlugin>
-                            <groupId>org.scalamacros</groupId>
-                            <artifactId>paradise_${scala.version}</artifactId>
-                            <version>${scala.macros.version}</version>
-                        </compilerPlugin>
-                    </compilerPlugins>
+<!--                    <compilerPlugins>-->
+<!--                        <compilerPlugin>-->
+<!--                            <groupId>org.scalamacros</groupId>-->
+<!--                            <artifactId>paradise_${scala.version}</artifactId>-->
+<!--                            <version>${scala.macros.version}</version>-->
+<!--                        </compilerPlugin>-->
+<!--                    </compilerPlugins>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -777,13 +778,13 @@
                             </args>
                             <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                                  by Spark SQL for code generation. -->
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>org.scalamacros</groupId>
-                                    <artifactId>paradise_${scala.version}</artifactId>
-                                    <version>${scala.macros.version}</version>
-                                </compilerPlugin>
-                            </compilerPlugins>
+<!--                            <compilerPlugins>-->
+<!--                                <compilerPlugin>-->
+<!--                                    <groupId>org.scalamacros</groupId>-->
+<!--                                    <artifactId>paradise_${scala.version}</artifactId>-->
+<!--                                    <version>${scala.macros.version}</version>-->
+<!--                                </compilerPlugin>-->
+<!--                            </compilerPlugins>-->
                         </configuration>
                     </plugin>
                 </plugins>
@@ -860,17 +861,28 @@
                             </args>
                             <!-- The following plugin is required to use quasiquotes in Scala 2.10 and is used
                                  by Spark SQL for code generation. -->
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>org.scalamacros</groupId>
-                                    <artifactId>paradise_${scala.version}</artifactId>
-                                    <version>${scala.macros.version}</version>
-                                </compilerPlugin>
-                            </compilerPlugins>
+<!--                            <compilerPlugins>-->
+<!--                                <compilerPlugin>-->
+<!--                                    <groupId>org.scalamacros</groupId>-->
+<!--                                    <artifactId>paradise_${scala.version}</artifactId>-->
+<!--                                    <version>${scala.macros.version}</version>-->
+<!--                                </compilerPlugin>-->
+<!--                            </compilerPlugins>-->
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>scala_2.13</id>
+            <properties>
+                <scala.major.version>2.13</scala.major.version>
+                <scala.version>2.13.5</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+                <breeze.version>1.2</breeze.version>
+                <scalatest.version>3.2.9</scalatest.version>
+                <scopt.version>3.7.1</scopt.version>
+            </properties>
         </profile>
         <profile>
             <id>scala_2.12</id>

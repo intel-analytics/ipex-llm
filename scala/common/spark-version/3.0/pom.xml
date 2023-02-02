@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.12</artifactId>
+            <artifactId>spark-core_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>provided</scope>
             <exclusions>
@@ -144,7 +144,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.12</artifactId>
+            <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>provided</scope>
             <exclusions>
