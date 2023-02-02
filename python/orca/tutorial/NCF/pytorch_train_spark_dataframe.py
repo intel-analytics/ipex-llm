@@ -33,11 +33,27 @@ init_orca(args, extra_python_lib="pytorch_model.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
-train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, neg_scale=4)
+train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, neg_scale=4)
 
 
 # Step 3: Define the model, optimizer and loss
+config = {
+    "user_num": user_num,
+    "item_num": item_num,
+    "factor_num": 16,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "model": "NeuMF-end",
+    "sparse_feats_input_dims": sparse_feats_input_dims,
+    "sparse_feats_embed_dims": 8,
+    "num_dense_feats": num_dense_feats,
+    "feature_cols": feature_cols,
+    "label_cols": label_cols
+}
+
+
 def model_creator(config):
     model = NCF(user_num=config["user_num"],
                 item_num=config["item_num"],
@@ -69,21 +85,12 @@ est = Estimator.from_torch(model=model_creator,
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node,
-                           config={"user_num": user_num,
-                                   "item_num": item_num,
-                                   "factor_num": 16,
-                                   "num_layers": 3,
-                                   "dropout": 0.5,
-                                   "lr": 0.01,
-                                   "model": "NeuMF-end",
-                                   "sparse_feats_input_dims": sparse_feats_input_dims,
-                                   "sparse_feats_embed_dims": 8,
-                                   "num_dense_feats": num_dense_feats})
-train_stats = est.fit(data=train_data, epochs=2,
+                           config=config)
+train_stats = est.fit(data=train_df, epochs=2,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
                       batch_size=10240,
-                      validation_data=test_data,
+                      validation_data=test_df,
                       callbacks=callbacks)
 print("Train results:")
 for epoch_stats in train_stats:
@@ -93,7 +100,7 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_data,
+eval_stats = est.evaluate(data=test_df,
                           feature_cols=feature_cols,
                           label_cols=label_cols,
                           batch_size=10240)
@@ -104,10 +111,11 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
-train_data.write.parquet(os.path.join(args.data_dir,
-                                      "train_processed_dataframe.parquet"), mode="overwrite")
-test_data.write.parquet(os.path.join(args.data_dir,
-                                     "test_processed_dataframe.parquet"), mode="overwrite")
+save_model_config(config, args.model_dir, "config.json")
+train_df.write.parquet(os.path.join(args.data_dir,
+                                    "train_processed_dataframe.parquet"), mode="overwrite")
+test_df.write.parquet(os.path.join(args.data_dir,
+                                   "test_processed_dataframe.parquet"), mode="overwrite")
 
 
 # Step 7: Stop Orca Context when program finishes
