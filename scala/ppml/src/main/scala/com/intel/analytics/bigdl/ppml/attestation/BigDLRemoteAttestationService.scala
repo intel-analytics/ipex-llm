@@ -68,7 +68,7 @@ object BigDLRemoteAttestationService {
   private val salt = Array[Byte](0,1,2,3,4,5,6,7)
   private val iterations = 65536
   private val keySize = 256
-  private val secretKey = "password"
+  private var secretKey = "password"
   private val algorithm = "PBKDF2WithHmacSHA256"
 
   def encrypt(data: Array[Byte]): Array[Byte] = {
@@ -154,7 +154,8 @@ object BigDLRemoteAttestationService {
                           httpsKeyStoreToken: String = "token",
                           httpsKeyStorePath: String = "./key",
                           httpsEnabled: Boolean = false,
-                          filepath: String = "./BigDLRemoteAttestationService.dat"
+                          basePath: String = "./BigDLRemoteAttestationService.dat",
+                          policyPath: String = "./BigDLRemoteAttestationServicePolicy.dat"
                           )
 
     val cmdParser : OptionParser[CmdParams] =
@@ -188,30 +189,47 @@ object BigDLRemoteAttestationService {
           path("enroll") {
             var app_id = Random.alphanumeric.take(12).mkString
             var api_key = Random.alphanumeric.take(16).mkString
-            val filepath = params.filepath
-            val content = Await.result(loadFile(filepath), 5.seconds)
-            var map = stringToMap(content)
-            while (map.contains(app_id)) {
+            val basePath = params.basePath
+            val userContent = Await.result(loadFile(basePath), 5.seconds)
+            var userMap = stringToMap(userContent)
+            while (userMap.contains(app_id)) {
               app_id = Random.alphanumeric.take(12).mkString
               api_key = Random.alphanumeric.take(20).mkString
             }
-            map += (app_id -> api_key)
-            saveFile(filepath, mapToString(map))
+            userMap += (app_id -> api_key)
+            saveFile(basePath, mapToString(userMap))
             val res = "{\"app_id\":\"" + app_id + ",\"api_key\":\"" + api_key + "\"}"
             complete(res)
           }
         } ~
         post {
           path("verifyQuote") {
-            entity(as[Quote]) { quoteMsg =>
-              logger.info(quoteMsg)
-              val verifyQuoteResult = quoteVerifier.verifyQuote(
-                Base64.getDecoder().decode(quoteMsg.quote.getBytes))
-              val res = new Result(verifyQuoteResult)
-              if (verifyQuoteResult >= 0) {
-                complete(200, res)
+            entity(as[String]) { jsonMsg =>
+              logger.info(jsonMsg)
+              val msg = stringToMap(jsonMsg)
+              if (!msg.contains("app_id") || !msg.contains("api_key") || !msg.contains("quote")) {
+                complete(400, "Required parameters are not provided.")
               } else {
-                complete(400, res)
+                val appID = msg.get("app_id").mkString
+                val apiKey = msg.get("api_key").mkString
+                val quote = msg.get("quote").mkString
+                val basePath = params.basePath
+                val userContent = Await.result(loadFile(basePath), 5.seconds)
+                val userMap = stringToMap(userContent)
+                val userMapRes = userMap.get(appID).mkString
+                if (userMapRes != "" && apiKey == userMapRes) {
+                  val verifyQuoteResult = quoteVerifier.verifyQuote(
+                    Base64.getDecoder().decode(quote.getBytes))
+                  val res = new Result(verifyQuoteResult)
+                  if (verifyQuoteResult >= 0) {
+                    complete(200, res)
+                  } else {
+                    complete(400, res)
+                  }
+                } else {
+                  print(userMap.get(appID).toString())
+                  complete(400, "Invalid app_id and api_key.")
+                }
               }
             }
           }
