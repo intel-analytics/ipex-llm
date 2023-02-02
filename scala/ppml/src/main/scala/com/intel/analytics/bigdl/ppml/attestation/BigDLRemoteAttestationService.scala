@@ -204,6 +204,8 @@ object BigDLRemoteAttestationService {
             val res = s"Welcome to BigDL Remote Attestation Service \n \n" +
             "enroll an account like: " +
             "GET <bigdl_remote_attestation_address>/enroll \n" +
+            "registe a policy like: " +
+            "POST <bigdl_remote_attestation_address>/registePolicy \n" +
             "verify your quote like: " +
             "POST <bigdl_remote_attestation_address>/verifyQuote \n"
             complete(res)
