@@ -61,6 +61,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                     self._output_shape = model.compute_output_shape((i.shape for i in input_spec))
                 else:
                     self._output_shape = model.compute_output_shape(input_spec.shape)
+                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
+                    self._output_shape = self._output_shape[0]
                 if not isinstance(input_spec, (tuple, list)):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
