@@ -46,6 +46,15 @@ def get_cpu_info():
                 get_physical_core[i] = j
         for i in range(logical_cores):
             get_socket[i] = 0
+    elif platform.system() == "Darwin":
+        # We cannot query which cores are physical cores on MacOS,
+        # so we use all logical cores
+        get_logical_core_num_args = ["sysctl", "-n", "hw.ncpu"]
+        logical_core_num = int(subprocess.check_output(get_logical_core_num_args,
+                                                       universal_newlines=True))
+        for i in range(logical_core_num):
+            get_physical_core[i] = i
+            get_socket[i] = 0
     else:
         cpuinfo = []
 
