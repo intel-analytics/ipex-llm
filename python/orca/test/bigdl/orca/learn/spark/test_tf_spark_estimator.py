@@ -27,8 +27,6 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
 
-resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
 
 
 def simple_model(config):
@@ -160,7 +158,7 @@ class TestTFEstimator(TestCase):
             model.compile(**compile_args(config))
             return model
         
-        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
 
         xshards = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,

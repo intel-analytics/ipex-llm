@@ -42,7 +42,7 @@ import logging
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../resources")
+    os.path.realpath(os.path.dirname(__file__)), "../../resources")
 
 
 class LinearDataset(torch.utils.data.Dataset):
