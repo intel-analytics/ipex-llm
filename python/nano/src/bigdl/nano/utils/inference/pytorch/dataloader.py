@@ -86,6 +86,9 @@ def _need_dataloader_type_transformation(model, dataloader):
     # check if a dataloader has met inc format
     input_sample = next(iter(dataloader))
     if isinstance(input_sample[0], Sequence):
+        if len(input_sample) == 2 and isinstance(input_sample[1], torch.Tensor) and \
+                len(input_sample[0]) <= forward_args_len:
+            return False, forward_args_len
         if len(input_sample[0]) == forward_args_len:
             return False, forward_args_len
     return True, forward_args_len
