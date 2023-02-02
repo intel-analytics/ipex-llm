@@ -26,7 +26,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
-init_orca_context(memory='4g')
+init_orca_context(cluster_mode="local")
 
 
 # Step 2: Read and process data
@@ -47,6 +47,7 @@ def data_process():
     return train_ds, validation_ds, test_ds
 
 
+# TODO: remove this if train/val steps are not required
 train_ds, validation_ds, test_ds = data_process()
 
 
@@ -80,9 +81,6 @@ def test_data_creator(config, batch_size):
 
 
 # Step 3: Define model
-config = dict(dropout=0.2)
-
-
 def xception_model(dropout):
     base_model = keras.applications.Xception(
         weights="imagenet",  # Load weights pre-trained on ImageNet.
@@ -114,8 +112,6 @@ def xception_model(dropout):
     outputs = keras.layers.Dense(1)(x)
     model = keras.Model(inputs, outputs)
 
-    model.summary()
-
     model.compile(
         optimizer=keras.optimizers.Adam(),
         loss=keras.losses.BinaryCrossentropy(from_logits=True),
@@ -132,7 +128,7 @@ def model_creator(config):
 # Step 4: Distributed training with Orca keras Estimator
 backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
-                           config=config,
+                           config={"dropout": 0.2},
                            backend=backend)
 
 batch_size = 32
@@ -144,23 +140,24 @@ train_stats = est.fit(data=train_data_creator,
                       batch_size=batch_size,
                       steps_per_epoch=train_steps,
                       validation_data=val_data_creator,
-                      validation_steps=val_steps,
-                      data_config=config)
+                      validation_steps=val_steps)
 print("Train results:")
 for k, v in train_stats.items():
     print("{}: {}".format(k, v))
 
+
 # Step 5: Distributed evaluation of the trained model
 eval_stats = est.evaluate(test_data_creator,
                           batch_size=batch_size,
-                          num_steps=test_steps,
-                          data_config=config)
+                          num_steps=test_steps)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
 
+
 # Step 6: Save the trained Tensorflow model
-est.save("model")
+est.save("xception_model")
+
 
 # Step 7: Stop Orca Context when program finishes
 stop_orca_context()
