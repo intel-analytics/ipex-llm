@@ -252,7 +252,9 @@ class TestTCNForecaster(TestCase):
 
         stop_orca_context()
 
-    def test_tcn_forecaster_quantization(self):
+    def test_tcn_keras_forecaster_quantization(self):
+        # Capturing behaviors during `pytest -v` influence generating the valid sampling log
+        # during quantization. Work around by using `pytest -s` to test this ut.
         train_data, _, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=10,
                                     future_seq_len=2,
