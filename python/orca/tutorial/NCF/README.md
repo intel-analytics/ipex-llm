@@ -4,6 +4,8 @@
 - https://files.grouplens.org/datasets/movielens/ml-1m.zip
 - https://files.grouplens.org/datasets/movielens/ml-100k.zip
 
+TODO: Add command to upload to HDFS
+
 ## Arguments
 TODO
 
