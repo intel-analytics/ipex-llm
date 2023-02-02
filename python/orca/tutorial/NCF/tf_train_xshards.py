@@ -76,7 +76,7 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-if args.scheduler:
+if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
@@ -90,7 +90,7 @@ train_stats = est.fit(train_data,
                       validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for k, v in train_stats.items():
+for k, v in train_stats[0].items():
     print("{}: {}".format(k, v))
 
 
