@@ -26,10 +26,11 @@ jobs:
     steps:
     - name: "Auth Synk"
       run: |
-        snyk auth -d $SNYK_APITOKEN
+        snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com
       run: |
         cd scala
         snyk monitor --all-projects
+        cd -
