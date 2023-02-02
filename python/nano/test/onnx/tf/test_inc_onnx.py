@@ -38,7 +38,9 @@ class TestONNX(TestCase):
         onnx_quantized_model = InferenceOptimizer.quantize(model,
                                                            accelerator='onnxruntime',
                                                            x=train_dataset,
-                                                           thread_num=8)
+                                                           thread_num=8,
+                                                           accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
 
         y_hat = onnx_quantized_model(input_examples[:10])
         assert y_hat.shape == (10, 10)
@@ -61,7 +63,9 @@ class TestONNX(TestCase):
                                                            accelerator='onnxruntime',
                                                            x=input_examples,
                                                            y=input_features,
-                                                           thread_num=8)
+                                                           thread_num=8,
+                                                           accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
 
         preds = model.predict(input_examples, batch_size=5)
         onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
@@ -71,40 +75,40 @@ class TestONNX(TestCase):
         model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3))
+        preds = model.predict(input_examples, batch_size=5)
+
         # quantize a Keras model based on numpy array
         onnx_quantized_model = InferenceOptimizer.quantize(model,
                                                            accelerator='onnxruntime',
                                                            x=input_examples,
                                                            y=None,
-                                                           thread_num=8)
-
-        preds = model.predict(input_examples, batch_size=5)
+                                                           thread_num=8,
+                                                           accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
         onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
         # quantize a Keras model based on dataset
-        input_examples = np.random.random((100, 224, 224, 3))
         train_dataset = tf.data.Dataset.from_tensor_slices(input_examples)
         onnx_quantized_model = InferenceOptimizer.quantize(model,
                                                            accelerator='onnxruntime',
                                                            x=train_dataset,
                                                            y=None,
-                                                           thread_num=8)
-
-        preds = model.predict(input_examples, batch_size=5)
+                                                           thread_num=8,
+                                                           accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
         onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
         
         # quantize a Keras model based on tf tensor
-        input_examples = np.random.random((100, 224, 224, 3))
-        input_examples = tf.convert_to_tensor(input_examples)
+        input_tensor = tf.convert_to_tensor(input_examples)
         onnx_quantized_model = InferenceOptimizer.quantize(model,
                                                            accelerator='onnxruntime',
-                                                           x=input_examples,
+                                                           x=input_tensor,
                                                            y=None,
-                                                           thread_num=8)
-
-        preds = model.predict(input_examples, batch_size=5)
+                                                           thread_num=8,
+                                                           accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
         onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
 
@@ -121,7 +125,10 @@ class TestONNX(TestCase):
         onnx_model = InferenceOptimizer.quantize(model,
                                                  accelerator='onnxruntime',
                                                  x=train_dataset,
-                                                 thread_num=1)
+                                                 thread_num=1,
+                                                 accuracy_criterion={'relative': 0.99,
+                                                                               'higher_is_better': True})
+        preds1 = onnx_model.predict(input_examples, batch_size=5)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             onnx_model._save(tmp_dir_name)
@@ -130,9 +137,7 @@ class TestONNX(TestCase):
         assert new_onnx_model.session_options.intra_op_num_threads == 1
         assert new_onnx_model.session_options.inter_op_num_threads == 1
 
-        preds1 = onnx_model.predict(input_examples, batch_size=5)
         preds2 = new_onnx_model.predict(input_examples, batch_size=5)
-
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -142,7 +147,5 @@ class TestONNX(TestCase):
         assert new_onnx_model.session_options.intra_op_num_threads == 1
         assert new_onnx_model.session_options.inter_op_num_threads == 1
 
-        preds1 = onnx_model.predict(input_examples, batch_size=5)
         preds2 = new_onnx_model.predict(input_examples, batch_size=5)
-
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
