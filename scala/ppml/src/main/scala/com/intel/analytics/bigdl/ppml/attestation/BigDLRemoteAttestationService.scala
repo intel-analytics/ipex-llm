@@ -102,14 +102,6 @@ object BigDLRemoteAttestationService {
     val out = new BufferedOutputStream(new FileOutputStream(file))
     out.write(encryptedContent)
     out.close()
-      
-    // val outputStream = new FileOutputStream(file)
-    // val objectOutputStream = new ObjectOutputStream(outputStream)
-    // val encryptedContent = encrypt(content.getBytes("UTF-8"))
-    // // objectOutputStream.writeObject(encryptedContent)
-    // objectOutputStream.writeObject(content.getBytes("UTF-8"))
-    // objectOutputStream.close()
-    // outputStream.close()
   }
 
   def loadFile(filename: String): Future[String] = Future {
@@ -117,14 +109,6 @@ object BigDLRemoteAttestationService {
     if (!file.exists()){
       ""
     } else {
-      // val inputStream = new FileInputStream(file)
-      // val objectInputStream = new ObjectInputStream(inputStream)
-      // val encryptedContent = objectInputStream.readObject().asInstanceOf[Array[Byte]]
-      // val decryptedContent = new String(decrypt(encryptedContent), "UTF-8")
-      // objectInputStream.close()
-      // inputStream.close()
-      // decryptedContent
-
       val in = new FileInputStream(file)
       val bufIn = new BufferedInputStream(in)
       val encryptedContent = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
@@ -155,26 +139,35 @@ object BigDLRemoteAttestationService {
                           httpsKeyStorePath: String = "./key",
                           httpsEnabled: Boolean = false,
                           basePath: String = "./BigDLRemoteAttestationService.dat",
-                          policyPath: String = "./BigDLRemoteAttestationServicePolicy.dat"
+                          policyPath: String = "./BigDLRemoteAttestationServicePolicy.dat",
+                          secretKey: String = "password"
                           )
 
     val cmdParser : OptionParser[CmdParams] =
       new OptionParser[CmdParams]("BigDL Remote Attestation Service") {
         opt[String]('h', "serviceHost")
-          .text("Attestation Service Host")
+          .text("Attestation Service Host, default is 0.0.0.0")
           .action((x, c) => c.copy(serviceHost = x))
         opt[String]('p', "servicePort")
-          .text("Attestation Service Port")
+          .text("Attestation Service Port, default is 9875")
           .action((x, c) => c.copy(servicePort = x))
         opt[Boolean]('s', "httpsEnabled")
-          .text("httpsEnabled")
+          .text("Whether enable https, default is false")
           .action((x, c) => c.copy(httpsEnabled = x))
         opt[String]('t', "httpsKeyStoreToken")
-          .text("httpsKeyStoreToken")
+          .text("KeyStoreToken of https, default is token")
           .action((x, c) => c.copy(httpsKeyStoreToken = x))
         opt[String]('h', "httpsKeyStorePath")
-          .text("httpsKeyStorePath")
+          .text("KeyStorePath of https, default is ./key")
           .action((x, c) => c.copy(httpsKeyStorePath = x))
+        opt[String]('k', "secretKey")
+          .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
+          .action((x, c) => c.copy(secretKey = x))  
+        opt[String]('b', "basePath")
+          .text("Path of base data file to save user information, "
+            + "default is ./BigDLRemoteAttestationService.dat")
+          .action((x, c) => c.copy(basePath = x))
+        
     }
     val params = cmdParser.parse(args, CmdParams()).get
 
@@ -182,6 +175,8 @@ object BigDLRemoteAttestationService {
         get {
           path("") {
             val res = s"Welcome to BigDL Remote Attestation Service \n \n" +
+            "enroll an account like: " +
+            "GET <bigdl_remote_attestation_address>/enroll \n" +
             "verify your quote like: " +
             "POST <bigdl_remote_attestation_address>/verifyQuote \n"
             complete(res)
@@ -193,8 +188,8 @@ object BigDLRemoteAttestationService {
             val userContent = Await.result(loadFile(basePath), 5.seconds)
             var userMap = stringToMap(userContent)
             while (userMap.contains(app_id)) {
-              app_id = Random.alphanumeric.take(12).mkString
-              api_key = Random.alphanumeric.take(20).mkString
+              app_id = Random.alphanumeric.take(32).mkString
+              api_key = Random.alphanumeric.take(32).mkString
             }
             userMap += (app_id -> api_key)
             saveFile(basePath, mapToString(userMap))
@@ -245,18 +240,10 @@ object BigDLRemoteAttestationService {
        serviceHost, servicePortInt, connectionContext = serverContext)
       println("Server online at https://%s:%s/\n".format(serviceHost, servicePort) +
         "Press Ctrl + C to stop...")
-      // StdIn.readLine()
-      // bindingFuture
-      //   .flatMap(_.unbind())
-      //   .onComplete(_ => system.terminate())
     } else {
       val bindingFuture = Http().bindAndHandle(route, serviceHost, servicePortInt)
       println("Server online at http://%s:%s/\n".format(serviceHost, servicePort) +
         "Press Ctrl + C to stop...")
-      // StdIn.readLine()
-      // bindingFuture
-      //   .flatMap(_.unbind())
-      //   .onComplete(_ => system.terminate())
     }
   }
 
