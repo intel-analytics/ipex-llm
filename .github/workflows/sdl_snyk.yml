@@ -26,7 +26,9 @@ jobs:
     steps:
     - name: "Auth Synk"
       run: |
-        snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
+        #snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
+        export SNYK_APITOKEN="89bf9e74-d7ce-4b3b-92c3-2e7cce85bf52"
+        snyk auth -d $SNYK_APITOKEN
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com
