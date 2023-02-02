@@ -24,6 +24,7 @@ jobs:
   snyk-scan:
     runs-on: [self-hosted, SDL]
     steps:
+    - uses: actions/checkout@v3
     - name: "Auth Synk"
       run: |
         #snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
