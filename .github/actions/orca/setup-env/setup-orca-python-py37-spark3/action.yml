@@ -30,7 +30,6 @@ runs:
         pip uninstall -r ${{ github.workspace }}/requirements-orca-python.txt -y
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python.txt 
         pip uninstall -y opencv-python-headless
-        pip uninstall -y pyarrow
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} opencv-python-headless
         
       env:
