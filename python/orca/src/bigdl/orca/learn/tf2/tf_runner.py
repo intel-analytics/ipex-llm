@@ -264,7 +264,6 @@ class TFRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = 0
         self.verbose = verbose
 
     def setup(self):
@@ -352,8 +351,8 @@ class TFRunner:
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1,
-             data_config=None):
+             initial_epoch=0, steps_per_epoch=None, validation_steps=None,
+             validation_freq=1, data_config=None):
         """Runs a training epoch and updates the model parameters."""
         config = copy.copy(self.config)
         if data_config is not None:
@@ -393,12 +392,12 @@ class TFRunner:
                           "or use load function of the estimator to load a model.")
 
         history = self.model.fit(train_dataset,
-                                 epochs=self.epoch + epochs,
+                                 epochs=epochs,
                                  verbose=verbose,
                                  callbacks=callbacks,
                                  validation_data=test_dataset,
                                  class_weight=class_weight,
-                                 initial_epoch=self.epoch,
+                                 initial_epoch=initial_epoch,
                                  steps_per_epoch=steps_per_epoch,
                                  validation_steps=validation_steps,
                                  validation_freq=validation_freq)
@@ -417,7 +416,6 @@ class TFRunner:
             stats.update(history.params)
             stats.update(history.history)
 
-        self.epoch += epochs
         return stats
 
     def validate(self, data_creator, batch_size=32, verbose=1, sample_weight=None,
@@ -562,14 +560,12 @@ class TFRunner:
                           "Please input a model_creator when creating estimator "
                           "or use load function of the estimator to load a model.")
         return {
-            "epoch": self.epoch,
             "weights": self.model.get_weights(),
             "optimizer_weights": self.model.optimizer.get_weights()
         }
 
     def set_state(self, state, sample_input=None):
         """Sets the state of the model."""
-        self.epoch = state["epoch"]
         if sample_input:
             self.model(sample_input)
         try:

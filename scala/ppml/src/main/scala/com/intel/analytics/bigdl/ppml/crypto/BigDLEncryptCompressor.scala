@@ -137,7 +137,7 @@ object BigDLEncryptCompressor {
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
     // TODO read parameter
-    val dataKey = conf.get("bigdl.kms.data.key")
+    val dataKey = conf.get("bigdl.kms.dataKey.plaintext")
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING, dataKey)
   }
 }

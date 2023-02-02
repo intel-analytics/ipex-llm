@@ -22,6 +22,7 @@ import os
 import torch
 import platform
 import warnings
+from bigdl.nano.utils.log4warning import register_suggestion
 
 
 if 'KMP_INIT_AT_FORK' in os.environ:
@@ -57,9 +58,10 @@ if platform.system() == "Linux":
             affinity_core_num = preset_thread_nums
 
     if preset_thread_nums > affinity_core_num:
-        # setting thread num will cause bug
-        # todo
-        pass
+        register_suggestion(f"CPU Affinity is set to this program and {affinity_core_num} "
+                            f"cores are binded. While OpenMP code block will use "
+                            f"{preset_thread_nums} cores, which may cause severe performance "
+                            f"downgrade. Please set `OMP_NUM_THREADS` to {affinity_core_num}.")
 
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer

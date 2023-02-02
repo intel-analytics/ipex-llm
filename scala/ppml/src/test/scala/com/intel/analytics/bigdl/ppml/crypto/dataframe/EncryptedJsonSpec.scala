@@ -25,10 +25,10 @@ class EncryptedJsonSpec extends DataFrameHelper {
   val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
 
   val ppmlArgs = Map(
-    "spark.bigdl.kms.simple.id" -> appid,
-    "spark.bigdl.kms.simple.key" -> apikey,
-    "spark.bigdl.kms.key.primary" -> primaryKeyPath,
-    "spark.bigdl.kms.key.data" -> dataKeyPath
+    "spark.bigdl.kms.appId" -> appid,
+    "spark.bigdl.kms.apiKey" -> apikey,
+    "spark.bigdl.kms.primaryKey" -> primaryKeyPath,
+    "spark.bigdl.kms.dataKey" -> dataKeyPath
   )
   val conf = new SparkConf().setMaster("local[4]")
   conf.set("spark.hadoop.io.compression.codecs",
