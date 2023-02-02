@@ -509,12 +509,14 @@ class TestChronosNBeatsForecaster(TestCase):
         res = nbeats.evaluate(test_loader, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='pytorch_fx')
+                        framework='pytorch_fx',
+                        relative_drop=0.99)
         q_yhat = nbeats.predict(test, acceleration=False)
         q_res = nbeats.evaluate(test_loader, quantize=True, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='onnxrt_qlinearops')
+                        framework='onnxrt_qlinearops',
+                        relative_drop=0.99)
         q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
         q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
         onnx_yhat = nbeats.predict_with_onnx(test)

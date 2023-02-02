@@ -821,6 +821,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             thread_num=thread_num,
                                                             inplace=inplace,
                                                             jit_strict=jit_strict)
+                        print("using pure ipex quantization")
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
