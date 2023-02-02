@@ -9,7 +9,7 @@ TODO: Add command to upload to HDFS
 ## Arguments
 TODO
 
-## Run on local
+## 1. Run on local
 ### Prepare the environment
 TODO
 
@@ -19,21 +19,21 @@ TODO
 ### Results
 TODO
 
-## Run on YARN with python command
+## 2-1 Run on YARN with python command
 ### Prepare the environment
 TODO
 
 ### Run Command
 TODO
 
-## Run on YARN with bigdl-submit
+## 2-2 Run on YARN with bigdl-submit
 ### Prepare the environment
 TODO
 
 ### Run Command
 TODO
 
-## Run on YARN with spark-submit
+## 2-3 Run on YARN with spark-submit
 ### Prepare the environment
 TODO
 
