@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# ==============================================================================
+# Most of the code is adapted from
+# https://keras.io/guides/transfer_learning/
+# #an-endtoend-example-finetuning-an-image-classification-model
+# -on-a-cats-vs-dogs-dataset
+#
 
 # Step 0: Import necessary libraries
 import math
