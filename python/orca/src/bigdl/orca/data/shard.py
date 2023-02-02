@@ -241,6 +241,13 @@ class SparkXShards(XShards):
         """
         return self.rdd.collect()
 
+    def first(self):
+        """
+        Returns the first element in the rdd of SparkXShards
+        :return: a record of data.
+        """
+        return self.rdd.first()
+
     def cache(self) -> "SparkXShards":
         """
 
@@ -940,23 +947,23 @@ class SparkXShards(XShards):
         left_df = self.to_spark_df()
         right_df = right.to_spark_df()
         merged = left_df.join(right_df, on=on, how=how)
+
         # count non-empty partitions
         nonEmptyPart = get_spark_context().accumulator(0)
 
         def f(iterator):
             isEmpty = 1
             for x in iterator:
-                if(isEmpty == 0):
-                    break
-                else:
-                    isEmpty = 0
+                isEmpty = 0
+                break
             nonEmptyPart.add(isEmpty == 0)
         merged.rdd.foreachPartition(f)
+
         # repartition evenly according to the index
         if nonEmptyPart.value != merged.rdd.getNumPartitions():
             merged_withIndex_rdd = merged.rdd.zipWithIndex().map(lambda p: (p[1], p[0]))
             merged = merged_withIndex_rdd.partitionBy(nonEmptyPart.value) \
-                .map(lambda p: p[1]).toDF()
+                .map(lambda p: p[1]).toDF(merged.schema)
         mergedXShards = spark_df_to_pd_sparkxshards(merged)
         return mergedXShards
 
@@ -1103,6 +1110,31 @@ class SparkXShards(XShards):
             frac=frac, replace=replace, weights=weights, random_state=random_state)
         pdf = sampled.concat_to_pdf(axis=axis)
         return pdf
+
+    def stack_feature_labels(self) -> "SparkXShards":
+        """
+        Stack tuple of features and labels in each partition into an ndarray for
+        Orca Estimator traning
+
+        :return: SparkXShards.
+        """
+        if self._get_class_name() != "builtins.tuple":
+            invalidInputError(False,
+                              "Currently only support stack_feature_labels() on"
+                              " XShards of tuple of features and labels")
+
+        def per_partition(iterator):
+            features = []
+            labels = []
+            for it in iterator:
+                feature, label = it[0], it[1]
+                features.append(feature)
+                labels.append(label)
+            out = {'x': np.array(features).astype(np.float32),
+                   'y': np.array(labels).astype(np.float32)}
+            return [out]
+        rdd = self.rdd.mapPartitions(lambda x: per_partition(x))
+        return SparkXShards(rdd)
 
 
 class SharedValue(object):

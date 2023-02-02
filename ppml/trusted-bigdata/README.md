@@ -682,97 +682,6 @@ SET hive.exec.compress.output=true;
 SET mapreduce.output.fileoutputformat.compress.codec=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
 ```
 
-## Start Flink
-The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
-![flink cluster in application mode](./flink%20cluster%20in%20application%20mode.png)
-
-### 1. Enter the client contianer
-First, use the docker command to enter the client container.
-```bash
-docker exec -it spark-local-k8s-client bash
-```
-
-### 2. Submit flink job on native k8s mode on SGX
-Use the `$FLINK_HOME/bin/flink run-application` command to start the flink cluster in application mode. In the application mode, the jar to be executed is bound to the flink cluster, and the flink cluster will automatically terminate and exit after the submitted job is completed.
-
-This example is `WordCount`, you can replace it with your own jar to start the flink cluster to execute job in applicaiton mode.
-
-```bash
-$FLINK_HOME/bin/flink run-application \
-    --target kubernetes-application \
-    -Dkubernetes.sgx.enabled=true \
-    -Djobmanager.memory.process.size=4g \
-    -Dtaskmanager.memory.process.size=8g \
-    -Dkubernetes.flink.conf.dir=/ppml/flink/conf \
-    -Dkubernetes.entry.path="/opt/flink-entrypoint.sh" \
-    -Dkubernetes.jobmanager.service-account=spark \
-    -Dkubernetes.taskmanager.service-account=spark \
-    -Dkubernetes.cluster-id=wordcount-example-flink-cluster \
-    -Dkubernetes.container.image.pull-policy=Always \
-    -Dkubernetes.pod-template-file.jobmanager=/ppml/flink-k8s-template.yaml \
-    -Dkubernetes.pod-template-file.taskmanager=/ppml/flink-k8s-template.yaml \
-    -Dkubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest \
-    -Dheartbeat.timeout=10000000 \
-    -Dheartbeat.interval=10000000 \
-    -Dakka.ask.timeout=10000000ms \
-    -Dakka.lookup.timeout=10000000ms \
-    -Dslot.request.timeout=10000000 \
-    -Dtaskmanager.slot.timeout=10000000 \
-    -Dkubernetes.websocket.timeout=10000000 \
-    -Dtaskmanager.registration.timeout=10000000 \
-    -Dresourcemanager.taskmanager-timeout=10000000 \
-    -Dtaskmanager.network.request-backoff.max=10000000 \
-    -Dresourcemanager.taskmanager-registration.timeout=10000000 \
-    -Djobmanager.adaptive-scheduler.resource-wait-timeout=10000000 \
-    -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
-    local:///ppml/flink/examples/streaming/WordCount.jar
-```
-* The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
-* The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
-* The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
-* **The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.**  
-* The `kubernetes.flink.conf.dir` parameter specifies the directory of the flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
-* The `kubernetes.jobmanager.service-account` and `kubernetes.taskmanager.service-account` parameters specify the k8s service account created in Section 1.2.  
-* The `kubernetes.cluster-id` parameter is the name of the flink cluster to be started, which can be customized by the user.  
-* The `kubernetes.pod-template-file.jobmanager` parameter specifies the template file of the jobmanager, which is used as the configuration when k8s starts the `jobmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
-* The `kubernetes.pod-template-file.taskmanager` parameter specifies the template file of the taskmanager, which is used as the configuration when k8s starts the `taskmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
-* The `kubernetes.container.image` parameter specifies the image used to start `jobmanager` and `taskmanager`.  
-
-> The remaining parameters are related to the `timeout` configuration of flink cluster. For more configuration of flink cluster, please refer to the flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
-
-After start a flink cluster in application mode on SGX, you can use `kubectl` command to get `deployment` and `pod` created by flink cluster:
-```bash
-# the deployment name is the kubernetes.cluster-id
-kubectl get deployment | grep "wordcount-example-flink-cluster"
-
-kubectl get pods | grep "wordcount"
-```
-
-### 3. Flink total process memory
-[Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
-
-The following uses **the total process memory** to introduce how flink allocates memory.
-
-The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
-
-<img src="./jobmanager%20memory%20allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
-
-**<p align="center">jobmanager memory allocation</p>**
-
-The **total process memory** in jobmanager corresponds to the memory (4G) given by `jobmanager.memory.process.size` parameter, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.
-
-In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
-
-<img src="./taskmanager%20memory%20allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
-
-**<p align="center">taskmanager memory allocation</p>**
-
-Similar to the allocation of jobmanager memory, **the total process memory** in taskmanager corresponds to the memory (4G) given by `taskmanager.memory.process.size parameter`, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.  
-
-In the picture, memory is allocated from bottom to top. First, 10% of **total process memory** is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, 40% of total flink memory is allocated to `managed memory`, 10% of total flink memory is allocated to `network memory`, `framework heap` memory defaults to 128MB, `framework off-heap` memory defaults to 128MB, `taskmanager off-heap` defaults to 0, the rest of total flink memroy is allocated to `taskmanager heap`.
-
-> The value and proportion of each memory component can be specified by parameters, for more information please refer to flink memory configuration.
-
 ## Configuration Explainations
 
 ### 1. Bigdl ppml SGX related configurations
@@ -865,4 +774,200 @@ Below is an explanation of these security configurations, Please refer to [Spark
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
 
+## Run Flink
+The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
+![flink cluster in application mode](./flink%20cluster%20in%20application%20mode.png)
+
+### 1. Enter the client contianer
+First, use the docker command to enter the client container.
+```bash
+docker exec -it spark-local-k8s-client bash
+```
+
+### 2. Submit flink job on native k8s mode on SGX
+Use the `$FLINK_HOME/bin/flink run-application` command to start the flink cluster in application mode. In the application mode, the jar to be executed is bound to the flink cluster, and the flink cluster will automatically terminate and exit after the submitted job is completed.
+
+This example is `WordCount`, you can replace it with your own jar to start the flink cluster to execute job in applicaiton mode.
+
+```bash
+$FLINK_HOME/bin/flink run-application \
+    --target kubernetes-application \
+    -Dkubernetes.sgx.enabled=true \
+    -Djobmanager.memory.process.size=4g \
+    -Dtaskmanager.memory.process.size=8g \
+    -Dkubernetes.flink.conf.dir=/ppml/flink/conf \
+    -Dkubernetes.entry.path="/opt/flink-entrypoint.sh" \
+    -Dkubernetes.jobmanager.service-account=spark \
+    -Dkubernetes.taskmanager.service-account=spark \
+    -Dkubernetes.cluster-id=wordcount-example-flink-cluster \
+    -Dkubernetes.container.image.pull-policy=Always \
+    -Dkubernetes.pod-template-file.jobmanager=/ppml/flink-k8s-template.yaml \
+    -Dkubernetes.pod-template-file.taskmanager=/ppml/flink-k8s-template.yaml \
+    -Dkubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest \
+    -Dheartbeat.timeout=10000000 \
+    -Dheartbeat.interval=10000000 \
+    -Dakka.ask.timeout=10000000ms \
+    -Dakka.lookup.timeout=10000000ms \
+    -Dslot.request.timeout=10000000 \
+    -Dtaskmanager.slot.timeout=10000000 \
+    -Dkubernetes.websocket.timeout=10000000 \
+    -Dtaskmanager.registration.timeout=10000000 \
+    -Dresourcemanager.taskmanager-timeout=10000000 \
+    -Dtaskmanager.network.request-backoff.max=10000000 \
+    -Dresourcemanager.taskmanager-registration.timeout=10000000 \
+    -Djobmanager.adaptive-scheduler.resource-wait-timeout=10000000 \
+    -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
+    local:///ppml/flink/examples/streaming/WordCount.jar
+```
+* The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
+* The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
+* The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
+* **The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.**  
+* The `kubernetes.flink.conf.dir` parameter specifies the directory of the flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
+* The `kubernetes.jobmanager.service-account` and `kubernetes.taskmanager.service-account` parameters specify the k8s service account created in Section 1.2.  
+* The `kubernetes.cluster-id` parameter is the name of the flink cluster to be started, which can be customized by the user.  
+* The `kubernetes.pod-template-file.jobmanager` parameter specifies the template file of the jobmanager, which is used as the configuration when k8s starts the `jobmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
+* The `kubernetes.pod-template-file.taskmanager` parameter specifies the template file of the taskmanager, which is used as the configuration when k8s starts the `taskmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
+* The `kubernetes.container.image` parameter specifies the image used to start `jobmanager` and `taskmanager`.  
+
+> The remaining parameters are related to the `timeout` configuration of flink cluster. For more configuration of flink cluster, please refer to the flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
+
+After start a flink cluster in application mode on SGX, you can use `kubectl` command to get `deployment` and `pod` created by flink cluster:
+```bash
+# the deployment name is the kubernetes.cluster-id
+kubectl get deployment | grep "wordcount-example-flink-cluster"
+
+kubectl get pods | grep "wordcount"
+```
+
+### 3. Flink total process memory
+[Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
+
+The following uses **the total process memory** to introduce how flink allocates memory.
+
+The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
+
+<img src="./jobmanager%20memory%20allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
+
+**<p align="center">jobmanager memory allocation</p>**
+
+The **total process memory** in jobmanager corresponds to the memory (4G) given by `jobmanager.memory.process.size` parameter, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.
+
+In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
+
+<img src="./taskmanager%20memory%20allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
+
+**<p align="center">taskmanager memory allocation</p>**
+
+Similar to the allocation of jobmanager memory, **the total process memory** in taskmanager corresponds to the memory (4G) given by `taskmanager.memory.process.size parameter`, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.  
+
+In the picture, memory is allocated from bottom to top. First, 10% of **total process memory** is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, 40% of total flink memory is allocated to `managed memory`, 10% of total flink memory is allocated to `network memory`, `framework heap` memory defaults to 128MB, `framework off-heap` memory defaults to 128MB, `taskmanager off-heap` defaults to 0, the rest of total flink memroy is allocated to `taskmanager heap`.
+
+> The value and proportion of each memory component can be specified by parameters, for more information please refer to flink memory configuration.
+
+## For Spark Task in TDXVM
+
+1. Deploy PCCS
+You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
+2. Deploy BigDL Remote Attestation Service 
+[Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
+3. Start BigDL bigdata client 
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT
+```bash
+export NFS_INPUT_PATH=/disk1/nfsdata/default-nfsvolumeclaim-pvc-decb9dcf-dc7a-4dd0-8bd2-e2c669fd50af
+sudo docker run -itd --net=host \
+    --privileged \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube/config:/root/.kube/config \
+    -v $NFS_INPUT_PATH:/bigdl/nfsdata \
+    -v /dev/tdx-attest:/dev/tdx-attest \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
+    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+    -e RUNTIME_EXECUTOR_INSTANCES=2 \
+    -e RUNTIME_EXECUTOR_CORES=2 \
+    -e RUNTIME_DRIVER_HOST=172.29.19.131 \
+    -e RUNTIME_EXECUTOR_MEMORY=5g \
+    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+    -e RUNTIME_DRIVER_CORES=4 \
+    -e RUNTIME_DRIVER_MEMORY=5g \
+    --name tdx-attestation-test \
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT bash
+```
+4. Enable Attestation in configuration
+Upload `appid` and `apikey` to kubernetes as secrets:
+```bash
+kubectl create secret generic kms-secret \
+                  --from-literal=app_id=YOUR_APP_ID \
+                  --from-literal=api_key=YOUR_API_KEY 
+```
+Configure `spark-driver-template-for-tdxvm.yaml` and `spark-executor-template-for-tdxvm.yaml` to enable Attestation as follows:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true 
+      - name: ATTESTATION_URL
+        value: your_attestation_url # 127.0.0.1:9875 for example
+      - name: PCCS_URL
+        value: your_pccs_url # https://127.0.0.1:8081 for example
+      - name: APP_ID
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_id
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: api_key
+      - name: ATTESTATION_TYPE
+        value: BigDLRemoteAttestationService
+      - name: QUOTE_TYPE
+        value: TDX
+```
+5. Submit spark task
+```bash
+${SPARK_HOME}/bin/spark-submit \
+     --master k8s://https://172.29.19.131:6443 \
+    --deploy-mode cluster \
+    --name sparkpi-tdx \
+    --conf spark.driver.host=172.29.19.131 \
+    --conf spark.driver.port=54321 \
+    --conf spark.driver.memory=2g \
+    --conf spark.executor.cores=4 \
+    --conf spark.executor.memory=10g \
+    --conf spark.executor.instances=2 \
+    --conf spark.cores.max=32 \
+    --conf spark.kubernetes.memoryOverheadFactor=0.6 \
+    --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.sql.shuffle.partitions=64 \
+    --conf spark.io.compression.codec=lz4 \
+    --conf spark.sql.autoBroadcastJoinThreshold=-1 \
+    --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.file.upload.path=file:///tmp \
+    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+```
+
+[helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
+[kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
+
 [fsdGuide]:https://github.com/intel-analytics/BigDL/tree/main/ppml/base#how-to-use-the-encryptiondecryption-function-provided-by-gramine
+

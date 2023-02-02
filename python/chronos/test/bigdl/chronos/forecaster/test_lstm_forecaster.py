@@ -804,3 +804,41 @@ class TestChronosModelLSTMForecaster(TestCase):
 
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+
+    @op_inference
+    def test_lstm_forecaster_set_thread_num(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        pred = forecaster.predict_with_onnx(test_data[0])
+        current_thread = torch.get_num_threads()
+        assert current_thread == 1
+        assert forecaster.thread_num == 1
+        assert forecaster.optimized_model_thread_num == 1
+
+        num = max(1, original_thread//2)
+        forecaster.quantize(train_data, thread_num=num)
+        pred = forecaster.predict(test_data[0], quantize=True)
+        current_thread = torch.get_num_threads()
+        assert current_thread == num
+        assert forecaster.thread_num == num
+        assert forecaster.optimized_model_thread_num == num
+
+        # if set `optimize=False`, keep the current thread num
+        num = max(1, current_thread//2)
+        forecaster.optimize(train_data=train_data,
+                            validation_data=val_data,
+                            batch_size=32,
+                            thread_num=num)
+        pred = forecaster.predict(test_data[0], acceleration=False)
+        new_current_thread = torch.get_num_threads()
+        assert new_current_thread == current_thread
+        assert forecaster.thread_num == current_thread
+        assert forecaster.optimized_model_thread_num == num

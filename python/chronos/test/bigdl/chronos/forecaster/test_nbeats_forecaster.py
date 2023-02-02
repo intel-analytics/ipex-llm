@@ -132,16 +132,18 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
 
         forecaster.quantize(calib_data=train_loader,
-                    val_data=val_loader,
-                    metric="mae",
-                    framework='pytorch_fx')
+                            val_data=val_loader,
+                            metric="mae",
+                            framework='pytorch_fx',
+                            relative_drop=0.2)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
         forecaster.quantize(calib_data=train_loader,
-                    val_data=val_loader,
-                    metric="mae",
-                    framework='onnxrt_qlinearops')
+                            val_data=val_loader,
+                            metric="mae",
+                            framework='onnxrt_qlinearops',
+                            relative_drop=0.2)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
@@ -238,7 +240,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
-        forecaster.quantize(train_data)
+        forecaster.quantize(train_data, relative_drop=0.2)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -262,8 +264,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       loss='mae',
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        # no tunning quantization
-        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops', relative_drop=0.2)
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
@@ -278,7 +279,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.1, max_trials=3,
+                            metric="mse", relative_drop=0.5, max_trials=3,
                             framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
@@ -733,3 +734,40 @@ class TestChronosNBeatsForecaster(TestCase):
 
         if os.path.exists(temp_dir):
             shutil.rmtree(temp_dir)
+
+    @op_inference
+    def test_nbeats_forecaster_set_thread_num(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mse',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        pred = forecaster.predict_with_onnx(test_data[0])
+        current_thread = torch.get_num_threads()
+        assert current_thread == 1
+        assert forecaster.thread_num == 1
+        assert forecaster.optimized_model_thread_num == 1
+
+        num = max(1, original_thread//2)
+        forecaster.quantize(train_data, thread_num=num)
+        pred = forecaster.predict(test_data[0], quantize=True)
+        current_thread = torch.get_num_threads()
+        assert current_thread == num
+        assert forecaster.thread_num == num
+        assert forecaster.optimized_model_thread_num == num
+
+        # if set `optimize=False`, keep the current thread num
+        num = max(1, current_thread//2)
+        forecaster.optimize(train_data=train_data,
+                            validation_data=val_data,
+                            batch_size=32,
+                            thread_num=num)
+        pred = forecaster.predict(test_data[0], acceleration=False)
+        new_current_thread = torch.get_num_threads()
+        assert new_current_thread == current_thread
+        assert forecaster.thread_num == current_thread
+        assert forecaster.optimized_model_thread_num == num

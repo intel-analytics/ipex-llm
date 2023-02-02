@@ -84,8 +84,12 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
       val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
         bytesRead += this.lv2Len
-        // create a buffer to cache undecrypted data.
-        this.b.copyToArray(this.lv2Buffer)
+        // create a buffer to cache undecrypted data, size of this.b is changing.
+        if (lv2Buffer.size >= this.b.size) {
+          this.b.copyToArray(this.lv2Buffer)
+        } else {
+          lv2Buffer = this.b.clone()
+        }
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
@@ -133,7 +137,7 @@ object BigDLEncryptCompressor {
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
     // TODO read parameter
-    val dataKey = conf.get("bigdl.kms.data.key")
+    val dataKey = conf.get("bigdl.kms.dataKey.plaintext")
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING, dataKey)
   }
 }

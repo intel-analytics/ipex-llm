@@ -17,10 +17,13 @@ import os.path
 
 from pyspark.ml.feature import StringIndexer, MinMaxScaler, VectorAssembler
 from pyspark.ml import Pipeline
-from pyspark.sql.types import StructField, StructType, IntegerType, ArrayType, StringType
+from pyspark.sql.types import StructField, StructType, IntegerType, LongType, ArrayType, StringType
 from pyspark.sql.functions import udf, lit, collect_list, explode
 
 from bigdl.orca import OrcaContext
+
+# user/item ids and sparse features are converted to LongType to be compatible with
+# lower versions of PyTorch such as 1.7.1.
 
 sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
@@ -28,20 +31,20 @@ dense_features = ["age"]
 
 def read_data(data_dir):
     spark = OrcaContext.get_spark_session()
-    schema = StructType([StructField("user", IntegerType(), False),
-                         StructField("item", IntegerType(), False)])
+    schema = StructType([StructField("user", LongType(), False),
+                         StructField("item", LongType(), False)])
     schema_user = StructType(
         [
-            StructField("user", IntegerType(), False),
+            StructField("user", LongType(), False),
             StructField("gender", StringType(), False),
             StructField("age", IntegerType(), False),
-            StructField("occupation", IntegerType(), False),
+            StructField("occupation", LongType(), False),
             StructField("zipcode", StringType(), False)
         ]
     )
     schema_item = StructType(
         [
-            StructField("item", IntegerType(), False),
+            StructField("item", LongType(), False),
             StructField("title", StringType(), False),
             StructField("category", StringType(), False)
         ]
@@ -71,7 +74,7 @@ def generate_neg_sample(df, item_num, neg_scale):
 
     df = df.withColumn("label", lit(1.0))
 
-    neg_sample_udf = udf(neg_sample, ArrayType(IntegerType(), False))
+    neg_sample_udf = udf(neg_sample, ArrayType(LongType(), False))
     df_neg = df.groupBy("user").agg(neg_sample_udf(collect_list("item")).alias("item_list"))
     df_neg = df_neg.select(df_neg.user, explode(df_neg.item_list))
     df_neg = df_neg.withColumn("label", lit(0.0))
@@ -89,7 +92,7 @@ def string_index(df, col):
     df = df.drop(col).withColumnRenamed(col + "_index", col)
     # The StringIndexer output is float type.
     # Change to 1-based index with 0 reversed for unknown features.
-    df = df.withColumn(col, df[col].cast("int") + 1)
+    df = df.withColumn(col, df[col].cast("long") + 1)
     embed_dim = df.agg({col: "max"}).collect()[0][f"max({col})"] + 1
     return df, embed_dim
 
@@ -135,18 +138,19 @@ def prepare_data(data_dir, neg_scale=4):
 
     occupation_num = df.agg({"occupation": "max"}).collect()[0]["max(occupation)"] + 1
     sparse_feats_input_dims.append(occupation_num)
-    feature_cols = get_feature_cols()
-    label_cols = ["label"]
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
 
     return train_df, val_df, user_num, item_num, \
-        sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+        sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
 
 def get_feature_cols():
-    feature_cols = ["user", "item"] + sparse_features + dense_features
-    return feature_cols
+    return ["user", "item"] + sparse_features + dense_features
+
+
+def get_label_cols():
+    return ['label']
 
 
 if __name__ == "__main__":

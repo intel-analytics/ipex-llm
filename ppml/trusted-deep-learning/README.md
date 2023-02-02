@@ -8,15 +8,15 @@ The following sections will show how to run a small demo using our currently-dev
 ## Before Running code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.2.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it in production.
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.3.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it for production.
 
 #### 1.1 Build BigDL Base Image
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following steps. 
 
-Please be noted that the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.2.0-SNAPSHOT` image relies on the `intelanalytics/bigdl-ppml-gramine-base:2.2.0-SNAPSHOT` image.  
+Please be noted that the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.3.0-SNAPSHOT` image relies on the `intelanalytics/bigdl-ppml-gramine-base:2.3.0-SNAPSHOT` image.  
 
-For the instructions on how to build the `gramine-base` image, check `ppml/base/README.md` in our repository.  Another option is to use our public image `intelanalytics/bigdl-ppml-gramine-base:2.2.0-SNAPSHOT` for a quick start.
+For the instructions on how to build the `gramine-base` image, check `ppml/base/README.md` in our repository.  Another option is to use our public image `intelanalytics/bigdl-ppml-gramine-base:2.3.0-SNAPSHOT` for a quick start.
 
 Before running the following command, please modify the paths in `../base/build-docker-image.sh`. Then build the docker image with the following command.
 
@@ -36,7 +36,7 @@ It will generate a file `enclave-key.pem` in `ppml/trusted-deep-learning/ref` di
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.2.0-SNAPSHOT` image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive enclave key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.3.0-SNAPSHOT` image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive enclave key inside the final image, which is safer.
 
 
 Before running the following command, please modify the paths in `./build-custom-image.sh`. Then build the docker image with the following command.
@@ -110,7 +110,7 @@ Now you should have all files required for TLS encryption, including `myCA.pem`,
 
 *WARNING: We are currently actively developing our images, which indicate that the ENTRYPOINT of the docker image may be changed accordingly.  We will do our best to update our documentation in time.*
 
-We have included a file named `mnist.py` in our `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.2.0-SNAPSHOT` image for test purpose.  In the following sections, we will show how to run distributed PyTorch training in nodes with SGX enabled.
+We have included a file named `mnist.py` in our `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.3.0-SNAPSHOT` image for test purpose.  In the following sections, we will show how to run distributed PyTorch training in nodes with SGX enabled.
 
 Run the following script on nodes with SGX enabled:
 
@@ -125,7 +125,7 @@ To run the following bash scripts, set the following parameters:
 #### On node one
 
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.2.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.3.0-SNAPSHOT
 export CERTS_PATH="your_certs_path"
 sudo docker run -itd \
         --net=host \
@@ -157,7 +157,7 @@ docker logs -f node_one
 
 #### On node two
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.2.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.3.0-SNAPSHOT
 export CERTS_PATH="your_certs_path"
 sudo docker run -itd \
         --net=host \
@@ -191,7 +191,7 @@ docker logs -f node_two
 #### On node three
 
 ```bash
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.2.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.3.0-SNAPSHOT
 export CERTS_PATH="your_certs_path"
 sudo docker run -itd \
         --net=host \

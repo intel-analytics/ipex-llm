@@ -11,3 +11,4 @@ psutil
 prometheus-client==0.11.0
 ray[default]==1.9.2
 setproctitle
+protobuf==3.19.5

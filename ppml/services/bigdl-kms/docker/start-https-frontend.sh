@@ -17,7 +17,7 @@
 #
 
 
-set -x
+#set -x
 
 echo "[INFO] Launching BigDL KMS HTTPS Frontend"
 

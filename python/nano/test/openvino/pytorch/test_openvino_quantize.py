@@ -216,6 +216,14 @@ class TestOpenVINO(TestCase):
             assert y_hat.shape == (3, 10)
             y_hat = optimized_model(x)
             assert y_hat.shape == (10, 10)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(optimized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            y_hat = new_model(x[0:3])
+            assert y_hat.shape == (3, 10)
+            assert new_model.ov_model.additional_config["INFERENCE_PRECISION_HINT"] == "bf16"
 
     def test_openvino_gpu_quatize(self):
         # test whether contains GPU

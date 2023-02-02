@@ -32,7 +32,7 @@ jobs:
           "pytorch_110 neural-compressor==1.13.1",
           "pytorch_111 neural-compressor==1.13.1",
           "pytorch_112 neural-compressor==1.13.1",
-          "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
     steps:
       - uses: actions/checkout@v2
@@ -98,6 +98,22 @@ jobs:
           $CONDA/bin/conda remove -n pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+  nano-unit-test-pytorch-deps:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+        pytorch-version: [
+          "pytorch_110 neural-compressor==1.13.1",
+          "pytorch_111 neural-compressor==1.13.1",
+          "pytorch_112 neural-compressor==1.13.1",
+          "pytorch_113 neural-compressor==2.0",
+          ]
+    steps:
+      - uses: actions/checkout@v3
 
       - name: Run PyTorch unit tests(Ray)
         shell: bash
@@ -187,6 +203,7 @@ jobs:
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[1]}
           fi
           pip install pytest
           source bigdl-nano-init
@@ -210,7 +227,7 @@ jobs:
           # The reason why ipex1.11 is not currently supported is that the optimization of ipex
           # seems will cause strange behaior of context manager, which will make some tests of nano fail.
           "pytorch_112 neural-compressor==1.13.1",
-          "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -260,7 +277,7 @@ jobs:
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
           "pytorch_111 neural-compressor==1.13.1",
           "pytorch_112 neural-compressor==1.13.1",
-          "pytorch_113 neural-compressor==1.14.2",
+          "pytorch_113 neural-compressor==2.0",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job

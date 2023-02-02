@@ -17,7 +17,8 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
-&ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files)
+&ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files) \
+&ensp;&ensp;[4.3 Create Multi-KMS PPMLContext](#43-create-multi-kms-ppmlcontext)
 
 
 
@@ -67,7 +68,7 @@ In this section, you can get started with running a simple native python HelloWo
 
 **a. Prepare Images**
 
-For demo purpose, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT` to have a quick start.
+For demo purpose, we will skip building the custom image here and use the public reference image provided by BigDL PPML `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT` to have a quick start.
 
 Note: This public image is only for demo purposes, it is non-production. For security concern, you are strongly recommended to generate your encalve key and build your own custom image for your production environment. Refer to [How to Prepare Your PPML image for production environment](#step-1-prepare-your-ppml-image-for-production-environment).
 
@@ -90,7 +91,7 @@ Note: This public image is only for demo purposes, it is non-production. For sec
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 # ppml graphene image is deprecated, please use the gramine version
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT
 
 sudo docker pull $DOCKER_IMAGE
 
@@ -173,7 +174,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
 
     Pull the base image
     ```bash
-    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base:2.2.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-base:2.3.0-SNAPSHOT
     ```
     or
 
@@ -227,7 +228,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
     export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
     export LOCAL_IP=$LOCAL_IP
-    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.2.0-SNAPSHOT # or the custom image built by yourself
+    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
 
     sudo docker run -itd \
         --privileged \
@@ -619,10 +620,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-             "spark.bigdl.kms.simple.id" -> "your_app_id",
-             "spark.bigdl.kms.simple.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.appId" -> "your_app_id",
+             "spark.bigdl.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
          )
     
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -638,10 +639,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       from bigdl.ppml.ppml_context import *
 
       ppml_args = {"kms_type": "SimpleKeyManagementService",
-                   "simple_app_id": "your_app_id",
-                   "simple_api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
+                   "primary_key": "/your/primary/key/path/primaryKey",
+                   "data_key": "/your/data/key/path/dataKey"
                   }
 
       sc = PPMLContext("MyApp", ppml_args)
@@ -659,12 +660,12 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
          
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
-             "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
-             "spark.bigdl.kms.ehs.port" -> "your_server_port",
-             "spark.bigdl.kms.ehs.id" -> "your_app_id",
-             "spark.bigdl.kms.ehs.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.ip" -> "your_server_ip",
+             "spark.bigdl.kms.port" -> "your_server_port",
+             "spark.bigdl.kms.appId" -> "your_app_id",
+             "spark.bigdl.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
       )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -681,10 +682,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       ppml_args = {"kms_type": "EHSMKeyManagementService",
                    "kms_server_ip": "your_server_ip",
                    "kms_server_port": "your_server_port"
-                   "ehsm_app_id": "your_app_id",
-                   "ehsm_api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
+                   "primary_key": "/your/primary/key/path/primaryKey",
+                   "data_key": "/your/data/key/path/dataKey"
                   }
    
       sc = PPMLContext("MyApp", ppml_args)
@@ -705,10 +706,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
          
       val ppmlArgs: Map[String, String] = Map(
              "spark.bigdl.kms.type" -> "AzureKeyManagementService",
-             "spark.bigdl.kms.azure.vault" -> "key_vault_name",
-             "spark.bigdl.kms.azure.clientId" -> "client_id",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.kms.vault" -> "key_vault_name",
+             "spark.bigdl.kms.clientId" -> "client_id",
+             "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+             "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
          )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
@@ -723,16 +724,61 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
        from bigdl.ppml.ppml_context import *
    
        ppml_args = {"kms_type": "AzureKeyManagementService",
-                    "azure_vault": "your_azure_vault",
-                    "azure_client_id": "your_azure_client_id",
-                    "primary_key_path": "/your/primary/key/path/primaryKey",
-                    "data_key_path": "/your/data/key/path/dataKey"
+                    "vault": "your_azure_vault",
+                    "client_id": "your_azure_client_id",
+                    "primary_key": "/your/primary/key/path/primaryKey",
+                    "data_key": "/your/data/key/path/dataKey"
                    }
    
        sc = PPMLContext("MyApp", ppml_args)
        ```
    
      </details>
+
+   - For `BigDLKeyManagementService`
+     
+
+      <details open>
+       <summary>scala</summary>
+
+      ```scala
+      import com.intel.analytics.bigdl.ppml.PPMLContext
+   
+      val ppmlArgs: Map[String, String] = Map(
+             "spark.bigdl.kms.type" -> "BigDLKeyManagementService",
+             "spark.bigdl.kms.ip" -> "your_server_ip",
+             "spark.bigdl.kms.port" -> "your_server_port",
+             "spark.bigdl.kms.user" -> "your_user_name",
+             "spark.bigdl.kms.token" -> "your_user_token",
+             "spark.bigdl.kms.primaryKey" -> "your_precreated_primary_key_name",
+             "spark.bigdl.kms.dataKey" -> "your_precreated_data_key_name"
+      )
+   
+      val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+      ```
+
+     </details>
+
+     <details>
+       <summary>python</summary>
+
+       ```python
+       from bigdl.ppml.ppml_context import *
+
+       ppml_args = {"kms_type": "BigDLKeyManagementService",
+                    "kms_server_ip": "your_server_ip",
+                    "kms_server_port": "your_server_port",
+                    "kms_user_name": "your_user_name",
+                    "kms_user_token": "your_user_token",
+                    "primary_key": "your_precreated_primary_key_name",
+                    "data_key": "your_precreated_data_key_name"
+                   }
+
+       sc = PPMLContext("MyApp", ppml_args)
+       ```
+
+     </details>
+
 
 - create a PPMLContext with `sparkConf` & `appName` & `ppmlArgs`
 
@@ -747,10 +793,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    
    val ppmlArgs: Map[String, String] = Map(
        "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-       "spark.bigdl.kms.simple.id" -> "your_app_id",
-       "spark.bigdl.kms.simple.key" -> "your_api_key",
-       "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-       "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+       "spark.bigdl.kms.appId" -> "your_app_id",
+       "spark.bigdl.kms.apiKey" -> "your_api_key",
+       "spark.bigdl.kms.primaryKey" -> "/your/primary/key/path/primaryKey",
+       "spark.bigdl.kms.dataKey" -> "/your/data/key/path/dataKey"
    )
    
    val conf: SparkConf = new SparkConf().setMaster("local[4]")
@@ -768,10 +814,10 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    from pyspark import SparkConf
    
    ppml_args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "your_app_id",
-                "simple_api_key": "your_api_key",
-                "primary_key_path": "/your/primary/key/path/primaryKey",
-                "data_key_path": "/your/data/key/path/dataKey"
+                "app_id": "your_app_id",
+                "api_key": "your_api_key",
+                "primary_key": "/your/primary/key/path/primaryKey",
+                "data_key": "/your/data/key/path/dataKey"
                }
    
    conf = SparkConf()
@@ -1071,3 +1117,8 @@ rdd2 = sc.textfile(path=encrypted_csv_path, crypto_mode=CryptoMode.AES_CBC_PKCS5
 </details>
 
 More usage with `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
+
+
+### 4.3 Create Multi-KMS PPMLContext
+
+Please refer to introductions about MultiPartySparkExample in [Trusted SimpleQuery With Multiple Data source/KMS](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery)
