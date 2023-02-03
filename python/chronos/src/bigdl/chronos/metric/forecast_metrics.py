@@ -334,7 +334,7 @@ class Evaluator(object):
             for col_iter in range(1, col_num + 1):
                 # generate the index
                 if instance_index_iter is None:
-                    instance_index = random.randint(0, y.shape[0])
+                    instance_index = random.randint(0, y.shape[0]-1)
                 else:
                     try:
                         instance_index = next(instance_index_iter)
