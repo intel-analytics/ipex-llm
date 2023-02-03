@@ -291,7 +291,49 @@ You can do attestation via REST API of BigDL Remote Attestation Service. Current
 GET <bigdl_remote_attestation_address>/
 ```
 
+### Enroll 
+
+Obtain a valid access key pair (APPID and APIKey).
+
+* REST API format:
+```
+GET <bigdl_remote_attestation_address>/enroll
+```
+
+* Response Data:
+
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| app_id | String | HfpPKHdF... | ID which represents a certain application  |
+| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+
+### Registe Policy
+
+Registe a attestation policy for SGX/TDX quote, which will check some certain attributes or contents from the quote.
+
+* REST API format:
+```
+POST <bigdl_remote_attestation_address>/registePolicy
+```
+* Request Payload:
+
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| app_id | String | HfpPKHdF... | ID which represents a certain application  |
+| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+| mr_enclave | String | e38104fe6938... | (**For SGX**) The hash over the enclave pages loaded into the SGX protected memory |
+| mr_signer | String | d412a4f07ef8... | (**For SGX**) The hash of the public portion of the key
+used to sign the enclave |
+
+* Response Data:
+
+| Name | Type | Reference Value | Description |
+|:-----------|:-----------|:-----------|:-----------|
+| policy_id | string | LdPXuPs8fI5Q... | Generated policyID |
+
 ### Verify SGX/TDX Quote
+
+Verify a SGX/TDX quote with BigDL Remote Attestation Service.
 
 * REST API format:
 ```
@@ -301,7 +343,10 @@ POST <bigdl_remote_attestation_address>/verifyQuote
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
+| app_id | String | HfpPKHdF... | ID which represents a certain application  |
+| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
 | quote | String | AwACAAAAAAAJAA0Ak5py... | A valid DCAP quote in BASE64 |
+| policy_id | string | LdPXuPs8fI5Q... | (**Optional**) The policy which the given quote should satisfy |
 
 * Response Data:
 
