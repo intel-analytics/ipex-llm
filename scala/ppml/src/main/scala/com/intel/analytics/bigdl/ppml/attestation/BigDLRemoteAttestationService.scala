@@ -110,7 +110,7 @@ object BigDLRemoteAttestationService {
     } else {
       val in = new FileInputStream(file)
       val bufIn = new BufferedInputStream(in)
-      val encryptedContent = 
+      val encryptedContent =
         Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
       bufIn.close()
       in.close()
