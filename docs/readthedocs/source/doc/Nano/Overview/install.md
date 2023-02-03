@@ -91,7 +91,7 @@ For Linux, Ubuntu (22.04/20.04/18.04) is recommended.
 
 For Windows OS, users could only run `bigdl-nano-init` every time they open a new cmd terminal.
 
-We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/windows_guide.md) for instructions.
+We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/Install/windows_guide.md) for instructions.
 
 ### Install on MacOS
 #### MacOS with Intel Chip
