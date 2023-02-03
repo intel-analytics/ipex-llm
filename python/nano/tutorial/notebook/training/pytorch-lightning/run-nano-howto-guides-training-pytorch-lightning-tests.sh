@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
-# export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/notebook/training/pytorch-lightning
 
 TORCH_VERSION_LESS_1_12=`python -c "from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12; print(TORCH_VERSION_LESS_1_12)"`
@@ -9,7 +9,7 @@ TORCH_VERSION_LESS_1_12=`python -c "from bigdl.nano.pytorch.utils import TORCH_V
 set -e
 
 # disable training with native pytorch bf16 amp if torch<1.12
-if [ $TORCH_VERSION_LESS_1_12 == True ]
+if [[ $TORCH_VERSION_LESS_1_12 == True ]]
 then
     sed -i "s/trainer = Trainer(max_epochs=5, precision='bf16')/#trainer = Trainer(max_epochs=5, precision='bf16')/" $NANO_HOWTO_GUIDES_TEST_DIR/pytorch_lightning_training_bf16.ipynb
 fi
