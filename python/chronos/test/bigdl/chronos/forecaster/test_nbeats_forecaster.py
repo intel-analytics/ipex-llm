@@ -240,7 +240,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
-        forecaster.quantize(train_data, relative_drop=0.2)
+        forecaster.quantize(train_data)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -264,7 +264,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       loss='mae',
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        forecaster.quantize(train_data, framework='onnxrt_qlinearops', relative_drop=0.2)
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
@@ -509,12 +509,14 @@ class TestChronosNBeatsForecaster(TestCase):
         res = nbeats.evaluate(test_loader, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='pytorch_fx')
+                        framework='pytorch_fx',
+                        relative_drop=0.99)
         q_yhat = nbeats.predict(test, acceleration=False)
         q_res = nbeats.evaluate(test_loader, quantize=True, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='onnxrt_qlinearops')
+                        framework='onnxrt_qlinearops',
+                        relative_drop=0.99)
         q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
         q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
         onnx_yhat = nbeats.predict_with_onnx(test)

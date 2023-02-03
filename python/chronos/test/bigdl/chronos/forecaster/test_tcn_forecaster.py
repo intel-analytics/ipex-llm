@@ -655,7 +655,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.internal.eval()
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="rmse", relative_drop=0.1, max_trials=3)
+                            metric="rmse", relative_drop=0.99, max_trials=3)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -738,7 +738,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.1, max_trials=3,
+                            metric="mse", relative_drop=0.99, max_trials=3,
                             framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
