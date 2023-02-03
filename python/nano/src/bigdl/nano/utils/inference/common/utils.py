@@ -121,7 +121,7 @@ class AccelerationEnv(object):
             tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
 
         # set omp env var
-        omp_lib_path = None
+        omp_lib_path = ''
         if AccelerationEnv._CONDA_DIR:
             if os.path.exists(os.path.join(AccelerationEnv._CONDA_DIR, '../lib/libiomp5.so')):
                 omp_lib_path = os.path.join(AccelerationEnv._CONDA_DIR, '../lib/libiomp5.so')
@@ -140,11 +140,11 @@ class AccelerationEnv(object):
                                             '../../../../../../lib/libiomp5.so')
 
         tmp_omp_lib = self.get_omp_lib()
-        if tmp_omp_lib=='openmp_perf':
+        if tmp_omp_lib == 'openmp_perf':
             tmp_env_dict['LD_PRELOAD'] = tmp_env_dict['LD_PRELOAD'] + ' ' + omp_lib_path
             tmp_env_dict['KMP_AFFINITY'] = 'granularity=fine,compact,1,0'
             tmp_env_dict['KMP_BLOCKTIME'] = '1'
-        elif tmp_omp_lib=='openmp':
+        elif tmp_omp_lib == 'openmp':
             tmp_env_dict['LD_PRELOAD'] = tmp_env_dict['LD_PRELOAD'] + ' ' + omp_lib_path
             tmp_env_dict['KMP_AFFINITY'] = 'granularity=fine,none'
             tmp_env_dict['KMP_BLOCKTIME'] = '1'
