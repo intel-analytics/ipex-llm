@@ -240,7 +240,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
-        forecaster.quantize(train_data, relative_drop=0.2)
+        forecaster.quantize(train_data)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -264,7 +264,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       loss='mae',
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        forecaster.quantize(train_data, framework='onnxrt_qlinearops', relative_drop=0.2)
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
