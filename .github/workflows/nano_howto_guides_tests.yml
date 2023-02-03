@@ -182,6 +182,7 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false basic
             source bigdl-nano-init
+            pip install pytest nbmake
             pip install openvino-dev==2022.3.0
             bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
             source $CONDA/bin/deactivate
