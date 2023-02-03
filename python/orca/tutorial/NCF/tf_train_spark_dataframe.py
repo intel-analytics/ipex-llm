@@ -90,7 +90,7 @@ train_stats = est.fit(train_df,
                       validation_steps=val_steps,
                       callbacks=callbacks)
 print("Train results:")
-for k, v in train_stats[0].items():
+for k, v in train_stats.items():
     print("{}: {}".format(k, v))
 
 
