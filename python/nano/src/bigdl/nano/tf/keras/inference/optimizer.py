@@ -138,7 +138,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                evaluation. This is only needed when users care about the possible accuracy drop.
         :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
                            defining the shape/dtype of the input. This is only required when
-                           you have a custom Keras model(no input/output layer is explicitly
+                           you have a custom Keras model (no input/output layer is explicitly
                            defined).
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
@@ -351,7 +351,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
                            defining the shape/dtype of the input. This is only required when
-                           you have a custom Keras model(no input/output layer is explicitly
+                           you have a custom Keras model (no input/output layer is explicitly
                            defined).
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
@@ -455,7 +455,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 None means staying in tensorflow.
         :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
                                 defining the shape/dtype of the input. This is only required when
-                                you have a custom Keras model(no input/output layer is explicitly
+                                you have a custom Keras model (no input/output layer is explicitly
                                 defined).
         :param eval_func:       A evaluation function which only accepts model as input and return
                                 evaluation value. This parameter provides a higher degree of
