@@ -246,7 +246,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       val _storageOffset = storageOffset - 1
       val _size = if (size == null) Array(storage.length) else size
       val _stride = if (size == null) null else stride
-      DenseTensor.newWithStorage(this, storage, _storageOffset, _size, _stride, ev)
+      DenseTensor.newWithStorage[T](this, storage, _storageOffset, _size, _stride, ev)
     }
   }
 
@@ -258,7 +258,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     val _storageOffset = other.storageOffset() - 1
     val _size = other.size()
     val _stride = other.stride()
-    DenseTensor.newWithStorage(this, _storage, _storageOffset, _size, _stride, ev)
+    DenseTensor.newWithStorage[T](this, _storage, _storageOffset, _size, _stride, ev)
   }
 
   private[tensor] def this()(implicit ev: TensorNumeric[T]) = this(null, 0, null, null, 0)

@@ -1979,7 +1979,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         Log4Error.invalidOperationError(false, s"No support byte order $byteOrder")
         ByteOrder.BIG_ENDIAN
     }
-    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order,
+    Module.loadTF[T](path, inputs.asScala.toSeq, outputs.asScala.toSeq, order,
       Option(binFile), generatedBackward)
   }
 
@@ -2007,8 +2007,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val array = elem.asInstanceOf[JList[Any]]
       val name = array.get(0).asInstanceOf[String]
       val shape = array.get(1).asInstanceOf[JList[Int]]
-      (name, shape.asScala)
-    }
+      (name, shape.asScala.toSeq)
+    }.toSeq
     model.saveTF(scalaInputs, path, order, format)
   }
 
@@ -2130,16 +2130,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
   : JMap[Any, JMap[Any, JList[JList[Any]]]] = {
-    model.getParametersTable().getState().mapValues {
+    val a = model.getParametersTable().getState().mapValues {
       case name2Values: Table =>
-        name2Values.getState().mapValues {
+        mapAsJavaMap(name2Values.getState().mapValues {
           case t: Tensor[T] =>
             val tensorClone = t.clone()
             val item = List(tensorClone.storage().toList.asJava.asInstanceOf[JList[Any]],
               tensorClone.size().toList.asJava.asInstanceOf[JList[Any]]).asJava
             item
-        }.asJava
-    }.asJava
+        }.toMap)
+    }.toMap
+    mapAsJavaMap(a)
   }
 
   def createMaxEpoch(max: Int): Trigger = {
@@ -2167,11 +2168,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTriggerAnd(first: Trigger, others: JList[Trigger]): Trigger = {
-    Trigger.and(first, others.asScala: _*)
+    Trigger.and(first, others.asScala.toSeq: _*)
   }
 
   def createTriggerOr(first: Trigger, others: JList[Trigger]): Trigger = {
-    Trigger.or(first, others.asScala: _*)
+    Trigger.or(first, others.asScala.toSeq: _*)
   }
 
   def createTop1Accuracy(): ValidationMethod[T] = {
@@ -2328,7 +2329,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val nodeList = parse(modelPath)
 
     val context = new Context[T]()
-    val session = new BigDLSessionImpl[T](nodeList.asScala, context, ByteOrder.LITTLE_ENDIAN)
+    val session = new BigDLSessionImpl[T](nodeList.asScala.toSeq, context, ByteOrder.LITTLE_ENDIAN)
     val dataset = batching(DataSet.rdd(toJSample(samples)),
       batchSize).asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     val model = session.train(Seq(output), dataset,
@@ -2505,7 +2506,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     if (null == x || x.isEmpty) {
       module.inputs()
     } else {
-      module.inputs(x.asScala: _*)
+      module.inputs(x.asScala.toSeq: _*)
     }
   }
 
@@ -2633,7 +2634,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
-    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
+    if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala.toSeq: _*)
   }
 
   def unFreeze(model: AbstractModule[Activity, Activity, T],
@@ -2641,7 +2642,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     if (names == null) {
       model.unFreeze()
     } else {
-      model.unFreeze(names.asScala: _*)
+      model.unFreeze(names.asScala.toSeq: _*)
     }
   }
 

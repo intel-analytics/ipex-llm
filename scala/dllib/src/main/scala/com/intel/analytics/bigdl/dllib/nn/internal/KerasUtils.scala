@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn.internal
 
 import com.intel.analytics.bigdl.Criterion
-import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.{AbsCriterion, BCECriterion, CategoricalCrossEntropy, ClassNLLCriterion, CosineProximityCriterion, HardSigmoid, InitializationMethod, KullbackLeiblerDivergenceCriterion, MSECriterion, MarginCriterion, MeanAbsolutePercentageCriterion, MeanSquaredLogarithmicCriterion, Ones, PoissonCriterion, RandomNormal, RandomUniform, ReLU, Sigmoid, SoftPlus, SoftSign, Tanh, Xavier, Zeros}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor

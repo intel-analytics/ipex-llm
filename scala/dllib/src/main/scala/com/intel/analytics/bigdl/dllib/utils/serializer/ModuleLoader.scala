@@ -254,7 +254,7 @@ object ModulePersister {
   private def serializeModule[T : ClassTag](module: AbstractModule[Activity, Activity, T],
     storageType: StorageType)(implicit ev: TensorNumeric[T]): SerializeResult = {
     val bigDLModule = ModuleData(module
-      , new ArrayBuffer[String](), new ArrayBuffer[String]())
+      , Seq[String](), Seq[String]())
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(bigDLModule, storages, storageType)
     ModuleSerializer.serialize(context)
@@ -343,7 +343,7 @@ object ModulePersister {
   def saveModelDefinitionToFile[T: ClassTag](definitionPath : String,
     module : AbstractModule[Activity, Activity, T],
     overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
-    val bigDLModule = ModuleData(module, new ArrayBuffer[String](), new ArrayBuffer[String]())
+    val bigDLModule = ModuleData(module, Seq[String](), Seq[String]())
     val storages = new mutable.HashMap[Int, Any]()
     val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
     val bigDLModel = ModuleSerializer.serialize(context).bigDLModule

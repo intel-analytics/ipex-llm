@@ -136,8 +136,8 @@ class Table private[bigdl](
     }
     this.state.keys.foreach(key => {
       if (this.state(key).isInstanceOf[Array[_]] && other.state(key).isInstanceOf[Array[_]]) {
-        return (this.state(key).asInstanceOf[Array[_]].deep ==
-          other.state(key).asInstanceOf[Array[_]].deep)
+        return this.state(key).asInstanceOf[Array[_]].sameElements(
+          other.state(key).asInstanceOf[Array[_]])
       } else if (this.state(key) != other.state(key)) {
         return false
       }

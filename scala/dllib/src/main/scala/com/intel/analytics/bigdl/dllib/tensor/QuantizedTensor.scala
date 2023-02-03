@@ -245,7 +245,7 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
    * @return current tensor
    */
   override def copy(other: Tensor[T]): Tensor[T] = {
-    if (other.isInstanceOf[QuantizedTensor[T]] && other.size().deep == this.size().deep) {
+    if (other.isInstanceOf[QuantizedTensor[T]] && other.size().sameElements(this.size())) {
       val quantizedTensor = other.asInstanceOf[QuantizedTensor[T]]
 
       if (internalStorage != null) {

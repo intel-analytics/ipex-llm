@@ -392,7 +392,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
         s"Cannot find enqueue node for queue: ${queueNode.element}")
       null
     } else {
-      enqueNodes
+      enqueNodes.toSeq
     }
   }
 

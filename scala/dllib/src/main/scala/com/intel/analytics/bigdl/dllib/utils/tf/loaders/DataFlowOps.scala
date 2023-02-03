@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 
 private[bigdl] class TensorArrayV3 extends TensorflowOpsLoader {
 
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -75,7 +75,7 @@ private[bigdl] class TensorArrayV3 extends TensorflowOpsLoader {
 
 private[bigdl] class TensorArrayGradV3 extends TensorflowOpsLoader {
 
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -86,7 +86,7 @@ private[bigdl] class TensorArrayGradV3 extends TensorflowOpsLoader {
 }
 
 class TensorArrayGatherV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -107,7 +107,7 @@ class TensorArrayGatherV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArrayScatterV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -128,7 +128,7 @@ private[bigdl] class TensorArrayScatterV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArrayConcatV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -149,7 +149,7 @@ private[bigdl] class TensorArrayConcatV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArraySplitV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -170,7 +170,7 @@ private[bigdl] class TensorArraySplitV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArrayReadV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -191,7 +191,7 @@ private[bigdl] class TensorArrayReadV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArrayWriteV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]
@@ -212,7 +212,7 @@ private[bigdl] class TensorArrayWriteV3 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class TensorArraySizeV3 extends TensorflowOpsLoader {
-  override def build[T: ClassManifest](
+  override def build[T: ClassTag](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
     context: Context[T]

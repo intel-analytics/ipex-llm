@@ -244,7 +244,7 @@ object DistriOptimizer extends AbstractOptimizer {
               b += 1
             }
           })
-          Engine.default.sync(tasks)
+          Engine.default.sync(tasks.toSeq)
           weightsResults.waitResult()
           val weightSyncTime = System.nanoTime() - syWStart
           driverMetrics.add("get weights average", weightSyncTime)

@@ -92,7 +92,7 @@ trait TensorflowToBigDL {
   }
 
   protected def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
-    attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+    attrMap.get(key).getList.getIList.asScala.map(_.toInt).toSeq
   }
 
   protected def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {

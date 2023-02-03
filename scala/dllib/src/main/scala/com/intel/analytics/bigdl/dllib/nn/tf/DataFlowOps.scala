@@ -213,7 +213,7 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
     }
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -276,7 +276,7 @@ private[bigdl] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -309,7 +309,7 @@ private[bigdl] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -370,7 +370,7 @@ private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -416,7 +416,7 @@ private[bigdl] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -477,7 +477,7 @@ private[bigdl] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -531,7 +531,7 @@ private[bigdl] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -644,7 +644,7 @@ private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
     }
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -660,7 +660,7 @@ private[bigdl] class StackPop[T: ClassTag, D: ClassTag]()
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
@@ -679,7 +679,7 @@ private[bigdl] class StackPush[T: ClassTag, D: ClassTag]()
     output
   }
 
-  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+  override def getClassTagNumerics(): (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }

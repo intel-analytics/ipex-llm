@@ -56,7 +56,7 @@ class ParseSingleExample extends TensorflowOpsLoader {
         shapeProto.getDimList.asScala.map(_.getSize.toInt).toArray
       }
 
-    new ParseSingleExampleOperation[T](Tdense, denseKeys, denseShapes)
+    new ParseSingleExampleOperation[T](Tdense.toSeq, denseKeys.toSeq, denseShapes.toSeq)
   }
 }
 

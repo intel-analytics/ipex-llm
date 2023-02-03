@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxU
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
+import com.intel.analytics.bigdl.dllib.models.maskrcnn.Utils
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime._

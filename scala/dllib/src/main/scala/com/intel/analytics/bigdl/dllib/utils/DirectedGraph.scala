@@ -192,37 +192,37 @@ class Node[T](var element: T) extends Serializable {
    * The nodes pointed by current node
    * @return
    */
-  def nextNodes: Seq[Node[T]] = nexts.map(_._1)
+  def nextNodes: Seq[Node[T]] = nexts.map(_._1).toSeq
 
   /**
    * The edges start from this node
    * @return
    */
-  def nextEdges: Seq[Edge] = nexts.map(_._2)
+  def nextEdges: Seq[Edge] = nexts.map(_._2).toSeq
 
   /**
    * The nodes pointed by current node with the connect edges
    * @return
    */
-  def nextNodesAndEdges: Seq[(Node[T], Edge)] = nexts
+  def nextNodesAndEdges: Seq[(Node[T], Edge)] = nexts.toSeq
 
   /**
    * The nodes point to current node
    * @return
    */
-  def prevNodes: Seq[Node[T]] = prevs.map(_._1)
+  def prevNodes: Seq[Node[T]] = prevs.map(_._1).toSeq
 
   /**
    * The edges connect to this node
    * @return
    */
-  def prevEdges: Seq[Edge] = prevs.map(_._2)
+  def prevEdges: Seq[Edge] = prevs.map(_._2).toSeq
 
   /**
    * The nodes pointed to current node with the connect edges
    * @return
    */
-  def prevNodesAndEdges: Seq[(Node[T], Edge)] = prevs
+  def prevNodesAndEdges: Seq[(Node[T], Edge)] = prevs.toSeq
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket

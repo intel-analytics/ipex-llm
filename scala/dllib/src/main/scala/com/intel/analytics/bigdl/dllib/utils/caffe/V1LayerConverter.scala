@@ -563,7 +563,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
       nextedLayers(nextedLayers.size - 1).
         asInstanceOf[V1LayerParameter].getTopList.asScala.foreach(lastBottoms.append(_))
     })
-    res
+    res.toSeq
   }
 
   private def toCaffeWithWeightAndBiasOnly(module : AbstractModule[Activity, Activity, T],

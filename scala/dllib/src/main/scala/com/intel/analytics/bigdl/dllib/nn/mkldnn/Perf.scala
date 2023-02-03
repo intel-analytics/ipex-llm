@@ -17,9 +17,9 @@
 package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.dllib.nn.{Container, CrossEntropyCriterion, MsraFiller, Ones, RandomNormal, Zeros}
 import com.intel.analytics.bigdl.mkl.{MKL, Memory, MklDnn}
-import com.intel.analytics.bigdl.dllib.nn.Graph._
-import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.ResNet.DatasetType.ImageNet
@@ -285,13 +285,14 @@ object ResNet {
       graph.getSortedForwardExecutions.foreach(n => {
         n.element match {
           case conv: SpatialConvolution =>
-            val n: Float = conv.kernelW * conv.kernelW * conv.nOutputPlane
-            val weight = Tensor[Float].resize(conv.weight.size()).apply1 { _ =>
+            val conv2 = conv.asInstanceOf[SpatialConvolution]
+            val n: Float = conv2.kernelW * conv2.kernelW * conv2.nOutputPlane
+            val weight = Tensor[Float].resize(conv2.weight.size()).apply1 { _ =>
               RNG.normal(0, Math.sqrt(2.0f / n)).toFloat
             }
-            val bias = Tensor[Float].resize(conv.bias.size()).apply1(_ => 0.0f)
-            conv.weight.copy(weight)
-            conv.bias.copy(bias)
+            val bias = Tensor[Float].resize(conv2.bias.size()).apply1(_ => 0.0f)
+            conv2.weight.copy(weight)
+            conv2.bias.copy(bias)
 
           case bn: SpatialBatchNormalization =>
             val weightAndBias = Tensor[Float]().resize(Array(2, bn.nOutput))

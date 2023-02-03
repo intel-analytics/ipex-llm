@@ -64,7 +64,7 @@ object TensorflowSaver {
 
     model.getSortedForwardExecutions.foreach(n => {
       val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element,
-        inputNodeCache(n.element.getName()),
+        inputNodeCache(n.element.getName()).toSeq,
         byteOrder)
       nodeDefs.foreach(nDef => {
         graphBuilder.addNode(nDef)

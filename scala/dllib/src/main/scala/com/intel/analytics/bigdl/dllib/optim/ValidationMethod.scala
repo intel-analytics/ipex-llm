@@ -448,7 +448,7 @@ class MAPValidationResult(
   }
 
   private def sortPredictions(p: ArrayBuffer[(Float, Boolean)]): ArrayBuffer[(Float, Boolean)] = {
-    p.sortBy(v => v._1)(Ordering.Float.reverse) // decending order
+    p.sortBy(v => v._1)(Ordering[Float].reverse) // decending order
   }
 
   private[bigdl] def calculateClassAP(clz: Int): Float = {
@@ -751,7 +751,7 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               val mask = masks.map(_ (bboxIdx - 1)).orNull
               detections.append((label, score, x1, y1, x2, y2, mask))
             }
-            detections.sortBy(v => v._2)(Ordering.Float.reverse).foreach {
+            detections.sortBy(v => v._2)(Ordering[Float].reverse).foreach {
               case (label, score, x1, y1, x2, y2, mask) =>
                 MAPUtil.parseDetection(gtBbox, label, score, x1, y1, x2, y2, mask, classes,
                   iouThres, predictByClasses)
