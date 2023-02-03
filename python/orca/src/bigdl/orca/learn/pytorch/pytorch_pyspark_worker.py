@@ -61,7 +61,6 @@ class PytorchPysparkWorker(TorchRunner):
                  metrics=None,
                  scheduler_creator=None,
                  config=None,
-                 use_tqdm=False,
                  state_dict=None,
                  backend="torch-distributed",
                  mode="fit",
@@ -79,7 +78,6 @@ class PytorchPysparkWorker(TorchRunner):
                          metrics=metrics,
                          scheduler_creator=scheduler_creator,
                          config=config,
-                         use_tqdm=use_tqdm,
                          sync_stats=sync_stats,
                          log_level=log_level)
 

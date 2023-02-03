@@ -37,6 +37,7 @@ from bigdl.orca.data.file import get_remote_file_to_local, put_local_file_to_rem
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -136,6 +137,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "Must provide a function for model_creator")
 
         self.model_dir = parse_model_dir(model_dir)
+        self.use_tqdm = use_tqdm
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -162,7 +164,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             optimizer_creator=optimizer_creator,
             loss_creator=loss_creator,
             scheduler_creator=scheduler_creator,
-            use_tqdm=use_tqdm,
             config=copy.copy(self.config),
             metrics=metrics,
             size=self.num_workers,
@@ -289,9 +290,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(
             epochs=epochs,
@@ -544,9 +546,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(
             batch_size=batch_size,
