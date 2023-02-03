@@ -258,7 +258,7 @@ class SpatialBatchNormalization(
     // if the output is not null, it means we have initialized the primitives before.
     // so we do not need create weightAndBias native space again.
     if (output == null || output.isInstanceOf[DnnTensor[_]] &&
-      output.toTensor[Float].size().deep != outputFormats()(0).shape.deep) {
+      !output.toTensor[Float].size().sameElements(outputFormats()(0).shape)) {
       output = initTensor(outputFormats()(0))
     }
 

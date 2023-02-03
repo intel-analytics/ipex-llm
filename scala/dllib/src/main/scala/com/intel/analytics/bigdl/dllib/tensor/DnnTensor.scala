@@ -132,7 +132,7 @@ class DnnTensor[T: ClassTag](
     }
     val other = obj.asInstanceOf[DnnTensor[T]]
 
-    if (this.size().deep != other.size().deep) {
+    if (!this.size().sameElements(other.size())) {
       return false
     }
 

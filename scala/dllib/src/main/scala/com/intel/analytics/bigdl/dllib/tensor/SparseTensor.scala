@@ -1108,9 +1108,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       d += 1
     }
 
-    _indices.map(_.array()).deep == other._indices.map(_.array()).deep &&
-      _values.array().deep == other._values.array().deep &&
-      this._shape.deep == other._shape.deep &&
+    _indices.map(_.array()).corresponds(other._indices.map(_.array())) {_ sameElements _} &&
+      _values.array().sameElements(other._values.array()) &&
+      this._shape.sameElements(other._shape) &&
       this._nElement == other._nElement
   }
 
