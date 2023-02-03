@@ -196,7 +196,7 @@ class TorchRunner(BaseRunner):
             self.dist_backend = TorchDistBackend()
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
         self.num_epochs = epochs
@@ -250,7 +250,7 @@ class TorchRunner(BaseRunner):
         for i in range(epochs):
             del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
-            stats = self.train_epoch(self.train_loader, profile=profile, info=info,
+            stats = self.train_epoch(self.train_loader, profile=profile,
                                      callbacks=callbacks, val_loader=val_loader,
                                      val_steps=val_steps)
             self.epoch_stats = stats
@@ -272,7 +272,6 @@ class TorchRunner(BaseRunner):
     def train_epoch(self,
                     data_loader,
                     profile=False,
-                    info=None,
                     callbacks=None,
                     val_loader=None,
                     val_steps=None):
@@ -286,12 +285,11 @@ class TorchRunner(BaseRunner):
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self._train_epoch(data_loader, info, callbacks)
+            train_stats = self._train_epoch(data_loader, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -318,7 +316,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def _train_epoch(self, iterator, info, callbacks=None):
+    def _train_epoch(self, iterator, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -350,8 +348,6 @@ class TorchRunner(BaseRunner):
         Args:
             iterator (iter): Iterator over the training data for the entire
                 epoch. This iterator is expected to be entirely consumed.
-            info (dict): Dictionary for information to be used for custom
-                training operations.
 
         Returns:
             A dict of metrics from training.
@@ -409,7 +405,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Information dict passed in from ``train_epoch``.
 
         Returns:
             A dictionary of metrics.
@@ -452,14 +447,13 @@ class TorchRunner(BaseRunner):
         del self.loss
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None, callbacks=None):
+                 wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
         config = copy.copy(self.config)
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         if OrcaContext.serialize_data_creator:
@@ -498,8 +492,6 @@ class TorchRunner(BaseRunner):
         Args:
             val_iterator (iter): Iterable constructed from the
                 validation dataloader.
-            info: (dict): Dictionary for information to be used for custom
-                validation operations.
 
         Returns:
             A dict of metrics from the evaluation.
@@ -549,8 +541,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Contains information per batch from
-                ``validate()``.
 
         Returns:
             A dict of metrics.
