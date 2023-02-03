@@ -700,7 +700,6 @@ class TorchRunner(BaseRunner):
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
-            import fsspec
             if save_weights_only:
                 checkpoint = {
                     "epoch": self.epochs,
@@ -712,7 +711,7 @@ class TorchRunner(BaseRunner):
             file_name = os.path.basename(filepath)
             temp_dir = tempfile.mkdtemp()
             temp_path = os.path.join(temp_dir, file_name)
-            with fsspec.open(temp_path, "wb") as f:
+            with open(temp_path, "wb") as f:
                 f.write(byte_obj)
             from bigdl.orca.data.file import put_local_file_to_remote
             put_local_file_to_remote(temp_path, filepath)
