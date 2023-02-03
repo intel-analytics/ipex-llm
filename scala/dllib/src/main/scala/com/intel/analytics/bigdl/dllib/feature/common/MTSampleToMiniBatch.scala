@@ -63,7 +63,7 @@ class MTSampleToMiniBatch[A: ClassTag, T: ClassTag] (
           }
 
           // multi thread processing
-          (0 until parallelism).toParArray.foreach{tid =>
+          collection.parallel.immutable.ParVector.range(0, parallelism).foreach{tid =>
             var j = tid
             while (j < count) {
               sampleData(j) = transformers(tid).apply(rawDataCache(j)).next()

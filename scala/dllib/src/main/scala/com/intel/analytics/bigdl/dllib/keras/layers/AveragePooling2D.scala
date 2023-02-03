@@ -48,8 +48,8 @@ class AveragePooling2D[T: ClassTag](
     override val poolSize: Array[Int] = Array(2, 2),
     override val strides: Array[Int] = null,
     override val borderMode: String = "valid",
-    val dimOrdering: DataFormat = DataFormat.NCHW,
     override val inputShape: Shape = null,
+    val dimOrdering: DataFormat = DataFormat.NCHW,
     val pads: Array[Int] = null,
     val countIncludePad: Boolean = false)(implicit ev: TensorNumeric[T])
   extends Pooling2D[T](poolSize, strides, borderMode, inputShape) {
@@ -91,6 +91,6 @@ object AveragePooling2D {
     }
     new AveragePooling2D[T](
       poolSizeArray, strideArray,
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape, pads, countIncludePad)
+      borderMode, inputShape, KerasUtils.toBigDLFormat(dimOrdering), pads, countIncludePad)
   }
 }

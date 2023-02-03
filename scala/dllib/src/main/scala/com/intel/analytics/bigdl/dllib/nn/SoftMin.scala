@@ -141,9 +141,10 @@ object SoftMin {
     results: Array[Future[Unit]], pos: Int = 1
     )(implicit ev: TensorNumeric[T]): Tensor[T] = {
 
-    Log4Error.invalidInputError(input.size().deep == gradOutput.size().deep,
+    Log4Error.invalidInputError(input.size().sameElements(gradOutput.size()),
       "input should have the same size with gradOutput" +
-        s"inputsize ${input.size().deep} gradOutput ${gradOutput.size().deep}")
+        s"inputSize (${input.size().mkString(",")}) " +
+        s"gradOutput (${gradOutput.size().mkString(",")})")
     // get nFrame, dim and stride value based on the output tensor and pos
     val (nFrame, dim, stride) = output.nDimension() - pos match {
       case 0 => (1, output.size(pos), 1)

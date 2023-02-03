@@ -244,7 +244,7 @@ object Model extends KerasLayerSerializable{
     val labor = context.moduleData.module.
       asInstanceOf[KerasLayer[Activity, Activity, T]].labor
     val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(labor,
-      new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
+      Seq[String](), Seq[String]()), context.storages,
       context.storageType, _copyWeightAndBias))
     builder.addSubModules(subModule.bigDLModule)
   }

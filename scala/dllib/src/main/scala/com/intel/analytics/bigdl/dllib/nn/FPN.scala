@@ -124,7 +124,7 @@ class FPN[T : ClassTag](
     case that: FPN[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        inChannels.deep == that.inChannels.deep &&
+        inChannels.sameElements(that.inChannels) &&
         outChannels == that.outChannels
     case _ => false
   }

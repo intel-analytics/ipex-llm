@@ -93,8 +93,8 @@ object Relations {
     val positive = relations.filter(_.label > 0).groupBy(_.id1)
     val negative = relations.filter(_.label == 0).groupBy(_.id1)
     positive.cogroup(negative).flatMap(x => {
-      val posIDs = x._2._1.flatten.toArray.map(_.id2)
-      val negIDs = x._2._2.flatten.toArray.map(_.id2)
+      val posIDs = x._2._1.flatten.map(_.id2)
+      val negIDs = x._2._2.flatten.map(_.id2)
       posIDs.flatMap(y => negIDs.map(z => RelationPair(x._1, y, z)))
     })
   }

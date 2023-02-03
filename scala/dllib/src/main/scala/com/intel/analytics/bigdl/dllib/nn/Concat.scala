@@ -330,7 +330,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       outputTuple = modules(i).getEndNodes(startNodes)
       outputs ++= outputTuple
     }
-    Array(JoinTable(dimension, -1).inputs(outputs: _*))
+    Array(JoinTable(dimension, -1).inputs(outputs.toSeq: _*))
   }
 }
 

@@ -1215,7 +1215,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
   }
 
   def getTrainSummary(tag: String): Array[(Long, Float, Double)] = {
-    if (this.trainSummary isDefined) {
+    if (this.trainSummary.isDefined) {
       this.trainSummary.get.readScalar(tag)
     } else {
       null
@@ -1223,7 +1223,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
   }
 
   def getValidationSummary(tag: String): Array[(Long, Float, Double)] = {
-    if (this.validationSummary isDefined) {
+    if (this.validationSummary.isDefined) {
       this.validationSummary.get.readScalar(tag)
     } else {
       null
@@ -1563,7 +1563,7 @@ object InternalDistriOptimizer {
           val stackSize = batch.size() / _subModelNumber
           val extraSize = batch.size() % _subModelNumber
           val parallelism = if (stackSize == 0) extraSize else _subModelNumber
-          (0 until parallelism).toParArray.map { b =>
+          collection.parallel.immutable.ParVector.range(0, parallelism).map { b =>
             val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
             val miniBatch = batch.slice(offset, length)
@@ -1721,7 +1721,7 @@ object InternalDistriOptimizerV2 {
           val stackSize = batch.size() / _subModelNumber
           val extraSize = batch.size() % _subModelNumber
           val parallelism = if (stackSize == 0) extraSize else _subModelNumber
-          (0 until parallelism).toParArray.map { b =>
+          collection.parallel.immutable.ParVector.range(0, parallelism).map { b =>
             val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
             val miniBatch = batch.slice(offset, length)

@@ -75,14 +75,16 @@ object COCOSeqFileGenerator {
       println("Metadata loaded")
       val conf: Configuration = new Configuration
       val doneCount = new AtomicInteger(0)
-      val tasks = meta.images.filter(img => {
-        val path = img.path
-        val valid = Files.exists(path) && !Files.isDirectory(path)
-        if (!valid) {
-          System.err.print(s"[Warning] The image file ${path.getFileName} does not exist.\n")
-        }
-        valid
-      }).grouped(param.blockSize).zipWithIndex.toArray.par
+      val tasks = collection.parallel.immutable.ParVector(
+        meta.images.filter(img => {
+          val path = img.path
+          val valid = Files.exists(path) && !Files.isDirectory(path)
+          if (!valid) {
+            System.err.print(s"[Warning] The image file ${path.getFileName} does not exist.\n")
+          }
+          valid
+        }).grouped(param.blockSize).zipWithIndex.toArray: _*
+      )
       tasks.tasksupport = new ForkJoinTaskSupport(
         new scala.concurrent.forkjoin.ForkJoinPool(param.parallel))
       tasks.foreach { case (imgs, blkId) =>
