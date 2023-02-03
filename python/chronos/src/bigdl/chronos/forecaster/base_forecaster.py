@@ -64,7 +64,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             # seed setting
             from pytorch_lightning import seed_everything
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             seed_everything(seed=self.seed)
 
             # Model preparation
@@ -157,7 +157,7 @@ class BasePytorchForecaster(Forecaster):
                               "You may specify search space in hyper parameters to enable it.")
 
         # prepare data
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
 
         # data transformation
         if isinstance(data, tuple):
@@ -354,7 +354,7 @@ class BasePytorchForecaster(Forecaster):
                                      epochs=epochs,
                                      batch_size=batch_size)
         else:
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             from bigdl.nano.utils.log4Error import invalidInputError
 
             # numpy data shape checking
@@ -615,7 +615,7 @@ class BasePytorchForecaster(Forecaster):
                     "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
         if not self.quantize_available:
             excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear"]
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
                      training_data=train_data,
@@ -1348,7 +1348,7 @@ class BasePytorchForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster.
         :param quantize_checkpoint_file: The location you want to save quantized forecaster.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
 
         if self.distributed:
             self.internal.save(checkpoint_file)
@@ -1376,13 +1376,12 @@ class BasePytorchForecaster(Forecaster):
         :param quantize_checkpoint_file: The checkpoint file location you want to
                load the quantized forecaster.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         if self.distributed:
             self.internal.load(checkpoint_file)
         else:
             from bigdl.nano.pytorch.lightning import LightningModule
-            from bigdl.chronos.pytorch import TSTrainer as Trainer
+            from bigdl.chronos.pytorch import Trainer
             if self.use_hpo:
                 ckpt = torch.load(checkpoint_file)
                 hparams = ckpt["hyper_parameters"]
@@ -1424,7 +1423,7 @@ class BasePytorchForecaster(Forecaster):
 
         :return: a forecaster instance.
         """
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
@@ -1490,7 +1489,7 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             invalidInputError(False,
@@ -1537,7 +1536,7 @@ class BasePytorchForecaster(Forecaster):
                default where no limit is set. Besides, the environment variable
                `OMP_NUM_THREADS` is suggested to be same as `thread_num`.
         '''
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
@@ -1613,7 +1612,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         :param quantized_dirname: The dir location you want to save the quantized onnx file.
         """
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1639,7 +1638,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the openvino file.
         :param quantized_dirname: The dir location you want to save the quantized openvino file.
         """
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
@@ -1845,7 +1844,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # check model support for quantization
         from bigdl.nano.utils.log4Error import invalidInputError
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         if not self.quantize_available:
             invalidInputError(False,
                               "This model has not supported quantization.")

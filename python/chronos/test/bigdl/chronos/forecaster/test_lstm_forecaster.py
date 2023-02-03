@@ -391,7 +391,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                         loss="mae",
                                         lr=0.01,
                                         distributed=distributed)
-            forecaster.fit(train_data, epochs=2)
+            forecaster.fit(train_data, epochs=1)
             distributed_pred = forecaster.predict(test_data, acceleration=False)
             distributed_eval = forecaster.evaluate(val_data, acceleration=False)
         stop_orca_context()

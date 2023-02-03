@@ -14,4 +14,37 @@
 # limitations under the License.
 #
 
+import torch
+from torch import nn
+from torch.utils.data import DataLoader
+from typing import Union, Tuple, List, Dict, Optional, Callable
 from bigdl.nano.pytorch import InferenceOptimizer as TSInferenceOptimizer
+
+
+class InferenceOptimizer(TSInferenceOptimizer):
+
+    def optimize(self, model: nn.Module,
+                 training_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]],
+                 validation_data:
+                     Optional[Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]]]=None,
+                 input_sample: Union[torch.Tensor, Dict, Tuple[torch.Tensor], None]=None,
+                 metric: Optional[Callable]=None,
+                 direction: str="max",
+                 thread_num: Optional[int]=None,
+                 accelerator: Optional[Tuple[str]]=None,
+                 precision: Optional[Tuple[str]]=None,
+                 use_ipex: Optional[bool]=None,
+                 search_mode: str="default",
+                 dynamic_axes: Union[bool, dict]=True,
+                 logging: bool=False,
+                 latency_sample_num: int=100,
+                 includes: Optional[List[str]]=None,
+                 excludes: Optional[List[str]]=None,
+                 output_filename: Optional[str]=None) -> None:
+
+        super().optimize(model, training_data, validation_data,
+                         input_sample, metric, direction,
+                         thread_num, accelerator, precision,
+                         use_ipex, search_mode, dynamic_axes,
+                         logging, latency_sample_num,
+                         includes, excludes, output_filename)

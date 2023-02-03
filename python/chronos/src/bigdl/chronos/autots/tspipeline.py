@@ -153,7 +153,7 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         # predict with onnx
@@ -264,7 +264,7 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
-        from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
+        from bigdl.chronos.pytorch import InferenceOptimizer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
@@ -335,7 +335,7 @@ class TSPipeline:
         :param batch_size: batch size, defaults to None, which takes the searched best batch_size.
         :param **kwargs: args to be passed to bigdl-nano trainer.
         '''
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
         from bigdl.nano.utils.log4Error import invalidInputError
         train_loader = None
         valid_loader = None

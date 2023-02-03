@@ -25,7 +25,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
-from bigdl.chronos.pytorch import TSTrainer as Trainer
+from bigdl.chronos.pytorch import Trainer
 from bigdl.chronos.data import TSDataset
 from bigdl.nano.automl.hpo.space import Space
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, \
@@ -250,7 +250,7 @@ class AutoformerForecaster(Forecaster):
                               "HPO is disabled for this forecaster."
                               "You may specify search space in hyper parameters to enable it.")
         # prepare data
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
 
         # data transformation
         if isinstance(data, tuple):
@@ -384,7 +384,7 @@ class AutoformerForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=True)
 
-        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch import Trainer
         if self.use_hpo is True:
             # check whether the user called the tune function
             invalidOperationError(hasattr(self, "trainer"), "There is no trainer, and you "
