@@ -136,8 +136,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) ``tf.TensorSpec`` defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
@@ -348,9 +350,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
-                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
-                           ``input_spec`` is required. If ``accelerator='openvino'``,
-                           ``input_spec`` is only required when you have a custom Keras model.
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -451,11 +453,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
-                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
-                           ``input_spec`` is required. If ``accelerator='openvino'``, or
-                           ``accelerator=None`` and ``precision='int8'``, ``input_spec``
-                           is required when you have a custom Keras model.
+        :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
+                                defining the shape/dtype of the input. This is only required when
+                                you have a custom Keras model (no input/output layer is explicitly
+                                defined).
         :param eval_func:       A evaluation function which only accepts model as input and return
                                 evaluation value. This parameter provides a higher degree of
                                 freedom than using eval_loader and metric. Default to None meaning

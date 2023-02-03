@@ -54,7 +54,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
             if isinstance(model, tf.keras.Model):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 if input_spec is None:
-                    input_spec = tf.TensorSpec((model.input_shape), model.dtype)
+                    input_spec = tf.TensorSpec(model.input_shape, model.dtype)
                 if not isinstance(input_spec, (tuple, list)):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
