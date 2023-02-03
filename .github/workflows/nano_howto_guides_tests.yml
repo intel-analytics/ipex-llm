@@ -43,7 +43,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-      
+
       - name: Run unit tests for Inference PyTorch how-to guides
         shell: bash
         run: |
@@ -75,7 +75,7 @@ jobs:
           $CONDA/bin/conda remove -n howto-guides-training-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
+
       - name: Run unit tests for Training PyTorch Lightning how-to guides
         shell: bash
         run: |
@@ -113,7 +113,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-      
+
       - name: Run unit tests for Inference TensorFlow how-to guides
         shell: bash
         run: |
@@ -169,7 +169,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-      
+
       - name: Run unit tests for Inference OpenVINO how-to guides
         shell: bash
         run: |
