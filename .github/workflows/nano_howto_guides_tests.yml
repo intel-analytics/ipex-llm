@@ -92,8 +92,66 @@ on:
 #           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# jobs:
+#   nano-howto-guides-tensorflow-test:
+#     # The type of runner that the job will run on
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         os: ["ubuntu-20.04"]
+#         python-version: ["3.7"]
+
+#     # Steps represent a sequence of tasks that will be executed as part of the job
+#     steps:
+#       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#       - uses: actions/checkout@v2
+#       - name: Set up Python ${{ matrix.python-version }}
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: ${{ matrix.python-version }}
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           python -m pip install --upgrade setuptools==58.0.4
+#           python -m pip install --upgrade wheel
+      
+#       - name: Run unit tests for Inference TensorFlow how-to guides
+#         shell: bash
+#         run: |
+#           $CONDA/bin/conda create -n howto-guides-inference-tensorflow -y python==3.7.10 setuptools=58.0.4
+#           source $CONDA/bin/activate howto-guides-inference-tensorflow
+#           $CONDA/bin/conda info
+#           bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+#           source bigdl-nano-init
+#           pip install pytest nbmake
+#           pip install ipykernel==5.5.6
+#           bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
+#           source $CONDA/bin/deactivate
+#           $CONDA/bin/conda remove -n howto-guides-inference-tensorflow --all
+#         env:
+#           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+#       - name: Run unit tests for Training TensorFlow how-to guides
+#         shell: bash
+#         run: |
+#           $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.7.10 setuptools=58.0.4
+#           source $CONDA/bin/activate howto-guides-training-tensorflow
+#           $CONDA/bin/conda info
+#           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+#           source bigdl-nano-init
+#           pip install pytest nbmake
+#           pip install ipykernel==5.5.6
+#           pip install tensorflow-datasets
+#           bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
+#           source $CONDA/bin/deactivate
+#           $CONDA/bin/conda remove -n howto-guides-training-tensorflow --all
+#         env:
+#           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  nano-howto-guides-tensorflow-test:
+  nano-howto-guides-openvino-test:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -116,35 +174,21 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
       
-      # - name: Run unit tests for Inference TensorFlow how-to guides
-      #   shell: bash
-      #   run: |
-      #     $CONDA/bin/conda create -n howto-guides-inference-tensorflow -y python==3.7.10 setuptools=58.0.4
-      #     source $CONDA/bin/activate howto-guides-inference-tensorflow
-      #     $CONDA/bin/conda info
-      #     bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
-      #     source bigdl-nano-init
-      #     pip install pytest nbmake
-      #     pip install ipykernel==5.5.6
-      #     bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
-      #     source $CONDA/bin/deactivate
-      #     $CONDA/bin/conda remove -n howto-guides-inference-tensorflow --all
-      #   env:
-      #     ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run unit tests for Training TensorFlow how-to guides
+      - name: Run unit tests for Inference OpenVINO how-to guides
         shell: bash
         run: |
-          $CONDA/bin/conda create -n howto-guides-training-tensorflow -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate howto-guides-training-tensorflow
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          source bigdl-nano-init
-          pip install pytest nbmake
-          pip install ipykernel==5.5.6
-          pip install tensorflow-datasets
-          bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n howto-guides-training-tensorflow --all
+            $CONDA/bin/conda create -n howto-guides-inference-openvino -y python==3.7.10 setuptools=58.0.4
+            source $CONDA/bin/activate howto-guides-inference-openvino
+            $CONDA/bin/conda info
+            bash python/nano/dev/build_and_install.sh linux default false basic
+            source bigdl-nano-init
+            pip install openvino-dev==2022.3.0
+            bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
+            source $CONDA/bin/deactivate
+            $CONDA/bin/conda remove -n howto-guides-inference-openvino --all
         env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      # TODO: Add test for /notebook/inference/openvino/accelerate_inference_openvino_gpu.ipynb
+      #       when GPU is avaliable for action tests.
+      #       For this notebook, we may need to install with options pytorch,tensorflow,inference
