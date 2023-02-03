@@ -1424,7 +1424,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.export_torchscript_file(dirname=pipeline_module_dir,
                                            save_pipeline=True,
                                            tsdata=train_data,
-                                           drop_dtcol=True)
+                                           drop_dt_col=True)
         # save the test data for deployment
         test_data_path = os.path.join(temp_dir, "inference_data.csv")
         test_data.df.to_csv(test_data_path, index=False)
