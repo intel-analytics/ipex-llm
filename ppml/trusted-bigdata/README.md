@@ -1,6 +1,6 @@
-# Gramine Bigdata Toolkit
+# Gramine Bigdata Toolkit Overall
 
-This image contains Gramine and some popular Big Data frameworks including Hadoop, Spark and Hive.
+This image is designed for the big data field in Privacy Preserving Machine Learning. Users can run end-to-end big data analytics application (Spark, Flink, Hive and Flink) with distributed cluster on Intel Software Guard Extensions (Intel SGX) or Intel Trust Domain Extensions (Intel TDX).
 
 ## Before Running Code
 ### 1. Build Docker Images
@@ -148,7 +148,7 @@ python register-mrenclave.py --appid <your_appid> \
                              --mr_signer <your_mrensigner_hash_value>
 ```
 
-## Run Spark
+# Spark
 
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [Using Helm to run your Spark job][https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes#25-using-helm-to-run-your-spark-job].
 
