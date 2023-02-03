@@ -36,3 +36,13 @@ then
 fi
 
 ray stop -f
+
+echo "Running openvino test"
+python -m pytest -v test/bigdl/orca/spark/test_estimator_openvino.py
+exist_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+   exit $exit_status_2
+fi
+
+ray stop -f
