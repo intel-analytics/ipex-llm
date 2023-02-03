@@ -9,7 +9,7 @@ TORCH_VERSION=`python -c "from bigdl.nano.pytorch.utils import TORCH_VERSION_LES
 set -e
 
 # disable training with native pytorch bf16 amp if torch<1.12
-if [ $TORCH_VERSION_LESS_1_12 == True ]
+if [[ $TORCH_VERSION_LESS_1_12 == True ]]
 then
     sed -i "s/MyNano(precision='bf16').train()/#MyNano(precision='bf16').train()/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_pytorch_training_bf16.ipynb
 fi
@@ -21,8 +21,8 @@ sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 sed -i 's/!source bigdl-nano-init/#!source bigdl-nano-init/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 # the training dataset size is limited for testing purposes
-sed -i 's/num_epochs=5/num_epochs=1/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
-sed -i 's/num_epochs = 5/num_epochs = 1/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i 's/DataLoader(train_dataset/DataLoader(torch.utils.data.Subset(train_dataset, torch.randperm(len(train_dataset))[:5])/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+
 
 
 echo 'Start testing'
