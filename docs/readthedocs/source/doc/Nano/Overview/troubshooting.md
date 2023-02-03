@@ -5,7 +5,7 @@ Refer to this section for common issues faced while using BigDL-Nano.
 ## Installation
 ### Why I fail to install openvino-dev==2022.2 when ``pip install bigdl-nano[inference]``?
 
-Please check your system first as openvino-dev 2022.2 does not support centos. Refer [this](https://pypi.org/project/openvino-dev/) for more details. You can install openvino-dev==2022.3 instead as openvino-dev 2022.3 supports centos again. 
+Please check your system first as openvino-dev 2022.2 does not support centos. Refer [this](https://pypi.org/project/openvino-dev/) for more details. You can install bigdl-nano[inference] >= 2.2 instead, as bigdl-nano[inference] >= 2.2 use openvino-dev >= 2022.3 which supports centos again.
 
 ## Inference
 
@@ -15,7 +15,7 @@ Please make sure you use context manager provided by ``InferenceOptimizer.get_co
 
 ### ``assert precision in list(self.cur_config['ops'].keys())`` when using ipex quantization with inc on machine with BF16 instruction set
 
-It's known issue for [Intel® Neural Compressor](https://github.com/intel/neural-compressor) that they don't deal with BF16 op well at version 1.13.1 . This has been fixed in version 2.0.
+It's known issue for [Intel® Neural Compressor](https://github.com/intel/neural-compressor) that they don't deal with BF16 op well at version 1.13.1 . This has been fixed in version 2.0. You can install bigdl-nano[inference] >= 2.2 to fix this problem.
 
 ### Why my output is not bf16 dtype when using bf16+ipex related methods?
 
@@ -67,3 +67,7 @@ If you found the workload runs with Intel® Extension for PyTorch* occupies a re
 ### RuntimeError: Check 'false' failed at src/frontends/common/src/frontend.cpp
 
 You may see this error when you do inference with accelerator=`OpenVINO` in keras. It only occurs when you use `intel-tensorflow` >= 2.8 and you forget `source bigdl-nano-init`. The way to solve this problem is just `source bigdl-nano-init` or `source bigdl-nano-init -j`.
+
+### TypeError: deprecated() got an unexpected keyword argument 'name'
+
+If a version problem caused by too low cryptography version. You can fix it by just `pip install cryptography==38.0.0` .
