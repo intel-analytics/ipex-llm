@@ -833,8 +833,8 @@ class BasePytorchForecaster(Forecaster):
             if quantize:
                 if self.accelerate_method != "onnxruntime_int8":
                     invalidInputError(False,
-                                     "Can't find the quantized model, "
-                                     "please call .quantize() method first")
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
                                                   batch_size=batch_size)
