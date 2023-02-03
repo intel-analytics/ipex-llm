@@ -13,19 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import subprocess
+import sys
+import tempfile
 from collections import namedtuple
 import os
 import time
 import numbers
+
+import cloudpickle
 import numpy as np
-from typing import Dict
+from typing import Dict, Callable, Optional
 from abc import abstractmethod
 import bigdl
+from . import _worker
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
                                "bf16", "jit", "channels_last"]
 
-_whole_acceleration_env = ['tcmalloc', 'jemalloc']
+_whole_acceleration_env = ['tcmalloc', 'jemalloc', 'openmp', 'perf']
 
 CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
 
@@ -64,11 +70,17 @@ class AccelerationOption(object):
 
 class AccelerationEnv(object):
     __slot__ = _whole_acceleration_env
+    _CONDA_DIR = os.environ.get('CONDA_PREFIX', None)
+    _NANO_DIR = os.path.join(os.path.dirname(bigdl.__file__), 'nano')
 
     def __init__(self, **kwargs):
         """
         initialize optimization env
         """
+        self.openmp = None
+        self.jemalloc = None
+        self.tcmalloc = None
+        self.perf = None
         for option in _whole_acceleration_env:
             setattr(self, option, kwargs.get(option, False))
 
@@ -77,20 +89,68 @@ class AccelerationEnv(object):
             return "tcmalloc"
         if self.jemalloc:
             return "jemalloc"
-        return "tcmalloc"
+        return None
+
+    def get_omp_lib(self):
+        if self.openmp and self.perf:
+            return "openmp_perf"
+        elif self.openmp:
+            return "openmp"
+        else:
+            return None
 
     def get_env_dict(self):
         tmp_env_dict = {}
-        nano_dir = os.path.join(os.path.dirname(bigdl.__file__), 'nano')
-        if self.get_malloc_lib() == 'jemalloc':
-            tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libjemalloc.so')
+
+        # set allocator env var
+        tmp_malloc_lib = self.get_malloc_lib()
+        if tmp_malloc_lib == 'jemalloc':
+            tmp_env_dict['LD_PRELOAD'] = os.path.join(
+                AccelerationEnv._NANO_DIR, 'libs/libjemalloc.so')
             tmp_env_dict['MALLOC_CONF'] = 'oversize_threshold:1,background_thread:false,' \
                                           'metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1'
             tmp_env_dict['ENABLE_JEMALLOC_VAR'] = '1'
-        else:
-            tmp_env_dict['LD_PRELOAD'] = os.path.join(nano_dir, 'libs/libtcmalloc.so')
+        elif tmp_malloc_lib:
+            tmp_env_dict['LD_PRELOAD'] = os.path.join(
+                AccelerationEnv._NANO_DIR, 'libs/libtcmalloc.so')
             tmp_env_dict['MALLOC_CONF'] = ''
             tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
+        else:
+            tmp_env_dict['LD_PRELOAD'] = ''
+            tmp_env_dict['MALLOC_CONF'] = ''
+            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
+
+        # set omp env var
+        omp_lib_path = None
+        if AccelerationEnv._CONDA_DIR:
+            if os.path.exists(os.path.join(AccelerationEnv._CONDA_DIR, '../lib/libiomp5.so')):
+                omp_lib_path = os.path.join(AccelerationEnv._CONDA_DIR, '../lib/libiomp5.so')
+            elif os.path.exists(os.path.join(AccelerationEnv._CONDA_DIR,
+                                             '../../../lib/libiomp5.so')):
+                omp_lib_path = os.path.join(AccelerationEnv._CONDA_DIR,
+                                            '../../../lib/libiomp5.so')
+        elif AccelerationEnv._NANO_DIR:
+            if os.path.exists(os.path.join(AccelerationEnv._NANO_DIR,
+                                           '../../../libiomp5.so')):
+                omp_lib_path = os.path.join(AccelerationEnv._NANO_DIR,
+                                            '../../../libiomp5.so')
+            elif os.path.exists(os.path.join(AccelerationEnv._NANO_DIR,
+                                             '../../../../../../lib/libiomp5.so')):
+                omp_lib_path = os.path.join(AccelerationEnv._NANO_DIR,
+                                            '../../../../../../lib/libiomp5.so')
+
+        tmp_omp_lib = self.get_omp_lib()
+        if tmp_omp_lib=='openmp_perf':
+            tmp_env_dict['LD_PRELOAD'] = tmp_env_dict['LD_PRELOAD'] + ' ' + omp_lib_path
+            tmp_env_dict['KMP_AFFINITY'] = 'granularity=fine,compact,1,0'
+            tmp_env_dict['KMP_BLOCKTIME'] = '1'
+        elif tmp_omp_lib=='openmp':
+            tmp_env_dict['LD_PRELOAD'] = tmp_env_dict['LD_PRELOAD'] + ' ' + omp_lib_path
+            tmp_env_dict['KMP_AFFINITY'] = 'granularity=fine,none'
+            tmp_env_dict['KMP_BLOCKTIME'] = '1'
+        else:
+            tmp_env_dict['KMP_AFFINITY'] = ''
+            tmp_env_dict['KMP_BLOCKTIME'] = ''
         return tmp_env_dict
 
 
@@ -199,3 +259,30 @@ def format_optimize_result(optimize_result_dict: dict,
             repr_str += method_str
         repr_str += horizontal_line
     return repr_str
+
+
+def exec_with_worker(func: Callable, *args, env: Optional[dict] = None):
+    """
+    Call func on subprocess with provided environment variables.
+
+    :param func: a Callable object
+    :param args: arguments for the func call
+    :param env: a mapping that defines the environment variables for the subprocess
+    """
+    worker_path = _worker.__file__
+    tmp_env = {}
+    tmp_env.update(os.environ)
+    if env is not None:
+        tmp_env.update(env)
+    if 'PYTHONPATH' in tmp_env:
+        tmp_env['PYTHONPATH'] = ":".join([tmp_env['PYTHONPATH'], *sys.path])
+    else:
+        tmp_env['PYTHONPATH'] = ":".join(sys.path)
+    with tempfile.TemporaryDirectory() as tmp_dir_path:
+        param_file = os.path.join(tmp_dir_path, 'param')
+        with open(param_file, 'wb') as f:
+            cloudpickle.dump([func, *args], f)
+        subprocess.run(["python", worker_path, param_file],
+                       check=True, env=tmp_env)
+        with open(os.path.join(tmp_dir_path, _worker.RETURN_FILENAME), 'rb') as f:
+            return cloudpickle.load(f)

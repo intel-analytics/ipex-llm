@@ -49,7 +49,7 @@ from bigdl.nano.pytorch.context_manager import generate_context_manager,\
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
 import traceback
 import warnings
-from bigdl.nano.pytorch.utils import exec_with_worker
+from bigdl.nano.utils.inference.common.utils import exec_with_worker
 
 # Filter out useless Userwarnings
 warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
@@ -152,8 +152,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         DEFAULT_INFERENCE_ACCELERATION_METHOD[method] = ALL_INFERENCE_ACCELERATION_METHOD[method]
 
     ALL_ACCELERATION_ENV = {
+        'raw': AccelerationEnv(),
         'tcmalloc': AccelerationEnv(tcmalloc=True),
-        'jemalloc': AccelerationEnv(jemalloc=True)
+        'jemalloc': AccelerationEnv(jemalloc=True),
+        'openmp': AccelerationEnv(openmp=True),
+        'openmp_perf': AccelerationEnv(openmp=True, perf=True),
     }
 
     def optimize(self, model: nn.Module,
