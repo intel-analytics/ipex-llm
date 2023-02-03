@@ -148,7 +148,10 @@ class BasePytorchForecaster(Forecaster):
             effect if target_metric contains "latency". Default value is False.
         :param input_sample: A set of inputs for trace, defaults to None if you have
             trace before or model is a LightningModule with any dataloader attached.
+        :param kwargs: some other parameters could be used for tuning, most useful one is
+               `sampler` from SamplerType.Grid, SamplerType.Random and SamplerType.TPE so on.
         """
+
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
                           "Please use AutoTS instead.")

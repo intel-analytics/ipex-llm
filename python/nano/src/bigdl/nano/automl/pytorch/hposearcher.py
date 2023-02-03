@@ -156,6 +156,11 @@ class HPOSearcher:
         _sampler_kwargs.update(user_sampler_kwargs)
         if "sampler" in kwargs and kwargs["sampler"] in [SamplerType.Grid]:
             search_kwargs["sampler_kwargs"] = _sampler_kwargs
+            # Following condition will be met when user state non-catagory problem
+            invalidInputError(len(model._lazyobj.kwspaces_) <= len(_sampler_kwargs),
+                              "Only `space.Categorical` is supported for `SamplerType.Grid` "
+                              "sampler. Please try replace other space to `space.Categorical` "
+                              "or use another SamplerType.")
 
         (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
             = _prepare_args(search_kwargs,
