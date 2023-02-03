@@ -67,6 +67,19 @@ class DummyMultiInputModel(nn.Module):
     def forward(self, x1, x2, x3: List[float]):
         return x1, x2, x3
 
+
+class DummyModelWith3d(nn.Module):
+    """
+    A simple model for test various inputs of channels last format
+    """
+    def __init__(self):
+        super(DummyModelWith3d, self).__init__()
+        self.conv3d_1 = nn.Conv3d(3, 33, 3, stride=2)
+
+    def forward(self, x1, x2:int):
+        return self.conv3d_1(x1), x2
+
+
 class MultipleInputWithKwargsNet(nn.Module):
     def __init__(self):
         super().__init__()
@@ -129,6 +142,19 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
 
+    def test_ipex_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None, 
+                                                            channels_last=True, use_ipex=True)
+        with InferenceOptimizer.get_context(ipex_channels_last_model):
+            ipex_channels_last_model(x1, x2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
+
     def test_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
         x1 = torch.rand(1, 1) # 3-dim input test
@@ -143,6 +169,19 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
 
+    def test_jit_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+                                                           use_ipex=False)
+        with InferenceOptimizer.get_context(jit_channels_last_model):
+            jit_channels_last_model(x1, x2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
+
     def test_ipex_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
         x1 = torch.rand(1, 1) # 3-dim input test
@@ -156,6 +195,19 @@ class IPEXJITInference_gt_1_10:
             InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
+
+    def test_ipex_jit_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+                                                                use_ipex=True)
+        with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
+            ipex_jit_channels_last_model(x1, x2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
 
     def test_ipex_jit_inference_additional_attrs(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)

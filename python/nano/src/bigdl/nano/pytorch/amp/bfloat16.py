@@ -114,16 +114,19 @@ class BF16Model(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
-        if self.channels_last is True:
-            if self.channels_last_available:
-                for idx, input in enumerate(inputs):
-                    if self.channels_last_available[idx]:
-                        input.to(memory_format=torch.channels_last)
-            else:
+        if self.channels_last:
+            # generate channels_last_available list is possible
+            # this won't affect inference latency much since it will only run 1 time
+            if not self.channels_last_available:
                 self.channels_last_available = generate_channels_last_available(inputs)
-                for idx, input in enumerate(inputs):
-                    if self.channels_last_available[idx]:
-                        input.to(memory_format=torch.channels_last)
+
+            # change the data to suitable mem format
+            for idx, input in enumerate(inputs):
+                if self.channels_last_available[idx] == "channels_last":
+                    input.to(memory_format=torch.channels_last)
+                if self.channels_last_available[idx] == "channels_last_3d":
+                    input.to(memory_format=torch.channels_last_3d)
+
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):
