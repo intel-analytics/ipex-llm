@@ -35,5 +35,6 @@ jobs:
           no_proxy: snyk.devtools.intel.com, intel.com
       run: |
         cd scala
+        mvn clean install -f common/spark-version/pom.xml
         snyk monitor --all-projects
         cd -
