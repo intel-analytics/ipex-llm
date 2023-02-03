@@ -153,10 +153,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     ALL_ACCELERATION_ENV = {
         'raw': AccelerationEnv(),
-        'tcmalloc': AccelerationEnv(tcmalloc=True),
-        'jemalloc': AccelerationEnv(jemalloc=True),
         'openmp': AccelerationEnv(openmp=True),
         'openmp_perf': AccelerationEnv(openmp=True, perf=True),
+        'tcmalloc': AccelerationEnv(tcmalloc=True),
+        'tcmalloc_openmp': AccelerationEnv(tcmalloc=True, openmp=True),
+        'tcmalloc_openmp_perf': AccelerationEnv(tcmalloc=True, openmp=True, perf=True),
+        'jemalloc': AccelerationEnv(jemalloc=True),
+        'jemalloc_openmp': AccelerationEnv(jemalloc=True, openmp=True),
+        'jemalloc_openmp_perf': AccelerationEnv(jemalloc=True, openmp=True, perf=True),
     }
 
     def optimize(self, model: nn.Module,
