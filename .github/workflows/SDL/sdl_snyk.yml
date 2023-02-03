@@ -1,7 +1,7 @@
 name: Scanner-Snyk 
 on:
-  pull_request:
-    branchs: [ main ]
+  #pull_request:
+  #branchs: [ main ]
 
   workflow_dispatch:
     inputs:
