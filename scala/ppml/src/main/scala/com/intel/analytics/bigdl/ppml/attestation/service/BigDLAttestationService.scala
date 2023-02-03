@@ -48,7 +48,7 @@ import com.intel.analytics.bigdl.ppml.attestation._
  * @param attestationServerPort ehsm port
  */
 class BigDLAttestationService(attestationServerIP: String, attestationServerPort: String,
-  appID: String, apiKey:String, httpsEnabled: Boolean = false) extends AttestationService {
+  appID: String, apiKey: String, httpsEnabled: Boolean = false) extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
 
