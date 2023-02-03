@@ -125,7 +125,6 @@ def _quantize(
         # So we construct a INC DataLoader from them
         dataloader = DataLoader(framework, dataloader)
 
-    inc_metric = metric
     if 'pytorch' in framework:
         # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
         from bigdl.nano.pytorch.lightning import LightningModule
