@@ -85,8 +85,6 @@ object COCOSeqFileGenerator {
           valid
         }).grouped(param.blockSize).zipWithIndex.toArray: _*
       )
-      tasks.tasksupport = new ForkJoinTaskSupport(
-        new scala.concurrent.forkjoin.ForkJoinPool(param.parallel))
       tasks.foreach { case (imgs, blkId) =>
         val outFile = new Path(param.output, s"coco-seq-$blkId.seq")
         val key = new BytesWritable
