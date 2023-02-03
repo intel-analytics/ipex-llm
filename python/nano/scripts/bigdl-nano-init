@@ -229,6 +229,8 @@ if [[ ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
 elif [[ ! -z "${ENABLE_TCMALLOC_VAR:-}" ]]; then
     set-allocator tcmalloc
     unset MALLOC_CONF
+else
+    unset MALLOC_CONF
 fi
 
 if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then

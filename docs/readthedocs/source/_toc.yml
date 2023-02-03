@@ -188,6 +188,8 @@ subtrees:
               title: "Troubleshooting Guide"
             - file: doc/PythonAPI/Nano/index
               title: "API Reference"
+            - file: doc/Nano/Overview/support
+              title: "OS Support"
 
 
 
