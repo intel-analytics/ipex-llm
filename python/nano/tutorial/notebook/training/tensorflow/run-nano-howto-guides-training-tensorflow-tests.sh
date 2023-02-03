@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
-# export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/notebook/training/tensorflow
 
 set -e
@@ -22,10 +22,7 @@ sed -i 's/!source bigdl-nano-init/#!source bigdl-nano-init/' $NANO_HOWTO_GUIDES_
 echo 'Start testing'
 start=$(date "+%s")
 
-# diable test for tensorflow_training_bf16.ipynb for now,
-# due to the core dumped problem on platforms without AVX512;
-# use nbconvert to test here; nbmake may cause some errors
-jupyter nbconvert --ExecutePreprocessor.timeout=600 --to notebook --execute ${NANO_HOWTO_GUIDES_TEST_DIR}/accelerate_tensorflow_training_multi_instance.ipynb ${NANO_HOWTO_GUIDES_TEST_DIR}/tensorflow_training_embedding_sparseadam.ipynb
+python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}
 now=$(date "+%s")
 time=$((now-start))
 
