@@ -34,7 +34,11 @@ import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
 
+import org.json4s.jackson.Serialization
+import org.json4s._
+
 import scala.util.Random
+import scala.util.parsing.json._
 
 import com.intel.analytics.bigdl.ppml.attestation._
 
@@ -44,7 +48,7 @@ import com.intel.analytics.bigdl.ppml.attestation._
  * @param attestationServerPort ehsm port
  */
 class BigDLAttestationService(attestationServerIP: String, attestationServerPort: String,
-  httpsEnabled: Boolean = false) extends AttestationService {
+  appID: String, apiKey:String, httpsEnabled: Boolean = false) extends AttestationService {
 
   val logger = LogManager.getLogger(getClass)
 
@@ -57,6 +61,19 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     }
     sslContext.init(null, Array(trustManager), new SecureRandom())
     new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())
+  }
+
+  implicit val formats = DefaultFormats
+
+  private def mapToString(map: Map[String, Any]): String = {
+    Serialization.write(map)
+  }
+
+  private def stringToMap(str: String): Map[String, Any] = {
+    JSON.parseFull(str) match {
+      case Some(map: Map[String, Any]) => map
+      case None => Map.empty
+    }
   }
 
   // Quote
@@ -86,7 +103,13 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     val action: String = ACTION_VERIFY_QUOTE
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
-      val postString: String = "{\"quote\": \"" + quote + "\"}"
+      // val postString: String = "{\"quote\": \"" + quote + "\"}"
+      val postContent = Map[String, Any](
+        "app_id" -> appID,
+        "api_key" -> apiKey,
+        "quote" -> quote
+      )
+      val postString = mapToString(postContent)
       val postUrl = constructUrl(action, httpsEnabled)
       var response: String = null
       if (httpsEnabled) {
@@ -114,7 +137,45 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
   }
 
   override def attestWithServer(quote: String, policyID: String): (Boolean, String) = {
-    attestWithServer(quote)
+    if (quote == null) {
+      Log4Error.invalidInputError(false,
+        "Quote should be specified")
+    }
+    val action: String = ACTION_VERIFY_QUOTE
+
+    val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
+      // val postString: String = "{\"quote\": \"" + quote + "\"}"
+      val postContent = Map[String, Any](
+        "app_id" -> appID,
+        "api_key" -> apiKey,
+        "quote" -> quote,
+        "policy_id" -> policyID
+      )
+      val postString = mapToString(postContent)
+      val postUrl = constructUrl(action, httpsEnabled)
+      var response: String = null
+      if (httpsEnabled) {
+        response = HTTPSUtil.retrieveResponse(postUrl, sslConSocFactory, postString)
+      } else {
+        response = HTTPUtil.retrieveResponse(postUrl, postString)
+      }
+
+      if (response != null && response.startsWith("\ufeff")) {
+        response = response.substring(1)
+      }
+      // System.out.println(response)
+      new JSONObject(response)
+    }
+    val result = postResult.getInt(RES_RESULT)
+    if (result == 0) {
+      return (true, postResult.toString)
+    } else if (result == 1) {
+      println("WARNING: Attestation pass but BIOS or the software" +
+        " is out of date.")
+      return (true, postResult.toString)
+    } else {
+      return (false, postResult.toString)
+    }
   }
 
   private def constructUrl(action: String, httpsEnabled: Boolean = false): String = {

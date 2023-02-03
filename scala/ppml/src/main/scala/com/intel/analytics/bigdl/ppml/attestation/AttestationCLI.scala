@@ -98,7 +98,7 @@ object AttestationCLI {
                     params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_BIGDL =>
                 new BigDLAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.httpsEnabled)
+                    params.asURL.split(":")(1), params.appID, params.apiKey, params.httpsEnabled)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")

@@ -120,7 +120,6 @@ object BigDLRemoteAttestationService {
   }
 
   def mapToString(map: Map[String, Any]): String = {
-    // JSONObject(map).toString()
     Serialization.write(map)
   }
 

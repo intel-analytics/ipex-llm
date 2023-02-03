@@ -311,6 +311,8 @@ GET <bigdl_remote_attestation_address>/enroll
 
 Registe a attestation policy for SGX/TDX quote, which will check some certain attributes or contents from the quote.
 
+**TDX Policy is not implemented yet.**
+
 * REST API format:
 ```
 POST <bigdl_remote_attestation_address>/registePolicy
