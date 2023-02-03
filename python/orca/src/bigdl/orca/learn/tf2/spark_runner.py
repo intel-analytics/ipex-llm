@@ -395,8 +395,7 @@ class SparkRunner:
 
         if self.model_dir is not None:
             model_state = {
-                "weights": self.model.get_weights(),
-                "optimizer_weights": self.model.optimizer.get_weights()
+                "weights": self.model.get_weights()
             }
             if self.rank == 0:
                 # only chef save model to destination location
