@@ -219,7 +219,7 @@ class GenericTSTransformerLightningModule(pl.LightningModule):
         else:
             args = args[:nargs]
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), args)
-        outputs = self.model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+        outputs = self.model(batch_x, batch_y, batch_x_mark, batch_y_mark)
         return outputs
 
     def training_step(self, batch, batch_idx):

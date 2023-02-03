@@ -127,7 +127,7 @@ class AutoFormer(pl.LightningModule):
             projection=nn.Linear(configs.d_model, configs.c_out, bias=True)
         )
 
-    def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec,
+    def forward(self, x_enc, x_dec, x_mark_enc, x_mark_dec,
                 enc_self_mask=None, dec_self_mask=None, dec_enc_mask=None):
         # decomp init
         mean = torch.mean(x_enc, dim=1).unsqueeze(1).repeat(1, self.pred_len, 1)
@@ -153,7 +153,7 @@ class AutoFormer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
+        outputs = self(batch_x, batch_y, batch_x_mark, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, -self.c_out:]
         batch_y = batch_y[:, -self.pred_len:, -self.c_out:]
@@ -161,7 +161,7 @@ class AutoFormer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
+        outputs = self(batch_x, batch_y, batch_x_mark, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, -self.c_out:]
         batch_y = batch_y[:, -self.pred_len:, -self.c_out:]
@@ -169,7 +169,7 @@ class AutoFormer(pl.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
+        outputs = self(batch_x, batch_y, batch_x_mark, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, -self.c_out:]
         return outputs
