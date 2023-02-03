@@ -28,7 +28,6 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Orca Xshards")
-args.backend = "spark"  # TODO: support initial_epoch for ray backend
 init_orca(args)
 
 
