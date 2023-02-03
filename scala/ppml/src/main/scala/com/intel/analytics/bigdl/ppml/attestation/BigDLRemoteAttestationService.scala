@@ -64,7 +64,7 @@ object BigDLRemoteAttestationService {
 
   val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
 
-  private val salt = Array[Byte](0,1,2,3,4,5,6,7)
+  private val salt = Array[Byte](0, 1, 2, 3, 4, 5, 6, 7)
   private val iterations = 65536
   private val keySize = 256
   private var secretKey = "password"
@@ -94,7 +94,7 @@ object BigDLRemoteAttestationService {
 
   def saveFile(filename: String, content: String): Future[Unit] = Future {
     val file = new File(filename)
-    if (!file.exists()){
+    if (!file.exists()) {
       file.createNewFile()
     }
     val encryptedContent = encrypt(content.getBytes("UTF-8"))
@@ -105,12 +105,13 @@ object BigDLRemoteAttestationService {
 
   def loadFile(filename: String): Future[String] = Future {
     val file = new File(filename)
-    if (!file.exists()){
+    if (!file.exists()) {
       ""
     } else {
       val in = new FileInputStream(file)
       val bufIn = new BufferedInputStream(in)
-      val encryptedContent = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+      val encryptedContent = 
+        Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
       bufIn.close()
       in.close()
       val decryptedContent = new String(decrypt(encryptedContent), "UTF-8")
@@ -187,12 +188,11 @@ object BigDLRemoteAttestationService {
           .action((x, c) => c.copy(httpsKeyStorePath = x))
         opt[String]('k', "secretKey")
           .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
-          .action((x, c) => c.copy(secretKey = x))  
+          .action((x, c) => c.copy(secretKey = x))
         opt[String]('b', "basePath")
           .text("Path of base data file to save user information, "
             + "default is ./BigDLRemoteAttestationService.dat")
           .action((x, c) => c.copy(basePath = x))
-        
     }
     val params = cmdParser.parse(args, CmdParams()).get
     secretKey = params.secretKey
@@ -256,7 +256,7 @@ object BigDLRemoteAttestationService {
                   val res = mapToString(Map("policy_id" -> policyID))
                   complete(200, res)
                 } else {
-                  //TODO: TDX policy
+                  // TODO: TDX policy
                   complete(400, "Not Implemented.")
                 }
               }
@@ -274,9 +274,7 @@ object BigDLRemoteAttestationService {
                 } else {
                   val quoteBase64 = msg.get("quote").mkString
                   val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
-                  
                   val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
-                  
                   if (verifyQuoteResult >= 0) {
                     if (msg.contains("policy_id")) {
                       val appID = msg.get("app_id").mkString
