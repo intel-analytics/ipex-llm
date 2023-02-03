@@ -192,6 +192,9 @@ object BigDLRemoteAttestationService {
           .text("Path of base data file to save user information, "
             + "default is ./BigDLRemoteAttestationService.dat")
           .action((x, c) => c.copy(basePath = x))
+        opt[String]('o', "policyPath")
+          .text("Path of policy data file, default is ./BigDLRemoteAttestationServicePolicy.dat")
+          .action((x, c) => c.copy(policyPath = x))
     }
     val params = cmdParser.parse(args, CmdParams()).get
     secretKey = params.secretKey
