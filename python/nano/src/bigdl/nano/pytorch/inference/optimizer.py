@@ -26,6 +26,7 @@ from bigdl.nano.utils.common import AccelerationOption, available_acceleration_c
     latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
+from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
     PytorchIPEXQuantizationModel
@@ -928,6 +929,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 }
                 return model.pot(calib_dataloader, thread_num=thread_num,
                                  config=openvino_config, **kwargs)
+            elif accelerator == 'jit':
+                invalidInputError(jit_method in [None, 'trace', 'script'],
+                                  "jit_method {} is invalid.".format(jit_method))
+                return PytorchJITINT8Model(model,
+                                           calib_dataloader,
+                                           q_config=q_config,
+                                           input_sample=input_sample,
+                                           channels_last=channels_last,
+                                           thread_num=thread_num,
+                                           jit_strict=jit_strict,
+                                           jit_method=jit_method)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
