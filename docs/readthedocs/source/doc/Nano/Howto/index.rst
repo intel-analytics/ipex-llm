@@ -89,5 +89,5 @@ TensorFlow
 
 Install
 -------------------------
-* `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
-* `How to install BigDL-Nano on Windows <windows_guide.html>`_
+* `How to install BigDL-Nano in Google Colab <Install/install_in_colab.html>`_
+* `How to install BigDL-Nano on Windows <Install/windows_guide.html>`_

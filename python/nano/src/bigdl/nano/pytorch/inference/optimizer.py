@@ -821,6 +821,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             thread_num=thread_num,
                                                             inplace=inplace,
                                                             jit_strict=jit_strict)
+                        print("using pure ipex quantization")
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
@@ -1090,12 +1091,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 else:
                     warnings.warn("These context managers have different thread_num.  We will "
                                   "set thread_num to the larger one.")
-                if thread_num1 is None or thread_num2 > thread_num1:
-                    manager.thread_num = thread_num2
-                else:
-                    manager.thread_num = thread_num1
-            else:
+            if thread_num1 is None:
+                manager.thread_num = thread_num2
+            elif thread_num2 is None:
                 manager.thread_num = thread_num1
+            else:
+                manager.thread_num = max(thread_num1, thread_num2)
             return manager
 
         _context_manager = obtain_manager(model)
