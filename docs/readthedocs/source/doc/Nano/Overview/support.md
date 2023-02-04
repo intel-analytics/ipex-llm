@@ -15,7 +15,7 @@
 | **IPEX**              | Intel-extension-for-pytorch optimization                                |
 | **Multi-instance**    | Multi-process training and inference                                    |
 
-## Common Feature Support
+## Common Feature Support (Can be used in both PyTorch and TensorFlow)
 
 | Feature               | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
 | --------------------- | -------------------- | ------- | ------------------ | ------- |
