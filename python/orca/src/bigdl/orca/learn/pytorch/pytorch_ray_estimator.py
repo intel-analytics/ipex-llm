@@ -145,7 +145,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
-            info: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
@@ -172,8 +171,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner for
-               train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param validation_data: validation data. Validation data type should be the same
@@ -203,7 +200,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             epochs=epochs,
             batch_size=batch_size,
             profile=profile,
-            info=info,
             callbacks=callbacks,
         )
 
@@ -393,7 +389,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                  num_steps: int=None,
                  profile: bool=False,
                  reduce_results: bool=True,
-                 info: Dict=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols:  Optional[List[str]]=None,
                  callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
@@ -419,8 +414,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner
-               for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks. Note that only one MainCallback
@@ -453,7 +446,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
         params = dict(batch_size=batch_size,
                       num_steps=num_steps,
                       profile=profile,
-                      info=info,
                       wrap_dataloader=False,
                       callbacks=callbacks)
 
