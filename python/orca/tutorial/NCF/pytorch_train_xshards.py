@@ -46,7 +46,6 @@ config = dict(
     num_layers=3,
     dropout=0.5,
     lr=0.01,
-    model="NeuMF-end",
     sparse_feats_input_dims=sparse_feats_input_dims,
     sparse_feats_embed_dims=8,
     num_dense_feats=num_dense_feats
@@ -59,7 +58,7 @@ def model_creator(config):
                 factor_num=config["factor_num"],
                 num_layers=config["num_layers"],
                 dropout=config["dropout"],
-                model=config["model"],
+                model="NeuMF-end",
                 sparse_feats_input_dims=config["sparse_feats_input_dims"],
                 sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
                 num_dense_feats=config["num_dense_feats"])

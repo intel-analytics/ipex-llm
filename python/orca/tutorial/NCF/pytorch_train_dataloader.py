@@ -70,7 +70,7 @@ def model_creator(config):
                 factor_num=config["factor_num"],
                 num_layers=config["num_layers"],
                 dropout=config["dropout"],
-                model=config["model"],
+                model="NeuMF-end",
                 sparse_feats_input_dims=sparse_feats_input_dims,
                 sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
                 num_dense_feats=num_dense_feats)
