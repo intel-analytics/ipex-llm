@@ -195,11 +195,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /usr/local/bin/gosu && \
     chmod +x /opt/flink-entrypoint.sh && \
     chmod -R 777 ${FLINK_HOME} && \
-    chown -R flink:flink ${FLINK_HOME} && \
-    unzip /ppml/spark-3.1.3/python/lib/py4j-0.10.9-src.zip
+    chown -R flink:flink ${FLINK_HOME}
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
-ENV PYTHONPATH $PYTHONPATH:/ppml/spark-3.1.3/python:/ppml/spark-3.1.3/python/lib/py4j
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
