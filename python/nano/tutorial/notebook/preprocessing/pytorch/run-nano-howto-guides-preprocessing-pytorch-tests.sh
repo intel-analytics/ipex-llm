@@ -7,12 +7,12 @@ export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/not
 set -e
 
 # comment out the install commands
-sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!pip install/#!pip install/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 # comment out the environment setting commands
-sed -i 's/!source bigdl-nano-init/#!source bigdl-nano-init/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
-echo 'Start testing'
+echo "Start testing"
 start=$(date "+%s")
 
 python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}

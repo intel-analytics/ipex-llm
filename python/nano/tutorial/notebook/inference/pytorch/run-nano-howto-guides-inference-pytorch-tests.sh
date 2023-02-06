@@ -7,19 +7,19 @@ export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/not
 set -e
 
 # comment out the install commands
-sed -i 's/!pip install/#!pip install/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!pip install/#!pip install/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 # comment out the environment setting commands
-sed -i 's/!source bigdl-nano-init/#!source bigdl-nano-init/' $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 # the number of batches to run is limited for testing purposes
-sed -i 's/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/' $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
+sed -i "s/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/" $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 
 
-echo 'Start testing'
+echo "Start testing"
 start=$(date "+%s")
 
-python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR} -k 'not inference_optimizer_optimize'
+python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR} -k "not inference_optimizer_optimize"
 python -m pytest -s --nbmake --nbmake-timeout=1200 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
 
 now=$(date "+%s")
