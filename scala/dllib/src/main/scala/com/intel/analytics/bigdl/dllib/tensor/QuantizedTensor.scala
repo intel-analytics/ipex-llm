@@ -111,23 +111,24 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
     hash
   }
 
-  def this(size: Array[Int], params: DescParams)(
+  def this(size: Array[Int], params: DescParams, desc: Long)(
     implicit ev: TensorNumeric[T]) = {
     this(size, DenseTensor.size2Stride(size), size.length)
     this.params = params
-    this.desc = Desc.get(params, null, 0, null, null)
+    this.desc = desc
   }
 
-  def this(src: Tensor[T], descParams: DescParams)(
+  def this(src: Tensor[T], descParams: DescParams, desc: Long)(
     implicit ev: TensorNumeric[T]) = {
     this(src.size(), src.stride(), src.nDimension())
     this.internalStorage = createInternalStorage(src)
     this.params = descParams
-    this.desc = Desc.get(descParams, this.internalStorage, 0, this.maxOfRow, this.minOfRow)
+    this.desc = desc
+    // this.desc = Desc.get(descParams, this.internalStorage, 0, this.maxOfRow, this.minOfRow)
   }
 
   def this(src: Array[Byte], size: Array[Int], max: Array[T], min: Array[T], sum: Array[T],
-    descParams: DescParams)(implicit ev: TensorNumeric[T]) = {
+    descParams: DescParams, desc: Long)(implicit ev: TensorNumeric[T]) = {
     this(size, DenseTensor.size2Stride(size), size.length)
     Log4Error.unKnowExceptionError(src.length == size.product,
       s"size mismatch, byte array size should equal to shape")
@@ -137,7 +138,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
     this.minOfRow = min
     this.sumOfRow = sum
     this.params = descParams
-    this.desc = Desc.get(descParams, this.internalStorage, 0, this.maxOfRow, this.minOfRow)
+    this.desc = desc
+//    this.desc = Desc.get(descParams, this.internalStorage, 0, this.maxOfRow, this.minOfRow)
   }
 
   private def createInternalStorage(tensor: Tensor[T]): Array[Byte] = {
@@ -289,18 +291,49 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
 
 object QuantizedTensor {
   def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int], params: DescParams)(
-    implicit ev: TensorNumeric[T]): QuantizedTensor[T] =
-    new QuantizedTensor[T](size, params)
+    implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
+    val desc = Desc.get(params, null, 0, null, null)
+    new QuantizedTensor[T](size, params, desc)
+  }
 
   def apply[@specialized(Float, Double) T: ClassTag](src: Tensor[T], descParams: DescParams)(
     implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
-    new QuantizedTensor[T](src, descParams)
+    val storage = createInternalStorage(src)
+    apply[T](storage._1, storage._2, storage._3, storage._4, src.size(), descParams)
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](src: Array[Byte], max: Array[T], min: Array[T],
     sum: Array[T], size: Array[Int], descParams: DescParams)(
     implicit ev: TensorNumeric[T]): QuantizedTensor[T] = {
-    new QuantizedTensor[T](src, size, max, min, sum, descParams)
+    val desc = Desc.get(descParams, src, 0, max, min)
+    new QuantizedTensor[T](src, size, max, min, sum, descParams, desc)
+  }
+
+  private def createInternalStorage[T: ClassTag](tensor: Tensor[T])(
+    implicit ev: TensorNumeric[T]): (Array[Byte], Array[T], Array[T], Array[T]) = {
+    val size = tensor.size(1)
+    val maxOfRow = new Array[T](size)
+    val minOfRow = new Array[T](size)
+    val sumOfRow = new Array[T](size)
+
+    for (i <- 1 to size) {
+      val tmp = tensor.select(1, i)
+      minOfRow(i - 1) = tmp.min()
+      maxOfRow(i - 1) = tmp.max()
+      sumOfRow(i - 1) = tmp.sum()
+    }
+
+    val bytes = new Array[Byte](tensor.nElement())
+    val bytesOffset = 0
+    ev.getType() match {
+      case FloatType =>
+        Quantization.quantize(tensor.asInstanceOf[Tensor[Float]], bytes, bytesOffset)
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "Only support Float for quantized model")
+    }
+
+    (bytes, maxOfRow, minOfRow, sumOfRow)
   }
 }
 
