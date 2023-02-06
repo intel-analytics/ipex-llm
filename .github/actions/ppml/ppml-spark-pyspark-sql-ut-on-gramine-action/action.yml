@@ -4,7 +4,7 @@ inputs:
   image:
     description: 'image'
     required: true
-    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
   image-tag:
     description: 'image tag'
     required: true
@@ -35,13 +35,13 @@ runs:
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $NFS_INPUT_PATH:/ppml/data \
         -e http_proxy=$HTTP_PROXY \
         -e https_proxy=$HTTPS_PROXY \
         $IMAGE bash
     - name: Spark Examples Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-ut-on-local-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-ut-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-ut-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-ut-on-local-sgx.sh"

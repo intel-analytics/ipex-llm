@@ -39,15 +39,15 @@ train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats,
 
 # Step 3: Define the NCF model
 config = dict(
-    factor_num=16,
-    lr=1e-2,
-    item_num=item_num,
     user_num=user_num,
+    item_num=item_num,
+    factor_num=16,
+    num_layers=3,
     dropout=0.5,
+    lr=0.01,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=num_dense_feats,
     sparse_feats_embed_dims=8,
-    num_layers=3
+    num_dense_feats=num_dense_feats
 )
 
 

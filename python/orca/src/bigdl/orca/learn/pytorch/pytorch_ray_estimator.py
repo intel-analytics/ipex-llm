@@ -28,6 +28,7 @@ from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -113,8 +114,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
         self.optimizer_creator = optimizer_creator
         self.loss_creator = loss_creator
         self.scheduler_creator = scheduler_creator
-        self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
+        self.use_tqdm = use_tqdm
         self.backend = backend
         self.workers_per_node = workers_per_node
 
@@ -125,7 +126,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             optimizer_creator=self.optimizer_creator,
             loss_creator=self.loss_creator,
             scheduler_creator=self.scheduler_creator,
-            use_tqdm=self.use_tqdm,
             config=worker_config,
             metrics=metrics,
             sync_stats=sync_stats,
@@ -145,7 +145,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
-            info: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
@@ -172,8 +171,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner for
-               train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param validation_data: validation data. Validation data type should be the same
@@ -194,15 +191,15 @@ class PyTorchRayEstimator(BaseRayEstimator):
             batch_size = 1
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
             profile=profile,
-            info=info,
             callbacks=callbacks,
         )
 
@@ -392,7 +389,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                  num_steps: int=None,
                  profile: bool=False,
                  reduce_results: bool=True,
-                 info: Dict=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols:  Optional[List[str]]=None,
                  callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
@@ -418,8 +414,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner
-               for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks. Note that only one MainCallback
@@ -444,14 +438,14 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                              shard_size=batch_size)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
 
         params = dict(batch_size=batch_size,
                       num_steps=num_steps,
                       profile=profile,
-                      info=info,
                       wrap_dataloader=False,
                       callbacks=callbacks)
 
