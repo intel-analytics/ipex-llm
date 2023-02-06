@@ -85,15 +85,15 @@ We support a wide range of PyTorch and Tensorflow. We only care the MAJOR.MINOR 
 Some specific note should be awared of when installing `bigdl-nano`.`
 
 ### Install on Linux
-For Linux, Ubuntu (22.04/20.04/18.04) is recommended.
+For Linux, Ubuntu (22.04/20.04) is recommended.
 
-### Install on Windows
+### Install on Windows (experimental support)
 
 For Windows OS, users could only run `bigdl-nano-init` every time they open a new cmd terminal.
 
 We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/Install/windows_guide.md) for instructions.
 
-### Install on MacOS
+### Install on MacOS (experimental support)
 #### MacOS with Intel Chip
 Same usage as Linux, while some of the funcions now rely on lower version dependencies.
 
