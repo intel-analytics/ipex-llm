@@ -17,6 +17,7 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
@@ -38,20 +39,17 @@ train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_fe
 
 
 # Step 3: Define the model, optimizer and loss
-config = {
-    "user_num": user_num,
-    "item_num": item_num,
-    "factor_num": 16,
-    "num_layers": 3,
-    "dropout": 0.5,
-    "lr": 0.01,
-    "model": "NeuMF-end",
-    "sparse_feats_input_dims": sparse_feats_input_dims,
-    "sparse_feats_embed_dims": 8,
-    "num_dense_feats": num_dense_feats,
-    "feature_cols": feature_cols,
-    "label_cols": label_cols
-}
+config = dict(
+    user_num=user_num,
+    item_num=item_num,
+    factor_num=16,
+    num_layers=3,
+    dropout=0.5,
+    lr=0.01,
+    sparse_feats_input_dims=sparse_feats_input_dims,
+    sparse_feats_embed_dims=8,
+    num_dense_feats=num_dense_feats
+)
 
 
 def model_creator(config):
@@ -60,7 +58,7 @@ def model_creator(config):
                 factor_num=config["factor_num"],
                 num_layers=config["num_layers"],
                 dropout=config["dropout"],
-                model=config["model"],
+                model="NeuMF-end",
                 sparse_feats_input_dims=config["sparse_feats_input_dims"],
                 sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
                 num_dense_feats=config["num_dense_feats"])
@@ -71,21 +69,27 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config["lr"])
 
+
+def scheduler_creator(optimizer, config):
+    return optim.lr_scheduler.StepLR(optimizer, step_size=1)
+
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
+scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            loss=loss,
+                           scheduler_creator=scheduler_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
+                           config=config,
                            backend=args.backend,
                            use_tqdm=True,
-                           workers_per_node=args.workers_per_node,
-                           config=config)
+                           workers_per_node=args.workers_per_node)
 train_stats = est.fit(data=train_data, epochs=2,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
@@ -111,7 +115,6 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
-save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
