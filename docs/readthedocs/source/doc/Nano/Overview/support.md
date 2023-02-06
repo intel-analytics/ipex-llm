@@ -26,7 +26,7 @@
 | **OpenVINO**          | ✅                    | ①       | ❌                  | ?       |
 | **ONNXRuntime**       | ✅                    | ①       | ✅                  | ?       |
 
-## Pytorch Feature Support
+## PyTorch Feature Support
 
 | Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
 | ------------------ | -------------------- | ------- | ------------------ | ------- |
@@ -37,12 +37,12 @@
 | **IPEX**           | ✅                    | ✅       | ❌                  | ❌       |
 | **Multi-instance** | ✅                    | ✅       | ②                  | ?       |
 
-## Tensorflow Feature Support
+## TensorFlow Feature Support
 
-| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS | Windows |
-| ------------------ | -------------------- | ------- | ----- | ------- |
-| **BF16**           | ✅                    | ✅       | ⭕     | ?       |
-| **Multi-instance** | ③                    | ③       | ②③    | ?       |
+| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
+| ------------------ | -------------------- | ------- | ------------------ | ------- |
+| **BF16**           | ✅                    | ✅       | ⭕                  | ?       |
+| **Multi-instance** | ③                    | ③       | ②③                 | ?       |
 
 ## Symbol Meaning
 

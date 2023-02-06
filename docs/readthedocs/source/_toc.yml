@@ -186,10 +186,10 @@ subtrees:
               title: "Tips and Known Issues"
             - file: doc/Nano/Overview/troubshooting
               title: "Troubleshooting Guide"
-            - file: doc/PythonAPI/Nano/index
-              title: "API Reference"
             - file: doc/Nano/Overview/support
               title: "OS Support"
+            - file: doc/PythonAPI/Nano/index
+              title: "API Reference"
 
 
 
