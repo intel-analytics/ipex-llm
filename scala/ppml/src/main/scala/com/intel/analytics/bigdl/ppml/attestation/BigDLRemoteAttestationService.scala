@@ -52,76 +52,18 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import com.intel.analytics.bigdl.ppml.attestation.verifier.SGXDCAPQuoteVerifierImpl
-import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
+import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, FileEncryptUtil}
 
 object BigDLRemoteAttestationService {
-
   implicit val system = ActorSystem("BigDLRemoteAttestationService")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
-  implicit val formats = DefaultFormats
-
   val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
 
-  private val salt = Array[Byte](0, 1, 2, 3, 4, 5, 6, 7)
-  private val iterations = 65536
-  private val keySize = 256
-  private var secretKey = "password"
-  private val algorithm = "PBKDF2WithHmacSHA256"
-
-  var userMap : Map[String, Any] = Map.empty 
+  var userMap : Map[String, Any] = Map.empty
   var policyMap : Map[String, Any] = Map.empty
-
-  def encrypt(data: Array[Byte]): Array[Byte] = {
-    val factory = SecretKeyFactory.getInstance(algorithm)
-    val spec = new PBEKeySpec(secretKey.toCharArray, salt, iterations, keySize)
-    val key = factory.generateSecret(spec).getEncoded()
-    val keySpec = new SecretKeySpec(key, "AES")
-
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-    cipher.init(Cipher.ENCRYPT_MODE, keySpec)
-    cipher.doFinal(data)
-  }
-
-  def decrypt(encryptedData: Array[Byte]): Array[Byte] = {
-    val factory = SecretKeyFactory.getInstance(algorithm)
-    val spec = new PBEKeySpec(secretKey.toCharArray, salt, iterations, keySize)
-    val key = factory.generateSecret(spec).getEncoded()
-    val keySpec = new SecretKeySpec(key, "AES")
-
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-    cipher.init(Cipher.DECRYPT_MODE, keySpec)
-    cipher.doFinal(encryptedData)
-  }
-
-  def saveFile(filename: String, content: String): Future[Unit] = Future {
-    val file = new File(filename)
-    if (!file.exists()) {
-      file.createNewFile()
-    }
-    val encryptedContent = encrypt(content.getBytes("UTF-8"))
-    val out = new BufferedOutputStream(new FileOutputStream(file))
-    out.write(encryptedContent)
-    out.close()
-  }
-
-  def loadFile(filename: String): Future[String] = Future {
-    val file = new File(filename)
-    if (!file.exists()) {
-      ""
-    } else {
-      val in = new FileInputStream(file)
-      val bufIn = new BufferedInputStream(in)
-      val encryptedContent =
-        Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
-      bufIn.close()
-      in.close()
-      val decryptedContent = new String(decrypt(encryptedContent), "UTF-8")
-      decryptedContent
-    }
-  }
 
   def checkAppIDAndApiKey(filename: String, map: Map[String, Any]): Boolean = {
     if (!map.contains("app_id") || !map.contains("api_key")) {
@@ -185,25 +127,25 @@ object BigDLRemoteAttestationService {
           .action((x, c) => c.copy(policyFilePath = x))
     }
     val params = cmdParser.parse(args, CmdParams()).get
-    secretKey = params.secretKey
+    val secretKey = params.secretKey
     val enrollFilePath = params.basePath + "/" + params.enrollFilePath
     val policyFilePath = params.basePath + "/" + params.policyFilePath
-    val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
+    val userContent = Await.result(FileEncryptUtil.loadFile(enrollFilePath, secretKey), 5.seconds)
     userMap = AttestationUtil.stringToMap(userContent)
-    val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
+    val policyContent = Await.result(FileEncryptUtil.loadFile(policyFilePath, secretKey), 5.seconds)
     policyMap = AttestationUtil.stringToMap(policyContent)
 
     val t = new Thread {
       override def run(): Unit = {
         while (true) {
           Thread.sleep(30 * 1000)
-          saveFile(enrollFilePath, AttestationUtil.mapToString(userMap))
-          saveFile(policyFilePath, AttestationUtil.mapToString(policyMap))
+          FileEncryptUtil.saveFile(enrollFilePath, AttestationUtil.mapToString(userMap), secretKey)
+          FileEncryptUtil.saveFile(policyFilePath, AttestationUtil.mapToString(policyMap), secretKey)
         }
       }
     }
     t.start()
-  
+
     val route: Route =
         get {
           path("") {

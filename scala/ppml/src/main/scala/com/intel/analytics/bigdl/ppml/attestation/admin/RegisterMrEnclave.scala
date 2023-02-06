@@ -88,7 +88,7 @@ object RegisterMrEnclave {
     val URL = params.URL
 
     params.asType match {
-      case ATTESTATION_CONVENTION.MODE_EHSM_KMS => {
+      case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
         val action: String = "UploadQuotePolicy"
 
         val currentTime = System.currentTimeMillis() // ms
@@ -109,8 +109,7 @@ object RegisterMrEnclave {
         }
 
         println("policy_Id " + postResult.getString("policyId"))
-      }
-      case ATTESTATION_CONVENTION.MODE_BIGDL => {
+      case ATTESTATION_CONVENTION.MODE_BIGDL =>
         val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
           val postContent = Map[String, Any](
             "app_id" -> appID,
@@ -134,8 +133,7 @@ object RegisterMrEnclave {
           return
         }
 
-        println("policy_Id " + postResult.getString("policy_id"))
-      }
+        println("policy_id " + postResult.getString("policy_id"))
     }
   }
 
