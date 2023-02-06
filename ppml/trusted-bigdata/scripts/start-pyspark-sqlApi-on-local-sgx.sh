@@ -13,20 +13,20 @@ status_11_pyspark_sql_api_Catalog=1
 status_12_pyspark_sql_types_module=1
 status_13_pyspark_sql_functions_module=1
 
-# entry /ppml/trusted-big-data-ml dir
-cd /ppml/trusted-big-data-ml
+# entry /ppml dir
+cd /ppml
 
 if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.sql.broadcastTimeout=3000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_example.py"
+    /ppml/examples/sql_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-dataframe-sgx.log
 status_1_pyspark_sql_api_DataFrame=$(echo $?)
 fi
@@ -34,14 +34,14 @@ fi
 if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "pysaprk sql api example.2 --- SQLContext"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
     --conf spark.sql.broadcastTimeout=3000 \
-    /ppml/trusted-big-data-ml/work/examples/sql_context_example.py"
+    /ppml/examples/sql_context_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-context-sgx.log
 status_2_pyspark_sql_api_SQLContext=$(echo $?)
 fi
@@ -49,13 +49,13 @@ fi
 if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
 echo "pysaprk sql api example.3 --- UDFRegistration"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/spark-sql_2.12-$SPARK_VERSION.jar:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/jars/spark-sql_2.12-$SPARK_VERSION.jar:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_UDFRegistration_example.py"
+    /ppml/examples/sql_UDFRegistration_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-UDFRegistration.log
 status_3_pyspark_sql_api_UDFRegistration=$(echo $?)
 fi
@@ -63,13 +63,13 @@ fi
 if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "pysaprk sql api example.4 --- GroupedData"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_groupeddata_example.py"
+    /ppml/examples/sql_groupeddata_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-groupeddata-sgx.log
 status_4_pyspark_sql_api_GroupedData=$(echo $?)
 fi
@@ -77,13 +77,13 @@ fi
 if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "pysaprk sql api example.5 --- Column"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_column_example.py"
+    /ppml/examples/sql_column_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-column-sgx.log
 status_5_pyspark_sql_api_Column=$(echo $?)
 fi
@@ -91,13 +91,13 @@ fi
 if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
 echo "pysaprk sql api example.6 --- Row_and_DataFrameNaFunctions"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_row_func_example.py"
+    /ppml/examples/sql_row_func_example.py"
 gramine-sgx bash 2>&1 | tee test-sql-row-sgx.log
 status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions=$(echo $?)
 fi
@@ -105,13 +105,13 @@ fi
 if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "pysaprk sql api example.7 --- Window"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_window_example.py"
+    /ppml/examples/sql_window_example.py"
 gramine-sgx bash 2>&1 | tee test-window-sgx.log
 status_7_pyspark_sql_api_Window=$(echo $?)
 fi
@@ -119,13 +119,13 @@ fi
 if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "pysaprk sql api example.8 --- DataframeReader"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_reader_example.py"
+    /ppml/examples/sql_dataframe_reader_example.py"
 gramine-sgx bash 2>&1 | tee test-dataframe-reader-sgx.log
 status_8_pyspark_sql_api_DataframeReader=$(echo $?)
 fi
@@ -133,13 +133,13 @@ fi
 if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
 echo "pysaprk sql api example.9 --- DataframeWriter"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_dataframe_writer_example.py"
+    /ppml/examples/sql_dataframe_writer_example.py"
 gramine-sgx bash 2>&1 | tee test-dataframe-writer-sgx.log
 status_9_pyspark_sql_api_DataframeWriter=$(echo $?)
 fi
@@ -147,13 +147,13 @@ fi
 if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "pysaprk sql api example.10 --- HiveContext"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_hive_context_example.py"
+    /ppml/examples/sql_hive_context_example.py"
 gramine-sgx bash 2>&1 | tee sql_hive_context_example-sgx.log
 status_10_pyspark_sql_api_HiveContext=$(echo $?)
 fi
@@ -161,13 +161,13 @@ fi
 if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "pysaprk sql api example.11 --- Catalog"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_catalog_example.py"
+    /ppml/examples/sql_catalog_example.py"
 gramine-sgx bash 2>&1 | tee sql_catalog_example-sgx.log
 status_11_pyspark_sql_api_Catalog=$(echo $?)
 fi
@@ -175,13 +175,13 @@ fi
 if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "pysaprk sql api example.12 --- types module"
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx1g \
   org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    /ppml/trusted-big-data-ml/work/examples/sql_types_example.py"
+    /ppml/examples/sql_types_example.py"
 gramine-sgx bash 2>&1 | tee sql_types_example-sgx.log
 status_12_pyspark_sql_types_module=$(echo $?)
 fi
@@ -191,13 +191,13 @@ echo "pysaprk sql api example.13 --- pyspark api functions"
   for f_num in {a..g}
   do
 export sgx_command="/opt/jdk8/bin/java \
-      -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+      -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
       -Xmx1g \
       org.apache.spark.deploy.SparkSubmit \
         --master local[4] \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
-        /ppml/trusted-big-data-ml/work/examples/sql_functions_${f_num}_example.py"
+        /ppml/examples/sql_functions_${f_num}_example.py"
 gramine-sgx bash 2>&1 | tee sql_functions_${f_num}_example.log
   done
 fi

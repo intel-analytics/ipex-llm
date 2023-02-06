@@ -1,9 +1,9 @@
 #!/bin/bash
-cd /ppml/trusted-big-data-ml
+cd /ppml
 
 /opt/jdk8/bin/java \
-    -cp "/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*" \
+    -cp "/ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/*" \
     -Xmx1g org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
-    /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/src/main/python/pi.py
+    /ppml/spark-${SPARK_VERSION}/examples/src/main/python/pi.py
 

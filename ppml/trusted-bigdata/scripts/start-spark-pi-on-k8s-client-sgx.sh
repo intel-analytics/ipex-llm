@@ -1,11 +1,11 @@
 #!/bin/bash
  
 export mode=client && \
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
+secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin` && \
 TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 SPARK_LOCAL_IP=$LOCAL_IP && \
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/conf/:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/* \
+  -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* \
     -Xmx8g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
@@ -20,8 +20,8 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
@@ -47,14 +47,14 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
     --class org.apache.spark.examples.SparkPi \
     --verbose \
-    --jars local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-    local:///ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000"
+    --jars local:///ppml/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local:///ppml/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000"
 gramine-sgx bash 2>&1 | tee spark-pi-client-sgx.log

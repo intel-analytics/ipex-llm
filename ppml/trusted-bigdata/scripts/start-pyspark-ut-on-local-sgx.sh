@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # python files will be submitted as jobs via spark.
-cd /ppml/trusted-big-data-ml
-mkdir -p /ppml/trusted-big-data-ml/logs/pyspark/sql
+cd /ppml
+mkdir -p /ppml/logs/pyspark/sql
 
 # Source Suites Path
-SOURCE_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/work/data/Spark-UT-Suites/pysparkSuites"
+SOURCE_SUITES_FILE_PATH="/ppml/data/Spark-UT-Suites/pysparkSuites"
 
 # temp input data for and result data for ut test
-INPUT_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/pysparkInputSuites"
-SUCCESS_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/pysparkSucceessSuites"
-FAILED_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/pysparkFailedSuites"
+INPUT_SUITES_FILE_PATH="/ppml/pysparkInputSuites"
+SUCCESS_SUITES_FILE_PATH="/ppml/pysparkSucceessSuites"
+FAILED_SUITES_FILE_PATH="/ppml/pysparkFailedSuites"
 
 # copy source suites to failed suites, assume
 cp $SOURCE_SUITES_FILE_PATH $FAILED_SUITES_FILE_PATH
@@ -31,18 +31,18 @@ do
         do
             # Gramine SGX Command
             export sgx_command="/opt/jdk8/bin/java -cp \
-                   /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+                   /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
                    -Xmx1g org.apache.spark.deploy.SparkSubmit \
                    --master local[4] \
                    --conf spark.network.timeout=10000000 \
                    --conf spark.executor.heartbeatInterval=10000000 \
                    --conf spark.python.use.daemon=false \
                    --conf spark.python.worker.reuse=false \
-                   /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/python/pyspark/sql/tests/$suite"
-            gramine-sgx bash > /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log 2>&1
+                   /ppml/spark-$SPARK_VERSION/python/pyspark/sql/tests/$suite"
+            gramine-sgx bash > /ppml/logs/pyspark/sql/$suite.log 2>&1
 
             # Records the number of successful test files number and path.
-            if [ -n "$(grep "FAILED" /ppml/trusted-big-data-ml/logs/pyspark/sql/$suite.log -H -o)" ]
+            if [ -n "$(grep "FAILED" /ppml/logs/pyspark/sql/$suite.log -H -o)" ]
             then
                 echo "$suite" >> $FAILED_SUITES_FILE_PATH
             else

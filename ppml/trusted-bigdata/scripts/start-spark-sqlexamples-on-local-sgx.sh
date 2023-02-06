@@ -1,6 +1,6 @@
 #!/bin/bash
 # define scala status
-cd /ppml/trusted-big-data-ml
+cd /ppml
 
 status_2_scala_sql_example=1
 status_3_scala_sql_RDDRelation=1
@@ -14,13 +14,13 @@ LOCAL_IP=$LOCAL_IP
 
 if [ $status_2_scala_sql_example -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.sql.SparkSQLExample \
-  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+  /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-example-sgx.log
 fi
 status_2_scala_sql_example=$(echo $?)
@@ -28,13 +28,13 @@ status_2_scala_sql_example=$(echo $?)
 if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-    -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+    -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
     -Xmx10g \
     -XX:ActiveProcessorCount=24 \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --class org.apache.spark.examples.sql.RDDRelation \
-    /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+    /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-RDDRelation-sgx.log
 fi
 status_3_scala_sql_RDDRelation=$(echo $?)
@@ -42,13 +42,13 @@ status_3_scala_sql_RDDRelation=$(echo $?)
 if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.sql.SimpleTypedAggregator \
-  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+  /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SimpleTypedAggregator-sgx.log
 fi
 status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
@@ -56,13 +56,13 @@ status_4_scala_sql_SimpleTypedAggregator=$(echo $?)
 if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.sql.UserDefinedScalar \
-  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+  /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedScalar-sgx.log
 fi
 status_5_scala_sql_UserDefinedScalar=$(echo $?)
@@ -70,26 +70,26 @@ status_5_scala_sql_UserDefinedScalar=$(echo $?)
 if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.sql.UserDefinedTypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+  /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedTypedAggregation-sgx.log
 fi
 status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
-  -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/* \
+  -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx10g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
   --class org.apache.spark.examples.sql.UserDefinedUntypedAggregation \
-  /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
+  /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee test-scala-spark-sql-UserDefinedUntypedAggregation-sgx.log
 fi
 status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
@@ -101,7 +101,7 @@ status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 #gramine-argv-serializer bash -c "
 #    rm -rf pair.parquet && \
 #    /opt/jdk8/bin/java \
-#        -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
+#        -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/* \
 #        -Xmx10g \
 #        -XX:ActiveProcessorCount=24 \
 #        org.apache.spark.deploy.SparkSubmit \
@@ -120,7 +120,7 @@ status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 #        --executor-cores 4 \
 #        --total-executor-cores 4 \
 #        --executor-memory 10G \
-#        /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > secured_argvs
+#        /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > secured_argvs
 #./init.sh
 #gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SparkHiveExample-sgx.log
 #fi

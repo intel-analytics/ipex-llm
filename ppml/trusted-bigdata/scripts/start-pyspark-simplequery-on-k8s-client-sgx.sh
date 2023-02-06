@@ -1,12 +1,12 @@
 #!/bin/bash
-cd /ppml/trusted-big-data-ml
+cd /ppml
 
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 export TF_MKL_ALLOC_MAX_BYTES=10737418240
 export SPARK_LOCAL_IP=$LOCAL_IP
 
 export sgx_command="/opt/jdk8/bin/java \
-    -cp /ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/*:/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/* \
+    -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/* \
     -Xmx1g org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
@@ -20,8 +20,8 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
@@ -43,25 +43,25 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    --jars local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-grpc-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-orca-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/bigdl-serving-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
-    --py-files /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
-    /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/code/simple_query_example.py \
+    --jars local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-friesian-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-grpc-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-orca-spark_$SPARK_VERSION-$BIGDL_VERSION.jar,local:///ppml/bigdl-$BIGDL_VERSION/jars/bigdl-serving-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+    --py-files /ppml/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,/ppml/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
+    /ppml/data/SimpleQueryExampleWithSimpleKMS/code/simple_query_example.py \
     --simple_app_id 465227134889 \
     --simple_app_key 799072978028 \
-    --primary_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \
-    --data_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/dataKey \
-    --input_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/input \
-    --output_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/output \
+    --primary_key_path /ppml/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \
+    --data_key_path /ppml/data/SimpleQueryExampleWithSimpleKMS/keys/simple/dataKey \
+    --input_path /ppml/data/SimpleQueryExampleWithSimpleKMS/ppml_test/input \
+    --output_path /ppml/data/SimpleQueryExampleWithSimpleKMS/ppml_test/output \
     --input_encrypt_mode AES/CBC/PKCS5Padding \
     --output_encrypt_mode plain_text"
 gramine-sgx bash 2>&1 | tee test-python-k8s-spark-simplequery.log

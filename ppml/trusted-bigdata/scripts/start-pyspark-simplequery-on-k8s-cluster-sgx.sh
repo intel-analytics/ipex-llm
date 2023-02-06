@@ -1,9 +1,9 @@
 #!/bin/bash
-cd /ppml/trusted-big-data-ml
+cd /ppml
 
 deploy_mode=cluster && \
 driver_name=pyspark-simplequery-on-k8s-cluster-sgx && \
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
+secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin` && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
 /opt/jdk8/bin/java \
     -cp $SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
@@ -20,8 +20,8 @@ export SPARK_LOCAL_IP=$LOCAL_IP && \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.container.image.pullPolicy=Always \
     --conf spark.network.timeout=10000000 \
@@ -45,20 +45,20 @@ export SPARK_LOCAL_IP=$LOCAL_IP && \
     --conf spark.ssl.enabled=true \
     --conf spark.ssl.port=8043 \
     --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.keyStorePassword=$secure_password \
     --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
     --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,$(echo $BIGDL_HOME/jars/* |tr ' ' ',' | sed "s#${BIGDL_HOME}#local://${BIGDL_HOME}#g") \
-    --py-files local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local:///ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
-    local:///ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/code/simple_query_example.py \
+    --py-files local:///ppml/bigdl-$BIGDL_VERSION/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local:///ppml/bigdl-$BIGDL_VERSION/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local:///ppml/bigdl-$BIGDL_VERSION/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
+    local:///ppml/data/SimpleQueryExampleWithSimpleKMS/code/simple_query_example.py \
     --simple_app_id 465227134889 \
     --simple_app_key 799072978028 \
-    --primary_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \
-    --data_key_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/keys/simple/dataKey \
-    --input_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/input \
-    --output_path /ppml/trusted-big-data-ml/work/data/SimpleQueryExampleWithSimpleKMS/ppml_test/output \
+    --primary_key_path /ppml/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \
+    --data_key_path /ppml/data/SimpleQueryExampleWithSimpleKMS/keys/simple/dataKey \
+    --input_path /ppml/data/SimpleQueryExampleWithSimpleKMS/ppml_test/input \
+    --output_path /ppml/data/SimpleQueryExampleWithSimpleKMS/ppml_test/output \
     --input_encrypt_mode AES/CBC/PKCS5Padding \
     --output_encrypt_mode plain_text 2>&1 | tee pyspark-simplequery-on-k8s-cluster-sgx.log

@@ -6,10 +6,10 @@ wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip
 unzip -q v$SPARK_VERSION.zip
 rm v$SPARK_VERSION.zip
 mv /opt/spark-$SPARK_VERSION /opt/spark-source
-cp -r /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/bin /opt/spark-source
-cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
-mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-jars
-cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-jars
+cp -r /ppml/spark-${SPARK_VERSION}/bin /opt/spark-source
+cd /ppml/spark-${SPARK_VERSION}
+mkdir /ppml/spark-${SPARK_VERSION}/test-jars
+cd /ppml/spark-${SPARK_VERSION}/test-jars
 wget https://repo1.maven.org/maven2/org/apache/spark/spark-core_2.12/$SPARK_VERSION/spark-core_2.12-$SPARK_VERSION-tests.jar
 wget https://repo1.maven.org/maven2/org/apache/spark/spark-catalyst_2.12/$SPARK_VERSION/spark-catalyst_2.12-$SPARK_VERSION-tests.jar
 wget https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar
@@ -22,24 +22,24 @@ wget https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.13/byte-buddy-
 wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.6/postgresql-42.2.6.jar
 wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12/1.0.0-SNAP5/scalatestplus-mockito_2.12-1.0.0-SNAP5.jar
 wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar
-#mkdir /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
-#cd /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/test-classes
+#mkdir /ppml/spark-${SPARK_VERSION}/test-classes
+#cd /ppml/spark-${SPARK_VERSION}/test-classes
 wget https://repo1.maven.org/maven2/org/apache/spark/spark-sql_2.12/$SPARK_VERSION/spark-sql_2.12-$SPARK_VERSION-tests.jar
 #jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar
 #rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
 
-cd /ppml/trusted-big-data-ml
-mkdir -p /ppml/trusted-big-data-ml/logs/runtime
-mkdir -p /ppml/trusted-big-data-ml/logs/reporter
+cd /ppml
+mkdir -p /ppml/logs/runtime
+mkdir -p /ppml/logs/reporter
 
 # Source Suites Path
-SOURCE_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/work/data/Spark-UT-Suites/sparkSuites"
+SOURCE_SUITES_FILE_PATH="/ppml/data/Spark-UT-Suites/sparkSuites"
 
 # temp input data for and result data for ut test
-INPUT_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkInputSuites"
-SUCCESS_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkSucceessSuites"
-FAILED_SUITES_FILE_PATH="/ppml/trusted-big-data-ml/sparkFailedSuites"
+INPUT_SUITES_FILE_PATH="/ppml/sparkInputSuites"
+SUCCESS_SUITES_FILE_PATH="/ppml/sparkSucceessSuites"
+FAILED_SUITES_FILE_PATH="/ppml/sparkFailedSuites"
 
 # copy source suites to failed suites, assume
 cp $SOURCE_SUITES_FILE_PATH $FAILED_SUITES_FILE_PATH
@@ -65,16 +65,16 @@ do
                -Djdk.lang.Process.launchMechanism=posix_spawn \
                -XX:MaxMetaspaceSize=256m \
                -Dos.name='Linux' \
-               -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION \
+               -Dspark.test.home=/ppml/spark-$SPARK_VERSION \
                -Dspark.python.use.daemon=false \
                -Dspark.python.worker.reuse=false \
                -Dspark.driver.host=$LOCAL_IP \
                org.scalatest.tools.Runner \
                -s $suite \
-               -fF /ppml/trusted-big-data-ml/logs/reporter/$suite.txt"
-        gramine-sgx bash > /ppml/trusted-big-data-ml/logs/runtime/$suite.log 2>&1
+               -fF /ppml/logs/reporter/$suite.txt"
+        gramine-sgx bash > /ppml/logs/runtime/$suite.log 2>&1
 
-        if [ -z "$(grep "All tests passed" /ppml/trusted-big-data-ml/logs/reporter/$suite.txt)" ]
+        if [ -z "$(grep "All tests passed" /ppml/logs/reporter/$suite.txt)" ]
         then
             echo "$suite" >> $FAILED_SUITES_FILE_PATH
         else
