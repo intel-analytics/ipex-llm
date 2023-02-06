@@ -23,8 +23,7 @@ import java.security.{KeyStore, SecureRandom}
 import javax.crypto.{Cipher, SecretKey, SecretKeyFactory}
 import javax.crypto.spec.{PBEKeySpec, SecretKeySpec}
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
-import java.util.Base64
-import java.math.BigInteger
+import java.util.{Base64, UUID}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.{ConnectionContext, Http, HttpsConnectionContext}
@@ -52,6 +51,7 @@ import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
 import com.intel.analytics.bigdl.ppml.attestation.verifier.SGXDCAPQuoteVerifierImpl
+import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
 
 object BigDLRemoteAttestationService {
 
@@ -119,17 +119,6 @@ object BigDLRemoteAttestationService {
     }
   }
 
-  def mapToString(map: Map[String, Any]): String = {
-    Serialization.write(map)
-  }
-
-  def stringToMap(str: String): Map[String, Any] = {
-    JSON.parseFull(str) match {
-      case Some(map: Map[String, Any]) => map
-      case None => Map.empty
-    }
-  }
-
   def checkAppIDAndApiKey(filename: String, map: Map[String, Any]): Boolean = {
     if (!map.contains("app_id") || !map.contains("api_key")) {
       false
@@ -137,7 +126,7 @@ object BigDLRemoteAttestationService {
       val appID = map.get("app_id").mkString
       val apiKey = map.get("api_key").mkString
       val fileContent = Await.result(loadFile(filename), 5.seconds)
-      val userMap = stringToMap(fileContent)
+      val userMap = AttestationUtil.stringToMap(fileContent)
       val userMapRes = userMap.get(appID).mkString
       if ((userMapRes != "") && apiKey == userMapRes) {
         true
@@ -147,14 +136,6 @@ object BigDLRemoteAttestationService {
     }
   }
 
-  def getMREnclaveFromQuote(quote: Array[Byte]): String = {
-    new BigInteger(1, quote.slice(112, 144)).toString(16)
-  }
-
-  def getMRSignerFromQuote(quote: Array[Byte]): String = {
-    new BigInteger(1, quote.slice(176, 208)).toString(16)
-  }
-
   def main(args: Array[String]): Unit = {
 
     val logger = LogManager.getLogger(getClass)
@@ -162,9 +143,10 @@ object BigDLRemoteAttestationService {
                           servicePort: String = "9875",
                           httpsKeyStoreToken: String = "token",
                           httpsKeyStorePath: String = "./key",
-                          httpsEnabled: Boolean = false,
-                          basePath: String = "./BigDLRemoteAttestationService.dat",
-                          policyPath: String = "./BigDLRemoteAttestationServicePolicy.dat",
+                          httpsEnabled: Boolean = true,
+                          basePath: String = "./data",
+                          enrollFilePath: String = "BigDLRemoteAttestationService.dat",
+                          policyFilePath: String = "BigDLRemoteAttestationServicePolicy.dat",
                           secretKey: String = "password"
                           )
 
@@ -189,15 +171,20 @@ object BigDLRemoteAttestationService {
           .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
           .action((x, c) => c.copy(secretKey = x))
         opt[String]('b', "basePath")
+          .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
+          .action((x, c) => c.copy(basePath = x))
+        opt[String]('e', "enrollFilePath")
           .text("Path of base data file to save user information, "
             + "default is ./BigDLRemoteAttestationService.dat")
-          .action((x, c) => c.copy(basePath = x))
-        opt[String]('o', "policyPath")
+          .action((x, c) => c.copy(enrollFilePath = x))
+        opt[String]('o', "policyFilePath")
           .text("Path of policy data file, default is ./BigDLRemoteAttestationServicePolicy.dat")
-          .action((x, c) => c.copy(policyPath = x))
+          .action((x, c) => c.copy(policyFilePath = x))
     }
     val params = cmdParser.parse(args, CmdParams()).get
     secretKey = params.secretKey
+    val enrollFilePath = params.basePath + params.enrollFilePath
+    val policyFilePath = params.basePath + params.policyFilePath
 
     val route: Route =
         get {
@@ -212,17 +199,14 @@ object BigDLRemoteAttestationService {
             complete(res)
           } ~
           path("enroll") {
-            var appID = Random.alphanumeric.take(32).mkString
-            var apiKey = Random.alphanumeric.take(32).mkString
+            val appID = UUID.randomUUID.toString
+            val apiKey = Random.alphanumeric.take(32).mkString
             val basePath = params.basePath
-            val userContent = Await.result(loadFile(basePath), 5.seconds)
-            var userMap = stringToMap(userContent)
-            while (userMap.contains(appID)) {
-              appID = Random.alphanumeric.take(32).mkString
-              apiKey = Random.alphanumeric.take(32).mkString
-            }
+            val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
+            var userMap = AttestationUtil.stringToMap(userContent)
+
             userMap += (appID -> apiKey)
-            saveFile(basePath, mapToString(userMap))
+            saveFile(basePath, AttestationUtil.mapToString(userMap))
             val res = "{\"app_id\":\"" + appID + ",\"api_key\":\"" + apiKey + "\"}"
             complete(res)
           }
@@ -231,8 +215,8 @@ object BigDLRemoteAttestationService {
           path("registePolicy") {
             entity(as[String]) { jsonMsg =>
               logger.info(jsonMsg)
-              val msg = stringToMap(jsonMsg)
-              if (!checkAppIDAndApiKey(params.basePath, msg)) {
+              val msg = AttestationUtil.stringToMap(jsonMsg)
+              if (!checkAppIDAndApiKey(enrollFilePath, msg)) {
                 complete(400, "Invalid app_id and api_key.")
               } else {
                 if (!msg.contains("TDX") || msg.get("TDX").mkString == "false") {
@@ -242,20 +226,18 @@ object BigDLRemoteAttestationService {
                   val appID = msg.get("app_id").mkString
                   val mrEnclave = msg.get("mr_enclave").mkString
                   val mrSigner = msg.get("mr_signer").mkString
-                  val policyContent = Await.result(loadFile(params.policyPath), 5.seconds)
-                  var policyMap = stringToMap(policyContent)
-                  var policyID = Random.alphanumeric.take(48).mkString
-                  while (policyMap.contains(policyID)) {
-                    policyID = Random.alphanumeric.take(48).mkString
-                  }
+                  val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
+                  var policyMap = AttestationUtil.stringToMap(policyContent)
+                  var policyID = UUID.randomUUID.toString
+
                   val curContent = Map[String, Any] (
                     "app_id" -> appID,
                     "mr_enclave" -> mrEnclave,
                     "mr_signer" -> mrSigner
                   )
                   policyMap += (policyID -> curContent)
-                  saveFile(params.policyPath, mapToString(policyMap))
-                  val res = mapToString(Map("policy_id" -> policyID))
+                  saveFile(policyFilePath, AttestationUtil.mapToString(policyMap))
+                  val res = AttestationUtil.mapToString(Map("policy_id" -> policyID))
                   complete(200, res)
                 } else {
                   // TODO: TDX policy
@@ -267,8 +249,8 @@ object BigDLRemoteAttestationService {
           path("verifyQuote") {
             entity(as[String]) { jsonMsg =>
               logger.info(jsonMsg)
-              val msg = stringToMap(jsonMsg)
-              if (!checkAppIDAndApiKey(params.basePath, msg)) {
+              val msg = AttestationUtil.stringToMap(jsonMsg)
+              if (!checkAppIDAndApiKey(enrollFilePath, msg)) {
                 complete(400, "Invalid app_id and api_key.")
               } else {
                 if (!msg.contains("quote")) {
@@ -277,15 +259,21 @@ object BigDLRemoteAttestationService {
                   val quoteBase64 = msg.get("quote").mkString
                   val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
                   val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
-                  if (verifyQuoteResult >= 0) {
-                    if (msg.contains("policy_id")) {
+                  if (verifyQuoteResult < 0) {
+                    val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+                    complete(400, res)
+                  } else {
+                    if (!msg.contains("policy_id")) {
+                      val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
+                      complete(200, res)
+                    } else {
                       val appID = msg.get("app_id").mkString
-                      val mrEnclave = getMREnclaveFromQuote(quote)
-                      val mrSigner = getMRSignerFromQuote(quote)
+                      val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
+                      val mrSigner = AttestationUtil.getMRSignerFromQuote(quote)
 
                       val policyID = msg.get("policy_id").mkString
-                      val fileContent = Await.result(loadFile(params.policyPath), 5.seconds)
-                      val policyMap = stringToMap(fileContent)
+                      val fileContent = Await.result(loadFile(policyFilePath), 5.seconds)
+                      val policyMap = AttestationUtil.stringToMap(fileContent)
                       val policyContent: Map[String, Any] = policyMap.get(policyID) match {
                         case Some(map: Map[String, Any]) => map
                         case None => Map.empty
@@ -299,13 +287,7 @@ object BigDLRemoteAttestationService {
                         val res = "{\"result\": -1}"
                         complete(400, res)
                       }
-                    } else {
-                      val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
-                      complete(200, res)
                     }
-                  } else {
-                    val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
-                    complete(400, res)
                   }
                 }
               }

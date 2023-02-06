@@ -43,7 +43,6 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              quoteType: String = "gramine",
-                             httpsEnabled: Boolean = false,
                              userReport: String = "ppml")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -69,9 +68,6 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-            opt[Boolean]('s', "httpsEnabled")
-              .text("httpsEnabled")
-              .action((x, c) => c.copy(httpsEnabled = x))
             opt[String]('O', "quoteType")
               .text("quoteType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(quoteType = x))
@@ -98,7 +94,7 @@ object AttestationCLI {
                     params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_BIGDL =>
                 new BigDLAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.appID, params.apiKey, params.httpsEnabled)
+                    params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
