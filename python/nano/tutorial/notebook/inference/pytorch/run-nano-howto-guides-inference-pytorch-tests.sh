@@ -15,6 +15,9 @@ sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_
 # the number of batches to run is limited for testing purposes
 sed -i "s/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/" $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_inc.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/quantize_pytorch_inference_pot.ipynb $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 
+# reduce the executing time of optimize function for testing purposes
+sed -i "s/latency_sample_num=100/latency_sample_num=10/" $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
+sed -i "s/latency_sample_num=20/latency_sample_num=10/" $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 
 echo "Start testing"
 start=$(date "+%s")
