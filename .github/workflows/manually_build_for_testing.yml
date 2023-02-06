@@ -30,6 +30,7 @@ on:
         - bigdl-ppml-trusted-python-toolkit-base
         - bigdl-ppml-trusted-python-toolkit-ref
         - bigdl-ppml-trusted-bigdata-gramine
+        - bigdl-test-tdx
       tag:
         description: 'docker image tag (e.g. test)'
         required: true
@@ -754,3 +755,31 @@ jobs:
 
         sudo docker rmi -f ${base_image}:${TAG}
         sudo docker rmi -f ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
+
+
+  bigdl-test-tdx:
+    if: ${{ github.event.inputs.artifact == 'bigdl-test-tdx' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-test-tdx
+      run: |
+        echo "########################################"
+        echo "####### bigdl-test-tdx ########"
+        echo "########################################"
+        cd ppml/test-image
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t bigdl-tdx-test:${TAG} -f ./Dockerfile .
+        sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
