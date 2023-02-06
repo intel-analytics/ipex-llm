@@ -826,7 +826,7 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
         if not self.context_enabled:
-            self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
             self.cxt_manager = DummyForecasterContextManager()
         with self.cxt_manager:
@@ -907,7 +907,7 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if not self.context_enabled:
-            self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
             self.cxt_manager = DummyForecasterContextManager()
         with self.cxt_manager:
@@ -988,7 +988,7 @@ class BasePytorchForecaster(Forecaster):
                                              shuffle=False)
 
         if not self.context_enabled:
-            self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
             self.cxt_manager = DummyForecasterContextManager()
         with self.cxt_manager:
