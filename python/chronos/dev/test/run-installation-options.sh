@@ -23,6 +23,8 @@ export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 echo "test output1"
 echo "${OMP_NUM_THREADS}"
+export OMP_NUM_THREADS=1
+echo "${OMP_NUM_THREADS}"
 if [ -z "${OMP_NUM_THREADS}" ]; then
     export OMP_NUM_THREADS=1
     echo "test output2"
