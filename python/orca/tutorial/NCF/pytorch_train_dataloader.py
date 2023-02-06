@@ -55,7 +55,6 @@ config = dict(
     num_layers=3,
     dropout=0.5,
     lr=0.01,
-    model="NeuMF-end",
     sparse_feats_embed_dims=8
 )
 
