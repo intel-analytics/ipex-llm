@@ -17,7 +17,6 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 import torch.utils.data as data
 
 from pytorch_dataset import load_dataset, process_users_items, get_input_dims
@@ -36,20 +35,31 @@ init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config["dataset_dir"], config["num_ng"])
+    train_dataset, _ = load_dataset(config["dataset_dir"], num_ng=4)
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config["dataset_dir"], config["num_ng"])
+    _, test_dataset = load_dataset(config["dataset_dir"], num_ng=4)
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
 
 
 # Step 3: Define the model, optimizer and loss
+config = dict(
+    dataset_dir=args.data_dir,
+    factor_num=16,
+    num_layers=3,
+    dropout=0.5,
+    lr=0.01,
+    model="NeuMF-end",
+    sparse_feats_embed_dims=8
+)
+
+
 def model_creator(config):
     users, items, user_num, item_num, sparse_features, dense_features, \
         total_cols = process_users_items(config["dataset_dir"])
@@ -73,8 +83,7 @@ def optimizer_creator(model, config):
 
 
 def scheduler_creator(optimizer, config):
-    scheduler = StepLR(optimizer, step_size=1)
-    return scheduler
+    return optim.lr_scheduler.StepLR(optimizer, step_size=1)
 
 loss = nn.BCEWithLogitsLoss()
 
@@ -82,24 +91,17 @@ loss = nn.BCEWithLogitsLoss()
 # Step 4: Distributed training with Orca PyTorch Estimator
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
-scheduler = scheduler_creator if args.lr_scheduler else None
+scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
-                           scheduler_creator=scheduler,
                            loss=loss,
+                           scheduler_creator=scheduler_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
+                           config=config,
                            backend=args.backend,
                            use_tqdm=True,
-                           workers_per_node=args.workers_per_node,
-                           config={"dataset_dir": args.data_dir,
-                                   "num_ng": 4,
-                                   "factor_num": 16,
-                                   "num_layers": 3,
-                                   "dropout": 0.5,
-                                   "lr": 0.01,
-                                   "model": "NeuMF-end",
-                                   "sparse_feats_embed_dims": 8})
+                           workers_per_node=args.workers_per_node)
 train_stats = est.fit(data=train_loader_func,
                       validation_data=test_loader_func,
                       epochs=2,
