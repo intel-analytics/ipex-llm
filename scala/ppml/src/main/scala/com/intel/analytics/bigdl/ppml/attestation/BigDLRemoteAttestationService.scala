@@ -46,7 +46,6 @@ import scala.util.parsing.json._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-// import scala.collection.mutable.Map
 
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
@@ -139,8 +138,10 @@ object BigDLRemoteAttestationService {
       override def run(): Unit = {
         while (true) {
           Thread.sleep(30 * 1000)
-          FileEncryptUtil.saveFile(enrollFilePath, AttestationUtil.mapToString(userMap), secretKey)
-          FileEncryptUtil.saveFile(policyFilePath, AttestationUtil.mapToString(policyMap), secretKey)
+          FileEncryptUtil.saveFile(enrollFilePath, 
+            AttestationUtil.mapToString(userMap), secretKey)
+          FileEncryptUtil.saveFile(policyFilePath, 
+            AttestationUtil.mapToString(policyMap), secretKey)
         }
       }
     }
