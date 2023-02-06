@@ -8,14 +8,14 @@ AVX512_AVAILABLE=`lscpu | grep avx512`
 
 set -e
 
+# limit the iterations of inferece for testing purposes
+sed -i "s/range(100)/range(10)/" $NANO_HOWTO_GUIDES_TEST_DIR/tensorflow_inference_bf16.ipynb
+
 # comment out the install commands
 sed -i "s/!pip install/#!pip install/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
 
 # comment out the environment setting commands
 sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
-
-# limit the iterations of inferece for testing purposes
-sed -i "s/range(100)/range(10)/" $NANO_HOWTO_GUIDES_TEST_DIR/tensorflow_inference_bf16.ipynb
 
 echo "Start testing"
 start=$(date "+%s")
