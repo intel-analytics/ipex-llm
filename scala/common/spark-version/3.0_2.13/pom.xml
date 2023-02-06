@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.intel.analytics.bigdl.spark-version</groupId>
-    <artifactId>3.0</artifactId>
+    <artifactId>3.0_2.13</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -100,7 +100,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.12</artifactId>
+            <artifactId>spark-core_2.13</artifactId>
             <version>${spark.version}</version>
             <scope>provided</scope>
             <exclusions>
@@ -144,13 +144,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.12</artifactId>
+            <artifactId>spark-mllib_2.13</artifactId>
             <version>${spark.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-core_2.12</artifactId>
+                    <artifactId>spark-core_2.13</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>

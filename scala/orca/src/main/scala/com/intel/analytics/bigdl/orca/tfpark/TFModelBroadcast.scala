@@ -194,8 +194,7 @@ private[bigdl] object CachedModels {
 
   import java.util.concurrent.ConcurrentHashMap
 
-  import scala.collection._
-  import scala.collection.convert.decorateAsScala._
+  import scala.collection.JavaConverters._
   import scala.language.existentials
 
   type Modles = ArrayBuffer[Module[_]]
