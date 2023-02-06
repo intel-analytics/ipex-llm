@@ -39,9 +39,10 @@
 
 ## Tensorflow Feature Support
 
-| Feature  | Ubuntu (20.04/22.04) | CentOS7 | MacOS | Windows |
-| -------- | -------------------- | ------- | ----- | ------- |
-| **BF16** | ✅                    | ✅       | ⭕     | ?       |
+| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS | Windows |
+| ------------------ | -------------------- | ------- | ----- | ------- |
+| **BF16**           | ✅                    | ✅       | ⭕     | ?       |
+| **Multi-instance** | ③                    | ③       | ②③    | ?       |
 
 ## Symbol Meaning
 
@@ -52,4 +53,5 @@
 | ⭕      | All Mac machines with intel chip do not support bf16 instruction set, so this feature is pointless |
 | ①      | This feature is only supported when used together with jemalloc                                    |
 | ②      | This feature is supported but without any performance guarantee                                    |
+| ③      | Only Multi-instance training is supported for now                                                  |
 | ?      | Not tested                                                                                         |
