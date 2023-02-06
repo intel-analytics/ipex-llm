@@ -696,6 +696,7 @@ $FLINK_HOME/bin/flink run-application \
     -Dkubernetes.sgx.enabled=true \
     -Djobmanager.memory.process.size=4g \
     -Dtaskmanager.memory.process.size=4g \
+    -Dio.tmp.dirs=/ppml/encrypted-fs \
     -Dkubernetes.flink.conf.dir=/ppml/flink/conf \
     -Dkubernetes.entry.path="/opt/flink-entrypoint.sh" \
     -Dkubernetes.jobmanager.service-account=spark \
@@ -783,6 +784,14 @@ The following are the configurations related to SSL between internal components 
 * `security.ssl.internal.keystore-password`: The secret to decrypt the keystore file for Flink's for Flink's internal endpoints (rpc, data transport, blob server).
 * `security.ssl.internal.truststore-password`: The password to decrypt the truststore for Flink's internal endpoints (rpc, data transport, blob server).
 * `security.ssl.internal.key-password`: The secret to decrypt the key in the keystore for Flink's internal endpoints (rpc, data transport, blob server).
+
+#### 5.2 Local Storage
+* `io.tmp.dirs`: The directories where Flink puts local data, defaults to the system temp directory (java.io.tmpdir property). If a list of directories is configured, Flink will rotate files across the directories. For more information please refer to [Flink Configuration](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#io-tmp-dirs)
+
+Set this path to encrypted fs dir to ensure temp file encryption on SGX mode.
+```bash
+-Dio.tmp.dirs=/ppml/encrypted-fs
+```
 
 ## For Spark Task in TDXVM
 
