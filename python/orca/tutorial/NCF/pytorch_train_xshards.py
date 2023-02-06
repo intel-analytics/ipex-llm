@@ -17,6 +17,7 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
@@ -38,6 +39,22 @@ train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_fe
 
 
 # Step 3: Define the model, optimizer and loss
+config = {
+    "user_num": user_num,
+    "item_num": item_num,
+    "factor_num": 16,
+    "num_layers": 3,
+    "dropout": 0.5,
+    "lr": 0.01,
+    "model": "NeuMF-end",
+    "sparse_feats_input_dims": sparse_feats_input_dims,
+    "sparse_feats_embed_dims": 8,
+    "num_dense_feats": num_dense_feats,
+    "feature_cols": feature_cols,
+    "label_cols": label_cols
+}
+
+
 def model_creator(config):
     model = NCF(user_num=config["user_num"],
                 item_num=config["item_num"],
@@ -55,30 +72,28 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config["lr"])
 
+
+def scheduler_creator(optimizer, config):
+    scheduler = StepLR(optimizer, step_size=1)
+    return scheduler
+
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
+scheduler = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
+                           scheduler_creator=scheduler,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node,
-                           config={"user_num": user_num,
-                                   "item_num": item_num,
-                                   "factor_num": 16,
-                                   "num_layers": 3,
-                                   "dropout": 0.5,
-                                   "lr": 0.01,
-                                   "model": "NeuMF-end",
-                                   "sparse_feats_input_dims": sparse_feats_input_dims,
-                                   "sparse_feats_embed_dims": 8,
-                                   "num_dense_feats": num_dense_feats})
+                           config=config)
 train_stats = est.fit(data=train_data, epochs=2,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
