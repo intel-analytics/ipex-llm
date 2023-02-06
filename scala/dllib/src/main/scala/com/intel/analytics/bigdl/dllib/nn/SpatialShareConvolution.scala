@@ -353,7 +353,7 @@ object SpatialShareConvolution {
           }
           i += 1
         }
-      case _ => Unit
+      case _ => ()
     }
   }
 }

@@ -2431,8 +2431,8 @@ object DenseTensor {
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](
-        storage: ArrayStorage[T], storageOffset: Int, size: Array[Int] = null,
-        stride: Array[Int] = null)(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
+        storage: ArrayStorage[T], storageOffset: Int, size: Array[Int],
+        stride: Array[Int])(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
     val newT = new DenseTensor[T](null, 0, null, null, 0)
     if (storage != null) {
       val _storageOffset = storageOffset - 1
@@ -2441,6 +2441,12 @@ object DenseTensor {
       DenseTensor.newWithStorage[T](newT, storage, _storageOffset, _size, _stride, ev)
     }
     newT
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+        storage: ArrayStorage[T], storageOffset: Int,
+        size: Array[Int])(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
+    apply(storage, storageOffset, size, null)
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](

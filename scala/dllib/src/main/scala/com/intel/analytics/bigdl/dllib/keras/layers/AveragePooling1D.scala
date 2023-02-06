@@ -51,7 +51,7 @@ class AveragePooling1D[T: ClassTag](
   extends Pooling1D[T](
     poolLength, stride, borderMode, inputShape) with Net {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val model = TSequential[T]()
@@ -67,7 +67,7 @@ class AveragePooling1D[T: ClassTag](
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(3))
-    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 

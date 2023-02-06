@@ -247,7 +247,7 @@ object TensorflowLoader{
     val originInputs = new mutable.ArrayBuffer[String]()
 
     // Do a BFS to connect the nodes
-    queue.enqueue(nodes: _*)
+    nodes.foreach(queue.enqueue(_))
     while(queue.nonEmpty) {
       val node = queue.dequeue()
       if (!visited(node)) {
@@ -451,7 +451,7 @@ object TensorflowLoader{
     def connect(outputModuleNode: Seq[Node[AbstractModule[Activity, Activity, T]]]) = {
       val queue = new mutable.Queue[Node[AbstractModule[Activity, Activity, T]]]()
       val visited = mutable.Set[Node[AbstractModule[Activity, Activity, T]]]()
-      queue.enqueue(outputModuleNode: _*)
+      outputModuleNode.foreach(queue.enqueue(_))
 
       while (queue.nonEmpty) {
         val currNode = queue.dequeue()
@@ -465,7 +465,7 @@ object TensorflowLoader{
             .filterNot(n => allNodes(n._1))
             .map(n => (convertedNode(n._1), n._2.newInstance())).filter(n => n._1 != currNode)
           inputModuleNodes.foreach(n => n._1.add(currNode, n._2))
-          queue.enqueue(inputModuleNodes.map(_._1): _*)
+          inputModuleNodes.map(_._1).foreach(queue.enqueue(_))
         }
       }
     }

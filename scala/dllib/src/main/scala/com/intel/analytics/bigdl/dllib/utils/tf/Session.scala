@@ -375,7 +375,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
   private def findEnqueueNodes(queueNode: Node[NodeDef]): Seq[Node[NodeDef]] = {
     val queue = mutable.Queue[Node[NodeDef]]()
     val enqueNodes = mutable.ArrayBuffer[Node[NodeDef]]()
-    queue.enqueue(queueNode.nextNodes: _*)
+    queueNode.nextNodes.foreach(queue.enqueue(_))
     val visited = mutable.HashSet[Node[NodeDef]]()
     while(queue.nonEmpty) {
       val node = queue.dequeue()
@@ -383,7 +383,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
         if (node.element != null && enqueueOp(node.element.getOp)) {
           enqueNodes += node
         } else if (node.element != null && identityOp(node.element.getOp)) {
-          queue.enqueue(node.nextNodes: _*)
+          node.nextNodes.foreach(queue.enqueue(_))
         }
       }
     }
