@@ -186,8 +186,8 @@ object BigDLRemoteAttestationService {
     }
     val params = cmdParser.parse(args, CmdParams()).get
     secretKey = params.secretKey
-    val enrollFilePath = params.basePath + params.enrollFilePath
-    val policyFilePath = params.basePath + params.policyFilePath
+    val enrollFilePath = params.basePath + "/" + params.enrollFilePath
+    val policyFilePath = params.basePath + "/" + params.policyFilePath
     val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
     userMap = AttestationUtil.stringToMap(userContent)
     val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
