@@ -16,10 +16,8 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn._
-import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat, Activity}
-import com.intel.analytics.bigdl.dllib.nn.internal.Pooling1D
+import com.intel.analytics.bigdl.dllib.nn.{SpatialMaxPooling, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
@@ -49,10 +47,10 @@ class MaxPooling1D[T: ClassTag](
     override val inputShape: Shape = null,
     val pad: Int = 0)(implicit ev: TensorNumeric[T])
   extends Pooling1D[T](
-    poolLength, stride, borderMode, inputShape) with Net {
+    poolLength, stride, borderMode, inputShape) {
 
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
     val input = inputShape.toSingle().toArray
 
     val pads = KerasUtils.getPadsFromBorderMode(borderMode, if (pad == 0) {

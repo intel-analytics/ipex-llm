@@ -251,8 +251,8 @@ class ReorderMemorySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     println(reorder.gradInput.toTensor[Float].size().mkString("\t"))
 
-    output.toTensor[Float].size().deep == Array(24, 1, 5, 5).deep should be (true)
-    gradInput.toTensor[Float].size().deep == Array(20, 1, 5, 5).deep should be (true)
+    output.toTensor[Float].size().sameElements(Array(24, 1, 5, 5)) should be (true)
+    gradInput.toTensor[Float].size().sameElements(Array(20, 1, 5, 5)) should be (true)
 
     gradInput should be (input)
   }

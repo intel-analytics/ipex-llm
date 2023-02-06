@@ -156,8 +156,8 @@ class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .array.head.apply[Tensor[Float]](ImageFeature.imageTensor)
 
     TestUtils.conditionFailTest(
-      nchw.transpose(1, 2).transpose(2, 3).contiguous().storage().array().deep
-      == nhwc.storage().array().deep)
+      nchw.transpose(1, 2).transpose(2, 3).contiguous().storage()
+        .array().sameElements(nhwc.storage().array()))
   }
 
   ignore should "ImageChannelNormalize with std not 1 work properly" in {

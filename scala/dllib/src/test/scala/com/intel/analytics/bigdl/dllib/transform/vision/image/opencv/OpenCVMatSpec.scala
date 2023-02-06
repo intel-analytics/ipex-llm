@@ -167,7 +167,7 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val img = OpenCVMat.read(resource.getFile)
     val bytes = OpenCVMat.toBytePixels(img)
     val shape = img.shape()
-    val rdd = sc.parallelize(Array(img))
+    val rdd = sc.parallelize(Seq(img))
     val collect = rdd.collect()
     collect(0).`type`() should be (CvType.CV_8UC3)
     val bytes2 = OpenCVMat.toBytePixels(collect(0))
@@ -179,7 +179,7 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val img = OpenCVMat.read(resource.getFile)
     val floats = OpenCVMat.toFloatPixels(img)
     val shape = img.shape()
-    val rdd = sc.parallelize(Array(img))
+    val rdd = sc.parallelize(Seq(img))
     val collect = rdd.collect()
     collect(0).`type`() should be (CvType.CV_32FC3)
     val floats2 = OpenCVMat.toFloatPixels(collect(0))
@@ -197,7 +197,7 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "empty serialize" should "work properly" in {
     OpenCV.isOpenCVLoaded
     val img = new OpenCVMat()
-    val rdd = sc.parallelize(Array(img))
+    val rdd = sc.parallelize(Seq(img))
     val out = rdd.collect()
     OpenCVMat.toBytePixels(out(0))._1.length should be (0)
   }

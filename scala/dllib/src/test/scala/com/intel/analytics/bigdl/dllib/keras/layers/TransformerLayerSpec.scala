@@ -434,14 +434,14 @@ class TransformerLayerSpec extends ZooSpecHelper {
     KerasUtils.tril(data)
     val expect = Array[Float](1, 0, 0, 1, 1, 0, 1, 1, 1)
     val res = data.storage().array()
-    TestUtils.conditionFailTest(expect.deep == res.deep)
+    TestUtils.conditionFailTest(expect.sameElements(res))
 
     val data2 = Tensor.ones[Float](4, 6)
     KerasUtils.tril(data2)
     val expect2 = Array[Float](1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
       1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0)
     val res2 = data2.storage().array()
-    TestUtils.conditionFailTest(expect2.deep == res2.deep)
+    TestUtils.conditionFailTest(expect2.sameElements(res2))
   }
 
   "Conv1D" should "be generate the same result with pytorch-openai conv1d" in {

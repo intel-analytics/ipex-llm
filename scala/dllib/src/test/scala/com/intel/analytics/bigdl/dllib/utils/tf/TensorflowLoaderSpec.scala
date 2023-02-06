@@ -727,7 +727,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
 
     tmpLocation.deleteOnExit()
-    comparePair
+    comparePair.toSeq
   }
 
 
