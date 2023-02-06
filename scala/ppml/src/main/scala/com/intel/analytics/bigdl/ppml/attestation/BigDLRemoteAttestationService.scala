@@ -138,9 +138,9 @@ object BigDLRemoteAttestationService {
       override def run(): Unit = {
         while (true) {
           Thread.sleep(30 * 1000)
-          FileEncryptUtil.saveFile(enrollFilePath, 
+          FileEncryptUtil.saveFile(enrollFilePath,
             AttestationUtil.mapToString(userMap), secretKey)
-          FileEncryptUtil.saveFile(policyFilePath, 
+          FileEncryptUtil.saveFile(policyFilePath,
             AttestationUtil.mapToString(policyMap), secretKey)
         }
       }
