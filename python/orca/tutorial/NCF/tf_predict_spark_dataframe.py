@@ -31,7 +31,7 @@ spark = OrcaContext.get_spark_session()
 
 # Step 2: Load the model and data
 est = Estimator.from_keras()
-load_tf_model(est, args.model_dir, "NCF_model")
+est.load("NCF_model")
 
 df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.parquet"))
 feature_cols = get_feature_cols()
