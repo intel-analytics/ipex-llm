@@ -371,7 +371,7 @@ class TestInferencePipeline(TestCase):
             preds1 = [model(b) for b in input_data]
         
         # test normal
-        multi_instance_model = InferenceOptimizer.to_multi_instance(model, num_processes=4)
+        multi_instance_model = InferenceOptimizer.to_multi_instance(model, num_processes=2)
         preds2 = multi_instance_model(input_data)
         for (pred1, pred2) in zip(preds1, preds2):
             np.testing.assert_allclose(pred1, pred2, atol=1e-4,
@@ -494,7 +494,7 @@ class TestInferencePipeline(TestCase):
 
         inference_opt.save(ipex_model, "ipex")
         ipex_model = inference_opt.load("ipex", model, inplace=True)
-    
+
     def test_multi_context_manager(self):
         inference_opt = InferenceOptimizer()
         input_sample = torch.rand(10, 3, 32, 32)
@@ -526,6 +526,11 @@ class TestInferencePipeline(TestCase):
                                                      use_ipex=True,
                                                      thread_num=4)
         with InferenceOptimizer.get_context(ipex_model, ipex_thread_model):
+            # test manager1 with thread=None
+            ipex_model(input_sample)
+            assert torch.get_num_threads() == 4
+        with InferenceOptimizer.get_context(ipex_thread_model, ipex_model):
+            # test manager2 with thread=None
             ipex_model(input_sample)
             assert torch.get_num_threads() == 4
 

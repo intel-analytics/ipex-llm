@@ -66,7 +66,7 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
     for key, value in kwargs.items():
         value = str(value)
         value = value.replace(' ', '')  # remove space in param value
-        params_str += "--" + str(key) + " " + str(value)
+        params_str += "--" + str(key) + " " + str(value) + " "
     if OpenVINO_LESS_2022_3:
         logging_str = "--silent" if logging is False else ""
         mo_cmd = "mo --saved_model_dir {0} {1} {2} {3} -n {4} -o {5}".format(

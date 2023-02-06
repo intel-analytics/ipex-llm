@@ -3,9 +3,9 @@
 Refer to this section for common issues faced while using BigDL-Nano.
 
 ## Installation
-### Why I fail to install openvino==2022.2 when ``pip install bgdl-nano[inference]``?
+### Why I fail to install openvino-dev==2022.2 when ``pip install bigdl-nano[inference]``?
 
-Please check your system first as openvino 2022.x does not support centos anymore. Refer [OpenVINO release notes](https://www.intel.com/content/www/us/en/developer/articles/release-notes/openvino-relnotes-2021.html) for more details.
+Please check your system first as openvino-dev 2022.2 does not support centos. Refer [this](https://pypi.org/project/openvino-dev/) for more details. You can install bigdl-nano[inference] >= 2.2 instead, as bigdl-nano[inference] >= 2.2 use openvino-dev >= 2022.3 which supports centos again.
 
 ## Inference
 
@@ -15,7 +15,7 @@ Please make sure you use context manager provided by ``InferenceOptimizer.get_co
 
 ### ``assert precision in list(self.cur_config['ops'].keys())`` when using ipex quantization with inc on machine with BF16 instruction set
 
-It's known issue for [Intel® Neural Compressor](https://github.com/intel/neural-compressor) that they don't deal with BF16 op well at version 1.13.1 . This will be fixed when next stable version releases.
+It's known issue for [Intel® Neural Compressor](https://github.com/intel/neural-compressor) that they don't deal with BF16 op well at version 1.13.1 . This has been fixed in version 2.0. You can install bigdl-nano[inference] >= 2.2 to fix this problem.
 
 ### Why my output is not bf16 dtype when using bf16+ipex related methods?
 
@@ -41,7 +41,7 @@ If you accelerate the model with ``accelerator=None`` by ``InferenceOptimizer.tr
 
 ### Why my bf16 model is slower than fp32 model?
 
-You can first check whether your machine supports the bf16 instruction set first by ``lscpu | grep "avx512"``. If there is no ``avx512_bf16`` in the output, then, without instruction set support, the performance of bf16 cannot be guaranteed, and generally, its performance will deteriorate.
+You can first check whether your machine supports the bf16 instruction set first by ``lscpu | grep "bf16"``. If there is no ``avx512_bf16`` or ``amx_bf16`` in the output, then, without instruction set support, the performance of bf16 cannot be guaranteed, and generally, its performance will deteriorate.
 
 ### ``INVALID_ARGUMENT : Got invalid dimensions for input`` or ``[ PARAMETER_MISMATCH ] Can not clone with new dims.`` when do inference with OpenVINO / ONNXRuntime accelerated model
 
@@ -63,3 +63,11 @@ Please check first if you use `patch_cuda(disable_jit=True)` command of Nano, if
 ### How to cope with out-of-memory during workload with Intel® Extension for PyTorch*
 
 If you found the workload runs with Intel® Extension for PyTorch* occupies a remarkably large amount of memory, you can try to reduce the occupied memory size by setting `weights_prepack=False` when calling `InferenceOptimizer.trace` \ `InferenceOptimizer.quantize`.
+
+### RuntimeError: Check 'false' failed at src/frontends/common/src/frontend.cpp
+
+You may see this error when you do inference with accelerator=`OpenVINO` in keras. It only occurs when you use `intel-tensorflow` >= 2.8 and you forget `source bigdl-nano-init`. The way to solve this problem is just `source bigdl-nano-init` or `source bigdl-nano-init -j`.
+
+### TypeError: deprecated() got an unexpected keyword argument 'name'
+
+If a version problem caused by too low cryptography version. You can fix it by just `pip install cryptography==38.0.0` .

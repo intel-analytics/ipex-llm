@@ -22,7 +22,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `memory`: a string that specifies the memory for each executor (default to be `"2g"`).
 * `num_nodes`: an integer that specifies the number of executors (default to be `1`).
 * `driver_cores`: an integer that specifies the number of cores for the driver node (default to be `4`).
-* `driver_memory`: a string that specifies the memory for the driver node (default to be `"1g"`).
+* `driver_memory`: a string that specifies the memory for the driver node (default to be `"2g"`).
 * `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
@@ -95,10 +95,9 @@ __Note__:
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
-    pip install torch torchvision
+    pip install torch torchvision tqdm
     ```
 
-- For more details, please see [Python User Guide](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html).
 
 ### 2.3 Run on CDH
 * For [CDH](https://www.cloudera.com/products/open-source/apache-hadoop/key-cdh-components.html) users, the environment variable `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` by default.
@@ -113,28 +112,28 @@ __Note__:
 ## 3. Prepare Dataset 
 To run the Fashion-MNIST example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
 
-First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the root folder.
+First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the dataset folder.
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
 
-# Move the dataset under the folder FashionMNIST/raw
-mv /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
+# Copy the dataset files to the folder FashionMNIST/raw
+cp /path/to/fashion-mnist/data/fashion/* /path/to/local/data/FashionMNIST/raw
 
 # Extract FashionMNIST archives
-gzip -dk /bigdl/nfsdata/dataset/FashionMNIST/raw/*
+gzip -d /path/to/local/data/FashionMNIST/raw/*
 ```
 Then upload it to a distributed storage. Sample command to upload data to HDFS is as follows:
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
-In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
+In the given example, you can specify the argument `--data_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 ---
 ## 4. Prepare Custom Modules
 Spark allows to upload Python files (`.py`), and zipped Python packages (`.zip`) across the cluster by setting `--py-files` option in Spark scripts or specifying `extra_python_lib` in `init_orca_context`.
 
-The FasionMNIST example needs to import modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
+The FasionMNIST example needs to import the modules from [`model.py`](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/model.py).
 * When using [`python` command](#use-python-command), please specify `extra_python_lib` in `init_orca_context`.
     ```python
     init_orca_context(..., extra_python_lib="model.py")
@@ -193,14 +192,14 @@ See [here](#init-orca-context) for the runtime configurations.
 #### 5.1.1 Yarn Client
 Run the example with the following command by setting the cluster_mode to "yarn-client":
 ```bash
-python train.py --cluster_mode yarn-client --remote_dir hdfs://path/to/remote/data
+python train.py --cluster_mode yarn-client --data_dir hdfs://path/to/remote/data
 ```
 
 
 #### 5.1.2 Yarn Cluster
 Run the example with the following command by setting the cluster_mode to "yarn-cluster":
 ```bash
-python train.py --cluster_mode yarn-cluster --remote_dir hdfs://path/to/remote/data
+python train.py --cluster_mode yarn-cluster --data_dir hdfs://path/to/remote/data
 ```
 
 
@@ -255,7 +254,7 @@ bigdl-submit \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -278,7 +277,7 @@ bigdl-submit \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -345,7 +344,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.pyspark.python=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -369,7 +368,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
 * `--master`: the spark master, set it to "yarn".

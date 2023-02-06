@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: false 
+      # - name: ATTESTATION_URL
+      #   value: your_attestation_url
+      # - name: PCCS_URL
+      #   value:your_pccs_url
+      # - name: APP_ID
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: kms-secret
+      #       key: app_id
+      # - name: API_KEY
+      #   valueFrom:
+      #     secretKeyRef:
+      #       name: kms-secret
+      #       key: api_key
+      #- name: ATTESTATION_POLICYID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: policy_id
+      # - name: ATTESTATION_TYPE
+      #   value: BigDLRemoteAttestationService
+      # - name: QUOTE_TYPE
+      #   value: TDX
+    volumeMounts:
+      - name: aesm-socket
+        mountPath: /var/run/aesmd/aesm.socket
+      - name: tdx-device
+        mountPath: /dev/tdx-attest
+  volumes:
+    - name: tdx-device
+      hostPath:
+        path: /dev/tdx-attest
+    - name: aesm-socket
+      hostPath:
+        path: /var/run/aesmd/aesm.socket

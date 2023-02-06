@@ -25,7 +25,7 @@ import time
 from bigdl.nano.pytorch.patching import patch_encryption
 from bigdl.nano.pytorch.encryption import EncryptedDataset
 import logging
-from bigdl.ppml.kms.client import generate_primary_key, generate_data_key, get_data_key_plaintext
+from bigdl.ppml.kms.ehsm.client import generate_primary_key, generate_data_key, get_data_key_plaintext
 from datasets.load import load_from_disk
 import argparse
 from transformers import BertTokenizer, BertModel, AdamW

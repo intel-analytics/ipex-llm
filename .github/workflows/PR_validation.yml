@@ -64,9 +64,12 @@ jobs:
     name: Paths filter
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
-      friesian: ${{ steps.filter.outputs.friesian }}
+      friesian-pytest: ${{ steps.filter.outputs.friesian-pytest }}
+      friesian-example: ${{ steps.filter.outputs.friesian-example }}
       dllib: ${{ steps.filter.outputs.dllib }}
-      orca: ${{ steps.filter.outputs.orca }}
+      orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
+      orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
+      orca-example: ${{ steps.filter.outputs.orca-example }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
@@ -74,20 +77,28 @@ jobs:
         id: filter
         with:
           filters: |
-            friesian:
-              - 'scala/serving/pom.xml'
-              - 'scala/ppml/pom.xml'
+            friesian-pytest:
               - 'scala/orca/pom.xml'
               - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
               - 'scala/pom.xml'
               - 'scala/friesian/**'
               - '.github/actions/friesian-scala-ut-action/action.yml'
-              - 'python/friesian/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
+              - 'python/friesian/test/**'
+              - '.github/actions/friesian/**'
+
+            friesian-example: 
+              - 'scala/orca/pom.xml'
+              - 'scala/friesian/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - 'python/friesian/example/**'
+              - 'python/friesian/src/**'
+              - 'python/friesian/dev/**'
               - '.github/actions/friesian/**'
               - 'python/orca/src/bigdl/orca/data/**'
-              - 'python/orca/src/bigdl/orca/learn/**'
-              
+
             dllib:
               - 'scala/serving/pom.xml'
               - 'scala/ppml/pom.xml'
@@ -112,20 +123,36 @@ jobs:
               - 'python/dllib/**'
               - '.github/actions/ppml/**'
               
-            orca:
-              - 'scala/serving/pom.xml'
-              - 'scala/ppml/pom.xml'
+            orca-pytest:
+              - 'python/orca/src/**'
+              - 'python/orca/dev/**'
+              - 'python/orca/test/**'
+              - 'python/dllib/src/**'
               - 'scala/orca/pom.xml'
-              - 'scala/friesian/pom.xml'
               - 'scala/dllib/pom.xml'
-              - 'scala/pom.xml'
-              - 'python/orca/**'
-              - 'python/dllib/**'
               - '.github/actions/orca/**'
-                    
+              
+            orca-tutorial:
+              - 'python/orca/src/**'
+              - 'python/orca/dev/**'
+              - 'python/orca/tutorial/**'
+              - 'python/dllib/src/**'
+              - 'scala/orca/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - '.github/actions/orca/**'
+              
+            orca-example:
+              - 'python/orca/src/**'
+              - 'python/orca/example/**'
+              - 'python/orca/dev/**'
+              - 'python/dllib/src/**'
+              - 'scala/orca/pom.xml'
+              - 'scala/dllib/pom.xml'
+              - '.github/actions/orca/**'
+
   Friesian-Scala-UT:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [ self-hosted, ubuntu-20.04-lts, CLX, AVX512, Ettenmoors ]
 
     steps:
@@ -165,9 +192,9 @@ jobs:
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
 
-  Orca-Notebook-Test:
+  Orca-Notebook-Tutorial-Xshards-Test:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -184,9 +211,28 @@ jobs:
         if: ${{ always() }}
         uses: ./.github/actions/remove-env
 
+  Orca-Notebook-Tutorial-Xshards-image-Test:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Setup env
+        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      - name: Run test
+        uses: ./.github/actions/orca/orca-notebook-xshards-image-action
+      - name: Remove Env
+        if: ${{ always() }}
+        uses: ./.github/actions/remove-env
+
   Orca-Python-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -205,7 +251,7 @@ jobs:
   
   Orca-Python-Ray-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -221,10 +267,48 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
+  
+  Orca-Python-Py38-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-py38-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env/remove-env-py38
+
+  Orca-Python-Ray-Py38-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-python-ray-py38-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env/remove-env-py38
 
   Orca-Python-Horovod-Tf2-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -243,7 +327,7 @@ jobs:
 
   Orca-Python-Horovod-Pytorch-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -262,7 +346,7 @@ jobs:
 
   Orca-Jep-Python-Py37-Spark2:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -281,7 +365,7 @@ jobs:
 
   Orca-Python-Rayonspark-Tf2-Py37:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -300,7 +384,7 @@ jobs:
 
   Orca-Tutorial-Xshards:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -314,7 +398,7 @@ jobs:
 
   Orca-Python-Ray-Ctx:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin-Ctx]
 
     steps:
@@ -343,7 +427,7 @@ jobs:
   
   Friesian-Python-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -362,7 +446,7 @@ jobs:
     
   Friesian-Python-Py37-Spark3-Pip:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -381,7 +465,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Feature-Tf1-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -400,7 +484,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Feature-Tf1-Pip-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -419,7 +503,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Tf2-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -438,7 +522,7 @@ jobs:
 
   Friesian-Python-ExampleTest-Tf2-Pip-Py37-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.friesian == 'true' }}
+    if: ${{ needs.changes.outputs.friesian-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:

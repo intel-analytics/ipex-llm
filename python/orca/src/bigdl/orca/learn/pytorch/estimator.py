@@ -41,7 +41,6 @@ class Estimator(object):
                    config: Optional[Dict]=None,
                    workers_per_node: int=1,
                    scheduler_creator: Optional[Callable[[Dict], 'LRScheduler']]=None,
-                   scheduler_step_freq: str="epoch",
                    use_tqdm: bool=False,
                    model_dir: Optional[str]=None,
                    sync_stats: bool=False,
@@ -74,12 +73,8 @@ class Estimator(object):
                Default: 1.
         :param scheduler_creator: A scheduler creator function that has two parameters "optimizer"
                and "config" and returns a PyTorch learning rate scheduler wrapping the optimizer.
-               Note that if you specify this parameter, you need to take care of the argument
-               scheduler_step_freq accordingly as well.
+               By default a scheduler will take effect automatically every epoch.
                Default: None if no scheduler is needed.
-        :param scheduler_step_freq: The frequency when `scheduler.step` is called.
-               "batch" or "epoch" if there is a scheduler.
-               Default: "epoch".
         :param use_tqdm: Whether to use tqdm to monitor the training progress.
                Default: False.
         :param model_dir: The path to save the PyTorch model during the training if
@@ -103,7 +98,6 @@ class Estimator(object):
                                        metrics=metrics,
                                        scheduler_creator=scheduler_creator,
                                        config=config,
-                                       scheduler_step_freq=scheduler_step_freq,
                                        use_tqdm=use_tqdm,
                                        workers_per_node=workers_per_node,
                                        backend=backend,
@@ -126,7 +120,6 @@ class Estimator(object):
                                            metrics=metrics,
                                            scheduler_creator=scheduler_creator,
                                            config=config,
-                                           scheduler_step_freq=scheduler_step_freq,
                                            use_tqdm=use_tqdm,
                                            workers_per_node=workers_per_node,
                                            sync_stats=sync_stats,

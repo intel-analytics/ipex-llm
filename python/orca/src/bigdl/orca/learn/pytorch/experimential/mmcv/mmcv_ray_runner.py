@@ -146,8 +146,6 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         "meta",
         "work_dir",
         "_model_name",
-        "_rank",
-        "_world_size",
         "timestamp",
         "mode",
         "_hooks",

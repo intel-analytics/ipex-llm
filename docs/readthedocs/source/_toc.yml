@@ -101,39 +101,87 @@ subtrees:
               title: "How-to Guides"
               subtrees:
                 - entries:
-                  - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
-                  - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
-                  - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
-                  - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
-                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
-                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
-                  - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
-                  - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
-                  - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
-                  - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
-                  - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
-                  - file: doc/Nano/Howto/Training/General/choose_num_processes_training
-                  - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
-                  - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
-                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
-                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
-                  - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
-                  - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
-                  - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
-                  - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
-                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
-                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
-                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
-                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
-                  - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
-                  - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
-                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
-                  - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
-                  - file: doc/Nano/Howto/install_in_colab
-                  - file: doc/Nano/Howto/windows_guide
+                  - file: doc/Nano/Howto/Preprocessing/index
+                    subtrees:
+                      - entries:
+                        - file: doc/Nano/Howto/Preprocessing/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries:      
+                              - file: doc/Nano/Howto/Preprocessing/PyTorch/accelerate_pytorch_cv_data_pipeline
+                  - file: doc/Nano/Howto/Training/index
+                    subtrees:
+                      - entries:
+                        - file: doc/Nano/Howto/Training/PyTorchLightning/index
+                          title: "PyTorch Lightning"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_ipex
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/accelerate_pytorch_lightning_training_multi_instance
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_channels_last
+                              - file: doc/Nano/Howto/Training/PyTorchLightning/pytorch_lightning_training_bf16
+                        - file: doc/Nano/Howto/Training/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/PyTorch/convert_pytorch_training_torchnano
+                              - file: doc/Nano/Howto/Training/PyTorch/use_nano_decorator_pytorch_training
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_ipex
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_multi_instance
+                              - file: doc/Nano/Howto/Training/PyTorch/pytorch_training_channels_last
+                              - file: doc/Nano/Howto/Training/PyTorch/accelerate_pytorch_training_bf16
+                        - file: doc/Nano/Howto/Training/TensorFlow/index
+                          title: "TensorFlow"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/TensorFlow/accelerate_tensorflow_training_multi_instance
+                              - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_embedding_sparseadam
+                              - file: doc/Nano/Howto/Training/TensorFlow/tensorflow_training_bf16
+                        - file: doc/Nano/Howto/Training/General/index
+                          title: "General"
+                          subtrees:
+                            - entries:
+                              - file: doc/Nano/Howto/Training/General/choose_num_processes_training
+                  - file: doc/Nano/Howto/Inference/index
+                    subtrees:
+                      - entries:
+                        - file: doc/Nano/Howto/Inference/OpenVINO/index
+                          title: "OpenVINO"
+                          subtrees:
+                            - entries:    
+                              - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference
+                              - file: doc/Nano/Howto/Inference/OpenVINO/openvino_inference_async
+                              - file: doc/Nano/Howto/Inference/OpenVINO/accelerate_inference_openvino_gpu
+                        - file: doc/Nano/Howto/Inference/PyTorch/index
+                          title: "PyTorch"
+                          subtrees:
+                            - entries: 
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
+                              - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
+                              - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
+                              - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_ipex
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
+                              - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
+                              - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                        - file: doc/Nano/Howto/Inference/TensorFlow/index
+                          title: "TensorFlow"
+                          subtrees:
+                            - entries: 
+                              - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_onnx
+                              - file: doc/Nano/Howto/Inference/TensorFlow/accelerate_tensorflow_inference_openvino
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_bf16
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
+                  - file: doc/Nano/Howto/Install/index
+                    subtrees:
+                      - entries:
+                        - file: doc/Nano/Howto/Install/install_in_colab
+                        - file: doc/Nano/Howto/Install/windows_guide
             - file: doc/Nano/Overview/known_issues
               title: "Tips and Known Issues"
             - file: doc/Nano/Overview/troubshooting
@@ -205,6 +253,7 @@ subtrees:
                 - file: doc/Chronos/Howto/how_to_speedup_inference_of_forecaster_through_OpenVINO
                 - file: doc/Chronos/Howto/how_to_evaluate_a_forecaster
                 - file: doc/Chronos/Howto/how_to_use_forecaster_to_predict_future_data
+                - file: doc/Chronos/Howto/how_to_optimize_a_forecaster
                 - file: doc/Chronos/Howto/how_to_generate_confidence_interval_for_prediction
                 - file: doc/Chronos/Howto/how_to_export_onnx_files
                 - file: doc/Chronos/Howto/how_to_export_openvino_files

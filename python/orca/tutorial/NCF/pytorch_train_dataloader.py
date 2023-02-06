@@ -17,19 +17,21 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 import torch.utils.data as data
 
 from pytorch_dataset import load_dataset, process_users_items, get_input_dims
 from pytorch_model import NCF
+from utils import *
 
-from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-sc = init_orca_context(cluster_mode="local")
+args = parse_args("PyTorch NCF Training with DataLoader")
+init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
@@ -69,20 +71,28 @@ def model_creator(config):
 def optimizer_creator(model, config):
     return optim.Adam(model.parameters(), lr=config["lr"])
 
+
+def scheduler_creator(optimizer, config):
+    scheduler = StepLR(optimizer, step_size=1)
+    return scheduler
+
 loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-dataset_dir = "./ml-1m"
-backend = "spark"  # "ray" or "spark"
-callbacks = [TensorBoardCallback(log_dir="runs", freq=1000)]
+callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
+                                 freq=1000)] if args.tensorboard else []
+scheduler = scheduler_creator if args.lr_scheduler else None
 
-est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
+est = Estimator.from_torch(model=model_creator,
+                           optimizer=optimizer_creator,
+                           scheduler_creator=scheduler,
                            loss=loss,
                            metrics=[Accuracy(), Precision(), Recall()],
-                           backend=backend,
+                           backend=args.backend,
                            use_tqdm=True,
-                           config={"dataset_dir": dataset_dir,
+                           workers_per_node=args.workers_per_node,
+                           config={"dataset_dir": args.data_dir,
                                    "num_ng": 4,
                                    "factor_num": 16,
                                    "num_layers": 3,
@@ -90,18 +100,27 @@ est = Estimator.from_torch(model=model_creator, optimizer=optimizer_creator,
                                    "lr": 0.01,
                                    "model": "NeuMF-end",
                                    "sparse_feats_embed_dims": 8})
-est.fit(data=train_loader_func, epochs=2, batch_size=10240, callbacks=callbacks)
+train_stats = est.fit(data=train_loader_func,
+                      validation_data=test_loader_func,
+                      epochs=2,
+                      batch_size=10240,
+                      callbacks=callbacks)
+print("Train results:")
+for epoch_stats in train_stats:
+    for k, v in epoch_stats.items():
+        print("{}: {}".format(k, v))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=10240)
+eval_stats = est.evaluate(data=test_loader_func, batch_size=10240)
 print("Evaluation results:")
-for r in result:
-    print("{}: {}".format(r, result[r]))
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained PyTorch model
-est.save("NCF_model")
+est.save(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 7: Stop Orca Context when program finishes

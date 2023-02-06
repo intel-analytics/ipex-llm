@@ -26,6 +26,7 @@ from math import log10
 from PIL import Image
 import urllib
 import tarfile
+import shutil
 import os
 from os import makedirs, remove, listdir
 from os.path import exists, join, basename
@@ -43,6 +44,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import MSE
 from bigdl.orca.learn.trigger import EveryEpoch
+from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
 parser.add_argument('--upscale_factor', type=int,
@@ -299,24 +301,29 @@ elif opt.backend in ["ray", "spark"]:
         }
     )
 
-    if not exists(model_dir):
-        makedirs(model_dir)
+    if exists(model_dir):
+        shutil.rmtree(model_dir)
 
-    for epoch in range(1, opt.epochs + 1):
-        stats = estimator.fit(data=train_data_creator, epochs=1, batch_size=opt.batch_size)
-        for epochinfo in stats:
-            print("===> Epoch {} Complete: Avg. Loss: {:.4f}"
-                  .format(epoch, epochinfo["train_loss"]))
+    f_model_out_path = join(model_dir, "model_epoch_{epoch:02d}.pth")
 
-        val_stats = estimator.evaluate(data=validation_data_creator,
-                                       batch_size=opt.test_batch_size)
-        print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
-              .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
+    stats = estimator.fit(data=train_data_creator,
+                          epochs=opt.epochs,
+                          batch_size=opt.batch_size,
+                          callbacks=[ModelCheckpoint(filepath=f_model_out_path,
+                                                     save_weights_only=True)])
+    for epochinfo in stats:
+        print("===> Epoch {} Complete: Avg. Loss: {:.4f}"
+              .format(epochinfo["epoch"], epochinfo["train_loss"]))
 
-        model_out_path = model_dir + "/" + "model_epoch_{}.pth".format(epoch)
-        model = estimator.get_model()
-        torch.save(model, model_out_path)
-        print("Checkpoint saved to {}".format(model_out_path))
+    val_stats = estimator.evaluate(data=validation_data_creator,
+                                   batch_size=opt.test_batch_size)
+    print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
+          .format(10 * log10(1. / val_stats["val_loss"]), val_stats["val_loss"]))
+
+    model = estimator.get_model()
+    last_model_path = f_model_out_path.format(epoch=opt.epochs)
+    estimator.save(last_model_path)
+    print("Checkpoint saved to {}".format(last_model_path))
 else:
     invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend, "
                       "but got {}".format(opt.backend))

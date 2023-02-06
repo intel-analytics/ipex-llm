@@ -1270,19 +1270,17 @@ class TSDataset:
                  torchscript modules.
 
         """
-        from bigdl.chronos.data.utils.export_torchscript import export_processing_to_jit
+        from bigdl.chronos.data.utils.export_torchscript \
+            import export_processing_to_jit, get_index
         import torch
         import os
 
         if drop_dt_col:
             self.df.drop(columns=self.dt_col, inplace=True)
 
-        id_index = self.df.columns.tolist().index(self.id_col)
-        target_col = _to_list(self.target_col, "target_col", deploy_mode=True)
-        feature_col = _to_list(self.feature_col, "feature_col", deploy_mode=True)
-
-        # index of target col and feature col, will be used in scale and roll
-        target_feature_index = [self.df.columns.tolist().index(i) for i in target_col + feature_col]
+        # target_feature_index: index of target col and feature col, will be used in scale and roll
+        id_index, target_feature_index = get_index(self.df, self.id_col,
+                                                   self.target_col, self.feature_col)
 
         preprocessing_module = export_processing_to_jit(self.scaler, self.lookback,
                                                         id_index,
