@@ -50,7 +50,10 @@ class BF16Model(AcceleratedLightningModule):
         self.channels_last = channels_last
         self.thread_num = thread_num
         if self.channels_last is True:
-            self.model = self.model.to(memory_format=torch.channels_last)
+            try:
+                self.model = self.model.to(memory_format=torch.channels_last)
+            except Exception as _e:
+                self.model = self.model.to(memory_format=torch.channels_last_3d)
             if channels_last_available:  # init from load
                 self.channels_last_available = channels_last_available
             else:  # init without channels_last_available loaded
