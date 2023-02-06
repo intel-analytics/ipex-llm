@@ -17,41 +17,41 @@
 
 ## Common Feature Support (Can be used in both PyTorch and TensorFlow)
 
-| Feature               | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
-| --------------------- | -------------------- | ------- | ------------------ | ------- |
-| **Intel-openmp**      | ✅                    | ✅       | ✅                  | ✅       |
-| **Jemalloc**          | ✅                    | ✅       | ✅                  | ❌       |
-| **Tcmalloc**          | ✅                    | ❌       | ❌                  | ❌       |
-| **Neural-Compressor** | ✅                    | ✅       | ❌                  | ?       |
-| **OpenVINO**          | ✅                    | ①       | ❌                  | ?       |
-| **ONNXRuntime**       | ✅                    | ①       | ✅                  | ?       |
+| Feature               | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | MacOS (M-series chip) | Windows |
+| --------------------- | -------------------- | ------- | ------------------ | --------------------- | ------- |
+| **Intel-openmp**      | ✅                    | ✅       | ✅                  | ②                     | ✅       |
+| **Jemalloc**          | ✅                    | ✅       | ✅                  | ❌                     | ❌       |
+| **Tcmalloc**          | ✅                    | ❌       | ❌                  | ❌                     | ❌       |
+| **Neural-Compressor** | ✅                    | ✅       | ❌                  | ❌                     | ?       |
+| **OpenVINO**          | ✅                    | ①       | ❌                  | ❌                     | ?       |
+| **ONNXRuntime**       | ✅                    | ①       | ✅                  | ❌                     | ?       |
 
 ## PyTorch Feature Support
 
-| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
-| ------------------ | -------------------- | ------- | ------------------ | ------- |
-| **CUDA patch**     | ✅                    | ✅       | ✅                  | ✅       |
-| **JIT**            | ✅                    | ✅       | ✅                  | ✅       |
-| **Channel last**   | ✅                    | ✅       | ✅                  | ✅       |
-| **BF16**           | ✅                    | ✅       | ⭕                  | ?       |
-| **IPEX**           | ✅                    | ✅       | ❌                  | ❌       |
-| **Multi-instance** | ✅                    | ✅       | ②                  | ?       |
+| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | MacOS (M-series chip) | Windows |
+| ------------------ | -------------------- | ------- | ------------------ | --------------------- | ------- |
+| **CUDA patch**     | ✅                    | ✅       | ✅                  | ?                     | ✅       |
+| **JIT**            | ✅                    | ✅       | ✅                  | ?                     | ✅       |
+| **Channel last**   | ✅                    | ✅       | ✅                  | ?                     | ✅       |
+| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ?       |
+| **IPEX**           | ✅                    | ✅       | ❌                  | ❌                     | ❌       |
+| **Multi-instance** | ✅                    | ✅       | ②                  | ②                     | ?       |
 
 ## TensorFlow Feature Support
 
-| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | Windows |
-| ------------------ | -------------------- | ------- | ------------------ | ------- |
-| **BF16**           | ✅                    | ✅       | ⭕                  | ?       |
-| **Multi-instance** | ③                    | ③       | ②③                 | ?       |
+| Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | MacOS (M-series chip) | Windows |
+| ------------------ | -------------------- | ------- | ------------------ | --------------------- | ------- |
+| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ?       |
+| **Multi-instance** | ③                    | ③       | ②③                 | ②③                    | ?       |
 
 ## Symbol Meaning
 
-| Symbol | Meaning                                                                                            |
-| ------ | -------------------------------------------------------------------------------------------------- |
-| ✅      | Supported                                                                                          |
-| ❌      | Not supported                                                                                      |
-| ⭕      | All Mac machines with intel chip do not support bf16 instruction set, so this feature is pointless |
-| ①      | This feature is only supported when used together with jemalloc                                    |
-| ②      | This feature is supported but without any performance guarantee                                    |
-| ③      | Only Multi-instance training is supported for now                                                  |
-| ?      | Not tested                                                                                         |
+| Symbol | Meaning                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------- |
+| ✅      | Supported                                                                                                |
+| ❌      | Not supported                                                                                            |
+| ⭕      | All Mac machines (Intel/M-series chip) do not support bf16 instruction set, so this feature is pointless |
+| ①      | This feature is only supported when used together with jemalloc                                          |
+| ②      | This feature is supported but without any performance guarantee                                          |
+| ③      | Only Multi-instance training is supported for now                                                        |
+| ?      | Not tested                                                                                               |
