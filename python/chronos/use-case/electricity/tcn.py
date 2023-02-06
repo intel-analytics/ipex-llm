@@ -65,22 +65,20 @@ if __name__ == '__main__':
 
     torch.set_num_threads(1)
     latency = []
-    with torch.no_grad():
-        for x, y in test_loader:
-            st = time.time()
-            yhat = forecaster.predict(x.numpy())
-            latency.append(time.time()-st)
+    for x, y in test_loader:
+        st = time.time()
+        yhat = forecaster.predict(x.numpy())
+        latency.append(time.time()-st)
     # latency is calculated the mean after ruling out the first 10% and last 10%
     latency = latency[int(0.1*len(latency)):int(0.9*len(latency))]
     print("Inference latency is:", np.mean(latency))
 
     forecaster.build_onnx(thread_num=1)
     onnx_latency = []
-    with torch.no_grad():
-        for x, y in test_loader:
-            st = time.time()
-            y_pred = forecaster.predict_with_onnx(x.numpy())
-            onnx_latency.append(time.time()-st)
+    for x, y in test_loader:
+        st = time.time()
+        y_pred = forecaster.predict_with_onnx(x.numpy())
+        onnx_latency.append(time.time()-st)
     # latency is calculated the mean after ruling out the first 10% and last 10%
     onnx_latency = onnx_latency[int(0.1*len(onnx_latency)):int(0.9*len(onnx_latency))]
     print("Inference latency with onnx is:", np.mean(onnx_latency))
