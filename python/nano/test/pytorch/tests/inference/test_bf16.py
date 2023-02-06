@@ -217,6 +217,7 @@ class Pytorch1_12:
             load_model(x1, x2, x3)
 
     def test_bf16_channels_last_3d_various_input_sample(self):
+        import torch.nn as nn
 
         class DummyModelWith3d(nn.Module):
             """
