@@ -163,7 +163,8 @@ def setup_package():
                         "cloudpickle",
                         "protobuf==3.19.5",
                         "py-cpuinfo",
-                        "pyyaml"]
+                        "pyyaml",
+                        "packaging"]
 
     package_data = [
         "libs/libjemalloc.so",
