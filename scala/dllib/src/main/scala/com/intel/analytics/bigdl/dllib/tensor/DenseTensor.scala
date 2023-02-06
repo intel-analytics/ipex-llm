@@ -67,7 +67,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def squeeze(dim: Int): Tensor[T] = DenseTensor.squeeze(this, dim - 1)
 
   override def squeezeNewTensor(): Tensor[T] = {
-    val result = new DenseTensor(this._storage, this.storageOffset(), this._size, this._stride)
+    val result = DenseTensor(this._storage, this.storageOffset(), this._size, this._stride)
     result.squeeze()
   }
 
@@ -174,7 +174,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     Log4Error.unKnowExceptionError(this.isContiguous(), "current tensor is not contiguous")
     Log4Error.unKnowExceptionError(sizes.product == this.nElement(), "invalid size eElement")
 
-    new DenseTensor(this._storage, this.storageOffset(), sizes.clone())
+    DenseTensor(this._storage, this.storageOffset(), sizes.clone())
   }
 
   override def unfold(dim: Int, size: Int, step: Int): Tensor[T] = {
@@ -231,35 +231,37 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this(new ArrayStorage[T](new Array[T](dims.product)), 0, dims.toArray,
       DenseTensor.size2Stride(dims.toArray), dims.length)
 
-  private[tensor] def this(storage: ArrayStorage[T])(implicit ev: TensorNumeric[T]) = {
-    this(null, 0, null, null, 0)
-    val _storageOffset = 0
-    val _size = Array(storage.length)
-    val _stride = Array(1)
-    DenseTensor.newWithStorage(this, storage, _storageOffset, _size, _stride, ev)
-  }
-
-  private[tensor] def this(storage: ArrayStorage[T], storageOffset: Int, size: Array[Int] = null,
-    stride: Array[Int] = null)(implicit ev: TensorNumeric[T]) = {
-    this(null, 0, null, null, 0)
-    if (storage != null) {
-      val _storageOffset = storageOffset - 1
-      val _size = if (size == null) Array(storage.length) else size
-      val _stride = if (size == null) null else stride
-      DenseTensor.newWithStorage[T](this, storage, _storageOffset, _size, _stride, ev)
-    }
-  }
-
-  private[tensor] def this(other: Tensor[T])(implicit ev: TensorNumeric[T]) = {
-    this(null, 0, null, null, 0)
-    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]],
-      "Only support dense tensor in this operation")
-    val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
-    val _storageOffset = other.storageOffset() - 1
-    val _size = other.size()
-    val _stride = other.stride()
-    DenseTensor.newWithStorage[T](this, _storage, _storageOffset, _size, _stride, ev)
-  }
+  //  Notice: DenseTensor.newWithStorage will cause a ambiguous implicit values error.
+  //  Move to Object DenseTensor.
+//  private[tensor] def this(storage: ArrayStorage[T])(implicit ev: TensorNumeric[T]) = {
+//    this(null, 0, null, null, 0)
+//    val _storageOffset = 0
+//    val _size = Array(storage.length)
+//    val _stride = Array(1)
+//    DenseTensor.newWithStorage(this, storage, _storageOffset, _size, _stride, ev)
+//  }
+//
+//  private[tensor] def this(storage: ArrayStorage[T], storageOffset: Int, size: Array[Int] = null,
+//    stride: Array[Int] = null)(implicit ev: TensorNumeric[T]) = {
+//    this(null, 0, null, null, 0)
+//    if (storage != null) {
+//      val _storageOffset = storageOffset - 1
+//      val _size = if (size == null) Array(storage.length) else size
+//      val _stride = if (size == null) null else stride
+//      DenseTensor.newWithStorage[T](this, storage, _storageOffset, _size, _stride, ev)
+//    }
+//  }
+//
+//  private[tensor] def this(other: Tensor[T])(implicit ev: TensorNumeric[T]) = {
+//    this(null, 0, null, null, 0)
+//    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]],
+//      "Only support dense tensor in this operation")
+//    val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
+//    val _storageOffset = other.storageOffset() - 1
+//    val _size = other.size()
+//    val _stride = other.stride()
+//    DenseTensor.newWithStorage[T](this, _storage, _storageOffset, _size, _stride, ev)
+//  }
 
   private[tensor] def this()(implicit ev: TensorNumeric[T]) = this(null, 0, null, null, 0)
 
@@ -1006,7 +1008,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       if (x.size(i + 1- delta2) != 1) expandStridesX(i) = x.stride(i + 1- delta2)
       i -= 1
     }
-    val expandX = new DenseTensor[T](
+    val expandX = DenseTensor[T](
       x.storage().asInstanceOf[ArrayStorage[T]],
       x.storageOffset(),
       targetSize,
@@ -1019,7 +1021,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         if (this.size(i + 1 - delta1) != 1) expandStrides(i) = this.stride(i + 1 - delta1)
         i -= 1
       }
-      val tensor1 = new DenseTensor[T](
+      val tensor1 = DenseTensor[T](
         this._storage,
         this.storageOffset(),
         targetSize,
@@ -1381,8 +1383,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       xSize = Array(1) ++ xSize
       i += 1
     }
-    val size = new DenseTensor(new ArrayStorage[T](xSize.map(x => ev.fromType[Int](x)))).
-      cmul(new DenseTensor(new ArrayStorage[T](sizes.map(x => ev.fromType[Int](x))))).
+    val size = DenseTensor(new ArrayStorage[T](xSize.map(x => ev.fromType[Int](x)))).
+      cmul(DenseTensor(new ArrayStorage[T](sizes.map(x => ev.fromType[Int](x))))).
       storage().array().map(x => ev.toType[Int](x))
     xTensor.resize(xSize)
     result.resize(size)
@@ -2419,6 +2421,40 @@ object DenseTensor {
       Array[Int](), 0)
   }
 
+  def apply[@specialized(Float, Double) T: ClassTag](
+        storage: ArrayStorage[T])(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
+    val newT = new DenseTensor[T](null, 0, null, null, 0)
+    val _storageOffset = 0
+    val _size = Array(storage.length)
+    val _stride = Array(1)
+    DenseTensor.newWithStorage(newT, storage, _storageOffset, _size, _stride, ev)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+        storage: ArrayStorage[T], storageOffset: Int, size: Array[Int] = null,
+        stride: Array[Int] = null)(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
+    val newT = new DenseTensor[T](null, 0, null, null, 0)
+    if (storage != null) {
+      val _storageOffset = storageOffset - 1
+      val _size = if (size == null) Array(storage.length) else size
+      val _stride = if (size == null) null else stride
+      DenseTensor.newWithStorage[T](newT, storage, _storageOffset, _size, _stride, ev)
+    }
+    newT
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+        other: Tensor[T])(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
+    val newT = new DenseTensor[T](null, 0, null, null, 0)
+    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
+    val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
+    val _storageOffset = other.storageOffset() - 1
+    val _size = other.size()
+    val _stride = other.stride()
+    DenseTensor.newWithStorage[T](newT, _storage, _storageOffset, _size, _stride, ev)
+  }
+
   private[tensor] def squeeze[@specialized(Float, Double) T](self: DenseTensor[T]): Tensor[T] = {
     var ndim = 0
     var d = 0
@@ -2765,7 +2801,7 @@ object DenseTensor {
 
   private[tensor] def get1dTensor[@specialized(Float, Double) T: ClassTag](
     self: DenseTensor[T], x0: Int)(implicit ev: TensorNumeric[T]): DenseTensor[T] = {
-    new DenseTensor(new ArrayStorage(Array(get1d(self, x0))))
+    DenseTensor(new ArrayStorage(Array(get1d(self, x0))))
   }
 
   private[tensor] def copy[@specialized T](
