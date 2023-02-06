@@ -46,6 +46,7 @@ import scala.util.parsing.json._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+// import scala.collection.mutable.Map
 
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
@@ -69,6 +70,9 @@ object BigDLRemoteAttestationService {
   private val keySize = 256
   private var secretKey = "password"
   private val algorithm = "PBKDF2WithHmacSHA256"
+
+  var userMap : Map[String, Any] = Map.empty 
+  var policyMap : Map[String, Any] = Map.empty
 
   def encrypt(data: Array[Byte]): Array[Byte] = {
     val factory = SecretKeyFactory.getInstance(algorithm)
@@ -125,8 +129,7 @@ object BigDLRemoteAttestationService {
     } else {
       val appID = map.get("app_id").mkString
       val apiKey = map.get("api_key").mkString
-      val fileContent = Await.result(loadFile(filename), 5.seconds)
-      val userMap = AttestationUtil.stringToMap(fileContent)
+
       val userMapRes = userMap.get(appID).mkString
       if ((userMapRes != "") && apiKey == userMapRes) {
         true
@@ -142,7 +145,7 @@ object BigDLRemoteAttestationService {
     case class CmdParams(serviceHost: String = "0.0.0.0",
                           servicePort: String = "9875",
                           httpsKeyStoreToken: String = "token",
-                          httpsKeyStorePath: String = "./key",
+                          httpsKeyStorePath: String = "./keys/server.p12",
                           httpsEnabled: Boolean = true,
                           basePath: String = "./data",
                           enrollFilePath: String = "BigDLRemoteAttestationService.dat",
@@ -162,16 +165,16 @@ object BigDLRemoteAttestationService {
           .text("Whether enable https, default is false")
           .action((x, c) => c.copy(httpsEnabled = x))
         opt[String]('t', "httpsKeyStoreToken")
-          .text("KeyStoreToken of https, default is token")
+          .text("KeyS toreToken of https, default is token")
           .action((x, c) => c.copy(httpsKeyStoreToken = x))
-        opt[String]('h', "httpsKeyStorePath")
+        opt[String]("httpsKeyStorePath")
           .text("KeyStorePath of https, default is ./key")
           .action((x, c) => c.copy(httpsKeyStorePath = x))
         opt[String]('k', "secretKey")
           .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
           .action((x, c) => c.copy(secretKey = x))
         opt[String]('b', "basePath")
-          .text("Secret Key to encrypt and decrypt BigDLRemoteAttestation data file")
+          .text("Diretory for data files of BigDL Remote Attestation Service")
           .action((x, c) => c.copy(basePath = x))
         opt[String]('e', "enrollFilePath")
           .text("Path of base data file to save user information, "
@@ -185,7 +188,22 @@ object BigDLRemoteAttestationService {
     secretKey = params.secretKey
     val enrollFilePath = params.basePath + params.enrollFilePath
     val policyFilePath = params.basePath + params.policyFilePath
+    val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
+    userMap = AttestationUtil.stringToMap(userContent)
+    val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
+    policyMap = AttestationUtil.stringToMap(policyContent)
 
+    val t = new Thread {
+      override def run(): Unit = {
+        while (true) {
+          Thread.sleep(30 * 1000)
+          saveFile(enrollFilePath, AttestationUtil.mapToString(userMap))
+          saveFile(policyFilePath, AttestationUtil.mapToString(policyMap))
+        }
+      }
+    }
+    t.start()
+  
     val route: Route =
         get {
           path("") {
@@ -202,11 +220,11 @@ object BigDLRemoteAttestationService {
             val appID = UUID.randomUUID.toString
             val apiKey = Random.alphanumeric.take(32).mkString
             val basePath = params.basePath
-            val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
-            var userMap = AttestationUtil.stringToMap(userContent)
+            // val userContent = Await.result(loadFile(enrollFilePath), 5.seconds)
+            // var userMap = AttestationUtil.stringToMap(userContent)
 
             userMap += (appID -> apiKey)
-            saveFile(basePath, AttestationUtil.mapToString(userMap))
+            // saveFile(basePath, AttestationUtil.mapToString(userMap))
             val res = "{\"app_id\":\"" + appID + ",\"api_key\":\"" + apiKey + "\"}"
             complete(res)
           }
@@ -226,8 +244,8 @@ object BigDLRemoteAttestationService {
                   val appID = msg.get("app_id").mkString
                   val mrEnclave = msg.get("mr_enclave").mkString
                   val mrSigner = msg.get("mr_signer").mkString
-                  val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
-                  var policyMap = AttestationUtil.stringToMap(policyContent)
+                  // val policyContent = Await.result(loadFile(policyFilePath), 5.seconds)
+                  // var policyMap = AttestationUtil.stringToMap(policyContent)
                   var policyID = UUID.randomUUID.toString
 
                   val curContent = Map[String, Any] (
@@ -236,7 +254,7 @@ object BigDLRemoteAttestationService {
                     "mr_signer" -> mrSigner
                   )
                   policyMap += (policyID -> curContent)
-                  saveFile(policyFilePath, AttestationUtil.mapToString(policyMap))
+                  // saveFile(policyFilePath, AttestationUtil.mapToString(policyMap))
                   val res = AttestationUtil.mapToString(Map("policy_id" -> policyID))
                   complete(200, res)
                 } else {
@@ -272,8 +290,8 @@ object BigDLRemoteAttestationService {
                       val mrSigner = AttestationUtil.getMRSignerFromQuote(quote)
 
                       val policyID = msg.get("policy_id").mkString
-                      val fileContent = Await.result(loadFile(policyFilePath), 5.seconds)
-                      val policyMap = AttestationUtil.stringToMap(fileContent)
+                      // val fileContent = Await.result(loadFile(policyFilePath), 5.seconds)
+                      // val policyMap = AttestationUtil.stringToMap(fileContent)
                       val policyContent: Map[String, Any] = policyMap.get(policyID) match {
                         case Some(map: Map[String, Any]) => map
                         case None => Map.empty
