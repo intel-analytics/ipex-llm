@@ -27,6 +27,7 @@ sgx.isvsvn = 3
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}:/usr/lib/python3.7/lib:/usr/lib:{{ jdk_home }}:{{ jdk_home }}/lib/amd64/jli:/ppml/lib"
 loader.env.PATH = "{{ execdir }}:/usr/lib/python3.7/bin:/:/usr/sbin:/usr/bin:/sbin:/bin:{{ jdk_home }}/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.7"
+loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src"
 loader.env.JAVA_HOME = "{{ jdk_home }}"
 loader.env.JAVA_OPTS = "'-Djava.library.path={{ jdk_home }}/lib -Dsun.boot.library.path={{ jdk_home }}/lib'"
 loader.env.SPARK_LOCAL_IP = "{{ spark_local_ip }}"
