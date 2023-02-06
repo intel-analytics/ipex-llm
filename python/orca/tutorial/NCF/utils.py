@@ -20,17 +20,14 @@ import json
 import tempfile
 
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_local, \
-    put_local_dir_tree_to_remote, get_remote_dir_to_local
+from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_local
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 
 def parse_args(description):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str, default="./",
+    parser.add_argument("--data_dir", type=str, default="./ml-1m",
                         help="The path to load data from local or remote resources.")
-    parser.add_argument("--dataset", type=str, default="ml-1m",
-                        help="The name of dataset. ml-1m or ml-100k")
     parser.add_argument("--model_dir", type=str, default="./",
                         help="The path to save model and logs.")
     parser.add_argument("--cluster_mode", type=str, default="local",
@@ -137,25 +134,3 @@ def load_model_config(model_dir, file_name="config.json"):
             with open(local_path, "r") as f:
                 config = json.load(f)
     return config
-
-
-def save_tf_model(estimator, model_dir, model_name="NCF_model"):
-    if is_local_path(model_dir):  # save the model to local directory
-        estimator.save(os.path.join(model_dir, model_name))
-    else:  # save the model to remote directory
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            local_dir = os.path.join(tmpdirname, model_name)
-            remote_dir = os.path.join(model_dir)
-            estimator.save(local_dir)
-            put_local_dir_tree_to_remote(local_dir, remote_dir)
-
-
-def load_tf_model(estimator, model_dir, model_name="NCF_model"):
-    if is_local_path(model_dir):  # load the model from local directory
-        estimator.load(os.path.join(model_dir, model_name))
-    else:  # load the model from remote directory
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            local_dir = os.path.join(tmpdirname)
-            remote_dir = os.path.join(model_dir, model_name)
-            get_remote_dir_to_local(remote_dir, local_dir)
-            estimator.load(os.path.join(local_dir, model_name))
