@@ -6,7 +6,7 @@
 | **Jemalloc**          | Use jemalloc as allocator                                               |
 | **Tcmalloc**          | Use tcmalloc as allocator                                               |
 | **Neural-Compressor** | Neural-Compressor int8 quantization                                     |
-| **OpenVINO**          | OpenVINO fp32/bf16/fp16(GPU)/int8 acceleration                          |
+| **OpenVINO**          | OpenVINO fp32/bf16/fp16/int8 acceleration on CPU/GPU/VPU                |
 | **ONNXRuntime**       | ONNXRuntime fp32/int8 acceleration                                      |
 | **CUDA patch**        | Run CUDA code even without GPU                                          |
 | **JIT**               | PyTorch JIT optimization                                                |
