@@ -4,7 +4,7 @@ inputs:
   image:
     description: 'image'
     required: true
-    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
   image-tag:
     description: 'image tag'
     required: true
@@ -16,11 +16,9 @@ runs:
     - name: Set Variable
       shell: bash
       env:
-        DEFAULT_SGX_MEM_SIZE: 32G
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         echo "CONTAINER_NAME=spark-k8s-exmaples-test-gramine" >> $GITHUB_ENV
-        echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
 
     - name: Start Container
@@ -39,10 +37,10 @@ runs:
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
-        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
+        -v $KEYS_PATH:/ppml/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/password \
         -v $KUBECONFIG_PATH:/root/.kube/config \
-        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
+        -v $NFS_INPUT_PATH:/ppml/data \
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
         -e LOCAL_IP=$LOCAL_IP \
@@ -67,8 +65,8 @@ runs:
     - name: Spark K8S Examples Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-pi-on-k8s-client-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-pi-on-k8s-cluster-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-sqlexamples-on-k8s-client-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-sqlexamples-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-k8s-cluster-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-sqlexamples-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlexamples-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-pi-on-k8s-client-sgx.sh"

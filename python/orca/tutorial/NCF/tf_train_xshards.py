@@ -39,15 +39,15 @@ train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_fe
 
 # Step 3: Define the NCF model
 config = dict(
-    factor_num=16,
-    lr=1e-2,
-    item_num=item_num,
     user_num=user_num,
+    item_num=item_num,
+    factor_num=16,
+    num_layers=3,
     dropout=0.5,
+    lr=0.01,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=num_dense_feats,
     sparse_feats_embed_dims=8,
-    num_layers=3
+    num_dense_feats=num_dense_feats
 )
 
 
@@ -76,7 +76,7 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-if args.scheduler:
+if args.lr_scheduler:
     lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
     callbacks.append(lr_callback)
 
