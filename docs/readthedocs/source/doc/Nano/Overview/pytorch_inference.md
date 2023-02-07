@@ -71,8 +71,19 @@ You can simply append the following part to enable your [ONNXRuntime](https://on
 ort_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = ort_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(ort_model):
+    y_hat = ort_model(x)
+```
+
+```eval_rst
+.. note::
+    For all Nano optimized models, you need to wrap the inference process with the automatic context manager provided by Nano through the API ``InferenceOptimizer.get_context(model=...)``.
+
+    Please note that the context manager is not needed for `multi-instance inference <#multi-instance-acceleration>`_.
+
+    For more details about the context manager, you could refer to section `Automatic Context Management <#automatic-context-management>`_.
 ```
 ### OpenVINO Acceleration
 The [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:
@@ -82,8 +93,10 @@ The [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-
 ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = ov_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(ov_model):
+    y_hat = ov_model(x)
 ```
 
 ### TorchScript Acceleration
@@ -97,8 +110,10 @@ jit_model = InferenceOptimizer.trace(model, accelerator='jit',
                                      use_ipex=True, input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = jit_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(jit_model):
+    y_hat = jit_model(x)
 ```
 
 ## Quantization
@@ -118,7 +133,8 @@ Without extra accelerator, `InferenceOptimizer.quantize()` returns a PyTorch mod
 ```python
 q_model = InferenceOptimizer.quantize(model, calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = q_model(x)
+with InferenceOptimizer.get_context(q_model):
+    y_hat = q_model(x)
 ```
 This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.
 
@@ -129,7 +145,8 @@ Still taking the example in [Runtime Acceleration](pytorch_inference.md#runtime-
 ```python
 ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = ort_q_model(x)
+with InferenceOptimizer.get_context(ort_q_model):
+    y_hat = ort_q_model(x)
 ```
 
 #### Quantization using Post-training Optimization Tools
@@ -138,7 +155,8 @@ Take the example in [Runtime Acceleration](#runtime-acceleration), and add quant
 ```python
 ov_q_model = InferenceOptimizer.quantize(model, accelerator='openvino', calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = ov_q_model(x)
+with InferenceOptimizer.get_context(ort_q_model):
+    y_hat = ort_q_model(x)
 ```
 
 #### Quantization with Accuracy Control
@@ -204,8 +222,6 @@ with InferenceOptimizer.get_context(bf16_model):
 ```eval_rst
 .. note::
     For BFloat16 quantization, make sure your inference is under ``with InferenceOptimizer.get_context(bf16_model):``. Otherwise, the whole inference process is actually FP32 precision.
-
-    For more details about the context manager provided by ``InferenceOptimizer.get_context()``, you could refer related `How-to guide <https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager.html>`_.
 ```
 
 #### Channels Last Memory Format
@@ -326,14 +342,18 @@ multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores
 multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
 ```
 
-## Automatic Context Management
-BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context managers:
+```eval_rst
+.. note::
+    Please note during multi-instance infernece, the context manager ``InferenceOptimizer.get_context(model=...)`` is not needed to be maunally added.
+```
 
-1. ``torch.no_grad()`` to disable gradients, which will be used for all model
-   
-2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related model
-   
+## Automatic Context Management
+BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model optimized by ``InferenceOptimizer.trace``/``quantize``/``optimize``, it usually contains part of or all of following four types of context managers:
+
+1. ``torch.inference_mode(True)`` to disable gradients, which will be used for all models
+2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related models
 3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when applying ``InferenceOptimizer.trace``/``quantize``/``optimize``
+4. ``torch.jit.enable_onednn_fusion(True)`` to support ONEDNN fusion for jit when using jit as accelerator
 
 For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
 ```python
@@ -369,6 +389,10 @@ with InferenceOptimizer.get_context(ipex_model, classifer):
     assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
 ```
 
+```eval_rst
+.. seealso::
+   You could refer to the related `how-to guide <../Howto/Inference/PyTorch/pytorch_context_manager.nblink>`_ for more detailed usage of the context manager.
+```
 ## One-click Accleration Without Code Change
 ```eval_rst
 .. note::
