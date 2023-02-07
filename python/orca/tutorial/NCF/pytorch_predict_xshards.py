@@ -24,8 +24,8 @@ from bigdl.orca.data import XShards
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Prediction with Orca XShards")
-init_orca(args, extra_python_lib="pytorch_model.py")
+args = parse_args("PyTorch NCF Prediction with Orca XShards", mode="predict")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
 
 
 # Step 2: Load the processed data

@@ -27,7 +27,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Spark DataFrame")
-init_orca(args)
+init_orca(args.cluster_mode)
 spark = OrcaContext.get_spark_session()
 
 

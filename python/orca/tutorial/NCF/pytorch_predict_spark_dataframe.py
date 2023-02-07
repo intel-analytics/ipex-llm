@@ -23,8 +23,8 @@ from bigdl.orca.learn.pytorch import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Prediction with Spark DataFrame")
-init_orca(args, extra_python_lib="pytorch_model.py")
+args = parse_args("PyTorch NCF Prediction with Spark DataFrame", mode="predict")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
 spark = OrcaContext.get_spark_session()
 
 
