@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.ppml.attestation.utils
 
 import java.math.BigInteger
-
+import java.security.SecureRandom
 import org.json4s.jackson.Serialization
 import org.json4s._
 
@@ -42,5 +42,15 @@ object AttestationUtil {
 
   def getMRSignerFromQuote(quote: Array[Byte]): String = {
     new BigInteger(1, quote.slice(176, 208)).toString(16)
+  }
+
+  def generatePassword(length: Int): String = {
+    val secureRandom = new SecureRandom()
+    val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    val password = new Array[Char](length)
+    for (i <- 0 until length) {
+      password(i) = charSet.charAt(secureRandom.nextInt(charSet.length))
+    }
+    password.mkString
   }
 }

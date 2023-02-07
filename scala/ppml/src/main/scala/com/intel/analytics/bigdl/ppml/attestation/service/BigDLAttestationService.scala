@@ -41,6 +41,7 @@ import scala.util.Random
 import scala.util.parsing.json._
 
 import com.intel.analytics.bigdl.ppml.attestation._
+import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
 
 /**
  * Attestation Service provided by BigDL
@@ -64,17 +65,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
   }
 
   implicit val formats = DefaultFormats
-
-  private def mapToString(map: Map[String, Any]): String = {
-    Serialization.write(map)
-  }
-
-  private def stringToMap(str: String): Map[String, Any] = {
-    JSON.parseFull(str) match {
-      case Some(map: Map[String, Any]) => map
-      case None => Map.empty
-    }
-  }
 
   // Quote
   val PAYLOAD_QUOTE = "quote"
@@ -109,7 +99,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
         "api_key" -> apiKey,
         "quote" -> quote
       )
-      val postString = mapToString(postContent)
+      val postString = AttestationUtil.mapToString(postContent)
       val postUrl = constructUrl(action, httpsEnabled)
       var response: String = null
       if (httpsEnabled) {
@@ -151,7 +141,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
         "quote" -> quote,
         "policy_id" -> policyID
       )
-      val postString = mapToString(postContent)
+      val postString = AttestationUtil.mapToString(postContent)
       val postUrl = constructUrl(action, httpsEnabled)
       var response: String = null
       if (httpsEnabled) {
