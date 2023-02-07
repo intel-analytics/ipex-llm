@@ -315,7 +315,7 @@ Register a attestation policy for SGX/TDX quote, which will check some certain a
 
 * REST API format:
 ```
-POST <bigdl_remote_attestation_address>/registePolicy
+POST <bigdl_remote_attestation_address>/registerPolicy
 ```
 * Request Payload:
 
