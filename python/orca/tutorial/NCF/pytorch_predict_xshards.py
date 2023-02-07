@@ -24,8 +24,8 @@ from bigdl.orca.data import XShards
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Prediction with Orca XShards")
-init_orca(args, extra_python_lib="pytorch_model.py")
+args = parse_args("PyTorch NCF Prediction with Orca XShards", mode="predict")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
 
 
 # Step 2: Load the processed data
@@ -67,5 +67,6 @@ print(predictions.head(n=5))
 predictions.save_pickle(os.path.join(args.data_dir, "test_predictions_xshards"))
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

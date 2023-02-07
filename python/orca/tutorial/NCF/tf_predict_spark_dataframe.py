@@ -22,8 +22,8 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Prediction with Spark DataFrame")
-init_orca(args)
+args = parse_args("TensorFlow NCF Prediction with Spark DataFrame", mode="predict")
+init_orca(args.cluster_mode)
 spark = OrcaContext.get_spark_session()
 
 
@@ -32,8 +32,9 @@ df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.pa
 
 
 # Step 3: Load the model
-est = Estimator.from_keras()
-est.load("NCF_model")
+est = Estimator.from_keras(backend=args.backend,
+                           workers_per_node=args.workers_per_node)
+est.load(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 4: Distributed inference of the loaded model
@@ -49,5 +50,6 @@ predict_df.write.parquet(os.path.join(args.data_dir, "test_predictions_dataframe
                          mode="overwrite")
 
 
-# Step 6: Stop Orca Context when program finishes
+# Step 6: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

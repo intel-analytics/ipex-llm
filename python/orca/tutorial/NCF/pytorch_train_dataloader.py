@@ -30,7 +30,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Training with DataLoader")
-init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
@@ -101,10 +101,10 @@ est = Estimator.from_torch(model=model_creator,
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node)
-train_stats = est.fit(data=train_loader_func,
-                      validation_data=test_loader_func,
+train_stats = est.fit(train_loader_func,
                       epochs=2,
                       batch_size=10240,
+                      validation_data=test_loader_func,
                       callbacks=callbacks)
 print("Train results:")
 for epoch_stats in train_stats:
@@ -114,7 +114,8 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_loader_func, batch_size=10240)
+eval_stats = est.evaluate(test_loader_func,
+                          batch_size=10240)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
@@ -122,7 +123,9 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained PyTorch model
 est.save(os.path.join(args.model_dir, "NCF_model"))
+save_model_config(config, args.model_dir, "config.json")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

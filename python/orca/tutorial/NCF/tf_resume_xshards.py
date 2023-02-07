@@ -27,8 +27,8 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Resume Training with Orca Xshards")
-init_orca(args)
+args = parse_args("TensorFlow NCF Resume Training with Orca XShards")
+init_orca(args.cluster_mode)
 
 
 # Step 2: Read and process data using Xshards
@@ -37,8 +37,9 @@ test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xsha
 feature_cols, label_cols = get_feature_cols(), get_label_cols()
 
 
-# Step 3: Distributed training with Orca TF2 Estimator and load the model weight
-est = Estimator.from_keras(backend=args.backend)
+# Step 3: Distributed training with Orca TF2 Estimator after loading the model
+est = Estimator.from_keras(backend=args.backend,
+                           workers_per_node=args.workers_per_node)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
 batch_size = 10240
@@ -49,7 +50,7 @@ callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir,
     if args.tensorboard else []
 
 if args.lr_scheduler:
-    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(schedule_func, verbose=1)
     callbacks.append(lr_callback)
 
 train_stats = est.fit(train_data,
@@ -71,5 +72,6 @@ for k, v in train_stats.items():
 est.save(os.path.join(args.model_dir, "NCF_resume_model"))
 
 
-# Step 5: Stop Orca Context when program finishes
+# Step 5: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

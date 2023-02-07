@@ -29,7 +29,7 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Spark DataFrame")
 args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
-init_orca(args, extra_python_lib="tf_model.py")
+init_orca(args.cluster_mode, extra_python_lib="tf_model.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
@@ -77,7 +77,7 @@ callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir,
     if args.tensorboard else []
 
 if args.lr_scheduler:
-    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(schedule_func, verbose=1)
     callbacks.append(lr_callback)
 
 train_stats = est.fit(train_df,
@@ -106,6 +106,7 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
+# TODO: fix save model to HDFS
 est.save(os.path.join(args.model_dir, "NCF_model"))
 save_model_config(config, args.model_dir, "config.json")
 train_df.write.parquet(os.path.join(args.data_dir,
@@ -114,5 +115,6 @@ test_df.write.parquet(os.path.join(args.data_dir,
                                    "test_processed_dataframe.parquet"), mode="overwrite")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

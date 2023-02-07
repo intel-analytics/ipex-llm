@@ -131,7 +131,7 @@ def model_creator(config):
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
+# Step 4: Distributed training with Orca TF2 Estimator
 backend = 'spark'  # 'ray' or 'spark'
 est = Estimator.from_keras(model_creator=model_creator,
                            config={"dropout": 0.2},
@@ -161,9 +161,10 @@ for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
 
 
-# Step 6: Save the trained Tensorflow model
+# Step 6: Save the trained TensorFlow model
 est.save("xception_model")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

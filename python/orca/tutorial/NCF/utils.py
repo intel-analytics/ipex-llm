@@ -24,7 +24,7 @@ from bigdl.orca.data.file import put_local_file_to_remote, get_remote_file_to_lo
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 
-def parse_args(description):
+def parse_args(description, mode="train"):
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--data_dir", type=str, default="./ml-1m",
                         help="The path to load data from local or remote resources.")
@@ -35,30 +35,32 @@ def parse_args(description):
                              "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
     parser.add_argument("--backend", type=str, default="spark",
                         help="The backend of Orca Estimator, either ray or spark.")
-    parser.add_argument("--tensorboard", action='store_true',
-                        help="Whether to use TensorBoard as the train callback.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
-    parser.add_argument("--lr_scheduler", action='store_true',
-                        help="Whether to use learning rate scheduler for training.")
+    if mode == "train":
+        parser.add_argument("--tensorboard", action='store_true',
+                            help="Whether to use TensorBoard as the train callback.")
+
+        parser.add_argument("--lr_scheduler", action='store_true',
+                            help="Whether to use learning rate scheduler for training.")
     args = parser.parse_args()
     return args
 
 
-def init_orca(args, extra_python_lib=None):
-    if args.cluster_mode == "local":
+def init_orca(cluster_mode, extra_python_lib=None):
+    if cluster_mode == "local":
         sc = init_orca_context(cluster_mode="local")
-    elif args.cluster_mode.startswith("yarn"):
-        if args.cluster_mode == "yarn-client":
+    elif cluster_mode.startswith("yarn"):
+        if cluster_mode == "yarn-client":
             sc = init_orca_context(cluster_mode="yarn-client",
                                    cores=4, memory="10g", num_nodes=2,
                                    extra_python_lib=extra_python_lib)
-        elif args.cluster_mode == "yarn-cluster":
+        elif cluster_mode == "yarn-cluster":
             sc = init_orca_context(cluster_mode="yarn-cluster",
                                    cores=4, memory="10g", num_nodes=2,
                                    extra_python_lib=extra_python_lib)
-    elif args.cluster_mode.startswith("k8s"):
-        if args.cluster_mode == "k8s-client":
+    elif cluster_mode.startswith("k8s"):
+        if cluster_mode == "k8s-client":
             conf = {
                 "spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim"
                 ".options.claimName": "nfsvolumeclaim",
@@ -71,7 +73,7 @@ def init_orca(args, extra_python_lib=None):
                                    master=os.environ.get("RUNTIME_SPARK_MASTER"),
                                    container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                                    conf=conf)
-        elif args.cluster_mode == "k8s-cluster":
+        elif cluster_mode == "k8s-cluster":
             conf = {
                 "spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim"
                 ".options.claimName": "nfsvolumeclaim",
@@ -91,18 +93,18 @@ def init_orca(args, extra_python_lib=None):
                                    container_image=os.environ.get("RUNTIME_K8S_SPARK_IMAGE"),
                                    penv_archive="file:///bigdl/nfsdata/environment.tar.gz",
                                    conf=conf)
-    elif args.cluster_mode == "bigdl-submit":
+    elif cluster_mode == "bigdl-submit":
         sc = init_orca_context(cluster_mode="bigdl-submit")
-    elif args.cluster_mode == "spark-submit":
+    elif cluster_mode == "spark-submit":
         sc = init_orca_context(cluster_mode="spark-submit")
     else:
         exit("cluster_mode should be one of 'local', 'yarn-client', "
              "'yarn-cluster', 'k8s-client', 'k8s-cluster', 'bigdl-submit' or 'spark-submit', "
-             "but got " + args.cluster_mode)
+             "but got " + cluster_mode)
     return sc
 
 
-def scheduler(epoch, lr):
+def schedule_func(epoch, lr):
     if epoch < 1:
         return lr
     else:
@@ -110,10 +112,10 @@ def scheduler(epoch, lr):
 
 
 def save_model_config(config, model_dir, file_name="config.json"):
-    if is_local_path(model_dir):  # save the config of model to local path
+    if is_local_path(model_dir):  # save to local path
         with open(os.path.join(model_dir, file_name), "w") as f:
             json.dump(config, f)
-    else:  # save the config of model to remote path
+    else:  # save to remote path
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)
@@ -123,10 +125,10 @@ def save_model_config(config, model_dir, file_name="config.json"):
 
 
 def load_model_config(model_dir, file_name="config.json"):
-    if is_local_path(model_dir):  # load the config of model from local path
+    if is_local_path(model_dir):  # load from local path
         with open(os.path.join(model_dir, file_name), "r") as f:
             config = json.load(f)
-    else:  # load the config of model from remote path
+    else:  # load from remote path
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)

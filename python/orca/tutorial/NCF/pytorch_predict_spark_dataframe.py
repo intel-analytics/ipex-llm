@@ -23,8 +23,8 @@ from bigdl.orca.learn.pytorch import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Prediction with Spark DataFrame")
-init_orca(args, extra_python_lib="pytorch_model.py")
+args = parse_args("PyTorch NCF Prediction with Spark DataFrame", mode="predict")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
 spark = OrcaContext.get_spark_session()
 
 
@@ -68,5 +68,6 @@ predict_df.write.parquet(os.path.join(args.data_dir, "test_predictions_dataframe
                          mode="overwrite")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()
