@@ -398,7 +398,7 @@ jobs:
 
   Orca-Tutorial-NCF:
     needs: changes
-    if: ${{ needs.changes.outputs.orca == 'true' }}
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
