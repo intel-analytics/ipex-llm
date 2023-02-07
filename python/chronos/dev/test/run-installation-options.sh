@@ -26,8 +26,7 @@ if [ -z "${OMP_NUM_THREADS}" ]; then
 fi
 
 unset MALLOC_CONF
-export OMP_NUM_THREADS=1
-# unset KMP_AFFINITY
+export OMP_NUM_THREADS=2
 # unset OMP_NUM_THREADS
 
 # ray stop -f
