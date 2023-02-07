@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.ppml.attestation.utils
 
 import java.math.BigInteger
-import java.io.{File, InputStream, PrintWriter}
+import java.io.{File, InputStream}
 import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
 import java.io.{BufferedOutputStream, BufferedInputStream};
 import javax.crypto.{Cipher, SecretKey, SecretKeyFactory}

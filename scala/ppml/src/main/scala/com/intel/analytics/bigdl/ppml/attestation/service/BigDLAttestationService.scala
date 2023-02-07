@@ -45,8 +45,11 @@ import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
 
 /**
  * Attestation Service provided by BigDL
- * @param attestationServerIP ehsm IP
- * @param attestationServerPort ehsm port
+ * @param attestationServerIP Attestation Service IP
+ * @param attestationServerPort Attestation Service port
+ * @param appID application ID
+ * @param apiKey application Key
+ * @param httpsEnabled Whether enable https
  */
 class BigDLAttestationService(attestationServerIP: String, attestationServerPort: String,
   appID: String, apiKey: String, httpsEnabled: Boolean = true) extends AttestationService {
@@ -93,7 +96,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     val action: String = ACTION_VERIFY_QUOTE
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
-      // val postString: String = "{\"quote\": \"" + quote + "\"}"
       val postContent = Map[String, Any](
         "app_id" -> appID,
         "api_key" -> apiKey,
@@ -111,7 +113,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
       if (response != null && response.startsWith("\ufeff")) {
         response = response.substring(1)
       }
-      // System.out.println(response)
       new JSONObject(response)
     }
     val result = postResult.getInt(RES_RESULT)
@@ -134,7 +135,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     val action: String = ACTION_VERIFY_QUOTE
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
-      // val postString: String = "{\"quote\": \"" + quote + "\"}"
       val postContent = Map[String, Any](
         "app_id" -> appID,
         "api_key" -> apiKey,
@@ -153,7 +153,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
       if (response != null && response.startsWith("\ufeff")) {
         response = response.substring(1)
       }
-      // System.out.println(response)
       new JSONObject(response)
     }
     val result = postResult.getInt(RES_RESULT)

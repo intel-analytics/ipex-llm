@@ -307,9 +307,9 @@ GET <bigdl_remote_attestation_address>/enroll
 | app_id | String | HfpPKHdF... | ID which represents a certain application  |
 | api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
 
-### Registe Policy
+### Register Policy
 
-Registe a attestation policy for SGX/TDX quote, which will check some certain attributes or contents from the quote.
+Register a attestation policy for SGX/TDX quote, which will check some certain attributes or contents from the quote.
 
 **TDX Policy is not implemented yet.**
 
@@ -324,9 +324,17 @@ POST <bigdl_remote_attestation_address>/registePolicy
 | app_id | String | HfpPKHdF... | ID which represents a certain application  |
 | api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
 | mr_enclave | String | e38104fe6938... | (**For SGX**) The hash over the enclave pages loaded into the SGX protected memory |
-| mr_signer | String | d412a4f07ef8... | (**For SGX**) The hash of the public portion of the key
-used to sign the enclave |
+| mr_signer | String | d412a4f07ef8... | (**For SGX**) The hash of the public portion of the key used to sign the enclave |
 
+* Example Request:
+```json
+{
+    "app_id": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "api_key": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
+    "mr_enclave": "2b0376b7ce6e2ece6279b2b49157841c...",
+    "mr_signer": "3ab0ac54ff6dc8d717f2f18a82d5c88b..."
+}
+```
 * Response Data:
 
 | Name | Type | Reference Value | Description |
@@ -350,6 +358,15 @@ POST <bigdl_remote_attestation_address>/verifyQuote
 | quote | String | AwACAAAAAAAJAA0Ak5py... | A valid DCAP quote in BASE64 |
 | policy_id | string | LdPXuPs8fI5Q... | (**Optional**) The policy which the given quote should satisfy |
 
+* Example Request:
+```json
+{
+    "quote": "AwACAAAAAAAJAA0Ak5pyM...",
+    "app_id":"e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "api_key":"CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
+    "policy_id":"49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
+}
+```
 * Response Data:
 
 | Name | Type | Reference Value | Description |

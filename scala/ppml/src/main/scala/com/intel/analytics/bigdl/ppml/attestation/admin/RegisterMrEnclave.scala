@@ -118,7 +118,7 @@ object RegisterMrEnclave {
             "mr_signer" -> mrSigner
           )
           val postString = AttestationUtil.mapToString(postContent)
-          val postUrl = s"https://$URL/registePolicy"
+          val postUrl = s"https://$URL/registerPolicy"
           var response: String = HTTPSUtil.retrieveResponse(postUrl, sslConSocFactory, postString)
 
           if (response != null && response.startsWith("\ufeff")) {
