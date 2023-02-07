@@ -17,7 +17,6 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 import torch.utils.data as data
 
 from pytorch_dataset import load_dataset, process_users_items, get_input_dims
@@ -31,19 +30,19 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Resume Training with DataLoader")
-init_orca(args, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config["data_dir"], config["dataset"], config["num_ng"])
+    train_dataset, _ = load_dataset(config["data_dir"], num_ng=4)
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config["data_dir"], config["dataset"], config["num_ng"])
+    _, test_dataset = load_dataset(config["data_dir"], num_ng=4)
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -52,7 +51,7 @@ def test_loader_func(config, batch_size):
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(config["data_dir"], config["dataset"])
+        total_cols = process_users_items(config["data_dir"])
     sparse_feats_input_dims, num_dense_feats = get_input_dims(users, items,
                                                               sparse_features, dense_features)
     model = NCF(user_num=user_num,
@@ -60,7 +59,7 @@ def model_creator(config):
                 factor_num=config["factor_num"],
                 num_layers=config["num_layers"],
                 dropout=config["dropout"],
-                model=config["model"],
+                model="NeuMF-end",
                 sparse_feats_input_dims=sparse_feats_input_dims,
                 sparse_feats_embed_dims=config["sparse_feats_embed_dims"],
                 num_dense_feats=num_dense_feats)
@@ -79,34 +78,29 @@ def scheduler_creator(optimizer, config):
 loss = nn.BCEWithLogitsLoss()
 
 
-# Step 4: Resume distributed training with Orca PyTorch Estimator
+# Step 4: Distributed training with Orca PyTorch Estimator after loading the model
+config = load_model_config(args.model_dir, "config.json")
 callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
                                  freq=1000)] if args.tensorboard else []
-scheduler = scheduler_creator if args.lr_scheduler else None
+scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
-                           scheduler_creator=scheduler,
                            loss=loss,
+                           scheduler_creator=scheduler_creator,
                            metrics=[Accuracy(), Precision(), Recall()],
+                           config=config,
                            backend=args.backend,
                            use_tqdm=True,
-                           workers_per_node=args.workers_per_node,
-                           config={"data_dir": args.data_dir,
-                                   "dataset": args.dataset,
-                                   "num_ng": 4,
-                                   "factor_num": 16,
-                                   "num_layers": 3,
-                                   "dropout": 0.5,
-                                   "lr": 0.01,
-                                   "model": "NeuMF-end",
-                                   "sparse_feats_embed_dims": 8})
+                           workers_per_node=args.workers_per_node)
 est.load(os.path.join(args.model_dir, "NCF_model"))
-train_stats = est.fit(data=train_loader_func,
-                      validation_data=test_loader_func,
+
+train_stats = est.fit(train_loader_func,
                       epochs=2,
                       batch_size=10240,
+                      validation_data=test_loader_func,
                       callbacks=callbacks)
+
 
 print("Train results:")
 for epoch_stats in train_stats:
@@ -116,7 +110,8 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_loader_func, batch_size=10240)
+eval_stats = est.evaluate(test_loader_func,
+                          batch_size=10240)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
@@ -126,5 +121,6 @@ for k, v in eval_stats.items():
 est.save(os.path.join(args.model_dir, "NCF_model"))
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()
