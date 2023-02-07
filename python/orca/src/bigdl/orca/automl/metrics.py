@@ -29,9 +29,13 @@ from typing import List, Tuple, Union, Optional
 EPSILON = 1e-10
 
 
-def _standardize_input(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-                       y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
-                       multioutput: str) -> Tuple:
+def _standardize_input(y_true: Union[List[List[Union[int, float]]], ndarray,
+                                     List[Union[int, float]], List[List[List[Union[int, float]]]]],
+                       y_pred: Union[List[List[Union[int, float]]], ndarray,
+                                     List[Union[int, float]], List[List[List[Union[int, float]]]]],
+                       multioutput: str) -> Union[Tuple[ndarray, ndarray, Tuple[int, int]],
+                                                  Tuple[ndarray, ndarray, Tuple[()]],
+                                                  Tuple[ndarray, ndarray, Tuple[int]]]:
     """
     This function check the validation of the input
     input should be one of list/tuple/ndarray with same shape and not be None
@@ -88,8 +92,10 @@ def _standardize_input(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return y_true, y_pred, original_shape
 
 
-def sMAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-          y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def sMAPE(y_true: Union[ndarray, List[List[Union[int, float]]],
+                        List[List[List[Union[int, float]]]]],
+          y_pred: Union[ndarray, List[List[Union[int, float]]],
+                        List[List[List[Union[int, float]]]]],
           multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Symmetric mean absolute percentage error (sMAPE).
@@ -116,8 +122,8 @@ def sMAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def MPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-        y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+        y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
         multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean percentage error (MPE).
@@ -143,8 +149,10 @@ def MPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def MAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-         y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MAPE(y_true: Union[List[Union[int, float]], ndarray,
+                       List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
+         y_pred: Union[List[Union[int, float]], ndarray,
+                       List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean absolute percentage error (MAPE).
@@ -170,8 +178,8 @@ def MAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def MDAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-          y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+          y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
           multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Median Absolute Percentage Error (MDAPE).
@@ -198,8 +206,8 @@ def MDAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def sMDAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-           y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def sMDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+           y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
            multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Symmetric Median Absolute Percentage Error (sMDAPE).
@@ -227,8 +235,8 @@ def sMDAPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def ME(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-       y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def ME(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+       y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
        multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Mean Error (ME).
@@ -254,8 +262,8 @@ def ME(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.mean(output_errors)
 
 
-def MSPE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-         y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MSPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+         y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean squared percentage error (MSPE).
@@ -307,8 +315,8 @@ def MSLE(y_true: ndarray, y_pred: ndarray,
     return result
 
 
-def R2(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-       y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def R2(y_true: Union[ndarray, List[List[Union[int, float]]]],
+       y_pred: Union[ndarray, List[List[Union[int, float]]]],
        multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate the r2 score.
@@ -334,8 +342,8 @@ def R2(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return result
 
 
-def MAE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-        y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MAE(y_true: Union[ndarray, List[List[Union[int, float]]]],
+        y_pred: Union[ndarray, List[List[Union[int, float]]]],
         multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate the mean absolute error (MAE).
@@ -361,8 +369,8 @@ def MAE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return result
 
 
-def RMSE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-         y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def RMSE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+         y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate square root of the mean squared error (RMSE).
@@ -384,8 +392,10 @@ def RMSE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return np.sqrt(MSE(y_true, y_pred, multioutput=multioutput))
 
 
-def MSE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-        y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
+def MSE(y_true: Union[List[Union[int, float]], ndarray,
+                      List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
+        y_pred: Union[List[Union[int, float]], ndarray,
+                      List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
         multioutput: str='uniform_average') -> Union[float64, ndarray]:
     """
     Calculate the mean squared error (MSE).
@@ -411,9 +421,7 @@ def MSE(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
     return result
 
 
-def Accuracy(y_true: Union[List, Tuple, ndarray, pd.DataFrame],
-             y_pred: Union[List, Tuple, ndarray, pd.DataFrame],
-             multioutput: Optional[str]=None):
+def Accuracy(y_true, y_pred, multioutput=None):
     """
     Calculate the accuracy score (Accuracy).
 
@@ -469,7 +477,7 @@ class Evaluator(object):
     max_mode_metrics = ('r2', 'accuracy')
 
     @staticmethod
-    def evaluate(metric: str, y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values'):
+    def evaluate(metric, y_true, y_pred, multioutput: str='raw_values'):
         """
         Evaluate a specific metric for y_true and y_pred.
 
@@ -493,7 +501,7 @@ class Evaluator(object):
             return result
 
     @staticmethod
-    def check_metric(metric: str):
+    def check_metric(metric):
         if not metric:
             invalidInputError(False,
                               f"Got invalid metric name of {metric}!")
@@ -502,7 +510,7 @@ class Evaluator(object):
                               "metric " + metric + " is not supported")
 
     @staticmethod
-    def get_metric_mode(metric: str):
+    def get_metric_mode(metric):
         Evaluator.check_metric(metric)
         if metric in Evaluator.max_mode_metrics:
             return "max"
