@@ -112,7 +112,6 @@ class TestXShardsSparkBackend(TestCase):
 
         shutil.rmtree(temp)
 
-
     def test_read_large_csv(self):
         file_path = os.path.join(self.resource_path, "orca/data/10010.csv")
         data_shard = bigdl.orca.data.pandas.read_csv(file_path)
