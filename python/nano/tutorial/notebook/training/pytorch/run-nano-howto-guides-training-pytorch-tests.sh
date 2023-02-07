@@ -4,7 +4,8 @@ export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/notebook/training/pytorch
 
-TORCH_VERSION=`python -c "from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12; print(TORCH_VERSION_LESS_1_12)"`
+TORCH_VERSION_LESS_1_12=`python -c "from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12; print(TORCH_VERSION_LESS_1_12)"`
+AVX512_AVAILABLE=`lscpu | grep avx512`
 
 set -e
 
@@ -12,6 +13,13 @@ set -e
 if [[ $TORCH_VERSION_LESS_1_12 == True ]]
 then
     sed -i "s/MyNano(precision='bf16').train()/#MyNano(precision='bf16').train()/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_pytorch_training_bf16.ipynb
+fi
+# disable training with bf16 + ipex when avx512 is not avaliable;
+# as it will automatically turn back to fp32 training,
+# and no need to test
+if [[ -z "$AVX512_AVAILABLE" ]]
+then
+    sed -i "s/MyNano(use_ipex=True, precision='bf16').train()/#MyNano(use_ipex=True, precision='bf16').train()/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_pytorch_training_bf16.ipynb
 fi
 
 # the training dataset size is limited for testing purposes
