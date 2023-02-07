@@ -118,9 +118,9 @@ class ResNetPerfCallback(MainCallback):
             if runner.config["bf16"]:
                 images = images.to(torch.bfloat16)
         if runner.batch_idx < runner.config["warmup_iterations"]:
-            output, target, loss = runner.forward(images, target, warmup=True)
+            output, target, loss = self.forward(runner, images, target, warmup=True)
         else:
-            output, target, loss = runner.forward(images, target, warmup=False)
+            output, target, loss = self.forward(runner, images, target, warmup=False)
         
         runner.output = output
         runner.loss = loss
