@@ -19,7 +19,7 @@ fi
 # and no need to test
 if [[ -z "$AVX512_AVAILABLE" ]]
 then
-    sed -i "s/trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')/#trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')/" $NANO_HOWTO_GUIDES_TEST_DIR/accelerate_pytorch_training_bf16.ipynb
+    sed -i "s/trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')/#trainer = Trainer(max_epochs=5, use_ipex=True, precision='bf16')/" $NANO_HOWTO_GUIDES_TEST_DIR/pytorch_lightning_training_bf16.ipynb
 fi
 
 # the number of batches to run is limited for testing purposes
