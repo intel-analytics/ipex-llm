@@ -115,6 +115,7 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
+save_model_config(config, args.model_dir, "config.json")
 train_df.write.parquet(os.path.join(args.data_dir,
                                     "train_processed_dataframe.parquet"), mode="overwrite")
 test_df.write.parquet(os.path.join(args.data_dir,
