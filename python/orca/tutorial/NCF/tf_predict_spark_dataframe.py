@@ -32,8 +32,9 @@ df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.pa
 
 
 # Step 3: Load the model
-est = Estimator.from_keras()
-est.load("NCF_model")
+est = Estimator.from_keras(backend=args.backend,
+                           workers_per_node=args.workers_per_node)
+est.load(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 4: Distributed inference of the loaded model

@@ -39,8 +39,9 @@ test_df = spark.read.parquet(os.path.join(args.data_dir,
 feature_cols, label_cols = get_feature_cols(), get_label_cols()
 
 
-# Step 3: Distributed training with Orca TF2 Estimator and load the model weight
-est = Estimator.from_keras(backend=args.backend)
+# Step 3: Distributed training with Orca TF2 Estimator after loading the model
+est = Estimator.from_keras(backend=args.backend,
+                           workers_per_node=args.workers_per_node)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
 batch_size = 10240
