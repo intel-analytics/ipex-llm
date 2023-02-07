@@ -21,13 +21,23 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, AES_CBC_PKCS5PADDING}
 import org.apache.spark.sql.SparkSession
 
-object MultiPartySparkExample extends Supportive {
+object MultiPartySparkQueryExample extends Supportive {
   def main(args: Array[String]): Unit = {
 
-    val sparkSession = SparkSession.builder().getOrCreate
-    // load spark configurations into ppml context
-    val conf = sparkSession.sparkContext.getConf
-    val sc = PPMLContext.initPPMLContext(conf, "MultiPartySparkExample")
+    val ppmlArgs = Map(
+      "spark.bigdl.enableMultiKms" -> "true",
+      "spark.bigdl.kms.amyKms.type" -> "EHSMKeyManagementService",
+      "spark.bigdl.kms.amyKms.ip" -> args(0),
+      "spark.bigdl.kms.amyKms.port" -> args(1),
+      "spark.bigdl.kms.amyKms.appId" -> args(2),
+      "spark.bigdl.kms.amyKms.apiKey" -> args(3),
+      "spark.bigdl.kms.bobKms.type" -> "EHSMKeyManagementService",
+      "spark.bigdl.kms.bobKms.ip" -> args(4),
+      "spark.bigdl.kms.bobKms.port" -> args(5),
+      "spark.bigdl.kms.bobKms.appId" -> args(6),
+      "spark.bigdl.kms.bobKms.apiKey" -> args(7)
+    )
+    val sc = PPMLContext.initPPMLContext("MultiPartySparkExample", ppmlArgs)
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
@@ -38,14 +48,14 @@ object MultiPartySparkExample extends Supportive {
                 "./amy_encrypted_primary_key", // primary key file path
                 "./amy_encrypted_data_key") // data key file path
           .option("header", "true")
-          .csv("./amyDataSource.csv") // input file path
+          .csv("./encrypted_amy_data") // input file path
       }
 
       val bobDf = timing("2/8 read Bob's data source") {
         sc.read(AES_CBC_PKCS5PADDING, "bobKms",
                 "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
           .option("header", "true")
-          .csv("./bobDataSource.csv")
+          .csv("./encrypted_bob_data")
       }
 
       val amyDevelopers = timing("3/8 do SQL operations on Amy data frame") {
@@ -78,9 +88,9 @@ object MultiPartySparkExample extends Supportive {
         // write encrypted data
         sc.write(unionDf, // target data frame
                  AES_CBC_PKCS5PADDING, // encrypt mode
-                 "sharedKms", // name of kms which data key is retrieved from
-                 "./shared_encrypted_primary_key", // primary key file path
-                 "./shared_encrypted_data_key") // data key file path
+                 "amyKms", // name of kms which data key is retrieved from
+                 "./amy_encrypted_primary_key", // primary key file path
+                 "./amy_encrypted_data_key") // data key file path
           .mode("overwrite")
           .option("header", true)
           .csv("./union_output")
@@ -99,8 +109,8 @@ object MultiPartySparkExample extends Supportive {
       }
 
       timing("6/8 encrypt and save join outputs") {
-        sc.write(joinDf, AES_CBC_PKCS5PADDING, "sharedKms",
-                 "./shared_encrypted_primary_key", "./shared_encrypted_data_key")
+        sc.write(joinDf, AES_CBC_PKCS5PADDING, "bobKms",
+                 "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
           .mode("overwrite").option("header", true).csv("./join_output")
       }
     }
