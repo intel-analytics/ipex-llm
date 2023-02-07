@@ -16,6 +16,7 @@ TODO
 ```bash
 conda create -n NCF-yarn python=3.7
 conda activate NCF-yarn
+
 # spark backend
 pip install --pre --upgrade bigdl-orca-spark3
 # ray backend
@@ -67,7 +68,7 @@ bigdl-submit \
     --conf spark.pyspark.python=environment/bin/python \
     pytorch_train_spark_dataframe.py \
     --cluster_mode bigdl-submit \
-   --data_dir hdfs://ip:port/data/NCF
+    --data_dir hdfs://ip:port/data/NCF
 ```
 
 ## 2-3 Run on YARN with spark-submit
@@ -75,6 +76,7 @@ bigdl-submit \
 ### Prepare the Environment
 - Do not install bigdl-orca-spark3 in the conda environment.
 - Install the dependencies of bigdl-orca as listed in the dependency files.
+- `conda pack -o environment.tar.gz`
 - Download Spark and set SPARK_HOME and SPARK_VERSION.
 - Download BigDL and set BIGDL_HOME and BIGDL_VERSION.
 
