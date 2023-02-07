@@ -234,7 +234,7 @@ cp /path/to/fashion-mnist/data/fashion/* /bigdl/nfsdata/dataset/FashionMNIST/raw
 gzip -d /bigdl/nfsdata/dataset/FashionMNIST/raw/*
 ```
 
-In the given example, you can specify the argument `--remote_dir` to be the directory on NFS for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
+In the given example, you can specify the argument `--data_dir` to be the directory on NFS for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 
 ---
@@ -304,7 +304,7 @@ See [here](#init-orca-context) for the runtime configurations.
 #### 6.1.1 K8s-Client
 Run the example with the following command by setting the cluster_mode to "k8s-client":
 ```bash
-python train.py --cluster_mode k8s-client --remote_dir file:///bigdl/nfsdata/dataset
+python train.py --cluster_mode k8s-client --data_dir /bigdl/nfsdata/dataset
 ```
 
 
@@ -333,7 +333,7 @@ conda pack -o environment.tar.gz
 
 Run the example with the following command by setting the cluster_mode to "k8s-cluster":
 ```bash
-python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --remote_dir /bigdl/nfsdata/dataset
+python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --data_dir /bigdl/nfsdata/dataset
 ```
 
 
@@ -395,7 +395,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
-    train.py --cluster_mode spark-submit --remote_dir /bigdl/nfsdata/dataset
+    train.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/dataset
 ```
 
 In the `spark-submit` script:
@@ -447,7 +447,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
-    file:///bigdl/nfsdata/train.py --cluster_mode spark-submit --remote_dir /bigdl/nfsdata/dataset
+    file:///bigdl/nfsdata/train.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/dataset
 ```
 
 In the `spark-submit` script:
@@ -544,7 +544,7 @@ spec:
                 --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
                 local:///bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
-                --remote_dir file:///bigdl/nfsdata/dataset
+                --data_dir file:///bigdl/nfsdata/dataset
                 "]
         securityContext:
           privileged: true
@@ -688,7 +688,7 @@ spec:
                 --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
                 local:///bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
-                --remote_dir file:///bigdl/nfsdata/dataset
+                --data_dir file:///bigdl/nfsdata/dataset
                 "]
         securityContext:
           privileged: true
@@ -861,7 +861,7 @@ spec:
                 --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
                 local:///bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
-                --remote_dir file:///bigdl/nfsdata/dataset
+                --data_dir file:///bigdl/nfsdata/dataset
                 "]
         securityContext:
           privileged: true
@@ -999,7 +999,7 @@ spec:
                 --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
                 local:///bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
-                --remote_dir file:///bigdl/nfsdata/dataset
+                --data_dir file:///bigdl/nfsdata/dataset
                 "]
         securityContext:
           privileged: true

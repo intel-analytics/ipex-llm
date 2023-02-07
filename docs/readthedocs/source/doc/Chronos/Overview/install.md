@@ -97,10 +97,9 @@ Select your preferences in the panel below to find the proper install command. T
                 <tr>
                     <td colspan="1">Version</td>
                     <td colspan="2"><button id="nightly"
-                            title="For users would like to try chronos's latest feature">Nightly (2.2.0b)</button>
-                    </td>
+                            title="For users would like to try chronos's latest feature">Nightly</button></td>
                     <td colspan="2"><button id="stable"
-                            title="For users would like to deploy chronos in their production">Stable (2.1.0)</button></td>
+                            title="For users would like to deploy chronos in their production">Stable</button></td>
                 </tr>
 
                 <tr class="taller_tr">

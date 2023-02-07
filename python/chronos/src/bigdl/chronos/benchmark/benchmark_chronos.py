@@ -82,8 +82,7 @@ def throughput(args, model_path, forecaster, train_loader, test_loader, records)
     if 'torch' in args.inference_framework:
         import torch
         st = time.time()
-        with torch.no_grad():
-            yhat = forecaster.predict(test_loader, quantize=args.quantize)
+        yhat = forecaster.predict(test_loader, quantize=args.quantize)
         total_time = time.time()-st
         records['torch_infer_throughput'] = inference_sample_num / total_time
 
@@ -144,17 +143,16 @@ def latency(args, model_path, forecaster, train_loader, test_loader, records):
     # predict
     if 'torch' in args.inference_framework:
         import torch
-        with torch.no_grad():
-            if args.model == 'autoformer':
-                for x, y, x_, y_ in test_loader:
-                    st = time.time()
-                    yhat = forecaster.predict((x.numpy(), y.numpy(), x_.numpy(), y_.numpy()))
-                    latency.append(time.time()-st)
-            else:
-                for x, y in test_loader:
-                    st = time.time()
-                    yhat = forecaster.predict(x.numpy(), quantize=args.quantize)
-                    latency.append(time.time()-st)
+        if args.model == 'autoformer':
+            for x, y, x_, y_ in test_loader:
+                st = time.time()
+                yhat = forecaster.predict((x.numpy(), y.numpy(), x_.numpy(), y_.numpy()))
+                latency.append(time.time()-st)
+        else:
+            for x, y in test_loader:
+                st = time.time()
+                yhat = forecaster.predict(x.numpy(), quantize=args.quantize)
+                latency.append(time.time()-st)
         records['torch_latency'] = stats.trim_mean(latency, latency_trim_portion)
         records['torch_percentile_latency'] = np.percentile(latency, latency_percentile)
 

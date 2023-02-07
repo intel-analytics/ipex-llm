@@ -18,7 +18,8 @@ import tempfile
 import operator
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.metrics import MeanSquaredError
+from tensorflow.keras.metrics import MeanSquaredError, CategoricalAccuracy
+from tensorflow.keras import layers, Model
 
 from bigdl.nano.tf.keras import InferenceOptimizer
 
@@ -152,38 +153,39 @@ class TestTraceAndQuantize(TestCase):
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
 
-    def test_evaluate_after_trace(self):
-        # test onnxxruntime
-        model = MyModel(100)
-        model.compile(loss='mse', metrics=MeanSquaredError())
-        x = np.random.random((100, 4))
-        y = np.random.random((100, 5))
+    def test_evaluate(self):
+        inputs = tf.keras.Input(shape=(28*28,), name='digits')
+        x = layers.Dense(10, name='dense_logits')(inputs)
+        outputs = layers.Activation('softmax', dtype='float32', name='predictions')(x)
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(loss='sparse_categorical_crossentropy',
+                      optimizer=tf.keras.optimizers.RMSprop(),
+                      metrics=CategoricalAccuracy())
 
-        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        traced_model.evaluate(x=x, y=y)
+        x = np.random.random((100, 28*28))
+        y = np.random.randint(0, 10, 100)
+
+        inc_q_model = InferenceOptimizer.quantize(model, x=x, y=y)
+        inc_q_model.evaluate(x=x, y=y)
+
+        ov_t_model = InferenceOptimizer.trace(model, accelerator="openvino")
+        ov_t_model.evaluate(x=x, y=y)
+
+        ov_q_model = InferenceOptimizer.quantize(model, accelerator="openvino", x=x, y=y)
+        ov_q_model.evaluate(x=x, y=y)
+
+        ort_t_model = InferenceOptimizer.trace(model, accelerator="onnxruntime")
+        ort_t_model.evaluate(x=x, y=y)
+
+        ort_q_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime", x=x, y=y)
+        ort_q_model.evaluate(x=x, y=y)
 
         # test save/load
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(traced_model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name, model)
-        new_model.evaluate(x=x, y=y)
-
-        # test openvino
-        model = MyModel(100)
-        model.compile(loss='mse', metrics=MeanSquaredError())
-        x = np.random.random((100, 4))
-        y = np.random.random((100, 5))
-
-        traced_model = InferenceOptimizer.trace(model, accelerator="openvino",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        traced_model.evaluate(x=x, y=y)
-
-        # test save/load
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(traced_model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name, model)
-        new_model.evaluate(x=x, y=y)
+        for m in [inc_q_model, ov_t_model, ov_q_model, ort_t_model, ort_q_model]:
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(m, tmp_dir_name)
+                new_model = InferenceOptimizer.load(tmp_dir_name, model)
+                new_model.evaluate(x=x, y=y)
 
     def test_inference_output_shape(self):
         model = MyModelReturnList()

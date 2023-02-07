@@ -56,12 +56,6 @@ try:
 except ImportError:
     from collections import Iterable
 
-tqdm = None
-try:
-    from tqdm import tqdm
-except ImportError:
-    pass
-
 
 class DistBackend:
 
@@ -115,7 +109,6 @@ class TorchRunner(BaseRunner):
                  metrics=None,
                  scheduler_creator=None,
                  config=None,
-                 use_tqdm=False,
                  sync_stats=True,
                  log_level=logging.INFO):
         logging.basicConfig(level=log_level,
@@ -139,9 +132,8 @@ class TorchRunner(BaseRunner):
         self.schedulers = None
         self.train_loader = None
         self.validation_loader = None
-        self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
-        self.epochs_stats = None  # The state saved in every epoch
+        self.epoch_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
 
     def _create_loss(self):
@@ -204,21 +196,22 @@ class TorchRunner(BaseRunner):
             self.dist_backend = TorchDistBackend()
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
+        self.num_epochs = epochs
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
-                loader = data_creator(config, batch_size)
+                self.train_loader = data_creator(config, batch_size)
         else:
-            loader = data_creator(config, batch_size)
+            self.train_loader = data_creator(config, batch_size)
 
         if wrap_dataloader is None:
-            if TorchRunner.should_wrap_dataloader(loader):
-                loader = self.with_sampler(loader)
+            if TorchRunner.should_wrap_dataloader(self.train_loader):
+                self.train_loader = self.with_sampler(self.train_loader)
         elif wrap_dataloader is True:
-            loader = self.with_sampler(loader)
+            self.train_loader = self.with_sampler(self.train_loader)
 
         if validation_data_creator:
             if OrcaContext.serialize_data_creator:
@@ -255,11 +248,14 @@ class TorchRunner(BaseRunner):
 
         stats_list = list()
         for i in range(epochs):
+            del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
-            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
-                                     val_loader=val_loader, val_steps=val_steps)
-            self.epochs_stats = stats
+            stats = self.train_epoch(self.train_loader, profile=profile,
+                                     callbacks=callbacks, val_loader=val_loader,
+                                     val_steps=val_steps)
+            self.epoch_stats = stats
             self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
+
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -276,30 +272,27 @@ class TorchRunner(BaseRunner):
     def train_epoch(self,
                     data_loader,
                     profile=False,
-                    info=None,
                     callbacks=None,
                     val_loader=None,
                     val_steps=None):
         """Runs a training epoch and updates the model parameters."""
-        if hasattr(self.train_loader, "sampler") and hasattr(
-                self.train_loader.sampler, "set_epoch"):
-            self.train_loader.sampler.set_epoch(self.epochs)
+        if hasattr(data_loader, "sampler") and hasattr(
+                data_loader.sampler, "set_epoch"):
+            data_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self._train_epoch(data_loader, info, callbacks)
+            train_stats = self._train_epoch(data_loader, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
-                info = info or {}
                 validation_results = self._validate(val_loader,
                                                     metrics=self.metrics,
                                                     num_steps=val_steps,
@@ -323,7 +316,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def _train_epoch(self, iterator, info, callbacks=None):
+    def _train_epoch(self, iterator, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -355,30 +348,11 @@ class TorchRunner(BaseRunner):
         Args:
             iterator (iter): Iterator over the training data for the entire
                 epoch. This iterator is expected to be entirely consumed.
-            info (dict): Dictionary for information to be used for custom
-                training operations.
 
         Returns:
             A dict of metrics from training.
         """
         self._mode = 'train'
-        if self.use_tqdm and self.rank == 0:
-            desc = ""
-            if info is not None and "epoch_idx" in info:
-                if "num_epochs" in info:
-                    desc = "{}/{}e".format(info["epoch_idx"] + 1,
-                                           info["num_epochs"])
-                else:
-                    desc = "{}e".format(info["epoch_idx"] + 1)
-            invalidInputError(tqdm is not None,
-                              "tqdm is not installed, please install with 'pip install tqdm'")
-            _progress_bar = tqdm(
-                total=len(iterator),
-                desc=desc,
-                unit="batch",
-                leave=False)
-        else:
-            _progress_bar = None
 
         metric_meters = AverageMeterCollection()
 
@@ -389,27 +363,20 @@ class TorchRunner(BaseRunner):
         from torch.nn.parallel import DistributedDataParallel as DDP
         if isinstance(self.model, DDP):
             with self.model.join():
-                self._train_loop(iterator, _progress_bar, metric_meters, callbacks)
+                self._train_loop(iterator, metric_meters, callbacks)
         else:
-            self._train_loop(iterator, _progress_bar, metric_meters, callbacks)
+            self._train_loop(iterator, metric_meters, callbacks)
 
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
         return metric_meters.summary(sync_stats=self.sync_stats,
                                      dist_backend=self.dist_backend)
 
-    def _train_loop(self, iterator, _progress_bar, metric_meters, callbacks):
+    def _train_loop(self, iterator, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
             self.batch_idx = batch_idx
 
             self._train_batch(batch, callbacks=callbacks)
-
-            if self.use_tqdm and self.rank == 0:
-                _progress_bar.n = batch_idx + 1
-                postfix = {}
-                if "train_loss" in self.metrics_stats:
-                    postfix.update(loss=self.metrics_stats["train_loss"])
-                _progress_bar.set_postfix(postfix)
 
             metric_meters.update(self.metrics_stats, n=self.metrics_stats.pop(NUM_SAMPLES, 1))
             self.global_step += 1
@@ -438,7 +405,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Information dict passed in from ``train_epoch``.
 
         Returns:
             A dictionary of metrics.
@@ -481,14 +447,13 @@ class TorchRunner(BaseRunner):
         del self.loss
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None, callbacks=None):
+                 wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
         config = copy.copy(self.config)
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         if OrcaContext.serialize_data_creator:
@@ -527,8 +492,6 @@ class TorchRunner(BaseRunner):
         Args:
             val_iterator (iter): Iterable constructed from the
                 validation dataloader.
-            info: (dict): Dictionary for information to be used for custom
-                validation operations.
 
         Returns:
             A dict of metrics from the evaluation.
@@ -578,8 +541,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Contains information per batch from
-                ``validate()``.
 
         Returns:
             A dict of metrics.
@@ -729,7 +690,6 @@ class TorchRunner(BaseRunner):
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
-            import fsspec
             if save_weights_only:
                 checkpoint = {
                     "epoch": self.epochs,
@@ -741,7 +701,7 @@ class TorchRunner(BaseRunner):
             file_name = os.path.basename(filepath)
             temp_dir = tempfile.mkdtemp()
             temp_path = os.path.join(temp_dir, file_name)
-            with fsspec.open(temp_path, "wb") as f:
+            with open(temp_path, "wb") as f:
                 f.write(byte_obj)
             from bigdl.orca.data.file import put_local_file_to_remote
             put_local_file_to_remote(temp_path, filepath)

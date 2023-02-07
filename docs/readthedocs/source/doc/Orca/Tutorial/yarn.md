@@ -127,7 +127,7 @@ Then upload it to a distributed storage. Sample command to upload data to HDFS i
 ```bash
 hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
-In the given example, you can specify the argument `--remote_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
+In the given example, you can specify the argument `--data_dir` to be the directory on a distributed storage for the Fashion-MNIST dataset. The directory should contain `FashionMNIST/raw/train-images-idx3-ubyte` and `FashionMNIST/raw/t10k-images-idx3`.
 
 ---
 ## 4. Prepare Custom Modules
@@ -192,14 +192,14 @@ See [here](#init-orca-context) for the runtime configurations.
 #### 5.1.1 Yarn Client
 Run the example with the following command by setting the cluster_mode to "yarn-client":
 ```bash
-python train.py --cluster_mode yarn-client --remote_dir hdfs://path/to/remote/data
+python train.py --cluster_mode yarn-client --data_dir hdfs://path/to/remote/data
 ```
 
 
 #### 5.1.2 Yarn Cluster
 Run the example with the following command by setting the cluster_mode to "yarn-cluster":
 ```bash
-python train.py --cluster_mode yarn-cluster --remote_dir hdfs://path/to/remote/data
+python train.py --cluster_mode yarn-cluster --data_dir hdfs://path/to/remote/data
 ```
 
 
@@ -254,7 +254,7 @@ bigdl-submit \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -277,7 +277,7 @@ bigdl-submit \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    train.py --cluster_mode bigdl-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -344,7 +344,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.pyspark.python=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
 * `--master`: the spark master, set it to "yarn".
@@ -368,7 +368,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
 * `--master`: the spark master, set it to "yarn".

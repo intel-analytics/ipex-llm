@@ -53,7 +53,7 @@ class KerasONNXRuntimeQuantization(BaseONNXRuntimeQuantization):
 # we cannot call `.numpy()` in `Dataset.map()`,
 # so we use this wrapper to transform the output of dataset to numpy array
 class KerasNumpyDataset():
-    def __init__(self, x, y, dtype):
+    def __init__(self, x, y, dtype=tf.float32):
         self.x = x
         self.y = y
         self.batch_size = 1     # it's necessary

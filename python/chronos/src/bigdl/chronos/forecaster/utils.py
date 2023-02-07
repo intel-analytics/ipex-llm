@@ -199,11 +199,11 @@ class ExportForecastingPipeline(nn.Module):
         return postprocess_output
 
 
-def get_exported_module(tsdata, forecaster_path, drop_dtcol):
+def get_exported_module(tsdata, forecaster_path, drop_dt_col):
     from bigdl.chronos.data.utils.export_torchscript \
         import get_processing_module_instance, get_index
 
-    if drop_dtcol:
+    if drop_dt_col:
         tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
 
     id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,

@@ -148,7 +148,10 @@ class BasePytorchForecaster(Forecaster):
             effect if target_metric contains "latency". Default value is False.
         :param input_sample: A set of inputs for trace, defaults to None if you have
             trace before or model is a LightningModule with any dataloader attached.
+        :param kwargs: some other parameters could be used for tuning, most useful one is
+               `sampler` from SamplerType.Grid, SamplerType.Random and SamplerType.TPE so on.
         """
+
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
                           "Please use AutoTS instead.")
@@ -1661,7 +1664,7 @@ class BasePytorchForecaster(Forecaster):
                                 quantized_dirname=None,
                                 save_pipeline=False,
                                 tsdata=None,
-                                drop_dtcol=True):
+                                drop_dt_col=True):
         """
         Save the torchscript model file and the whole forecasting pipeline to the disk.
 
@@ -1719,7 +1722,7 @@ class BasePytorchForecaster(Forecaster):
                model will be saved.
         :param tsdata: The TSDataset instance used when developing the forecaster. The parameter
                should be used only when save_pipeline is True.
-        :param drop_dtcol: Whether to delete the datetime column, defaults to True. The parameter
+        :param drop_dt_col: Whether to delete the datetime column, defaults to True. The parameter
                is valid only when save_pipeline is True.
                Since datetime value (like "2022-12-12") can't be converted to Pytorch tensor, you
                can choose different ways to workaround this. If set to True, the datetime column
@@ -1753,7 +1756,7 @@ class BasePytorchForecaster(Forecaster):
 
             if save_pipeline:
                 forecaster_path = Path(dirname) / "ckpt.pth"
-                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
+                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dt_col)
                 saved_path = Path(dirname) / "chronos_forecasting_pipeline.pt"
                 torch.jit.save(exproted_module, saved_path)
 
