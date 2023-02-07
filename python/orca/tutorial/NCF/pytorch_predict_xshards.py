@@ -24,12 +24,12 @@ from bigdl.orca.data import XShards
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Prediction with Orca Xshards")
-init_orca(args, extra_python_lib="pytorch_model.py,process_xshards.py")
+args = parse_args("PyTorch NCF Prediction with Orca XShards")
+init_orca(args, extra_python_lib="pytorch_model.py")
 
 
 # Step 2: Load the processed data
-data = XShards().load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
+data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
 # Step 3: Define the model
@@ -46,17 +46,17 @@ def model_creator(config):
     return model
 
 
-# Step 4: Create Orca PyTorch Estimator and load the model
+# Step 4: Load the model
 config = load_model_config(args.model_dir, "config.json")
 est = Estimator.from_torch(model=model_creator,
-                           backend=args.backend,
                            config=config,
+                           backend=args.backend,
                            workers_per_node=args.workers_per_node)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 5: Distributed inference of the loaded model
-predictions = est.predict(data=data,
+predictions = est.predict(data,
                           feature_cols=get_feature_cols(),
                           batch_size=10240)
 print("Prediction results of the first 5 rows:")

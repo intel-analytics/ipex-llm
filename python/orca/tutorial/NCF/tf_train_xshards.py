@@ -27,12 +27,12 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Training with Orca Xshards")
+args = parse_args("TensorFlow NCF Training with Orca XShards")
 args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
 init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
 
 
-# Step 2: Read and process data using Orca Xshards
+# Step 2: Read and process data using Orca XShards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
     feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
 
