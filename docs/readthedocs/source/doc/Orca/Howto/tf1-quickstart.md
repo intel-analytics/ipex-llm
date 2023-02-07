@@ -10,11 +10,12 @@
 
 ### Step 0: Prepare Environment
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/install.md) for more details.
 
 ```bash
 conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
 conda activate py37
+
 pip install bigdl-orca
 pip install tensorflow==1.15
 pip install tensorflow-datasets==2.0
@@ -26,18 +27,16 @@ pip install psutil
 from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
-    init_orca_context(cluster_mode="local", cores=4, memory="10g")
-    dataset_dir = "~/tensorflow_datasets"
+    init_orca_context(cluster_mode="local", cores=4, memory="4g")
 elif cluster_mode == "k8s":  # For K8s cluster
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g", master=..., container_image=...)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1)
-    dataset_dir = "hdfs:///tensorflow_datasets"
+    init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g")
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](../Overview/orca-context.md) for more details.
 
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](../../UserGuide/hadoop.md) for more details. To use tensorflow_datasets on HDFS, you should correctly set HADOOP_HOME, HADOOP_HDFS_HOME, LD_LIBRARY_PATH, etc. For more details, please refer to TensorFlow documentation [link](https://github.com/tensorflow/docs/blob/r1.11/site/en/deploy/hadoop.md).
+Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
 
 ### Step 2: Define the Model
 
@@ -73,8 +72,7 @@ acc = accuracy(logits, labels)
 ```
 ### Step 3: Define Train Dataset
 
-You can define the dataset using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset). Orca also supports [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html) and [Orca XShards](../Overview/data-parallel-processing.md).
-
+You can define the dataset using standard [tf.data.Dataset](https://www.tensorflow.org/api_docs/python/tf/data/Dataset). Orca also supports [Spark DataFrame](./spark-dataframe.md) and [Orca XShards](./xshards-pandas.md).
 
 ```python
 import tensorflow_datasets as tfds
@@ -84,8 +82,8 @@ def preprocess(data):
     return data['image'], data['label']
 
 # get DataSet
-mnist_train = tfds.load(name="mnist", split="train", data_dir=dataset_dir)
-mnist_test = tfds.load(name="mnist", split="test", data_dir=dataset_dir)
+mnist_train = tfds.load(name="mnist", split="train", data_dir=...)
+mnist_test = tfds.load(name="mnist", split="test", data_dir=...)
 
 mnist_train = mnist_train.map(preprocess)
 mnist_test = mnist_test.map(preprocess)
@@ -93,7 +91,7 @@ mnist_test = mnist_test.map(preprocess)
 
 ### Step 4: Fit with Orca Estimator
 
-First, create an Estimator.
+First, create an Orca Estimator for TensorFlow.
 
 ```python
 from bigdl.orca.learn.tf.estimator import Estimator
@@ -117,6 +115,6 @@ result = est.evaluate(mnist_test)
 print(result)
 ```
 
-That's it, the same code can run seamlessly in your local laptop and the distribute K8s or Hadoop cluster.
-
 **Note:** You should call `stop_orca_context()` when your program finishes.
+
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.

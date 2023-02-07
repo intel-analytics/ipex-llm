@@ -18,13 +18,18 @@
 #
 
 import os
+import tempfile
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
 
-import torch.utils.data as data
+import scipy.sparse as sp
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+
+import torch.utils.data as data
+
+from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.orca.data.file import get_remote_dir_to_local, get_remote_file_to_local
 
 # user/item ids and sparse features are converted to int64 to be compatible with
 # lower versions of PyTorch such as 1.7.1.
@@ -89,17 +94,25 @@ def process_users_items(dataset_dir):
     sparse_features = ["gender", "zipcode", "category", "occupation"]
     dense_features = ["age"]
 
-    users = pd.read_csv(
-        os.path.join(dataset_dir, "users.dat"),
-        sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
-        usecols=[0, 1, 2, 3, 4],
-        dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str},
-        engine="python")
-    items = pd.read_csv(
-        os.path.join(dataset_dir, "movies.dat"),
-        sep="::", header=None, names=["item", "category"],
-        usecols=[0, 2], dtype={0: np.int64, 1: str},
-        engine="python", encoding="latin-1")
+    # load datasets
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        if is_local_path(dataset_dir):
+            local_dir = dataset_dir
+        else:
+            get_remote_dir_to_local(remote_dir=dataset_dir, local_dir=tmpdirname)
+            local_dir = os.path.join(tmpdirname, "ml-1m")
+
+        users = pd.read_csv(
+            os.path.join(local_dir, "users.dat"),
+            sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
+            usecols=[0, 1, 2, 3, 4],
+            dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str},
+            engine="python")
+        items = pd.read_csv(
+            os.path.join(local_dir, "movies.dat"),
+            sep="::", header=None, names=["item", "category"],
+            usecols=[0, 2], dtype={0: np.int64, 1: str},
+            engine="python", encoding="latin-1")
 
     user_num = users["user"].max() + 1
     item_num = items["item"].max() + 1
@@ -137,11 +150,20 @@ def get_input_dims(users, items, sparse_features, dense_features):
 
 
 def process_ratings(dataset_dir, user_num, item_num):
-    ratings = pd.read_csv(
-        os.path.join(dataset_dir, "ratings.dat"),
-        sep="::", header=None, names=["user", "item"],
-        usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
-        engine="python")
+    # load datasets
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        if is_local_path(dataset_dir):
+            local_path = os.path.join(dataset_dir, "ratings.dat")
+        else:
+            remote_path = os.path.join(dataset_dir, "ratings.dat")
+            local_path = os.path.join(tmpdirname, "ratings.dat")
+            get_remote_file_to_local(remote_path=remote_path, local_path=local_path)
+
+        ratings = pd.read_csv(
+            local_path,
+            sep="::", header=None, names=["user", "item"],
+            usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
+            engine="python")
 
     # load ratings as a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)

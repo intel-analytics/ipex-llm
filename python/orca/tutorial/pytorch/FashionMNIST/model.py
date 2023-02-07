@@ -18,10 +18,9 @@
 # https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
 #
 
-import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
+import torch.optim as optim
 
 
 class Net(nn.Module):
@@ -50,5 +49,5 @@ def model_creator(config):
 
 
 def optimizer_creator(model, config):
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=config.get("lr", 0.001), momentum=0.9)
     return optimizer

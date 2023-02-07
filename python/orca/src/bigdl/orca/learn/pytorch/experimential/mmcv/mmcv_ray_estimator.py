@@ -74,6 +74,9 @@ class MMCVRayEstimator(BaseRayEstimator):
                       workflow=workflow,
                       max_epochs=max_epochs,
                       **kwargs)
+
+        self.setup_torch_ddp()
+
         success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))

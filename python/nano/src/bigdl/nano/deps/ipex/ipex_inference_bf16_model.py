@@ -25,8 +25,9 @@ import torch
 
 class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
-                 use_jit=False, channels_last=None, thread_num=None, from_load=False,
-                 inplace=False, jit_strict=True, jit_method=None, weights_prepack=None):
+                 use_jit=False, channels_last=None, channels_last_available=[],
+                 thread_num=None, from_load=False, inplace=False, jit_strict=True,
+                 jit_method=None, weights_prepack=None, enable_onednn=True):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -51,6 +52,9 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                to avoid oneDNN weights reorder. The default value is None. Explicitly setting
                this knob overwrites the configuration set by level knob. Only valid when
                ``use_ipex=True``, otherwise will be ignored.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
+               API, which provides a flexible API for aggressive fusion. Default to
+               ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
         '''
         if use_ipex:
             invalidInputError(
@@ -61,12 +65,15 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
 
         PytorchIPEXJITModel.__init__(self, model, input_sample=input_sample, use_ipex=use_ipex,
                                      dtype=torch.bfloat16, use_jit=use_jit,
-                                     channels_last=channels_last, from_load=from_load,
-                                     inplace=inplace, jit_strict=jit_strict,
+                                     channels_last=channels_last,
+                                     channels_last_available=channels_last_available,
+                                     from_load=from_load, inplace=inplace, jit_strict=jit_strict,
                                      jit_method=jit_method, weights_prepack=weights_prepack)
-        self._nano_context_manager = generate_context_manager(accelerator=None,
+        _accelerator = "jit" if use_jit is True else None
+        self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
-                                                              thread_num=thread_num)
+                                                              thread_num=thread_num,
+                                                              enable_onednn=enable_onednn)
 
     @property
     def _check_cpu_isa(self):
@@ -105,9 +112,11 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         return PytorchIPEXJITBF16Model(model, use_ipex=status['use_ipex'],
                                        use_jit=status['use_jit'],
                                        channels_last=status['channels_last'],
+                                       channels_last_available=status['channels_last_available'],
                                        from_load=from_load,
                                        thread_num=thread_num,
                                        inplace=inplace,
                                        jit_strict=status.get('jit_strict', True),
                                        jit_method=status.get('jit_method', None),
-                                       weights_prepack=status.get('weights_prepack', None))
+                                       weights_prepack=status.get('weights_prepack', None),
+                                       enable_onednn=status.get('enable_onednn', True))

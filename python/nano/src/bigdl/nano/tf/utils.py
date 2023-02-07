@@ -19,6 +19,8 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from functools import partial
 from bigdl.nano.common.compare_version import _compare_version
+from bigdl.nano.utils.log4Error import invalidOperationError
+
 
 KERAS_VERSION_LESS_2_9 = _compare_version("keras", operator.lt, "2.9")
 KERAS_VERSION_LESS_2_10 = _compare_version("keras", operator.lt, "2.10")
@@ -28,30 +30,32 @@ class _NanoPartial(partial):
     pass
 
 
-def _create_wrapper_type(parent_type, target_obj, source_obj):
-    def _getattr(self, name):
-        try:
-            return getattr(self.target_obj, name)
-        except AttributeError as _e:
-            pass
-        return getattr(self.source_obj, name)
+class _ModuleWrapper:
+    def __init__(self, target_obj, source_obj):
+        self.__dict__["target_obj"] = target_obj
+        self.__dict__["source_obj"] = source_obj
+        self.__dict__["support_operations"] = ["predict", "evaluate", "compile"]
 
-    def _setattr(self, name, value):
+    def __getattr__(self, name):
+        # We only support tf's `predict`, `evaluate`, `compile`,
+        # and user custom attributes which are not in `tf.keras.Model`
+        if name in self.support_operations:
+            return getattr(self.target_obj, name)
+        elif not hasattr(Model, name):
+            try:
+                return getattr(self.target_obj, name)
+            except AttributeError as _e:
+                pass
+            return getattr(self.source_obj, name)
+        else:
+            invalidOperationError(False,
+                                  f"This optimized model does not support {name} method !")
+
+    def __setattr__(self, name: str, value) -> None:
         return setattr(self.target_obj, name, value)
 
-    def _call(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs):
         return self.target_obj(*args, **kwargs)
-
-    return type(
-        f"wrapped_{parent_type.__class__.__name__}", (parent_type,),
-        {
-            'target_obj': target_obj,
-            'source_obj': source_obj,
-            '__getattr__': _getattr,
-            '__setattr__': _setattr,
-            '__call__': _call,
-        }
-    )
 
 
 def patch_attrs(target_obj: object, source_obj: object) -> object:
@@ -64,8 +68,7 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
     """
     if inspect.ismethod(target_obj.__setattr__):
         # `target_obj` has custom `__setattr__`
-        wrapper_type = _create_wrapper_type(type(target_obj), target_obj, source_obj)
-        wrapper_obj = wrapper_type.__new__(wrapper_type)
+        wrapper_obj = _ModuleWrapper(target_obj, source_obj)
         return wrapper_obj
     else:
         # `target_obj` has no custom `__setattr__`

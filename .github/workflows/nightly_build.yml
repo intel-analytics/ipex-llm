@@ -262,7 +262,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.2.0
+        export PYPI_VERSION=2.3.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
 
@@ -312,7 +312,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=2.2.0
+        export PYPI_VERSION=2.3.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
         apt-get update

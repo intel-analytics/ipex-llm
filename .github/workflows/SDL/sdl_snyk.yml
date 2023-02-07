@@ -1,0 +1,53 @@
+name: Scanner-Snyk 
+on:
+  #pull_request:
+  #branchs: [ main ]
+
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Scan type for Snyk'
+        required: false
+        type: string        
+        default: 'monitor'
+      snyk_org:
+        description: 'Enter synk org: (eg- iags_mlp)'
+        required: true
+        type: string
+        default: 'iags_mlp'
+    secrets:
+      SNYK_API_TOKEN:
+        description: 'Enter Snyk Api Token:'
+        required: true
+
+jobs:
+  snyk-scan:
+    runs-on: [self-hosted, SDL]
+    steps:
+    - uses: actions/checkout@v3
+    - name: "Auth Synk"
+      run: |
+        snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
+        snyk auth -d $SNYK_APITOKEN
+    - name: "run Snyk test scan"
+      env: 
+          no_proxy: snyk.devtools.intel.com, intel.com
+      run: |
+        cd scala
+        mvn clean install -f common/spark-version/2.0/pom.xml
+        snyk monitor
+        mvn clean install -f dllib/pom.xml -DskipTests
+        snyk monitor
+        mvn clean install -f orca/pom.xml -DskipTests
+        snyk monitor 
+        mvn clean install -f grpc/pom.xml -DskipTests
+        snyk monitor
+        mvn clean install -f friesian/pom.xml -DskipTests
+        snyk monitor
+        mvn clean install -f serving/pom.xml -DskipTests
+        snyk monitor
+        mvn clean install -f ppml/pom.xml -DskipTests
+        snyk monitor
+        mvn clean install -f assembly/pom.xml -DskipTests
+        snyk monitor
+        cd -

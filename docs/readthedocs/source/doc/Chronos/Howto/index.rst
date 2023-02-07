@@ -31,6 +31,7 @@ Speed up a forecaster
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `Speed up inference of forecaster through ONNXRuntime <how_to_speedup_inference_of_forecaster_through_ONNXRuntime.html>`__
 * `Speed up inference of forecaster through OpenVINO <how_to_speedup_inference_of_forecaster_through_OpenVINO.html>`__
+* `Optimize a forecaster by searching the best accelerate method <how_to_optimize_a_forecaster.html>`__
 
 Persist a forecaster
 ~~~~~~~~~~~~~~~~~~~~~~~~~

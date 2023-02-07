@@ -35,7 +35,9 @@ __all__ = ['loader_to_creator',
            'read_csv',
            'delete_folder',
            'is_main_process',
-           'xshard_expand_dim']
+           'xshard_expand_dim',
+           'get_exported_module',
+           'set_pytorch_thread']
 
 
 def loader_to_creator(loader):
@@ -197,11 +199,11 @@ class ExportForecastingPipeline(nn.Module):
         return postprocess_output
 
 
-def get_exported_module(tsdata, forecaster_path, drop_dtcol):
+def get_exported_module(tsdata, forecaster_path, drop_dt_col):
     from bigdl.chronos.data.utils.export_torchscript \
         import get_processing_module_instance, get_index
 
-    if drop_dtcol:
+    if drop_dt_col:
         tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
 
     id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,
@@ -218,3 +220,11 @@ def get_exported_module(tsdata, forecaster_path, drop_dtcol):
     inference = torch.jit.load(forecaster_path)
 
     return torch.jit.script(ExportForecastingPipeline(preprocess, inference, postprocess))
+
+
+def set_pytorch_thread(optimized_model_thread_num, thread_num):
+    # optimized_model_thread_num is None means no limit is set, just keep current thread num
+    if optimized_model_thread_num is not None and optimized_model_thread_num != thread_num:
+        thread_num = optimized_model_thread_num
+        torch.set_num_threads(thread_num)
+    return thread_num

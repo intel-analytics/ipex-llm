@@ -48,7 +48,7 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
 .. note::
     Since bigdl-nano is still in the process of rapid iteration, we highly recommend that you install nightly build version through the above command to facilitate your use of the latest features.
 
-    For stable version, please refer to the document and installation guide `here <https://bigdl.readthedocs.io/en/v2.1.0/doc/Nano/Overview/nano.html>`_ .
+    For stable version, please refer to the document and installation guide `here <https://bigdl.readthedocs.io/en/v2.2.0/doc/Nano/Overview/install.html>`_ .
 ```
 
 ## Environment Management
@@ -74,6 +74,9 @@ In a conda environment, when you run `source bigdl-nano-init` manually, this com
 
 In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
+## Other PyTorch/Tensorflow Version Support
+We support a wide range of PyTorch and Tensorflow. We only care the MAJOR.MINOR in [Semantic Versioning](https://semver.org/). If you have a specific PyTorch/Tensorflow version want to use, e.g. PyTorch 1.11.0+cpu, you may select corresponding MAJOR.MINOR (i.e., PyTorch 1.11 in this case) and install PyTorch again after installing nano.
+
 ## Python Version
 `bigdl-nano` is validated on Python 3.7-3.9.
 
@@ -82,15 +85,15 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
 Some specific note should be awared of when installing `bigdl-nano`.`
 
 ### Install on Linux
-For Linux, Ubuntu (22.04/20.04/18.04) is recommended.
+For Linux, Ubuntu (22.04/20.04) is recommended.
 
-### Install on Windows
+### Install on Windows (experimental support)
 
 For Windows OS, users could only run `bigdl-nano-init` every time they open a new cmd terminal.
 
-We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/windows_guide.md) for instructions.
+We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/Install/windows_guide.md) for instructions.
 
-### Install on MacOS
+### Install on MacOS (experimental support)
 #### MacOS with Intel Chip
 Same usage as Linux, while some of the funcions now rely on lower version dependencies.
 

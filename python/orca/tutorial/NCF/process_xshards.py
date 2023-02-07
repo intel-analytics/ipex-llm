@@ -20,8 +20,8 @@
 import os
 import numpy as np
 import pandas as pd
-import scipy.sparse as sp
 
+import scipy.sparse as sp
 from sklearn.model_selection import train_test_split
 
 from bigdl.orca.data.pandas import read_csv
@@ -142,15 +142,16 @@ def prepare_data(dataset_dir, num_ng=4):
     print("Split data...")
     train_data, test_data = data.transform_shard(split_dataset).split()
 
-    feature_cols = get_feature_cols()
-    label_cols = ["label"]
     return train_data, test_data, user_num, item_num, \
-        sparse_feats_input_dims, len(dense_features), feature_cols, label_cols
+        sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
 
 def get_feature_cols():
-    feature_cols = ["user", "item"] + sparse_features + dense_features
-    return feature_cols
+    return ["user", "item"] + sparse_features + dense_features
+
+
+def get_label_cols():
+    return ['label']
 
 
 if __name__ == "__main__":

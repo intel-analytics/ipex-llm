@@ -227,7 +227,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                inference. This parameter only controls the usage of thread number in the process
                of latency calculation as well as later inference process of your obtained
                accelerated model. In other words, the process of model conversion and optional
-               accuracy calculation won't be restricted by this parameter.
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param accelerator: (optional) A string tuple that specifys the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
@@ -494,6 +495,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  use_ipex: bool = False,
                  calib_data: Union[DataLoader, torch.Tensor, Tuple[torch.Tensor]] = None,
                  calib_dataloader: Union[DataLoader] = None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -516,6 +518,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = True,
                  inplace: bool = False,
                  weights_prepack: Optional[bool] = None,
+                 enable_onednn: bool = True,
                  q_config=None,
                  **kwargs):
         """
@@ -527,6 +530,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param use_ipex:        Whether we use ipex as accelerator for inferencing.
+                                If precision != bf16, it will be ignored. Default: ``False``.
         :param calib_data:      Calibration data is required for static quantization.
                                 It's also used as validation dataloader.
                                 calib_data support following formats:
@@ -546,13 +551,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   ``calib_dataloader`` will be deprecated in future release.
 
                   Please use ``calib_data`` instead.
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
@@ -631,6 +645,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to
+                              ``True``, only valid when accelerator='jit', otherwise will
+                              be ignored. For more details, please refer https://github.com/
+                              pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
         :param q_config: describes how to quantize a layer or a part of the network
                          by providing settings (observer classes) for activations and weights
                          respectively. Note that QConfig needs to contain observer classes
@@ -688,9 +708,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    thread_num=thread_num, inplace=inplace,
                                                    jit_strict=jit_strict,
                                                    jit_method=jit_method,
-                                                   weights_prepack=weights_prepack)
+                                                   weights_prepack=weights_prepack,
+                                                   enable_onednn=enable_onednn)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
+                                           input_sample=input_sample,
                                            thread_num=thread_num)
                     return bf16_model
             elif accelerator == "openvino":
@@ -774,6 +796,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 `quantized_model.model`.
                 """
                 inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                                          "eval_func": eval_func,
                                           "metric": metric, "thread_num": thread_num,
                                           "framework": framework, "conf": conf,
                                           "approach": approach,
@@ -798,6 +821,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             thread_num=thread_num,
                                                             inplace=inplace,
                                                             jit_strict=jit_strict)
+                        print("using pure ipex quantization")
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
@@ -891,6 +915,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               logging: bool = True,
               inplace: bool = False,
               weights_prepack: Optional[bool] = None,
+              enable_onednn: bool = True,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -902,7 +927,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino', 'onnxruntime' and 'jit' are supported for now.
-        :param use_ipex: Whether we use ipex as accelerator for inferencing. Default: False.
+        :param use_ipex: Whether we use ipex as accelerator for inferencing. Only valid when
+                         accelerator='jit'/None, otherwise will be ignored. Default: ``False``.
         :param channels_last: Whether use channels last memory format, i.e. NHWC (batch size,
                               height, width, channels), as an alternative way to store tensors in
                               classic/contiguous NCHW order. This setting only works for 4-dim
@@ -953,6 +979,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 Only valid when ``use_ipex=True``, otherwise will be ignored.
                                 You can try to reduce the occupied memory size by setting this
                                 parameter to ``False``.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                              which provides a flexible API for aggressive fusion. Default to
+                              ``True``, only valid when accelerator='jit', otherwise will be
+                              ignored. For more details, please refer https://github.com/pytorch/
+                              pytorch/tree/master/torch/csrc/jit/codegen/
+                              onednn#pytorch---onednn-graph-api-bridge.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -1014,7 +1046,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                        use_jit=use_jit, channels_last=channels_last,
                                        thread_num=thread_num, inplace=inplace,
                                        jit_strict=jit_strict, jit_method=jit_method,
-                                       weights_prepack=weights_prepack)
+                                       weights_prepack=weights_prepack,
+                                       enable_onednn=enable_onednn)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -1058,12 +1091,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 else:
                     warnings.warn("These context managers have different thread_num.  We will "
                                   "set thread_num to the larger one.")
-                if thread_num1 is None or thread_num2 > thread_num1:
-                    manager.thread_num = thread_num2
-                else:
-                    manager.thread_num = thread_num1
-            else:
+            if thread_num1 is None:
+                manager.thread_num = thread_num2
+            elif thread_num2 is None:
                 manager.thread_num = thread_num1
+            else:
+                manager.thread_num = max(thread_num1, thread_num2)
             return manager
 
         _context_manager = obtain_manager(model)
@@ -1089,7 +1122,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: Optional[nn.Module] = None, inplace=False, device=None):
+    def load(path, model: Optional[nn.Module] = None, input_sample=None,
+             inplace=False, device=None):
         """
         Load a model from local.
 
@@ -1098,13 +1132,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                the model with accelerator=None by InferenceOptimizer.trace/
                InferenceOptimizer.quantize. model should be set to None if you choose
                accelerator="onnxruntime"/"openvino"/"jit".
+        :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+               Only valid for inc ipex quantization model, otherwise will be ignored.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model, inplace=inplace, device=device)
+        return load_model(path, model, input_sample=input_sample,
+                          inplace=inplace, device=device)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,
