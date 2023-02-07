@@ -15,38 +15,39 @@
 #
 
 # Step 0: Import necessary libraries
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
-from bigdl.orca.learn.tf2 import Estimator
-
 from process_spark_dataframe import get_feature_cols
 from utils import *
 
+from bigdl.orca.learn.tf2 import Estimator
+
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Predicting with Spark DataFrame")
-args.backend = "ray"
+args = parse_args("TensorFlow NCF Prediction with Spark DataFrame")
 init_orca(args)
 spark = OrcaContext.get_spark_session()
 
 
-# Step 2: Load the model and data
+# Step 2: Load the processed data
+df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.parquet"))
+
+
+# Step 3: Load the model
 est = Estimator.from_keras()
 est.load("NCF_model")
 
-df = spark.read.parquet(os.path.join(args.data_dir, "test_processed_dataframe.parquet"))
-feature_cols = get_feature_cols()
 
-
-# Step 3: Distributed inference of the loaded model
-predict_df = est.predict(df, batch_size=10240, feature_cols=feature_cols)
+# Step 4: Distributed inference of the loaded model
+predict_df = est.predict(df,
+                         feature_cols=get_feature_cols(),
+                         batch_size=10240)
 print("Prediction results of the first 5 rows:")
 predict_df.show(5)
 
 
-# Step 4: Save the prediction results
+# Step 5: Save the prediction results
 predict_df.write.parquet(os.path.join(args.data_dir, "test_predictions_dataframe.parquet"),
                          mode="overwrite")
 
 
-# Step 5: Stop Orca Context when program finishes
+# Step 6: Stop Orca Context when program finishes
 stop_orca_context()

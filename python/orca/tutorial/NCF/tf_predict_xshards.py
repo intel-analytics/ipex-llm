@@ -15,36 +15,38 @@
 #
 
 # Step 0: Import necessary libraries
-from bigdl.orca.data import XShards
-from bigdl.orca.learn.tf2 import Estimator
-from bigdl.orca import init_orca_context, stop_orca_context
-
 from process_xshards import get_feature_cols
 from utils import *
 
+from bigdl.orca.data import XShards
+from bigdl.orca.learn.tf2 import Estimator
+
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Predicting with Orca Xshards")
+args = parse_args("TensorFlow NCF Prediction with Orca XShards")
 init_orca(args)
 
 
-# Step 2: Load the model and data
+# Step 2: Load the processed data
+data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
+
+
+# Step 3: Load the model
 est = Estimator.from_keras()
 est.load("NCF_model")
 
-data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
-feature_cols = get_feature_cols()
 
-
-# Step 3: Distributed inference of the loaded model
-predictions = est.predict(data, batch_size=10240, feature_cols=feature_cols)
+# Step 4: Distributed inference of the loaded model
+predictions = est.predict(data,
+                          feature_cols=get_feature_cols(),
+                          batch_size=10240)
 print("Prediction results of the first 5 rows:")
 print(predictions.head(n=5))
 
 
-# Step 4: Save the prediction results
+# Step 5: Save the prediction results
 predictions.save_pickle(os.path.join(args.data_dir, "test_predictions_xshards"))
 
 
-# Step 5: Stop Orca Context when program finishes
+# Step 6: Stop Orca Context when program finishes
 stop_orca_context()
