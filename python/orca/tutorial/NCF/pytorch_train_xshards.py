@@ -90,10 +90,11 @@ est = Estimator.from_torch(model=model_creator,
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node)
-train_stats = est.fit(data=train_data, epochs=2,
+train_stats = est.fit(train_data,
+                      epochs=2,
+                      batch_size=10240,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=10240,
                       validation_data=test_data,
                       callbacks=callbacks)
 print("Train results:")
@@ -104,7 +105,7 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_data,
+eval_stats = est.evaluate(test_data,
                           feature_cols=feature_cols,
                           label_cols=label_cols,
                           batch_size=10240)
