@@ -28,22 +28,27 @@ from collections.abc import Sequence
 class PytorchJITINT8Model(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, calib_data, q_config=None,
                  input_sample=None, channels_last=None, thread_num=None,
-                 from_load=False, jit_strict=True, jit_method=None):
+                 from_load=False, jit_strict=True, jit_method=None,
+                 enable_onednn=True):
         super().__init__(model)
         if from_load:
             self.jit_strict = jit_strict
             self.jit_method = jit_method
+            self.enable_onednn = enable_onednn
             self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                                   precision="int8",
-                                                                  thread_num=thread_num)
+                                                                  thread_num=thread_num,
+                                                                  enable_onednn=enable_onednn)
             return
         
         self.original_state_dict = model.state_dict()
         self.jit_strict = jit_strict
         self.jit_method = jit_method
+        self.enable_onednn = enable_onednn
         self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                               precision="int8",
-                                                              thread_num=thread_num)
+                                                              thread_num=thread_num,
+                                                              enable_onednn=enable_onednn)
         self.thread_num = thread_num
         self.original_model = model
 
@@ -115,7 +120,8 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         status.update({"checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
-                       'jit_method': self.jit_method})
+                       "jit_method": self.jit_method,
+                       "enable_onednn": self.enable_onednn})
         return status
 
     @staticmethod

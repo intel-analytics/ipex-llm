@@ -939,7 +939,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            channels_last=channels_last,
                                            thread_num=thread_num,
                                            jit_strict=jit_strict,
-                                           jit_method=jit_method)
+                                           jit_method=jit_method,
+                                           enable_onednn=enable_onednn)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))

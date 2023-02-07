@@ -18,12 +18,12 @@
 def PytorchJITINT8Model(model, calib_data, q_config=None,
                         input_sample=None, channels_last=None,
                         thread_num=None, jit_strict=True,
-                        jit_method=None):
+                        jit_method=None, enable_onednn=True):
     from .jit_int8_model import PytorchJITINT8Model
     return PytorchJITINT8Model(model, calib_data, q_config=q_config,
                                input_sample=input_sample, channels_last=channels_last,
                                thread_num=thread_num, jit_strict=jit_strict,
-                               jit_method=jit_method)
+                               jit_method=jit_method, enable_onednn=enable_onednn)
 
 def load_pytorchjitint8_model(path):
     from .jit_int8_model import PytorchJITINT8Model
