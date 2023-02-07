@@ -102,7 +102,7 @@ def init_orca(args, extra_python_lib=None):
     return sc
 
 
-def scheduler(epoch, lr):
+def schedule_func(epoch, lr):
     if epoch < 1:
         return lr
     else:
@@ -110,10 +110,10 @@ def scheduler(epoch, lr):
 
 
 def save_model_config(config, model_dir, file_name="config.json"):
-    if is_local_path(model_dir):  # save the config of model to local path
+    if is_local_path(model_dir):  # save to local path
         with open(os.path.join(model_dir, file_name), "w") as f:
             json.dump(config, f)
-    else:  # save the config of model to remote path
+    else:  # save to remote path
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)
@@ -123,10 +123,10 @@ def save_model_config(config, model_dir, file_name="config.json"):
 
 
 def load_model_config(model_dir, file_name="config.json"):
-    if is_local_path(model_dir):  # load the config of model from local path
+    if is_local_path(model_dir):  # load from local path
         with open(os.path.join(model_dir, file_name), "r") as f:
             config = json.load(f)
-    else:  # load the config of model from remote path
+    else:  # load from remote path
         with tempfile.TemporaryDirectory() as tmpdirname:
             local_path = os.path.join(tmpdirname, file_name)
             remote_path = os.path.join(model_dir, file_name)
