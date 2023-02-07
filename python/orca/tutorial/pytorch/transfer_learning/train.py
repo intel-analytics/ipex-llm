@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Most of the pytorch code is adapted from PyTorch's transfer learning tutorial for
-# hymenoptera dataset.
+# Most of the code is adapted from
 # https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 #
 
@@ -28,7 +27,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
 import torchvision
-from torchvision import datasets, transforms, models
+from torchvision import datasets, transforms
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
@@ -63,7 +62,7 @@ def load_dataset(dataset_dir, batch_size=4):
         ]),
     }
 
-    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+    image_datasets = {x: datasets.ImageFolder(os.path.join(dataset_dir, x),
                                               data_transforms[x])
                       for x in ["train", "val"]}
     dataset_sizes = {x: len(image_datasets[x]) for x in ["train", "val"]}
@@ -78,15 +77,12 @@ def load_dataset(dataset_dir, batch_size=4):
 
 
 def train_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config["data_dir"], batch_size)
-
-    inputs, classes = next(iter(train_loader))  # Get a batch of training data
-    out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
+    train_loader, _, _ = load_dataset(config["data_dir"], batch_size)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config["data_dir"], batch_size)
+    _, test_loader, _ = load_dataset(config["data_dir"], batch_size)
     return test_loader
 
 
@@ -119,9 +115,6 @@ imshow()
 # Here, ConvNet is as a fixed feature extractor. We will freeze the weights for all of the
 # network except that of the final fully connected layer. This last fully connected layer is
 # replaced with a new one with random weights and only this layer is trained.
-
-
-# Create the model
 def model_creator(config):
     model = torchvision.models.resnet18(pretrained=True)
     # Freeze all the network except the final layer.
@@ -133,7 +126,6 @@ def model_creator(config):
     return model
 
 
-# Create the optimizer
 # Observe that only parameters of final layer are being optimized as
 # opposed to before.
 def optimizer_creator(model, config):
@@ -145,27 +137,24 @@ def scheduler_creator(optimizer, config):
     return lr_scheduler.StepLR(optimizer, step_size=config["step_size"], gamma=config["gamma"])
 
 
-# Step 4: Finetune with Orca PyTorch Estimator
-backend = "ray"
-
+# Step 4: Distributed transfer learning with Orca PyTorch Estimator
+backend = "spark"  # "ray" or "spark"
 est = Estimator.from_torch(model=model_creator,
                            optimizer=optimizer_creator,
                            loss=nn.CrossEntropyLoss(),
-                           metrics=[Accuracy()],
                            scheduler_creator=scheduler_creator,
+                           metrics=[Accuracy()],
                            use_tqdm=True,
                            backend=backend,
                            config={"data_dir": data_dir,
                                    "lr": 0.001,
                                    "momentum": 0.9,
                                    "step_size": 7,
-                                   "gamma": 0.1
-                                   })
-train_stats = est.fit(data=train_loader_func,
-                      validation_data=test_loader_func,
+                                   "gamma": 0.1})
+train_stats = est.fit(train_loader_func,
                       epochs=5,
-                      batch_size=4)
-
+                      batch_size=4,
+                      validation_data=test_loader_func)
 print("Train results:")
 for epoch_stats in train_stats:
     for k, v in epoch_stats.items():
@@ -174,7 +163,8 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_loader_func, batch_size=4)
+eval_stats = est.evaluate(test_loader_func,
+                          batch_size=4)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
@@ -212,9 +202,6 @@ def visualize_model(model, num_images=6):
 visualize_model(est.get_model())
 
 
-# Step 8: Shut down workers and releases resources
+# Step 8: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
-
-
-# Step 9: Stop orca context
 stop_orca_context()
