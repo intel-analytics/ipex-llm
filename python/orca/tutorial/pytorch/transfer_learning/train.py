@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Most of the pytorch code is adapted from
+# Most of the code is adapted from
 # https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 #
 
