@@ -58,7 +58,7 @@ on:
       image:
         description: 'docker image name'
         required: true
-        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
         type: string
       tag:
         description: 'docker image tag'
@@ -438,6 +438,30 @@ jobs:
         job-name: Orca-Python-Ray-Ctx
         runner-hosted-on: 'Shanghai'
 
+  Orca-Ray-Ctx-Example:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Run test
+      uses: ./.github/actions/orca/orca-python-ray-ctx-exampletest-action
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Ray-Ctx-Example.json
+        type: job
+        job-name: Orca-Ray-Ctx-Example
+        runner-hosted-on: 'Shanghai'
+
   Dllib-Scala-UT:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Dllib-Scala-UT' || github.event.inputs.artifact == 'all' }} 
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -539,30 +563,6 @@ jobs:
         job-name: PPML-Python-UT-Spark3
         runner-hosted-on: 'Shanghai'
 
-  Orca-Ray-Ctx-Example:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Ray-Ctx-Example' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Run test
-      uses: ./.github/actions/orca-ray-ctx-example-action
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Orca-Ray-Ctx-Example.json
-        type: job
-        job-name: Orca-Ray-Ctx-Example
-        runner-hosted-on: 'Shanghai'
-
   PPML-Occlum-ExampleTests:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'PPML-Occlum-ExampleTests' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, SGX, Wilwarin]
@@ -609,7 +609,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
@@ -937,7 +937,7 @@ jobs:
       uses: ./.github/actions/maven-setup-action
     - name: set env
       env:
-        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference'
+        DEFAULT_IMAGE: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
         DEFAULT_TAG: 'latest'
       run: |
         echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV

@@ -20,7 +20,7 @@ sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-s
 The result should look something like this:
 
 > Hello World
-</details>
+> </details>
 
 ### Run Trusted Python Numpy
 <details><summary>This example shows how to run trusted native python numpy.</summary>
@@ -41,7 +41,7 @@ sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-numpy-sgx.lo
 The result should look something like this:
 
 >  numpy.dot: 0.034211914986371994 sec
-</details>
+>  </details>
 
 ## Spark Examples
 ### Run Trusted Spark Pi
@@ -95,7 +95,7 @@ The result should look something like this:
 ### Run Trusted Spark SQL
 <details><summary>This example shows how to run trusted Spark SQL.</summary>
 
-  
+
 First, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
 
 Run the script to run trusted Spark SQL:
@@ -127,7 +127,7 @@ The result should look something like this:
 >Name: Justin
 >
 >| Justin|
-</details>
+></details>
 
 ### Run Trusted Spark SQL (TPC-H)
 <details><summary>TPC-H with Trusted SparkSQL on Kubernetes</summary>
@@ -142,7 +142,7 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 
 
 ### Run Trusted SimpleQuery
-<details><summary>Trusted SimpleQuery</summary>
+<details><summary>Trusted SimpleQuery With Single Data source/KMS</summary>
 
 spark native mode
 <p align="left">
@@ -252,7 +252,7 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPPID appid \
         --ehsmAPIKEY apikey
 ```
-  
+
 k8s cluster mode, sgx enabled
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" alt="data lifecycle" width='500px' />
@@ -292,6 +292,282 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPIKEY apikey
 ```
 </details>
+
+<details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
+
+
+If you have multiple data sources that use different keys, you can also use the `initPPMLContext` method to automatically initialize PPML Context with support for multiple key management services and data sources.   
+
+You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
+
+For ***KMS***, specify parameters for each named KMS instance:
+
+- **spark.bigdl.kms.<KMSName>.type:**  type of the existing KMS instance, e.g. SimpleKeyManagementService, EHSMKeyManagementService, AzureKeyManagementService or BigDLKeyManagementService.
+
+Type-specific parameters for each KMS instance:
+
+ - For a Simple KMS:
+
+    **spark.bigdl.kms.[KMSName].appId:**  APPID of SimpleKMS.
+
+    **spark.bigdl.kms.[KMSName].apiKey:**  APIKEY of SimpleKMS.
+
+ - For an EHSM KMS:
+
+    **spark.bigdl.kms.[KMSName].ip:**  EHSM service IP.
+
+    **spark.bigdl.kms.[KMSName].port:**  EHSM port number.
+
+    **spark.bigdl.kms.[KMSName].appId:**  EHSM APPID.
+
+    **spark.bigdl.kms.[KMSName].apiKey:**  EHSM APIKEY.
+
+ - For an Azure KMS:
+
+    **spark.bigdl.kms.[KMSName].vault:** Azure KMS KeyVault.
+
+    **spark.bigdl.kms.[KMSName].clientId:** Azure KMS clientId.
+
+ - For a BigDL KMS:
+
+    **spark.bigdl.kms.[KMSName].ip:**  BigDL KMS service IP.
+
+    **spark.bigdl.kms.[KMSName].port:**  BigDL KMS port number.
+
+    **spark.bigdl.kms.[KMSName].user:**  BigDL KMS user name.
+
+    **spark.bigdl.kms.[KMSName].token:**  BigDL KMS user token.
+
+
+You can specify multi-KMS configurations through **conf at bigdl-ppml-submit** or **ppmlArgs at initPPMLContext**:
+
+- **bigdl-ppml-submit multi-kms conf**:
+
+  ```bash
+  bash bigdl-ppml-submit.sh \
+  ...
+  --conf spark.bigdl.enableMultiKms=true \
+  --conf spark.bigdl.kms.amyKMS.type=SimpleKeyManagementService \
+  --conf spark.bigdl.kms.amyKMS.appId=${SimpleAPPID} \
+  --conf spark.bigdl.kms.amyKMS.apiKey=${SimpleAPIKEY} \
+  --conf spark.bigdl.kms.bobKMS.type=EHSMKeyManagementService \
+  --conf spark.bigdl.kms.bobKMS.ip=${EHSMIP} \
+  --conf spark.bigdl.kms.bobKMS.port=${EHSMPORT} \
+  --conf spark.bigdl.kms.bobKMS.appId=${EHSMAPPID} \
+  --conf spark.bigdl.kms.bobKMS.apiKey=${EHSMAPIKEY} \
+  --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+  --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+  --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
+  ...
+  ```
+
+- **ppmlArgs for initPPMLContext**:
+
+  ```scala
+  import com.intel.analytics.bigdl.ppml.PPMLContext
+     
+  val ppmlArgs: Map[String, String] = Map(
+    "spark.bigdl.enableMultiKms" -> "true",
+    "spark.bigdl.kms.amyKMS.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.kms.amyKMS.appId" -> simpleAPPID,
+    "spark.bigdl.kms.amyKMS.apiKey" -> simpleAPIKEY,
+    "spark.bigdl.kms.bobKMS.type" -> "EHSMKeyManagementService",
+    "spark.bigdl.kms.bobKMS.ip" -> ehsmIP,
+    "spark.bigdl.kms.bobKMS.port" -> ehsmPort,
+    "spark.bigdl.kms.bobKMS.appId" -> ehsmAPPID,
+    "spark.bigdl.kms.bobKMS.apiKey" -> ehsmAPIKEY,
+    "spark.bigdl.kms.sharedKms.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.kms.sharedKms.appId" -> "${sharedSimpleAppId}",
+    "spark.bigdl.kms.sharedKms.apiKey" -> "${sharedSimpleApiKey}"
+  )
+     
+  val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+  ```
+
+For read/write data frames, configure their KMS, keys and path etc parameters. for each:
+
+ - **kms:**  name of the KMS used by the data source/sink.
+ - **primaryKey:** path/name of the primary key  related to this data source/sink.
+ - **dataKey:** path/name of the data key related to this data source/sink.
+ - **encryptMode:** encryption mode when applying data key, e.g. `plain_text` for non-encrypted input files, `AES/CBC/PKCS5Padding` for encrypted CSV, JSON and other textfile, and `AES_GCM_CTR_V1` or `AES_GCM_V1`for encrypted parquet files.
+ - **path:** the file system path of the dataframe read from or write to.
+
+ <details open>
+    <summary>scala</summary>
+
+```scala
+import com.intel.analytics.bigdl.ppml.crypto.AES_CBC_PKCS5PADDING
+
+val amyDf = sc.read(AES_CBC_PKCS5PADDING,          // crypto mode
+                    "amyKms",                      // name of kms which data key is retrieved from
+                    "./amy_encrypted_primary_key", // primary key file path
+                    "./amy_encrypted_data_key")    // data key file path
+              .option("header", "true")
+              .csv("./amyDataSource.csv")          // input file path
+
+val bobDf = sc.read(AES_CBC_PKCS5PADDING, "bobKms",
+                    "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
+              .option("header", "true")
+              .csv("./bobDataSource.csv")
+
+...
+
+sc.write(unionDf,                          // target data frame
+         AES_CBC_PKCS5PADDING,             // encrypt mode
+         "sharedKms",                      // kms name
+         "./shared_encrypted_primary_key", // primary key file path
+         "./shared_encrypted_data_key")    // data key file path
+  .mode("overwrite")
+  .option("header", true)
+  .csv("./output")
+
+```
+  </details>
+
+  <details>
+    <summary>python</summary>
+
+```python
+from bigdl.ppml.ppml_context import *
+
+sparkConf =  {"spark.bigdl.enableMultiKms": "true",
+              "spark.bigdl.kms.amyKMS.type": "SimpleKeyManagementService",
+              "spark.bigdl.kms.amyKMS.appId": "simpleAPPID",
+              "spark.bigdl.kms.amyKMS.apiKey": "simpleAPIKEY",
+              "spark.bigdl.kms.bobKMS.type": "EHSMKeyManagementService",
+              "spark.bigdl.kms.bobKMS.ip": "ehsmIP",
+              "spark.bigdl.kms.bobKMS.port": "ehsmPort",
+              "spark.bigdl.kms.bobKMS.appId": "ehsmAPPID",
+              "spark.bigdl.kms.bobKMS.apiKey": "ehsmAPIKEY",
+              "spark.bigdl.kms.sharedKms.type": "SimpleKeyManagementService",
+              "spark.bigdl.kms.sharedKms.appId": "${sharedSimpleAppId}",
+              "spark.bigdl.kms.sharedKms.apiKey" "${sharedSimpleApiKey}"
+             }
+
+sc = PPMLContext("MyApp", None, sparkConf)
+```
+
+```python
+amyDf = sc.read(crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING, \
+                kms_name = "amyKms", \
+                primary_key = "./amy_encrypted_primary_key", \
+                data_key = "./amy_encrypted_data_key")\
+          .option("header", "true")\
+          .csv(path = "./amyDataSource.csv")
+
+bobDf = sc.read(CryptoMode.AES_CBC_PKCS5PADDING, "bobKms", \
+                "./bob_encrypted_primary_key", "./bob_encrypted_data_key")\
+          .option("header", "true")\
+          .csv("./bobDataSource.csv")
+
+...
+
+sc.write(dataframe = unionDf, \
+         crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING, \
+         kms_name = "sharedKms", \
+         primary_key = "./shared_encrypted_primary_key", \
+         data_key = "./shared_encrypted_data_key")\
+  .option("header", true)\
+  .csv("./output")
+```
+  </details>
+  
+**MultiPartySparkExample:**
+
+![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
+
+- Local mode:
+
+
+```bash 
+export amySimpleAppId=YOUR_SIMPLE_APPID_1
+export amySimpleApiKey=YOUR_SIMPLE_APIKEY_1
+export bobEhsmIP=YOUR_EHSM_IP
+export bobEhsmPort=YOUR_EHSM_PORT
+export bobEhsmAppId=YOUR_EHSM_APPID
+export bobEhsmApiKey=YOUR_EHSM_APIKEY
+export sharedSimpleAppId=YOUR_SIMPLE_APPID_2
+export sharedSimpleApiKey=YOUR_SIMPLE_APIKEY_2
+
+bash bigdl-ppml-submit.sh \
+    --master local[2] \
+    --sgx-enabled false \
+    --driver-memory 32g \
+    --driver-cores 4 \
+    --executor-memory 32g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
+    --verbose \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
+    --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
+    --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
+    --conf spark.bigdl.kms.bobKms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.bobKms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.kms.bobKms.port=${bobEhsmPort} \
+    --conf spark.bigdl.kms.bobKms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.kms.bobKms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+    --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
+    --verbose \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar 
+```
+
+- K8S cluster mode:
+
+```bash
+export amySimpleAppId=YOUR_SIMPLE_APPID_1
+export amySimpleApiKey=YOUR_SIMPLE_APIKEY_1
+export bobEhsmIP=YOUR_EHSM_IP
+export bobEhsmPort=YOUR_EHSM_PORT
+export bobEhsmAppId=YOUR_EHSM_APPID
+export bobEhsmApiKey=YOUR_EHSM_APIKEY
+export sharedSimpleAppId=YOUR_SIMPLE_APPID_2
+export sharedSimpleApiKey=YOUR_SIMPLE_APIKEY_2
+export UPLOADPATH=YOUR_UPLOAD_PATH
+  
+bash bigdl-ppml-submit.sh \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode cluster \
+    --driver-memory 32g \
+    --driver-cores 4 \
+    --executor-memory 32g \
+    --executor-cores 4 \
+    --conf spark.kubernetes.container.image=${RUNTIME_SPARK_K8S_IMAGE} \
+    --sgx-enabled false \
+    --num-executors 2 \
+    --conf spark.cores.max=8 \
+    --verbose \
+    --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkExample \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.bigdl.enableMultiKms=true \
+    --conf spark.bigdl.kms.amyKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.amyKms.appId=${amySimpleAppId} \
+    --conf spark.bigdl.kms.amyKms.apiKey=${amySimpleApiKey} \
+    --conf spark.bigdl.kms.bobKms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.kms.bobKms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.kms.bobKms.port=${bobEhsmPort} \
+    --conf spark.bigdl.kms.bobKms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.kms.bobKms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.kms.sharedKms.type=SimpleKeyManagementService \
+    --conf spark.bigdl.kms.sharedKms.appId=${sharedSimpleAppId} \
+    --conf spark.bigdl.kms.sharedKms.apiKey=${sharedSimpleApiKey} \
+    --verbose \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    com.intel.analytics.bigdl.ppml.examples.MultiKMSExample
+```
+</details>
+
+
 
 ## Trusted ML 
 
@@ -356,8 +632,8 @@ The result should look something like this:
 > |[11.0874,0.0,18.1...| 16.7|16.174896240234375|
 >
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
-</details>
-  
+> </details>
+
 ### (Deprecated) Run Trusted Spark XGBoost Classifier
 <details><summary>This example shows how to run trusted Spark XGBoost Classifier.</summary>
 
@@ -393,7 +669,7 @@ The result should look something like this:
 > | 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938...|[0.29124027490615...|    1.0|
 >
 > | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
-</details>
+> </details>
 
 ## Trusted DL
 ### Run Trusted Spark BigDL
@@ -419,7 +695,7 @@ The result should look something like this:
 > 2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
 >
 > 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
-</details>
+> </details>
 
 ### Run Trusted Spark Orca Data
 <details><summary>This example shows how to run trusted Spark Orca Data.</summary>
@@ -490,7 +766,7 @@ The result should contain the content look like this:
 >\--
 >
 >Stopping orca context
-</details>
+></details>
 
 ### Run Trusted Spark Orca Learn Tensorflow Basic Text Classification
 <details><summary>This example shows how to run Trusted Spark Orca learn Tensorflow basic text classification.</summary>
@@ -511,10 +787,12 @@ sudo docker exec -it spark-local cat test-orca-tf-text.log | egrep "results"
 The result should be similar to:
 
 >INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
-</details>
+></details>
 
 ## Trusted FL
 ### Trusted FL example
 <details><summary>expand/fold</summary>
 content
 </details>
+
+

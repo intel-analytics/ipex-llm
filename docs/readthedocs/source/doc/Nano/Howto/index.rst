@@ -41,7 +41,7 @@ TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 * |tensorflow_training_embedding_sparseadam_link|_
-* `How to conduct BFloat16 Mixed Precision training in your TensorFlow application <Training/TensorFlow/tensorflow_training_bf16.html>`_
+* `How to conduct BFloat16 Mixed Precision training in your TensorFlow Keras application <Training/TensorFlow/tensorflow_training_bf16.html>`_
 
 .. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
 .. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
@@ -58,6 +58,7 @@ OpenVINO
 
 * `How to run inference on OpenVINO model <Inference/OpenVINO/openvino_inference.html>`_
 * `How to run asynchronous inference on OpenVINO model <Inference/OpenVINO/openvino_inference_async.html>`_
+* `How to accelerate a PyTorch / TensorFlow inference pipeline on Intel GPUs through OpenVINO <Inference/OpenVINO/accelerate_inference_openvino_gpu.html>`_
 
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,10 +83,11 @@ TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 * `How to accelerate a TensorFlow inference pipeline through ONNXRuntime <Inference/TensorFlow/accelerate_tensorflow_inference_onnx.html>`_
 * `How to accelerate a TensorFlow inference pipeline through OpenVINO <Inference/TensorFlow/accelerate_tensorflow_inference_openvino.html>`_
+* `How to conduct BFloat16 Mixed Precision inference in a TensorFlow Keras application <Inference/TensorFlow/tensorflow_inference_bf16.html>`_
 * `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
 * `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
 
 Install
 -------------------------
-* `How to install BigDL-Nano in Google Colab <install_in_colab.html>`_
-* `How to install BigDL-Nano on Windows <windows_guide.html>`_
+* `How to install BigDL-Nano in Google Colab <Install/install_in_colab.html>`_
+* `How to install BigDL-Nano on Windows <Install/windows_guide.html>`_

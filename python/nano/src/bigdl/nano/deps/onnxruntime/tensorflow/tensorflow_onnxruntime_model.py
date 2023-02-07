@@ -54,7 +54,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
             if isinstance(model, tf.keras.Model):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 if input_spec is None:
-                    input_spec = tf.TensorSpec((model.input_shape), model.dtype)
+                    input_spec = tf.TensorSpec(model.input_shape, model.dtype)
                 if not isinstance(input_spec, (tuple, list)):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
@@ -106,8 +106,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"ModelType": type(self.target_obj).__name__,
-                       "onnx_path": 'onnx_saved_model.onnx',
+        status.update({"onnx_path": 'onnx_saved_model.onnx',
                        "attr_path": "onnx_saved_model_attr.pkl",
                        "compile_path": "onnx_saved_model_compile.pkl",
                        "intra_op_num_threads": self.session_options.intra_op_num_threads,

@@ -37,7 +37,8 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 RAY_DEP = ['ray[default]==1.9.2', 'aiohttp==3.8.1', 'async-timeout==4.0.1', 'aioredis==1.3.1',
-           'hiredis==2.0.0', 'setproctitle', 'psutil', 'prometheus-client==0.11.0']
+           'hiredis==2.0.0', 'setproctitle', 'psutil', 'prometheus-client==0.11.0',
+           'protobuf==3.19.5']
 AUTOML_DEP = RAY_DEP + ['ray[tune]==1.9.2', 'scikit-learn', 'tensorboard']
 
 building_error_msg = """
@@ -107,7 +108,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['packaging', 'filelock',
-                          'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
+                          'bigdl-tf==2.3.0.dev0', 'bigdl-math==2.3.0.dev0',
                           'bigdl-dllib=='+VERSION, 'pyzmq'],
         extras_require={'ray': RAY_DEP,
                         'automl': AUTOML_DEP,

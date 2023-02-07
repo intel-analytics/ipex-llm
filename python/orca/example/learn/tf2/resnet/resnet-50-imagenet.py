@@ -423,19 +423,17 @@ if __name__ == "__main__":
             callbacks=callbacks,
         )
     else:
-        epoch = 0
-        for i in range(5):
-            dummy = args.use_dummy_data
+        dummy = args.use_dummy_data
 
-            results = trainer.fit(
-                data=train_data_creator if not dummy else dummy_data_creator,
-                epochs=args.epochs,
-                batch_size=global_batch_size,
-                validation_data=val_data_creator if not dummy else dummy_data_creator,
-                steps_per_epoch=args.num_images_train // global_batch_size,
-                callbacks=callbacks,
-                validation_steps=args.num_images_validation // global_batch_size,
-            )
-            epoch += args.epochs
-        trainer.save(os.path.join(args.log_dir, f"model-{epoch}.pkl"))
+        results = trainer.fit(
+            data=train_data_creator if not dummy else dummy_data_creator,
+            epochs=args.epochs,
+            batch_size=global_batch_size,
+            validation_data=val_data_creator if not dummy else dummy_data_creator,
+            steps_per_epoch=args.num_images_train // global_batch_size,
+            callbacks=callbacks,
+            validation_steps=args.num_images_validation // global_batch_size,
+        )
+
+        trainer.save(os.path.join(args.log_dir, f"model-{args.epochs}.pkl"))
     stop_orca_context()

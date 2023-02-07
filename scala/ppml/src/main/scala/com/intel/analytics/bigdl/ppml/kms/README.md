@@ -3,6 +3,7 @@ classDiagram
     KeyManagementService <|.. SimpleKeyManagementService
     KeyManagementService <|.. EHSMKeyManagementService
     KeyManagementService <|.. AzureKeyManagementService
+    KeyManagementService <|.. BigDLKeyManagementService
     KeyManagementService: +retrievePrimaryKey()
     KeyManagementService: +retrieveDataKey()
     KeyManagementService: +retrieveDataKeyPlainText()
@@ -30,5 +31,15 @@ classDiagram
     SimpleKeyManagementService: +retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath, config)
     SimpleKeyManagementService: +setAppIdAndKey(appId, apiKey)
 
+    BigDLKeyManagementService: +kmsServerIP
+    BigDLKeyManagementService: +kmsServerPort
+    BigDLKeyManagementService: +userName
+    BigDLKeyManagementService: +userToken
+    BigDLKeyManagementService: +enroll()
+    BigDLKeyManagementService: +retrievePrimaryKey(primaryKeySavePath, config)
+    BigDLKeyManagementService: +retrieveDataKey(primaryKeyPath, dataKeySavePath, config)
+    BigDLKeyManagementService: +retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath, config)
+    BigDLKeyManagementService: -constructBaseUrl(action, customParamName)
+    BigDLKeyManagementService: -sendRequest(requestType, url)
     
 ```

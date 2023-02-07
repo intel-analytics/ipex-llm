@@ -148,7 +148,10 @@ class BasePytorchForecaster(Forecaster):
             effect if target_metric contains "latency". Default value is False.
         :param input_sample: A set of inputs for trace, defaults to None if you have
             trace before or model is a LightningModule with any dataloader attached.
+        :param kwargs: some other parameters could be used for tuning, most useful one is
+               `sampler` from SamplerType.Grid, SamplerType.Random and SamplerType.TPE so on.
         """
+
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
                           "Please use AutoTS instead.")
@@ -608,12 +611,13 @@ class BasePytorchForecaster(Forecaster):
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
+        # remove channels_last methods and temporarily disable bf16
         excludes = ["fp32_channels_last", "fp32_ipex_channels_last", "bf16_channels_last",
                     "bf16_ipex_channels_last", "jit_fp32_channels_last", "jit_bf16_channels_last",
-                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last"]
+                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last",
+                    "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
         if not self.quantize_available:
-            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
-                                   "bf16", "jit_bf16_ipex"]
+            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear"]
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
@@ -634,6 +638,7 @@ class BasePytorchForecaster(Forecaster):
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
+        self.optimized_model_thread_num = thread_num
 
     def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
@@ -682,6 +687,9 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
+
+        if quantize or acceleration:
+            self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
 
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
@@ -786,6 +794,9 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
+
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -806,6 +817,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "onnxruntime_fp32":
                 self.build_onnx()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -857,6 +870,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -878,6 +893,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "openvino_fp32":
                 self.build_openvino()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -929,6 +946,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         if isinstance(data, TSDataset):
             _rolled = data.numpy_x is None
             data = data.to_torch_data_loader(batch_size=batch_size,
@@ -950,6 +969,8 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.accelerate_method != "jit_fp32":
                 self.build_jit()
+                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                     self.thread_num)
             return _pytorch_fashion_inference(model=self.accelerated_model,
                                               input_data=data,
                                               batch_size=batch_size)
@@ -1252,6 +1273,8 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling predict_interval!")
 
+        self.thread_num = set_pytorch_thread(self.optimized_model_thread_num, self.thread_num)
+
         # step1, according to validation dataset, calculate inherent noise
         if not hasattr(self, "data_noise"):
             invalidInputError(validation_data is not None,
@@ -1500,6 +1523,7 @@ class BasePytorchForecaster(Forecaster):
                                                           accelerator="onnxruntime",
                                                           onnxruntime_session_options=sess_options)
         self.accelerate_method = "onnxruntime_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def build_openvino(self, thread_num=1):
         '''
@@ -1538,6 +1562,7 @@ class BasePytorchForecaster(Forecaster):
                                                           accelerator="openvino",
                                                           thread_num=thread_num)
         self.accelerate_method = "openvino_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def build_jit(self, thread_num=1, use_ipex=False):
         '''
@@ -1582,6 +1607,7 @@ class BasePytorchForecaster(Forecaster):
                                                           channels_last=False,
                                                           thread_num=thread_num)
         self.accelerate_method = "jit_fp32"
+        self.optimized_model_thread_num = thread_num
 
     def export_onnx_file(self, dirname="fp32_onnx", quantized_dirname=None):
         """
@@ -1638,7 +1664,7 @@ class BasePytorchForecaster(Forecaster):
                                 quantized_dirname=None,
                                 save_pipeline=False,
                                 tsdata=None,
-                                drop_dtcol=True):
+                                drop_dt_col=True):
         """
         Save the torchscript model file and the whole forecasting pipeline to the disk.
 
@@ -1696,7 +1722,7 @@ class BasePytorchForecaster(Forecaster):
                model will be saved.
         :param tsdata: The TSDataset instance used when developing the forecaster. The parameter
                should be used only when save_pipeline is True.
-        :param drop_dtcol: Whether to delete the datetime column, defaults to True. The parameter
+        :param drop_dt_col: Whether to delete the datetime column, defaults to True. The parameter
                is valid only when save_pipeline is True.
                Since datetime value (like "2022-12-12") can't be converted to Pytorch tensor, you
                can choose different ways to workaround this. If set to True, the datetime column
@@ -1711,7 +1737,6 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.nano.pytorch import InferenceOptimizer
         from bigdl.nano.utils.log4Error import invalidInputError
-        from .utils import get_exported_module
         from pathlib import Path
         if self.distributed:
             invalidInputError(False,
@@ -1731,7 +1756,7 @@ class BasePytorchForecaster(Forecaster):
 
             if save_pipeline:
                 forecaster_path = Path(dirname) / "ckpt.pth"
-                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dtcol)
+                exproted_module = get_exported_module(tsdata, forecaster_path, drop_dt_col)
                 saved_path = Path(dirname) / "chronos_forecasting_pipeline.pt"
                 torch.jit.save(exproted_module, saved_path)
 
@@ -1899,7 +1924,7 @@ class BasePytorchForecaster(Forecaster):
                                               precision='int8',
                                               accelerator=accelerator,
                                               method=method,
-                                              calib_dataloader=calib_data,
+                                              calib_data=calib_data,
                                               metric=metric,
                                               conf=conf,
                                               approach=approach,
@@ -1918,6 +1943,7 @@ class BasePytorchForecaster(Forecaster):
         if accelerator is None:
             self.accelerated_model = q_model
             self.accelerate_method = "pytorch_int8"
+        self.optimized_model_thread_num = thread_num
 
     @classmethod
     def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):

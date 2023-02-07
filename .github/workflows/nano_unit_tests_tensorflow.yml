@@ -68,6 +68,29 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+  nano-unit-test-tensorflow-deps:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+        tf-version: [
+          "tensorflow_27",
+          "tensorflow_28",
+          "tensorflow_29",
+          "tensorflow_210",
+          ]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
+
       - name: Run TensorFlow unit tests (Horovod)
         shell: bash
         run: |
@@ -150,11 +173,9 @@ jobs:
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
-            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}},inference
           fi
           pip install pytest
-          pip install openvino-dev==2022.2.0
-          pip install numpy==1.21.6
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate

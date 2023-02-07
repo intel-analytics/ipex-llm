@@ -16,7 +16,7 @@
 import torch
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.chronos.model.tcn import model_creator
-from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.metric import Evaluator
 from bigdl.chronos.data import get_public_dataset
 from sklearn.preprocessing import StandardScaler
 from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
@@ -43,7 +43,7 @@ def gen_dataloader():
     return tsdata_traindataloader, tsdata_valdataloader, tsdata_testdataloader
 
 def predict_wraper(model, input_sample):
-    with InferenceOptimizer.get_context(model):
+    with torch.no_grad():
         model(input_sample)
 
 if __name__ == '__main__':

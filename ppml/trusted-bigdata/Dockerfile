@@ -1,5 +1,5 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
-ARG BASE_IMAGE_TAG=2.2.0-SNAPSHOT
+ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -170,11 +170,13 @@ COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+ADD ./scripts /ppml/scripts
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
+ADD ./examples /ppml/examples
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -185,6 +187,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /ppml/bigdl-ppml-submit.sh && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
+    wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && \
+    chmod a+x /ppml/scripts/* && \
 #flink
     env DEBIAN_FRONTEND=noninteractive apt-get install -y libsnappy1v5 gettext-base libjemalloc-dev && \
     rm -rf /var/lib/apt/lists/* && \

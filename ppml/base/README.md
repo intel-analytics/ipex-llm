@@ -24,34 +24,13 @@ All the corresponding files including
 
 are changed accordingly.
 
-### Mount files needed by bash.manifest.template
-
-The following four directories required by the `bash.manifest.template` are no longer added to the image.
-```bash
-  { path = "/root/.kube/", uri = "file:/root/.kube/" },
-  { path = "/root/.keras", uri = "file:/root/.keras" },
-  { path = "/root/.m2", uri = "file:/root/.m2" },
-  { path = "/root/.zinc", uri = "file:/root/.zinc" },
-```
-
-
-To ensure that the `bash.manifest.template` works correctly, add the following block into your image's Dockerfile:
-
-```dockerfile
-RUN  mkdir -p /root/.keras/datasets && \
-     mkdir -p /root/.zinc && \
-     mkdir -p /root/.m2 && \
-     mkdir -p /root/.kube/
-```
-
 ### Set ENV in your image
 
-The image have Python3.7 installed.  If this is what you needed, put the following command into your image:
-```dockerfile
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
-```
+The image have Python3.7 and python3.8 installed.
 
-Otherwise, install your version of Python and set the `PYTHONPATH` accordingly.
+The `PYTHONPATH` has already been setup for you.  The default python version is 3.8.10
+
+If this is not what you want, install your version of Python and set the `PYTHONPATH` accordingly.
 
 Besides, you may also want to set the `WORKDIR` and the `ENTRYPOINT` in your image.
 
@@ -59,11 +38,11 @@ Besides, you may also want to set the `WORKDIR` and the `ENTRYPOINT` in your ima
 
 The image only contains these important components:
 
-1. Python3.7 and some packages.
+1. Python3.8.10 and some packages.
 2. Gramine.
 3. Three patches applied to the Python source code and its packages.
 4. Package sgxsdk and dcap, required by remote attestation.
-5. Script for register MREnclave and verify remote EHSM (The jars required are not fully provided).
+5. Script for register MREnclave and verify remote EHSM.
 
 
 ## How to use the encryption/decryption function provided by Gramine?

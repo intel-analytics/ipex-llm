@@ -4,7 +4,7 @@ inputs:
   image:
     description: 'image'
     required: true
-    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine'
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
   image-tag:
     description: 'image tag'
     required: true
@@ -16,11 +16,9 @@ runs:
     - name: Set Variable
       shell: bash
       env:
-        DEFAULT_SGX_MEM_SIZE: 32G
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
         echo "CONTAINER_NAME=spark-examples-test-gramine" >> $GITHUB_ENV
-        echo "SGX_MEM_SIZE=${{ env.DEFAULT_SGX_MEM_SIZE }}" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
     - name: Start Container
       shell: bash
@@ -29,14 +27,14 @@ runs:
         docker pull ${IMAGE}
         docker rm -f ${CONTAINER_NAME}
         docker run -id --privileged --net=host --name ${CONTAINER_NAME} \
-        --cpuset-cpus=$CPUSET \
+        --cpus=10 \
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $NFS_INPUT_PATH:/ppml/trusted-big-data-ml/work/data \
-        -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $NFS_INPUT_PATH:/ppml/data \
+        -v $KEYS_PATH:/ppml/keys \
         -e LOCAL_IP=$LOCAL_IP \
         -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
@@ -53,6 +51,6 @@ runs:
     - name: Spark Examples Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-spark-simplequery-on-local-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/trusted-big-data-ml/work/scripts/start-pyspark-simplequery-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-simplequery-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simplequery-on-local-sgx.sh"

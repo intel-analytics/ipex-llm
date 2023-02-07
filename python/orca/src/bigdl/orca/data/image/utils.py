@@ -19,7 +19,6 @@ import os
 from collections import namedtuple
 from io import BytesIO
 import numpy as np
-import pyarrow as pa
 from itertools import chain, islice
 
 from enum import Enum
@@ -168,6 +167,7 @@ def chunks(iterable: List[Dict[str, Union[str, int, float, "ndarray"]]],
 
 
 def pa_fs(path):
+    import pyarrow as pa
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
         fs = pa.hdfs.connect()
         path = path[len("hdfs://"):]
