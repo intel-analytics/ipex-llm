@@ -26,13 +26,19 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
 .. note::
     You can install all required dependencies by
 
-    ::
+    .. code-block:: bash
 
         pip install --pre --upgrade bigdl-nano[pytorch,inference]
 
     This will install all dependencies required by BigDL-Nano PyTorch inference.
 
-    Or if you just want to use one of supported optimizations:
+    Or if you just want to use one of supported optimizations, you could install BigDL-Nano for PyTorch with manually installed dependencies:
+
+    .. code-block:: bash
+
+        pip install --pre --upgrade bigdl-nano[pytorch]
+
+    with
 
     - `INC (Intel Neural Compressor) <https://github.com/intel/neural-compressor>`_: ``pip install neural-compressor``
 
@@ -41,6 +47,8 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
     - `ONNXRuntime <https://onnxruntime.ai/>`_: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
 
     We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
+
+    For the case you only need inference optimization from IPEX (Intel® Extension for PyTorch*) or TorchScript, you could just install BigDL-Nano for PyTorch through ``pip install --pre --upgrade bigdl-nano[pytorch]``.
 ```
 
 ## Graph Mode Acceleration
@@ -344,15 +352,18 @@ multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[
 
 ```eval_rst
 .. note::
-    Please note during multi-instance infernece, the context manager ``InferenceOptimizer.get_context(model=...)`` is not needed to be maunally added.
+    During multi-instance infernece, the context manager ``InferenceOptimizer.get_context(model=...)`` is not needed to be maunally added.
 ```
 
 ## Automatic Context Management
 BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model optimized by ``InferenceOptimizer.trace``/``quantize``/``optimize``, it usually contains part of or all of following four types of context managers:
 
 1. ``torch.inference_mode(True)`` to disable gradients, which will be used for all models
+
 2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related models
+
 3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when applying ``InferenceOptimizer.trace``/``quantize``/``optimize``
+
 4. ``torch.jit.enable_onednn_fusion(True)`` to support ONEDNN fusion for jit when using jit as accelerator
 
 For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
