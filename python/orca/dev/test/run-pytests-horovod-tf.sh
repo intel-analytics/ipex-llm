@@ -30,3 +30,7 @@ python -m pytest -v test/bigdl/orca/learn/ray/tf/ \
     --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py \
     --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
 python -m pytest -v test/bigdl/orca/data/test_read_parquet_images.py
+
+ray stop -f
+echo "Running openvino test"
+python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py
