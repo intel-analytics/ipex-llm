@@ -126,5 +126,6 @@ est.save(os.path.join(args.model_dir, "NCF_model"))
 save_model_config(config, args.model_dir, "config.json")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when program finishes
+est.shutdown()
 stop_orca_context()
