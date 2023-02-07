@@ -17,7 +17,6 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 
 from process_spark_dataframe import prepare_data
 from pytorch_model import NCF
