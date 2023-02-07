@@ -6,7 +6,7 @@ def sql_dataframe_example(spark):
     
     print("INFO SQL Dataframe Example starts")
     
-    df = spark.read.parquet("work/spark-3.1.2/examples/src/main/resources/users.parquet")
+    df = spark.read.parquet("work/spark-3.1.3/examples/src/main/resources/users.parquet")
     df.show()
     
     # agg

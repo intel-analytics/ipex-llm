@@ -40,7 +40,7 @@ elif cluster_mode == "k8s":
 print("INFO 1 cluster_mode_init_success!")
 
 # Read in the dataset, and do a little preprocessing
-new_rating_files="/ppml/trusted-big-data-ml/work/data/ml-1m/ratings_new.dat.2"
+new_rating_files="/ppml/data/ml-1m/ratings_new.dat.2"
 if not os.path.exists(new_rating_files):
         print("INFO ERROR ratings_new.dat does not exist")
         exit(1)

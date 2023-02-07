@@ -58,7 +58,7 @@ def sql_context_api(spark):
 
     # read
     res = sqlContext.read
-    text_sdf = sqlContext.readStream.text("/ppml/trusted-big-data-ml/work/examples/helloworld.py")
+    text_sdf = sqlContext.readStream.text("/ppml/examples/helloworld.py")
     res = text_sdf.isStreaming
     print(res)
     print("read and readStream API finished")

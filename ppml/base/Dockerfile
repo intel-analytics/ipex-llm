@@ -45,6 +45,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
+# Python packages
+    pip3 install numpy && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
