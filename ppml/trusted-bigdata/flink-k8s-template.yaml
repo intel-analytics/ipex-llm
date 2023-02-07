@@ -11,7 +11,8 @@ spec:
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
       - name: flink-secure-keys
-        mountPath: /ppml/flink/keys
+        mountPath: /ppml/flink/keys/flink_internal.keystore
+        subPath: flink_internal.keystore
       - name: secure-keys
         mountPath: /ppml/keys
     resources:
