@@ -27,7 +27,7 @@ fi
 
 unset MALLOC_CONF
 unset KMP_AFFINITY
-unset OMP_NUM_THREADS
+# unset OMP_NUM_THREADS
 
 # ray stop -f
 
