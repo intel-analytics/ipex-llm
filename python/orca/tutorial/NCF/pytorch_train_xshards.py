@@ -121,6 +121,6 @@ train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
-# Step 7: Shutdown the Estimator and stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()

@@ -165,6 +165,6 @@ for k, v in eval_stats.items():
 est.save("xception_model")
 
 
-# Step 7: Shutdown the Estimator and stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()

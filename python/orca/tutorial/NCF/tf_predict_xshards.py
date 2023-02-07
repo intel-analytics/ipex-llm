@@ -49,6 +49,6 @@ print(predictions.head(n=5))
 predictions.save_pickle(os.path.join(args.data_dir, "test_predictions_xshards"))
 
 
-# Step 6: Shutdown the Estimator and stop Orca Context when program finishes
+# Step 6: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()

@@ -74,6 +74,6 @@ for k, v in train_stats.items():
 est.save(os.path.join(args.model_dir, "NCF_resume_model"))
 
 
-# Step 5: Shutdown the Estimator and stop Orca Context when program finishes
+# Step 5: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()

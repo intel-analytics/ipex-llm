@@ -68,6 +68,6 @@ predict_df.write.parquet(os.path.join(args.data_dir, "test_predictions_dataframe
                          mode="overwrite")
 
 
-# Step 7: Shutdown the Estimator and stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()
