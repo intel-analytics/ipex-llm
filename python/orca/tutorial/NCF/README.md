@@ -4,11 +4,11 @@
 - Spark DataFrame Users:
     - [Distributed Training and Evaluation](tf_train_spark_dataframe.py)
     - [Distributed Inference](tf_predict_spark_dataframe.py)
-    - [Distributed Resume Training](tf_resume_spark_dataframe.py)
+    - [Distributed Resume Training](tutorial/NCF/tf_resume_train_spark_dataframe.py)
 - Pandas DataFrame Users:
     - [Distributed Training and Evaluation](tf_train_xshards.py)
     - [Distributed Inference](tf_predict_xshards.py)
-    - [Distributed Resume Training](tf_resume_xshards.py)
+    - [Distributed Resume Training](tutorial/NCF/tf_resume_train_xshards.py)
 - [Transfer Learning](../tf/transfer_learning.py) using Xception with TensorFlow Dataset on cats_vs_dogs dataset.
 
 ## PyTorch
