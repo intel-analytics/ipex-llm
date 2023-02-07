@@ -161,10 +161,10 @@ est = Estimator.from_torch(model=model_creator,
                                    "step_size": 7,
                                    "gamma": 0.1
                                    })
-train_stats.fit(data=train_loader_func,
-                validation_data=test_loader_func,
-                epochs=5,
-                batch_size=4)
+train_stats = est.fit(data=train_loader_func,
+                      validation_data=test_loader_func,
+                      epochs=5,
+                      batch_size=4)
 
 print("Train results:")
 for epoch_stats in train_stats:
