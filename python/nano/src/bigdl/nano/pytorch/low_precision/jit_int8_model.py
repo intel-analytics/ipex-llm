@@ -19,7 +19,7 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 import torch
-import torch.ao.quantization
+from torch.ao.quantization import get_default_qconfig_mapping
 from torch.quantization.quantize_fx import prepare_fx, convert_fx
 
 from collections.abc import Sequence
@@ -48,7 +48,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         self.original_model = model
 
         if q_config is None:
-            self.q_config = torch.ao.quantization.default_qconfig
+            self.q_config = get_default_qconfig_mapping("fbgemm")
         else:
             self.q_config = q_config
         
@@ -57,7 +57,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
             if isinstance(input_sample, (tuple, list)) and len(input_sample) > 1:
                 input_sample = input_sample[0]
 
-        self.model = prepare_fx(self.model, {'' : self.q_config},
+        self.model = prepare_fx(self.model, self.q_config,
                                 example_inputs=input_sample)
 
         for x in calib_data:
@@ -119,7 +119,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def _load(path, model):
+    def _load(path):
         status = PytorchJITINT8Model._load_status(path)
         checkpoint_path = path / status['checkpoint']
         model = torch.jit.load(checkpoint_path)
@@ -130,11 +130,11 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         if status["thread_num"] is not None and status['thread_num'] != {}:
             thread_num = int(status['thread_num'])
         return PytorchJITINT8Model(model,
-                              calib_data=None,
-                              from_load=from_load,
-                              thread_num=thread_num,
-                              jit_strict=status["jit_strict"],
-                              jit_method=status["jit_method"])
+                                   calib_data=None,
+                                   from_load=from_load,
+                                   thread_num=thread_num,
+                                   jit_strict=status["jit_strict"],
+                                   jit_method=status["jit_method"])
 
     def _save_model(self, path):
-        self.model.save(path / "ckpt.pth")
+        torch.jit.save(self.model, path / "ckpt.pth")
