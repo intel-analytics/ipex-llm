@@ -16,12 +16,9 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
-import java.io.{File, InputStream, PrintWriter}
-import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+import java.io.{File, InputStream}
 import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.security.{KeyStore, SecureRandom}
-import javax.crypto.{Cipher, SecretKey, SecretKeyFactory}
-import javax.crypto.spec.{PBEKeySpec, SecretKeySpec}
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import java.util.{Base64, UUID}
 
@@ -40,8 +37,6 @@ import spray.json.DefaultJsonProtocol._
 import org.json4s.jackson.Serialization
 import org.json4s._
 
-import scala.io.{Source, StdIn}
-import scala.util.Random
 import scala.util.parsing.json._
 
 import scala.concurrent.{Await, Future}
@@ -86,7 +81,7 @@ object BigDLRemoteAttestationService {
     userMap += (appID -> apiKey)
     val res = "{\"app_id\":\"" + appID + ",\"api_key\":\"" + apiKey + "\"}"
     complete(res)
-  } 
+  }
 
   def registerPolicy(msg: Map[String, Any]): Route = {
     if (!checkAppIDAndApiKey(msg)) {
