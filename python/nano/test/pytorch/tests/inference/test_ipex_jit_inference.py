@@ -150,6 +150,7 @@ class IPEXJITInference_gt_1_10:
                                                             channels_last=True, use_ipex=True)
         with InferenceOptimizer.get_context(ipex_channels_last_model):
             ipex_channels_last_model(x1, x2)
+        assert ipex_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ipex_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
@@ -177,6 +178,7 @@ class IPEXJITInference_gt_1_10:
                                                            use_ipex=False, channels_last=True)
         with InferenceOptimizer.get_context(jit_channels_last_model):
             jit_channels_last_model(x1, x2)
+        assert jit_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
@@ -204,6 +206,7 @@ class IPEXJITInference_gt_1_10:
                                                                 use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
+        assert ipex_jit_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)

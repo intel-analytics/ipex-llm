@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.pytorch import generate_channels_last_available
+from bigdl.nano.utils.pytorch import generate_channels_last_available,\
+    apply_proper_channels_last
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
@@ -163,11 +164,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 self.channels_last_available = generate_channels_last_available(inputs)
 
             # change the data to suitable mem format
-            for idx, input in enumerate(inputs):
-                if self.channels_last_available[idx] == "channels_last":
-                    input = input.to(memory_format=torch.channels_last)
-                if self.channels_last_available[idx] == "channels_last_3d":
-                    input = input.to(memory_format=torch.channels_last_3d)
+            inputs = tuple(map(lambda item: apply_proper_channels_last(
+                self.channels_last_available[item[0]], item[1]),
+                enumerate(inputs)))
 
         return self.model(*inputs)
 

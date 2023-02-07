@@ -28,7 +28,9 @@ def generate_channels_last_available(inputs):
     no change: "original"
     '''
     # try channels_last available
-    if inputs:  # to avoid the situation of inputs == None
+    if inputs is not None:  # to avoid the situation of inputs == None
+        if isinstance(inputs, torch.Tensor):
+            inputs = tuple([inputs])  # make it an tuple for later process
         channels_last_available = ["original"] * len(inputs)
         for idx, input in enumerate(inputs):
             try:
@@ -43,3 +45,19 @@ def generate_channels_last_available(inputs):
     else:
         channels_last_available = []
     return channels_last_available
+
+
+def apply_proper_channels_last(flag, input_item):
+    '''
+    This function will apply proper channes_last to
+    input item. flag has 3 possible values:
+
+    channel_last: "channel_last"
+    channel_last_3d: "channel_last_3d"
+    no change: "original"
+    '''
+    if flag == "channels_last":
+        return input_item.to(memory_format=torch.channels_last)
+    if flag == "channels_last_3d":
+        return input_item.to(memory_format=torch.channels_last_3d)
+    return input_item
