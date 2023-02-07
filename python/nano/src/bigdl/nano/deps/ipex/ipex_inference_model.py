@@ -165,9 +165,9 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             # change the data to suitable mem format
             for idx, input in enumerate(inputs):
                 if self.channels_last_available[idx] == "channels_last":
-                    input.to(memory_format=torch.channels_last)
+                    input = input.to(memory_format=torch.channels_last)
                 if self.channels_last_available[idx] == "channels_last_3d":
-                    input.to(memory_format=torch.channels_last_3d)
+                    input = input.to(memory_format=torch.channels_last_3d)
 
         return self.model(*inputs)
 

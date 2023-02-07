@@ -341,7 +341,8 @@ class Pytorch1_11:
         ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
                                                                 use_ipex=True, precision='bf16',
                                                                 input_sample=(x1, x2),
-                                                                enable_onednn=True)
+                                                                enable_onednn=True,
+                                                                channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:

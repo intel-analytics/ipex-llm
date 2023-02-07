@@ -174,7 +174,7 @@ class IPEXJITInference_gt_1_10:
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
         jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                           use_ipex=False)
+                                                           use_ipex=False, channels_last=True)
         with InferenceOptimizer.get_context(jit_channels_last_model):
             jit_channels_last_model(x1, x2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -188,7 +188,7 @@ class IPEXJITInference_gt_1_10:
         x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
         x3 = [1, 2, 3, 4] # input without .to() method
         ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                use_ipex=True)
+                                                                use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2, x3)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -201,7 +201,7 @@ class IPEXJITInference_gt_1_10:
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
         ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                use_ipex=True)
+                                                                use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
