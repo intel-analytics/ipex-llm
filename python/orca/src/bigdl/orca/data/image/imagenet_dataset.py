@@ -71,7 +71,7 @@ def convert_imagenet_to_tf_records(
         return order
 
     # Glob all the training files
-    training_files = tf.io.gfile.glob(
+    training_files = tf.gfile.Glob(
         os.path.join(raw_data_dir, TRAINING_DIRECTORY, '*', '*.JPEG'))
 
     # Get training file synset labels from the directory name
@@ -84,11 +84,11 @@ def convert_imagenet_to_tf_records(
     training_synsets = [training_synsets[i] for i in training_shuffle_idx]
 
     # Glob all the validation files
-    validation_files = sorted(tf.io.gfile.glob(
+    validation_files = sorted(tf.gfile.Glob(
         os.path.join(raw_data_dir, VALIDATION_DIRECTORY, '*.JPEG')))
 
     # Get validation file synset labels from labels.txt
-    validation_synsets = tf.io.gfile.GFile(
+    validation_synsets = tf.gfile.FastGFile(
         os.path.join(raw_data_dir, VALIDATION_LABELS), 'rb').read().splitlines()
 
     # Create unique ids for all synsets
@@ -206,7 +206,7 @@ def _process_image(
     """
     import tensorflow as tf
     # Read the image file.
-    with tf.io.gfile.GFile(filename, 'rb') as f:
+    with tf.gfile.FastGFile(filename, 'rb') as f:
         image_data = f.read()
 
     # Clean the dirty data.
@@ -264,8 +264,8 @@ def _process_image_files_batch(
 def _check_or_create_dir(directory: str) -> None:
     import tensorflow as tf
     """Checks if directory exists otherwise creates it."""
-    if not tf.io.gfile.exists(directory):
-        tf.io.gfile.makedirs(directory)
+    if not tf.gfile.Exists(directory):
+        tf.gfile.MakeDirs(directory)
 
 
 def _int64_feature(value: Union[int, Iterable[int]]) -> "Feature":
