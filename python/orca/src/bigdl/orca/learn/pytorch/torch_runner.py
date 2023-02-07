@@ -244,6 +244,7 @@ class TorchRunner(BaseRunner):
             val_loader = None
             val_steps = None
 
+        self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
@@ -468,6 +469,7 @@ class TorchRunner(BaseRunner):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+        self.val_loader = loader
         loader = iter(loader)
 
         with self.timers.record("validation"):
