@@ -42,20 +42,20 @@ sc = init_orca_context(cluster_mode="local")
 
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
-data_dir = 'hymenoptera_data'
+data_dir = "hymenoptera_data"
 
 
 def load_dataset(dataset_dir, batch_size=4):
     # Data augmentation and normalization for training
     # Just normalization for validation
     data_transforms = {
-        'train': transforms.Compose([
+        "train": transforms.Compose([
             transforms.RandomResizedCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
-        'val': transforms.Compose([
+        "val": transforms.Compose([
             transforms.Resize(256),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
@@ -65,20 +65,20 @@ def load_dataset(dataset_dir, batch_size=4):
 
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                               data_transforms[x])
-                      for x in ['train', 'val']}
-    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-    class_names = image_datasets['train'].classes
+                      for x in ["train", "val"]}
+    dataset_sizes = {x: len(image_datasets[x]) for x in ["train", "val"]}
+    class_names = image_datasets["train"].classes
 
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size,
                                                   shuffle=True, num_workers=1)
-                   for x in ['train', 'val']}
-    train_loader = dataloaders['train']
-    test_loader = dataloaders['val']
+                   for x in ["train", "val"]}
+    train_loader = dataloaders["train"]
+    test_loader = dataloaders["val"]
     return train_loader, test_loader, class_names
 
 
 def train_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
+    train_loader, test_loader, class_names = load_dataset(config["data_dir"], batch_size)
 
     inputs, classes = next(iter(train_loader))  # Get a batch of training data
     out = torchvision.utils.make_grid(inputs)  # Make a grid from batch
@@ -86,7 +86,7 @@ def train_loader_func(config, batch_size):
 
 
 def test_loader_func(config, batch_size):
-    train_loader, test_loader, class_names = load_dataset(config['data_dir'], batch_size)
+    train_loader, test_loader, class_names = load_dataset(config["data_dir"], batch_size)
     return test_loader
 
 
@@ -137,12 +137,12 @@ def model_creator(config):
 # Observe that only parameters of final layer are being optimized as
 # opposed to before.
 def optimizer_creator(model, config):
-    return optim.SGD(model.fc.parameters(), lr=config['lr'], momentum=config['momentum'])
+    return optim.SGD(model.fc.parameters(), lr=config["lr"], momentum=config["momentum"])
 
 
 # Decay LR by a factor of gamma every step_size epochs
 def scheduler_creator(optimizer, config):
-    return lr_scheduler.StepLR(optimizer, step_size=config['step_size'], gamma=config['gamma'])
+    return lr_scheduler.StepLR(optimizer, step_size=config["step_size"], gamma=config["gamma"])
 
 
 # Step 4: Finetune with Orca PyTorch Estimator
@@ -153,24 +153,31 @@ est = Estimator.from_torch(model=model_creator,
                            loss=nn.CrossEntropyLoss(),
                            metrics=[Accuracy()],
                            scheduler_creator=scheduler_creator,
-                           scheduler_step_freq="epoch",
                            use_tqdm=True,
                            backend=backend,
-                           config={'data_dir': data_dir,
-                                   'lr': 0.001,
-                                   'momentum': 0.9,
-                                   'step_size': 7,
-                                   'gamma': 0.1
+                           config={"data_dir": data_dir,
+                                   "lr": 0.001,
+                                   "momentum": 0.9,
+                                   "step_size": 7,
+                                   "gamma": 0.1
                                    })
-est.fit(data=train_loader_func, epochs=5,
-        batch_size=4, validation_data=test_loader_func)
+train_stats.fit(data=train_loader_func,
+                validation_data=test_loader_func,
+                epochs=5,
+                batch_size=4)
+
+print("Train results:")
+for epoch_stats in train_stats:
+    for k, v in epoch_stats.items():
+        print("{}: {}".format(k, v))
+    print()
 
 
 # Step 5: Distributed evaluation of the trained model
-result = est.evaluate(data=test_loader_func, batch_size=4)
-print('Evaluation results:')
-for r in result:
-    print("{}: {}".format(r, result[r]))
+eval_stats = est.evaluate(data=test_loader_func, batch_size=4)
+print("Evaluation results:")
+for k, v in eval_stats.items():
+    print("{}: {}".format(k, v))
 
 
 # Step 6: Save the trained PyTorch model
@@ -193,8 +200,8 @@ def visualize_model(model, num_images=6):
             for j in range(inputs.size()[0]):
                 images_so_far += 1
                 ax = plt.subplot(num_images//2, 2, images_so_far)
-                ax.axis('off')
-                ax.set_title(f'predicted: {class_names[preds[j]]}')
+                ax.axis("off")
+                ax.set_title(f"predicted: {class_names[preds[j]]}")
                 imshow(inputs.cpu().data[j])
 
                 if images_so_far == num_images:
