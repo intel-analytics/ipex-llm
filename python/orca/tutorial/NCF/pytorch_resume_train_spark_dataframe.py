@@ -95,20 +95,10 @@ for epoch_stats in train_stats:
     print()
 
 
-# Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(test_df,
-                          feature_cols=get_feature_cols(),
-                          label_cols=get_label_cols(),
-                          batch_size=10240)
-print("Evaluation results:")
-for k, v in eval_stats.items():
-    print("{}: {}".format(k, v))
+# Step 5: Save the trained PyTorch model
+est.save(os.path.join(args.model_dir, "NCF_resume_model"))
 
 
-# Step 6: Save the trained PyTorch model
-est.save(os.path.join(args.model_dir, "NCF_model"))
-
-
-# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+# Step 6: Shutdown the Estimator and stop Orca Context when the program finishes
 est.shutdown()
 stop_orca_context()
