@@ -15,9 +15,7 @@
 #
 
 # Step 0: Import necessary libraries
-import torch.nn as nn
-import torch.optim as optim
-
+from process_spark_dataframe import get_feature_cols
 from pytorch_model import NCF
 from utils import *
 
@@ -25,7 +23,7 @@ from bigdl.orca.learn.pytorch import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Predicting with Spark DataFrame")
+args = parse_args("PyTorch NCF Prediction with Spark DataFrame")
 init_orca(args, extra_python_lib="pytorch_model.py")
 spark = OrcaContext.get_spark_session()
 
@@ -52,13 +50,14 @@ def model_creator(config):
 config = load_model_config(args.model_dir, "config.json")
 est = Estimator.from_torch(model=model_creator,
                            backend=args.backend,
-                           config=config)
+                           config=config,
+                           workers_per_node=args.workers_per_node)
 est.load(os.path.join(args.model_dir, "NCF_model"))
 
 
 # Step 5: Distributed inference of the loaded model
 predict_df = est.predict(data=df,
-                         feature_cols=config["feature_cols"],
+                         feature_cols=get_feature_cols(),
                          batch_size=10240)
 print("Prediction results of the first 5 rows:")
 predict_df.show(5)
