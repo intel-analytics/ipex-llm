@@ -180,8 +180,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
-                 output_filename: Optional[str] = None,
-                 search_env: Optional[bool] = False) -> None:
+                 output_filename: Optional[str] = None) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -299,8 +298,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
-        :param search_env: (optional) a boolean value that determines whether the optimizer searches
-               for the best environment parameters for this model.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -395,49 +392,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         model._nano_context_manager = generate_context_manager(accelerator=None,
                                                                precision="fp32",
                                                                thread_num=thread_num)
+        self.baseline_time = baseline_time
+        self.input_sample = input_sample
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
-
-        def func_test(model, input_sample):
-            if isinstance(input_sample, (Dict, torch.Tensor)):
-                model(input_sample)
-            else:
-                model(*input_sample)
-
-        def torch_model_throughput_calculate_helper(iterrun, baseline_time, func, model, *args):
-            with InferenceOptimizer.get_context(model):
-                return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
-
-        if search_env:
-            env_result_map = {}
-            for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
-                print(f"----------Start test {method} variables "
-                      f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
-                try:
-                    env_result_map[method], _ = \
-                        exec_with_worker(torch_model_throughput_calculate_helper,
-                                         latency_sample_num, baseline_time, func_test, model,
-                                         input_sample, env=env.get_env_dict())
-                except subprocess.CalledProcessError as e:
-                    print("----------worker error info----------")
-                    print(e.args)
-                    traceback.print_exc()
-                    print(f"----------Failed to run with {method} variables----------")
-                except Exception as e:
-                    print("----------worker creation failed----------")
-                    print(e.args)
-                    traceback.print_exc()
-                    print(f"----------Failed to run with {method} variables----------")
-            for method, latency in env_result_map.items():
-                print(f"{method}\t{latency} ms")
-            best_env = self.ALL_ACCELERATION_ENV[
-                min(env_result_map, key=env_result_map.get)].get_env_dict()
-            print(f"----------Best environment variables----------")
-            for env_key, env_value in best_env.items():
-                print(f'export {env_key}=\'{env_value}\'')
-        else:
-            best_env = {}
 
         for idx, (method, available) in enumerate(available_dict.items()):
             result_map[method] = {}
@@ -467,7 +426,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     try:
                         result_map[method]["latency"], status = \
                             throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                                                        self._func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -1246,6 +1205,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
 
         return _MultiInstanceModel(model, ps, send_queue, recv_queue, next_idx)
+
+    @staticmethod
+    def _func_test(model, input_sample):
+        if isinstance(input_sample, (Dict, torch.Tensor)):
+            model(input_sample)
+        else:
+            model(*input_sample)
+
+    @staticmethod
+    def _throughput_calculate_helper(iterrun, baseline_time, func, model, *args):
+        with InferenceOptimizer.get_context(model):
+            return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
 
 
 def _signature_check(function):

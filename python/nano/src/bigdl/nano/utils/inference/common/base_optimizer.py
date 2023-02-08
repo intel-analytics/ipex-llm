@@ -13,16 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-from typing import Dict, Optional
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
-from .utils import CompareMetric, AccelerationOption, format_acceleration_option
+import traceback
 from abc import abstractmethod
+from typing import Dict, Optional
+
+from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.nano.utils.log4warning import register_suggestion
+
+from .utils import CompareMetric, AccelerationOption, format_acceleration_option, \
+    exec_with_worker, throughput_calculate_helper
 
 
 class BaseInferenceOptimizer:
     ALL_INFERENCE_ACCELERATION_METHOD = None
+    ALL_ACCELERATION_ENV = None
+    _throughput_calculate_helper = throughput_calculate_helper
 
     def __init__(self):
         '''
@@ -35,6 +40,8 @@ class BaseInferenceOptimizer:
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
         self._optimize_result = None
+        self.input_sample = None
+        self.baseline_time = None
 
     @abstractmethod
     def optimize(self, *args, **kwargs):
@@ -49,7 +56,8 @@ class BaseInferenceOptimizer:
                               "before summary()")
         print(self._optimize_result)
 
-    def get_model(self, method_name: str):
+    def get_model(self, method_name: str,
+                  search_env: Optional[bool] = False):
         """
         According to results of `optimize`, obtain the model with method_name.
 
@@ -59,6 +67,8 @@ class BaseInferenceOptimizer:
         and "onnxruntime_int8_integer".
 
         :param method_name: (optional) Obtain specific model according to method_name.
+        :param search_env: (optional) a boolean value that determines whether the optimizer searches
+               for the best environment parameters for this model.
         :return: Model with different acceleration.
         """
         invalidOperationError(len(self.optimized_model_dict) > 0,
@@ -71,13 +81,16 @@ class BaseInferenceOptimizer:
         invalidInputError("model" in self.optimized_model_dict[method_name],
                           "Unable to get the specified model as it doesn't exist in "
                           "optimized_model_dict.")
+        if search_env:
+            self._search_env(method=method_name)
         return self.optimized_model_dict[method_name]["model"]
 
     def get_best_model(self,
                        accelerator: Optional[str] = None,
                        precision: Optional[str] = None,
                        use_ipex: Optional[bool] = None,
-                       accuracy_criterion: Optional[float] = None):
+                       accuracy_criterion: Optional[float] = None,
+                       search_env: Optional[bool] = False):
         '''
         According to results of `optimize`, obtain the model with minimum latency under
         specific restrictions or without restrictions.
@@ -92,6 +105,8 @@ class BaseInferenceOptimizer:
                model with this specific ipex setting. This is only effective for pytorch model.
         :param accuracy_criterion: (optional) a float represents tolerable
                accuracy drop percentage, defaults to None meaning no accuracy control.
+        :param search_env: (optional) a boolean value that determines whether the optimizer searches
+               for the best environment parameters for this model.
         :return: best model, corresponding acceleration option
         '''
         invalidOperationError(len(self.optimized_model_dict) > 0,
@@ -103,7 +118,7 @@ class BaseInferenceOptimizer:
                           "Only support precision 'int8', 'bf16', 'fp32'.")
         if accuracy_criterion is not None and not self._calculate_accuracy:
             invalidInputError(False, "If you want to specify accuracy_criterion, you need "
-                              "to set metric and validation_data when call 'optimize'.")
+                                     "to set metric and validation_data when call 'optimize'.")
 
         best_model = self.optimized_model_dict["original"]["model"]
         best_metric = CompareMetric("original",
@@ -157,5 +172,44 @@ class BaseInferenceOptimizer:
             invalidInputError(False,
                               "Don't find related model in optimize's results.")
 
+        if search_env:
+            self._search_env(method=best_metric.method_name)
+
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)
+
+    def _search_env(self, method=None):
+        invalidInputError(method,
+                          'Must give specific model method for searching env.')
+        invalidInputError(method in self.optimized_model_dict,
+                          'Must provide correct method name.')
+        if 'env' not in self.optimized_model_dict[method]:
+            env_result_map = {}
+            for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
+                print(f"----------Start test {method} variables "
+                      f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
+                try:
+                    env_result_map[method], _ = \
+                        exec_with_worker(self._throughput_calculate_helper,
+                                         100, self.baseline_time, self._func_test,
+                                         self.optimized_model_dict[method]['model'],
+                                         self.input_sample, env=env.get_env_dict())
+                except Exception as e:
+                    print("----------worker failed to execute----------")
+                    print(e.args)
+                    traceback.print_exc()
+                    print(f"----------Failed to run with {method} variables----------")
+            for method, latency in env_result_map.items():
+                print(f"{method}\t{latency} ms")
+            best_env = self.ALL_ACCELERATION_ENV[
+                min(env_result_map, key=env_result_map.get)].get_env_dict()
+            self.optimized_model_dict[method]['env'] = best_env
+        env_suggestion = '\n'.join(f'export {env_key}=\'{env_value}\''
+                                   for env_key, env_value in
+                                   self.optimized_model_dict[method]['env'].items())
+        register_suggestion(f'You can try the following commands for better performance\n'
+                            f'{env_suggestion}')
+
+    @staticmethod
+    def _func_test(model, input_sample):
+        model(input_sample)
