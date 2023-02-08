@@ -19,8 +19,8 @@ runs:
         pip install torchvision==0.8.2
         pip install torchmetrics==0.10.0
         pip list
-        chmod a+x python/orca/dev/test/run-pytests-basic-env.sh
-        python/orca/dev/test/run-pytests-basic-env.sh
+        chmod a+x python/orca/dev/test/run-pytests-pytorch.sh
+        python/orca/dev/test/run-pytests-pytorch.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
