@@ -14,48 +14,48 @@
 # limitations under the License.
 #
 
+
+from abc import abstractmethod
 from typing import Optional, List, Set, Dict
-from importlib.util import find_spec
-from .utils import AccelerationOption
-from bigdl.nano.utils import CPUInfo
+
+from bigdl.nano.utils.common import _inc_checker, _ipex_checker,\
+    _onnxruntime_checker, _openvino_checker
 
 
-def _inc_checker():
-    '''
-    check if intel neural compressor is installed
-    '''
-    return not find_spec("neural_compressor") is None
+_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
+                               "bf16", "jit", "channels_last"]
 
 
-def _ipex_checker():
-    '''
-    check if intel pytorch extension is installed
-    '''
-    return not find_spec("intel_extension_for_pytorch") is None
+class AccelerationOption(object):
+    __slot__ = _whole_acceleration_options
 
+    def __init__(self, **kwargs):
+        '''
+        initialize optimization option
+        '''
+        for option in _whole_acceleration_options:
+            setattr(self, option, kwargs.get(option, False))
+        self.method = kwargs.get("method", None)
 
-def _onnxruntime_checker():
-    '''
-    check if onnxruntime and onnx is installed
-    '''
-    onnxruntime_installed = not find_spec("onnxruntime") is None
-    onnx_installed = not find_spec("onnx") is None
-    return onnxruntime_installed and onnx_installed
+    def get_precision(self):
+        if self.inc or self.pot:
+            return "int8"
+        if self.bf16:
+            return "bf16"
+        return "fp32"
 
+    def get_accelerator(self):
+        if self.onnxruntime:
+            return "onnxruntime"
+        if self.openvino:
+            return "openvino"
+        if self.jit:
+            return "jit"
+        return None
 
-def _openvino_checker():
-    '''
-    check if openvino-dev is installed
-    '''
-    return not find_spec("openvino") is None
-
-
-def _bf16_checker():
-    '''
-    bf16 availablity will be decided dynamically during the optimization
-    '''
-    cpuinfo = CPUInfo()
-    return cpuinfo.has_bf16
+    @abstractmethod
+    def optimize(self, *args, **kwargs):
+        pass
 
 
 def available_acceleration_combination(excludes: Optional[List[str]],

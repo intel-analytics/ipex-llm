@@ -28,7 +28,7 @@ from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
 

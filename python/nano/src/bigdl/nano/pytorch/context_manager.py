@@ -16,7 +16,7 @@
 
 import torch
 import operator
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class BaseContextManager(object):

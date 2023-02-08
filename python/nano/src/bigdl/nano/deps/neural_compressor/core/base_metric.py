@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from abc import ABC, abstractmethod
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 class BaseINCMetric(ABC):

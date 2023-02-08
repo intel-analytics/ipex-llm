@@ -16,14 +16,14 @@
 from pathlib import Path
 import yaml
 import operator
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):

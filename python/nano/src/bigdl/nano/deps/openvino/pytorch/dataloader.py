@@ -16,7 +16,7 @@
 from openvino.tools.pot import DataLoader
 from torch.utils.data.dataloader import DataLoader as TorchLoader
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 class PytorchOpenVINODataLoader(DataLoader):

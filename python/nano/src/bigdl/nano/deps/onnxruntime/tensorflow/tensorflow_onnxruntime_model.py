@@ -20,10 +20,10 @@ import pickle
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
-from bigdl.nano.utils.util import get_default_args
+from bigdl.nano.utils.common import get_default_args
 from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import

@@ -42,7 +42,7 @@ def _check_nano_envs():
 
 
 import atexit
-from bigdl.nano.utils.log4warning import output_suggestions
+from bigdl.nano.utils.common import output_suggestions
 
 
 atexit.register(output_suggestions)

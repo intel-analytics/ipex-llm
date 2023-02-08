@@ -15,13 +15,12 @@
 #
 
 
-from copy import deepcopy
 import subprocess
 import re
 from typing import Optional
 import platform
 import cpuinfo
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def get_cgroup_cpuset():

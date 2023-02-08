@@ -27,7 +27,7 @@ import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 import tempfile
 from typing import List
 
