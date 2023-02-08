@@ -26,8 +26,10 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 def parse_args(description, mode="train"):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str, default="./ml-1m",
+    parser.add_argument("--data_dir", type=str, default="./",
                         help="The path to load data from local or remote resources.")
+    parser.add_argument("--dataset", type=str, default="ml-1m",
+                        help="The name of dataset. ml-1m or ml-100k")
     parser.add_argument("--model_dir", type=str, default="./",
                         help="The path to save model and logs.")
     parser.add_argument("--cluster_mode", type=str, default="local",
