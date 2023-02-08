@@ -875,8 +875,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
         if precision == 'fp16':
-            invalidInputError('GPU' in device or device == 'VPUX',
-                              "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':

@@ -223,3 +223,25 @@ class TestOpenVINO(TestCase):
                                                                mean_value=[127.5, 127.5, 127.5])
         y_hat = openvino_quantized_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
+
+    def test_model_quantize_openvino_fp16(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+        openvino_quantized_model = InferenceOptimizer.quantize(model,
+                                                               accelerator='openvino',
+                                                               x=train_dataset,
+                                                               thread_num=8,
+                                                               precision='fp16')
+
+        # test original save / load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_quantized_model, tmp_dir_name)
+            new_ov_model = InferenceOptimizer.load(tmp_dir_name)
+
+        preds1 = openvino_quantized_model(train_examples).numpy()
+        preds2 = new_ov_model(train_examples).numpy()
+        np.testing.assert_almost_equal(preds1, preds2, decimal=5)
