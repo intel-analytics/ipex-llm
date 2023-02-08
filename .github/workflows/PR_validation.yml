@@ -396,7 +396,7 @@ jobs:
     - name: Run Test
       uses: ./.github/actions/orca/orca-tutorial-xshards
 
-  Orca-Tutorial-NCF:
+  Orca-Tutorial-NCF-Spark:
     needs: changes
     if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
@@ -410,7 +410,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
     - name: Run Test
-      uses: ./.github/actions/orca/orca-tutorial-NCF
+      uses: ./.github/actions/orca/orca-tutorial-NCF-spark
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
