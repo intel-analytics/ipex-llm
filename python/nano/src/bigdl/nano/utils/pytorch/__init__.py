@@ -15,7 +15,8 @@
 #
 
 
-from .channel_last import generate_channels_last_available
+from .channel_last import generate_channels_last_available,\
+    apply_proper_channels_last
 
 from .dataset import RepeatDataset
 from .dataset import remove_batch_dim_fn
