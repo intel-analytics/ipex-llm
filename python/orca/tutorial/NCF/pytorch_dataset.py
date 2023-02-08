@@ -194,15 +194,15 @@ def process_ratings(data_dir, dataset, user_num, item_num):
     return ratings, train_mat
 
 
-def load_dataset(data_dir="./", dataset_name="ml-1m", num_ng=4):
+def load_dataset(data_dir="./", dataset="ml-1m", num_ng=4):
     """
     data_dir: the path of the datasets;
-    dataset_name: the name of the datasets;
+    dataset: the name of the datasets;
     num_ng: number of negative samples to be sampled here.
     """
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(data_dir, dataset_name)
-    ratings, train_mat = process_ratings(data_dir, dataset_name, user_num, item_num)
+        total_cols = process_users_items(data_dir, dataset)
+    ratings, train_mat = process_ratings(data_dir, dataset, user_num, item_num)
 
     # sample negative items
     dataset = NCFData(ratings.values.tolist(),
