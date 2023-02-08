@@ -140,10 +140,11 @@ runs:
         source $CONDA/bin/activate nano-pytorch
         source bigdl-nano-init
 
-        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh onnx
-        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh openvino
-        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh inferenceoptimizer
+        bash python/nano/tutorial/notebook/preprocessing/pytorch/run-nano-howto-guides-preprocessing-pytorch-tests.sh
+        bash python/nano/tutorial/notebook/training/pytorch/run-nano-howto-guides-training-pytorch-tests.sh
         bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
+        bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh
+        bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
         
         source $CONDA/bin/deactivate
       env:
