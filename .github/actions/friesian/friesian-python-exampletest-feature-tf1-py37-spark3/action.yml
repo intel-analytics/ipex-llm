@@ -19,6 +19,8 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install pyspark==3.1.3 
         pip install -i https://pypi.org/simple bigdl-math bigdl-tf
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r grpcio==1.43.0
+        
         cd python/friesian/dev/test
         bash run-feature-example-tests.sh 
         bash run-example-tests-tf1.15.0.sh
