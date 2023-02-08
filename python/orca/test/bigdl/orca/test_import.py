@@ -37,8 +37,7 @@ class TestImport(TestCase):
         from bigdl.orca.data import file, transformer
 
     def test_tf2_import(self):
-        from bigdl.orca.learn.tf2 import Estimator
-        from bigdl.orca.learn.tf2 import pyspark_estimator, spark_runner
+        from bigdl.orca.learn.tf2 import Estimator, pyspark_estimator, spark_runner
 
     def test_pytorch_import(self):
         from bigdl.orca.learn.pytorch import Estimator, pytorch_metrics
