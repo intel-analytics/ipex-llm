@@ -19,6 +19,8 @@ runs:
         # install friesian
         pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
 
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+
         cd python/friesian/dev/test
         bash run-example-tests-tf2.6.0.sh
         source deactivate
