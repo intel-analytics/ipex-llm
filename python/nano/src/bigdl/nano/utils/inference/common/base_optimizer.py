@@ -186,7 +186,7 @@ class BaseInferenceOptimizer:
         if 'env' not in self.optimized_model_dict[method_name]:
             env_result_map = {}
             for idx, (env_name, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
-                print(f"----------Start test {method_name} variables "
+                print(f"----------Start test {env_name} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
                     env_result_map[env_name], _ = \
@@ -198,7 +198,7 @@ class BaseInferenceOptimizer:
                     print("----------worker failed to execute----------")
                     print(e.args)
                     traceback.print_exc()
-                    print(f"----------Failed to run with {method_name} variables----------")
+                    print(f"----------Failed to run with {env_name} variables----------")
             for env_name, latency in env_result_map.items():
                 print(f"{env_name}\t{latency} ms")
             best_env = self.ALL_ACCELERATION_ENV[
