@@ -354,7 +354,7 @@ multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[
 ## Automatic Context Management
 BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model optimized by ``InferenceOptimizer.trace``/``quantize``/``optimize``, it usually contains part of or all of following four types of context managers:
 
-1. ``torch.inference_mode(True)`` (when `torch` > 1.12) or ``torch.no_grad()`` (when `torch` <= 1.12) to disable gradients, which will be used for all models
+1. ``torch.inference_mode(True)`` to disable gradients, which will be used for all models. For the case when ``torch <= 1.12``, ``torch.no_grad()`` will be used for PyTorch mixed precision inference as a replacement of ``torch.inference_mode(True)``
 
 2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related models
 
