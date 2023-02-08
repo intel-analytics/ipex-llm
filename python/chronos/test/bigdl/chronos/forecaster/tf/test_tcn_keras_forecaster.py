@@ -262,8 +262,7 @@ class TestTCNForecaster(TestCase):
                                     output_feature_num=2)
 
         forecaster.fit(train_data, epochs=1)
-        forecaster.quantize(input_data=train_data[0], target_data=train_data[1],
-                            input_spec=tf.TensorSpec(shape=(None, 10, 10), dtype=tf.float32))
+        forecaster.quantize(input_data=train_data[0], target_data=train_data[1])
         assert forecaster.accelerated_model
         assert forecaster.accelerate_method == "tensorflow_int8"
         pred_q = forecaster.predict(test_data[0], quantize=True)

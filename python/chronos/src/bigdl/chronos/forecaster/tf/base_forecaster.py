@@ -113,7 +113,6 @@ class BaseTF2Forecaster(Forecaster):
 
     def quantize(self, input_data=None,
                  target_data=None,
-                 input_spec=None,
                  metric=None,
                  conf=None,
                  framework='tensorflow',
@@ -130,11 +129,13 @@ class BaseTF2Forecaster(Forecaster):
 
         :param input_data: Input data which is used for training. Support following formats:
 
-               | 1. a Numpy array (or array-like), or a list of arrays (in case the model
-               | has multiple inputs).
+               | 1. a numpy ndarray:
+               | The shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
                |
-               | 2. a TensorFlow tensor, or a list of tensors (in case the model has
-               | multiple inputs).
+               | 2. TensorFlow tensor:
+               | The shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
                |
                | 3. an unbatched tf.data.Dataset. Should return a tuple of (inputs, targets).
                |
@@ -145,8 +146,6 @@ class BaseTF2Forecaster(Forecaster):
         :param target_data: Target data. It could be either Numpy array(s) or TensorFlow tensor(s)
                while the length should be consistent with `input_data`.
                If `input_data` is dataset, `target_data` will be ignored.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -214,6 +213,8 @@ class BaseTF2Forecaster(Forecaster):
         else:
             accelerator = 'onnxruntime'
             method = method[:-3]
+        input_spec = input_spec=tf.TensorSpec(shape=(None, self.model_config["past_seq_len"],
+                                                     self.model_config["input_feature_num"]))
         q_model = InferenceOptimizer.quantize(self.internal,
                                               x=input_data,
                                               y=target_data,
