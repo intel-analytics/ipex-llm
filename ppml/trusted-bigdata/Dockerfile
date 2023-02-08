@@ -197,7 +197,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /usr/local/bin/gosu && \
     chmod +x /opt/flink-entrypoint.sh && \
     chmod -R 777 ${FLINK_HOME} && \
-    chown -R flink:flink ${FLINK_HOME}
+    chown -R flink:flink ${FLINK_HOME} && \
+# Python packages
+    pip3 install numpy
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
