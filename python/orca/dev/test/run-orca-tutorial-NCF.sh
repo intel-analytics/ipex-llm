@@ -26,70 +26,82 @@ ray stop -f
 cd "`dirname $0`"
 cd ../../tutorial/NCF
 
+echo "Start Orca NCF tutorial Test - Spark Backend"
+
 #download dataset from ftp
 rm -f ./orca-tutorial-ncf-dataset-compressed.zip
 rm -rf ml-1m
 wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
 unzip orca-tutorial-ncf-dataset-compressed.zip
-echo "Successfully gets dataset from ftp"
+echo "Successfully got dataset from ftp"
 
 echo "#1 Running pytorch_train_dataloader"
 #timer
 start=$(date "+%s")
-
-sed 's/epochs=2/epochs=1/1' ./pytorch_train_dataloader.py > ./temp.py 
-python ./temp.py
+ 
+python ./pytorch_train_dataloader.py --backend spark
+# pytorch dataloader does not have predict
+python ./pytorch_resume_train_dataloader.py --backend spark
 
 now=$(date "+%s")
 time1=$((now - start))
 
 #clean files
-rm -rf runs
-rm -f NCF_model
+rm -f NCF*model
+rm -rf ./ml-1m/test*
+rm -rf ./ml-1m/train*
+rm -f config.json
 
 echo "#2 Running pytorch_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-sed 's/epochs=2/epochs=1/1' ./pytorch_train_spark_dataframe.py > ./temp.py
-python ./temp.py
+python ./pytorch_train_spark_dataframe.py --backend spark
+python ./pytorch_predict_spark_dataframe.py --backend spark
+python ./pytorch_resume_train_spark_dataframe.py --backend spark
 
 now=$(date "+%s")
 time2=$((now - start))
 
 #clean files
-rm -rf runs
-rm -f NCF_model
+rm -f NCF*model
+rm -rf ./ml-1m/test*
+rm -rf ./ml-1m/train*
+rm -f config.json
 
 echo "#3 Running pytorch_train_xshards"
 #timer
 start=$(date "+%s")
 
-sed 's/epochs=2/epochs=1/1' ./pytorch_train_xshards.py > ./temp.py
-python ./temp.py
+python ./pytorch_train_xshards.py --backend spark
+python ./pytorch_predict_xshards.py --backend spark
+python ./pytorch_resume_train_xshards.py --backend spark
 
 now=$(date "+%s")
 time3=$((now - start))
 
 #clean files
-rm -rf runs
-rm -f NCF_model
+rm -f NCF*model
+rm -rf ./ml-1m/test*
+rm -rf ./ml-1m/train*
+rm -f config.json
 
 echo "#4 Running tf_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-sed 's/epochs=2/epochs=1/1' ./tf_train_spark_dataframe.py > ./temp.py
-python ./temp.py
+python ./tf_train_spark_dataframe.py --backend spark
+python ./tf_predict_spark_dataframe.py --backend spark
+python ./tf_resume_train_spark_dataframe.py --backend spark
 
 now=$(date "+%s")
 time4=$((now - start))
 
 #clean files
-rm -rf test_processed.parquet
-rm -rf train_processed.parquet
-rm -rf NCF_model
-rm -rf log
+rm -rf NCF*model
+rm -rf ./ml-1m/test*
+rm -rf ./ml-1m/train*
+rm -f config.json
 
 echo "#5 Running tf_train_xshards"
 #timer
@@ -102,10 +114,10 @@ now=$(date "+%s")
 time5=$((now - start))
 
 #clean files
-rm -rf test_processed.parquet
-rm -rf train_processed.parquet
-rm -rf NCF_model
-rm -rf log
+rm -rf NCF*model
+rm -rf ./ml-1m/test*
+rm -rf ./ml-1m/train*
+rm -f config.json
 
 echo "#1 Running pytorch_train_dataloader time used: $time1 seconds"
 echo "#2 Running pytorch_train_spark_dataframe time used: $time2 seconds"
@@ -116,4 +128,3 @@ echo "#5 Running tf_train_xshards time used: $time5 seconds"
 #clean files
 rm -rf ml-1m
 rm -f orca-tutorial-ncf-dataset-compressed.zip
-rm -f ./temp.py
