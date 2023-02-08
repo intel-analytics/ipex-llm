@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,17 +14,17 @@
 # limitations under the License.
 #
 
-# bigdl orca test only support pip, you have to install orca whl before running the script.
-#. `dirname $0`/prepare_env.sh
+from unittest import TestCase
+import pytest
 
-set -ex
+from bigdl.orca.data import *
+from bigdl.orca.learn.tf2 import Estimator
+from bigdl.orca.learn.pytorch import Estimator
 
-cd "`dirname $0`"
-cd ../..
+class TestOrcaPy37Env(TestCase):
 
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
+    def test_orca_py37_env():
+        pass
 
-echo "Running Orca Test without any dependency"
-python -m pytest -v test/bigdl/orca/data/test_xshards_partition.py
-python -m pytest -v test/bigdl/orca/test_orca_py37_env.py
+if __name__ == "__main__":
+    pytest.main([__file__])
