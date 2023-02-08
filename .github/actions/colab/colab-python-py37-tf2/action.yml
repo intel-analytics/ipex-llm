@@ -30,7 +30,7 @@ runs:
         wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-friesian-python-tf2-spark3.txt  -O ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt
         pip uninstall -r ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt -y
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-friesian-python-tf2-spark3.txt
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r grpcio==1.43.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
 
       env:
         BIGDL_ROOT: ${{ github.workspace }}
