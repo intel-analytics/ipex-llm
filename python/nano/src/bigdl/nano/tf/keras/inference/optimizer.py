@@ -622,14 +622,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
             saved_model_input_spec_set = model._saved_model_inputs_spec is not None
             if not model.built and not saved_model_input_spec_set:
+                invalidInputError(input_spec is not None,
+                                  "`input_spec` cannot be None when passing unbuilt model.")
                 # model cannot be saved either because the input shape is not available
                 # or because the forward pass of the model is not defined
-                if input_spec is not None:
-                    if isinstance(input_spec, (tuple, list)):
-                        input_shape = (i.shape for i in input_spec)
-                    else:
-                        input_shape = input_spec.shape
-                    model.compute_output_shape(input_shape)
+                if isinstance(input_spec, (tuple, list)):
+                    input_shape = (i.shape for i in input_spec)
+                else:
+                    input_shape = input_spec.shape
+                _output_shape = model.compute_output_shape(input_shape)
+            else:
+                _output_shape = model.output_shape
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -656,6 +659,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   max_trials=max_trials,
                                   inputs=inputs,
                                   outputs=outputs)
+            result._output_shape = _output_shape
         elif accelerator == 'openvino':
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
@@ -732,6 +736,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._inputs_dtypes = onnx_model._inputs_dtypes
             result._default_kwargs = onnx_model._default_kwargs
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
+            result._output_shape = onnx_model._output_shape
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)

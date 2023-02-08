@@ -47,7 +47,7 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
 
     :return: numpy ndarray
     '''
-    with torch.no_grad():
+    with torch.inference_mode():
         if isinstance(input_data, list):
             input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
         elif isinstance(input_data, DataLoader):

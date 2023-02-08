@@ -783,18 +783,47 @@ First, use the docker command to enter the client container.
 ```bash
 docker exec -it spark-local-k8s-client bash
 ```
+### 2. Prepare flink security configuration
+#### 2.1 prepare ssl keystore
+Create keystore for flink ssl connection.
+```bash
+export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 
-### 2. Submit flink job on native k8s mode on SGX
+# use secure_password as storepass to generate keystore(the flink_internal.keystore file)
+keytool -genkeypair \
+  -alias flink.internal \
+  -keystore flink_internal.keystore \
+  -dname "CN=flink.internal" \
+  -storepass $secure_password \
+  -keyalg RSA \
+  -keysize 4096 \
+  -storetype PKCS12
+```
+
+Use the `flink_internal.keystore` file to create secret on k8s.
+```bash
+# create the secert of keystore using flink_internal.keystore file.
+kubectl create secret generic flink-ssl-key --from-file=YOUR_PATH/flink_internal.keystore
+
+# To be on the safe side, delete the flink_internal.keystore file your created.
+rm YOUR_PATH/flink_internal.keystore
+```
+
+> you can find the usage of `flink-ssl-key` on our `/ppml/flink-k8s-template.yaml` file.
+
+### 3. Submit flink job on native k8s mode on SGX
 Use the `$FLINK_HOME/bin/flink run-application` command to start the flink cluster in application mode. In the application mode, the jar to be executed is bound to the flink cluster, and the flink cluster will automatically terminate and exit after the submitted job is completed.
 
 This example is `WordCount`, you can replace it with your own jar to start the flink cluster to execute job in applicaiton mode.
 
 ```bash
+export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 $FLINK_HOME/bin/flink run-application \
     --target kubernetes-application \
     -Dkubernetes.sgx.enabled=true \
     -Djobmanager.memory.process.size=4g \
-    -Dtaskmanager.memory.process.size=8g \
+    -Dtaskmanager.memory.process.size=4g \
+    -Dio.tmp.dirs=/ppml/encrypted-fs \
     -Dkubernetes.flink.conf.dir=/ppml/flink/conf \
     -Dkubernetes.entry.path="/opt/flink-entrypoint.sh" \
     -Dkubernetes.jobmanager.service-account=spark \
@@ -817,6 +846,12 @@ $FLINK_HOME/bin/flink run-application \
     -Dresourcemanager.taskmanager-registration.timeout=10000000 \
     -Djobmanager.adaptive-scheduler.resource-wait-timeout=10000000 \
     -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
+    -Dsecurity.ssl.internal.enabled=true \
+    -Dsecurity.ssl.internal.keystore=/ppml/flink/keys/flink_internal.keystore \
+    -Dsecurity.ssl.internal.truststore=/ppml/flink/keys/flink_internal.keystore \
+    -Dsecurity.ssl.internal.keystore-password=$secure_password \
+    -Dsecurity.ssl.internal.truststore-password=$secure_password \
+    -Dsecurity.ssl.internal.key-password=$secure_password \
     local:///ppml/flink/examples/streaming/WordCount.jar
 ```
 * The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
@@ -840,7 +875,7 @@ kubectl get deployment | grep "wordcount-example-flink-cluster"
 kubectl get pods | grep "wordcount"
 ```
 
-### 3. Flink total process memory
+### 4. Flink total process memory
 [Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
 
 The following uses **the total process memory** to introduce how flink allocates memory.
@@ -864,6 +899,26 @@ Similar to the allocation of jobmanager memory, **the total process memory** in 
 In the picture, memory is allocated from bottom to top. First, 10% of **total process memory** is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, 40% of total flink memory is allocated to `managed memory`, 10% of total flink memory is allocated to `network memory`, `framework heap` memory defaults to 128MB, `framework off-heap` memory defaults to 128MB, `taskmanager off-heap` defaults to 0, the rest of total flink memroy is allocated to `taskmanager heap`.
 
 > The value and proportion of each memory component can be specified by parameters, for more information please refer to flink memory configuration.
+
+### 5. Flink security configurations
+#### 5.1 SSL Configuration
+
+The following are the configurations related to SSL between internal components of flink, For more information please refer to [Flink Security](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#security)
+
+* `security.ssl.internal.enabled`: enable SSL.
+* `security.ssl.internal.keystore`: The Java keystore file with SSL Key and Certificate, to be used Flink's internal endpoints (rpc, data transport, blob server)
+* `security.ssl.internal.truststore`: The truststore file containing the public CA certificates to verify the peer for Flink's internal endpoints (rpc, data transport, blob server).
+* `security.ssl.internal.keystore-password`: The secret to decrypt the keystore file for Flink's for Flink's internal endpoints (rpc, data transport, blob server).
+* `security.ssl.internal.truststore-password`: The password to decrypt the truststore for Flink's internal endpoints (rpc, data transport, blob server).
+* `security.ssl.internal.key-password`: The secret to decrypt the key in the keystore for Flink's internal endpoints (rpc, data transport, blob server).
+
+#### 5.2 Local Storage
+* `io.tmp.dirs`: The directories where Flink puts local data, defaults to the system temp directory (java.io.tmpdir property). If a list of directories is configured, Flink will rotate files across the directories. For more information please refer to [Flink Configuration](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#io-tmp-dirs)
+
+Set this path to encrypted fs dir to ensure temp file encryption on SGX mode.
+```bash
+-Dio.tmp.dirs=/ppml/encrypted-fs
+```
 
 ## For Spark Task in TDXVM
 
