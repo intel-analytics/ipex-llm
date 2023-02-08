@@ -744,6 +744,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator"
                               "is openvino.".format(device))
+        model.eval()  # change model to eval mode
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -1089,6 +1090,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
+        model.eval()  # change model to eval mode
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:

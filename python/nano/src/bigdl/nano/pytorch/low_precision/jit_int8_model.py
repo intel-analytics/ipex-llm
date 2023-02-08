@@ -19,7 +19,7 @@ from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 import torch
-from torch.ao.quantization import get_default_qconfig_mapping
+from torch.ao.quantization import QConfig, get_default_qconfig_mapping
 from torch.quantization.quantize_fx import prepare_fx, convert_fx
 
 from collections.abc import Sequence
@@ -27,11 +27,12 @@ from collections.abc import Sequence
 
 class PytorchJITINT8Model(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, calib_data, q_config=None,
-                 input_sample=None, channels_last=None, thread_num=None,
+                 input_sample=None, channels_last=False, thread_num=None,
                  from_load=False, jit_strict=True, jit_method=None,
-                 enable_onednn=True):
+                 enable_onednn=False):
         super().__init__(model)
         if from_load:
+            self.channels_last = channels_last
             self.jit_strict = jit_strict
             self.jit_method = jit_method
             self.enable_onednn = enable_onednn
@@ -42,6 +43,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
             return
         
         self.original_state_dict = model.state_dict()
+        self.channels_last = channels_last
         self.jit_strict = jit_strict
         self.jit_method = jit_method
         self.enable_onednn = enable_onednn
@@ -51,19 +53,30 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                                                               enable_onednn=enable_onednn)
         self.thread_num = thread_num
         self.original_model = model
+        if self.channels_last:
+            self.model = self.model.to(memory_format=torch.channels_last)
 
         if q_config is None:
             self.q_config = get_default_qconfig_mapping("fbgemm")
         else:
-            self.q_config = q_config
+            if isinstance(q_config, QConfig):
+                self.q_config = {'' : q_config}
+            else:
+                self.q_config = q_config
         
         if input_sample is None:
             input_sample = next(iter(calib_data))
             if isinstance(input_sample, (tuple, list)) and len(input_sample) > 1:
                 input_sample = input_sample[0]
+                if self.channels_last:
+                    if isinstance(input_sample, torch.Tensor):
+                        input_sample = input_sample.to(memory_format=torch.channels_last)
+                    else:
+                        input_sample = tuple(map(lambda x: x.to(memory_format=torch.channels_last),
+                                                 input_sample))
 
         self.model = prepare_fx(self.model, self.q_config,
-                                example_inputs=input_sample)
+                                example_inputs=(input_sample,))
 
         for x in calib_data:
             if isinstance(x, (tuple, list)) and len(x) > 1:
@@ -98,6 +111,8 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
+        if self.channels_last:
+            inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):
@@ -117,7 +132,8 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
     @property
     def status(self):
         status = super().status
-        status.update({"checkpoint": "ckpt.pth",
+        status.update({"channels_last": self.channels_last,
+                       "checkpoint": "ckpt.pth",
                        "thread_num": self.thread_num,
                        "jit_strict": self.jit_strict,
                        "jit_method": self.jit_method,
@@ -137,10 +153,12 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
             thread_num = int(status['thread_num'])
         return PytorchJITINT8Model(model,
                                    calib_data=None,
+                                   channels_last=status.get('channels_last', False),
                                    from_load=from_load,
                                    thread_num=thread_num,
-                                   jit_strict=status["jit_strict"],
-                                   jit_method=status["jit_method"])
+                                   jit_strict=status.get('jit_strict', True),
+                                   jit_method=status.get('jit_method', None),
+                                   enable_onednn=status.get('enable_onednn', False))
 
     def _save_model(self, path):
         torch.jit.save(self.model, path / "ckpt.pth")
