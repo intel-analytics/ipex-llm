@@ -17,6 +17,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
      
+        pip list
         chmod a+x python/orca/dev/test/run-pytests-clean-env.sh
         python/orca/dev/test/run-pytests-clean-env.sh
         source deactivate
