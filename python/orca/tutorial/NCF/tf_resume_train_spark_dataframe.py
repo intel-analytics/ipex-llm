@@ -36,7 +36,6 @@ train_df = spark.read.parquet(os.path.join(args.data_dir,
                                            "train_processed_dataframe.parquet"))
 test_df = spark.read.parquet(os.path.join(args.data_dir,
                                           "test_processed_dataframe.parquet"))
-feature_cols, label_cols = get_feature_cols(), get_label_cols()
 
 
 # Step 3: Distributed training with Orca TF2 Estimator after loading the model
@@ -59,11 +58,11 @@ train_stats = est.fit(train_df,
                       initial_epoch=2,
                       epochs=4,
                       batch_size=batch_size,
+                      feature_cols=get_feature_cols(),
+                      label_cols=get_label_cols(),
                       steps_per_epoch=train_steps,
                       validation_data=test_df,
                       validation_steps=val_steps,
-                      feature_cols=feature_cols,
-                      label_cols=label_cols,
                       callbacks=callbacks)
 print("Train results:")
 for k, v in train_stats.items():
