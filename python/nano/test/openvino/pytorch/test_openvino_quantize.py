@@ -25,6 +25,7 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import tempfile
 import pytest
+import numpy as np
 
 
 class TestOpenVINO(TestCase):
@@ -346,7 +347,7 @@ class TestOpenVINO(TestCase):
                                                     precision='fp16')
 
         with InferenceOptimizer.get_context(ov_fp16_model):
-            pred1 = ov_fp16_model(x).numpy()
+            preds1 = ov_fp16_model(x).numpy()
             ov_fp16_model(x2).numpy()  # test dinamic shape
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -354,6 +355,6 @@ class TestOpenVINO(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(load_model):
-            pred2 = load_model(x).numpy()
+            preds2 = load_model(x).numpy()
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)

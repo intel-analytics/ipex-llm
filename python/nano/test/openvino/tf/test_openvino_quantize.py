@@ -240,7 +240,7 @@ class TestOpenVINO(TestCase):
         # test original save / load
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_quantized_model, tmp_dir_name)
-            new_ov_model = InferenceOptimizer.load(tmp_dir_name)
+            new_ov_model = InferenceOptimizer.load(tmp_dir_name, model)
 
         preds1 = openvino_quantized_model(train_examples).numpy()
         preds2 = new_ov_model(train_examples).numpy()
