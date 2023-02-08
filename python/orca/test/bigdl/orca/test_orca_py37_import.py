@@ -18,9 +18,6 @@ from unittest import TestCase
 import pytest
 
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.data import *
-from bigdl.orca.learn.tf2 import Estimator
-from bigdl.orca.learn.pytorch import Estimator
 
 class TestOrcaPy37Env(TestCase):
 
@@ -37,6 +34,15 @@ class TestOrcaPy37Env(TestCase):
         stop_orca_context()
 
     def test_orca_py37_env(self):
+        from bigdl.orca.data import file
+        from bigdl.orca.data import transformer
+
+        from bigdl.orca.learn.tf2 import Estimator
+        from bigdl.orca.learn.tf2 import pyspark_estimator, spark_runner
+        
+        from bigdl.orca.learn.pytorch import Estimator, pytorch_metrics
+        from bigdl.orca.learn.pytorch import pytorch_pyspark_estimator, pytorch_spark_estimator
+
         pass
 
 if __name__ == "__main__":
