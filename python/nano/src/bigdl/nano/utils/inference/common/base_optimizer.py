@@ -82,7 +82,7 @@ class BaseInferenceOptimizer:
                           "Unable to get the specified model as it doesn't exist in "
                           "optimized_model_dict.")
         if search_env:
-            self._search_env(method=method_name)
+            self._search_env(method_name=method_name)
         return self.optimized_model_dict[method_name]["model"]
 
     def get_best_model(self,
@@ -173,40 +173,40 @@ class BaseInferenceOptimizer:
                               "Don't find related model in optimize's results.")
 
         if search_env:
-            self._search_env(method=best_metric.method_name)
+            self._search_env(method_name=best_metric.method_name)
 
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)
 
-    def _search_env(self, method=None):
-        invalidInputError(method,
+    def _search_env(self, method_name=None):
+        invalidInputError(method_name,
                           'Must give specific model method for searching env.')
-        invalidInputError(method in self.optimized_model_dict,
+        invalidInputError(method_name in self.optimized_model_dict,
                           'Must provide correct method name.')
-        if 'env' not in self.optimized_model_dict[method]:
+        if 'env' not in self.optimized_model_dict[method_name]:
             env_result_map = {}
-            for idx, (method, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
-                print(f"----------Start test {method} variables "
+            for idx, (env_name, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
+                print(f"----------Start test {method_name} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
-                    env_result_map[method], _ = \
+                    env_result_map[env_name], _ = \
                         exec_with_worker(self._throughput_calculate_helper,
                                          100, self.baseline_time, self._func_test,
-                                         self.optimized_model_dict[method]['model'],
+                                         self.optimized_model_dict[method_name]['model'],
                                          self.input_sample, env=env.get_env_dict())
                 except Exception as e:
                     print("----------worker failed to execute----------")
                     print(e.args)
                     traceback.print_exc()
-                    print(f"----------Failed to run with {method} variables----------")
-            for method, latency in env_result_map.items():
-                print(f"{method}\t{latency} ms")
+                    print(f"----------Failed to run with {method_name} variables----------")
+            for env_name, latency in env_result_map.items():
+                print(f"{env_name}\t{latency} ms")
             best_env = self.ALL_ACCELERATION_ENV[
                 min(env_result_map, key=env_result_map.get)].get_env_dict()
-            self.optimized_model_dict[method]['env'] = best_env
+            self.optimized_model_dict[method_name]['env'] = best_env
         env_suggestion = '\n'.join(f'export {env_key}=\'{env_value}\''
                                    for env_key, env_value in
-                                   self.optimized_model_dict[method]['env'].items())
+                                   self.optimized_model_dict[method_name]['env'].items())
         register_suggestion(f'You can try the following commands for better performance\n'
                             f'{env_suggestion}')
 
