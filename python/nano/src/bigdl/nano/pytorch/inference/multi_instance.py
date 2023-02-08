@@ -23,7 +23,6 @@ from torch.utils.data.dataloader import DataLoader
 
 from bigdl.nano.utils.common import invalidInputError, invalidOperationError
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.pytorch import InferenceOptimizer
 
 
 class _MultiInstanceModel(torch.nn.Module):
@@ -47,6 +46,7 @@ class _MultiInstanceModel(torch.nn.Module):
             if isinstance(self.model, AcceleratedLightningModule):
                 # If this model is optimized by `InferenceOptimizer`
                 # we should use context manager
+                from bigdl.nano.pytorch import InferenceOptimizer
                 context = InferenceOptimizer.get_context(self.model)
             else:
                 context = torch.inference_mode(True)
@@ -77,6 +77,7 @@ class _MultiInstanceModel(torch.nn.Module):
 
 def _multi_instance_helper(model, recv_queue, send_queue, next_idx):
     if isinstance(model, AcceleratedLightningModule):
+        from bigdl.nano.pytorch import InferenceOptimizer
         context = InferenceOptimizer.get_context(model)
     else:
         context = torch.inference_mode(True)
