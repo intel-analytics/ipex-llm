@@ -223,8 +223,16 @@ class AutoformerForecaster(Forecaster):
         """
         Search the hyper parameter.
 
-        :param data: train data, as numpy ndarray tuple (x, y, x_enc, y_enc)
-        :param validation_data: validation data, as numpy ndarray tuple (x, y, x_enc, y_enc)
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+
+        :param validation_data: validation data, The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+
         :param target_metric: the target metric to optimize,
                a string or an instance of torchmetrics.metric.Metric, default to 'mse'.
         :param direction: in which direction to optimize the target metric,
