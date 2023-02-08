@@ -19,7 +19,7 @@ import pytest
 
 from bigdl.orca import init_orca_context, stop_orca_context
 
-class TestOrcaPy37Env(TestCase):
+class TestImport(TestCase):
 
     def setUp(self):
         """ setup any state tied to the execution of the given method in a
@@ -33,16 +33,19 @@ class TestOrcaPy37Env(TestCase):
         """
         stop_orca_context()
 
-    def test_orca_py37_env(self):
+    def test_data_import(self):
         from bigdl.orca.data import file
         from bigdl.orca.data import transformer
+        pass
 
+    def test_tf2_import(self):
         from bigdl.orca.learn.tf2 import Estimator
         from bigdl.orca.learn.tf2 import pyspark_estimator, spark_runner
-        
+        pass
+
+    def test_pytorch_import(self):
         from bigdl.orca.learn.pytorch import Estimator, pytorch_metrics
         from bigdl.orca.learn.pytorch import pytorch_pyspark_estimator, pytorch_spark_estimator
-
         pass
 
 if __name__ == "__main__":
