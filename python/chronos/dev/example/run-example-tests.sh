@@ -100,7 +100,6 @@ sed -i 's/optuna/# optuna/' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objec
 execute_ray_test muti_objective_hpo_with_builtin_latency_tutorial "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
 time10=$?
 
-${BIGDL_ROOT} = "/home/binbin/fork_bigdl_source/BigDL/"
 sed -i "s/accelerator='gpu', /# accelerator='gpu', /" "${BIGDL_ROOT}/python/chronos/example/inference-acceleration/cpu_inference_acceleration.py"
 execute_ray_test cpu_inference_acceleration "${BIGDL_ROOT}/python/chronos/example/inference-acceleration/cpu_inference_acceleration.py"
 time11=$?
