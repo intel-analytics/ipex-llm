@@ -17,13 +17,26 @@
 from unittest import TestCase
 import pytest
 
+from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data import *
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.learn.pytorch import Estimator
 
 class TestOrcaPy37Env(TestCase):
 
-    def test_orca_py37_env():
+    def setUp(self):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
+        self.sc = init_orca_context(cores=4)
+
+    def tearDown(self):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
+        stop_orca_context()
+
+    def test_orca_py37_env(self):
         pass
 
 if __name__ == "__main__":

@@ -29,4 +29,4 @@ export PYSPARK_DRIVER_PYTHON=python
 
 echo "Running Orca Test without any dependency"
 python -m pytest -v test/bigdl/orca/data/test_xshards_partition.py
-python -m pytest -v test/bigdl/orca/test_orca_py37_env.py
+python -m pytest -v test/bigdl/orca/test_orca_py37_import.py
