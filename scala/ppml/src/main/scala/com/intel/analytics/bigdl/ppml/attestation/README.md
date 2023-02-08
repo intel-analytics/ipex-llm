@@ -238,30 +238,28 @@ BigDL
 
 ## Usage
 ```bash
-java -cp [dependent-jars] -u <serviceURL> -p <servicePort> -s <httpsKeyStoreToken> -t <httpsKeyStorePath> -h <httpsEnabled>
+java -cp [dependent-jars] -h <serviceHost> -p <servicePort> -s <httpsKeyStoreToken> --httpsKeyStorePath <httpsKeyStorePath> -k <secretKey> -b <basePath> -e <enrollFilePath> -o <policyFilePath>
 ```
+
+## Parameters
+`-h` **serviceHost** Host of BigDL Remote Attestation Service, default is `0.0.0.0`.
+`-p` **servicePort** Port of BigDL Remote Attestation Service, default is 9875.
+`-t` **httpsKeyStoreToken** Token of PKCS12 certificate for https.
+`--httpsKeyStorePath` **httpsKeyStorePath** Path of PKCS12 certificate for https, default is `./keys/server.p12`.
+`-k` **secretKey** Secret Key to encrypt and decrypt BigDLRemoteAttestation data file.
+`-b` **basePath** Diretory for data files of BigDL Remote Attestation Service, default is `./data`.
+`-e` **enrollFilePath** Path of base data file to save account information, default is `BigDLRemoteAttestationService.dat`.
+`-b` **basePath** Diretory for data files of BigDL Remote Attestation Service, default is `BigDLRemoteAttestationServicePolicy.dat`.
 
 ## How to deploy a BigDL Remote Attestation Service
-You can install all the required libs (Intel SGX SDK, DCAP, PCCS, BigDL, ... ) by your own, or you can refer [this]() to build a docker image and deploy the Attestation Service in a docker container.
-
-### http service
-After installation, start your server with command:
-```bash
-java -cp [dependent-jars] -u <serviceURL> -p <servicePort>
-```
-You will find ths console output like:
-```bash
-Server online at http://0.0.0.0:9875/
-Press RETURN to stop...
-```
-which indicates the service is listening on `http://0.0.0.0:9875/` (default settings for example), and you can post a verify quote request to the URL.
+You can install all the required libs (Intel SGX SDK, DCAP, PCCS, BigDL, ... ) by your own, or you can refer [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service/) to deploy the Attestation Service with docker or kubernetes.
 
 ### https service
 For https, you need to generate a PKCS12 certificate.
 
 ```bash
 # Generate all files in a temporary directory
-mkdir key && cd key
+mkdir keys && cd keys
 # 1. Generete private key for server
 openssl genrsa -des3 -out server.key 2048
 # 2. Generate ca.crt
@@ -278,7 +276,7 @@ openssl pkcs12 -export -clcerts -in server.crt -inkey server.key -out server.p12
 
 Then you can start your server with command:
 ```bash
-java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> -s true -h key/server.p12 -t <your_token_of_server_key>
+java -cp $BIGDL_HOME/jars/*:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*: com.intel.analytics.bigdl.ppml.service.BigDLRemoteAttestationService -u <serviceURL> -p <servicePort> --httpsKeyStorePath ./keys/server.p12 -t <httpsKeyStoreToken> -k <secretKey>
 ```
 
 ## How to attest with a BigDL Remote Attestation Service
@@ -306,6 +304,14 @@ GET <bigdl_remote_attestation_address>/enroll
 |:-----------|:-----------|:-----------|:-----------|
 | app_id | String | HfpPKHdF... | ID which represents a certain application  |
 | api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+
+* Example Response:
+```json
+{
+    "app_id": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "api_key": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL"
+}
+```
 
 ### Register Policy
 
@@ -339,7 +345,14 @@ POST <bigdl_remote_attestation_address>/registerPolicy
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| policy_id | string | LdPXuPs8fI5Q... | Generated policyID |
+| policy_id | string | 49ac44ff-01f0... | Generated policyID |
+
+* Example Response:
+```json
+{
+    "policy_id": "49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
+}
+```
 
 ### Verify SGX/TDX Quote
 
@@ -372,3 +385,10 @@ POST <bigdl_remote_attestation_address>/verifyQuote
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
 | result | Int | 0/1/-1 | 0 for success, 1 for warning, -1 for error |
+
+* Example Response:
+```json
+{
+    "result": 0
+}
+```

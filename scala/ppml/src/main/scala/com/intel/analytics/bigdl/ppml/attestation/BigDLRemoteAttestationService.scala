@@ -187,10 +187,10 @@ object BigDLRemoteAttestationService {
           .action((x, c) => c.copy(basePath = x))
         opt[String]('e', "enrollFilePath")
           .text("Path of base data file to save account information, "
-            + "default is ./BigDLRemoteAttestationService.dat")
+            + "default is BigDLRemoteAttestationService.dat")
           .action((x, c) => c.copy(enrollFilePath = x))
         opt[String]('o', "policyFilePath")
-          .text("Path of policy data file, default is ./BigDLRemoteAttestationServicePolicy.dat")
+          .text("Path of policy data file, default is BigDLRemoteAttestationServicePolicy.dat")
           .action((x, c) => c.copy(policyFilePath = x))
     }
     val params = cmdParser.parse(args, CmdParams()).get
