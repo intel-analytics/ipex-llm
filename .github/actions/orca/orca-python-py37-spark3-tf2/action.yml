@@ -17,8 +17,8 @@ runs:
      
         pip install tensorflow==2.9.0
         pip list
-        chmod a+x python/orca/dev/test/run-pytests-basic-env.sh
-        python/orca/dev/test/run-pytests-basic-env.sh
+        chmod a+x python/orca/dev/test/run-pytests-tf2.sh
+        python/orca/dev/test/run-pytests-tf2.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
