@@ -41,7 +41,7 @@ class TestImport(TestCase):
 
     def test_pytorch_import(self):
         from bigdl.orca.learn.pytorch import Estimator, pytorch_metrics
-        from bigdl.orca.learn.pytorch import pytorch_pyspark_estimator, pytorch_spark_estimator
+        from bigdl.orca.learn.pytorch import pytorch_pyspark_estimator, torch_runner
 
 if __name__ == "__main__":
     pytest.main([__file__])
