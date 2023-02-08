@@ -48,7 +48,7 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
 
     We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
 
-    For the case you only need inference optimization from IPEX (Intel® Extension for PyTorch*) or TorchScript, you could just install BigDL-Nano for PyTorch through ``pip install --pre --upgrade bigdl-nano[pytorch]``.
+    For the case you do not need the optimizations from INC, OpenVINO, or ONNXRuntime (e.g. you only want to use multi-instance inference, optimization from IPEX (Intel Extension for PyTorch) or TorchScript, etc.), you could just install BigDL-Nano for PyTorch through ``pip install --pre --upgrade bigdl-nano[pytorch]``.
 ```
 
 ## Graph Mode Acceleration
