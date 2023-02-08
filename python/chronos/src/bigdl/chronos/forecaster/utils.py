@@ -163,6 +163,31 @@ def np_to_dataloader(data, batch_size, num_processes):
                       batch_size=max(1, batch_size//num_processes),
                       shuffle=True)
 
+def tsdataset_to_dataloader(data, batch_size, lookback, horizon, num_processes):
+    if num_processes: # void the num_processes is none 
+        if batch_size % num_processes != 0:
+            warnings.warn("'batch_size' cannot be divided with no remainder by "
+                        "'self.num_processes'. We got 'batch_size' = {} and "
+                        "'self.num_processes' = {}".
+                        format(batch_size, num_processes))
+        batch_size = max(1, batch_size//num_processes)
+    _rolled = data.numpy_x is None
+    return data.to_torch_data_loader(batch_size=batch_size,
+                                     roll=_rolled,
+                                     lookback=lookback,
+                                     horizon=horizon,
+                                     feature_col=data.roll_feature,
+                                     target_col=data.roll_target,
+                                     shuffle=True)
+
+def dataloader_batch_resize(data:DataLoader, num_processes):
+    if batch_size % num_processes != 0:
+        warnings.warn("'batch_size' cannot be divided with no remainder by "
+                    "'self.num_processes'. We got 'batch_size' = {} and "
+                    "'self.num_processes' = {}".
+                    format(batch_size, num_processes))
+    batch_size = max(1, batch_size//num_processes)
+    return DataLoader(data.dataset, batch_size=batch_size)
 
 def read_csv(filename, loss_name='val/loss'):
     import codecs
