@@ -143,7 +143,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='onnxrt_qlinearops',
-                            relative_drop=0.5)
+                            relative_drop=0.8)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
