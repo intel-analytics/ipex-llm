@@ -230,7 +230,7 @@ jobs:
         if: ${{ always() }}
         uses: ./.github/actions/remove-env
 
-  Orca-Python-Py37-Clean-Env:
+  Orca-Python-Py37:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -244,7 +244,7 @@ jobs:
       - name: Setup env
         uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-clean
       - name: Run test
-        uses: ./.github/actions/orca/orca-python-clean-env
+        uses: ./.github/actions/orca/orca-python-clean-env/pr-test
       - name: Remove Env
         if: ${{ always() }}
         uses: ./.github/actions/remove-env
