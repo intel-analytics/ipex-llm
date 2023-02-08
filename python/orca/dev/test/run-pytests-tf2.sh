@@ -27,3 +27,4 @@ cd ../..
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
+echo "Running Orca Tf2 Test"

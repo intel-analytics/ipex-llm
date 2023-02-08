@@ -27,3 +27,6 @@ cd ../..
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
+echo "Running Orca Pytorch Test"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py
+python -m pytest -v test/bigdl/orca/torch/
