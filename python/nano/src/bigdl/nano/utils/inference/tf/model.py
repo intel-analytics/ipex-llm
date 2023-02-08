@@ -42,7 +42,10 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         return super().__call__(*args, **kwds)
 
     def call(self, *inputs):
-        return tf.py_function(self.forward, inputs, Tout=self.precision)
+        output = tf.py_function(self.forward, inputs, Tout=self.precision)
+        if hasattr(self, "_output_shape") and self._output_shape is not None:
+            output.set_shape(self._output_shape)
+        return output
 
     def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)

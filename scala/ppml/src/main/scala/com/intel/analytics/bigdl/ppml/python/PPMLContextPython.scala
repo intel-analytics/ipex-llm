@@ -34,12 +34,6 @@ object PPMLContextPython {
 class PPMLContextPython[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def createPPMLContext(sparkSession: SparkSession): PPMLContext = {
-    logger.debug("createPPMLContext with SparkSession" + "confs:\n" +
-      sparkSession.sparkContext.getConf.getAll.mkString("Array(", ", ", ")"))
-    PPMLContext.initPPMLContext(sparkSession)
-  }
-
   def read(sc: PPMLContext, cryptoModeStr: String,
            kmsName: String = "", primaryKey: String = "",
            dataKey: String = ""): EncryptedDataFrameReader = {
