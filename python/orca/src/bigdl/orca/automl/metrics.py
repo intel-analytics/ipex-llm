@@ -23,7 +23,7 @@ import pandas as pd
 from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.utils.log4Error import invalidInputError
 from numpy import float64, ndarray
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Callable, Any
 
 
 EPSILON = 1e-10
@@ -477,7 +477,7 @@ class Evaluator(object):
     max_mode_metrics = ('r2', 'accuracy')
 
     @staticmethod
-    def evaluate(metric, y_true, y_pred, multioutput: str='raw_values'):
+    def evaluate(metric: str, y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> float64:
         """
         Evaluate a specific metric for y_true and y_pred.
 
@@ -501,7 +501,7 @@ class Evaluator(object):
             return result
 
     @staticmethod
-    def check_metric(metric):
+    def check_metric(metric: str) -> None:
         if not metric:
             invalidInputError(False,
                               f"Got invalid metric name of {metric}!")
@@ -510,7 +510,7 @@ class Evaluator(object):
                               "metric " + metric + " is not supported")
 
     @staticmethod
-    def get_metric_mode(metric):
+    def get_metric_mode(metric: Union[Callable[..., Any], str, None]) -> str:
         Evaluator.check_metric(metric)
         if metric in Evaluator.max_mode_metrics:
             return "max"

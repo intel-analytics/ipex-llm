@@ -18,9 +18,12 @@ from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.utils.log4Error import invalidInputError
 from numpy import ndarray
 from ray.tune.sample import Categorical, Float
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
+from pyspark.sql import DataFrame
+from keras.engine.sequential import Sequential
+
 if TYPE_CHECKING:
-    from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+    from bigdl.orca.automl.model.base_pytorch_model import ModelBuilder
     from pyspark.sql import DataFrame
 
 class AutoEstimator:
@@ -42,7 +45,7 @@ class AutoEstimator:
     """
 
     def __init__(self,
-                 model_builder: "PytorchModelBuilder",
+                 model_builder: "ModelBuilder",
                  logs_dir: str="/tmp/auto_estimator_logs",
                  resources_per_trial: Optional[Dict[str, int]]=None,
                  remote_dir: Optional[str]=None,
@@ -55,15 +58,15 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
-        self.best_trial = None
+        self.best_trial: "Sequential" = None
 
     @staticmethod
     def from_torch(*,
-                   model_creator: function,
-                   optimizer: function,
-                   loss: function,
+                   model_creator: Callable,
+                   optimizer: Callable,
+                   loss: Callable,
                    logs_dir: str="/tmp/auto_estimator_logs",
-                   resources_per_trial: Optional[dict]=None,
+                   resources_per_trial: Optional[Dict[str, int]]=None,
                    name: str="auto_pytorch_estimator",
                    remote_dir: Optional[str]=None,
                    ) -> "AutoEstimator":
@@ -101,9 +104,9 @@ class AutoEstimator:
 
     @staticmethod
     def from_keras(*,
-                   model_creator: function,
+                   model_creator: Callable,
                    logs_dir: str="/tmp/auto_estimator_logs",
-                   resources_per_trial: Optional[dict]=None,
+                   resources_per_trial: Optional[Dict[str, int]]=None,
                    name: str="auto_keras_estimator",
                    remote_dir: Optional[str]=None,
                    ) -> "AutoEstimator":
@@ -130,9 +133,9 @@ class AutoEstimator:
                              name=name)
 
     def fit(self,
-            data: Union[Callable, Tuple[ndarray, ndarray]],
+            data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
             epochs: int=1,
-            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray]]]=None,
+            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray], DataFrame]]=None,
             metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
             metric_threshold: Optional[float]=None,
@@ -140,11 +143,11 @@ class AutoEstimator:
             search_space: Optional[Dict[str, Union[Float, Categorical,
                                                    Dict[str, List[bool]]]]]=None,
             search_alg: Optional[str]=None,
-            search_alg_params: None=None,
+            search_alg_params: Any=None,
             scheduler: Optional[str]=None,
-            scheduler_params: None=None,
-            feature_cols: Optional[DataFrame]=None,
-            label_cols: Optional[DataFrame]=None,
+            scheduler_params: Any=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
             ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -215,7 +218,7 @@ class AutoEstimator:
         self.searcher.run()
         self._fitted = True
 
-    def get_best_model(self):
+    def get_best_model(self) -> "Sequential":
         """
         Return the best model found by the AutoEstimator
 
@@ -229,7 +232,7 @@ class AutoEstimator:
         best_automl_model.restore(best_model_path)
         return best_automl_model.model
 
-    def get_best_config(self):
+    def get_best_config(self) -> Dict[str, Union[float, int, bool]]:
         """
         Return the best config found by the AutoEstimator
 
@@ -240,7 +243,7 @@ class AutoEstimator:
         best_config = self.best_trial.config
         return best_config
 
-    def _get_best_automl_model(self):
+    def _get_best_automl_model(self) -> "Sequential":
         """
         This is for internal use only.
         Return the best automl model found by the AutoEstimator
@@ -278,11 +281,11 @@ class AutoEstimator:
         return mode
 
     @staticmethod
-    def _check_spark_dataframe_input(data: Union[Callable, Tuple[ndarray, ndarray]],
-                                     validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray]]],
-                                     feature_cols: None,
-                                     label_cols: None
-                                     ) -> Tuple[None, None]:
+    def _check_spark_dataframe_input(data: Union[Tuple[ndarray, ndarray], Callable, DataFrame],
+                                     validation_data: Union[Tuple[ndarray, ndarray], Callable, DataFrame],
+                                     feature_cols: Any,
+                                     label_cols: Any
+                                     ) -> Union[Tuple[List[str], List[str]], Tuple[None, None]]:
 
         def check_cols(cols, cols_name):
             if not cols:
