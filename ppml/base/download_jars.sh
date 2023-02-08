@@ -14,14 +14,10 @@ if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
   wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION.jar
   mv bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION.jar bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar
-  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION-python-api.zip
-  mv bigdl-ppml-spark_$SPARK_VERSION-$NIGHTLY_VERSION-python-api.zip bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip
 
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
   wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-dllib-spark_$SPARK_VERSION-$NIGHTLY_VERSION.jar
   mv bigdl-dllib-spark_$SPARK_VERSION-$NIGHTLY_VERSION.jar bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar
-  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-dllib-spark_$SPARK_VERSION-$NIGHTLY_VERSION-python-api.zip
-  mv bigdl-dllib-spark_$SPARK_VERSION-$NIGHTLY_VERSION-python-api.zip bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip
 
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
   wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/$BIGDL_VERSION/all-$NIGHTLY_VERSION.jar
