@@ -19,7 +19,7 @@ from keras import backend_config
 
 from tensorflow.python.util.tf_export import keras_export
 import tensorflow
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_9
 from tensorflow.keras.optimizers import Adam
 

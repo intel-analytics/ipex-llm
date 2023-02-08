@@ -32,9 +32,9 @@ from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import create_ray_strategy
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.common import check_avx512
-from bigdl.nano.utils import deprecated
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import deprecated
 
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
@@ -121,7 +121,7 @@ class Trainer(pl.Trainer):
             precision = 32
 
         # Confirm if cpu supports avx512
-        if self.use_ipex and not check_avx512():
+        if self.use_ipex and not _avx512_checker():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.11 in a cpu instruction set"
                         " without avx512 will crash."

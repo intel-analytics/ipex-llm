@@ -14,78 +14,11 @@
 # limitations under the License.
 #
 
-from collections import namedtuple
-import time
+
 import numbers
-import numpy as np
 from typing import Dict
-from abc import abstractmethod
 
-
-_whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
-                               "bf16", "jit", "channels_last"]
-
-CompareMetric = namedtuple("CompareMetric", ["method_name", "latency", "accuracy"])
-
-
-class AccelerationOption(object):
-    __slot__ = _whole_acceleration_options
-
-    def __init__(self, **kwargs):
-        '''
-        initialize optimization option
-        '''
-        for option in _whole_acceleration_options:
-            setattr(self, option, kwargs.get(option, False))
-        self.method = kwargs.get("method", None)
-
-    def get_precision(self):
-        if self.inc or self.pot:
-            return "int8"
-        if self.bf16:
-            return "bf16"
-        return "fp32"
-
-    def get_accelerator(self):
-        if self.onnxruntime:
-            return "onnxruntime"
-        if self.openvino:
-            return "openvino"
-        if self.jit:
-            return "jit"
-        return None
-
-    @abstractmethod
-    def optimize(self, *args, **kwargs):
-        pass
-
-
-def throughput_calculate_helper(iterrun, baseline_time, func, *args):
-    '''
-    A simple helper to calculate average latency
-    '''
-    # test run two times for more accurate latency
-    for i in range(2):
-        func(*args)
-    start_time = time.perf_counter()
-    time_list = []
-    for i in range(iterrun):
-        st = time.perf_counter()
-        func(*args)
-        end = time.perf_counter()
-        time_list.append(end - st)
-        # if three samples cost more than 4x time than baseline model, prune it
-        if i == 2 and end - start_time > 12 * baseline_time:
-            return np.mean(time_list) * 1000, False
-        # at least need 10 iters and try to control calculation
-        # time less than 10s
-        if i + 1 >= min(iterrun, 10) and (end - start_time) > 10:
-            iterrun = i + 1
-            break
-    time_list.sort()
-    # remove top and least 10% data
-    time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
-    return np.mean(time_list) * 1000, True
+from .acceleration_option import AccelerationOption
 
 
 def format_acceleration_option(method_name: str,

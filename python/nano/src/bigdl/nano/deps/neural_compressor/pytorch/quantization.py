@@ -15,7 +15,7 @@
 #
 from typing import Callable
 from collections import Iterable
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from ..core import BaseQuantization
 from .utils import _check_loader
 from .metric import PytorchINCMetric

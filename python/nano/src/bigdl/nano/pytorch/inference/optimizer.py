@@ -21,25 +21,23 @@ import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
+    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
     PytorchIPEXQuantizationModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
-from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
-from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
-from bigdl.nano.utils.inference.pytorch.dataloader import\
-    transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import get_forward_args, get_input_example
+from bigdl.nano.utils.pytorch import NanoMetric
+from bigdl.nano.utils.pytorch import RepeatDataset, remove_batch_dim_fn
+from bigdl.nano.utils.pytorch import transform_multiple_input_dataloader_to_inc_mode,\
+    automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
-from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
@@ -410,8 +408,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop

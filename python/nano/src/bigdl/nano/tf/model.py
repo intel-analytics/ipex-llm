@@ -15,8 +15,8 @@
 #
 import numpy as np
 import tensorflow as tf
-from bigdl.nano.utils.log4Error import invalidInputError
-from ..model import AcceleratedModel
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import AcceleratedModel
 
 try:
     import torch

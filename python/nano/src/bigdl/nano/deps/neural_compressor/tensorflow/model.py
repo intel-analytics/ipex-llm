@@ -16,8 +16,8 @@
 from pathlib import Path
 import yaml
 from ..core import version as inc_version
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 from neural_compressor.model.model import TensorflowModel
 import pickle
 import os

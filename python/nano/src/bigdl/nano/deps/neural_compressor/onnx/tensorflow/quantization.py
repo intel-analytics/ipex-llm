@@ -22,7 +22,7 @@ from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
 
 from ..quantization import BaseONNXRuntimeQuantization
 from .metric import KerasONNXRuntimeINCMetic
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
+from bigdl.nano.tf.model import AcceleratedKerasModel
 
 
 class KerasONNXRuntimeQuantization(BaseONNXRuntimeQuantization):

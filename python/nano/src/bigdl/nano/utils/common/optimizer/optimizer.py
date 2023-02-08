@@ -15,10 +15,13 @@
 #
 
 
-from typing import Dict, Optional
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
-from .utils import CompareMetric, AccelerationOption, format_acceleration_option
 from abc import abstractmethod
+from typing import Dict, Optional
+from bigdl.nano.utils.common import invalidInputError, invalidOperationError
+
+from .acceleration_option import AccelerationOption
+from .format import format_acceleration_option
+from .metric import CompareMetric
 
 
 class BaseInferenceOptimizer:

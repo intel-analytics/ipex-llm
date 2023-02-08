@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, \
-    get_conditional_args
 from typing import Sequence
 from copy import deepcopy
 import torch
 import warnings
+
+from bigdl.nano.utils.pytorch import get_conditional_args
 
 
 def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
