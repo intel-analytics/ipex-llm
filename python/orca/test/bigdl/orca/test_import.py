@@ -34,19 +34,15 @@ class TestImport(TestCase):
         stop_orca_context()
 
     def test_data_import(self):
-        from bigdl.orca.data import file
-        from bigdl.orca.data import transformer
-        pass
+        from bigdl.orca.data import file, transformer
 
     def test_tf2_import(self):
         from bigdl.orca.learn.tf2 import Estimator
         from bigdl.orca.learn.tf2 import pyspark_estimator, spark_runner
-        pass
 
     def test_pytorch_import(self):
         from bigdl.orca.learn.pytorch import Estimator, pytorch_metrics
         from bigdl.orca.learn.pytorch import pytorch_pyspark_estimator, pytorch_spark_estimator
-        pass
 
 if __name__ == "__main__":
     pytest.main([__file__])
