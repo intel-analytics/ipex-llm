@@ -37,7 +37,7 @@ runs:
         pip install ConfigSpace optuna
 
         # required by NoteBook and Tutorial test
-        pip install tensorflow-datasets jinja2 jupyter nbconvert nbmake ipykernel==5.5.6
+        pip install tensorflow-datasets jinja2 jupyter nbconvert nbmake
 
         source $CONDA/bin/deactivate
       env:

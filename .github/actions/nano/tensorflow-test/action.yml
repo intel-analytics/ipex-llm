@@ -130,6 +130,7 @@ runs:
       run: |
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
+        pip install ipykernel==5.5.6
 
         bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
         bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
