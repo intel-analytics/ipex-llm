@@ -1216,7 +1216,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
         def _throughput_calculate_helper(iterrun, baseline_time, func,
                                          model_path, original_model, *args):
-            model = InferenceOptimizer.load(model_path, original_model)
+            try:
+                model = InferenceOptimizer.load(model_path, original_model)
+            except Exception:
+                model = InferenceOptimizer.load(model_path)
             with InferenceOptimizer.get_context(model):
                 return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
 
