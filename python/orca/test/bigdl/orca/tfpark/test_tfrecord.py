@@ -26,7 +26,7 @@ from bigdl.orca.data.utils import *
 from bigdl.orca.data.transformer import *
 
 
-class TestXShardsSparkBackend(TestCase):
+class TestTFRecord(TestCase):
     def setup_method(self, method):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
