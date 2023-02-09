@@ -396,7 +396,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     model(*input_sample)
         except Exception:
             invalidInputError(False,
-                              "training_data is incompatible with your model input.")
+                              f"training_data is incompatible with your model input. "
+                              f"training_data is {input_sample}")
         baseline_time = time.perf_counter() - st
         if baseline_time > 0.1:  # 100ms
             sample_size_for_pot = 15
