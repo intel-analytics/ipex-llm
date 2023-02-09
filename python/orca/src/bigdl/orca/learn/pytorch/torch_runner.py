@@ -575,6 +575,7 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        target = self.batch[-1]
         del self.batch
         del self.output
 

@@ -125,6 +125,7 @@ class ResNetPerfCallback(MainCallback):
                 images = images.contiguous(memory_format=torch.channels_last)
             if runner.config["bf16"]:
                 images = images.to(torch.bfloat16)
+        runner.batch = images, target
         if runner.batch_idx < runner.config["warmup_iterations"]:
             output, target, loss = self.forward(runner, images, target, warmup=True)
         else:
@@ -142,11 +143,12 @@ class ResNetPerfCallback(MainCallback):
             else:
                 output = runner.model(images)
         else:
-            if not runner.config["jit"] and runner.config["bf16"]:
-                with torch.cpu.amp.autocast():
+            with runner.timers.record("non_warmup_eval_fwd"):
+                if not runner.config["jit"] and runner.config["bf16"]:
+                    with torch.cpu.amp.autocast():
+                        output = runner.model(images)
+                else:
                     output = runner.model(images)
-            else:
-                output = runner.model(images)
 
         if runner.config["bf16"]:
             output = output.to(torch.float32)
@@ -255,7 +257,6 @@ def validate(args):
                     model = torch.jit.trace(model, x)
                     model = torch.jit.freeze(model.eval())
                     y = model(x)
-                    y = model(x)
                     print("running int8 evaluation step\n")
             else:
                 # for ipex path, always convert model to channels_last for bf16, fp32.
@@ -304,7 +305,7 @@ def validate(args):
 
     config = vars(args).copy()
     batch = config.pop("batch_size")
-    config["batch"] = batch  # Dummy data needs batch_size in TrainingOperator
+    config["batch"] = batch  # Dummy data needs batch_size in MainCallback
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
                                loss=nn.CrossEntropyLoss(),
