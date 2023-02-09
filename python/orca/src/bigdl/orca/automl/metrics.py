@@ -421,8 +421,10 @@ def MSE(y_true: Union[List[Union[int, float]], ndarray,
     return result
 
 
-def Accuracy(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-             y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+def Accuracy(y_true: List[Union[int, float, List[Union[int, float]],
+                                List[List[Union[int, float]]]]],
+             y_pred: List[Union[int, float, List[Union[int, float]],
+                                List[List[Union[int, float]]]]],
              multioutput=None) -> Union[float64, ndarray]:
     """
     Calculate the accuracy score (Accuracy).
