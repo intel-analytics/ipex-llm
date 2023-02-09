@@ -16,13 +16,11 @@ bash bigdl-ppml-submit.sh \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.executor.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
     --conf spark.kubernetes.container.image.pullPolicy=Always \
-    --py-files $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/jars/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
-    --conf spark.executor.extraClassPath=/ppml/jars/* \
-    --conf spark.driver.extraClassPath=/ppml/jars/* \
+    --py-files local://$BIGDL_HOME/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local://$BIGDL_HOME/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,local://$BIGDL_HOME/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --name pyspark-simple-query-sgx-on-client \
     --verbose \
-    /ppml/examples/simple_query_example.py \
+    local:///ppml/examples/simple_query_example.py \
     --app_id 465227134889 \
     --api_key 799072978028 \
     --primary_key /ppml/data/SimpleQueryExampleWithSimpleKMS/keys/simple/primaryKey \

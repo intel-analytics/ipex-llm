@@ -9,7 +9,7 @@ export sgx_command="/opt/jdk8/bin/java \
      --conf spark.executor.heartbeatInterval=10000000 \
      --conf spark.python.use.daemon=false \
      --conf spark.python.worker.reuse=false \
-     --py-files $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/jars/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
+     --py-files $BIGDL_HOME/python/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/python/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip,$BIGDL_HOME/python/bigdl-spark_$SPARK_VERSION-$BIGDL_VERSION-python-api.zip \
      /ppml/examples/simple_query_example.py \
      --app_id 465227134889 \
      --api_key 799072978028 \
