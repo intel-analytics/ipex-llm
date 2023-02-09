@@ -43,14 +43,8 @@ class _MultiInstanceModel(torch.nn.Module):
 
         if self.ps is None:
             # run inference in current process directly
-            if isinstance(self.model, AcceleratedLightningModule):
-                # If this model is optimized by `InferenceOptimizer`
-                # we should use context manager
-                from bigdl.nano.pytorch import InferenceOptimizer
-                context = InferenceOptimizer.get_context(self.model)
-            else:
-                context = torch.inference_mode(True)
-            with context:
+            from bigdl.nano.pytorch import InferenceOptimizer
+            with InferenceOptimizer.get_context(self.model):
                 outputs = [self.model(inputs) for inputs in input_data]
             return outputs
 
@@ -76,12 +70,8 @@ class _MultiInstanceModel(torch.nn.Module):
 
 
 def _multi_instance_helper(model, recv_queue, send_queue, next_idx):
-    if isinstance(model, AcceleratedLightningModule):
-        from bigdl.nano.pytorch import InferenceOptimizer
-        context = InferenceOptimizer.get_context(model)
-    else:
-        context = torch.inference_mode(True)
-    with context:
+    from bigdl.nano.pytorch import InferenceOptimizer
+    with InferenceOptimizer.get_context(model):
         while True:
             try:
                 args = recv_queue.get()
