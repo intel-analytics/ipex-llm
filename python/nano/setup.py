@@ -164,7 +164,8 @@ def setup_package():
                         "protobuf==3.19.5",
                         "py-cpuinfo",
                         "pyyaml",
-                        "packaging"]
+                        "packaging",
+                        "setuptools<66"]
 
     package_data = [
         "libs/libjemalloc.so",
