@@ -22,8 +22,6 @@ import shutil
 
 from bigdl.dllib.nncontext import *
 from bigdl.orca.data.image import write_tfrecord, read_tfrecord
-from bigdl.orca.data.utils import *
-from bigdl.orca.data.transformer import *
 
 
 class TestTFRecord(TestCase):
