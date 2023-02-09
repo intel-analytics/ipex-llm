@@ -19,8 +19,6 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from numpy import ndarray
 from ray.tune.sample import Categorical, Float
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
-from pyspark.sql import DataFrame
-from keras.engine.sequential import Sequential
 
 if TYPE_CHECKING:
     from bigdl.orca.automl.model.base_pytorch_model import ModelBuilder
@@ -59,7 +57,7 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
-        self.best_trial: Sequential = None
+        self.best_trial = None
 
     @staticmethod
     def from_torch(*,
@@ -219,7 +217,7 @@ class AutoEstimator:
         self.searcher.run()
         self._fitted = True
 
-    def get_best_model(self) -> "Sequential":
+    def get_best_model(self):
         """
         Return the best model found by the AutoEstimator
 
@@ -233,7 +231,7 @@ class AutoEstimator:
         best_automl_model.restore(best_model_path)
         return best_automl_model.model
 
-    def get_best_config(self) -> Dict[str, Union[float, int, bool]]:
+    def get_best_config(self):
         """
         Return the best config found by the AutoEstimator
 
@@ -244,7 +242,7 @@ class AutoEstimator:
         best_config = self.best_trial.config
         return best_config
 
-    def _get_best_automl_model(self) -> "Sequential":
+    def _get_best_automl_model(self):
         """
         This is for internal use only.
         Return the best automl model found by the AutoEstimator
