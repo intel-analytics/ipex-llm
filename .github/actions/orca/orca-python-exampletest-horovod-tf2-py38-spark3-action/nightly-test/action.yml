@@ -1,12 +1,12 @@
-name: 'Run Orca Python Exampletest Horovod Tf2 Py37 Spark3'
-description: 'Run Orca Python Exampletest Horovod Tf2 Py37 Spark3'
+name: 'Run Orca Python Exampletest Horovod Tf2 Py38 Spark3'
+description: 'Run Orca Python Exampletest Horovod Tf2 Py38 Spark3'
 runs:
   using: "composite"
   steps:
     - name: Run Test
       shell: bash
       run: |
-        source activate py37
+        source activate py38
         export SPARK_LOCAL_HOSTNAME=localhost
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0

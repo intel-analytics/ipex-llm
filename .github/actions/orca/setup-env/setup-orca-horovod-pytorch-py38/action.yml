@@ -1,12 +1,12 @@
-name: 'Run Orca Python Horovod Pytorch Py37 Spark3'
-description: 'Run Orca Python Horovod Pytorch Py37 Spark3'
+name: 'Run Orca Python Horovod Pytorch Py38 Spark3'
+description: 'Run Orca Python Horovod Pytorch Py38 Spark3'
 runs:
   using: "composite"
   steps:
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7.10'
+        python-version: '3.8'
 
     - name: Install dependencies
       shell: bash
@@ -18,12 +18,12 @@ runs:
     - name: Setup env
       shell: bash
       run: |
-        if [ -d "/opt/conda/envs/py37" ];then
-          rm -rf /opt/conda/envs/py37
+        if [ -d "/opt/conda/envs/py38" ];then
+          rm -rf /opt/conda/envs/py38
         fi
-        conda create -n py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+        conda create -n py38 -y python==3.8 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
         conda info --env
-        source activate py37
+        source activate py38
         pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
         #conda install -y pytorch==1.4.0 torchvision==0.5.0 cpuonly -c pytorch
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.4.0 
