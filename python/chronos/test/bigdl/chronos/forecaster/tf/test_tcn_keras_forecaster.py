@@ -257,9 +257,9 @@ class TestTCNForecaster(TestCase):
         # during quantization. Work around by using `pytest -s` to test this ut.
         train_data, _, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=10,
-                                    future_seq_len=2,
-                                    input_feature_num=10,
-                                    output_feature_num=2)
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2)
 
         forecaster.fit(train_data, epochs=1)
         forecaster.quantize(input_data=train_data[0], target_data=train_data[1])
