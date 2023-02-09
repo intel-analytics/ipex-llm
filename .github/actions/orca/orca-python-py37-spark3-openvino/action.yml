@@ -22,6 +22,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} Pillow
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.19.5
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         
         chmod a+x python/orca/dev/test/run-pytests-spark-openvino.sh
         python/orca/dev/test/run-pytests-spark-openvino.sh
