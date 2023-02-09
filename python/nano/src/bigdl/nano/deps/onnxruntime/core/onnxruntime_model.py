@@ -16,7 +16,16 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
+import numpy as np
+
+
+def _flatten(inputs, result):
+    for x in inputs:
+        if isinstance(x, np.ndarray) or np.isscalar(x):
+            result.append(x)
+        else:
+            _flatten(x, result)
 
 
 class ONNXRuntimeModel:
@@ -31,11 +40,15 @@ class ONNXRuntimeModel:
         '''
         This function run through the onnxruntime forwarding step
         '''
-        invalidInputError(len(self._forward_args) >= len(inputs), "The length of inputs is "
+        flattened_inputs = []
+        _flatten(inputs, flattened_inputs)
+        invalidInputError(len(self._forward_args) >= len(flattened_inputs),
+                          "The length of inputs is "
                           "inconsistent with the length of ONNX Runtime session's inputs, "
-                          "there may be some redundant inputs.")
-        inputs = dict(zip(self.forward_args, inputs))
-        ort_outs = self.ortsess.run(None, inputs)
+                          f"got model_forward_args: {self._forward_args}, "
+                          f"and flattened inputs: {flattened_inputs}")
+        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
+        ort_outs = self.ortsess.run(None, zipped_inputs)
         return ort_outs
 
     @property

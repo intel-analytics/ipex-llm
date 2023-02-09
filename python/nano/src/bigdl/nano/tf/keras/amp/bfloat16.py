@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from tensorflow.keras import mixed_precision
 from tempfile import TemporaryDirectory
 import tensorflow as tf

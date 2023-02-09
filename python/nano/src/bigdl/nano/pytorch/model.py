@@ -16,8 +16,10 @@
 import torch
 
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.utils.log4Error import invalidInputError
-from ..model import AcceleratedModel
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import AcceleratedModel
+import numpy as np
+from typing import Sequence
 
 
 class AcceleratedLightningModule(AcceleratedModel, LightningModule):
@@ -45,10 +47,21 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
     @staticmethod
     def tensors_to_numpy(tensors):
         # TODO: add more type transformation here
-        np_data = tuple(map(
-            lambda x: x.cpu().numpy() if isinstance(x, torch.Tensor) else x,
-            tensors))
-        return np_data
+        def to_numpy(ts):
+            result = []
+            for x in ts:
+                if isinstance(x, torch.Tensor):
+                    result.append(x.cpu().numpy())
+                elif isinstance(x, np.ndarray):
+                    result.append(x)
+                elif np.isscalar(x):
+                    result.append(x)
+                elif isinstance(x, Sequence):
+                    result.append(to_numpy(x))
+                else:
+                    invalidInputError(False, f"Unexpected Type: {x}")
+            return tuple(result)
+        return to_numpy(tensors)
 
     @staticmethod
     def numpy_to_tensors(np_arrays):

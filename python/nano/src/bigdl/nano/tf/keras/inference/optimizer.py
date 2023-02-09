@@ -27,13 +27,11 @@ import traceback
 import inspect
 import tensorflow as tf
 from typing import Dict, Optional, List, Union, Callable
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
+from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
+    AccelerationOption, latency_calculate_helper, format_optimize_result
 from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
 from bigdl.nano.tf.utils import _ModuleWrapper
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
@@ -44,7 +42,7 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -275,8 +273,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
                         result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
@@ -555,8 +553,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             original_model = model
 
         if precision == 'fp16':
-            invalidInputError('GPU' in device or device == 'VPUX',
-                              "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':

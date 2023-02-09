@@ -27,7 +27,7 @@ import numpy as np
 import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
 import opencv_transforms.transforms as cv_t
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_14
 
 
