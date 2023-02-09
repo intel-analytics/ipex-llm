@@ -52,12 +52,16 @@ class EncryptedDataFrameReader(
 
   def csv(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    sparkSession.read.options(extraOptions).csv(path)
+    val df = sparkSession.read.options(extraOptions).csv(path)
+    df.cache.count
+    df
   }
 
   def json(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    sparkSession.read.options(extraOptions).json(path)
+    val df = sparkSession.read.options(extraOptions).json(path)
+    df.cache.count
+    df
   }
 
   def parquet(path: String): DataFrame = {
