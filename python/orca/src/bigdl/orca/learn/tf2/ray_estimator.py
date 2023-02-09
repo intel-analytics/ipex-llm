@@ -38,10 +38,9 @@ from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.ray import OrcaRayContext
 
-from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
+from typing import TYPE_CHECKING, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     import numpy as np
-    import tensorflow as tf
     from tensorflow import Tensor
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback

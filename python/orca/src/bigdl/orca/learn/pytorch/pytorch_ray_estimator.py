@@ -32,7 +32,7 @@ from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer

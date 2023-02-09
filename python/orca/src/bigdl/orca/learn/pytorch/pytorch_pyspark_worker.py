@@ -29,11 +29,9 @@
 # limitations under the License.
 
 
-from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
 import logging
-from bigdl.orca.learn.utils import save_pkl
 import os
 import tempfile
 import copy
@@ -41,7 +39,6 @@ import copy
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
-from bigdl.dllib.utils.log4Error import *
 
 
 logger = logging.getLogger(__name__)
