@@ -49,7 +49,9 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         def to_numpy(ts):
             result = []
             for x in ts:
-                if isinstance(x, torch.Tensor) or np.isscalar(x):
+                if isinstance(x, torch.Tensor):
+                    result.append(x.cpu().numpy())
+                elif np.isscalar(x):
                     result.append(x)
                 else:
                     result.append(to_numpy(x))

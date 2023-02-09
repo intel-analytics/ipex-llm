@@ -56,7 +56,10 @@ def get_input_example(model, input_sample, forward_args):
     if isinstance(input_sample, DataLoader):
         input_sample = next(iter(input_sample))
         if isinstance(input_sample, Sequence):
-            input_sample = tuple(list(input_sample)[:len(forward_args)])
+            if len(input_sample) <= 2:
+                input_sample = input_sample[0]
+            else:
+                input_sample = tuple(input_sample[:len(forward_args)])
     elif input_sample is None:
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
