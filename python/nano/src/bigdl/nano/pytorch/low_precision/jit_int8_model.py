@@ -30,7 +30,43 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                  input_sample=None, channels_last=False, thread_num=None,
                  from_load=False, jit_strict=True, jit_method=None,
                  enable_onednn=False):
+        '''
+        This is the accelerated model for pytorch fx quantization and jit.
+        All the external API is based on InferenceOptimizer, so what we have here is
+        basically internal APIs and subject to change.
+
+        :param model: the model(nn.module) to be transform if from_load is False
+               the accelerated model if from_load is True.
+        :param calib_data: calibration data is required for static quantization.
+        :param q_config: We support 2 types of input here:
+               Qconfig (https://pytorch.org/docs/stable/generated/torch.quantization.
+               qconfig.QConfig.html#qconfig) is the configuration for how we insert
+               observers for a particular operator. Quantization preparation function
+               will instantiate observers multiple times for each of the layers.
+               QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
+               quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping)
+               (recommended) is a collection of quantization configurations, user
+               can set the qconfig for each operator (torch op calls, functional
+               calls, module calls) in the model through qconfig_mapping.
+        :param input_sample: torch tensor indicate the data sample to be used
+               for tracing.
+        :param channels_last: if set model and data to be channels-last mode.
+        :param thread_num: the thread num allocated for this model.
+        :param from_load: this will only be set by _load method.
+        :param jit_strict: Whether recording your mutable container types.
+        :param jit_method: use ``jit.trace`` or ``jit.script`` to convert a model
+               to TorchScript.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on
+               oneDNN Graph API, which provides a flexible API for aggressive
+               fusion. Default to ``False``.
+        '''
         super().__init__(model)
+        
+        enable_onednn=False
+        # todo: since onednn cooperates well with other nano methods, it is set to True
+        # by default in InferenceOptimizer.quantize(). However, it will lead to strange
+        # error in fx quantization during inference. Therefore, we disable it by hand.
+
         if from_load:
             self.channels_last = channels_last
             self.jit_strict = jit_strict
