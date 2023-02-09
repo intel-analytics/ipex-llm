@@ -67,7 +67,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     default_onnx_export_args = {'export_params': True,
                                 'opset_version': opset_version,
                                 'do_constant_folding': True,
-                                'input_names': forward_args,
+                                'input_names': tensor_args,
                                 'dynamic_axes': dynamic_axes,
                                 }
     default_onnx_export_args.update(kwargs)

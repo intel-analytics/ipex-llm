@@ -19,6 +19,7 @@ from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.common import AcceleratedModel
 import numpy as np
+from typing import Sequence
 
 
 class AcceleratedLightningModule(AcceleratedModel, LightningModule):
@@ -51,10 +52,14 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
             for x in ts:
                 if isinstance(x, torch.Tensor):
                     result.append(x.cpu().numpy())
+                elif isinstance(x, np.ndarray):
+                    result.append(x)
                 elif np.isscalar(x):
                     result.append(x)
-                else:
+                elif isinstance(x, Sequence):
                     result.append(to_numpy(x))
+                else:
+                    raise ValueError(f"Unexpected Type: {x}")
             return tuple(result)
         return to_numpy(tensors)
 

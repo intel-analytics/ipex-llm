@@ -17,7 +17,7 @@ from typing import Sequence
 
 from torch.utils.data import DataLoader
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.pytorch import get_forward_args, get_forward_defaults
+from bigdl.nano.utils.pytorch import get_forward_args, get_forward_defaults, get_conditional_args
 
 
 def complement_input_sample(model, input_sample):
@@ -25,7 +25,7 @@ def complement_input_sample(model, input_sample):
     This function will give a complemented input sample
     Mainly using default value to complete.
     '''
-    forward_args = get_forward_args(model)
+    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
     forward_defaults = get_forward_defaults(model)
     input_sample_length = 1
     if isinstance(input_sample, Sequence):
