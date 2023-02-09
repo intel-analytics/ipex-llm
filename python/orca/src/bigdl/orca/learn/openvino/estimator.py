@@ -160,8 +160,6 @@ class OpenvinoEstimator(SparkEstimator):
                         for p in batch_pred:
                             temp_result_list.append(get_arrow_hex_str([[p.flatten()]], names=outputs))
                     else:
-                        print("Inference without arrow optimization. You can use pyspark=3.1.3 and" 
-                              "bigdl-orca-spark3 to activate the arrow optimization")
                         pred = [[np.expand_dims(output, axis=0).tolist()] for output in batch_pred]
                     
                 else:
@@ -278,6 +276,8 @@ class OpenvinoEstimator(SparkEstimator):
                                                 list(self.output_dict.values()))
             else:
                 from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
+                print("Inference without arrow optimization. You can use pyspark=3.1.3 and " 
+                      "bigdl-orca-spark3 to activate the arrow optimization")
                 # Deal with types
                 result_struct = []
                 for key, shape in self.output_dict.items():
