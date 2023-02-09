@@ -8,7 +8,7 @@ ARG SPARK_JAR_REPO_URL
 ARG SCALA_VERSION=2.12
 
 
-# Stage.1 Spark & Hadoop & Hive
+# Stage.1 Spark & Hadoop
 FROM ubuntu:20.04 as bigdata
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
@@ -106,19 +106,6 @@ RUN cd /opt && \
         -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
     mvn -T 16 -DskipTests=true clean package && \
     mv /opt/hadoop/hadoop-common-project/hadoop-common/target/hadoop-common-3.2.0.jar /opt/spark-${SPARK_VERSION}/jars/hadoop-common-3.2.0.jar
-# hive
-RUN cd /opt && \
-    git clone https://github.com/analytics-zoo/hive.git && \
-    cd hive && \
-    git checkout branch-2.3.7-ppml && \
-    cd ql && \
-    export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m \
-        -Dhttp.proxyHost=$HTTP_PROXY_HOST \
-        -Dhttp.proxyPort=$HTTP_PROXY_PORT \
-        -Dhttps.proxyHost=$HTTPS_PROXY_HOST \
-        -Dhttps.proxyPort=$HTTPS_PROXY_PORT" && \
-    mvn -T 16 -DskipTests=true clean package && \
-    mv /opt/hive/ql/target/hive-exec-2.3.7-core.jar /opt/spark-${SPARK_VERSION}/jars/hive-exec-2.3.7-core.jar
 
 RUN ls -al /opt
 
