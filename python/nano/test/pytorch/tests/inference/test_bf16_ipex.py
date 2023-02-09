@@ -20,7 +20,7 @@ from torch import nn
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import PropertyMock, patch
-from bigdl.nano.common import check_avx512
+from bigdl.nano.utils.common import _avx512_checker
 import tempfile
 from typing import List
 
@@ -302,7 +302,7 @@ class Pytorch1_11:
 TORCH_VERSION_CLS = Pytorch1_11
 
 
-if not check_avx512():
+if not _avx512_checker():
     print("IPEX Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
 

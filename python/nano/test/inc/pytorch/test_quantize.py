@@ -30,8 +30,8 @@ import torchmetrics
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.utils.log4Error import invalidOperationError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidOperationError
+from bigdl.nano.utils.common import compare_version
 
 batch_size = 256
 num_workers = 0

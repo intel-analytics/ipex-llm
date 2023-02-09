@@ -270,16 +270,6 @@ object PPMLContext{
   }
 
   /**
-   * init ppml context with an existed SparkSession
-   * @param sparkSession a SparkSession
-   * @return a PPMLContext
-   */
-  def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
-    val ppmlSc = loadPPMLContext(sparkSession)
-    ppmlSc
-  }
-
-  /**
    * init ppml context with app name, SparkConf
    * @param sparkConf a SparkConf, ppml arguments are passed by this sparkconf.
    * @param appName the name of this Application

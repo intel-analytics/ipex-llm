@@ -17,7 +17,6 @@
 # Step 0: Import necessary libraries
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 
 from process_xshards import prepare_data
 from pytorch_model import NCF
@@ -29,8 +28,8 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
-args = parse_args("PyTorch NCF Training with Orca Xshards")
-init_orca(args, extra_python_lib="pytorch_model.py,process_xshards.py")
+args = parse_args("PyTorch NCF Training with Orca XShards")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,process_xshards.py")
 
 
 # Step 2: Read and process data using Orca XShards
@@ -90,10 +89,11 @@ est = Estimator.from_torch(model=model_creator,
                            backend=args.backend,
                            use_tqdm=True,
                            workers_per_node=args.workers_per_node)
-train_stats = est.fit(data=train_data, epochs=2,
+train_stats = est.fit(train_data,
+                      epochs=2,
+                      batch_size=10240,
                       feature_cols=feature_cols,
                       label_cols=label_cols,
-                      batch_size=10240,
                       validation_data=test_data,
                       callbacks=callbacks)
 print("Train results:")
@@ -104,7 +104,7 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(data=test_data,
+eval_stats = est.evaluate(test_data,
                           feature_cols=feature_cols,
                           label_cols=label_cols,
                           batch_size=10240)
@@ -115,9 +115,11 @@ for k, v in eval_stats.items():
 
 # Step 6: Save the trained PyTorch model and processed data for resuming training or prediction
 est.save(os.path.join(args.model_dir, "NCF_model"))
+save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

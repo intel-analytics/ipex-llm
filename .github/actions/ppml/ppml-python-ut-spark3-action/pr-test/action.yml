@@ -21,6 +21,7 @@ runs:
         bash scala/make-dist.sh -P spark_3.x
         export http_proxy=
         export https_proxy=
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0 
         BUILD_ID=dontKillMe nohup bash python/ppml/dev/test/run-pytests
         source deactivate
       env:

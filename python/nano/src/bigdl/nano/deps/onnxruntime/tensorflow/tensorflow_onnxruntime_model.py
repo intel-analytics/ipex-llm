@@ -20,10 +20,10 @@ import pickle
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
-from bigdl.nano.utils.util import get_default_args
+from bigdl.nano.utils.common import get_default_args
 from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
@@ -55,6 +55,14 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 if input_spec is None:
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
+                if hasattr(model, "output_shape"):
+                    self._output_shape = model.output_shape
+                elif isinstance(input_spec, (tuple, list)):
+                    self._output_shape = model.compute_output_shape((i.shape for i in input_spec))
+                else:
+                    self._output_shape = model.compute_output_shape(input_spec.shape)
+                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
+                    self._output_shape = self._output_shape[0]
                 if not isinstance(input_spec, (tuple, list)):
                     input_spec = (input_spec, )
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
@@ -152,7 +160,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
                  "_inputs_dtypes": self._inputs_dtypes,
-                 "_nesting_level": self._nesting_level}
+                 "_nesting_level": self._nesting_level,
+                 "_output_shape": self._output_shape}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
         if self._is_compiled:

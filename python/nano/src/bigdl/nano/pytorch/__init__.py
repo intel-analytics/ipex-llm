@@ -22,7 +22,7 @@ import os
 import torch
 import platform
 import warnings
-from bigdl.nano.utils.log4warning import register_suggestion
+from bigdl.nano.utils.common import register_suggestion
 
 
 if 'KMP_INIT_AT_FORK' in os.environ:

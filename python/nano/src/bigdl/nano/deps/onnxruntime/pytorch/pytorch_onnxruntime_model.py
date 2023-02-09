@@ -19,9 +19,9 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import export_to_onnx
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
 
