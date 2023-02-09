@@ -183,8 +183,8 @@ class BaseInferenceOptimizer:
         invalidInputError(method_name in self.optimized_model_dict,
                           'Must provide correct method name.')
         if 'env' not in self.optimized_model_dict[method_name]:
-            print(f"=================Start searching for environment variables"
-                  f"on {method_name} model=================")
+            print(f"=================Start searching for environment variables "
+                  f"for {method_name} model=================")
             env_result_map = {}
             for idx, (env_name, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
                 print(f"----------Start test {env_name} variables "

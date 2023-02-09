@@ -109,16 +109,13 @@ class AccelerationEnv(object):
                 AccelerationEnv._NANO_DIR, 'libs/libjemalloc.so')
             tmp_env_dict['MALLOC_CONF'] = 'oversize_threshold:1,background_thread:false,' \
                                           'metadata_thp:always,dirty_decay_ms:-1,muzzy_decay_ms:-1'
-            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = '1'
         elif tmp_malloc_lib:
             tmp_env_dict['LD_PRELOAD'] = os.path.join(
                 AccelerationEnv._NANO_DIR, 'libs/libtcmalloc.so')
             tmp_env_dict['MALLOC_CONF'] = ''
-            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
         else:
             tmp_env_dict['LD_PRELOAD'] = ''
             tmp_env_dict['MALLOC_CONF'] = ''
-            tmp_env_dict['ENABLE_JEMALLOC_VAR'] = ''
 
         # set omp env var
         omp_lib_path = ''
