@@ -29,7 +29,6 @@
 # limitations under the License.
 
 
-from subprocess import call
 from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist

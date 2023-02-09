@@ -41,13 +41,9 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
-from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
-from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
-                                                SCHEDULER_STEP_BATCH)
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
-                                            NUM_SAMPLES, get_batchsize)
+from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
