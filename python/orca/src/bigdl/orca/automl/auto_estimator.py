@@ -59,7 +59,7 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
-        self.best_trial: Sequential = None
+        self.best_trial = None
 
     @staticmethod
     def from_torch(*,
