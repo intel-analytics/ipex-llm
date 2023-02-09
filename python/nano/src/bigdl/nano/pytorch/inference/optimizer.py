@@ -184,22 +184,34 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | in real deploy environment. E.g. batch size should be set to 1
                 | if you would like to use the accelerated model in an online service.
                 |
-                | 2. a single torch.Tensor which used for training, this case is used to
-                | accept single sample input x.
+                | Each element in the DataLoader can be one of the following:
+                |    a. a single Tensor or dict of Tensors
+                |    b. a tuple:
+                |         b1: if the lenth is 1, the first element will be treated as input
+                |             to the model
+                |         b2: if the lenth is 2, the first element will be treated as input
+                |             to the model, with the sencond element treated as label.
+                |             if the input to the model is a tuple, it will be unpacked as
+                |             multiple inputs.
+                |         b3: if the lengh is larger than 2, the first n elements as input
+                |             to the model, with n being the argument lenth to the model.forward
+                |             and the rest will be treated as label
                 |
-                | 3. a tuple of torch.Tensor which used for training, this case is used to
-                | accept single sample input (x, y) or (x1, x2) et al.
+                | 2. a single element of the Dataloader specified above
 
         :param validation_data: (optional) validation_data is only needed when users care
                                 about the possible accuracy drop. It support following formats:
 
                 | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
                 |
-                | 2. a single torch.Tensor which used for training, this case is used to
-                | accept single sample input x.
+                | Each element in the DataLoader should be a tuple as least size of two:
+                |     a: if the lenth is 2, the first element will be treated as input
+                |        to the model, with the sencond element treated as label
+                |     b: if the lengh is larger than 2, the first n elements as input
+                |        to the model, with n being the argument lenth to the model.forward
+                |        and the rest will be treated as label
                 |
-                | 3. a tuple of torch.Tensor which used for training, this case is used to
-                | accept single sample input (x, y) or (x1, x2) et al.
+                | 2. a single element of the Dataloader specified above
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
@@ -333,22 +345,45 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         model.eval()  # change model to eval mode
 
+        forward_args = get_forward_args(model)
         if input_sample is None:
-            forward_args = get_forward_args(model)
             if isinstance(training_data, DataLoader):
                 input_sample = get_input_example(model, training_data, forward_args)
             else:
                 if isinstance(training_data, Sequence):
-                    input_sample = tuple(list(training_data)[:len(forward_args)])
+                    if len(training_data) <= 2:
+                        input_sample = training_data[0]
+                        if len(training_data) == 2:
+                            input_label = training_data[1]
+                        else:
+                            input_label = []
+                    else:
+                        input_sample = tuple(training_data[:len(forward_args)])
+                        input_label = tuple(training_data[len(forward_args):])
                 else:
                     input_sample = training_data
+                    input_label = []
                 # turn training_data into dataset
-                dataset = RepeatDataset(sample=training_data, num=1)
+                dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
                 training_data = DataLoader(dataset, batch_size=1)
                 training_data = remove_batch_dim_fn(training_data)
+
                 if validation_data is not None and not isinstance(validation_data, DataLoader):
                     # turn validation_data into dataset
-                    val_dataset = RepeatDataset(sample=validation_data, num=1)
+                    if isinstance(validation_data, Sequence):
+                        if len(validation_data) <= 2:
+                            val_sample = validation_data[0]
+                            if len(validation_data) == 2:
+                                val_label = validation_data[1]
+                            else:
+                                val_label = []
+                        else:
+                            val_sample = tuple(validation_data[:len(forward_args)])
+                            val_label = tuple(validation_data[len(forward_args):])
+                    else:
+                        val_sample = training_data
+                        val_label = []
+                    val_dataset = RepeatDataset(sample=(val_sample, val_label), num=1)
                     validation_data = DataLoader(val_dataset, batch_size=1)
                     validation_data = remove_batch_dim_fn(validation_data)
 

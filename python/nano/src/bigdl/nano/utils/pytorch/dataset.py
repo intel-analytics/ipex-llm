@@ -34,8 +34,12 @@ class RepeatDataset(Dataset):
 def remove_batch_dim_fn(loader):
     def warpper_fn(batch):
         data = default_collate(batch)
-        if isinstance(data, torch.Tensor):
-            return data.squeeze(0)
-        return [x.squeeze(0) for x in data]
+
+        def recusive_remove(data):
+            if isinstance(data, torch.Tensor):
+                return data.squeeze(0)
+            else:
+                return tuple([recusive_remove(x) for x in data])
+        return recusive_remove(data)
     loader.collate_fn = warpper_fn
     return loader
