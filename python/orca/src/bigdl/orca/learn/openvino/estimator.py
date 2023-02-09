@@ -106,7 +106,7 @@ class OpenvinoEstimator(SparkEstimator):
         schema = None
         if config is None:
             config = {
-                'CPU_THREADS_NUM': str(self.core_num), 
+                'CPU_THREADS_NUM': str(self.core_num),
                 "CPU_BIND_THREAD": "HYBRID_AWARE"
             }
         print(config)
@@ -158,10 +158,10 @@ class OpenvinoEstimator(SparkEstimator):
                     if arrow_optimization:
                         temp_result_list = []
                         for p in batch_pred:
-                            temp_result_list.append(get_arrow_hex_str([[p.flatten()]], names=outputs))
+                            temp_result_list.append(
+                                get_arrow_hex_str([[p.flatten()]], names=outputs))
                     else:
                         pred = [[np.expand_dims(output, axis=0).tolist()] for output in batch_pred]
-                    
                 else:
                     batch_pred = list(map(lambda output:
                                           infer_request.output_blobs[output].buffer[:elem_num],
@@ -174,9 +174,8 @@ class OpenvinoEstimator(SparkEstimator):
                                 single_r.append([p[i].flatten()])
                             temp_result_list.append(get_arrow_hex_str(single_r, names=outputs))
                     else:
-                        pred = [list(np.expand_dims(output, axis=0).tolist()
-                                 for output in single_result)
-                            for single_result in zip(*batch_pred)]
+                        pred = [list(np.expand_dims(output, axis=0).tolist() for output in single_result) 
+                                for single_result in zip(*batch_pred)]
                 del batch_pred
                 if arrow_optimization:
                     return temp_result_list
@@ -273,10 +272,10 @@ class OpenvinoEstimator(SparkEstimator):
             result = data.rdd.mapPartitions(lambda iter: partition_inference(iter))
             if arrow_optimization:
                 result_df = openvino_output_to_sdf(data, result, outputs,
-                                                list(self.output_dict.values()))
+                                                   list(self.output_dict.values()))
             else:
                 from pyspark.sql.types import StructType, StructField, FloatType, ArrayType
-                print("Inference without arrow optimization. You can use pyspark=3.1.3 and " 
+                print("Inference without arrow optimization. You can use pyspark=3.1.3 and "
                       "bigdl-orca-spark3 to activate the arrow optimization")
                 # Deal with types
                 result_struct = []
