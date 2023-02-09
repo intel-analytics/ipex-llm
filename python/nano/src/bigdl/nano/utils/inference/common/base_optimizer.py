@@ -27,7 +27,6 @@ from .utils import CompareMetric, AccelerationOption, format_acceleration_option
 class BaseInferenceOptimizer:
     ALL_INFERENCE_ACCELERATION_METHOD = None
     ALL_ACCELERATION_ENV = None
-    _throughput_calculate_helper = throughput_calculate_helper
 
     def __init__(self):
         '''
@@ -178,22 +177,21 @@ class BaseInferenceOptimizer:
         return best_model, format_acceleration_option(best_metric.method_name,
                                                       self.ALL_INFERENCE_ACCELERATION_METHOD)
 
-    def _search_env(self, method_name=None):
+    def _search_env(self, method_name: str = None):
         invalidInputError(method_name,
                           'Must give specific model method for searching env.')
         invalidInputError(method_name in self.optimized_model_dict,
                           'Must provide correct method name.')
         if 'env' not in self.optimized_model_dict[method_name]:
+            print(f"=================Start searching for environment variables"
+                  f"on {method_name} model=================")
             env_result_map = {}
             for idx, (env_name, env) in enumerate(self.ALL_ACCELERATION_ENV.items()):
                 print(f"----------Start test {env_name} variables "
                       f"({idx + 1}/{len(self.ALL_ACCELERATION_ENV)})----------")
                 try:
-                    env_result_map[env_name], _ = \
-                        exec_with_worker(self._throughput_calculate_helper,
-                                         100, self.baseline_time, self._func_test,
-                                         self.optimized_model_dict[method_name]['model'],
-                                         self.input_sample, env=env.get_env_dict())
+                    env_result_map[env_name] = self._latency_calc_with_worker(
+                        self.optimized_model_dict[method_name]['model'], env=env.get_env_dict())
                 except Exception as e:
                     print("----------worker failed to execute----------")
                     print(e.args)
@@ -210,6 +208,11 @@ class BaseInferenceOptimizer:
         register_suggestion(f'You can try the following commands for better performance\n'
                             f'{env_suggestion}')
 
-    @staticmethod
-    def _func_test(model, input_sample):
-        model(input_sample)
+    def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
+        def _func_test(model, input_sample):
+            model(input_sample)
+
+        latency, _ = exec_with_worker(throughput_calculate_helper,
+                                      100, self.baseline_time, _func_test,
+                                      model, self.input_sample, env=env)
+        return latency
