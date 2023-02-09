@@ -1,0 +1,19 @@
+name: 'Run Orca Python Horovod Tf2 Py38 Spark3'
+description: 'Run Orca Python Exampletest Horovod Pytorch Py38 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py38
+        export SPARK_LOCAL_HOSTNAME=localhost
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+        chmod a+x python/orca/dev/example/run-example-test-ray-horovod-pytorch.sh
+        python/orca/dev/example/run-example-test-ray-horovod-pytorch.sh
+        ray stop
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

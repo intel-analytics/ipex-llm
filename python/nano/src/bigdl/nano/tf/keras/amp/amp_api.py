@@ -21,5 +21,5 @@ def BF16Model(*args, **kwargs):
 
 
 def load_bf16_model(path):
-    from .bfloat16 import BF16Model
-    return BF16Model._load(path)
+    from .bfloat16 import load_bf16_model
+    return load_bf16_model(path)

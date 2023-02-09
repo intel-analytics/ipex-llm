@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.multiprocessing.backend import Backend
 import ray
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import Backend
+from bigdl.nano.utils.common import invalidInputError
 
 
 class RayBackend(Backend):

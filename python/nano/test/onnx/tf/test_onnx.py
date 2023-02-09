@@ -42,8 +42,8 @@ class TestONNX(TestCase):
         y_hat = onnx_model.predict(input_examples, batch_size=5)
         assert y_hat.shape == (100, 10)
 
-        preds = model.predict(input_examples)
-        onnx_preds = onnx_model.predict(input_examples)
+        preds = model.predict(input_examples, batch_size=5)
+        onnx_preds = onnx_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=1e-5)
 
     def test_tf_onnx_save_load(self):

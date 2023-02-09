@@ -15,10 +15,12 @@
 #
 
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
+from .core.base_metric import BaseINCMetric
 
 
-def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
+def quantize(model, dataloader=None, eval_func=None, metric=None,
+             thread_num=None, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -29,7 +31,8 @@ def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
         if v is not None:
             not_none_kwargs[k] = v
 
-    q_model = _quantize(model=model, dataloader=dataloader, metric=metric, **not_none_kwargs)
+    q_model = _quantize(model=model, dataloader=dataloader, eval_func=eval_func,
+                        metric=metric, **not_none_kwargs)
 
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantized_model import PytorchQuantizedModel
@@ -76,11 +79,12 @@ def _quantize(
     model,
     metric,
     dataloader,
+    eval_func,
     framework,
     conf=None,
     approach='static',
     tuning_strategy='bayesian',
-    accuracy_criterion={'relative': 0.99, 'higher_is_better': True},
+    accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
     timeout=0,
     max_trials=1,
     inputs=[],
@@ -113,7 +117,7 @@ def _quantize(
             # `dataloader` is tensorflow (x,y)
             # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
             from .onnx.tensorflow.quantization import KerasNumpyDataset
-            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
+            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         # INC requires a batched dataloader,
         # A torch.Dataset doesn't have `batch_size` attribute,
@@ -126,8 +130,49 @@ def _quantize(
         from bigdl.nano.pytorch.lightning import LightningModule
         if isinstance(model, LightningModule):
             model = model.model
+        if metric is not None:
+            from .pytorch.metric import PytorchINCMetric
+            inc_metric = PytorchINCMetric()
+            inc_metric.metric = metric
     elif 'onnx' in framework:
+        onnx_option = kwargs.pop('onnx_option', None)
         model = model.onnx_model
+        if metric is not None:
+            if onnx_option == 'tensorflow':
+                from .onnx.tensorflow.metric import KerasONNXRuntimeINCMetic
+                inc_metric = KerasONNXRuntimeINCMetic()
+            else:
+                from .onnx.pytorch.metric import PytorchONNXRuntimeINCMetic
+                inc_metric = PytorchONNXRuntimeINCMetic()
+            inc_metric.metric = metric
+    elif 'tensorflow' in framework:
+        if metric is not None:
+            from .tensorflow.metric import TensorflowINCMetric
+            inc_metric = TensorflowINCMetric()
+            inc_metric.metric = metric
+
+    custom_inc_metric = None
+    # use metric_id and new custom_inc_metric to solve the same registered metric name
+    if metric is not None:
+        metric_id = str(inc_metric.get_next_metric_id())
+        if 'tensorflow' in framework:
+            # works for Tensorflow
+            custom_inc_metric = type(type(inc_metric).__name__ + metric_id,
+                                     (object, ),
+                                     {"stack": inc_metric.stack,
+                                      "to_scalar": inc_metric.to_scalar,
+                                      "result": inc_metric.result,
+                                      "update": inc_metric.update,
+                                      "stack": inc_metric.stack,
+                                      "reset": inc_metric.reset})
+        else:
+            # works for PyTorch
+            custom_inc_metric = type(type(inc_metric).__name__ + metric_id,
+                                     (BaseINCMetric, ),
+                                     {"stack": inc_metric.stack,
+                                      "to_scalar": inc_metric.to_scalar})
+        custom_inc_metric = custom_inc_metric()
+        custom_inc_metric.metric = metric
 
     if 'relative' in accuracy_criterion:
         criterion = 'relative'
@@ -144,8 +189,7 @@ def _quantize(
         accuracy_criterion = AccuracyCriterion(
             higher_is_better=accuracy_criterion.get('higher_is_better', True),
             criterion=criterion,
-            # we calculate `tolerable_loss` by `1 - target_accuracy`
-            tolerable_loss=1.0 - accuracy_criterion[criterion]
+            tolerable_loss=float(accuracy_criterion[criterion])
         )
 
     tuning_criterion = TuningCriterion(
@@ -163,8 +207,7 @@ def _quantize(
         outputs=outputs,
         backend=backend
     )
-    # if metric is None and eval_dataloader is None:
-    if metric is None:
+    if metric is None and eval_func is None:
         config.performance_only = True
     config = Config(quantization=config, benchmark=None, pruning=None,
                     distillation=None, nas=None)
@@ -177,6 +220,9 @@ def _quantize(
         model=model,
         conf=q_conf,
         calib_dataloader=dataloader,
-        # todo: add eval
+        eval_func=eval_func,
+        eval_metric=custom_inc_metric,
+        # use same dataloader as 1.0 API
+        eval_dataloader=dataloader if metric is not None else None,
     )
     return q_model

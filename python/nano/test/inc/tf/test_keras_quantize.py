@@ -16,6 +16,7 @@
 
 
 import pytest
+import operator
 import tempfile
 from unittest import TestCase
 import tensorflow as tf
@@ -23,6 +24,7 @@ from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
+from bigdl.nano.utils.common import compare_version
 
 
 class TestModelQuantize(TestCase):
@@ -98,3 +100,49 @@ class TestModelQuantize(TestCase):
         train_dataset = tf.data.Dataset.from_tensors(train_examples[0])
         q_model = InferenceOptimizer.quantize(model, x=train_dataset)
         assert q_model(train_examples[0:10]).shape == (10, 10)
+
+    def test_model_quantize_tuning(self):
+        model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
+        model = Model(inputs=model.inputs, outputs=model.outputs)
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+                        loss=tf.keras.losses.BinaryCrossentropy(),
+                        metrics=[tf.keras.metrics.CategoricalAccuracy()],)
+        train_examples = np.random.random((100, 40, 40, 3))
+        train_labels = np.random.randint(0, 10, size=(100,))
+        train_labels = to_categorical(train_labels, num_classes=10)
+        train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
+        # Case 1: test eval function
+        if compare_version("neural_compressor", operator.ge, "1.14.1"):
+            # eval function only works for version >= 1.14.1
+            def eval_func(model):
+                # model (tf.saved_model.load): The input model will be the class of tf.saved_model.load(quantized_model_path).
+                # model is a tensorflow.python.training.tracking.autotrackable.AutoTrackable
+                infer = model.signatures["serving_default"]
+                output_dict_keys = infer.structured_outputs.keys()
+                output_name = list(output_dict_keys )[0]
+                inputs = np.array(train_examples)
+                input_tensor = tf.constant(inputs, dtype=tf.float32)
+                preds = infer(input_tensor)[output_name]
+                acc = tf.keras.metrics.CategoricalAccuracy()(preds, train_labels).numpy()
+                return acc
+
+            q_model = InferenceOptimizer.quantize(model,
+                                                  x=train_dataset,
+                                                  eval_func=eval_func,
+                                                  accuracy_criterion={'relative': 0.99,
+                                                                      'higher_is_better': True})
+            assert q_model
+            output = q_model(train_examples[0:10])
+            assert output.shape == (10, 10)
+
+        # Case 2: test eval metric
+        q_model = InferenceOptimizer.quantize(model,
+                                              x=train_dataset,
+                                              metric=tf.keras.metrics.CategoricalAccuracy(),
+                                              tuning_strategy='basic',
+                                              accuracy_criterion={'relative': 0.99,
+                                                                  'higher_is_better': True})
+        assert q_model
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)

@@ -31,8 +31,8 @@ from pytorch_lightning.utilities.apply_func import apply_to_collection
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.strategies import DeepSpeedStrategy
 
-from bigdl.nano.common import check_avx512
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
@@ -181,7 +181,7 @@ class TorchNano(LightningLite):
             precision = 32
 
         # Confirm if cpu supports AVX512
-        if self.use_ipex and not check_avx512():
+        if self.use_ipex and not _avx512_checker():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.10 in a cpu instruction set"
                         " without avx512 will crash."

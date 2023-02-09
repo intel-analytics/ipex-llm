@@ -16,8 +16,8 @@
 
 
 import operator
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import compare_version
 
 
 def load_inc_model(path, model, framework, input_sample=None):
@@ -34,10 +34,11 @@ def load_inc_model(path, model, framework, input_sample=None):
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def quantize(model, dataloader=None, metric=None, thread_num=None, **kwargs):
+def quantize(model, dataloader=None, eval_func=None, metric=None,
+             thread_num=None, **kwargs):
     if compare_version("neural_compressor", operator.ge, "2.0"):
         from .inc_api_2 import quantize
-        return quantize(model, dataloader, metric, thread_num, **kwargs)
+        return quantize(model, dataloader, eval_func, metric, thread_num, **kwargs)
 
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,

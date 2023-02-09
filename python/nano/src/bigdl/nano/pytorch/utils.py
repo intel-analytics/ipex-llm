@@ -15,8 +15,6 @@
 #
 
 import operator
-
-from pytorch_lightning.utilities.imports import _compare_version
 from types import MethodType
 import pytorch_lightning as pl
 from typing import Optional
@@ -31,16 +29,17 @@ from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_m
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import compare_version
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from pathlib import Path
 
-TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
-TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
-TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-TORCH_VERSION_LESS_1_13 = _compare_version("torch", operator.lt, "1.13")
-TORCHVISION_VERSION_LESS_1_12 = _compare_version("torchvision", operator.lt, "0.12.0")
-TORCHVISION_VERSION_LESS_1_14 = _compare_version("torchvision", operator.lt, "0.14.0")
+TORCH_VERSION_LESS_1_10 = compare_version("torch", operator.lt, "1.10")
+TORCH_VERSION_LESS_1_11 = compare_version("torch", operator.lt, "1.11")
+TORCH_VERSION_LESS_1_12 = compare_version("torch", operator.lt, "1.12")
+TORCH_VERSION_LESS_1_13 = compare_version("torch", operator.lt, "1.13")
+TORCHVISION_VERSION_LESS_1_12 = compare_version("torchvision", operator.lt, "0.12.0")
+TORCHVISION_VERSION_LESS_1_14 = compare_version("torchvision", operator.lt, "0.14.0")
 
 
 def batch_call(func):

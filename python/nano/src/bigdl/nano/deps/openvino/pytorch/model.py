@@ -19,10 +19,10 @@ from typing import List, Union  # for typehint
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
 from ..core.model import OpenVINOModel
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from .utils import export
 import torch
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager

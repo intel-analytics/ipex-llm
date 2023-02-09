@@ -1,0 +1,35 @@
+$FLINK_HOME/bin/flink run-application \
+    --target kubernetes-application \
+    -Dkubernetes.entry.path="/opt/flink-entrypoint.sh" \
+    -Dsecurity.ssl.internal.enabled=true \
+    -Dsecurity.ssl.internal.keystore=/ppml/flink/keys/internal.keystore \
+    -Dsecurity.ssl.internal.truststore=/ppml/flink/keys/internal.keystore \
+    -Dsecurity.ssl.internal.keystore-password=internal_store_password \
+    -Dsecurity.ssl.internal.truststore-password=internal_store_password \
+    -Dsecurity.ssl.internal.key-password=internal_store_password \
+    -Djobmanager.memory.process.size=4g \
+    -Dtaskmanager.memory.process.size=4g \
+    -Dakka.watch.heartbeat.interval=5s \
+    -Dkubernetes.websocket.timeout=10000000 \
+    -Dheartbeat.timeout=10000000 \
+    -Dheartbeat.interval=10000000 \
+    -Dakka.ask.timeout=10000000ms \
+    -Dakka.lookup.timeout=10000000ms \
+    -Dslot.request.timeout=10000000 \
+    -Dtaskmanager.slot.timeout=10000000 \
+    -Dtaskmanager.network.request-backoff.max=10000000 \
+    -Dtaskmanager.registration.timeout=10000000 \
+    -Dresourcemanager.taskmanager-timeout=10000000 \
+    -Dresourcemanager.taskmanager-registration.timeout=10000000 \
+    -Djobmanager.adaptive-scheduler.resource-wait-timeout=10000000 \
+    -Djobmanager.adaptive-scheduler.resource-stabilization-timeout=10000000 \
+    -Dkubernetes.sgx.enabled=false \
+    -Dkubernetes.flink.conf.dir=/ppml/flink/conf \
+    -Dkubernetes.jobmanager.service-account=spark \
+    -Dkubernetes.taskmanager.service-account=spark \
+    -Dkubernetes.cluster-id=flink-wordcount-cluster \
+    -Dkubernetes.container.image.pull-policy=Always \
+    -Dkubernetes.pod-template-file.jobmanager=/ppml/flink-k8s-template.yaml \
+    -Dkubernetes.pod-template-file.taskmanager=/ppml/flink-k8s-template.yaml \
+    -Dkubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
+    local:///ppml/flink/examples/streaming/WordCount.jar

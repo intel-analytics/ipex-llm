@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG TINI_VERSION=v0.18.0
 ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
@@ -32,7 +32,7 @@ ENV JDK_HOME                            /opt/jdk${JDK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 # Environment used for build pytorch
 ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
-ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.7/dist-packages/:/usr/local/lib/"
+ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.8/dist-packages/:/usr/local/lib/"
 
 RUN mkdir /ppml/examples && \
     mkdir /ppml/torchserve
@@ -76,18 +76,18 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/import json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
+    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
+    sed -i '/import abc/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/torch_handler/base_handler.py && \
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
+    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    sed -i '/import json/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    cp /usr/local/lib/python3.8/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /ppml/torchserve/start-backend-sgx.sh && \
     chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
     chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
 # PyTorch
-    rm -rf /usr/local/lib/python3.7/dist-packages/torch && \
+    rm -rf /usr/local/lib/python3.8/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
     cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
@@ -105,7 +105,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    patch /usr/local/lib/python3.7/dist-packages/datasets/utils/filelock.py /filelock.patch && \
+    patch /usr/local/lib/python3.8/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

@@ -26,14 +26,12 @@ import numpy as np
 import traceback
 import inspect
 import tensorflow as tf
-from typing import Dict, Optional, List, Union
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
+from typing import Dict, Optional, List, Union, Callable
+from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
+    AccelerationOption, latency_calculate_helper, format_optimize_result
 from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
 from bigdl.nano.tf.utils import _ModuleWrapper
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
@@ -44,7 +42,7 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -136,8 +134,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) ``tf.TensorSpec`` defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
@@ -273,8 +273,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
                         result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
@@ -348,9 +348,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
-                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
-                           ``input_spec`` is required. If ``accelerator='openvino'``,
-                           ``input_spec`` is only required when you have a custom Keras model.
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -408,6 +408,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
                  input_spec=None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -450,17 +451,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
-                           defining the shape/dtype of the input. If ``accelerator='onnxruntime'``,
-                           ``input_spec`` is required. If ``accelerator='openvino'``, or
-                           ``accelerator=None`` and ``precision='int8'``, ``input_spec``
-                           is required when you have a custom Keras model.
+        :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
+                                defining the shape/dtype of the input. This is only required when
+                                you have a custom Keras model (no input/output layer is explicitly
+                                defined).
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
-        :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
+                                    accuracy control.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
@@ -543,8 +553,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             original_model = model
 
         if precision == 'fp16':
-            invalidInputError('GPU' in device or device == 'VPUX',
-                              "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':
@@ -584,7 +592,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             logging=logging,
                                             **kwargs)
             elif accelerator is None:
-                result = BF16Model(model)
+                return BF16Model(model)
             return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -610,14 +618,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
             saved_model_input_spec_set = model._saved_model_inputs_spec is not None
             if not model.built and not saved_model_input_spec_set:
+                invalidInputError(input_spec is not None,
+                                  "`input_spec` cannot be None when passing unbuilt model.")
                 # model cannot be saved either because the input shape is not available
                 # or because the forward pass of the model is not defined
-                if input_spec is not None:
-                    if isinstance(input_spec, (tuple, list)):
-                        input_shape = (i.shape for i in input_spec)
-                    else:
-                        input_shape = input_spec.shape
-                    model.compute_output_shape(input_shape)
+                if isinstance(input_spec, (tuple, list)):
+                    input_shape = (i.shape for i in input_spec)
+                else:
+                    input_shape = input_spec.shape
+                _output_shape = model.compute_output_shape(input_shape)
+            else:
+                _output_shape = model.output_shape
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -633,6 +644,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         outputs = "outputs"    # type: ignore
 
             result = inc_quantzie(model, dataloader=calib_dataset,
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework='tensorflow',
                                   conf=conf,
@@ -643,6 +655,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   max_trials=max_trials,
                                   inputs=inputs,
                                   outputs=outputs)
+            result._output_shape = _output_shape
         elif accelerator == 'openvino':
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
@@ -701,6 +714,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             }
             framework = method_map.get(method, None)
             result = inc_quantzie(onnx_model, dataloader=(x, y),
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework=framework,
                                   thread_num=thread_num,
@@ -718,6 +732,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result._inputs_dtypes = onnx_model._inputs_dtypes
             result._default_kwargs = onnx_model._default_kwargs
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
+            result._output_shape = onnx_model._output_shape
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)

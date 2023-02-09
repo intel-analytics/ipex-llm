@@ -71,7 +71,7 @@ class WandbLoggerCallback(Callback):
             epoch, the values of the Model's metrics are returned.
             Example : {'loss': 0.2, 'accuracy': 0.7}
         """
-        self.run.log(runner.epochs_stats)
+        self.run.log(runner.epoch_stats)
 
     def before_run(self, runner):
         """

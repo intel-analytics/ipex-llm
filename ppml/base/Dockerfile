@@ -37,8 +37,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
+# Python3.8
+    apt-get install -y python3.8 python3.8-dev python3.8-distutils && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.8 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip install setuptools==58.4.0 && \
@@ -69,10 +71,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py /_dill.py.patch && \
-    patch /usr/lib/python3.7/uuid.py /python-uuid.patch && \
-    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
+    patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py /_dill.py.patch && \
+    patch /usr/lib/python3.8/uuid.py /python-uuid.patch && \
+    patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so.1 /usr/lib/libpython3.8.so.1 && \
     chmod a+x /ppml/init.sh && \
     chmod a+x /ppml/clean.sh && \
     chmod +x /ppml/verify-attestation-service.sh && \
@@ -126,6 +128,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
