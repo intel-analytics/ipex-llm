@@ -1206,13 +1206,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         return _MultiInstanceModel(model, ps, send_queue, recv_queue, next_idx)
 
-    def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
-        def _func_test(model, input_sample):
-            if isinstance(input_sample, (Dict, torch.Tensor)):
-                model(input_sample)
-            else:
-                model(*input_sample)
+    @staticmethod
+    def _func_test(model, input_sample):
+        if isinstance(input_sample, (Dict, torch.Tensor)):
+            model(input_sample)
+        else:
+            model(*input_sample)
 
+    def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
         def _throughput_calculate_helper(iterrun, baseline_time, func,
                                          model_path, original_model, *args):
             model = InferenceOptimizer.load(model_path, original_model)
@@ -1223,7 +1224,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model_path = os.path.join(tmp_dir_path, 'model')
             InferenceOptimizer.save(model, model_path)
             latency, _ = exec_with_worker(_throughput_calculate_helper,
-                                          100, self.baseline_time, _func_test, model_path,
+                                          100, self.baseline_time, self._func_test, model_path,
                                           self.optimized_model_dict['original']['model'],
                                           self.input_sample, env=env)
         return latency

@@ -208,11 +208,12 @@ class BaseInferenceOptimizer:
         register_suggestion(f'You can try the following commands for better performance\n'
                             f'{env_suggestion}')
 
-    def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
-        def _func_test(model, input_sample):
-            model(input_sample)
+    @staticmethod
+    def _func_test(model, input_sample):
+        model(input_sample)
 
+    def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
         latency, _ = exec_with_worker(throughput_calculate_helper,
-                                      100, self.baseline_time, _func_test,
+                                      100, self.baseline_time, self._func_test,
                                       model, self.input_sample, env=env)
         return latency
