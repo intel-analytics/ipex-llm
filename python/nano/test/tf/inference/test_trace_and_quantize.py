@@ -210,7 +210,13 @@ class TestTraceAndQuantize(TestCase):
 
         from bigdl.nano.utils.common import _bf16_checker
         if _bf16_checker():
-            model(x)
+            output = model(x)
+            assert output.dtype == tf.bfloat16
 
-        InferenceOptimizer.save(model, "save_bf16")
-        model = InferenceOptimizer.load("save_bf16", model)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        if _bf16_checker():
+            output = load_model(x)
+            assert output.dtype == tf.bfloat16
