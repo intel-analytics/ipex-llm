@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.writeCsv
+import com.intel.analytics.bigdl.ppml.utils.{KeyReaderWriter, KeyLoaderManagement, KeyLoader}
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, AES_GCM_CTR_V1, AES_GCM_V1, Crypto, CryptoMode, ENCRYPT, PLAIN_TEXT}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SerializableWritable, SparkContext, TaskContext}
 import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
+
 
 import java.nio.charset.StandardCharsets
 import java.util.{Base64, Locale}
@@ -31,7 +33,8 @@ class EncryptedDataFrameWriter(
       sparkSession: SparkSession,
       df: DataFrame,
       encryptMode: CryptoMode,
-      dataKeyPlainText: String) {
+      primaryKeyName: String,
+      keyLoaderManagement: KeyLoaderManagement) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
 
   def option(key: String, value: String): this.type = {
@@ -61,17 +64,23 @@ class EncryptedDataFrameWriter(
     this
   }
 
+  def setCryptoCodecContext(path: String): Unit = {
+    val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
+                                              .generateDataKeyPlainText(path)
+    sparkSession.sparkContext.hadoopConfiguration
+      .set("bigdl.kms.dataKey.plaintext", dataKeyPlainText)
+    sparkSession.sparkContext.hadoopConfiguration
+      .set("hadoop.io.compression.codecs", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+    option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+  }
+
   def csv(path: String): Unit = {
     encryptMode match {
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
-        sparkSession.sparkContext.hadoopConfiguration
-          .set("hadoop.io.compression.codecs",
-          "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-        df.write
-          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-          .options(extraOptions).mode(mode).csv(path)
+        setCryptoCodecContext(path)
+        df.write.options(extraOptions).mode(mode).csv(path)
       case _ =>
         Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
     }
@@ -82,12 +91,8 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).json(path)
       case AES_CBC_PKCS5PADDING =>
-        sparkSession.sparkContext.hadoopConfiguration
-          .set("hadoop.io.compression.codecs",
-            "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-        df.write
-          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-          .options(extraOptions).mode(mode).json(path)
+        setCryptoCodecContext(path)
+        df.write.options(extraOptions).mode(mode).json(path)
       case _ =>
         Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
     }
@@ -99,6 +104,8 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).parquet(path)
       case AES_GCM_CTR_V1 | AES_GCM_V1 =>
+        val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
+                                                  .generateDataKeyPlainText(path)
         EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
         df.write
           .option("parquet.encryption.column.keys", "key1: " + header)
@@ -170,3 +177,4 @@ object EncryptedDataFrameWriter {
       s"footerKey: ${footKey}, key1: ${dataKey}")
   }
 }
+
