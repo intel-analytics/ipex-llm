@@ -618,7 +618,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
             saved_model_input_spec_set = model._saved_model_inputs_spec is not None
             if not model.built and not saved_model_input_spec_set or \
-                not hasattr(model, 'output_shape'):
+            not hasattr(model, 'output_shape'):
                 invalidInputError(input_spec is not None,
                                   "`input_spec` cannot be None when passing unbuilt model.")
                 # model cannot be saved either because the input shape is not available
