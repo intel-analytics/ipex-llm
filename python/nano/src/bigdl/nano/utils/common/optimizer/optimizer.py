@@ -16,12 +16,13 @@
 import traceback
 from abc import abstractmethod
 from typing import Dict, Optional
-from bigdl.nano.utils.common import invalidInputError, invalidOperationError
-from bigdl.nano.utils.log4warning import register_suggestion
+from bigdl.nano.utils.common import invalidInputError, invalidOperationError, register_suggestion
 
 from .acceleration_option import AccelerationOption
 from .format import format_acceleration_option
 from .metric import CompareMetric
+from .latency import latency_calculate_helper
+from .exec_with_worker import exec_with_worker
 
 
 class BaseInferenceOptimizer:
@@ -213,7 +214,7 @@ class BaseInferenceOptimizer:
         model(input_sample)
 
     def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
-        latency, _ = exec_with_worker(throughput_calculate_helper,
+        latency, _ = exec_with_worker(latency_calculate_helper,
                                       100, self.baseline_time, self._func_test,
                                       model, self.input_sample, env=env)
         return latency

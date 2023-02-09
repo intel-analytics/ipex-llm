@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import tempfile
 
 import torch
+from bigdl.nano.utils.common.optimizer.acceleration_env import AccelerationEnv
+from bigdl.nano.utils.common.optimizer.exec_with_worker import exec_with_worker
 from torch import nn
 import time
 import multiprocessing as mp
@@ -451,8 +454,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status = \
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        self._func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     self._func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -1253,19 +1256,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model(*input_sample)
 
     def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
-        def _throughput_calculate_helper(iterrun, baseline_time, func,
+        def _latency_calculate_helper(iterrun, baseline_time, func,
                                          model_path, original_model, *args):
             try:
                 model = InferenceOptimizer.load(model_path, original_model)
             except Exception:
                 model = InferenceOptimizer.load(model_path)
             with InferenceOptimizer.get_context(model):
-                return throughput_calculate_helper(iterrun, baseline_time, func, model, *args)
+                return latency_calculate_helper(iterrun, baseline_time, func, model, *args)
 
         with tempfile.TemporaryDirectory() as tmp_dir_path:
             model_path = os.path.join(tmp_dir_path, 'model')
             InferenceOptimizer.save(model, model_path)
-            latency, _ = exec_with_worker(_throughput_calculate_helper,
+            latency, _ = exec_with_worker(_latency_calculate_helper,
                                           100, self.baseline_time, self._func_test, model_path,
                                           self.optimized_model_dict['original']['model'],
                                           self.input_sample, env=env)
