@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import atexit
 import logging
 from typing import List
-
 
 logger = logging.getLogger(__name__)
 warning_messages: List[str] = []
 
 
+@atexit.register
 def output_suggestions():
     global warning_messages
     if len(warning_messages) > 0:
-        logger.warning(f"\n*****************Nano performance Suggestions*****************")
+        print(f"\n*****************Nano performance Suggestions*****************", flush=True)
         for message in warning_messages:
-            logger.warning(message)
-        logger.warning(f"\n*****************Nano performance Suggestions*****************")
+            print(message, flush=True)
+        print(f"\n*****************Nano performance Suggestions*****************", flush=True)
 
 
 def register_suggestion(warning_message: str):
