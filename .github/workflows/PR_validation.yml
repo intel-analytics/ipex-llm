@@ -132,6 +132,12 @@ jobs:
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
               
+            orca-pytest-openvino:
+              - 'python/orca/src/bigdl/orca/learn/openvino/**'
+              - 'python/dllib/src/**'
+              - 'python/orca/dev/test/**'
+              - '.github/actions/orca/**'
+              
             orca-tutorial:
               - 'python/orca/src/**'
               - 'python/orca/dev/**'
@@ -408,9 +414,9 @@ jobs:
 
   Orca-Python-Py37-Spark3-Openvino:
     needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest-openvino == 'true' }}
     runs-on: [self-hosted, Gondolin-Ctx]
-    # to run this test, please remove the comment
+
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
