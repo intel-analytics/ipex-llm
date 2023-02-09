@@ -59,7 +59,7 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
                 elif isinstance(x, Sequence):
                     result.append(to_numpy(x))
                 else:
-                    raise ValueError(f"Unexpected Type: {x}")
+                    invalidInputError(False, f"Unexpected Type: {x}")
             return tuple(result)
         return to_numpy(tensors)
 
