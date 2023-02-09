@@ -322,7 +322,7 @@ class TestInferencePipeline(TestCase):
             return
         optim_dict = inference_opt.optimized_model_dict
         for method, result in optim_dict.items():
-            assert result["status"] in ("successful", "early_stopped"), \
+            assert result["status"] in ("successful", "early stopped"), \
                 "optimization failed with dict: {optim_dict}"
 
     def test_pipeline_with_nested_tensor_one_input(self):
@@ -338,7 +338,7 @@ class TestInferencePipeline(TestCase):
         for method, result in optim_dict.items():
             # TODO: nested tensor currently not work for openvino and onnx
             if "openvino" not in method and "onnxruntime_int8_qlinear" != method:
-                assert result["status"] in ("successful", "early_stopped"), \
+                assert result["status"] in ("successful", "early stopped"), \
                     "optimization failed with dict: {optim_dict}"
 
     def test_pipeline_with_nested_tensor_two_inputs(self):
