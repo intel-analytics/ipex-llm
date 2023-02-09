@@ -174,7 +174,8 @@ class OpenvinoEstimator(SparkEstimator):
                                 single_r.append([p[i].flatten()])
                             temp_result_list.append(get_arrow_hex_str(single_r, names=outputs))
                     else:
-                        pred = [list(np.expand_dims(output, axis=0).tolist() for output in single_result) 
+                        pred = [list(np.expand_dims(output, axis=0).tolist()
+                                for output in single_result)
                                 for single_result in zip(*batch_pred)]
                 del batch_pred
                 if arrow_optimization:
