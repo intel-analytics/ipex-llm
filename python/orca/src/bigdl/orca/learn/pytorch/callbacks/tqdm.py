@@ -33,6 +33,7 @@ def is_tqdm_exited(callbacks):
             return True
     return False
 
+
 class TqdmCallback(Callback):
 
     def __init__(self):
