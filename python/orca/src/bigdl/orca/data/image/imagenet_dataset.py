@@ -34,10 +34,7 @@ import math
 import os
 import random
 from typing import TYPE_CHECKING, Iterable, List, Mapping, Union, Tuple
-import sys
-import threading
 
-import numpy as np
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 if TYPE_CHECKING:
