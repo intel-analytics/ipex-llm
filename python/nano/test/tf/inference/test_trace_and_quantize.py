@@ -20,6 +20,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanSquaredError, CategoricalAccuracy
 from tensorflow.keras import layers, Model
+from tensorflow.keras.applications import MobileNetV2
 
 from bigdl.nano.tf.keras import InferenceOptimizer
 
@@ -35,7 +36,7 @@ class MyModel(tf.keras.Model):
     def call(self, inputs):
         x = self.dense1(inputs)
         return self.dense2(x)
-        
+
     def get_x(self):
         return self.x
 
@@ -211,7 +212,7 @@ class TestTraceAndQuantize(TestCase):
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
-            output = traced_model(x)
+            output = bf16_model(x)
             assert output.dtype == tf.float32
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -223,7 +224,7 @@ class TestTraceAndQuantize(TestCase):
             assert output.dtype == tf.float32
 
         # test standard model, quantized model still return bf16 output
-        model = keras.applications.MobileNetV2(weights="imagenet")
+        model = MobileNetV2(weights="imagenet")
         x = np.random.rand(32, 224, 224, 3)
         model(x)
 
@@ -231,7 +232,7 @@ class TestTraceAndQuantize(TestCase):
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
-            output = traced_model(x)
+            output = bf16_model(x)
             assert output.dtype == tf.bfloat16
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -241,5 +242,3 @@ class TestTraceAndQuantize(TestCase):
         if _avx512_checker():
             output = load_model(x)
             assert output.dtype == tf.bfloat16
-
-
