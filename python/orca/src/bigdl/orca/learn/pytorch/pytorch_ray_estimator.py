@@ -28,7 +28,7 @@ from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
-from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exited
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -193,7 +193,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         # Check uniqueness of the MainCallback
         callbacks = callbacks or []
         make_only_mainCallback(callbacks)
-        if self.use_tqdm and not is_tqdm_exited(callbacks):
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
 
         params = dict(
@@ -440,7 +440,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         # Check uniqueness of the MainCallback
         callbacks = callbacks or []
         make_only_mainCallback(callbacks)
-        if self.use_tqdm and not is_tqdm_exited(callbacks):
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
 
         params = dict(batch_size=batch_size,
