@@ -131,7 +131,7 @@ jobs:
               - 'scala/orca/pom.xml'
               - 'scala/dllib/pom.xml'
               - '.github/actions/orca/**'
-              
+
             orca-pytest-openvino:
               - 'python/orca/src/bigdl/orca/learn/openvino/**'
               - 'python/dllib/src/**'
@@ -415,7 +415,7 @@ jobs:
   Orca-Python-Py37-Spark3-Openvino:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest-openvino == 'true' }}
-    runs-on: [self-hosted, Gondolin-Ctx]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
     - uses: actions/checkout@v3
