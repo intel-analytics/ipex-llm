@@ -798,12 +798,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             result = load_bf16_model(path)
             return patch_attrs(result, model)
         checkpoint_path = metadata.get('checkpoint', None)
-        if checkpoint_path:
-            checkpoint_path = path / metadata['checkpoint']
-            model = keras.models.load_model(checkpoint_path)
-            return model
-        else:
-            invalidInputError(False, "Key 'checkpoint' must be specified.")
+        invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
+        checkpoint_path = path / metadata['checkpoint']
+        model = keras.models.load_model(checkpoint_path)
+        return model
 
 
 def _accuracy_calculate_helper(model, metric, data):
