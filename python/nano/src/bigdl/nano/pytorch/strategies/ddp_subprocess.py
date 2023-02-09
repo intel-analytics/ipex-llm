@@ -69,16 +69,13 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
+        envs = schedule_processors(self._strategy.num_processes)
         cpu_procs = self._strategy.cpu_for_each_process
-        if cpu_procs is None:
-            envs = schedule_processors(self._strategy.num_processes)
-        else:
-            envs = [{
-                "KMP_AFFINITY": f"granularity=fine,proclist"
-                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                "PROCESS_IDX": str(i),
-            } for i in range(self._strategy.num_processes)]
+        if cpu_procs is not None:
+            for i in range(len(cpu_procs)):
+                envs[i]["KMP_AFFINITY"] = f"granularity=fine,proclist" + \
+                    f"=[{','.join(map(str, cpu_procs[i]))}],explicit"
+                envs[i]["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
 
         # the `return_queue` is necessary for recovering child process's state, we need
         # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in
