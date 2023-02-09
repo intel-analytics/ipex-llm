@@ -24,7 +24,9 @@ def generate_channels_last_available(inputs):
     elements of input can be converted to channels_last
     '''
     # try channels_last available
-    if inputs:  # to avoid the situation of inputs == None
+    if isinstance(inputs, torch.Tensor):
+        inputs = [inputs]
+    if inputs is not None:  # to avoid the situation of inputs == None
         channels_last_available = [True] * len(inputs)
         for idx, input in enumerate(inputs):
             try:

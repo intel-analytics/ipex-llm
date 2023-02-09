@@ -49,7 +49,7 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
 
 
 def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
-    if _check_whether_add_label(model, dataloader, input_sample) is True:
+    if _check_whether_add_label(model, dataloader, input_sample):
         # need to add label automaticly
         # generate a warning for user first
         warnings.warn("After checking, it is found that your data does not contain a label item. "
@@ -73,7 +73,7 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
 
 def _need_dataloader_type_transformation(model, dataloader):
     # get forward method's parameter number
-    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None),))
+    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
     forward_args_len = len(forward_args)
 
     # if the model is a simple model(x) format
