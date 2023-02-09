@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import traceback
 from abc import abstractmethod
 from typing import Dict, Optional
 from bigdl.nano.utils.common import invalidInputError, invalidOperationError
+from bigdl.nano.utils.log4warning import register_suggestion
 
 from .acceleration_option import AccelerationOption
 from .format import format_acceleration_option
