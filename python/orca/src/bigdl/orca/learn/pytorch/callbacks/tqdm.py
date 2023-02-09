@@ -26,6 +26,12 @@ try:
 except ImportError:
     pass
 
+def is_tqdm_exited(callbacks):
+    for callback in callbacks:
+        if isinstance(callback, TqdmCallback):
+            return True
+    return False
+
 
 class TqdmCallback(Callback):
 
