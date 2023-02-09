@@ -68,12 +68,9 @@ class PPMLContext(JavaValue):
                 invalidInputError(False, "invalid KMS type")
 
         spark_conf = init_spark_conf(conf)
-
-        sc = SparkContext.getOrCreate(spark_conf)
-
-        self.spark = SparkSession.builder.getOrCreate()
-        args = [self.spark._jsparkSession]
+        args = [spark_conf._jconf]
         super().__init__(None, self.bigdl_type, *args)
+        self.spark = SparkSession.builder.getOrCreate()
 
     def load_keys(self, primary_key_path, data_key_path):
         self.value = callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
