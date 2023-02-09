@@ -26,4 +26,11 @@ ray stop -f
 cd ../../
 
 echo "Running openvino test"
-python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py
+python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py::TestEstimatorForOpenVINO::test_openvino_predict_ndarray
+python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py::TestEstimatorForOpenVINO::test_openvino_predict_ndarray_multi_input
+python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py::TestEstimatorForOpenVINO::test_openvino_predict_xshards
+# uncomment below pytests to run corresponding testing function
+# python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py::TestEstimatorForOpenVINO::test_openvino_multi_output
+# python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py::TestEstimatorForOpenVINO::test_openvino_predict_spark_df
+# uncomment the below line to run the whole test
+# python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py
