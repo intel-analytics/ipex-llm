@@ -21,7 +21,7 @@ import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.nano.utils.common import invalidInputError, invalidOperationError
 
 
 class _MultiInstanceModel(torch.nn.Module):

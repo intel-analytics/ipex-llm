@@ -23,7 +23,7 @@ from pytorch_lightning.plugins.training_type import SingleDevicePlugin, DDPSpawn
 from pytorch_lightning.accelerators.cpu import CPUAccelerator
 
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.common import check_avx512
+from bigdl.nano.utils.common import _avx512_checker
 
 
 class CheckIPEXCallback(Callback):
@@ -78,7 +78,7 @@ class CheckIPEXCallback(Callback):
 
 class CheckIPEXFusedStepCallback(Callback):
     def on_train_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"):
-        if not check_avx512():
+        if not _avx512_checker():
             # IPEX BF16 weight prepack needs the cpu support avx512bw, avx512vl and avx512dq
             return
         if not TORCH_VERSION_LESS_1_10:

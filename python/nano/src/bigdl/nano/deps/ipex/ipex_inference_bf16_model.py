@@ -15,11 +15,10 @@
 #
 
 
-from ...utils.log4Error import invalidInputError
-
 from .ipex_inference_model import PytorchIPEXJITModel
 from bigdl.nano.pytorch.context_manager import generate_context_manager
-from bigdl.nano.utils import CPUInfo
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import invalidInputError
 import torch
 
 
@@ -78,8 +77,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     @property
     def _check_cpu_isa(self):
         """Indicator to verify if cpu supports avx512"""
-        cpuinfo = CPUInfo()
-        return cpuinfo.has_avx512
+        return _avx512_checker()
 
     @property
     def status(self):

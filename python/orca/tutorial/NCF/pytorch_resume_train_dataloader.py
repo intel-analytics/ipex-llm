@@ -33,6 +33,7 @@ args = parse_args("PyTorch NCF Resume Training with DataLoader")
 init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
 
 
+# TODO: Save the processed data of the data loader as well?
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
     train_dataset, _ = load_dataset(config["data_dir"], num_ng=4)
@@ -72,8 +73,7 @@ def optimizer_creator(model, config):
 
 
 def scheduler_creator(optimizer, config):
-    scheduler = StepLR(optimizer, step_size=1)
-    return scheduler
+    return optim.lr_scheduler.StepLR(optimizer, step_size=1)
 
 loss = nn.BCEWithLogitsLoss()
 
@@ -100,8 +100,6 @@ train_stats = est.fit(train_loader_func,
                       batch_size=10240,
                       validation_data=test_loader_func,
                       callbacks=callbacks)
-
-
 print("Train results:")
 for epoch_stats in train_stats:
     for k, v in epoch_stats.items():

@@ -43,8 +43,8 @@ from tempfile import TemporaryDirectory
 import pytorch_lightning as pl
 
 from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
-from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 import logging

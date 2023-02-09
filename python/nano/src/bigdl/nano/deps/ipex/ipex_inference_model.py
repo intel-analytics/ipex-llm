@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.inference.pytorch.model_utils import generate_channels_last_available
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import generate_channels_last_available
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 import torch

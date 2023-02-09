@@ -87,7 +87,6 @@ train_stats = est.fit(train_data,
                       label_cols=get_label_cols(),
                       validation_data=test_data,
                       callbacks=callbacks)
-
 print("Train results:")
 for epoch_stats in train_stats:
     for k, v in epoch_stats.items():

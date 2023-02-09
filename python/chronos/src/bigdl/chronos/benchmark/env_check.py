@@ -23,7 +23,7 @@ import logging
 import warnings
 
 from .utils_env import get_bytesize, _find_path, get_nano_env_var
-from bigdl.nano.common.common import _env_variable_is_set, _find_library
+from bigdl.nano.utils.common import _env_variable_is_set, _find_library
 from psutil import cpu_count
 
 

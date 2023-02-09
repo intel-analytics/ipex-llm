@@ -21,25 +21,23 @@ import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
+    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
     PytorchIPEXQuantizationModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args, get_input_example
-from bigdl.nano.utils.inference.pytorch.metrics import NanoMetric
-from bigdl.nano.utils.inference.pytorch.dataset import RepeatDataset, remove_batch_dim_fn
-from bigdl.nano.utils.inference.pytorch.dataloader import\
-    transform_multiple_input_dataloader_to_inc_mode, automatic_add_label_in_dataloader
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import get_forward_args, get_input_example
+from bigdl.nano.utils.pytorch import NanoMetric
+from bigdl.nano.utils.pytorch import RepeatDataset, remove_batch_dim_fn
+from bigdl.nano.utils.pytorch import transform_multiple_input_dataloader_to_inc_mode,\
+    automatic_add_label_in_dataloader
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
-from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
@@ -186,22 +184,34 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | in real deploy environment. E.g. batch size should be set to 1
                 | if you would like to use the accelerated model in an online service.
                 |
-                | 2. a single torch.Tensor which used for training, this case is used to
-                | accept single sample input x.
+                | Each element in the DataLoader can be one of the following:
+                |    a. a single Tensor or dict of Tensors
+                |    b. a tuple:
+                |         b1: if the lenth is 1, the first element will be treated as input
+                |             to the model
+                |         b2: if the lenth is 2, the first element will be treated as input
+                |             to the model, with the sencond element treated as label.
+                |             if the input to the model is a tuple, it will be unpacked as
+                |             multiple inputs.
+                |         b3: if the lengh is larger than 2, the first n elements as input
+                |             to the model, with n being the argument lenth to the model.forward
+                |             and the rest will be treated as label
                 |
-                | 3. a tuple of torch.Tensor which used for training, this case is used to
-                | accept single sample input (x, y) or (x1, x2) et al.
+                | 2. a single element of the Dataloader specified above
 
         :param validation_data: (optional) validation_data is only needed when users care
                                 about the possible accuracy drop. It support following formats:
 
                 | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
                 |
-                | 2. a single torch.Tensor which used for training, this case is used to
-                | accept single sample input x.
+                | Each element in the DataLoader should be a tuple as least size of two:
+                |     a: if the lenth is 2, the first element will be treated as input
+                |        to the model, with the sencond element treated as label
+                |     b: if the lengh is larger than 2, the first n elements as input
+                |        to the model, with n being the argument lenth to the model.forward
+                |        and the rest will be treated as label
                 |
-                | 3. a tuple of torch.Tensor which used for training, this case is used to
-                | accept single sample input (x, y) or (x1, x2) et al.
+                | 2. a single element of the Dataloader specified above
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
@@ -335,22 +345,45 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         model.eval()  # change model to eval mode
 
+        forward_args = get_forward_args(model)
         if input_sample is None:
-            forward_args = get_forward_args(model)
             if isinstance(training_data, DataLoader):
                 input_sample = get_input_example(model, training_data, forward_args)
             else:
                 if isinstance(training_data, Sequence):
-                    input_sample = tuple(list(training_data)[:len(forward_args)])
+                    if len(training_data) <= 2:
+                        input_sample = training_data[0]
+                        if len(training_data) == 2:
+                            input_label = training_data[1]
+                        else:
+                            input_label = []
+                    else:
+                        input_sample = tuple(training_data[:len(forward_args)])
+                        input_label = tuple(training_data[len(forward_args):])
                 else:
                     input_sample = training_data
+                    input_label = []
                 # turn training_data into dataset
-                dataset = RepeatDataset(sample=training_data, num=1)
+                dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
                 training_data = DataLoader(dataset, batch_size=1)
                 training_data = remove_batch_dim_fn(training_data)
+
                 if validation_data is not None and not isinstance(validation_data, DataLoader):
                     # turn validation_data into dataset
-                    val_dataset = RepeatDataset(sample=validation_data, num=1)
+                    if isinstance(validation_data, Sequence):
+                        if len(validation_data) <= 2:
+                            val_sample = validation_data[0]
+                            if len(validation_data) == 2:
+                                val_label = validation_data[1]
+                            else:
+                                val_label = []
+                        else:
+                            val_sample = tuple(validation_data[:len(forward_args)])
+                            val_label = tuple(validation_data[len(forward_args):])
+                    else:
+                        val_sample = training_data
+                        val_label = []
+                    val_dataset = RepeatDataset(sample=(val_sample, val_label), num=1)
                     validation_data = DataLoader(val_dataset, batch_size=1)
                     validation_data = remove_batch_dim_fn(validation_data)
 
@@ -363,7 +396,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     model(*input_sample)
         except Exception:
             invalidInputError(False,
-                              "training_data is incompatible with your model input.")
+                              f"training_data is incompatible with your model input.")
         baseline_time = time.perf_counter() - st
         if baseline_time > 0.1:  # 100ms
             sample_size_for_pot = 15
@@ -410,8 +443,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 with InferenceOptimizer.get_context(acce_model):
                     try:
                         result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop

@@ -131,7 +131,7 @@ class TestTraceAndQuantize(TestCase):
         assert new_model.get_x() == quantized_model.x == x
         
         # for inc
-        from bigdl.nano.utils.util import compare_version
+        from bigdl.nano.utils.common import compare_version
         INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
         if INC_LESS_14:
             return
@@ -208,9 +208,8 @@ class TestTraceAndQuantize(TestCase):
 
         traced_model = InferenceOptimizer.quantize(model, precision="bf16")
 
-        from bigdl.nano.utils import CPUInfo
-        cpuinfo = CPUInfo()
-        if cpuinfo.has_bf16:
+        from bigdl.nano.utils.common import _bf16_checker
+        if _bf16_checker():
             model(x)
 
         InferenceOptimizer.save(model, "save_bf16")
