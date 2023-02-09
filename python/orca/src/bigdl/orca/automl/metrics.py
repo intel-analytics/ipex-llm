@@ -477,7 +477,8 @@ class Evaluator(object):
     max_mode_metrics = ('r2', 'accuracy')
 
     @staticmethod
-    def evaluate(metric: str, y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> float64:
+    def evaluate(metric: str, y_true: ndarray,
+                 y_pred: ndarray, multioutput: str='raw_values') -> float64:
         """
         Evaluate a specific metric for y_true and y_pred.
 

@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from bigdl.orca.automl.model.base_pytorch_model import ModelBuilder
     from pyspark.sql import DataFrame
 
+
 class AutoEstimator:
     """
     Example:
@@ -58,7 +59,7 @@ class AutoEstimator:
             remote_dir=remote_dir,
             name=name)
         self._fitted = False
-        self.best_trial: "Sequential" = None
+        self.best_trial: Sequential = None
 
     @staticmethod
     def from_torch(*,
@@ -282,7 +283,8 @@ class AutoEstimator:
 
     @staticmethod
     def _check_spark_dataframe_input(data: Union[Tuple[ndarray, ndarray], Callable, DataFrame],
-                                     validation_data: Union[Tuple[ndarray, ndarray], Callable, DataFrame],
+                                     validation_data: Union[Tuple[ndarray, ndarray],
+                                                            Callable, DataFrame],
                                      feature_cols: Any,
                                      label_cols: Any
                                      ) -> Union[Tuple[List[str], List[str]], Tuple[None, None]]:
