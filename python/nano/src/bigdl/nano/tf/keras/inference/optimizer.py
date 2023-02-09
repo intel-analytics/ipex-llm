@@ -450,6 +450,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+                                Note that, mixed bf16 precision only works for ``keras.Model`` with
+                                explict input and output definition(e.g.,
+                                model = keras.Model(inputs=inputs, outputs=outputs)).
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
