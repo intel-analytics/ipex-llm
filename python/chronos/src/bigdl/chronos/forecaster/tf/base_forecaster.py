@@ -213,8 +213,10 @@ class BaseTF2Forecaster(Forecaster):
         else:
             accelerator = 'onnxruntime'
             method = method[:-3]
-        input_spec = input_spec=tf.TensorSpec(shape=(None, self.model_config["past_seq_len"],
-                                                     self.model_config["input_feature_num"]))
+        input_spec = tf.TensorSpec(shape=(None, self.model_config["past_seq_len"],
+                                   self.model_config["input_feature_num"]))
+        input_shape = input_spec.shape
+        self.internal.compute_output_shape(input_shape)
         q_model = InferenceOptimizer.quantize(self.internal,
                                               x=input_data,
                                               y=target_data,
