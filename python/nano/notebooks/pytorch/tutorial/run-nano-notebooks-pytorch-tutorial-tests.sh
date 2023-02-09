@@ -15,6 +15,7 @@ start=$(date "+%s")
 if [ ${openvino} == true ]; then
     python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'openvino'
 else
+    unset MALLOC_CONF
     python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'not openvino'
 fi 
 
