@@ -35,7 +35,7 @@
 | **Channel last**   | ✅                    | ✅       | ✅                  | ?                     | ✅       |
 | **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ✅       |
 | **IPEX**           | ✅                    | ✅       | ❌                  | ❌                     | ❌       |
-| **Multi-instance** | ✅                    | ✅       | ②                  | ②                     | ✅       |
+| **Multi-instance** | ✅                    | ✅       | ②                  | ②                     | ②       |
 
 ## TensorFlow Feature Support
 
