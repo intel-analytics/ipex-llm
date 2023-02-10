@@ -39,10 +39,10 @@ python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::Tes
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_get_model
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_optional_model_creator_h5
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_optional_model_creator_savemodel
-# requires uuid
+# require uuid
 # python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_architecture
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_h5     
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_savemodel
 python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_tensorboard          
-# requires pandas
+# require pandas
 # python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_xshards_pandas_dataframe
