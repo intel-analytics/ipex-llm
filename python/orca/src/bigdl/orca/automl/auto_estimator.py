@@ -132,9 +132,9 @@ class AutoEstimator:
                              name=name)
 
     def fit(self,
-            data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
+            data: Union[Callable, Tuple[ndarray, ndarray], "DataFrame"],
             epochs: int=1,
-            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray], DataFrame]]=None,
+            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray], "DataFrame"]]=None,
             metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
             metric_threshold: Optional[float]=None,
@@ -280,9 +280,9 @@ class AutoEstimator:
         return mode
 
     @staticmethod
-    def _check_spark_dataframe_input(data: Union[Tuple[ndarray, ndarray], Callable, DataFrame],
+    def _check_spark_dataframe_input(data: Union[Tuple[ndarray, ndarray], Callable, "DataFrame"],
                                      validation_data: Union[Tuple[ndarray, ndarray],
-                                                            Callable, DataFrame],
+                                                            Callable, "DataFrame"],
                                      feature_cols: Any,
                                      label_cols: Any
                                      ) -> Union[Tuple[List[str], List[str]], Tuple[None, None]]:
