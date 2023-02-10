@@ -25,7 +25,8 @@ def complement_input_sample(model, input_sample):
     This function will give a complemented input sample
     Mainly using default value to complete.
     '''
-    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    # forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    forward_args = get_forward_args(model)
     forward_defaults = get_forward_defaults(model)
     input_sample_length = 1
     if isinstance(input_sample, Sequence):
