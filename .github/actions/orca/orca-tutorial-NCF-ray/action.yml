@@ -27,7 +27,7 @@ runs:
         pip list
         export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-orca-tutorial-NCF-ray.sh
-        python/orca/dev/test/run-orca-tutorial-NCF-ray.sh
+        python/orca/dev/test/run-orca-tutorial-NCF-ray.sh ray
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
