@@ -40,7 +40,7 @@ cd ../../tutorial/NCF
 
 # backend passed as the first argument, either "ray" or "spark"
 # if no argument is provided, default to be "spark"
-arc=$#
+argc=$#
 if [ $argc -eq 0 ]; then
     backend="spark"
 else
@@ -112,8 +112,6 @@ echo "#5 Running tf_train_xshards"
 #timer
 start=$(date "+%s")
 
-sed 's/epochs=2/epochs=1/1' ./tf_train_xshards.py > ./temp.py
-python ./temp.py
 python ./tf_train_xshards.py --backend $backend
 python ./tf_predict_xshards.py --backend $backend
 python ./tf_resume_train_xshards.py --backend $backend
