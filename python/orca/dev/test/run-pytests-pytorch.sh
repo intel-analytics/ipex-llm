@@ -29,4 +29,5 @@ export PYSPARK_DRIVER_PYTHON=python
 
 echo "Running Orca Pytorch Test"
 python -m pytest -v test/bigdl/orca/test_import.py::TestImport::test_pytorch_import
+python -m pytest -v test/bigdl/orca/learn/test_metrics.py
 python -m pytest -v test/bigdl/orca/torch/
