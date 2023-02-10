@@ -19,7 +19,7 @@ import pytorch_lightning as pl
 import copy
 import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
 from ._helper import ResetCallback, CustomEvaluationLoop

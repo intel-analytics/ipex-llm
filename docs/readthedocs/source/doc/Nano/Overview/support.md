@@ -23,8 +23,8 @@
 | **Jemalloc**          | ✅                    | ✅       | ✅                  | ❌                     | ❌       |
 | **Tcmalloc**          | ✅                    | ❌       | ❌                  | ❌                     | ❌       |
 | **Neural-Compressor** | ✅                    | ✅       | ❌                  | ❌                     | ?       |
-| **OpenVINO**          | ✅                    | ①       | ❌                  | ❌                     | ?       |
-| **ONNXRuntime**       | ✅                    | ①       | ✅                  | ❌                     | ?       |
+| **OpenVINO**          | ✅                    | ①       | ❌                  | ❌                     | ④       |
+| **ONNXRuntime**       | ✅                    | ①       | ✅                  | ❌                     | ✅       |
 
 ## PyTorch Feature Support
 
@@ -33,16 +33,16 @@
 | **CUDA patch**     | ✅                    | ✅       | ✅                  | ?                     | ✅       |
 | **JIT**            | ✅                    | ✅       | ✅                  | ?                     | ✅       |
 | **Channel last**   | ✅                    | ✅       | ✅                  | ?                     | ✅       |
-| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ?       |
+| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ✅       |
 | **IPEX**           | ✅                    | ✅       | ❌                  | ❌                     | ❌       |
-| **Multi-instance** | ✅                    | ✅       | ②                  | ②                     | ?       |
+| **Multi-instance** | ✅                    | ✅       | ②                  | ②                     | ✅       |
 
 ## TensorFlow Feature Support
 
 | Feature            | Ubuntu (20.04/22.04) | CentOS7 | MacOS (Intel chip) | MacOS (M-series chip) | Windows |
 | ------------------ | -------------------- | ------- | ------------------ | --------------------- | ------- |
-| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ?       |
-| **Multi-instance** | ③                    | ③       | ②③                 | ②③                    | ?       |
+| **BF16**           | ✅                    | ✅       | ⭕                  | ⭕                     | ✅       |
+| **Multi-instance** | ③                    | ③       | ②③                 | ②③                    | ❌       |
 
 ## Symbol Meaning
 
@@ -54,4 +54,5 @@
 | ①      | This feature is only supported when used together with jemalloc                                          |
 | ②      | This feature is supported but without any performance guarantee                                          |
 | ③      | Only Multi-instance training is supported for now                                                        |
+| ④      | This feature is only supported when using PyTorch                                                        |
 | ?      | Not tested                                                                                               |

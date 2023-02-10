@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 from tensorflow.keras import mixed_precision
 from tempfile import TemporaryDirectory
 import tensorflow as tf
 
 
 def BF16Model(model):
-    # TODO: check bf16 isa
     policy_bf16 = mixed_precision.Policy('mixed_bfloat16')
     for layer in model.layers:
         layer._dtype_policy = policy_bf16

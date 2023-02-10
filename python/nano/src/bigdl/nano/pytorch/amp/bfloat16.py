@@ -18,11 +18,11 @@
 from logging import warning
 import torch
 import os
-from bigdl.nano.utils.inference.pytorch.model_utils import generate_channels_last_available
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.pytorch import generate_channels_last_available
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
-from bigdl.nano.utils import CPUInfo
+from bigdl.nano.utils.common import _bf16_checker
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 invalidInputError(
@@ -65,8 +65,7 @@ class BF16Model(AcceleratedLightningModule):
     @property
     def _has_bf16_isa(self):
         """Indicator to verify if bf16 instructions are available."""
-        cpuinfo = CPUInfo()
-        return cpuinfo.has_bf16
+        return _bf16_checker()
 
     @property
     def _allow_non_bf16(self):

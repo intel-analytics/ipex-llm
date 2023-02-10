@@ -20,6 +20,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanSquaredError, CategoricalAccuracy
 from tensorflow.keras import layers, Model
+from tensorflow.keras.applications import MobileNetV2
 
 from bigdl.nano.tf.keras import InferenceOptimizer
 
@@ -35,7 +36,7 @@ class MyModel(tf.keras.Model):
     def call(self, inputs):
         x = self.dense1(inputs)
         return self.dense2(x)
-        
+
     def get_x(self):
         return self.x
 
@@ -131,7 +132,7 @@ class TestTraceAndQuantize(TestCase):
         assert new_model.get_x() == quantized_model.x == x
         
         # for inc
-        from bigdl.nano.utils.util import compare_version
+        from bigdl.nano.utils.common import compare_version
         INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
         if INC_LESS_14:
             return
@@ -201,17 +202,43 @@ class TestTraceAndQuantize(TestCase):
         assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
 
     def test_quantize_bf16(self):
+        # for custom model, quantized model still return fp32 output
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
         x = np.random.random((100, 4))
         model(x)
 
-        traced_model = InferenceOptimizer.quantize(model, precision="bf16")
+        bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
 
-        from bigdl.nano.utils import CPUInfo
-        cpuinfo = CPUInfo()
-        if cpuinfo.has_bf16:
-            model(x)
+        from bigdl.nano.utils.common import _avx512_checker
+        if _avx512_checker():
+            output = bf16_model(x)
+            assert output.dtype == tf.float32
 
-        InferenceOptimizer.save(model, "save_bf16")
-        model = InferenceOptimizer.load("save_bf16", model)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        if _avx512_checker():
+            output = load_model(x)
+            assert output.dtype == tf.float32
+
+        # test standard model, quantized model still return bf16 output
+        model = MobileNetV2(weights="imagenet")
+        x = np.random.rand(32, 224, 224, 3)
+        model(x)
+
+        bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+
+        from bigdl.nano.utils.common import _avx512_checker
+        if _avx512_checker():
+            output = bf16_model(x)
+            assert output.dtype == tf.bfloat16
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+
+        if _avx512_checker():
+            output = load_model(x)
+            assert output.dtype == tf.bfloat16
