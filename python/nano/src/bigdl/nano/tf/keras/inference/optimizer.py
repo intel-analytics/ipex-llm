@@ -26,6 +26,7 @@ import numpy as np
 import traceback
 import inspect
 import tensorflow as tf
+import keras
 from typing import Dict, Optional, List, Union, Callable
 from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
     AccelerationOption, latency_calculate_helper, format_optimize_result
@@ -449,6 +450,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+                                Note that, mixed bf16 precision only works for ``keras.Model`` with
+                                explict input and output definition(e.g.,
+                                model = keras.Model(inputs=inputs, outputs=outputs)).
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
@@ -761,7 +765,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 }
                 yaml.safe_dump(metadata, f)
             checkpoint_path = path / metadata['checkpoint']
-            model.save_weights(checkpoint_path)
+            model.save(checkpoint_path)
 
     @staticmethod
     def load(path, model: Model, device=None):
@@ -796,20 +800,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'BF16Model':
             result = load_bf16_model(path)
             return patch_attrs(result, model)
-        if isinstance(model, Model):
-            # typically for keras Model
-            model = copy.deepcopy(model)
-            checkpoint_path = metadata.get('checkpoint', None)
-            if checkpoint_path:
-                checkpoint_path = path / metadata['checkpoint']
-                model.load_weights(checkpoint_path)
-                return model
-            else:
-                invalidInputError(False, "Key 'checkpoint' must be specified.")
-        else:
-            invalidInputError(False,
-                              "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
-                              " loading.".format(model_type, type(model)))
+        checkpoint_path = metadata.get('checkpoint', None)
+        invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
+        checkpoint_path = path / metadata['checkpoint']
+        model = keras.models.load_model(checkpoint_path)
+        return model
 
 
 def _accuracy_calculate_helper(model, metric, data):

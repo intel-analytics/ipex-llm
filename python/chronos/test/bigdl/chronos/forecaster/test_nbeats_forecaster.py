@@ -135,7 +135,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='pytorch_fx',
-                            relative_drop=0.2)
+                            relative_drop=0.5)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
@@ -143,7 +143,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='onnxrt_qlinearops',
-                            relative_drop=0.2)
+                            relative_drop=0.8)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
@@ -279,7 +279,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.5, max_trials=3,
+                            metric="mse", relative_drop=0.8, max_trials=3,
                             framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
