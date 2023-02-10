@@ -201,7 +201,7 @@ jobs:
 
   Orca-Python-Py37-Pytorch:
     needs: changes
-    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
@@ -220,7 +220,7 @@ jobs:
 
   Orca-Python-Py37-Tf2:
     needs: changes
-    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:

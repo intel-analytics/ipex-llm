@@ -28,3 +28,4 @@ export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
 echo "Running Orca Tf2 Test"
+python -m pytest -v test/bigdl/orca/test_import.py::TestImport::test_tf2_import
