@@ -132,6 +132,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
                                                                    ipex=True,
                                                                    channels_last=True),
+            "jit_int8": TorchAccelerationOption(fx=True, jit=True),
+            "jit_int8_channels_last": TorchAccelerationOption(fx=True, jit=True,
+                                                              channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
             "openvino_bf16": TorchAccelerationOption(openvino=True, bf16=True),
             "openvino_fp16": TorchAccelerationOption(openvino=True, fp16=True),
@@ -177,9 +180,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         The available methods are "original", "fp32_channels_last", "fp32_ipex",
         "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
-        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32", "jit_bf16",
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32",
+        "jit_fp32_channels_last", "jit_bf16", "jit_bf16_channels_last",
         "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
-        "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "jit_bf16_ipex_channels_last", "jit_int8", "jit_int8_channels_last",
+        "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
         "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
@@ -224,7 +229,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
-               training_data. You have to specidy this parameter only if the forward function
+               training_data. You have to specify this parameter only if the forward function
                of your model contains some kwargs like `def forward(self, x1, x2, x3=1)`.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
@@ -237,7 +242,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | 2. A callable object that takes model and validation_data (if
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
-               | validation_data is None).
+               | validation_data is None). Note that there is no need to call `with
+               | torch.no_grad()` etc. in this object.
 
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
@@ -248,14 +254,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                accelerated model. In other words, the process of model conversion and optional
                accuracy calculation won't be restricted by this parameter. Defaults to None,
                represents that all cores will be used.
-        :param accelerator: (optional) A string tuple that specifys the accelerators to search.
+        :param accelerator: (optional) A string tuple that specifies the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
-               If not None, then will only travese corresponding methods whose accelerator falls
+               If not None, then will only traverse corresponding methods whose accelerator falls
                within the specified accelerator tuple.
-        :param precision: (optional) A string tuple that specifys the precision to search.
+        :param precision: (optional) A string tuple that specifies the precision to search.
                The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which
-               represents no precision limit. If not None, then will only travese corresponding
+               represents no precision limit. If not None, then will only traverse corresponding
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
@@ -661,7 +667,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
                            ``jit_method='script'``, it will be ignored. Default to True.
         :param jit_method: Whether to use ``jit.trace`` or ``jit.script`` to convert a model
-                           to TorchScript. Accepected values are ``'trace'``, ``'script'``,
+                           to TorchScript. Accepted values are ``'trace'``, ``'script'``,
                            and ``None``. Default to be ``None`` meaning the try-except logic
                            to use ``jit.trace`` or ``jit.script``. If ``accelerator != 'jit'``,
                            this parameter will be ignored.
@@ -708,13 +714,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          preparation function will instantiate observers multiple times for each
                          of the layers.
                          This parameter only works for native ipex and jit quantization with int8
-                         precision. When accelerator is 'jit', we support and recommend
-                         to directly pass a QConfigMapping (https://pytorch.org/docs/
-                         stable/generated/torch.ao.quantization.qconfig_mapping.
-                         QConfigMapping.html#qconfigmapping). QConfigMapping is a collection of
-                         quantization configurations, user can set the qconfig for each operator
-                         (torch op calls, functional calls, module calls) in the model through
-                         qconfig_mapping.
+                         precision. When accelerator='jit', we support and recommend to pass a
+                         QConfigMapping instead of single Qconfig for customized quantization.
+                         QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
+                         quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping) is a
+                         collection of quantization configurations, user can set the qconfig for
+                         each operator (torch op calls, functional calls, module calls) in the
+                         model through qconfig_mapping.
         :param output_tensors: boolean, default to True and output of the model will be Tensors,
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
@@ -738,7 +744,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          Can be defined for desired input of the model, for example:
                          "--mean_values data[255,255,255],info[255,255,255]". The exact meaning
                          and order of channels depend on how the original model was trained.
-        :return:            A accelerated torch.nn.Module if quantization is sucessful.
+        :return:            A accelerated torch.nn.Module if quantization is successful.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "

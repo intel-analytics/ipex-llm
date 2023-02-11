@@ -24,15 +24,18 @@ def PytorchJITINT8Model(model, calib_data, q_config=None,
            the accelerated model if from_load is True.
     :param calib_data: calibration data is required for static quantization.
     :param q_config: We support 2 types of input here:
-           Qconfig (https://pytorch.org/docs/stable/generated/torch.quantization.
-           qconfig.QConfig.html#qconfig) is the configuration for how we insert
-           observers for a particular operator. Quantization preparation function
-           will instantiate observers multiple times for each of the layers.
-           QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
-           quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping)
-           (recommended) is a collection of quantization configurations, user
-           can set the qconfig for each operator (torch op calls, functional
-           calls, module calls) in the model through qconfig_mapping.
+
+           | 1. Qconfig (https://pytorch.org/docs/stable/generated/torch.quantization.
+           | qconfig.QConfig.html#qconfig) is the configuration for how we insert
+           | observers for a particular operator. Quantization preparation function
+           | will instantiate observers multiple times for each of the layers.
+           |
+           | 2. QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
+           | quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping)
+           | (recommended) is a collection of quantization configurations, user
+           | can set the qconfig for each operator (torch op calls, functional
+           | calls, module calls) in the model through qconfig_mapping.
+
     :param input_sample: torch tensor indicate the data sample to be used
            for tracing.
     :param channels_last: if set model and data to be channels-last mode.
