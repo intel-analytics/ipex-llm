@@ -1,5 +1,6 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -140,8 +141,21 @@ RUN wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/dow
   sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml
 RUN ls -al /opt
 
+# Stage.2 BigDL
+FROM ubuntu:20.04 as bigdl
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+RUN apt-get update --fix-missing && \
+    apt-get install -y apt-utils curl wget unzip git
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+    chmod a+x ./download-bigdl.sh
+RUN ./download-bigdl.sh && \
+    rm bigdl*.zip
 
-# stage.2 gramine
+# stage.3 gramine
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 ARG SPARK_VERSION
@@ -155,7 +169,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
-
+ENV BIGDL_HOME                          /ppml/bigdl-${BIGDL_VERSION}
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -168,6 +182,7 @@ COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
 COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./scripts /ppml/scripts
