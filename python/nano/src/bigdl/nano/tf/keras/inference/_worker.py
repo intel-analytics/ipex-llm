@@ -19,6 +19,8 @@ import sys
 import numpy as np
 import pickle
 import tensorflow as tf
+import os
+from bigdl.nano.tf.keras import InferenceOptimizer
 
 
 def throughput_calculate_helper(iterrun, func, model, input_sample):
@@ -45,5 +47,10 @@ if __name__ == "__main__":
         tf.config.threading.set_inter_op_parallelism_threads(0)
         tf.config.threading.set_intra_op_parallelism_threads(thread_num)
     params = pickle.load(open(param_file, "rb"))
+    if params["method"] != "original":
+        model_dir = os.path.dirname(param_file)
+        qmodel = InferenceOptimizer.load(model_dir, params["model"])
+        params["model"] = qmodel
+    del params["method"]
     latency = throughput_calculate_helper(**params)
     print(latency)
