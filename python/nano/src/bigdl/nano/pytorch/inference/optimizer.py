@@ -1159,10 +1159,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by InferenceOptimizer.trace/
-               InferenceOptimizer.quantize. model should be set to None if you choose
-               accelerator="onnxruntime"/"openvino"/"jit".
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerated the model with accelerator=None by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+               2. you want to the loaded model contains the attributes of original model.
         :param input_sample: Input sample for your model, could be a Tensor or a tuple.
                Only valid for inc ipex quantization model, otherwise will be ignored.
         :param inplace: whether to perform inplace optimization. Default: ``False``.

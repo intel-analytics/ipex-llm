@@ -18,6 +18,7 @@ import tempfile
 import operator
 import numpy as np
 import tensorflow as tf
+import pytest
 from tensorflow.keras.metrics import MeanSquaredError, CategoricalAccuracy
 from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import MobileNetV2
@@ -67,13 +68,22 @@ class TestTraceAndQuantize(TestCase):
         traced_model(np.random.random((1, 4)).astype(np.float32))
         traced_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(traced_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == traced_model.x == x
-        
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
+
         # for openvino
         model = MyModel(x)
         traced_model = InferenceOptimizer.trace(model, accelerator="openvino",
@@ -83,12 +93,21 @@ class TestTraceAndQuantize(TestCase):
         assert traced_model.get_x() == traced_model.x == x
         traced_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(traced_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == traced_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
 
     def test_attribute_access_after_quantize(self):
         x = 100
@@ -105,12 +124,21 @@ class TestTraceAndQuantize(TestCase):
         quantized_model(np.random.random((1, 4)).astype(np.float32))
         quantized_model(inputs=np.random.random((1, 4)).astype(np.float32))
         
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
 
         # for openvino
         model = MyModel(x)
@@ -124,12 +152,21 @@ class TestTraceAndQuantize(TestCase):
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
         
         # for inc
         from bigdl.nano.utils.common import compare_version
@@ -147,12 +184,21 @@ class TestTraceAndQuantize(TestCase):
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
 
     def test_evaluate(self):
         inputs = tf.keras.Input(shape=(28*28,), name='digits')
