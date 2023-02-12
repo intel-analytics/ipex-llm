@@ -303,3 +303,26 @@ class TestOpenVINO(TestCase):
                                             )
         with InferenceOptimizer.get_context(ov_model):
             result = ov_model(x)
+
+    def test_openvino_trace_stable_diffusion_unet(self):
+        from diffusers.models import UNet2DConditionModel
+        unet = UNet2DConditionModel(sample_size=512, cross_attention_dim=1024)
+        dynamic_axes= {"sample": [0],
+                       "encoder_hidden_states": [0],
+                       "unet_output": [0]}
+        latent_shape = (2, 4, 64, 64)
+        image_latents = torch.randn(latent_shape, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states = torch.randn((2, 77, 1024))
+        input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states, False)
+        nano_unet = InferenceOptimizer.trace(unet, accelerator="openvino",
+                                             input_sample=input_sample,
+                                             input_names=["sample", "timestep",
+                                                         "encoder_hidden_states", "return_dict"],
+                                             output_names=["unet_output"],
+                                             dynamic_axes=dynamic_axes,
+                                             device='CPU')
+        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(nano_unet, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name, unet)
+        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
