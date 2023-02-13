@@ -153,13 +153,25 @@ class TestOpenVINO(TestCase):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
 
+        # save & load without original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(openvino_model, tmp_dir_name)
-            model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
+            load_model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
+        with pytest.raises(AttributeError):
+            load_model.channels == 3
+        with pytest.raises(AttributeError):
+            load_model.hello()
 
-        with InferenceOptimizer.get_context(model):
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model, device='CPU')
+        assert load_model.channels == 3
+        load_model.hello()
+
+        with InferenceOptimizer.get_context(load_model):
             assert torch.get_num_threads() == 2
-            y2 = model(x[0:1])
+            y2 = load_model(x[0:1])
 
     def test_openvino_default_values(self):
         # default bool values

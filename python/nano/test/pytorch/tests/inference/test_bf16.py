@@ -181,6 +181,13 @@ class Pytorch1_12:
         with pytest.raises(AttributeError):
             bf16_model.width
 
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+
     def test_bf16_channels_last_various_input_sample(self):
 
         class DummyModel(torch.nn.Module):
