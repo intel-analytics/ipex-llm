@@ -446,10 +446,14 @@ class IPEXJITInference_gt_1_10:
 
     def test_ipex_jit_inference_stable_diffusion_unet(self):
         from diffusers.models import UNet2DConditionModel
-        unet = UNet2DConditionModel(sample_size=128, cross_attention_dim=10)
-        latent_shape = (2, 4, 16, 16)
+        unet = UNet2DConditionModel(sample_size=64,
+                                    cross_attention_dim=10,
+                                    attention_head_dim=1,
+                                    down_block_types=("CrossAttnDownBlock2D", "DownBlock2D"),
+                                    up_block_types=("UpBlock2D", "CrossAttnUpBlock2D",))
+        latent_shape = (2, 4, 8, 8)
         image_latents = torch.randn(latent_shape, device = "cpu", dtype=torch.float32)
-        encoder_hidden_states = torch.randn((2, 77, 10), device = "cpu", dtype=torch.float32)
+        encoder_hidden_states = torch.randn((2, 12, 10), device = "cpu", dtype=torch.float32)
         input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states, torch.tensor(False))
         nano_unet = InferenceOptimizer.trace(unet, accelerator="jit",
                                              use_ipex=True,
