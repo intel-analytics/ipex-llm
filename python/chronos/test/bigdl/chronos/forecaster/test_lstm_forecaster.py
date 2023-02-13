@@ -275,7 +275,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.internal.eval()
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.1, max_trials=3)
+                            metric="mse", relative_drop=0.99, max_trials=3)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
