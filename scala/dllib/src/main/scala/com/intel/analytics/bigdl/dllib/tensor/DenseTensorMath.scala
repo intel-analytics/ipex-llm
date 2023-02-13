@@ -307,7 +307,7 @@ object DenseTensorMath {
 
       val result = ev.dot(self.nElement(), self.storage().array(), self.storageOffset() - 1,
         self.stride(1), t.storage().array(), t.storageOffset() - 1, t.stride(1))
-      new DenseTensor(new ArrayStorage(Array(result)))
+      DenseTensor(new ArrayStorage(Array(result)))
     } else if (self.nDimension() == 2 && t.nDimension() == 1) {
       val result = new DenseTensor[T](self.size(1))
       DenseTensorBLAS.gemv[T](ev.fromType[Int](1), self, t, ev.fromType[Int](0), result)

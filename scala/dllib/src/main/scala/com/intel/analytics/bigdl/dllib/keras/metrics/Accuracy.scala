@@ -85,8 +85,8 @@ class CategoricalAccuracy[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends
 
     Log4Error.invalidInputError(_target.dim() == 2,
       "Target should have 2 dims with one-hot encoding")
-    Log4Error.invalidInputError(_target.size().deep == _output.size().deep,
-      s"${_target.size()} == ${_output.size()}")
+    Log4Error.invalidInputError(_target.size().sameElements(_output.size()),
+      s"(${_target.size().mkString(",")}) != (${_output.size().mkString(",")})")
 
     val bigdlTarget = if (_target.dim() == 2) {
       _target.max(2)._2

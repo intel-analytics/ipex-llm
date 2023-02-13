@@ -74,8 +74,8 @@ class Merge[T: ClassTag](
       while (j < input_i.length) {
         if (j != axis) Log4Error.invalidInputError(input_i(j)==output(j),
           s"Incompatible input dimension for merge " +
-          s"mode concat: (${output.deep.mkString(", ")}), " +
-          s"(${input_i.deep.mkString(", ")})")
+          s"mode concat: (${output.mkString(", ")}), " +
+          s"(${input_i.mkString(", ")})")
         j += 1
       }
       if (output(axis) == -1 || input_i(axis) == -1) {
@@ -95,8 +95,8 @@ class Merge[T: ClassTag](
       val input_i = input(i).toSingle().toArray
       Log4Error.invalidInputError(input_i.sameElements(input1),
         s"Incompatible input dimension for " +
-        s"merge mode $mergeMode: (${input1.deep.mkString(", ")}), " +
-        s"(${input_i.deep.mkString(", ")})")
+        s"merge mode $mergeMode: (${input1.mkString(", ")}), " +
+        s"(${input_i.mkString(", ")})")
       i += 1
     }
   }

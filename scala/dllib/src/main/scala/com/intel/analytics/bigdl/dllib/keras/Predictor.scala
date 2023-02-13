@@ -484,9 +484,9 @@ trait Predictable[T] extends VectorCompatibility{
         val predictions = toBatch(samples).flatMap { batch =>
           val batchResultActivity = localModel.forward(batch.getInput())
           val batchResults = if (batchResultActivity.isTensor) {
-            Array(batchResultActivity.toTensor)
+            Seq(batchResultActivity.toTensor)
           } else {
-            batchResultActivity.toTable.toSeq[Tensor[T]].toArray
+            batchResultActivity.toTable.toSeq[Tensor[T]]
           }
 
           batchResults.flatMap {batchResult => if (batchResult.size().length == 2) {

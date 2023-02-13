@@ -207,7 +207,7 @@ class NNClassifierModel[T: ClassTag] private[bigdl] (
   setDefault(threshold, 0.5)
 
   protected override def outputToPrediction(output: Tensor[T]): Any = {
-    if (output.size().deep == Array(1).deep) {
+    if (output.size().sameElements(Array(1))) {
       val raw = ev.toType[Double](output.toArray().head)
       if (raw > 0.5) 1.0 else 0.0
     } else {

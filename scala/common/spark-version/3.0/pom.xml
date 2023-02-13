@@ -150,7 +150,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-core_${scala.major.version}</artifactId>
+                    <artifactId>spark-core_2.12</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>

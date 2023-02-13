@@ -65,7 +65,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     import scala.collection.JavaConverters._
     val context = new Context[Float]()
-    val session = new BigDLSessionImpl[Float](nodes.asScala, context)
+    val session = new BigDLSessionImpl[Float](nodes.asScala.toSeq, context)
 
     val data = new Array[Tensor[Float]](100)
     val label = new Array[Tensor[Float]](100)
@@ -101,7 +101,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val lenetModel = getLenetModel("lenet_batch_2.pbtxt")
 
     val context = new Context[Float]()
-    val session = new BigDLSessionImpl[Float](lenetModel, context)
+    val session = new BigDLSessionImpl[Float](lenetModel.toSeq, context)
 
     val endpoints = Seq(
       "fifo_queue_Dequeue"
@@ -123,7 +123,7 @@ class SessionSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val lenetModel = getLenetModel("lenet_with_batch_3.pbtxt")
 
     val context = new Context[Float]()
-    val session = new BigDLSessionImpl[Float](lenetModel, context)
+    val session = new BigDLSessionImpl[Float](lenetModel.toSeq, context)
 
     val endpoints = Seq(
       "fifo_queue_Dequeue"

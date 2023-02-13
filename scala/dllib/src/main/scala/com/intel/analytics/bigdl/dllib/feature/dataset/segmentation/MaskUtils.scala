@@ -113,7 +113,7 @@ class RLEMasks(val counts: Array[Int], val height: Int, val width: Int)
       return true
     }
 
-    this.counts.deep == other.counts.deep &&
+    this.counts.sameElements(other.counts) &&
       this.height == other.height &&
       this.width == other.width
   }

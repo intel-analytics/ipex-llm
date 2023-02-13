@@ -109,7 +109,7 @@ object ResNet {
           val curModel = spatialShareConvolution.asInstanceOf[SpatialShareConvolution[Float]]
           curModel.fInput = Tensor[Float](cache.get("fInput").get)
           curModel.fGradInput = Tensor[Float](cache.get("fGradInput").get)
-        case _ => Unit
+        case _ => ()
       }
     }
     matchModels(model)
@@ -140,7 +140,7 @@ object ResNet {
           curModel.bias.apply1(_ => 0.0f)
         case linear if (linear.isInstanceOf[Linear[Float]]) =>
           linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
-        case _ => Unit
+        case _ => ()
       }
     }
     initModules(model)

@@ -239,8 +239,8 @@ trait ModuleSerializable extends Loadable with Savable{
                                               (implicit ev: TensorNumeric[T])
   : ModuleData[T] = {
     val model = context.bigdlModule
-    val preModules = model.getPreModulesList.asScala
-    val nextModules = model.getNextModulesList.asScala
+    val preModules = model.getPreModulesList.asScala.toSeq
+    val nextModules = model.getNextModulesList.asScala.toSeq
     val bigDLModule = ModuleData(module, preModules, nextModules)
     if (model.getName != "") {
       module.setName(model.getName)
@@ -506,7 +506,7 @@ trait ContainerSerializable extends ModuleSerializable {
       asInstanceOf[Container[Activity, Activity, T]].modules
     subModulesData.foreach(module => {
       val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(module,
-        new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
+        Seq[String](), Seq[String]()), context.storages,
         context.storageType, _copyWeightAndBias))
       containerBuilder.addSubModules(subModule.bigDLModule)
     })

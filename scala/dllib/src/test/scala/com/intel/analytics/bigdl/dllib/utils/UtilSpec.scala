@@ -56,7 +56,7 @@ class UtilSpec extends FlatSpec with Matchers with BeforeAndAfter{
       parameterSynchronizer = null)
 
     val model2 = new TestModule[Float]()
-    val modelRDD = sc.parallelize(Array(model)).map(_.asInstanceOf[Cache[Float]])
+    val modelRDD = sc.parallelize(Seq(model)).map(_.asInstanceOf[Cache[Float]])
     setExtraParametersFromModelRDD[Float](modelRDD, model2, 500000)
   }
 

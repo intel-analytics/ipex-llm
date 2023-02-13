@@ -532,7 +532,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val copiedVal = copied.getValidation.get
     TestUtils.conditionFailTest(estVal._1 == copiedVal._1)
     TestUtils.conditionFailTest(estVal._2 == copiedVal._2)
-    TestUtils.conditionFailTest(estVal._3.deep == copiedVal._3.deep)
+    TestUtils.conditionFailTest(estVal._3.corresponds(copiedVal._3)(_ == _))
     TestUtils.conditionFailTest(estVal._4 == copiedVal._4)
 
     // train Summary and validation Summary are not copied since they are not thread-safe and cannot

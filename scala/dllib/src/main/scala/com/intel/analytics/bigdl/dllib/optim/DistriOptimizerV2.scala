@@ -945,7 +945,7 @@ class TrainingContext[T: ClassTag](
         LossWithElapsedTime(i, loss, end - start)
       }
     ), Long.MaxValue)
-    trainingThreads.filter(!_.isCancelled).map(_.get())
+    trainingThreads.filter(!_.isCancelled).map(_.get()).toSeq
   }
 
   def update[T: ClassTag](

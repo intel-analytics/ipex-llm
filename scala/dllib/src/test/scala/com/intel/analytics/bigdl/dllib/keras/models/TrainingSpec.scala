@@ -21,17 +21,12 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Variable, AutoGrad => A}
-import com.intel.analytics.bigdl.dllib.keras.{Sequential, ZooSpecHelper}
+import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers._
-import com.intel.analytics.bigdl.dllib.keras.models.Sequential
-import com.intel.analytics.bigdl.dllib.keras.models.Model
 import com.intel.analytics.bigdl.dllib.keras.objectives.{BinaryCrossEntropy, ZooClassNLLCriterion}
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
 import com.intel.analytics.bigdl.dllib.nn.Graph._

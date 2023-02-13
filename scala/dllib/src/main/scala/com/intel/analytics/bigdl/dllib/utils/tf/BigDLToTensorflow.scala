@@ -375,7 +375,7 @@ object JoinTableToTF extends BigDLToTensorflow {
     val updateInputs = new ArrayBuffer[NodeDef]()
     updateInputs ++= inputs.reverse
     updateInputs.append(axis)
-    Seq(concat(updateInputs, layer.getName()), axis)
+    Seq(concat(updateInputs.toSeq, layer.getName()), axis)
   }
 }
 

@@ -43,11 +43,11 @@ class PythonDllibNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def newGraph(model: NetUtils[T, _],
                outputs: JList[String]): NetUtils[T, _] = {
-    model.newGraph(outputs.asScala).asInstanceOf[NetUtils[T, _]]
+    model.newGraph(outputs.asScala.toSeq).asInstanceOf[NetUtils[T, _]]
   }
 
   def freezeUpTo(model: NetUtils[T, _], names: JList[String]): Unit = {
-    model.freezeUpTo(names.asScala: _*)
+    model.freezeUpTo(names.asScala.toSeq: _*)
   }
 
   def netLoadBigDL(

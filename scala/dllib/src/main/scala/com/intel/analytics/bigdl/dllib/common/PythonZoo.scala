@@ -314,10 +314,10 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
   }
 
   def createZooTriggerAnd(first: ZooTrigger, others: JList[ZooTrigger]): And = {
-    new And(first, others.asScala: _*)
+    new And(first, others.asScala.toSeq: _*)
   }
 
   def createZooTriggerOr(first: ZooTrigger, others: JList[ZooTrigger]): Or = {
-    new Or(first, others.asScala: _*)
+    new Or(first, others.asScala.toSeq: _*)
   }
 }

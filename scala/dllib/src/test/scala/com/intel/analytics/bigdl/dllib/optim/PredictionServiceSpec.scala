@@ -137,7 +137,7 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
 
     RNG.setSeed(100)
 
-    val sumResults = (1 to 100).par.map { _ =>
+    val sumResults = collection.parallel.immutable.ParVector.range(1, 100).map { _ =>
       val tensor = Tensor[Float](2, 10).randn()
       val output = service.predict(tensor).asInstanceOf[Tensor[Float]]
       val output2 = service2.predict(tensor).asInstanceOf[Tensor[Float]]

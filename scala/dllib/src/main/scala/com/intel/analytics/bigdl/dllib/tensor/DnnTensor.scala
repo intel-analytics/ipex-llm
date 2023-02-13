@@ -132,7 +132,7 @@ class DnnTensor[T: ClassTag](
     }
     val other = obj.asInstanceOf[DnnTensor[T]]
 
-    if (this.size().deep != other.size().deep) {
+    if (!this.size().sameElements(other.size())) {
       return false
     }
 
@@ -309,7 +309,7 @@ object DnnTensor {
     override def isSameSizeAs(other: Tensor[_]): Boolean = ???
     override def emptyInstance(): Tensor[T] = ???
     override def resizeAs(src: Tensor[_]): Tensor[T] = ???
-    override def cast[D: ClassManifest](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] = ???
+    override def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] = ???
     override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = ???
     override def resize(size1: Int): Tensor[T] = ???
     override def resize(size1: Int, size2: Int): Tensor[T] = ???
@@ -325,9 +325,9 @@ object DnnTensor {
     override def set(): Tensor[T] = ???
     override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = ???
     override def copy(other: Tensor[T]): Tensor[T] = ???
-    override def applyFun[A: ClassManifest](t: Tensor[A], func: (A) => T): Tensor[T] = ???
+    override def applyFun[A: ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] = ???
     override def apply1(func: (T) => T): Tensor[T] = ???
-    override def zipWith[A: ClassManifest, B: ClassManifest](t1: Tensor[A], t2: Tensor[B], func: (A, B) => T): Tensor[T] = ???
+    override def zipWith[A: ClassTag, B: ClassTag](t1: Tensor[A], t2: Tensor[B], func: (A, B) => T): Tensor[T] = ???
     override def map(other: Tensor[T], func: (T, T) => T): Tensor[T] = ???
     override def squeeze(): Tensor[T] = ???
     override def squeeze(dim: Int): Tensor[T] = ???

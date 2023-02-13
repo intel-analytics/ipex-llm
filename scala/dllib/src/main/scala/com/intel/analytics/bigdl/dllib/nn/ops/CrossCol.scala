@@ -121,9 +121,9 @@ class CrossCol[T: ClassTag](
     val stack = mutable.Stack[Array[String]]()
     stack.pushAll(input(0).map(Array(_)))
 
-    val mkBuilder = (a: Array[String]) => mutable.ArrayBuilder.make[String]() ++= a
+    val mkBuilder = (a: Array[String]) => mutable.ArrayBuilder.make[String].++=(a)
 
-    val result = mutable.ArrayBuilder.make[Array[String]]()
+    val result = mutable.ArrayBuilder.make[Array[String]]
 
     while (stack.nonEmpty) {
       val current = stack.pop()
@@ -134,7 +134,7 @@ class CrossCol[T: ClassTag](
       if (current.length == input.length - 1) {
         result ++= children
       } else {
-        stack.pushAll(children)
+        stack.pushAll(children.toIterable)
       }
     }
 

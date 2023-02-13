@@ -322,7 +322,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
       }
       ret
     }
-    T.seq(tables)
+    T.seq(tables.toSeq)
   }
 
   override def slice(offset: Int, length: Int): MiniBatch[Float] = {

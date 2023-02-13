@@ -642,7 +642,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       nextedLayers(nextedLayers.size - 1).
         asInstanceOf[LayerParameter].getTopList.asScala.foreach(lastBottoms.append(_))
     })
-    res
+    res.toSeq
   }
 
   private def toCaffeWithWeightAndBiasOnly(module : AbstractModule[Activity, Activity, T],

@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.models.resnet
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dllib.feature.dataset._
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.feature.dataset.image._
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{HFlip => JHFlip}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{MTImageFeatureToBatch, MatToTensor, PixelBytesToMat}

@@ -1227,7 +1227,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
     Log4Error.invalidInputError(!x.isEmpty, "We don't accept empty inputs")
-    Variable(module.inputs(x.asScala.map(_.node): _*))
+    Variable(module.inputs(x.asScala.toSeq.map(_.node): _*))
   }
 
   def createZooKerasSparseCategoricalCrossEntropy(

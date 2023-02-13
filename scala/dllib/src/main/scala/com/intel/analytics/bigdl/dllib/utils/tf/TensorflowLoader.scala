@@ -81,7 +81,7 @@ object TensorflowLoader{
     val context = binFile.map(loadBinFiles(_))
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, newInputs, outputs, byteOrder, graphPrototxt,
+    buildBigDLModel(tfGraph, newInputs.toSeq, outputs.toSeq, byteOrder, graphPrototxt,
       context, generatedBackward)
   }
 
@@ -90,7 +90,7 @@ object TensorflowLoader{
     // Get node list
     val nodeList = parse(graphFile)
 
-    new BigDLSessionImpl[T](nodeList.asScala, loadBinFiles(binFile), byteOrder)
+    new BigDLSessionImpl[T](nodeList.asScala.toSeq, loadBinFiles(binFile), byteOrder)
   }
 
   /**
@@ -247,7 +247,7 @@ object TensorflowLoader{
     val originInputs = new mutable.ArrayBuffer[String]()
 
     // Do a BFS to connect the nodes
-    queue.enqueue(nodes: _*)
+    nodes.foreach(queue.enqueue(_))
     while(queue.nonEmpty) {
       val node = queue.dequeue()
       if (!visited(node)) {
@@ -312,7 +312,7 @@ object TensorflowLoader{
         }
       }
     }
-    (newInputs, originInputs)
+    (newInputs, originInputs.toSeq)
   }
 
   private def pushPreNode(name: String, name2Node: Map[String, Node[NodeDef]],
@@ -418,7 +418,7 @@ object TensorflowLoader{
           module.setName(removeColon(nodes.get(0).element.getName()))
         } else {
           // Many to one map
-          val name = removeColon(findCommonPrefix(nodes.asScala.map(_.element.getName)))
+          val name = removeColon(findCommonPrefix(nodes.asScala.map(_.element.getName).toSeq))
           if (name == "") {
             // Use a name combine nodes
             module.setName(s"[${nodes.asScala.map(_.element.getName).map(_.replaceAll("/", "\\\\"))
@@ -451,7 +451,7 @@ object TensorflowLoader{
     def connect(outputModuleNode: Seq[Node[AbstractModule[Activity, Activity, T]]]) = {
       val queue = new mutable.Queue[Node[AbstractModule[Activity, Activity, T]]]()
       val visited = mutable.Set[Node[AbstractModule[Activity, Activity, T]]]()
-      queue.enqueue(outputModuleNode: _*)
+      outputModuleNode.foreach(queue.enqueue(_))
 
       while (queue.nonEmpty) {
         val currNode = queue.dequeue()
@@ -465,7 +465,7 @@ object TensorflowLoader{
             .filterNot(n => allNodes(n._1))
             .map(n => (convertedNode(n._1), n._2.newInstance())).filter(n => n._1 != currNode)
           inputModuleNodes.foreach(n => n._1.add(currNode, n._2))
-          queue.enqueue(inputModuleNodes.map(_._1): _*)
+          inputModuleNodes.map(_._1).foreach(queue.enqueue(_))
         }
       }
     }
@@ -601,7 +601,7 @@ object TensorflowLoader{
       }
     })
     import scala.collection.JavaConverters._
-    return (patternToGraph.valuesIterator.toList.asJava, inputs)
+    return (patternToGraph.valuesIterator.toList.asJava, inputs.toSeq)
   }
 
   private def findCommonPrefix(data: Seq[String]): String = {

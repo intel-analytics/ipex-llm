@@ -37,7 +37,7 @@ object Test {
   Configurator.setLevel("akka", Level.ERROR)
   Configurator.setLevel("breeze", Level.ERROR)
 
-  import Utils._
+  import com.intel.analytics.bigdl.dllib.models.rnn.Utils._
   val logger = LogManager.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {

@@ -168,7 +168,7 @@ object RowTransformer {
     numericFields.foreach { case(key, fields) =>
       transSchemas += ColsToNumeric[T](key, fields)
     }
-    new RowTransformer(transSchemas)
+    new RowTransformer(transSchemas.toSeq)
   }
 
 }

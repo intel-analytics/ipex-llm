@@ -268,7 +268,7 @@ object LarsSGD {
           // generate Seq for each sub-module
           createOptimSeqForModule(mod, lrScheGenerator, trust, learningRate, learningRateDecay,
             weightDecay, momentum)
-        })
+        }).toSeq
       case _ =>
         if (model.parameters() != null) {
           val (lrSche, isOwner) = lrScheGenerator(model)

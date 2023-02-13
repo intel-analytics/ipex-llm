@@ -16,15 +16,12 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn._
-import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat, Activity}
-import com.intel.analytics.bigdl.dllib.nn.internal.Pooling1D
+import com.intel.analytics.bigdl.dllib.nn.{SpatialMaxPooling, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net
-import scala.tools.nsc.interpreter.JList
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -50,7 +47,7 @@ class MaxPooling1D[T: ClassTag](
     override val inputShape: Shape = null,
     val pad: Int = 0)(implicit ev: TensorNumeric[T])
   extends Pooling1D[T](
-    poolLength, stride, borderMode, inputShape) with Net {
+    poolLength, stride, borderMode, inputShape) {
 
 
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = {
@@ -73,7 +70,7 @@ class MaxPooling1D[T: ClassTag](
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(com.intel.analytics.bigdl.dllib.nn.Squeeze(3))
-    model.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 

@@ -375,7 +375,7 @@ object BERT extends KerasLayerSerializable {
 
     val embLabor = bert.embeddingLayer.labor.asInstanceOf[AbstractModule[Activity, Activity, T]]
     val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(embLabor,
-      new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
+      Seq[String](), Seq[String]()), context.storages,
       context.storageType, _copyWeightAndBias))
     bertBuilder.addSubModules(subModule.bigDLModule)
 
@@ -383,7 +383,7 @@ object BERT extends KerasLayerSerializable {
       asInstanceOf[KerasLayer[Activity, Activity, T]].labor
     val labor = model.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
     val subModule2 = ModuleSerializer.serialize(SerializeContext(ModuleData(labor,
-      new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
+      Seq[String](), Seq[String]()), context.storages,
       context.storageType, _copyWeightAndBias))
     bertBuilder.addSubModules(subModule2.bigDLModule)
 

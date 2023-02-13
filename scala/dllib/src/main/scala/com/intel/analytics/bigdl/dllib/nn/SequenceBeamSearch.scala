@@ -196,10 +196,9 @@ class SequenceBeamSearch[T: ClassTag](
   private def gatherNd(tensor: Tensor[T], indices: Tensor[T], outputs: Tensor[T]): Tensor[T] = {
     val shape1 = tensor.size()
     val shape2 = indices.size()
-    var slices = new Array[T](0)
-    if (shape1.length == 2) {
+    val slices = if (shape1.length == 2) {
       outputs.resize(shape2(0), shape2(1))
-      slices = new Array[T](shape2(0) * shape2(1))
+      val slices = new Array[T](shape2(0) * shape2(1))
       for (i <- 1 to shape2(0)) {
         for (j <- 1 to shape2(1)) {
           slices((i - 1) * shape2(1) + j - 1) = tensor.valueAt(ev.toType[Int](ev.plus
@@ -207,36 +206,45 @@ class SequenceBeamSearch[T: ClassTag](
             (ev.plus(indices.valueAt(i, j, 2), ev.fromType[Float](1.0f))))
         }
       }
+      slices
     } else if (shape1.length == 3) {
       outputs.resize(shape2(0), shape2(1), shape1(2))
+      val slicesBuffer = new ArrayBuffer[T]()
       for (i <- 1 to shape2(0)) {
         for (j <- 1 to shape2(1)) {
-          slices ++= tensor
+          slicesBuffer.appendAll(tensor
             .select(2, ev.toType[Int](ev.plus(indices.valueAt(i, j, 2), ev.fromType[Float](1.0f))))
             .select(1, ev.toType[Int](ev.plus(indices.valueAt(i, j, 1), ev.fromType[Float](1.0f))))
-            .toArray()
+            .toArray())
         }
       }
+      slicesBuffer.toArray
     } else if (shape1.length == 4) {
       outputs.resize(shape2(0), shape2(1), shape1(2), shape1(3))
+      val slicesBuffer = new ArrayBuffer[T]()
       for (i <- 1 to shape2(0)) {
         for (j <- 1 to shape2(1)) {
-          slices ++= tensor
+          slicesBuffer.appendAll(tensor
             .select(2, ev.toType[Int](ev.plus(indices.valueAt(i, j, 2), ev.fromType[Float](1.0f))))
             .select(1, ev.toType[Int](ev.plus(indices.valueAt(i, j, 1), ev.fromType[Float](1.0f))))
-            .reshape(Array(shape1(2) * shape1(3)))toArray()
+            .reshape(Array(shape1(2) * shape1(3))).toArray())
         }
       }
+      slicesBuffer.toArray
     } else if (shape1.length == 5) {
       outputs.resize(shape2(0), shape2(1), shape1(2), shape1(3), shape1(4))
+      val slicesBuffer = new ArrayBuffer[T]()
       for (i <- 1 to shape2(0)) {
         for (j <- 1 to shape2(1)) {
-          slices ++= tensor
+          slicesBuffer.appendAll(tensor
             .select(2, ev.toType[Int](ev.plus(indices.valueAt(i, j, 2), ev.fromType[Float](1.0f))))
             .select(1, ev.toType[Int](ev.plus(indices.valueAt(i, j, 1), ev.fromType[Float](1.0f))))
-            .reshape(Array(shape1(2) * shape1(3) * shape1(4)))toArray()
+            .reshape(Array(shape1(2) * shape1(3) * shape1(4))).toArray())
         }
       }
+      slicesBuffer.toArray
+    } else {
+      new Array[T](0)
     }
     val outputData = outputs.storage().array()
     val outputOffset = outputs.storageOffset() - 1

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nn.internal
 
-import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nn.{BiRecurrent, CAddTable, CAveTable, CMulTable, JoinTable}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric

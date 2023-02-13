@@ -90,7 +90,7 @@ object Utils {
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
     Log4Error.invalidInputError(attrMap.containsKey(key),
       s"Operation doesn't contain attributed $key")
-    attrMap.get(key).getList.getIList.asScala.map(_.toInt)
+    attrMap.get(key).getList.getIList.asScala.map(_.toInt).toSeq
   }
 
   private[loaders] def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {

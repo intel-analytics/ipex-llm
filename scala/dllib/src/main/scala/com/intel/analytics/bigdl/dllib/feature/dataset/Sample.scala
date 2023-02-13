@@ -233,12 +233,12 @@ class ArraySample[T: ClassTag] private[bigdl](
   override def equals(other: Any): Boolean = other match {
     case that: ArraySample[T] =>
       if (!(that canEqual this) ||
-        !(data.deep == that.data.deep) ||
-        !(featureSize.deep == that.featureSize.deep)) {
+        !(data sameElements that.data) ||
+        !featureSize.corresponds(that.featureSize) {_ sameElements _}) {
         return false
       }
       if (null != labelSize && null != that.labelSize) {
-        labelSize.deep == that.labelSize.deep
+        labelSize.corresponds(that.labelSize) {_ sameElements _}
       } else {
         null == labelSize & null == that.labelSize
       }

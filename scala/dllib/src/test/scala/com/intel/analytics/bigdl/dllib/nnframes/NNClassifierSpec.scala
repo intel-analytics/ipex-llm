@@ -228,7 +228,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     (0 until 10).foreach(i =>
       tensorBuffer.append(
         Data(targetArr(i), inputArr.slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))))
-    val rowRDD = sc.parallelize(tensorBuffer)
+    val rowRDD = sc.parallelize(tensorBuffer.toSeq)
     val testData = sqlContext.createDataFrame(rowRDD)
     TestUtils.conditionFailTest(
       valTrans.transform(testData).where("prediction=label").count() == testData.count())
@@ -355,7 +355,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val copiedVal = copied.getValidation.get
     TestUtils.conditionFailTest(estVal._1 == copiedVal._1)
     TestUtils.conditionFailTest(estVal._2 == copiedVal._2)
-    TestUtils.conditionFailTest(estVal._3.deep == copiedVal._3.deep)
+    TestUtils.conditionFailTest(estVal._3.corresponds(copiedVal._3)(_ == _))
     TestUtils.conditionFailTest(estVal._4 == copiedVal._4)
 
     // train Summary and validation Summary are not copied since they are not thread-safe and cannot

@@ -981,7 +981,7 @@ object Tensor {
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]],
       "Only support array storage in this operaiton")
-    new DenseTensor(storage.asInstanceOf[ArrayStorage[T]])
+    DenseTensor(storage.asInstanceOf[ArrayStorage[T]])
   }
 
   /**
@@ -1029,7 +1029,7 @@ object Tensor {
     storageOffset: Int,
     size: Array[Int] = null,
     stride: Array[Int] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    new DenseTensor(storage.asInstanceOf[ArrayStorage[T]], storageOffset, size, stride)
+    DenseTensor(storage.asInstanceOf[ArrayStorage[T]], storageOffset, size, stride)
   }
 
   /**
@@ -1042,7 +1042,15 @@ object Tensor {
    * @return
    */
   def apply[@specialized(Float, Double) T: ClassTag](other: Tensor[T])(
-    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor(other)
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val newT = new DenseTensor[T](null, 0, null, null, 0)
+    val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
+    val _storageOffset = other.storageOffset() - 1
+    val _size = other.size()
+    val _stride = other.stride()
+    DenseTensor.newWithStorage[T](newT, _storage, _storageOffset, _size, _stride, ev)
+    newT
+  }
 
   /**
    * create a tensor with a given breeze vector. The tensor will have the same size
