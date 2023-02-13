@@ -1,5 +1,5 @@
-name: 'Run Orca Jep ExampleTest'
-description: 'Run Orca Jep ExampleTest'
+name: 'Run Orca Jep ExampleTest Py37 Spark3'
+description: 'Run Orca Jep ExampleTest Py37 Spark3'
 runs:
   using: "composite"
   steps:
