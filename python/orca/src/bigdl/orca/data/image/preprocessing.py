@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from PIL import Image, ImageDraw
 from bigdl.orca import OrcaContext
 from typing import TYPE_CHECKING, Any
 
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
 from bigdl.orca.data.file import *
 from bigdl.orca.data.utils import *
 from bigdl.orca.data import SparkXShards
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, explode
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.dllib.utils.common import get_node_and_core_number
 
@@ -161,7 +162,6 @@ def read_images_spark(file_path: str,
         else:
             invalidInputError(False, "invalid nChannels of spark image, "
                                      "please use read_images_pil instead")
-        from PIL import Image
         img = Image.frombytes(mode=mode, data=bytes(image_spark.image.data),
                               size=[image_spark.image.width, image_spark.image.height])
         if mode in ['RGB', 'RGBA']:
@@ -193,3 +193,64 @@ def read_images_spark(file_path: str,
 
         image_rdd = image_rdd.zip(target_rdd)
     return SparkXShards(image_rdd)
+
+
+def read_coco(file_path: str,
+              split: str = "train",
+              label_type: str = "segmentation",
+              max_samples: int = 25,
+              ):
+    spark = OrcaContext.get_spark_session()
+    df = spark.read.json(file_path + "/annotations/instances_" + split + "2017.json")
+    annDF = df.select(explode(col("annotations")).alias("annotations"))
+    annDF = annDF.select(col("annotations.area").alias("area"),
+                         col("annotations.bbox").alias("bbox"),
+                         col("annotations.category_id").alias("category_id"),
+                         col("annotations.id").alias("id"),
+                         col("annotations.image_id").alias("image_id"),
+                         col("annotations.iscrowd").alias("iscrowd"),
+                         col("annotations." + label_type).alias(label_type))
+
+    catDF = df.select(explode(col("categories")).alias("categories"))
+    catDF = catDF.select(col("categories.id").alias("category_id"),
+                         col("categories.name").alias("name"),
+                         col("categories.supercategory").alias("supercategory"))
+    imgDF = df.select(explode(col("images")).alias("images"))
+
+    imgDF = imgDF.selectExpr("images.coco_url as coco_url",
+                             "images.date_captured as date_captured",
+                             "images.file_name as file_name", "images.flickr_url as flickr_url",
+                             "images.height as height", "images.id as image_id",
+                             "images.license as license", "images.width as width")
+
+    join1 = annDF.join(imgDF, annDF.image_id == imgDF.image_id)
+
+    meta_df = join1.join(catDF, join1.category_id == catDF.category_id)
+
+    image_path = file_path + "/" + split + "2017"
+    meta_rdd =meta_df.rdd.map(
+        lambda x: (image_path + x['file_name'],
+                   (x['id'], x['image_id'], x['bbox'], x['category_id'])))
+
+    file_names = meta_df.select("file_name").distinct().limit(max_samples).rdd.map(lambda r: r[0])\
+        .map(lambda x: file_path + x)
+
+    def load_image(iterator):
+        for f in iterator:
+            img = open_image(f)
+            yield f, img
+
+    image_rdd = file_names.mapPartitions(load_image)
+
+    def transform_data(x):
+        image = x[1][0]
+        target = dict()
+        target['bbox'] = x[1][1][2]
+        target['label'] = x[1][1][3]
+        return image, target
+
+    out_rdd = image_rdd.join(meta_rdd)
+    out_rdd = out_rdd.map(lambda x: transform_data(x))
+
+    return SparkXShards(out_rdd)
+
