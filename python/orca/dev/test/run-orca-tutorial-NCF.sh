@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,7 +16,7 @@
 #
 
 # clean train/predict/resume results
-function clean() {
+function clean () {
     echo "Cleaning files..."
     rm -rf NCF_model
     rm -f NCF_model
@@ -27,13 +28,20 @@ function clean() {
     echo "done"
 }
 
+function stop_ray () {
+    if [ $1 = "ray" ]; then
+        echo "Trying to stop any activate ray context..."
+        ray stop -f
+    else 
+        echo "Backend is not ray, skipping"
+    fi
+}
+
 set -ex
 
 export FTP_URI=$FTP_URI
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
-
-ray stop -f
 
 cd "`dirname $0`"
 cd ../../tutorial/NCF
@@ -55,6 +63,8 @@ wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
 unzip orca-tutorial-ncf-dataset-compressed.zip
 echo "Successfully got dataset from ftp"
 
+stop_ray $backend
+
 echo "#1 Running pytorch_train_dataloader"
 #timer
 start=$(date "+%s")
@@ -68,6 +78,7 @@ now=$(date "+%s")
 time1=$((now - start))
 
 clean
+stop_ray $backend
 
 echo "#2 Running pytorch_train_spark_dataframe"
 #timer
@@ -81,6 +92,7 @@ now=$(date "+%s")
 time2=$((now - start))
 
 clean
+stop_ray $backend
 
 echo "#3 Running pytorch_train_xshards"
 #timer
@@ -94,6 +106,7 @@ now=$(date "+%s")
 time3=$((now - start))
 
 clean
+stop_ray $backend
 
 echo "#4 Running tf_train_spark_dataframe"
 #timer
@@ -107,6 +120,7 @@ now=$(date "+%s")
 time4=$((now - start))
 
 clean
+stop_ray $backend
 
 echo "#5 Running tf_train_xshards"
 #timer
@@ -120,6 +134,7 @@ now=$(date "+%s")
 time5=$((now - start))
 
 clean
+stop_ray $backend
 
 echo "#1 Running pytorch_train_dataloader time used: $time1 seconds"
 echo "#2 Running pytorch_train_spark_dataframe time used: $time2 seconds"
