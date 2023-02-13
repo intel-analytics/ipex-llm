@@ -21,7 +21,8 @@ from bigdl.nano.utils.common import AcceleratedModel
 try:
     import torch
     is_torch_available = True
-except ImportError:
+except Exception as _e:
+    # import torch after import tensorflow may cause `OSError` exception on Windows
     is_torch_available = False
 
 
