@@ -29,10 +29,7 @@ from typing import List, Tuple, Union, Optional, Callable, Any
 EPSILON = 1e-10
 
 
-def _standardize_input(y_true: Union[List[List[Union[int, float]]], ndarray,
-                                     List[Union[int, float]], List[List[List[Union[int, float]]]]],
-                       y_pred: Union[List[List[Union[int, float]]], ndarray,
-                                     List[Union[int, float]], List[List[List[Union[int, float]]]]],
+def _standardize_input(y_true: ndarray, y_pred: ndarray,
                        multioutput: str) -> Union[Tuple[ndarray, ndarray, Tuple[int, int]],
                                                   Tuple[ndarray, ndarray, Tuple[()]],
                                                   Tuple[ndarray, ndarray, Tuple[int]]]:
@@ -92,10 +89,7 @@ def _standardize_input(y_true: Union[List[List[Union[int, float]]], ndarray,
     return y_true, y_pred, original_shape
 
 
-def sMAPE(y_true: Union[ndarray, List[List[Union[int, float]]],
-                        List[List[List[Union[int, float]]]]],
-          y_pred: Union[ndarray, List[List[Union[int, float]]],
-                        List[List[List[Union[int, float]]]]],
+def sMAPE(y_true: ndarray, y_pred: ndarray,
           multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Symmetric mean absolute percentage error (sMAPE).
@@ -122,9 +116,7 @@ def sMAPE(y_true: Union[ndarray, List[List[Union[int, float]]],
     return np.mean(output_errors)
 
 
-def MPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-        y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-        multioutput: str='raw_values') -> Union[float64, ndarray]:
+def MPE(y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean percentage error (MPE).
 
@@ -149,10 +141,7 @@ def MPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[
     return np.mean(output_errors)
 
 
-def MAPE(y_true: Union[List[Union[int, float]], ndarray,
-                       List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
-         y_pred: Union[List[Union[int, float]], ndarray,
-                       List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
+def MAPE(y_true: ndarray, y_pred: ndarray,
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean absolute percentage error (MAPE).
@@ -178,8 +167,7 @@ def MAPE(y_true: Union[List[Union[int, float]], ndarray,
     return np.mean(output_errors)
 
 
-def MDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-          y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+def MDAPE(y_true: ndarray, y_pred: ndarray,
           multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Median Absolute Percentage Error (MDAPE).
@@ -206,8 +194,7 @@ def MDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Unio
     return np.mean(output_errors)
 
 
-def sMDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-           y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+def sMDAPE(y_true: ndarray, y_pred: ndarray,
            multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Symmetric Median Absolute Percentage Error (sMDAPE).
@@ -235,9 +222,7 @@ def sMDAPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Uni
     return np.mean(output_errors)
 
 
-def ME(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-       y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-       multioutput: str='raw_values') -> Union[float64, ndarray]:
+def ME(y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate Mean Error (ME).
 
@@ -262,8 +247,7 @@ def ME(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[i
     return np.mean(output_errors)
 
 
-def MSPE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-         y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+def MSPE(y_true: ndarray, y_pred: ndarray,
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate mean squared percentage error (MSPE).
@@ -315,9 +299,7 @@ def MSLE(y_true: ndarray, y_pred: ndarray,
     return result
 
 
-def R2(y_true: Union[ndarray, List[List[Union[int, float]]]],
-       y_pred: Union[ndarray, List[List[Union[int, float]]]],
-       multioutput: str='raw_values') -> Union[float64, ndarray]:
+def R2(y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate the r2 score.
 
@@ -342,9 +324,7 @@ def R2(y_true: Union[ndarray, List[List[Union[int, float]]]],
     return result
 
 
-def MAE(y_true: Union[ndarray, List[List[Union[int, float]]]],
-        y_pred: Union[ndarray, List[List[Union[int, float]]]],
-        multioutput: str='raw_values') -> Union[float64, ndarray]:
+def MAE(y_true: ndarray, y_pred: ndarray, multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate the mean absolute error (MAE).
 
@@ -369,8 +349,7 @@ def MAE(y_true: Union[ndarray, List[List[Union[int, float]]]],
     return result
 
 
-def RMSE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
-         y_pred: List[Union[int, float, List[Union[int, float]], List[List[Union[int, float]]]]],
+def RMSE(y_true: ndarray, y_pred: ndarray,
          multioutput: str='raw_values') -> Union[float64, ndarray]:
     """
     Calculate square root of the mean squared error (RMSE).
@@ -392,10 +371,7 @@ def RMSE(y_true: List[Union[int, float, List[Union[int, float]], List[List[Union
     return np.sqrt(MSE(y_true, y_pred, multioutput=multioutput))
 
 
-def MSE(y_true: Union[List[Union[int, float]], ndarray,
-                      List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
-        y_pred: Union[List[Union[int, float]], ndarray,
-                      List[List[Union[int, float]]], List[List[List[Union[int, float]]]]],
+def MSE(y_true: ndarray, y_pred: ndarray,
         multioutput: str='uniform_average') -> Union[float64, ndarray]:
     """
     Calculate the mean squared error (MSE).
@@ -421,11 +397,7 @@ def MSE(y_true: Union[List[Union[int, float]], ndarray,
     return result
 
 
-def Accuracy(y_true: List[Union[int, float, List[Union[int, float]],
-                                List[List[Union[int, float]]]]],
-             y_pred: List[Union[int, float, List[Union[int, float]],
-                                List[List[Union[int, float]]]]],
-             multioutput=None) -> Union[float64, ndarray]:
+def Accuracy(y_true: ndarray, y_pred: ndarray, multioutput=None) -> Union[float64, ndarray]:
     """
     Calculate the accuracy score (Accuracy).
 
