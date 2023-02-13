@@ -2,9 +2,9 @@ export HTTP_PROXY_HOST=your_http_proxy_host
 export HTTP_PROXY_PORT=your_http_proxy_port
 export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
-export JDK_URL=http://your-http-url-to-download-jdk
-export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
-export LOCAL_IP=your_local_ip
+export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
+export SPARK_JAR_REPO_URL=http://10.239.45.10:8081/repository/raw/spark
+export LOCAL_IP=172.168.0.205
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
@@ -39,7 +39,7 @@ then
 else
     if [[ "$HTTP_PROXY_HOST" == "your_http_proxy_host" ]] || [[ "$HTTP_PROXY_PORT" == "your_http_proxy_port" ]] || [[ "$HTTPS_PROXY_HOST" == "your_https_proxy_host" ]] || [[ "$HTTPS_PROXY_PORT" == "your_https_proxy_port" ]]
     then
-       echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delet the image just created and modify the proxy in the script, then rerun this script."
+       echo "If your environment don't need to set proxy, please ignore this notice information; if your environment need to set proxy, please delete the image just created and modify the proxy in the script, then rerun this script."
        $No_Proxy_Modified
     else
        $Proxy_Modified

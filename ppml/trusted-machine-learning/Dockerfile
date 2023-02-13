@@ -9,7 +9,7 @@ ARG SCALA_VERSION=2.12
 
 
 # Stage.1 Spark & Hadoop
-FROM ubuntu:20.04 as bigdata
+FROM ubuntu:20.04 as machinelearning
 ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
@@ -131,9 +131,9 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/models && \
     mkdir -p /ppml/apps
 
-COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
-COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
-COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
+COPY --from=machinelearning /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
+COPY --from=machinelearning /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
+COPY --from=machinelearning /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./scripts /ppml/scripts

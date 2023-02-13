@@ -1,4 +1,15 @@
+#!/bin/bash
+
 cd /ppml
+
+input_file="data/mllib/sample_libsvm_data.txt"
+
+if [ -f "$input_file" ]; then
+    echo "Input file exists."
+else
+    echo "Input file not exists, downloading the file"
+    wget https://raw.githubusercontent.com/apache/spark/master/data/mllib/sample_libsvm_data.txt -O "$input_file"
+fi
 
 /opt/jdk8/bin/java \
     -cp "/ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/*" -Xmx1g \
@@ -14,5 +25,3 @@ cd /ppml
     --verbose \
     --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
     local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
-
-
