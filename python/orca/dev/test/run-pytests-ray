@@ -67,6 +67,7 @@ if [ $python_version == 3.7.10 ];then
 
     echo "Running orca data tests"
     python -m pytest -v test/bigdl/orca/data \
+          # test_xshards_partition.py is tested in run-pytests-basic-env.sh
           --ignore=test/bigdl/orca/data/test_xshards_partition.py \
           --ignore=test/bigdl/orca/data/test_read_parquet_images.py
     exit_status_4=$?
@@ -94,6 +95,7 @@ else
 
     echo "Running orca data tests"
     python -m pytest -v test/bigdl/orca/data \
+          # test_xshards_partition.py is tested in run-pytests-basic-env.sh
           --ignore=test/bigdl/orca/data/test_xshards_partition.py \
           --ignore=test/bigdl/orca/data/test_read_parquet_images.py \
           --ignore=test/bigdl/orca/data/test_write_parquet.py \
