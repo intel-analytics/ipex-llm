@@ -24,7 +24,7 @@ import torch
 import torch.nn as nn
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType, ArrayType, StructType, StructField
+from pyspark.sql.types import FloatType, ArrayType, DoubleType, StructType, StructField
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.metrics import Accuracy
@@ -293,7 +293,13 @@ class TestPyTorchEstimatorBasic(TestCase):
 
     def test_dataframe_predict(self):
 
+        def to_array_(v):
+            return v.toArray().tolist()
+        
         sc = init_nncontext()
+        spark = SparkSession(sc)
+        spark.udf.register("to_array", to_array_, ArrayType(DoubleType()))
+
         rdd = sc.parallelize(range(20))
         df = rdd.map(lambda x: ([float(x)] * 5,
                                 [int(np.random.randint(0, 2, size=()))])

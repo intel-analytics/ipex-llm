@@ -29,20 +29,4 @@ export PYSPARK_DRIVER_PYTHON=python
 
 echo "Running Orca Tf2 Test"
 python -m pytest -v test/bigdl/orca/test_import.py::TestImport::test_tf2_import
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_checkpoint_model    
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_checkpoint_weights   
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_checkpoint_weights_h5   
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_dataframe    
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_dataframe_different_train_val
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_dataframe_shard_size 
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_dataframe_with_empty_partition
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_get_model
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_optional_model_creator_h5
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_optional_model_creator_savemodel
-# require uuid
-# python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_architecture
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_h5     
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_save_load_model_savemodel
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_tensorboard          
-# require pandas
-# python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf_spark_estimator.py::TestTFEstimator::test_xshards_pandas_dataframe
+python -m pytest -v test/bigdl/orca/learn/test_tf2_basic.py
