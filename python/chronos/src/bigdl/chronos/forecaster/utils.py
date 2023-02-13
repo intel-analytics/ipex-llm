@@ -32,6 +32,8 @@ __all__ = ['loader_to_creator',
            'set_pytorch_seed',
            'check_data',
            'np_to_dataloader',
+           'tsdataset_to_dataloader',
+           'dataloader_batch_resize',
            'read_csv',
            'delete_folder',
            'is_main_process',
@@ -180,7 +182,9 @@ def tsdataset_to_dataloader(data, batch_size, lookback, horizon, num_processes):
                                      target_col=data.roll_target,
                                      shuffle=True)
 
-def dataloader_batch_resize(data:DataLoader, num_processes):
+def dataloader_batch_resize(data:DataLoader, batch_size, num_processes):
+    if num_processes == 1:
+        return data
     if batch_size % num_processes != 0:
         warnings.warn("'batch_size' cannot be divided with no remainder by "
                     "'self.num_processes'. We got 'batch_size' = {} and "

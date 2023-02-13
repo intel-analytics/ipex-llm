@@ -366,7 +366,7 @@ class BasePytorchForecaster(Forecaster):
 
             # dataloader change batch_size for multi-process
             if isinstance(data, DataLoader) and self.num_processes:
-                data = dataloader_batch_resize(data, self.num_processes)
+                data = dataloader_batch_resize(data, batch_size, self.num_processes)
 
             # training process
             # forecaster_log_dir is a temp directory for training log
