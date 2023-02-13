@@ -18,7 +18,6 @@ import types
 import copy
 import logging
 
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -33,7 +32,7 @@ from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer

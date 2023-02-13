@@ -18,7 +18,6 @@ import logging
 import shutil
 import tensorflow as tf
 
-from bigdl.dllib.utils.file_utils import is_local_path
 from bigdl.orca.learn.utils import get_replaced_path
 from bigdl.orca.data.file import put_local_files_with_prefix_to_remote, \
     put_local_dir_tree_to_remote, put_local_file_to_remote
