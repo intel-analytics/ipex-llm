@@ -57,11 +57,11 @@ fi
 echo "Start Orca NCF tutorial Test - $backend backend"
 
 # download dataset from ftp
-# rm -f ./orca-tutorial-ncf-dataset-compressed.zip
-# rm -rf ml-1m
-# wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
-# unzip orca-tutorial-ncf-dataset-compressed.zip
-# echo "Successfully got dataset from ftp"
+rm -f ./orca-tutorial-ncf-dataset-compressed.zip
+rm -rf ml-1m
+wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
+unzip orca-tutorial-ncf-dataset-compressed.zip
+echo "Successfully got dataset from ftp"
 
 stop_ray $backend
 
