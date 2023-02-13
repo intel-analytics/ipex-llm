@@ -175,6 +175,13 @@ class IPEXJITInference_gt_1_10:
         assert new_model.channels == 3
         new_model.hello()
 
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+
         # test jit + ipex + inplace
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
                                              use_ipex=True,
@@ -201,6 +208,13 @@ class IPEXJITInference_gt_1_10:
         assert new_model.channels == 3
         new_model.hello()
 
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+
         # test ipex
         new_model = InferenceOptimizer.trace(model, use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
@@ -209,6 +223,13 @@ class IPEXJITInference_gt_1_10:
         new_model.hello()
         with pytest.raises(AttributeError):
             new_model.width
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
 
         # test ipex inplace
         new_model = InferenceOptimizer.trace(model, use_ipex=True, inplace=True)
