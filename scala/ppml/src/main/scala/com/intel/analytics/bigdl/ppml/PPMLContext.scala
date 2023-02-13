@@ -277,7 +277,7 @@ object PPMLContext{
   def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
     val conf = sparkSession.sparkContext.getConf
     Log4Error.invalidInputError(conf.contains("spark.hadoop.io.compression.codecs"),
-        "spark.hadoop.io.compression.codecs not found!" + 
+        "spark.hadoop.io.compression.codecs not found!" +
         "If you want to init PPMLContext with an existing SparkSession, " +
         "must set the property before creating SparkSession!")
     Log4Error.invalidInputError(
