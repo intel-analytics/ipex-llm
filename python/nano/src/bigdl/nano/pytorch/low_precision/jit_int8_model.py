@@ -66,7 +66,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         super().__init__(model)
         
         enable_onednn=False
-        # todo: since onednn cooperates well with other nano methods, it is set to True
+        # TODO: since onednn cooperates well with other nano methods, it is set to True
         # by default in InferenceOptimizer.quantize(). However, it will lead to strange
         # error in fx quantization during inference. Therefore, we disable it by hand.
 
