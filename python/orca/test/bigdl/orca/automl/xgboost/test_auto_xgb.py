@@ -195,3 +195,7 @@ class TestAutoXGBRegressor(TestCase):
         assert 2 <= best_model.max_depth <= 5
         best_config = auto_xgb_reg.get_best_config()
         assert all(k in best_config.keys() for k in search_space.keys())
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

@@ -19,6 +19,8 @@ from bigdl.orca.automl.auto_estimator import AutoEstimator
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 if TYPE_CHECKING:
     from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+    from ray.tune.sample import Float, Function, Integer
+    from functools import partial
     from pyspark.sql import DataFrame
     from numpy import ndarray
 
@@ -74,20 +76,20 @@ class AutoXGBClassifier(AutoEstimator):
                          name=name)
 
     def fit(self,
-            data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
+            data: Union[partial, Tuple[ndarray, ndarray], DataFrame],
             epochs: int=1,
-            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray]]]=None,
+            validation_data: Optional[Union[partial, Tuple[ndarray, ndarray], DataFrame]]=None,
             metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
-            metric_threshold: Optional[float]=None,
+            metric_threshold: Optional[Union[int, float]]=None,
             n_sampling: int=1,
-            search_space: Optional[Dict]=None,
+            search_space: Optional[Dict[str, Union[Function, Integer, Float]]]=None,
             search_alg: Optional[str]=None,
-            search_alg_params: Optional[str]=None,
+            search_alg_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
             scheduler: Optional[str]=None,
-            scheduler_params: Optional[str]=None,
-            feature_cols: Optional[DataFrame]=None,
-            label_cols: Optional[DataFrame]=None,
+            scheduler_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
             ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -198,20 +200,20 @@ class AutoXGBRegressor(AutoEstimator):
                          name=name)
 
     def fit(self,
-            data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
+            data: Union[partial, Tuple[ndarray, ndarray], DataFrame],
             epochs: int=1,
-            validation_data: Optional[Union[Callable, Tuple[ndarray, ndarray]]]=None,
-            metric: Optional[Union[Callable, str]]=None,
+            validation_data: Optional[Union[partial, Tuple[ndarray, ndarray], DataFrame]]=None,
+            metric: Union[Callable, str]=None,
             metric_mode: Optional[str]=None,
-            metric_threshold: Optional[float]=None,
+            metric_threshold: Union[float, int]=None,
             n_sampling: int=1,
-            search_space: Optional[Dict[str, Union[float, Dict[str, List[bool]]]]]=None,
-            search_alg: Optional[str]=None,
-            search_alg_params: Optional[str]=None,
-            scheduler: Optional[str]=None,
-            scheduler_params: Optional[str]=None,
-            feature_cols: Optional[DataFrame]=None,
-            label_cols: Optional[DataFrame]=None,
+            search_space: Optional[Dict[str, Union[Function, Integer, Float]]]=None,
+            search_alg: str=None,
+            search_alg_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
+            scheduler: str=None,
+            scheduler_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
             ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -271,10 +273,10 @@ class AutoXGBRegressor(AutoEstimator):
                     label_cols=label_cols)
 
 
-def _merge_cols_for_spark_df(data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
-                             validation_data: Union[Callable, Tuple[ndarray, ndarray], DataFrame],
-                             feature_cols: Optional[DataFrame],
-                             label_cols: Optional[DataFrame]) -> Tuple:
+def _merge_cols_for_spark_df(data: Union[DataFrame, Tuple[ndarray, ndarray], partial],
+                             validation_data: Union[DataFrame, Tuple[ndarray, ndarray], partial],
+                             feature_cols: Optional[List[str]],
+                             label_cols: Optional[List[str]]) -> Tuple:
     # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and
     # label_cols in AutoEstimator, which correspond to the model inputs/outputs.
     from pyspark.sql import DataFrame
