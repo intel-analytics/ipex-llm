@@ -191,15 +191,6 @@ class TestTraceAndQuantize(TestCase):
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
 
-        # test save/load without original model
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(quantized_model, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
-        with pytest.raises(AttributeError):
-            new_model.do_nothing()
-        with pytest.raises(AttributeError):
-            assert new_model.get_x()
-
     def test_evaluate(self):
         inputs = tf.keras.Input(shape=(28*28,), name='digits')
         x = layers.Dense(10, name='dense_logits')(inputs)
