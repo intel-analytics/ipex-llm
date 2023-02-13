@@ -207,12 +207,15 @@ class TestTraceAndQuantize(TestCase):
         # change the original's model dtype policy 
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
-        ori_model_config = model.get_config()
+        model_policys = []
+        for layer in model.layers:
+            model_policys.append(layer._dtype_policy)
         x = np.random.random((100, 4))
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
-        assert ori_model_config == model.get_config()
+        for idx, layer in enumerate(model.layers):
+            assert layer._dtype_policy == model_policys[idx]
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
