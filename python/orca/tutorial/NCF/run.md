@@ -38,7 +38,43 @@ python pytorch_train_spark_dataframe.py --data_dir file:///local/path/to/NCF/ml-
 You can replace the file name with other files. Need to run the train script first before resume training or prediction.
 
 ### Results
-TODO
+<details>
+<summary> Click to expand </summary>
+
+```bash
+Loading data...
+Train results:
+num_samples: 2882458
+epoch: 1.0
+batch_count: 282.0
+train_loss: 0.3417230605540067
+last_train_loss: 0.29314390341794283
+val_accuracy: 0.874625027179718
+val_precision: 0.7700153589248657
+val_recall: 0.5436215400695801
+val_loss: 0.2966938563155457
+val_num_samples: 720335.0
+
+num_samples: 2882458
+epoch: 2.0
+batch_count: 282.0
+train_loss: 0.2704732511598162
+last_train_loss: 0.26464769959350676
+val_accuracy: 0.8847938776016235
+val_precision: 0.7885202169418335
+val_recall: 0.5895587801933289
+val_loss: 0.2665152659829276
+val_num_samples: 720335.0
+
+Evaluation results:
+num_samples: 720340
+Accuracy: 0.8834050297737122
+Precision: 0.7855872511863708
+Recall: 0.5875657200813293
+val_loss: 0.2684867502365162
+```
+
+</details>
 
 ## 2-1 Run on YARN with python command
 
