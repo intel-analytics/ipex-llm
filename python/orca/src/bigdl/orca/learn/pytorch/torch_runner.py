@@ -457,10 +457,10 @@ class TorchRunner(BaseRunner):
             self.batch = features, target
         elif isinstance(features, (tuple, list)):
             self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor or list/tuple, "
-                              "but got {}".format(type(features)))
+        # else:
+        #     invalidInputError(False,
+        #                       "Features should be tensor or list/tuple, "
+        #                       "but got {}".format(type(features)))
         self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
@@ -472,7 +472,11 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         loss_item = self.loss.item()
-        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
+        # print("features", features)
+        # batchsize = list(features[0].values())[0].size(0)
+        # self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: batchsize}
+        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(target)}
+        # self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch/loss from last iteration
@@ -596,10 +600,10 @@ class TorchRunner(BaseRunner):
             self.batch = features, target
         elif isinstance(features, (tuple, list)):
             self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor, list/tuple, "
-                              "but got {}".format(type(features)))
+        # else:
+            # invalidInputError(False,
+            #                   "Features should be tensor, list/tuple, "
+            #                   "but got {}".format(type(features)))
         self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
@@ -738,13 +742,18 @@ class TorchRunner(BaseRunner):
             else:
                 checkpoint = self.get_state_dict()
             byte_obj = TorchRunner._state_dict2stream(checkpoint)
-            file_name = os.path.basename(filepath)
-            temp_dir = tempfile.mkdtemp()
-            temp_path = os.path.join(temp_dir, file_name)
-            with fsspec.open(temp_path, "wb") as f:
-                f.write(byte_obj)
-            from bigdl.orca.data.file import put_local_file_to_remote
-            put_local_file_to_remote(temp_path, filepath)
+            from bigdl.dllib.utils.file_utils import is_local_path
+            if is_local_path(filepath):
+                with fsspec.open(filepath, "wb") as f:
+                    f.write(byte_obj)
+            else:
+                file_name = os.path.basename(filepath)
+                temp_dir = tempfile.mkdtemp()
+                temp_path = os.path.join(temp_dir, file_name)
+                with fsspec.open(temp_path, "wb") as f:
+                    f.write(byte_obj)
+                from bigdl.orca.data.file import put_local_file_to_remote
+                put_local_file_to_remote(temp_path, filepath)
             self.logger.debug(f"Saved checkpoint: {filepath}")
         return filepath
 
