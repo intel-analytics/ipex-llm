@@ -529,9 +529,7 @@ class TorchRunner(BaseRunner):
 
         result["num_samples"] = total_samples
 
-        self.validation_stats = result
         self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
-        del self.validation_stats
         return result
 
     def forward_batch(self, batch, callbacks=None):
@@ -575,10 +573,12 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        loss = self.loss
         del self.batch
         del self.output
+        del self.loss
 
-        return output, target, self.loss
+        return output, target, loss
 
     def predict(self, partition, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""

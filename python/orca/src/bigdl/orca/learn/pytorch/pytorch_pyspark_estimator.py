@@ -410,7 +410,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
-                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
+                profile: bool=False,
+                callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
+                                                                     'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -443,9 +445,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
+        callbacks = callbacks or []
+        make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
+
         params = dict(
             batch_size=batch_size,
-            profile=profile
+            profile=profile,
+            callbacks=callbacks
         )
 
         if isinstance(data, DataFrame):  # Computation would be triggered by the user
