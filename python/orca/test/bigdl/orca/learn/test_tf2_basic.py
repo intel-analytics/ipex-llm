@@ -28,10 +28,6 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
 
-resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
-
-
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
                                         tf.keras.layers.Dense(1)])
