@@ -203,12 +203,16 @@ class TestTraceAndQuantize(TestCase):
 
     def test_quantize_bf16(self):
         # for custom model, quantized model still return fp32 output
+        # test at the same time that the quantization does not 
+        # change the original's model dtype policy 
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
+        ori_model_config = model.get_config()
         x = np.random.random((100, 4))
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        assert ori_model_config = model.get_config()
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
@@ -223,12 +227,16 @@ class TestTraceAndQuantize(TestCase):
             output = load_model(x)
             assert output.dtype == tf.float32
 
-        # test standard model, quantized model still return bf16 output
+        # test standard model, quantized model return bf16 output
+        # test at the same time that the quantization does not 
+        # change the original's model dtype policy 
         model = MobileNetV2(weights="imagenet")
+        ori_model_config = model.get_config()
         x = np.random.rand(32, 224, 224, 3)
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        assert ori_model_config = model.get_config()
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
