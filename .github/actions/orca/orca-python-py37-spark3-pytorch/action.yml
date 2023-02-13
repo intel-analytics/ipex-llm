@@ -17,8 +17,6 @@ runs:
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
      
         pip install torch==1.7.1
-        pip install torchvision==0.8.2
-        pip install torchmetrics==0.10.0
         pip list
         chmod a+x python/orca/dev/test/run-pytests-pytorch.sh
         python/orca/dev/test/run-pytests-pytorch.sh
