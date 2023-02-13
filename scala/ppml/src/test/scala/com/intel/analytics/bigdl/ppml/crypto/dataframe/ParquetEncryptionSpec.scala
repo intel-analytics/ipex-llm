@@ -32,10 +32,9 @@ class ParquetEncryptionSpec extends DataFrameHelper {
   val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
 
   val ppmlArgs = Map(
-    "spark.bigdl.kms.appId" -> appid,
-    "spark.bigdl.kms.appKey" -> apikey,
-    "spark.bigdl.kms.primaryKey" -> primaryKeyPath,
-    "spark.bigdl.kms.dataKey" -> dataKeyPath
+      "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
+      "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
+      "spark.bigdl.primaryKey.defaultKey.material" -> (s"file://" + primaryKeyPath),
   )
   val conf = new SparkConf().setMaster("local[4]")
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)

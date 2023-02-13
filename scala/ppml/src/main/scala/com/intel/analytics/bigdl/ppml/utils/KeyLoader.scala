@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.ppml.kms.KeyManagementService
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
+import org.apache.hadoop.fs.Path
 
 // load both encryptedDataKey and dataKeyPlainText
 case class KeyLoader(val fromKms: Boolean,
@@ -32,24 +33,25 @@ case class KeyLoader(val fromKms: Boolean,
                      val kms: KeyManagementService = null,
                      val primaryKeyPlainText: String = "") extends Serializable {
     protected val keySize = 32
+    val keyReaderWriter = new KeyReaderWriter
+    val META_FILE_NAME = ".meta"
     
     // get an existing data key
     def getDataKeyPlainText(fileDirPath: String): String = {
-        val metaPath = new Path(fileDirPath + "/.meta").toString
-        val encryptedDataKey = new KeyReaderWriter.readKeyFromFile(metaPath)
+        val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+        val encryptedDataKey = keyReaderWriter.readKeyFromFile(metaPath)
         if (fromKms) {
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, encryptedDataKey)
         } else {
-            val dataKeyPlainTextBytes = new BigDLEncrypt()
-                .init(AES_CBC_PKCS5PADDING, DECRYPT, primaryKeyPlainText)
-                .doFinal(encryptedDataKey.getBytes)._1
-            new String(dataKeyPlainTextBytes)
+            val decrypt = new BigDLEncrypt()
+            decrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, primaryKeyPlainText)
+            new String(decrypt.doFinal(encryptedDataKey.getBytes)._1)
         }
     }
 
     // generate a data key and write it to meta as well
     def generateDataKeyPlainText(fileDirPath: String): String = {
-        val metaPath = new Path(fileDirPath + "/.meta").toString
+        val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
         if(fromKms) {
             kms.retrieveDataKey(primaryKeyMaterial, metaPath)
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, metaPath)
@@ -58,10 +60,12 @@ case class KeyLoader(val fromKms: Boolean,
             generator.init(keySize, SecureRandom.getInstanceStrong())
             val key: SecretKey = generator.generateKey()
             val dataKeyPlainText = Base64.getEncoder().encodeToString(key.getEncoded())
-            val dataKeyCiphertextBytes = new BigDLEncrypt()
-                .init(AES_CBC_PKCS5PADDING, ENCRYPT, primaryKeyPlainText)
-                .doFinal(dataKeyPlainText.getBytes)._1
-            new KeyReaderWriter.writeKeyToFile(metaPath, new String(dataKeyPlainTextBytes))
+            val encrypt = new BigDLEncrypt()
+            encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, primaryKeyPlainText)
+            val encryptedDataKey = new String(
+              encrypt.doFinal(dataKeyPlainText.getBytes)._1
+            )
+            keyReaderWriter.writeKeyToFile(metaPath, encryptedDataKey)
             dataKeyPlainText
         }
     }
@@ -73,12 +77,12 @@ class KeyLoaderManagement extends Serializable {
     
     def setKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
         Log4Error.invalidInputError(!(multiKeyLoaders.contains(primaryKeyName)),
-                                    s"keyLoaders with name $name are replicated.")
+                                    s"keyLoaders with name $primaryKeyName are replicated.")
         multiKeyLoaders += (primaryKeyName -> keyLoader)
     }
     
     def getKeyLoader(primaryKeyName: String): KeyLoader = {
-        Log4Error.invalidInputError(multiKms.contains(name),
+        Log4Error.invalidInputError(multiKeyLoaders.contains(primaryKeyName),
                                     s"cannot get a not-existing kms.")
         multiKeyLoaders.get(primaryKeyName).get
     }
