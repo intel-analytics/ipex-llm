@@ -385,7 +385,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --executor-cores ${RUNTIME_EXECUTOR_CORES} \
     --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
     --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=./environment/bin/python \
     --archives /path/to/environment.tar.gz#environment \
