@@ -7,6 +7,7 @@ export PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/pytorch
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P /tmp/data
 
 set -e
+unset MALLOC_CONF
 
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
