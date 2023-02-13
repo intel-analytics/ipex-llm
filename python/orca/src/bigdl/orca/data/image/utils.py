@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import copy
-import os
 from collections import namedtuple
 from io import BytesIO
 import numpy as np
