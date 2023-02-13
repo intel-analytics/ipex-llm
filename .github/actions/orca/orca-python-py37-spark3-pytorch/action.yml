@@ -7,6 +7,7 @@ runs:
       shell: bash
       run: |
         source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
         
         bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
