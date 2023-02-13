@@ -116,7 +116,8 @@ def sMAPE(y_true: "ndarray", y_pred: "ndarray",
     return np.mean(output_errors)
 
 
-def MPE(y_true: "ndarray", y_pred: "ndarray", multioutput: str='raw_values') -> Union[float64, "ndarray"]:
+def MPE(y_true: "ndarray", y_pred: "ndarray",
+        multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate mean percentage error (MPE).
 
@@ -222,7 +223,8 @@ def sMDAPE(y_true: "ndarray", y_pred: "ndarray",
     return np.mean(output_errors)
 
 
-def ME(y_true: "ndarray", y_pred: "ndarray", multioutput: str='raw_values') -> Union[float64, "ndarray"]:
+def ME(y_true: "ndarray", y_pred: "ndarray",
+       multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate Mean Error (ME).
 
@@ -299,7 +301,8 @@ def MSLE(y_true: "ndarray", y_pred: "ndarray",
     return result
 
 
-def R2(y_true: "ndarray", y_pred: "ndarray", multioutput: str='raw_values') -> Union[float64, "ndarray"]:
+def R2(y_true: "ndarray", y_pred: "ndarray",
+       multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate the r2 score.
 
@@ -324,7 +327,8 @@ def R2(y_true: "ndarray", y_pred: "ndarray", multioutput: str='raw_values') -> U
     return result
 
 
-def MAE(y_true: "ndarray", y_pred: "ndarray", multioutput: str='raw_values') -> Union[float64, "ndarray"]:
+def MAE(y_true: "ndarray", y_pred: "ndarray",
+        multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate the mean absolute error (MAE).
 
