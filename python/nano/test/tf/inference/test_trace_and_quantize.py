@@ -212,7 +212,7 @@ class TestTraceAndQuantize(TestCase):
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
-        assert ori_model_config = model.get_config()
+        assert ori_model_config == model.get_config()
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
@@ -236,7 +236,7 @@ class TestTraceAndQuantize(TestCase):
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
-        assert ori_model_config = model.get_config()
+        assert ori_model_config == model.get_config()
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
