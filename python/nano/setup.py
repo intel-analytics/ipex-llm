@@ -133,7 +133,7 @@ def setup_package():
     pytorch_nightly_requires = ["torch~=1.14.0.dev",
                                 "torchvision~=0.15.0.dev"]
 
-    pytorch_common_requires = ["pytorch_lightning==1.7.7",
+    pytorch_common_requires = ["pytorch_lightning==1.6.4",
                                "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
@@ -148,8 +148,8 @@ def setup_package():
     pytorch_110_requires += pytorch_common_requires
     pytorch_nightly_requires += pytorch_common_requires
 
-    inference_requires = ["onnx==1.13.0",
-                          "onnxruntime==1.13.1",
+    inference_requires = ["onnx==1.12.0",
+                          "onnxruntime==1.12.1",
                           "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
@@ -161,7 +161,7 @@ def setup_package():
 
     install_requires = ["intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
                         "cloudpickle",
-                        "protobuf==3.20.2",
+                        "protobuf==3.19.5",
                         "py-cpuinfo",
                         "pyyaml",
                         "packaging",
