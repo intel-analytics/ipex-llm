@@ -158,14 +158,15 @@ class PytorchPysparkWorker(TorchRunner):
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
 
-    def predict(self, data_creator, batch_size=32, profile=False):
+    def predict(self, data_creator, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
         self.load_state_dict(self.state_dict.value)
-        result = super().predict(partition=partition, batch_size=batch_size, profile=profile)
+        result = super().predict(partition=partition, batch_size=batch_size,
+                                 profile=profile, callbacks=callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return result
