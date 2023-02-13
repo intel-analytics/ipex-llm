@@ -127,7 +127,7 @@ class BaseInferenceOptimizer:
             if precision is not None:
                 if precision == 'bf16' and not option.bf16:
                     continue
-                if precision == 'int8' and not (option.inc or option.pot):
+                if precision == 'int8' and not (option.inc or option.pot or option.fx):
                     continue
                 if precision == 'fp32' and option.get_precision() != 'fp32':
                     continue
