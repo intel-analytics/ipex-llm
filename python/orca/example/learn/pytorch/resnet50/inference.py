@@ -30,7 +30,7 @@ import torchvision.models as models
 
 from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.pytorch import TrainingOperator
+from bigdl.orca.learn.pytorch.callbacks import MainCallback
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Inference')
 parser.add_argument('data', metavar='DIR',
@@ -80,16 +80,9 @@ parser.add_argument('-p', '--print_freq', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 
 
-class ResNetPerfOperator(TrainingOperator):
-    def validate(self, val_iterator, info, metrics, num_steps=None):
-        self.model.eval()
-        from bigdl.orca.learn.pytorch.utils import get_batchsize
-        from bigdl.orca.learn.metrics import Metric
-        metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
-        losses = []
-        total_samples = 0
-
-        if self.config["ipex"] and self.config["int8"] and self.config["calibration"]:
+class ResNetPerfCallback(MainCallback):
+    def before_val_epoch(self, runner):
+        if runner.config["ipex"] and runner.config["int8"] and runner.config["calibration"]:
             print("running int8 calibration step\n")
             import intel_extension_for_pytorch as ipex
             from torch.ao.quantization import MinMaxObserver, PerChannelMinMaxObserver, QConfig
@@ -99,90 +92,69 @@ class ResNetPerfOperator(TrainingOperator):
                 weight=PerChannelMinMaxObserver.with_args(dtype=torch.qint8,
                                                           qscheme=torch.per_channel_symmetric))
             x = torch.randn(1, 3, 224, 224)
-            prepared_model = ipex.quantization.prepare(self.model, qconfig, x, inplace=True)
+            prepared_model = ipex.quantization.prepare(runner.model, qconfig, x, inplace=True)
             with torch.no_grad():
-                for i, (images, target) in enumerate(val_iterator):
+                for i, (images, target) in enumerate(runner.val_loader):
                     images = images.contiguous(memory_format=torch.channels_last)
                     prepared_model(images)
                     if i == 4:
                         print(i)
                         break
-                prepared_model.save_qconf_summary(self.config["configure_dir"])
+                prepared_model.save_qconf_summary(runner.config["configure_dir"])
                 print(".........calibration step done..........")
 
-        if not num_steps:
-            num_steps = len(val_iterator)
-        invalidInputError(num_steps > self.config["warmup_iterations"],
+        if not runner.num_steps:
+            runner.num_steps = len(runner.val_loader)
+        invalidInputError(runner.num_steps > runner.config["warmup_iterations"],
                           "total steps should be larger than warmup iterations")
+        if runner.config["warmup_iterations"] > 0:
+            print("running warmup iterations")
 
-        if self.use_tqdm and self.world_rank == 0:
-            from tqdm import tqdm
-            _progress_bar = tqdm(
-                total=num_steps,
-                unit="batch",
-                leave=False)
+    def on_val_forward(self, runner):
+        if runner.config["dummy"]:
+            images = torch.randn(runner.config["batch"], 3, 224, 224)
+            target = torch.arange(1, runner.config["batch"] + 1).long()
+            # Only do the conversion once for dummy data
+            if runner.config["ipex"]:
+                images = images.contiguous(memory_format=torch.channels_last)
+            if runner.config["bf16"]:
+                images = images.to(torch.bfloat16)
+        if not runner.config["dummy"]:
+            images, target = next(iter(runner.val_loader))
+            if runner.config["ipex"]:
+                images = images.contiguous(memory_format=torch.channels_last)
+            if runner.config["bf16"]:
+                images = images.to(torch.bfloat16)
+        runner.batch = images, target
+        if runner.batch_idx < runner.config["warmup_iterations"]:
+            output, target, loss = self.forward(runner, images, target, warmup=True)
+        else:
+            output, target, loss = self.forward(runner, images, target, warmup=False)
 
-        with torch.no_grad():
-            if self.config["dummy"]:
-                images = torch.randn(self.config["batch"], 3, 224, 224)
-                target = torch.arange(1, self.config["batch"] + 1).long()
-                # Only do the conversion once for dummy data
-                if self.config["ipex"]:
-                    images = images.contiguous(memory_format=torch.channels_last)
-                if self.config["bf16"]:
-                    images = images.to(torch.bfloat16)
-            if self.config["warmup_iterations"] > 0:
-                print("running warmup iterations")
-            for batch_idx in range(num_steps):
-                if not self.config["dummy"]:
-                    images, target = next(val_iterator)
-                    if self.config["ipex"]:
-                        images = images.contiguous(memory_format=torch.channels_last)
-                    if self.config["bf16"]:
-                        images = images.to(torch.bfloat16)
-                if batch_idx < self.config["warmup_iterations"]:
-                    output, target, loss = self.forward(images, target, warmup=True)
-                else:
-                    output, target, loss = self.forward(images, target, warmup=False)
-                if self.use_tqdm and self.world_rank == 0 \
-                        and batch_idx % self.config["print_freq"] == 0:
-                    _progress_bar.n = batch_idx + self.config["print_freq"]
-                    postfix = {}
-                    # postfix.update(loss=loss)
-                    _progress_bar.set_postfix(postfix)
-                num_samples = get_batchsize(target)
-                total_samples += num_samples
-                losses.append(loss.item() * num_samples)
-                for metric in metrics.values():
-                    metric(output, target)
+        runner.output = output
+        runner.loss = loss
 
-        result = {name: metric.compute() for name, metric in metrics.items()}
-        result["val_loss"] = sum(losses) / total_samples
-        result["num_samples"] = total_samples
-        return result
-
-    def forward(self, images, target, warmup=False):
+    def forward(self, runner, images, target, warmup=False):
         # compute output
         if warmup:  # warmup iterations won't count into timers
-            if not self.config["jit"] and self.config["bf16"]:
+            if not runner.config["jit"] and runner.config["bf16"]:
                 with torch.cpu.amp.autocast():
-                    output = self.model(images)
+                    output = runner.model(images)
             else:
-                output = self.model(images)
+                output = runner.model(images)
         else:
-            with self.timers.record("eval_fwd"):
-                if not self.config["jit"] and self.config["bf16"]:
+            with runner.timers.record("non_warmup_eval_fwd"):
+                if not runner.config["jit"] and runner.config["bf16"]:
                     with torch.cpu.amp.autocast():
-                        output = self.model(images)
+                        output = runner.model(images)
                 else:
-                    output = self.model(images)
+                    output = runner.model(images)
 
-        if self.config["bf16"]:
+        if runner.config["bf16"]:
             output = output.to(torch.float32)
-        loss = self.criterion(output, target)
+        loss = runner.criterion(output, target)
 
-        return output, target, loss
-
+        return output, target, loss 
 
 def main():
     args = parser.parse_args()
@@ -285,7 +257,6 @@ def validate(args):
                     model = torch.jit.trace(model, x)
                     model = torch.jit.freeze(model.eval())
                     y = model(x)
-                    y = model(x)
                     print("running int8 evaluation step\n")
             else:
                 # for ipex path, always convert model to channels_last for bf16, fp32.
@@ -334,7 +305,7 @@ def validate(args):
 
     config = vars(args).copy()
     batch = config.pop("batch_size")
-    config["batch"] = batch  # Dummy data needs batch_size in TrainingOperator
+    config["batch"] = batch  # Dummy data needs batch_size in MainCallback
     est = Estimator.from_torch(model=model_creator,
                                optimizer=optimizer_creator,
                                loss=nn.CrossEntropyLoss(),
@@ -342,11 +313,10 @@ def validate(args):
                                backend=args.backend,
                                config=config,
                                workers_per_node=args.workers_per_node,
-                               training_operator_cls=ResNetPerfOperator,
                                use_tqdm=True)
 
     result = est.evaluate(data=val_loader_func, batch_size=args.batch_size,
-                          num_steps=number_iter, profile=True)
+                          num_steps=number_iter, profile=True, callbacks=[ResNetPerfCallback()])
     for r in result:
         print("{}: {}".format(r, result[r]))
 
