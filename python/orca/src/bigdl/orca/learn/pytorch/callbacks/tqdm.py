@@ -27,6 +27,13 @@ except ImportError:
     pass
 
 
+def is_tqdm_exists(callbacks):
+    for callback in callbacks:
+        if isinstance(callback, TqdmCallback):
+            return True
+    return False
+
+
 class TqdmCallback(Callback):
 
     def __init__(self):
