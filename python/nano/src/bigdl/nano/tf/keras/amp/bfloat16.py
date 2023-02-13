@@ -19,7 +19,6 @@ import tensorflow as tf
 
 
 def BF16Model(model):
-    # TODO: check bf16 isa
     policy_bf16 = mixed_precision.Policy('mixed_bfloat16')
     for layer in model.layers:
         layer._dtype_policy = policy_bf16

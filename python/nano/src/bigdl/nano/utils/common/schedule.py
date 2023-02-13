@@ -41,9 +41,9 @@ def get_cpu_info():
         logical_cores = int(subprocess.check_output(
             get_logical_core_args, universal_newlines=True).splitlines()[4].split("=")[1])
         for i in range(logical_cores):
-            for j in range(physical_cores):
-                get_physical_core[i] = j
-        for i in range(logical_cores):
+            # We don't know how to query which cores are physical cores on Windows,
+            # so we use all logical cores
+            get_physical_core[i] = i
             get_socket[i] = 0
     elif platform.system() == "Darwin":
         # We cannot query which cores are physical cores on MacOS,
