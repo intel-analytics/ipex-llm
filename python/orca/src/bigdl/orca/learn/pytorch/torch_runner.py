@@ -244,6 +244,7 @@ class TorchRunner(BaseRunner):
             val_loader = None
             val_steps = None
 
+        self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
@@ -468,13 +469,16 @@ class TorchRunner(BaseRunner):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+        self.val_loader = loader
         loader = iter(loader)
 
         with self.timers.record("validation"):
+            self.num_steps=num_steps
             validation_stats = self._validate(loader,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
                                               callbacks=callbacks)
+            del self.num_steps
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
@@ -571,6 +575,7 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        target = self.batch[-1]
         del self.batch
         del self.output
 
