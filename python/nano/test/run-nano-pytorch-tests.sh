@@ -14,7 +14,7 @@ start=$(date "+%s")
 # It seems nano's default `MALLOC_CONF` will cause higher memory usage,
 # and cause OOM (Killed) in git action
 unset MALLOC_CONF
-python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'not ipex and not ray and not optimizer and not test_scale_lr'
+python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'not ipex and not ray and not optimizer'
 
 now=$(date "+%s")
 time=$((now-start))
