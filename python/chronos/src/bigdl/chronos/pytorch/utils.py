@@ -33,7 +33,7 @@ def _inference(model, input_sample_list, batch_size):
             for batch_id in range(batch_num):
                 yhat_list.append(model(
                     *tuple(map(lambda x: x[batch_id * batch_size: (batch_id + 1) * batch_size],
-                            input_sample_list))).numpy())
+                               input_sample_list))).numpy())
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
