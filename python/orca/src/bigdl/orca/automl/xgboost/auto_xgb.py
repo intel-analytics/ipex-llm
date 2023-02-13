@@ -18,7 +18,6 @@ from bigdl.orca.automl.xgboost.XGBoost import XGBoostModelBuilder
 from bigdl.orca.automl.auto_estimator import AutoEstimator
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 if TYPE_CHECKING:
-    from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
     from ray.tune.sample import Float, Function, Integer
     from functools import partial
     from pyspark.sql import DataFrame
@@ -203,14 +202,14 @@ class AutoXGBRegressor(AutoEstimator):
             data: Union[partial, Tuple[ndarray, ndarray], DataFrame],
             epochs: int=1,
             validation_data: Optional[Union[partial, Tuple[ndarray, ndarray], DataFrame]]=None,
-            metric: Union[Callable, str]=None,
+            metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
-            metric_threshold: Union[float, int]=None,
+            metric_threshold: Optional[Union[Float, Integer]]=None,
             n_sampling: int=1,
             search_space: Optional[Dict[str, Union[Function, Integer, Float]]]=None,
-            search_alg: str=None,
+            search_alg: Optional[str]=None,
             search_alg_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
-            scheduler: str=None,
+            scheduler: Optional[str]=None,
             scheduler_params: Optional[Dict[str, Dict[str, Union[Function, Integer, Float]]]]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
