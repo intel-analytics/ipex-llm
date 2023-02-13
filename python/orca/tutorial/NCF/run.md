@@ -38,8 +38,15 @@ python pytorch_train_spark_dataframe.py --data_dir file:///local/path/to/NCF/ml-
 You can replace the file name with other files. Need to run the train script first before resume training or prediction.
 
 ### Results
+
+The above command will generate the following files
++ `NCF_model`: Zip file containing the trained PyTorch model 
++ `config.json`: Model configuration for predict and resume training
++ Processed dataframe parquet under `data_dir`
+    + `ml-1m/train_processed_dataframe.parquet`
+    + `ml-1m/test_processed_dataframe.parquet`
 <details>
-<summary> Click to expand </summary>
+<summary> Click to see the console output </summary>
 
 ```bash
 Loading data...
