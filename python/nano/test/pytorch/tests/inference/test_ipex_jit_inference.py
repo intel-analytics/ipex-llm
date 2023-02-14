@@ -446,6 +446,7 @@ class IPEXJITInference_gt_1_10:
 
     def test_ipex_jit_inference_stable_diffusion_unet(self):
         from diffusers.models import UNet2DConditionModel
+        # reduce model size as action runner has limited memory
         unet = UNet2DConditionModel(sample_size=64,
                                     cross_attention_dim=10,
                                     attention_head_dim=1,
