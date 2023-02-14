@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import numpy as np
-import os
 import os.path as osp
 import logging
 from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError

@@ -30,7 +30,6 @@ def orca_context_fixture(request):
     else:
         env = None
     sc = init_orca_context(cores=4, spark_log_level="INFO",
-                           env=env, object_store_memory="1g",
-                           init_ray_on_spark=True)
+                           env=env, object_store_memory="1g")
     yield sc
     stop_orca_context()
