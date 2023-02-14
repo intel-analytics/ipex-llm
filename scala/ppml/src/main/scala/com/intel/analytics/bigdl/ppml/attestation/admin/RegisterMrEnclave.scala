@@ -112,10 +112,10 @@ object RegisterMrEnclave {
       case ATTESTATION_CONVENTION.MODE_BIGDL =>
         val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
           val postContent = Map[String, Any](
-            "app_id" -> appID,
-            "api_key" -> apiKey,
-            "mr_enclave" -> mrEnclave,
-            "mr_signer" -> mrSigner
+            "appID" -> appID,
+            "apiKey" -> apiKey,
+            "mrEnclave" -> mrEnclave,
+            "policyType" -> "SGXMREnclavePolicy"
           )
           val postString = AttestationUtil.mapToString(postContent)
           val postUrl = s"https://$URL/registerPolicy"

@@ -44,13 +44,13 @@ object AttestationUtil {
     new BigInteger(1, quote.slice(176, 208)).toString(16)
   }
 
-  def generatePassword(length: Int): String = {
+  def generateToken(length: Int = 64): String = {
     val secureRandom = new SecureRandom()
     val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    val password = new Array[Char](length)
+    val token = new Array[Char](length)
     for (i <- 0 until length) {
-      password(i) = charSet.charAt(secureRandom.nextInt(charSet.length))
+      token(i) = charSet.charAt(secureRandom.nextInt(charSet.length))
     }
-    password.mkString
+    token.mkString
   }
 }

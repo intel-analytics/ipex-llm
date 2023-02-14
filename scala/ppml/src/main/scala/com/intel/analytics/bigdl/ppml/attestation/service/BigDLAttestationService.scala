@@ -97,8 +97,8 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
       val postContent = Map[String, Any](
-        "app_id" -> appID,
-        "api_key" -> apiKey,
+        "appID" -> appID,
+        "apiKey" -> apiKey,
         "quote" -> quote
       )
       val postString = AttestationUtil.mapToString(postContent)
@@ -136,10 +136,10 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
 
     val postResult: JSONObject = timing("BigDLAttestationService request for VerifyQuote") {
       val postContent = Map[String, Any](
-        "app_id" -> appID,
-        "api_key" -> apiKey,
+        "appID" -> appID,
+        "apiKey" -> apiKey,
         "quote" -> quote,
-        "policy_id" -> policyID
+        "policyID" -> policyID
       )
       val postString = AttestationUtil.mapToString(postContent)
       val postUrl = constructUrl(action, httpsEnabled)

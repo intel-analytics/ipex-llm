@@ -47,6 +47,14 @@ import scopt.OptionParser
 
 import com.intel.analytics.bigdl.ppml.attestation.verifier.SGXDCAPQuoteVerifierImpl
 import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, FileEncryptUtil}
+import com.intel.analytics.bigdl.ppml.attestation.utils.JsonUtil
+
+case class Enroll(appID: String, apiKey:String)
+
+case class PolicyBase(policyID: String, policyType: String)
+case class SGXMREnclavePolicy(appID: String, mrEnclave: String) extends Policy
+
+case class Quote(quote: String)
 
 object BigDLRemoteAttestationService {
   implicit val system = ActorSystem("BigDLRemoteAttestationService")
@@ -59,93 +67,65 @@ object BigDLRemoteAttestationService {
   var userMap : Map[String, Any] = Map.empty
   var policyMap : Map[String, Any] = Map.empty
 
-  def checkAppIDAndApiKey(msg: Map[String, Any]): Boolean = {
-    if (!msg.contains("app_id") || !msg.contains("api_key")) {
-      false
-    } else {
-      val appID = msg.get("app_id").mkString
-      val apiKey = msg.get("api_key").mkString
-      val userMapRes = userMap.get(appID).mkString
-      if ((userMapRes != "") && apiKey == userMapRes) {
-        true
-      } else {
-        false
-      }
-    }
+  def checkAppIDAndApiKey(enroll: Enroll): Boolean = {
+    val userMapRes = userMap.get(enroll.appID).mkString
+    ((userMapRes != "") && enroll.apiKey == userMapRes)
   }
 
   def enroll(): Route = {
     val appID = UUID.randomUUID.toString
-    val apiKey = AttestationUtil.generatePassword(32)
+    val apiKey = AttestationUtil.generateToken(32)
     userMap += (appID -> apiKey)
-    val res = "{\"app_id\":\"" + appID + ",\"api_key\":\"" + apiKey + "\"}"
+    val enroll = new Enroll(appID, apiKey)
+    val res = JsonUtil.toJson(enroll)
     complete(res)
   }
 
-  def registerPolicy(msg: Map[String, Any]): Route = {
-    if (!checkAppIDAndApiKey(msg)) {
-      complete(400, "Invalid app_id and api_key.")
+  def registerPolicy(msg: String): Route = {
+    val policyType = JsonUtil.fromJson(classOf[PolicyBase], msg).policyType
+    val curPolicy = policyType match {
+      case "SGXMREnclavePolicy" => 
+        JsonUtil.fromJson(classOf[SGXMREnclavePolicy], msg)
+      case _ =>
+        null
+    }
+    if (curPolicy == null) {
+      complete(400, "Unsupported policy type.")
     } else {
-      if (!msg.contains("TDX") || msg.get("TDX").mkString == "false") {
-        if (!msg.contains("mr_enclave") || !msg.contains("mr_signer")) {
-          complete(400, "Required parameters are not provided.")
-        }
-        val appID = msg.get("app_id").mkString
-        val mrEnclave = msg.get("mr_enclave").mkString
-        val mrSigner = msg.get("mr_signer").mkString
-        var policyID = UUID.randomUUID.toString
-        val curContent = Map[String, Any] (
-          "app_id" -> appID,
-          "mr_enclave" -> mrEnclave,
-          "mr_signer" -> mrSigner
-        )
-        policyMap += (policyID -> curContent)
-        val res = AttestationUtil.mapToString(Map("policy_id" -> policyID))
-        complete(200, res)
-      } else {
-        // TODO: TDX policy
-        complete(400, "Not Implemented.")
-      }
+      val policyID = UUID.randomUUID.toString
+      policyMap += (policyID -> curPolicy)
+      val res = AttestationUtil.mapToString(Map("policy_id" -> policyID))
+      complete(200, res)
     }
   }
 
-  def verifyQuote(msg: Map[String, Any]): Route = {
-    if (!checkAppIDAndApiKey(msg)) {
-      complete(400, "Invalid app_id and api_key.")
+  def verifyQuote(msg: String): Route = {
+    val quoteBase64 = JsonUtil.fromJson(classOf[Quote], msg).quote
+    val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
+    val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
+    if (verifyQuoteResult < 0) {
+      val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+      complete(400, res)
     } else {
-      if (!msg.contains("quote")) {
-        complete(400, "Required parameters are not provided.")
+      val curPolicyID = JsonUtil.fromJson(classOf[PolicyBase], msg).policyID
+      if (curPolicyID == null) {
+        val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
+        complete(200, res)
       } else {
-        val quoteBase64 = msg.get("quote").mkString
-        val quote = Base64.getDecoder().decode(quoteBase64.getBytes)
-        val verifyQuoteResult = quoteVerifier.verifyQuote(quote)
-        if (verifyQuoteResult < 0) {
-          val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
-          complete(400, res)
-        } else {
-          if (!msg.contains("policy_id")) {
-            val res = "{\"result\":" + verifyQuoteResult.toString() + "}"
-            complete(200, res)
-          } else {
-            val appID = msg.get("app_id").mkString
-            val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
-            val mrSigner = AttestationUtil.getMRSignerFromQuote(quote)
-
-            val policyID = msg.get("policy_id").mkString
-            val policyContent: Map[String, Any] = policyMap.get(policyID) match {
-              case Some(map: Map[String, Any]) => map
-              case None => Map.empty
-            }
-            if (appID == policyContent.get("app_id").mkString &&
-              mrEnclave == policyContent.get("mr_enclave").mkString &&
-              mrSigner == policyContent.get("mr_signer").mkString) {
+        val curPolicy = policyMap.get(curPolicyID)
+        val appID = JsonUtil.fromJson(classOf[Enroll], msg).appID
+        val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
+        curPolicy match {
+          case Some(SGXMREnclavePolicy(policyAppID, policyMREnclave)) =>
+            if (appID == policyAppID && mrEnclave == policyMREnclave) {
               val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
               complete(200, res)
             } else {
               val res = "{\"result\": -1}"
               complete(400, res)
             }
-          }
+          case _ =>
+            complete(400, "Unsupported policy type.")
         }
       }
     }
@@ -156,11 +136,11 @@ object BigDLRemoteAttestationService {
     case class CmdParams(serviceHost: String = "0.0.0.0",
                           servicePort: String = "9875",
                           httpsKeyStoreToken: String = "token",
-                          httpsKeyStorePath: String = "./keys/server.p12",
+                          httpsKeyStorePath: String = "keys/server.p12",
                           httpsEnabled: Boolean = true,
-                          basePath: String = "./data",
-                          enrollFilePath: String = "BigDLRemoteAttestationService.dat",
-                          policyFilePath: String = "BigDLRemoteAttestationServicePolicy.dat",
+                          basePath: String = "/opt/bigdl-as/",
+                          enrollFilePath: String = "data/enrolls.dat",
+                          policyFilePath: String = "data/policies.dat",
                           secretKey: String = "bigdl"
                           )
 
@@ -242,16 +222,27 @@ object BigDLRemoteAttestationService {
       post {
         path("registerPolicy") {
           entity(as[String]) { jsonMsg =>
+            logger.info("registerPolicy:")
             logger.info(jsonMsg)
-            val msg = AttestationUtil.stringToMap(jsonMsg)
-            registerPolicy(msg)
+            val enroll = JsonUtil.fromJson(classOf[Enroll], jsonMsg)
+            print(enroll)
+            if (checkAppIDAndApiKey(enroll)) {
+              registerPolicy(jsonMsg)
+            } else {
+              complete(400, "Invalid app_id and api_key.")
+            }
           }
         } ~
         path("verifyQuote") {
           entity(as[String]) { jsonMsg =>
+            logger.info("verifyQuote:")
             logger.info(jsonMsg)
-            val msg = AttestationUtil.stringToMap(jsonMsg)
-            verifyQuote(msg)
+            val enroll = JsonUtil.fromJson(classOf[Enroll], jsonMsg)
+            if (checkAppIDAndApiKey(enroll)) {
+              verifyQuote(jsonMsg)
+            } else {
+              complete(400, "Invalid app_id and api_key.")
+            }
           }
         }
       }
