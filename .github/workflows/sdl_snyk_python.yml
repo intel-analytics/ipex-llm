@@ -29,9 +29,6 @@ jobs:
         source activate snykchronos
         pip install --pre bigdl-chronos-spark3[all]
         pip freeze > requirements.txt
-    - name: "Auth Synk"
-      run: |
-        snyk auth -d ${{inputs.snyk_apitoken}}
     - name: "snyk docker"
       run: |
         snyk monitor --file=./requirements.txt --command=python3 --org=iags_mlp --package-manager=pip   --project-name=bigdl-chronos
