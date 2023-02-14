@@ -1,7 +1,6 @@
 bert
 boto3
 cloudpickle
-fsspec
 onnx
 onnxruntime
 Pillow

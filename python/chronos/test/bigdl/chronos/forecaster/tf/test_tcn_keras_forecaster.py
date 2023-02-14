@@ -252,5 +252,22 @@ class TestTCNForecaster(TestCase):
 
         stop_orca_context()
 
+    def test_tcn_keras_forecaster_quantization(self):
+        # Capturing behaviors during `pytest -v` influence generating the valid sampling log
+        # during quantization. Work around by using `pytest -s` to test this ut.
+        train_data, _, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2)
+
+        forecaster.fit(train_data, epochs=1)
+        forecaster.quantize(input_data=train_data[0], target_data=train_data[1])
+        assert forecaster.accelerated_model
+        assert forecaster.accelerate_method == "tensorflow_int8"
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        assert pred_q.shape == test_data[1].shape
+
 if __name__ == '__main__':
     pytest.main([__file__])
