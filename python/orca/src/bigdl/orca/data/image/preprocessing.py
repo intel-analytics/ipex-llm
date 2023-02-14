@@ -198,7 +198,7 @@ def read_images_spark(file_path: str,
 def read_coco(file_path: str,
               split: str = "train",
               label_type: str = "segmentation",
-              max_samples: int = 25,
+              max_samples: int = 25
               ):
     spark = OrcaContext.get_spark_session()
     df = spark.read.json(file_path + "/annotations/instances_" + split + "2017.json")
@@ -224,6 +224,7 @@ def read_coco(file_path: str,
                              "images.license as license", "images.width as width")
 
     join1 = annDF.join(imgDF, annDF.image_id == imgDF.image_id)
+
 
     meta_df = join1.join(catDF, join1.category_id == catDF.category_id)
 
@@ -253,4 +254,3 @@ def read_coco(file_path: str,
     out_rdd = out_rdd.map(lambda x: transform_data(x))
 
     return SparkXShards(out_rdd)
-
