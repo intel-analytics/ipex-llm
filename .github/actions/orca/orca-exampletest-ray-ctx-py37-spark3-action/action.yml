@@ -1,5 +1,5 @@
-name: 'Run Orca Ray Ctx Example'
-description: 'Run Orca Ray Ctx Example'
+name: 'Run Orca Ray Ctx Example Py37 Spark3'
+description: 'Run Orca Ray Ctx Example Py37 Spark3'
 runs:
   using: "composite"
   steps:

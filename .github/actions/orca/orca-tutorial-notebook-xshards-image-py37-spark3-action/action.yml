@@ -1,5 +1,5 @@
-name: 'Run Orca Notebook Xshards Image Py37 Spark2'
-description: 'Run Notebook Xshards Image Py37 Spark2'
+name: 'Run Orca Notebook Xshards Image Py37 Spark3'
+description: 'Run Notebook Xshards Image Py37 Spark3'
 runs:
   using: "composite"
   steps:
