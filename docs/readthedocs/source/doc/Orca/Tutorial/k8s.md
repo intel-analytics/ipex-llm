@@ -159,12 +159,6 @@ sudo docker run -itd --net=host \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_EXECUTOR_INSTANCES=2 \
-    -e RUNTIME_EXECUTOR_CORES=4 \
-    -e RUNTIME_EXECUTOR_MEMORY=2g \
-    -e RUNTIME_TOTAL_EXECUTOR_CORES=8 \
-    -e RUNTIME_DRIVER_CORES=2 \
-    -e RUNTIME_DRIVER_MEMORY=2g \
     intelanalytics/bigdl-k8s:latest bash
 ```
 
@@ -183,12 +177,6 @@ In the script:
 * `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
 * `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required if you use k8s-client mode).
 * `RUNTIME_DRIVER_PORT`: a string that specifies the driver port (only required if you use k8s-client mode).
-* `RUNTIME_EXECUTOR_INSTANCES`: an integer that specifies the number of executors.
-* `RUNTIME_EXECUTOR_CORES`: an integer that specifies the number of cores for each executor.
-* `RUNTIME_EXECUTOR_MEMORY`: a string that specifies the memory for each executor.
-* `RUNTIME_TOTAL_EXECUTOR_CORES`: an integer that specifies the number of cores for all executors.
-* `RUNTIME_DRIVER_CORES`: an integer that specifies the number of cores for the driver node.
-* `RUNTIME_DRIVER_MEMORY`: a string that specifies the memory for the driver node.
 
 __Notes:__
 * The __Client Container__ contains all the required environment except K8s configurations.
@@ -356,10 +344,11 @@ Some runtime configurations for Spark are as follows:
 * `--conf spark.kubernetes.container.image`: the name of the BigDL K8s Docker image.
 * `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
 * `--conf spark.executor.instances`: the number of executors.
-* `--executor-memory`: the memory for each executor.
-* `--driver-memory`: the memory for the driver node.
 * `--executor-cores`: the number of cores for each executor.
 * `--total-executor-cores`: the total number of executor cores.
+* `--executor-memory`: the memory for each executor.
+* `--driver-cores`: the number of cores for the driver.
+* `--driver-memory`: the memory for the driver node.
 * `--properties-file`: the BigDL configuration properties to be uploaded to K8s.
 * `--py-files`: the extra Python dependency files to be uploaded to K8s.
 * `--archives`: the conda archive to be uploaded to K8s.
@@ -378,12 +367,12 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-client-tutorial \
     --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-    --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
-    --driver-cores ${RUNTIME_DRIVER_CORES} \
-    --driver-memory ${RUNTIME_DRIVER_MEMORY} \
-    --executor-cores ${RUNTIME_EXECUTOR_CORES} \
-    --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
-    --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+    --conf spark.executor.instances=2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=./environment/bin/python \
