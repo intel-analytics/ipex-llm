@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-import math
 from unittest import TestCase
 
 import numpy as np
@@ -32,8 +31,6 @@ from bigdl.orca.learn.metrics import Accuracy
 
 from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.data import SparkXShards
-from bigdl.orca.data.image.utils import chunks
 from bigdl.orca.learn.pytorch.callbacks.base import Callback
 
 import tempfile
