@@ -19,16 +19,16 @@ import tensorflow as tf
 
 
 def BF16Model(model):
-    model_policys = []
+    original_model_policies = []
     policy_bf16 = mixed_precision.Policy('mixed_bfloat16')
     for layer in model.layers:
-        model_policys.append(layer._dtype_policy)
+        original_model_policies.append(layer._dtype_policy)
         layer._dtype_policy = policy_bf16
     with TemporaryDirectory() as temp_dir:
         model.save(temp_dir)
         bf16_model = tf.keras.models.load_model(temp_dir)
     for idx, layer in enumerate(model.layers):
-        layer._dtype_policy = model_policys[idx]
+        layer._dtype_policy = original_model_policies[idx]
     return bf16_model
 
 
