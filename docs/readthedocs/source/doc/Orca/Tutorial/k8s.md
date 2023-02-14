@@ -434,7 +434,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-cores ${RUNTIME_DRIVER_CORES} \
     --driver-memory ${RUNTIME_DRIVER_MEMORY} \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files local://${BIGDL_HOME}/python/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
+    --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
     --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
