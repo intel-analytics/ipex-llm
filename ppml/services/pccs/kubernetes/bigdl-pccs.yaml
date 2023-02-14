@@ -54,8 +54,12 @@ spec:
           value: $commonName 
         - name: EMAIL_ADDRESS
           value: $emailAddress 
-        - name: PASSWORD
-          value: $serverPassword 
+        - name: HTTPS_CERT_PASSWORD
+          value: $httpsCertPassword
+        - name: USER_PASSWORD
+          value: $user_passworld
+        - name: ADMIN_PASSWORD
+          value: $admin_passworld
         ports:
         - containerPort: 18081
           name: pccs-port
