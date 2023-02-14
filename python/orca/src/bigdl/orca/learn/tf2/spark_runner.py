@@ -194,6 +194,7 @@ class SparkRunner:
                  config=None,
                  verbose=False,
                  model_weights=None,
+                 optimizer_weights=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
@@ -218,6 +219,7 @@ class SparkRunner:
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
         self.verbose = verbose
         self.model_weights = model_weights
+        self.optimizer_weights = optimizer_weights
         self.size = size
         self.mode = mode
         self.backend = backend
@@ -260,6 +262,13 @@ class SparkRunner:
                                 self.model = self.model_creator(self.config)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
+                                if self.optimizer_weights:
+                                    def load_opt_weights():
+                                        grad_vars = self.model.trainable_weights
+                                        zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                                        self.model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
+                                        self.model.optimizer.set_weights(self.optimizer_weights.value)
+                                    self.strategy.run(load_opt_weights)
                             else:
                                 self.model = tf.keras.models.load_model(self.model_load)
 
@@ -411,13 +420,16 @@ class SparkRunner:
                     shutil.rmtree(temp_dir)
                     self._stop_log_monitor()
         else:
-            weights = self.model.get_weights()
+            model_state = {
+                "weights": self.model.get_weights(),
+                "opt_weights": self.model.optimizer.get_weights()
+            }
             self._stop_log_monitor()
         if self.rank == 0:
             if self.model_dir is not None:
                 return [stats]
             else:
-                return [stats, weights]
+                return [stats, model_state]
         else:
             return []
 

@@ -86,6 +86,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.optimizer_weights = None
         self.load_path = None
 
         if "batch_size" in self.config:
@@ -166,6 +167,11 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
+        
+        if self.optimizer_weights:
+            opt_weights = sc.broadcast(self.optimizer_weights)
+        else:
+            opt_weights = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -175,6 +181,7 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
+            optimizer_weights=opt_weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -613,6 +620,7 @@ class SparkTFEstimator():
         )
         model = load_model(**self.load_params)
         self.model_weights = model.get_weights()
+        self.optimizer_weights = model.optimizer.get_weights()
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
             if is_file(self.load_path):  # type:ignore
@@ -635,8 +643,15 @@ class SparkTFEstimator():
         else:
             model = load_model(**self.load_params)
 
-        if set_weights and self.model_weights is not None:
-            model.set_weights(self.model_weights)
+        if set_weights:
+            if self.model_weights is not None:
+                model.set_weights(self.model_weights)
+            if self.optimizer_weights is not None:
+                import tensorflow as tf
+                grad_vars = model.trainable_weights
+                zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
+                model.optimizer.set_weights(self.optimizer_weights)
         return model
 
     @property
@@ -665,5 +680,7 @@ class SparkTFEstimator():
                 shutil.rmtree(temp_dir)
         else:
             result = res[0]
-            self.model_weights = res[1]
+            states = res[1]
+            self.model_weights = states["weights"]
+            self.optimizer_weights = states["opt_weights"]
         return result
