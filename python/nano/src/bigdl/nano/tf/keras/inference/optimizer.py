@@ -85,7 +85,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
         {  # type: ignore
             "original": TFAccelerationOption(),
-            "int8": TFAccelerationOption(inc=True),
+            "static_int8": TFAccelerationOption(inc=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
@@ -247,15 +247,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    if method == "original" and thread_num is not None:
+                    if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
                         # for original keras model, as tf.config.threading can't set thread
                         # during running, so here we use subprocess to calculate throughput
                         params = {"iterrun": latency_sample_num,
                                   "func": func_test,
-                                  "model": acce_model,
-                                  "input_sample": input_sample}
+                                  "model": model,  # save original model
+                                  "input_sample": input_sample,
+                                  "method": method}
                         with tempfile.TemporaryDirectory() as temp_dir:
+                            if method != "original":
+                                # save accelerated model
+                                InferenceOptimizer.save(acce_model, temp_dir)
                             _filename = os.path.join(temp_dir, "params")
                             cloudpickle.dump(params, open(_filename, "wb"))
                             my_env = os.environ.copy()
