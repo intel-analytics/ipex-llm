@@ -197,7 +197,7 @@ In the launched BigDL K8s **Client Container**, please setup the environment fol
 
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment.
 
-- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please skip this step and __DO NOT__ install BigDL Orca in the conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example we provide:
 ```bash
@@ -327,15 +327,23 @@ python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --data_dir /bigdl/nfsd
 
 ### 6.2 Use `spark-submit`
 
-Set the cluster_mode to "bigdl-submit" in `init_orca_context`.
-```python
-init_orca_context(cluster_mode="spark-submit")
-```
+If you prefer to use `spark-submit`, please follow the steps below to prepare the environment in the __Client Container__. 
 
-Pack the current activate conda environment to an archive in the __Client Container__:
-```bash
-conda pack -o environment.tar.gz
-```
+1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
+    ```python
+    sc = init_orca_context(cluster_mode="spark-submit")
+    ```
+
+2. Download the requirement file from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
+    ```bash
+    pip install -r /path/to/requirements.txt
+    ```
+    Note that you are recommended **NOT** to install BigDL Orca in the conda environment if you use spark-submit to avoid possible conflicts.
+
+3. Pack the current activate conda environment to an archive before submitting the example:
+    ```bash
+    conda pack -o environment.tar.gz
+    ```
 
 Some runtime configurations for Spark are as follows:
 
@@ -348,7 +356,7 @@ Some runtime configurations for Spark are as follows:
 * `--total-executor-cores`: the total number of executor cores.
 * `--executor-memory`: the memory for each executor.
 * `--driver-cores`: the number of cores for the driver.
-* `--driver-memory`: the memory for the driver node.
+* `--driver-memory`: the memory for the driver.
 * `--properties-file`: the BigDL configuration properties to be uploaded to K8s.
 * `--py-files`: the extra Python dependency files to be uploaded to K8s.
 * `--archives`: the conda archive to be uploaded to K8s.

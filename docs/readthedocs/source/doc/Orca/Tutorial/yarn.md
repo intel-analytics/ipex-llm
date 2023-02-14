@@ -91,7 +91,7 @@ __Note__:
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please skip this step and __DO NOT__ install BigDL Orca.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please skip this step and __DO NOT__ install BigDL Orca in the conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
@@ -233,10 +233,11 @@ conda pack -o environment.tar.gz
 
 Some runtime configurations for Spark are as follows:
 
-* `--executor-memory`: the memory for each executor.
-* `--driver-memory`: the memory for the driver node.
-* `--executor-cores`: the number of cores for each executor.
 * `--num_executors`: the number of executors.
+* `--executor-cores`: the number of cores for each executor.
+* `--executor-memory`: the memory for each executor.
+* `--driver-cores`: the number of cores for the driver.
+* `--driver-memory`: the memory for the driver.
 * `--py-files`: the extra Python dependency files to be uploaded to YARN.
 * `--archives`: the conda archive to be uploaded to YARN.
 
@@ -246,10 +247,11 @@ Submit and run the example for `yarn-client` mode following the `bigdl-submit` s
 bigdl-submit \
     --master yarn \
     --deploy-mode client \
-    --executor-memory 2g \
-    --driver-memory 2g \
-    --executor-cores 4 \
     --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=/path/to/python \
@@ -269,10 +271,11 @@ Submit and run the program for `yarn-cluster` mode following the `bigdl-submit` 
 bigdl-submit \
     --master yarn \
     --deploy-mode cluster \
-    --executor-memory 2g \
-    --driver-memory 2g \
-    --executor-cores 4 \
     --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -319,10 +322,11 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
 
 Some runtime configurations for Spark are as follows:
 
-* `--executor-memory`: the memory for each executor.
-* `--driver-memory`: the memory for the driver node.
-* `--executor-cores`: the number of cores for each executor.
 * `--num_executors`: the number of executors.
+* `--executor-cores`: the number of cores for each executor.
+* `--executor-memory`: the memory for each executor.
+* `--driver-cores`: the number of cores for the driver.
+* `--driver-memory`: the memory for the driver.
 * `--py-files`: the extra Python dependency files to be uploaded to YARN.
 * `--archives`: the conda archive to be uploaded to YARN.
 * `--properties-file`: the BigDL configuration properties to be uploaded to YARN.
@@ -334,10 +338,11 @@ Submit and run the program for `yarn-client` mode following the `spark-submit` s
 ${SPARK_HOME}/bin/spark-submit \
     --master yarn \
     --deploy-mode client \
-    --executor-memory 2g \
-    --driver-memory 2g \
-    --executor-cores 4 \
     --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --conf spark.pyspark.driver.python=/path/to/python \
@@ -358,10 +363,11 @@ Submit and run the program for `yarn-cluster` mode following the `spark-submit` 
 ${SPARK_HOME}/bin/spark-submit \
     --master yarn \
     --deploy-mode cluster \
-    --executor-memory 2g \
-    --driver-memory 2g \
-    --executor-cores 4 \
     --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
