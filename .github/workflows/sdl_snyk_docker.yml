@@ -2,13 +2,12 @@ name: Scanner-snyk-docker
 on:
   #pull_request:
     #branchs: [ main ]
-
-  workflow_dispatch:
+  workflow_call:
     inputs:
       snyk_apitoken:
         description: 'Snyk token'
         required: false
-        type: string        
+        type: string
         default: 'monitor'
       snyk_org:
         description: 'Enter synk org: (eg- iags_mlp)'
@@ -28,15 +27,15 @@ jobs:
     - uses: actions/checkout@v3
     - name: set env
       run: |
-        echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
-        echo "IMAGE=${{ github.event.inputs.snyk_image }}"
-        echo "SNYK_ORG=${{ github.event.inputs.snyk_org }}"
+        echo "SNYK_APITOKEN=${{inputs.snyk_apitoken}}"
+        echo "IMAGE=${{inputs.snyk_image}}"
+        echo "SNYK_ORG=${{inputs.snyk_org}}"
     - name: "Pull docker image"
       run: |
-        docker pull $IMAGE
+        docker pull ${{inputs.snyk_org}}
     - name: "Auth Synk"
       run: |
-        snyk auth -d $SNYK_APITOKEN
+        snyk auth -d ${{inputs.snyk_apitoken}}
     - name: "snyk docker"
       run: |
-        snyk monitor --docker $IMAGE --api=${SNYK_APITOKEN} --org=${SNYK_ORG}
+        snyk monitor --docker $IMAGE --api=${{inputs.snyk_apitoken}} --org=${{inputs.snyk_org}}
