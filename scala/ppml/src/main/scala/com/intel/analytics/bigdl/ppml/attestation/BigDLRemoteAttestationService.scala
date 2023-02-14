@@ -230,14 +230,14 @@ object BigDLRemoteAttestationService {
             complete(res)
           } ~
           path("enroll") {
+            logger.info("enroll\n")
             enroll()
           }
         } ~
       post {
         path("registerPolicy") {
           entity(as[String]) { jsonMsg =>
-            logger.info("registerPolicy:")
-            logger.info(jsonMsg)
+            logger.info("registerPolicy\n")
             val enroll = JsonUtil.fromJson(classOf[Enroll], jsonMsg)
             print(enroll)
             if (checkAppIDAndApiKey(enroll)) {
@@ -249,8 +249,7 @@ object BigDLRemoteAttestationService {
         } ~
         path("verifyQuote") {
           entity(as[String]) { jsonMsg =>
-            logger.info("verifyQuote:")
-            logger.info(jsonMsg)
+            logger.info("verifyQuote:\n")
             val enroll = JsonUtil.fromJson(classOf[Enroll], jsonMsg)
             if (checkAppIDAndApiKey(enroll)) {
               verifyQuote(jsonMsg)
