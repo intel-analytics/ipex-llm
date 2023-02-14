@@ -19,7 +19,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r python/requirements/orca/requirements_ray.txt
         
         chmod a+x python/orca/dev/test/run-pytests-automl.sh
-        python/orca/dev/test/run-pytests-tf2-automl.sh
+        python/orca/dev/test/run-pytests-automl.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
