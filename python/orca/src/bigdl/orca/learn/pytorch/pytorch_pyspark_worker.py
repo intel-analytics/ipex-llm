@@ -29,12 +29,9 @@
 # limitations under the License.
 
 
-from subprocess import call
-from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
 import logging
-from bigdl.orca.learn.utils import save_pkl
 import os
 import tempfile
 import copy
@@ -42,7 +39,6 @@ import copy
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
-from bigdl.dllib.utils.log4Error import *
 
 
 logger = logging.getLogger(__name__)
@@ -162,14 +158,15 @@ class PytorchPysparkWorker(TorchRunner):
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
 
-    def predict(self, data_creator, batch_size=32, profile=False):
+    def predict(self, data_creator, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
         self.load_state_dict(self.state_dict.value)
-        result = super().predict(partition=partition, batch_size=batch_size, profile=profile)
+        result = super().predict(partition=partition, batch_size=batch_size,
+                                 profile=profile, callbacks=callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return result

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -33,6 +34,12 @@ object PPMLContextPython {
 
 class PPMLContextPython[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
+
+  def createPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    logger.debug("createPPMLContext with SparkSession" + "confs:\n" +
+      sparkSession.sparkContext.getConf.getAll.mkString("Array(", ", ", ")"))
+    PPMLContext.initPPMLContext(sparkSession)
+  }
 
   def read(sc: PPMLContext, cryptoModeStr: String,
     primaryKeyName: String = "defaultKey"): EncryptedDataFrameReader = {
