@@ -743,7 +743,7 @@ def main():
                                extra_python_lib="optimization.py,modeling.py,deferred_grad_optimizer.py,lamb_optimizer_v1.py")
         num_workers = num_executor
     elif cluster_mode == "spark-submit":
-        sc = init_orca_context(cluster_mode="spark-submit", init_ray_on_spark=True, object_store_memory="30g",
+        sc = init_orca_context(cluster_mode="spark-submit", init_ray_on_spark=False, object_store_memory="30g",
                                include_webui=False)
         instances = sc.getConf().get("spark.executor.instances")
         num_workers = int(instances) if instances else 1
