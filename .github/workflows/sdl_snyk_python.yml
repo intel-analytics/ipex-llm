@@ -1,0 +1,37 @@
+name: Scanner-snyk-docker
+on:
+  pull_request:
+    branchs: [ main ]
+  workflow_call:
+    inputs:
+      snyk_apitoken:
+        description: 'Snyk token'
+        required: false
+        type: string
+        default: 'monitor'
+      snyk_org:
+        description: 'Enter synk org: (eg- iags_mlp)'
+        required: true
+        type: string
+        default: 'iags_mlp'
+
+jobs:
+  snyk-scan:
+    runs-on: [self-hosted, SDL]
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      run: |
+        echo "SNYK_APITOKEN=${{inputs.snyk_apitoken}}"
+        echo "SNYK_ORG=${{inputs.snyk_org}}"
+    - name: "pip install bigdl-chronos"
+      run: |
+        source activate snykchronos
+        pip install --pre bigdl-chronos-spark3[all]
+        pip freeze > requirements.txt
+    - name: "Auth Synk"
+      run: |
+        snyk auth -d ${{inputs.snyk_apitoken}}
+    - name: "snyk docker"
+      run: |
+        snyk monitor --file=./requirements.txt --command=python3 --org=iags_mlp --package-manager=pip   --project-name=bigdl-chronos
