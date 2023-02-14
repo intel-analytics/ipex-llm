@@ -31,4 +31,5 @@ jobs:
         pip freeze > requirements.txt
     - name: "snyk docker"
       run: |
+        pip install -r ./requirements.txt
         snyk monitor --file=./requirements.txt --command=python3 --org=iags_mlp --package-manager=pip   --project-name=bigdl-chronos
