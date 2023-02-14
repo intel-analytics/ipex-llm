@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from bigdl.orca import OrcaContext
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Tuple
 
 if TYPE_CHECKING:
     from numpy import ndarray
@@ -25,6 +25,11 @@ from bigdl.orca.data import SparkXShards
 from pyspark.sql.functions import col
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.dllib.utils.common import get_node_and_core_number
+import os.path as osp
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET  # type: ignore
 
 
 def get_file_paths(file_path):
@@ -192,4 +197,76 @@ def read_images_spark(file_path: str,
             .map(lambda x: to_pil(x)).repartition(num_partitions)
 
         image_rdd = image_rdd.zip(target_rdd)
+    return SparkXShards(image_rdd)
+
+
+def read_voc(file_path: str="VOCdevkit",
+             split_names: List[Tuple[int, str]]=[(2007, "trainval")],
+             diff=False,
+             max_samples: int = 25
+             ):
+
+    CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+                'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
+                'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+
+    cat2label = {cat: i for i, cat in enumerate(CLASSES)}
+    spark = OrcaContext.get_spark_session()
+    anno_path = osp.join('{}', 'Annotations', '{}.xml')
+    image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
+
+    def get_imgids(splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
+        img_ids = []
+        for year, txtname in splits_names:
+            vocfolder = osp.join(file_path, "VOC{}".format(year))
+            txtpath = osp.join(vocfolder, 'ImageSets', 'Main', txtname + '.txt')
+            try:
+                with open(txtpath, 'r', encoding='utf-8') as f:
+                    img_ids += [(vocfolder, line.strip()) for line in f.readlines()]
+            except:
+                continue
+        return img_ids
+
+    def get_img_label(f):
+        image_file = image_path.format(f)
+        label_file = anno_path.format(f)
+        root = ET.parse(label_file).getroot()
+        img = open_image(image_file)
+        width, height = img.size
+
+        # load label [[x1, y1, x2, y2, cls, difficult]]
+        labels = []
+        for obj in root.iter('object'):
+            try:
+                difficult = int(obj.find('difficult').text)
+            except ValueError:
+                difficult = 0
+            cls_name = obj.find('name').text.strip().lower()
+            cls_id = cat2label[cls_name]
+            xml_box = obj.find('bndbox')
+            xmin = float(int(xml_box.find('xmin').text) / width)
+            ymin = float(int(xml_box.find('ymin').text) / height)
+            xmax = float(int(xml_box.find('xmax').text) / width)
+            ymax = float(int(xml_box.find('ymax').text) / height)
+            labels.append([xmin, ymin, xmax, ymax, cls_id, difficult])
+        # labels = np.array(labels).astype(np.float32)
+        if not diff:
+            labels = labels[..., :5]
+        return img, labels
+
+    img_paths = get_imgids(split_names)
+    num_files = len(img_paths)
+    node_num, core_num = get_node_and_core_number()
+    total_cores = node_num * core_num
+    num_partitions = num_files if num_files < total_cores else total_cores
+
+    rdd = spark.sparkContext.parallelize(img_paths, num_partitions)
+
+    def load_image(iterator):
+        for f in iterator:
+            img, labels = get_img_label(f)
+            yield img, labels
+
+    image_rdd = rdd.mapPartitions(load_image)
+
     return SparkXShards(image_rdd)
