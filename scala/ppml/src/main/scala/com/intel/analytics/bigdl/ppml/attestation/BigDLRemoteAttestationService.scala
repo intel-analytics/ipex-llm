@@ -49,10 +49,11 @@ import com.intel.analytics.bigdl.ppml.attestation.verifier.SGXDCAPQuoteVerifierI
 import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, FileEncryptUtil}
 import com.intel.analytics.bigdl.ppml.attestation.utils.JsonUtil
 
-case class Enroll(appID: String, apiKey:String)
+case class Enroll(appID: String, apiKey: String)
 
 case class PolicyBase(policyID: String, policyType: String)
 case class SGXMREnclavePolicy(appID: String, mrEnclave: String) extends Policy
+case class SGXMRSignerPolicy(appID: String, mrSigner: String, isvProdID: String) extends Policy
 
 case class Quote(quote: String)
 
@@ -84,8 +85,10 @@ object BigDLRemoteAttestationService {
   def registerPolicy(msg: String): Route = {
     val policyType = JsonUtil.fromJson(classOf[PolicyBase], msg).policyType
     val curPolicy = policyType match {
-      case "SGXMREnclavePolicy" => 
+      case "SGXMREnclavePolicy" =>
         JsonUtil.fromJson(classOf[SGXMREnclavePolicy], msg)
+      case "SGXMRSignerPolicy" =>
+        JsonUtil.fromJson(classOf[SGXMRSignerPolicy], msg)
       case _ =>
         null
     }
@@ -114,10 +117,21 @@ object BigDLRemoteAttestationService {
       } else {
         val curPolicy = policyMap.get(curPolicyID)
         val appID = JsonUtil.fromJson(classOf[Enroll], msg).appID
-        val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
         curPolicy match {
           case Some(SGXMREnclavePolicy(policyAppID, policyMREnclave)) =>
+            val mrEnclave = AttestationUtil.getMREnclaveFromQuote(quote)
             if (appID == policyAppID && mrEnclave == policyMREnclave) {
+              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+          case Some(SGXMRSignerPolicy(policyAppID, policyMRSigner, policyISVProdID)) =>
+            val mrSigner = AttestationUtil.getMRSignerFromQuote(quote)
+            val isvProdID = AttestationUtil.getISVProdIDFromQuote(quote)
+            if (appID == policyAppID && mrSigner == policyMRSigner &&
+              isvProdID == policyISVProdID) {
               val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
               complete(200, res)
             } else {

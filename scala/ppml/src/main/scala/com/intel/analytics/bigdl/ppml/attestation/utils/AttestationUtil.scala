@@ -44,6 +44,10 @@ object AttestationUtil {
     new BigInteger(1, quote.slice(176, 208)).toString(16)
   }
 
+  def getISVProdIDFromQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(304, 306)).toString(16)
+  }
+
   def generateToken(length: Int = 64): String = {
     val secureRandom = new SecureRandom()
     val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
