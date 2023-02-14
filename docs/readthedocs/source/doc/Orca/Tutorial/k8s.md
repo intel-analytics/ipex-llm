@@ -423,17 +423,17 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-cluster-tutorial \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-    --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --archives file:///bigdl/nfsdata/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=environment/bin/python \
     --conf spark.pyspark.python=environment/bin/python \
     --conf spark.executorEnv.PYTHONHOME=environment \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
-    --executor-cores ${RUNTIME_EXECUTOR_CORES} \
-    --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
-    --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-    --driver-cores ${RUNTIME_DRIVER_CORES} \
-    --driver-memory ${RUNTIME_DRIVER_MEMORY} \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
     --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
