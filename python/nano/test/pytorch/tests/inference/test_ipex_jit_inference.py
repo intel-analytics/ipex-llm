@@ -457,17 +457,27 @@ class IPEXJITInference_gt_1_10:
         latent_shape = (2, 4, 8, 8)
         image_latents = torch.randn(latent_shape, device = "cpu", dtype=torch.float32)
         encoder_hidden_states = torch.randn((2, 6, 10), device = "cpu", dtype=torch.float32)
-        input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states, torch.tensor(False))
+        input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+
+        latent_shape2 = (1, 4, 8, 8) # different shape
+        image_latents2 = torch.randn(latent_shape2, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states2 = torch.randn((1, 12, 10), device = "cpu", dtype=torch.float32)
+
+        unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
         nano_unet = InferenceOptimizer.trace(unet, accelerator="jit",
                                              use_ipex=True,
                                              input_sample=input_sample,
                                              jit_strict=False,
                                              weights_prepack=False)
-        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states, torch.tensor(False))
+        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(nano_unet, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name)
-        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states, torch.tensor(False))
+        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
 
 class IPEXJITInference_lt_1_10:
