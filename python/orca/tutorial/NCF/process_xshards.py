@@ -114,8 +114,8 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
     item_set = set(items["item"].unique())
-    user_num = int(max(user_set) + 1)
-    item_num = int(max(item_set) + 1)
+    user_num = max(user_set) + 1
+    item_num = max(item_set) + 1
 
     print("Processing features...")
 
