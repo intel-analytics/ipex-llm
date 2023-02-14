@@ -137,7 +137,7 @@ class TimeSequenceModel(BaseModel):
             x, _ = self.ft.transform(df, is_train=False)
             data_np = x
         else:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               f"Mode should be among ['train', 'val', 'test']. Got {mode}")
         return data_np
@@ -151,7 +151,7 @@ class TimeSequenceModel(BaseModel):
         Otherwise, train metric will be the optimization target.
         :return: the resulting metric
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(self.built, "You must call setup or restore before calling fit_eval")
         if not isinstance(data, pd.DataFrame):
             invalidInputError(False,
@@ -173,7 +173,7 @@ class TimeSequenceModel(BaseModel):
                                    **kwargs)
 
     def fit_incr(self, data, validation_data=None, **kwargs):
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(self.built, "You must call setup or restore before calling fit_eval")
         if not isinstance(data, pd.DataFrame):
             invalidInputError(False,
@@ -249,7 +249,7 @@ class TimeSequenceModel(BaseModel):
             os.makedirs(file_dirname)
 
         dirname = tempfile.mkdtemp(prefix="automl_save_")
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         try:
             ppl_model = os.path.join(dirname, "model.ckpt")
             ppl_config = os.path.join(dirname, "config.json")

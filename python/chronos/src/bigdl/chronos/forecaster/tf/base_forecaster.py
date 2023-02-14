@@ -21,7 +21,7 @@ import numpy as np
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.chronos.forecaster.tf.utils import np_to_data_creator, tsdata_to_data_creator,\
     np_to_xshards, xshard_to_np, np_to_tfdataset
 
@@ -84,7 +84,7 @@ class BaseTF2Forecaster(Forecaster):
                 data = np_to_data_creator(data, shuffle=True)
             if isinstance(data, TSDataset):
                 data = tsdata_to_data_creator(data, shuffle=True)
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(not isinstance(data, tf.data.Dataset),
                               "tf.data.Dataset is not supported, "
                               "please replace with numpy.ndarray or TSDataset instance.")
@@ -94,7 +94,7 @@ class BaseTF2Forecaster(Forecaster):
             num_nodes = 1 if sc.get('spark.master').startswith('local') \
                 else int(sc.get('spark.executor.instances'))
             if batch_size % self.workers_per_node != 0:
-                from bigdl.nano.utils.log4Error import invalidInputError
+                from bigdl.nano.utils.common import invalidInputError
                 invalidInputError(False,
                                   "Please make sure that batch_size can be divisible by "
                                   "the product of worker_per_node and num_nodes, "
@@ -173,7 +173,7 @@ class BaseTF2Forecaster(Forecaster):
                by default where no limit is set.
         """
         # check model support for quantization
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         from bigdl.nano.tf.keras import InferenceOptimizer
         if not self.quantize_available:
             invalidInputError(False,
