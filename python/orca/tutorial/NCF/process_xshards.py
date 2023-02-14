@@ -68,28 +68,54 @@ def split_dataset(df):
     return train_data, test_data
 
 
-def prepare_data(dataset_dir, num_ng=4):
+def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     print("Loading data...")
-    # Need spark3 to support delimiter with more than one character.
-    users = read_csv(
-        os.path.join(dataset_dir, "users.dat"),
-        sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
-        usecols=[0, 1, 2, 3, 4],
-        dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str})
-    ratings = read_csv(
-        os.path.join(dataset_dir, "ratings.dat"),
-        sep="::", header=None, names=["user", "item"],
-        usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
-    items = read_csv(
-        os.path.join(dataset_dir, "movies.dat"),
-        sep="::", header=None, names=["item", "category"],
-        usecols=[0, 2], dtype={0: np.int64, 2: str})
+    if dataset == "ml-1m":
+        # Need spark3 to support delimiter with more than one character.
+        users = read_csv(
+            os.path.join(data_dir, dataset, "users.dat"),
+            sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
+            usecols=[0, 1, 2, 3, 4],
+            dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str})
+        ratings = read_csv(
+            os.path.join(data_dir, dataset, "ratings.dat"),
+            sep="::", header=None, names=["user", "item"],
+            usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
+        items = read_csv(
+            os.path.join(data_dir, dataset, "movies.dat"),
+            sep="::", header=None, names=["item", "category"],
+            usecols=[0, 2], dtype={0: np.int64, 2: str})
+    else:  # dataset == "ml-100k"
+        users = read_csv(
+            os.path.join(data_dir, dataset, "u.user"),
+            sep="|", header=None, names=["user", "age", "gender", "occupation", "zipcode"],
+            usecols=[0, 1, 2, 3, 4],
+            dtype={0: np.int64, 1: np.int32, 2: str, 3: str, 4: str})
+        ratings = read_csv(
+            os.path.join(data_dir, dataset, "u.data"),
+            sep="\t", header=None, names=["user", "item"],
+            usecols=[0, 1], dtype={0: np.int64, 1: np.int64})
+        items = read_csv(
+            os.path.join(data_dir, dataset, "u.item"),
+            sep="|", header=None,
+            names=["item"]+[f"col{i}" for i in range(19)],
+            usecols=[0]+list(range(5, 24)),
+            dtype=str)
+
+        # merge multiple one-hot columns into one category column
+        def merge_one_hot_cols(df):
+            df["item"] = df["item"].astype(np.int64)
+            category_cols = df.iloc[:, 1:]
+            df["category"] = pd.Series([''.join(row) for row in category_cols.values])
+            return df.drop(columns=[f"col{i}" for i in range(19)])
+
+        items = items.transform_shard(merge_one_hot_cols)
 
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
     item_set = set(items["item"].unique())
-    user_num = max(user_set) + 1
-    item_num = max(item_set) + 1
+    user_num = int(max(user_set) + 1)
+    item_num = int(max(item_set) + 1)
 
     print("Processing features...")
 
@@ -98,7 +124,7 @@ def prepare_data(dataset_dir, num_ng=4):
         return df
 
     # Categorical encoding
-    for col in sparse_features[:-1]:  # occupation is already indexed.
+    for col in sparse_features:
         indexer = StringIndexer(inputCol=col)
         if col in users.get_schema()["columns"]:
             users = indexer.fit_transform(users)
@@ -112,7 +138,7 @@ def prepare_data(dataset_dir, num_ng=4):
     for col in sparse_features:
         data = users if col in users.get_schema()["columns"] else items
         sparse_feat_set = set(data[col].unique())
-        sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
+        sparse_feats_input_dims.append(int(max(sparse_feat_set) + 1))
 
     # scale dense features
     def rename(df, col):
@@ -159,7 +185,7 @@ if __name__ == "__main__":
 
     sc = init_orca_context()
     train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-        feature_cols, label_cols = prepare_data("./ml-1m")
+        feature_cols, label_cols = prepare_data()
     train_data.save_pickle("./train_processed_xshards")
     test_data.save_pickle("./test_processed_xshards")
     stop_orca_context()
