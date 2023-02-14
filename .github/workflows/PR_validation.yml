@@ -427,7 +427,7 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-  Orca-Pytest-Rayonspark-Tf2-Py37:
+  Orca-Pytest-AutoML-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
@@ -441,7 +441,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
     - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-rayonspark-tf2-action/pr-test
+      uses: ./.github/actions/orca/orca-pytest-automl-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
