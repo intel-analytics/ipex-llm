@@ -154,7 +154,8 @@ class ResNetPerfCallback(MainCallback):
             output = output.to(torch.float32)
         loss = runner.criterion(output, target)
 
-        return output, target, loss 
+        return output, target, loss
+
 
 def main():
     args = parser.parse_args()

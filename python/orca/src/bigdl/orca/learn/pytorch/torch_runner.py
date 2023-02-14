@@ -473,7 +473,7 @@ class TorchRunner(BaseRunner):
         loader = iter(loader)
 
         with self.timers.record("validation"):
-            self.num_steps=num_steps
+            self.num_steps = num_steps
             validation_stats = self._validate(loader,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
