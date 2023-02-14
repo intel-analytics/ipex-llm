@@ -138,7 +138,7 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     for col in sparse_features:
         data = users if col in users.get_schema()["columns"] else items
         sparse_feat_set = set(data[col].unique())
-        sparse_feats_input_dims.append(int(max(sparse_feat_set) + 1))
+        sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
 
     # scale dense features
     def rename(df, col):
