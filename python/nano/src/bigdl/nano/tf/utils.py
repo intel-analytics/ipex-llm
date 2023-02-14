@@ -66,6 +66,8 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
     :param source_obj: source object
     :return: `target_obj`
     """
+    if source_obj is None:
+        return target_obj
     if inspect.ismethod(target_obj.__setattr__):
         # `target_obj` has custom `__setattr__`
         wrapper_obj = _ModuleWrapper(target_obj, source_obj)

@@ -115,7 +115,7 @@ def setup_package():
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
                             "torchvision==0.14.0",
-                            "intel_extension_for_pytorch==1.13.0;platform_system=='Linux'"]
+                            "intel_extension_for_pytorch==1.13.100;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",

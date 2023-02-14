@@ -18,6 +18,7 @@ import tempfile
 import operator
 import numpy as np
 import tensorflow as tf
+import pytest
 from tensorflow.keras.metrics import MeanSquaredError, CategoricalAccuracy
 from tensorflow.keras import layers, Model
 from tensorflow.keras.applications import MobileNetV2
@@ -67,13 +68,22 @@ class TestTraceAndQuantize(TestCase):
         traced_model(np.random.random((1, 4)).astype(np.float32))
         traced_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(traced_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == traced_model.x == x
-        
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
+
         # for openvino
         model = MyModel(x)
         traced_model = InferenceOptimizer.trace(model, accelerator="openvino",
@@ -83,12 +93,21 @@ class TestTraceAndQuantize(TestCase):
         assert traced_model.get_x() == traced_model.x == x
         traced_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(traced_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == traced_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(traced_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
 
     def test_attribute_access_after_quantize(self):
         x = 100
@@ -105,12 +124,21 @@ class TestTraceAndQuantize(TestCase):
         quantized_model(np.random.random((1, 4)).astype(np.float32))
         quantized_model(inputs=np.random.random((1, 4)).astype(np.float32))
         
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
 
         # for openvino
         model = MyModel(x)
@@ -124,12 +152,21 @@ class TestTraceAndQuantize(TestCase):
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
         new_model.do_nothing()
         assert new_model.get_x() == quantized_model.x == x
+
+        # test save/load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(quantized_model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            new_model.do_nothing()
+        with pytest.raises(AttributeError):
+            assert new_model.get_x()
         
         # for inc
         from bigdl.nano.utils.common import compare_version
@@ -147,7 +184,7 @@ class TestTraceAndQuantize(TestCase):
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
 
-        # test save/load
+        # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
             new_model = InferenceOptimizer.load(tmp_dir_name, model)
@@ -203,12 +240,19 @@ class TestTraceAndQuantize(TestCase):
 
     def test_quantize_bf16(self):
         # for custom model, quantized model still return fp32 output
+        # test at the same time that the quantization does not 
+        # change the original's model dtype policy 
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
+        ori_model_policies = []
+        for layer in model.layers:
+            ori_model_policies.append(layer._dtype_policy)
         x = np.random.random((100, 4))
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        for idx, layer in enumerate(model.layers):
+            assert layer._dtype_policy == ori_model_policies[idx]
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():
@@ -223,12 +267,16 @@ class TestTraceAndQuantize(TestCase):
             output = load_model(x)
             assert output.dtype == tf.float32
 
-        # test standard model, quantized model still return bf16 output
+        # test standard model, quantized model return bf16 output
+        # test at the same time that the quantization does not 
+        # change the original's model dtype policy 
         model = MobileNetV2(weights="imagenet")
+        ori_model_config = model.get_config()
         x = np.random.rand(32, 224, 224, 3)
         model(x)
 
         bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        assert ori_model_config == model.get_config()
 
         from bigdl.nano.utils.common import _avx512_checker
         if _avx512_checker():

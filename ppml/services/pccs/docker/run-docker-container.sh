@@ -12,7 +12,7 @@ export CITY_NAME=your_city_name
 export ORGANIZATION_NAME=your_organizaition_name
 export COMMON_NAME=server_fqdn_or_your_name
 export EMAIL_ADDRESS=your_email_address
-export SERVER_CERT_PASSWORD=your_server_cert_password_to_use
+export HTTPS_CERT_PASSWORD=your_https_cert_password_to_use
 
 docker run -itd \
 --net=host \
@@ -27,5 +27,5 @@ docker run -itd \
 -e ORGANIZATION_NAME==$ORGANIZATION_NAME \
 -e COMMON_NAME=$COMMON_NAME \
 -e EMAIL_ADDRESS=$EMAIL_ADDRESS \
--e SERVER_CERT_PASSWORD=$SERVER_CERT_PASSWORD \
+-e HTTPS_CERT_PASSWORD=$HTTPS_CERT_PASSWORD \
 -d $PCCS_IMAGE_NAME:$PCCS_IMAGE_VERSION

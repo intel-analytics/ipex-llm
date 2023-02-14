@@ -98,8 +98,7 @@ else
           # test_xshards_partition.py is tested in run-pytests-basic-env.sh
           --ignore=test/bigdl/orca/data/test_xshards_partition.py \
           --ignore=test/bigdl/orca/data/test_read_parquet_images.py \
-          --ignore=test/bigdl/orca/data/test_write_parquet.py \
-          --ignore=test/bigdl/orca/data/test_spark_backend.py
+          --ignore=test/bigdl/orca/data/test_write_parquet.py 
             
     exit_status_4=$?
     if [ $exit_status_4 -ne 0 ];

@@ -15,7 +15,7 @@
 #
 
 
-from typing import Any, Union, List, Optional
+from typing import Any, Union, List, Optional, Mapping
 from logging import warning
 from functools import partial, wraps
 from abc import abstractmethod
@@ -33,7 +33,7 @@ from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_13
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
@@ -50,9 +50,13 @@ class _TorchNanoModule(_LiteModule):
         else:
             return self.module.state_dict(*args, **kwargs)
 
-    def load_state_dict(self, *args, **kwargs):
-        invalidInputError(False, "TorchNano doesn't support loading state dict, "
-                          "please load it using original pytorch model")
+    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True):
+        invalidInputError(TORCH_VERSION_LESS_1_13, "TorchNano doesn't support loading state dict"
+                          " with PyTorch<1.13, please load it using original pytorch model")
+        if isinstance(self.module, DistributedDataParallel):
+            return self.module.module.load_state_dict(state_dict=state_dict, strict=strict)
+        else:
+            return self.module.load_state_dict(state_dict=state_dict, strict=strict)
 
     def __getattr__(self, name: str):
         # automatically unwrap attributes access of _LiteModule,
