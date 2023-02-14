@@ -509,7 +509,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Run test
-      uses: ./.github/actions/orca/Orca-ExampleTest-ray-ctx-action
+      uses: ./.github/actions/orca/orca-exampletest-ray-ctx-action
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
