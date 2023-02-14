@@ -1,5 +1,5 @@
-name: 'Run Orca Python Py37 Pytorch'
-description: 'Run Orca Python Pytorch'
+name: 'Run Orca Basic Pytorch Py37 Spark3'
+description: 'Run Orca Basic Pytorch Py37 Spark3'
 runs:
   using: "composite"
   steps:
