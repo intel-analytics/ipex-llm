@@ -32,10 +32,10 @@ jobs:
         echo "SNYK_ORG=${{inputs.snyk_org}}"
     - name: "Pull docker image"
       run: |
-        docker pull ${{inputs.snyk_org}}
-    - name: "Auth Synk"
-      run: |
-        snyk auth -d ${{inputs.snyk_apitoken}}
+        docker pull ${{inputs.snyk_image}}
+#    - name: "Auth Synk"
+#      run: |
+#        snyk auth -d ${{inputs.snyk_apitoken}}
     - name: "snyk docker"
       run: |
         snyk monitor --docker $IMAGE --api=${{inputs.snyk_apitoken}} --org=${{inputs.snyk_org}}
