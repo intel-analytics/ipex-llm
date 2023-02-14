@@ -197,7 +197,7 @@ In the launched BigDL K8s **Client Container**, please setup the environment fol
 
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment.
 
-- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please skip this step and __DO NOT__ install BigDL Orca in the conda environment.
+- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please __skip__ this step and __DO NOT__ pip install BigDL Orca in the conda environment.
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example we provide:
 ```bash
@@ -338,7 +338,7 @@ If you prefer to use `spark-submit`, please follow the steps below to prepare th
     ```bash
     pip install -r /path/to/requirements.txt
     ```
-    Note that you are recommended **NOT** to install BigDL Orca in the conda environment if you use spark-submit to avoid possible conflicts.
+    Note that you are recommended **NOT** to pip install BigDL Orca in the conda environment if you use spark-submit to avoid possible conflicts.
 
 3. Pack the current activate conda environment to an archive before submitting the example:
     ```bash
