@@ -31,6 +31,7 @@ class EncryptDataFrameHadoopSpec extends DataFrameHelper {
 
 
   val ppmlArgs = Map(
+      "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
       "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
       "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
       "spark.bigdl.primaryKey.defaultKey.material" -> (s"file://" + primaryKeyPath),

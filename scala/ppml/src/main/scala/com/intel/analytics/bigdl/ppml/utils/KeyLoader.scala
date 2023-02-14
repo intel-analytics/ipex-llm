@@ -35,16 +35,17 @@ case class KeyLoader(val fromKms: Boolean,
     protected val keySize = 32
     val keyReaderWriter = new KeyReaderWriter
     val META_FILE_NAME = ".meta"
+    val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     
-    // get an existing data key
-    def getDataKeyPlainText(fileDirPath: String): String = {
+    // retrieve an existing data key
+    def retrieveDataKeyPlainText(fileDirPath: String): String = {
         val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
         val encryptedDataKey = keyReaderWriter.readKeyFromFile(metaPath)
         if (fromKms) {
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, encryptedDataKey)
         } else {
             val decrypt = new BigDLEncrypt()
-            decrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, primaryKeyPlainText)
+            decrypt.init(CRYPTO_MODE, DECRYPT, primaryKeyPlainText)
             new String(decrypt.doFinal(encryptedDataKey.getBytes)._1)
         }
     }
@@ -61,7 +62,7 @@ case class KeyLoader(val fromKms: Boolean,
             val key: SecretKey = generator.generateKey()
             val dataKeyPlainText = Base64.getEncoder().encodeToString(key.getEncoded())
             val encrypt = new BigDLEncrypt()
-            encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, primaryKeyPlainText)
+            encrypt.init(CRYPTO_MODE, ENCRYPT, primaryKeyPlainText)
             val encryptedDataKey = new String(
               encrypt.doFinal(dataKeyPlainText.getBytes)._1
             )
@@ -75,13 +76,13 @@ class KeyLoaderManagement extends Serializable {
     // map from primaryKeyName to KeyLoader
     var multiKeyLoaders = new HashMap[String, KeyLoader]
     
-    def setKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
+    def addKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
         Log4Error.invalidInputError(!(multiKeyLoaders.contains(primaryKeyName)),
                                     s"keyLoaders with name $primaryKeyName are replicated.")
         multiKeyLoaders += (primaryKeyName -> keyLoader)
     }
     
-    def getKeyLoader(primaryKeyName: String): KeyLoader = {
+    def retrieveKeyLoader(primaryKeyName: String): KeyLoader = {
         Log4Error.invalidInputError(multiKeyLoaders.contains(primaryKeyName),
                                     s"cannot get a not-existing kms.")
         multiKeyLoaders.get(primaryKeyName).get

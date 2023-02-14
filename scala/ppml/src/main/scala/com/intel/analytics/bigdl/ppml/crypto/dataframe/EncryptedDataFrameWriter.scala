@@ -65,10 +65,10 @@ class EncryptedDataFrameWriter(
   }
 
   def setCryptoCodecContext(path: String): Unit = {
-    val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
+    val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
                                               .generateDataKeyPlainText(path)
     sparkSession.sparkContext.hadoopConfiguration
-      .set("bigdl.kms.dataKey.plaintext", dataKeyPlainText)
+      .set("bigdl.dataKey.plainText", dataKeyPlainText)
     sparkSession.sparkContext.hadoopConfiguration
       .set("hadoop.io.compression.codecs", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
@@ -104,7 +104,7 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).parquet(path)
       case AES_GCM_CTR_V1 | AES_GCM_V1 =>
-        val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
                                                   .generateDataKeyPlainText(path)
         EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
         df.write

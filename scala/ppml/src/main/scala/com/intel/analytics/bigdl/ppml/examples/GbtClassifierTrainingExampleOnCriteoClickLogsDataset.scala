@@ -95,7 +95,7 @@ case class Params(
   }
 }
 
-object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
+object GbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   val featureNum = 39
 

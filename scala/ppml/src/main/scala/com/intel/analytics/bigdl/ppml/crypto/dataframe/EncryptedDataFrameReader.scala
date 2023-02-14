@@ -44,9 +44,9 @@ class EncryptedDataFrameReader(
   }
 
   def setCryptoCodecContext(path: String): Unit = {
-    val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
-                                              .getDataKeyPlainText(path)
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.dataKey.plaintext",
+    val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                              .retrieveDataKeyPlainText(path)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.dataKey.plainText",
                                                       dataKeyPlainText)
   }
 
@@ -66,8 +66,8 @@ class EncryptedDataFrameReader(
 
   def parquet(path: String): DataFrame = {
     if (encryptMode != PLAIN_TEXT) {
-      val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
-                                                .getDataKeyPlainText(path)
+      val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                .retrieveDataKeyPlainText(path)
       EncryptedDataFrameReader.setParquetKey(sparkSession, dataKeyPlainText)
     }
     sparkSession.read.parquet(path)

@@ -40,28 +40,24 @@ class TestPPMLContext(unittest.TestCase):
 
         # set key path
         primary_key_path = os.path.join(resource_path, "primaryKey")
-        data_key_path = os.path.join(resource_path, "dataKey")
 
         # init a SparkContext
         conf = {"spark.app.name": "PPML TEST",
                 "spark.hadoop.io.compression.codecs": "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
-                "spark.bigdl.kms.type": "SimpleKeyManagementService",
-                "spark.bigdl.kms.appId": cls.app_id,
-                "spark.bigdl.kms.apiKey": cls.app_key,
-                "spark.bigdl.kms.primaryKey": primary_key_path,
-                "spark.bigdl.kms.dataKey": data_key_path
+                "spark.bigdl.primaryKey.defaultKey.kms.type": "SimpleKeyManagementService",
+                "spark.bigdl.primaryKey.defaultKey.kms.appId": cls.app_id,
+                "spark.bigdl.primaryKey.defaultKey.kms.apiKey": cls.app_key,
+                "spark.bigdl.primaryKey.defaultKey.material": primary_key_path
                 }
         init_spark_on_local(conf=conf)
 
-        # generate primaryKey and dataKey
-        init_keys(cls.app_id, cls.app_key,
-                  primary_key_path, data_key_path)
+        # generate primaryKey
+        init_keys(cls.app_id, cls.app_key, primary_key_path
 
         args = {"kms_type": "SimpleKeyManagementService",
                 "app_id": cls.app_id,
                 "api_key": cls.app_key,
-                "primary_key": primary_key_path,
-                "data_key": data_key_path
+                "primary_key_material": primary_key_path
                 }
 
         # init a PPMLContext

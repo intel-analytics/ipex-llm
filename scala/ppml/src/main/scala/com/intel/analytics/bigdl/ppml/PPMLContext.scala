@@ -35,7 +35,7 @@ import org.apache.hadoop.fs.Path
  * write functions to save DataFrame to encrypted data files.
  */
 class PPMLContext {
-  protected var keyLoaderManagement = new KeyLoaderManagement
+  protected val keyLoaderManagement = new KeyLoaderManagement
   protected var sparkSession: SparkSession = null
 
   /**
@@ -55,10 +55,10 @@ class PPMLContext {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case _ =>
-        val dataKeyPlainText = keyLoaderManagement.getKeyLoader(primaryKeyName)
-                                              .getDataKeyPlainText(path)
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                  .retrieveDataKeyPlainText(path)
         PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
-                               cryptoMode, minPartitions)
+                             cryptoMode, minPartitions)
     }
   }
 
@@ -206,6 +206,7 @@ object PPMLContext{
         ppmlArgs: Map[String, String]): PPMLContext = {
     val conf = createSparkConf(sparkConf)
     ppmlArgs.foreach{arg =>
+      println(arg._1+": " + arg._2)
       conf.set(arg._1, arg._2)
     }
     initPPMLContext(conf, appName)
@@ -242,8 +243,9 @@ object PPMLContext{
         if(conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.plainText")){
           val primaryKeyPlainText = conf.get(
             s"spark.bigdl.primaryKey.$primaryKeyName.plainText")
-          ppmlSc.keyLoaderManagement.setKeyLoader(primaryKeyName,
-            KeyLoader(false, "", null, primaryKeyPlainText))
+          ppmlSc.keyLoaderManagement
+                .addKeyLoader(primaryKeyName,
+                              KeyLoader(false, "", null, primaryKeyPlainText))
         }else{
           Log4Error.invalidInputError(
             conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.material"),
@@ -251,8 +253,9 @@ object PPMLContext{
             val primaryKeyMaterial = conf.get(
               s"spark.bigdl.primaryKey.$primaryKeyName.material")
             val kms = loadKmsOfPrimaryKey(conf, primaryKeyName)
-            ppmlSc.keyLoaderManagement.setKeyLoader(primaryKeyName,
-              KeyLoader(true, primaryKeyMaterial, kms, ""))
+            ppmlSc.keyLoaderManagement
+                  .addKeyLoader(primaryKeyName,
+                                KeyLoader(true, primaryKeyMaterial, kms, ""))
          }
       }
     }
