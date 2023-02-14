@@ -54,8 +54,7 @@ case class KeyLoader(val fromKms: Boolean,
     // generate a data key and write it to meta as well
     def generateDataKeyPlainText(): String = {
         if(fromKms) {
-            encryptedDataKey = kms.retrieveDataKey(
-              primaryKeyMaterial, "", null, false).get
+            encryptedDataKey = kms.retrieveDataKey(primaryKeyMaterial).get
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
             val generator = KeyGenerator.getInstance("AES")

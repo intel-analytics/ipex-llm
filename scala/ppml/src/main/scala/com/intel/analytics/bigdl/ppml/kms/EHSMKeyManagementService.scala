@@ -96,13 +96,10 @@ class EHSMKeyManagementService(
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, primaryKeyCiphertext, config)
   }
 
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
-                      config: Configuration = null,
-                      writeKeyToFile: Boolean = true): Option[String] = {
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String = "",
+                      config: Configuration = null): Option[String] = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
-    Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
-      "dataKeySavePath should be specified")
     val action = EHSM_CONVENTION.ACTION_GENERATE_DATAKEY_WO_PLAINTEXT
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     val currentTime = System.currentTimeMillis() // ms
@@ -118,7 +115,7 @@ class EHSMKeyManagementService(
       val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT)
     }
-    if (writeKeyToFile){
+    if (dataKeySavePath != ""){
       keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
       Some(null)
     } else {
@@ -132,16 +129,15 @@ class EHSMKeyManagementService(
                                         encryptedDataKeyString: String): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
-    Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
-      "dataKeyPath should be specified")
     val action: String = EHSM_CONVENTION.ACTION_DECRYPT
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
-    val encryptedDataKey: String = encryptedDataKeyString match {
-      case "" =>
+    val encryptedDataKey = if (dataKeyPath != "") {
         keyReaderWriter.readKeyFromFile(dataKeyPath, config)
-      case _ =>
+    } else {
+        Log4Error.invalidInputError(encryptedDataKeyString != "",
+          "encryptedDataKeyString should be specified")
         encryptedDataKeyString
-    }
+      }
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)

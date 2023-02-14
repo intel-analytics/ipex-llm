@@ -98,12 +98,9 @@ class BigDLKeyManagementService(
   }
 
   def retrieveDataKey(primaryKeyName: String, dataKeyName: String,
-                      config: Configuration = null,
-                      writeKeyToFile: Boolean = false): Option[String] = {
+                      config: Configuration = null): Option[String] = {
     Log4Error.invalidInputError(primaryKeyName != null && primaryKeyName != "",
       "primaryKeyName should be specified")
-    Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
-      "dataKeyName should be specified")
     logger.info("BigDLKMS retrieveDataKey API create a data key at KMS server" +
                 " and do not save locally.")
     val action = BIGDLKMS_ACTION.CREATE_DATA_KEY
