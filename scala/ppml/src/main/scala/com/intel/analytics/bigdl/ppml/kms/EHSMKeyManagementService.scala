@@ -97,7 +97,8 @@ class EHSMKeyManagementService(
   }
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
-                      config: Configuration = null): Unit = {
+                      config: Configuration = null,
+                      writeKeyToFile: Boolean = true): Option[String] = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
@@ -117,19 +118,30 @@ class EHSMKeyManagementService(
       val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT)
     }
-    keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+    if (writeKeyToFile){
+      keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+      Some(null)
+    } else {
+      Some(dataKeyCiphertext)
+    }
   }
 
 
   override def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
-                                        config: Configuration = null): String = {
+                                        config: Configuration = null,
+                                        encryptedDataKeyString: String): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
       "dataKeyPath should be specified")
     val action: String = EHSM_CONVENTION.ACTION_DECRYPT
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
-    val encryptedDataKey: String = keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+    val encryptedDataKey: String = encryptedDataKeyString match {
+      case "" =>
+        keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+      case _ =>
+        encryptedDataKeyString
+    }
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)

@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.BigDLSpecHelper
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, ENCRYPT, DECRYPT, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.ppml.PPMLContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 import java.io.FileWriter
 import scala.util.Random
@@ -42,10 +44,10 @@ class DataFrameHelper extends BigDLSpecHelper {
     (appid, apikey)
   }
 
-  def generateCsvData(): (String, String, String, String) = {
+  def generateCsvData(): (String, String, String) = {
     Random.setSeed(1)
     val fileName = dir + "/people.csv"
-    val encryptFileName = dir + "/en_people.csv" + CryptoCodec.getDefaultExtension()
+    val encryptFileName = dir + "/people.encrypted"
     val fw = new FileWriter(fileName)
     val data = new StringBuilder()
     data.append(header)
@@ -56,13 +58,22 @@ class DataFrameHelper extends BigDLSpecHelper {
     fw.close()
 
     simpleKms.retrievePrimaryKey(primaryKeyPath)
-    simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
     logger.info("write primaryKey to " + primaryKeyPath)
-    val crypto = new BigDLEncrypt()
-    val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
-    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    crypto.doFinal(fileName, encryptFileName)
-    (fileName, encryptFileName, data.toString(), dataKeyPlaintext)
+
+    val ppmlArgs = Map(
+      "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
+      "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
+      "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
+      "spark.bigdl.primaryKey.defaultKey.material" -> primaryKeyPath
+    )
+    val sparkConf = new SparkConf().setMaster("local[4]")
+    val sc = PPMLContext.initPPMLContext(sparkConf, "SimpleQuery", ppmlArgs)
+    
+    logger.info("read source csv in to PPMLContext sc")
+    val df = sc.read(PLAIN_TEXT).csv(fileName)
+    logger.info("encrypt and write csv in to PPMLContext sc")
+    sc.write(df, AES_CBC_PKCS5PADDING).mode("overwrite").csv(encryptFileName)
+    (fileName, encryptFileName, data.toString())
   }
 
 }

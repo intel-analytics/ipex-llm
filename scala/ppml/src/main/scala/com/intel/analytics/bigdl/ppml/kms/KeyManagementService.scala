@@ -28,7 +28,10 @@ object KMS_CONVENTION {
 
 trait KeyManagementService extends Supportive {
   def retrievePrimaryKey(primaryKeySavePath: String, config: Configuration = null)
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String, config: Configuration = null)
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
+                      config: Configuration = null,
+                      writeKeyToFile: Boolean = true): Option[String]
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
-                               config: Configuration = null): String
+                               config: Configuration = null,
+                               encryptedDataKeyString: String = ""): String
 }

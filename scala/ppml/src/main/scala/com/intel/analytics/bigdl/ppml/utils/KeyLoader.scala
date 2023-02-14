@@ -33,9 +33,10 @@ case class KeyLoader(val fromKms: Boolean,
                      val kms: KeyManagementService = null,
                      val primaryKeyPlainText: String = "") extends Serializable {
     protected val keySize = 32
-    val keyReaderWriter = new KeyReaderWriter
+    protected val keyReaderWriter = new KeyReaderWriter
     val META_FILE_NAME = ".meta"
-    val CRYPTO_MODE = AES_CBC_PKCS5PADDING
+    protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
+    protected var encryptedDataKey: String = ""
     
     // retrieve an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
@@ -51,11 +52,11 @@ case class KeyLoader(val fromKms: Boolean,
     }
 
     // generate a data key and write it to meta as well
-    def generateDataKeyPlainText(fileDirPath: String): String = {
-        val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+    def generateDataKeyPlainText(): String = {
         if(fromKms) {
-            kms.retrieveDataKey(primaryKeyMaterial, metaPath)
-            kms.retrieveDataKeyPlainText(primaryKeyMaterial, metaPath)
+            encryptedDataKey = kms.retrieveDataKey(
+              primaryKeyMaterial, "", null, false).get
+            kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
             val generator = KeyGenerator.getInstance("AES")
             generator.init(keySize, SecureRandom.getInstanceStrong())
@@ -63,12 +64,17 @@ case class KeyLoader(val fromKms: Boolean,
             val dataKeyPlainText = Base64.getEncoder().encodeToString(key.getEncoded())
             val encrypt = new BigDLEncrypt()
             encrypt.init(CRYPTO_MODE, ENCRYPT, primaryKeyPlainText)
-            val encryptedDataKey = new String(
+            encryptedDataKey = new String(
               encrypt.doFinal(dataKeyPlainText.getBytes)._1
             )
-            keyReaderWriter.writeKeyToFile(metaPath, encryptedDataKey)
             dataKeyPlainText
         }
+    }
+
+    // write encryptedDataKey to meta after spark df has been written
+    def writeEncryptedDataKey(fileDirPath: String): Unit = {
+      val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+      keyReaderWriter.writeKeyToFile(metaPath, encryptedDataKey)
     }
 }
 

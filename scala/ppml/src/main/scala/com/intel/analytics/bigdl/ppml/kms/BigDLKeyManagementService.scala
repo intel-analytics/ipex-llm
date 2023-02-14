@@ -98,7 +98,8 @@ class BigDLKeyManagementService(
   }
 
   def retrieveDataKey(primaryKeyName: String, dataKeyName: String,
-                      config: Configuration = null): Unit = {
+                      config: Configuration = null,
+                      writeKeyToFile: Boolean = false): Option[String] = {
     Log4Error.invalidInputError(primaryKeyName != null && primaryKeyName != "",
       "primaryKeyName should be specified")
     Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
@@ -111,12 +112,13 @@ class BigDLKeyManagementService(
     val response = timing("BKeyManagementService request for creating dataKey") {
       sendRequest(BIGDLKMS_ACTION.POST_REQUEST, url)
     }
-    logger.info(response)
+    Some(dataKeyName)
   }
 
 
   def retrieveDataKeyPlainText(primaryKeyName: String, dataKeyName: String,
-                                        config: Configuration = null): String = {
+                               config: Configuration = null,
+                               encryptedDataKeyString: String = ""): String = {
     Log4Error.invalidInputError(primaryKeyName != null && primaryKeyName != "",
       "primaryKeyName should be specified")
     Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",

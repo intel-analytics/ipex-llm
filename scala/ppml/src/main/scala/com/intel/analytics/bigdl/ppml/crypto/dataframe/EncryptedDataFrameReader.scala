@@ -23,6 +23,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.utils.KeyLoaderManagement
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  *
@@ -46,10 +47,16 @@ class EncryptedDataFrameReader(
   def setCryptoCodecContext(path: String): Unit = {
     sparkSession.sparkContext.hadoopConfiguration
       .set("bigdl.crypto.mode", encryptMode.encryptionAlgorithm)
-    val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
-                                              .retrieveDataKeyPlainText(path)
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.dataKey.plainText",
-                                                      dataKeyPlainText)
+    encryptMode match {
+      case PLAIN_TEXT =>
+      case AES_CBC_PKCS5PADDING =>
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                  .retrieveDataKeyPlainText(path)
+        sparkSession.sparkContext.hadoopConfiguration.set("bigdl.dataKey.plainText",
+                                                          dataKeyPlainText)
+      case _ =>
+        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
+    }
   }
 
   def csv(path: String): DataFrame = {

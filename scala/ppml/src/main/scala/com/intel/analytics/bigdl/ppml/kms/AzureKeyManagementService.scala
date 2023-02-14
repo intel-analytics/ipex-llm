@@ -64,7 +64,8 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
   }
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
-                      config: Configuration = null): Unit = {
+                      config: Configuration = null,
+                      writeKeyToFile: Boolean = true): Option[String] = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
@@ -79,18 +80,29 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     // wrap data key content.
     val wrapResult: WrapResult = cryptoClient.wrapKey(KeyWrapAlgorithm.RSA_OAEP, aesKey)
     val dataKeyCiphertext = Base64.getEncoder.encodeToString(wrapResult.getEncryptedKey())
-    keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+    if (writeKeyToFile) {
+      keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+      Some(null)
+    } else {
+      Some(dataKeyCiphertext)
+    }
   }
 
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
-                               config: Configuration = null): String = {
+                               config: Configuration = null,
+                               encryptedDataKeyString: String = ""): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
       "dataKeyPath should be specified")
     val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     val cryptoClient = getCryptoClient(primaryKeyId)
-    val dataKeyCiphertext: String = keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+    val dataKeyCiphertext: String = encryptedDataKeyString match {
+      case "" =>
+        keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+      case _ =>
+        encryptedDataKeyString
+    }
     val unwrapResult = cryptoClient.unwrapKey(KeyWrapAlgorithm.RSA_OAEP,
       Base64.getDecoder().decode(dataKeyCiphertext))
     val dataKey = unwrapResult.getKey()

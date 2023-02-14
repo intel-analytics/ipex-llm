@@ -27,7 +27,7 @@ import java.io.{File, FileWriter}
 class EncryptDataFrameHadoopSpec extends DataFrameHelper {
   LoggerFilter.redirectSparkInfoLogs()
 
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
+  val (plainFileName, encryptFileName, data) = generateCsvData()
 
 
   val ppmlArgs = Map(

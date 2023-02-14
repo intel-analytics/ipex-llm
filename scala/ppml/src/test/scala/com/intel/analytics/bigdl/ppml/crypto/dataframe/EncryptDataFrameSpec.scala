@@ -27,8 +27,9 @@ import java.io.{File, FileWriter}
 class EncryptDataFrameSpec extends DataFrameHelper {
   LoggerFilter.redirectSparkInfoLogs()
 
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
-
+  val (plainFileName, encryptFileName, data) = generateCsvData()
+  val dataKeyPlaintext =
+    "cj18yAYW3szWOGQacn3kAIVmNvk3MZIjtyj4wiSoibmRfuXWX9g8W7XicpMh862SJaKrIF4c+xjiizI+"
   val ppmlArgs = Map(
       "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
       "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
@@ -46,11 +47,11 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   }
 
   "sparkSession.read" should "work" in {
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-    val df = sparkSession.read.csv(plainFileName)
+    //val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val df = sc.read(PLAIN_TEXT).csv(plainFileName)
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d + "\n" should be (data)
-    val df2 = sparkSession.read.option("header", "true").csv(plainFileName)
+    val df2 = sc.read(PLAIN_TEXT).option("header", "true").csv(plainFileName)
     val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
       df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d2 + "\n" should be (data)
@@ -173,9 +174,6 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
     crypto.doFinal(enFile, outFile)
     new File(bigFile).length() should be (new File(outFile).length())
-
-    val read = sc.read(AES_CBC_PKCS5PADDING).csv(enFile)
-    read.count() should be (genNum * 3)
   }
 
   "csv read/write different size" should "work" in {

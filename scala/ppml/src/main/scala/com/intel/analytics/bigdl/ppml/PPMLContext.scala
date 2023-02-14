@@ -270,12 +270,8 @@ object PPMLContext{
   }
 
   def loadKmsOfPrimaryKey(conf: SparkConf, primaryKeyName: String): KeyManagementService = {
-    Log4Error.invalidInputError(
-      conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.kms.type"),
-      s"spark.bigdl.primaryKey.$primaryKeyName.kms.type not found."
-    )
     val kmsType = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.type",
-                           defaultValue = KMS_CONVENTION.MODE_SIMPLE_KMS)
+      defaultValue = KMS_CONVENTION.MODE_SIMPLE_KMS)
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
         val ip = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.ip")

@@ -49,7 +49,8 @@ class SimpleKeyManagementService protected(
   }
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String,
-                      config: Configuration = null): Unit = {
+                      config: Configuration = null,
+                      writeKeyToFile: Boolean = true): Option[String] = {
     timing("SimpleKeyManagementService retrieveDataKey") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _apiKey, "appid and apikey do not match!")
@@ -67,12 +68,18 @@ class SimpleKeyManagementService protected(
         dataKeyCiphertext += '0' + ((primaryKeyPlaintext(i) - '0') +
           (dataKeyPlaintext(i) - '0')) % 10
       }
-      keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+      if (writeKeyToFile) {
+        keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
+        Some(null)
+      } else {
+        Some(dataKeyCiphertext)
+      }
     }
   }
 
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String,
-                               config: Configuration = null): String = {
+                               config: Configuration = null,
+                               encryptedDataKeyString: String = ""): String = {
     timing("SimpleKeyManagementService retrieveDataKeyPlaintext") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _apiKey, "appid and apikey do not match!")
@@ -83,7 +90,12 @@ class SimpleKeyManagementService protected(
       val primaryKeyCiphertext = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
       Log4Error.invalidInputError(primaryKeyCiphertext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      val dataKeyCiphertext = keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+      val dataKeyCiphertext = encryptedDataKeyString match {
+        case "" =>
+          keyReaderWriter.readKeyFromFile(dataKeyPath, config)
+        case _ =>
+          encryptedDataKeyString
+      }
       var dataKeyPlaintext = ""
       for(i <- 0 until 16) {
         dataKeyPlaintext += '0' + ((dataKeyCiphertext(i) - '0') -

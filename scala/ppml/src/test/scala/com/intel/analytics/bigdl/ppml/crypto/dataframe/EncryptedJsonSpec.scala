@@ -22,7 +22,7 @@ import org.apache.spark.SparkConf
 import java.io.File
 
 class EncryptedJsonSpec extends DataFrameHelper {
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
+  val (plainFileName, encryptFileName, data) = generateCsvData()
 
   val ppmlArgs = Map(
       "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",

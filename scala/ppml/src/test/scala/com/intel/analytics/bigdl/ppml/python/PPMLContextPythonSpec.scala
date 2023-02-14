@@ -27,13 +27,12 @@ import scala.collection.JavaConverters._
 
 class PPMLContextPythonSpec extends DataFrameHelper{
   override val repeatedNum = 100
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
+  val (plainFileName, encryptFileName, data) = generateCsvData()
   val ppmlArgs: Map[String, String] = Map(
-    "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-    "spark.bigdl.kms.simple.id" -> appid,
-    "spark.bigdl.kms.simple.key" -> apikey,
-    "spark.bigdl.kms.key.primary" -> primaryKeyPath,
-    "spark.bigdl.kms.key.data" -> dataKeyPath
+    "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
+    "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
+    "spark.bigdl.primaryKey.defaultKey.material" -> primaryKeyPath
   )
   val conf: SparkConf = new SparkConf().setMaster("local[4]")
   val ppmlContextPython: PPMLContextPython[Float] = PPMLContextPython.ofFloat

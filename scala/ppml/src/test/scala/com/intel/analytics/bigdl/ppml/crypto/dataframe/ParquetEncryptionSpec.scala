@@ -29,7 +29,7 @@ import java.util.Base64
  * A test suite that tests parquet modular encryption usage.
  */
 class ParquetEncryptionSpec extends DataFrameHelper {
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
+  val (plainFileName, encryptFileName, data) = generateCsvData()
 
   val ppmlArgs = Map(
       "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,

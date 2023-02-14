@@ -64,40 +64,35 @@ class EncryptedDataFrameWriter(
     this
   }
 
-  def setCryptoCodecContext(path: String): Unit = {
+  def setCryptoCodecContext(): Unit = {
     sparkSession.sparkContext.hadoopConfiguration
       .set("bigdl.crypto.mode", encryptMode.encryptionAlgorithm)
-    val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
-                                              .generateDataKeyPlainText(path)
-    sparkSession.sparkContext.hadoopConfiguration
-      .set("bigdl.dataKey.plainText", dataKeyPlainText)
-    sparkSession.sparkContext.hadoopConfiguration
-      .set("hadoop.io.compression.codecs", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-    option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+    encryptMode match {
+      case PLAIN_TEXT =>
+      case AES_CBC_PKCS5PADDING =>
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                  .generateDataKeyPlainText
+        sparkSession.sparkContext.hadoopConfiguration
+                    .set("bigdl.dataKey.plainText", dataKeyPlainText)
+        sparkSession.sparkContext.hadoopConfiguration
+                    .set("hadoop.io.compression.codecs",
+                         "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+        option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+      case _ =>
+        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
+    }
   }
 
   def csv(path: String): Unit = {
-    encryptMode match {
-      case PLAIN_TEXT =>
-        df.write.options(extraOptions).mode(mode).csv(path)
-      case AES_CBC_PKCS5PADDING =>
-        setCryptoCodecContext(path)
-        df.write.options(extraOptions).mode(mode).csv(path)
-      case _ =>
-        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
-    }
+    setCryptoCodecContext()
+    df.write.options(extraOptions).mode(mode).csv(path)
+    keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }
 
   def json(path: String): Unit = {
-    encryptMode match {
-      case PLAIN_TEXT =>
-        df.write.options(extraOptions).mode(mode).json(path)
-      case AES_CBC_PKCS5PADDING =>
-        setCryptoCodecContext(path)
-        df.write.options(extraOptions).mode(mode).json(path)
-      case _ =>
-        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
-    }
+    setCryptoCodecContext()
+    df.write.options(extraOptions).mode(mode).json(path)
+    keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }
 
   def parquet(path: String): Unit = {
@@ -107,13 +102,14 @@ class EncryptedDataFrameWriter(
         df.write.options(extraOptions).mode(mode).parquet(path)
       case AES_GCM_CTR_V1 | AES_GCM_V1 =>
         val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
-                                                  .generateDataKeyPlainText(path)
+                                                  .generateDataKeyPlainText
         EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
         df.write
           .option("parquet.encryption.column.keys", "key1: " + header)
           .option("parquet.encryption.footer.key", "footerKey")
           .option("parquet.encryption.algorithm", encryptMode.encryptionAlgorithm)
           .options(extraOptions).mode(mode).parquet(path)
+        keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
