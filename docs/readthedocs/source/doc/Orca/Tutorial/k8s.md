@@ -350,8 +350,7 @@ Some runtime configurations for Spark are as follows:
 * `--master`: a URL format that specifies the Spark master: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>.
 * `--name`: the name of the Spark application.
 * `--conf spark.kubernetes.container.image`: the name of the BigDL K8s Docker image.
-* `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
-* `--conf spark.executor.instances`: the number of executors.
+* `--num-executors`: the number of executors.
 * `--executor-cores`: the number of cores for each executor.
 * `--total-executor-cores`: the total number of executor cores.
 * `--executor-memory`: the memory for each executor.
@@ -375,7 +374,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-client-tutorial \
     --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-    --conf spark.executor.instances=2 \
+    --num-executors 2 \
     --executor-cores 4 \
     --total-executor-cores 8 \
     --executor-memory 2g \
@@ -447,6 +446,7 @@ ${SPARK_HOME}/bin/spark-submit \
 
 In the `spark-submit` script:
 * `deploy-mode`: set it to `cluster` when running programs on k8s-cluster mode.
+* `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
 * `spark.pyspark.python`: sset the Python location in conda archive as each executor's Python environment.
 * `spark.executorEnv.PYTHONHOME`: the search path of Python libraries on executor pods.
 * `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
