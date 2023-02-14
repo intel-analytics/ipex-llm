@@ -31,6 +31,9 @@ jobs:
         echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
         echo "IMAGE=${{ github.event.inputs.snyk_image }}"
         echo "SNYK_ORG=${{ github.event.inputs.snyk_org }}"
+    - name: "Pull docker image"
+      run: |
+        docker pull $IMAGE
     - name: "Auth Synk"
       run: |
         snyk auth -d $SNYK_APITOKEN
