@@ -65,6 +65,8 @@ class EncryptedDataFrameWriter(
   }
 
   def setCryptoCodecContext(path: String): Unit = {
+    sparkSession.sparkContext.hadoopConfiguration
+      .set("bigdl.crypto.mode", encryptMode.encryptionAlgorithm)
     val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
                                               .generateDataKeyPlainText(path)
     sparkSession.sparkContext.hadoopConfiguration

@@ -33,7 +33,7 @@ class EncryptDataFrameSpec extends DataFrameHelper {
       "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
       "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
       "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
-      "spark.bigdl.primaryKey.defaultKey.material" -> (s"file://" + primaryKeyPath),
+      "spark.bigdl.primaryKey.defaultKey.material" -> primaryKeyPath
   )
   val sparkConf = new SparkConf().setMaster("local[4]")
   val sc = PPMLContext.initPPMLContext(sparkConf, "SimpleQuery", ppmlArgs)
