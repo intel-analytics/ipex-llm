@@ -213,28 +213,6 @@ object PPMLContext{
   }
 
   /**
-   * init ppml context with an existed SparkSession
-   * @param sparkSession a SparkSession
-   * @return a PPMLContext
-   */
-  def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
-    val conf = sparkSession.sparkContext.getConf
-    Log4Error.invalidInputError(conf.contains("spark.hadoop.io.compression.codecs"),
-        "spark.hadoop.io.compression.codecs not found!" +
-        "If you want to init PPMLContext with an existing SparkSession, " +
-        "must set the property before creating SparkSession!")
-    Log4Error.invalidInputError(
-      conf.get("spark.hadoop.io.compression.codecs")
-      == "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
-      "If you want to init PPMLContext with an existing SparkSession, " +
-      "spark.hadoop.io.compression.codecs property must be set to" +
-      "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" +
-      " before creating SparkSession!")
-    val ppmlSc = loadPPMLContext(sparkSession)
-    ppmlSc
-  }
-
-  /**
    * init ppml context with app name, SparkConf
    * @param sparkConf a SparkConf, ppml arguments are passed by this sparkconf.
    * @param appName the name of this Application
