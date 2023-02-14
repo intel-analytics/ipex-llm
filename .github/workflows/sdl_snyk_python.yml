@@ -1,4 +1,4 @@
-name: Scanner-snyk-docker
+name: Scanner-snyk-python
 on:
   pull_request:
     branchs: [ main ]
