@@ -47,7 +47,7 @@ From 1.2.3.4 icmp_seq=3 Destination Host Unreachable
 Then, modify parameters in `install-bigdl-pccs.sh` as following, and `pccsIP` should be the IP address you have determined in step 2.1.
 ```bash
 # reset of other parameters in bigdl-pccs.yaml is optional, please check according to your environment
-pccsIP: your_pccs_ip_to_use_as                    --->   <an_unused_ip_address_in_your_subnetwork_to_assign_to_pccs>
+pccsIP: your_pccs_ip_to_use_as                    
 user_password: a_password_for_pccs_user
 admin_password: a_password_for_pccs_admin
 # replace the below parameters according to your environment
@@ -57,7 +57,7 @@ cityName: your_city_name
 organizaitonName: your_organizaition_name
 commonName: server_fqdn_or_your_name
 emailAddress: your_email_address
-serverPassword: your_server_password_to_use 
+httpsCertPassword: your_https_cert_password_to_use 
 ```
 Then, deploy BigDL-PCCS on kubernetes:
 
