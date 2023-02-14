@@ -1,7 +1,9 @@
 name: Scanner-snyk-python
 on:
-  pull_request:
-    branchs: [ main ]
+  push:
+    branches: [ "main" ]
+# pull_request:
+#  branchs: [ main ]
   workflow_call:
     inputs:
       snyk_apitoken:
