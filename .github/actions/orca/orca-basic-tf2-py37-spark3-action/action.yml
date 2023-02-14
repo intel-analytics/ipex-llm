@@ -19,8 +19,8 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         pip list
-        chmod a+x python/orca/dev/test/run-pytests-tf2.sh
-        python/orca/dev/test/run-pytests-tf2.sh
+        chmod a+x python/orca/dev/test/run-pytests-basic-tf2.sh
+        python/orca/dev/test/run-pytests-basic-tf2.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}

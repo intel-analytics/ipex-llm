@@ -18,8 +18,8 @@ runs:
      
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip list
-        chmod a+x python/orca/dev/test/run-pytests-pytorch.sh
-        python/orca/dev/test/run-pytests-pytorch.sh
+        chmod a+x python/orca/dev/test/run-pytests-basic-pytorch.sh
+        python/orca/dev/test/run-pytests-basic-pytorch.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
