@@ -127,13 +127,13 @@ object RegisterMrEnclave {
           // System.out.println(response)
           new JSONObject(response)
         }
-        if (postResult == null || !postResult.has("policy_id") ||
-          postResult.get("policy_id") == null || postResult.get("policy_id") == "") {
+        if (postResult == null || !postResult.has("policyID") ||
+          postResult.get("policyID") == null || postResult.get("policyID") == "") {
           println("register error")
           return
         }
 
-        println("policy_id " + postResult.getString("policy_id"))
+        println("policyID " + postResult.getString("policyID"))
     }
   }
 

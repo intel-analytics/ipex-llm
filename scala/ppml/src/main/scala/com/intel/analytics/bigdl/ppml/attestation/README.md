@@ -302,14 +302,14 @@ GET <bigdl_remote_attestation_address>/enroll
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| app_id | String | HfpPKHdF... | ID which represents a certain application  |
-| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+| appID | String | HfpPKHdF... | ID which represents a certain application  |
+| apiKey | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
 
 * Example Response:
 ```json
 {
-    "app_id": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
-    "api_key": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL"
+    "appID": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "apiKey": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL"
 }
 ```
 
@@ -327,30 +327,31 @@ POST <bigdl_remote_attestation_address>/registerPolicy
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| app_id | String | HfpPKHdF... | ID which represents a certain application  |
-| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
-| mr_enclave | String | e38104fe6938... | (**For SGX**) The hash over the enclave pages loaded into the SGX protected memory |
-| mr_signer | String | d412a4f07ef8... | (**For SGX**) The hash of the public portion of the key used to sign the enclave |
+| appID | String | HfpPKHdF... | ID which represents a certain application  |
+| apiKey | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+| policyType | String | SGXMREnclavePolicy | Type of policy the service will check, currently support `SGXMREnclavePolicy` |
+| mrEnclave | String | e38104fe6938... | (**For SGX**) The hash over the enclave pages loaded into the SGX protected memory |
+| mrSigner | String | d412a4f07ef8... | (**For SGX**) The hash of the public portion of the key used to sign the enclave |
 
 * Example Request:
 ```json
 {
-    "app_id": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
-    "api_key": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
-    "mr_enclave": "2b0376b7ce6e2ece6279b2b49157841c...",
-    "mr_signer": "3ab0ac54ff6dc8d717f2f18a82d5c88b..."
+    "appID": "e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "apiKey": "CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
+    "policyType": "SGXMREnclavePolicy",
+    "mrEnclave": "2b0376b7ce6e2ece6279b2b49157841c..."
 }
 ```
 * Response Data:
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| policy_id | string | 49ac44ff-01f0... | Generated policyID |
+| policyID | string | 49ac44ff-01f0... | Generated policyID |
 
 * Example Response:
 ```json
 {
-    "policy_id": "49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
+    "policyID": "49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
 }
 ```
 
@@ -366,18 +367,18 @@ POST <bigdl_remote_attestation_address>/verifyQuote
 
 | Name | Type | Reference Value | Description |
 |:-----------|:-----------|:-----------|:-----------|
-| app_id | String | HfpPKHdF... | ID which represents a certain application  |
-| api_key | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
+| appID | String | HfpPKHdF... | ID which represents a certain application  |
+| apiKey | String | EnJnmF31... | The application's access key to the BigDL Remote Attestation Service |
 | quote | String | AwACAAAAAAAJAA0Ak5py... | A valid DCAP quote in BASE64 |
-| policy_id | string | LdPXuPs8fI5Q... | (**Optional**) The policy which the given quote should satisfy |
+| policyID | string | LdPXuPs8fI5Q... | (**Optional**) The policy which the given quote should satisfy |
 
 * Example Request:
 ```json
 {
     "quote": "AwACAAAAAAAJAA0Ak5pyM...",
-    "app_id":"e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
-    "api_key":"CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
-    "policy_id":"49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
+    "appID":"e95dfcd1-d98a-4b33-80ab-5249315ab5d4",
+    "apiKey":"CHUIYoW0HF8b6Ig6q7MiOHHn2KGGQ3HL",
+    "policyID":"49ac44ff-01f0-4f59-8d7e-fcffb78f0f4c"
 }
 ```
 * Response Data:

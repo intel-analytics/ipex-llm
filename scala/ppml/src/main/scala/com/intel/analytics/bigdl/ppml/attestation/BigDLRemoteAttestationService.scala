@@ -94,7 +94,7 @@ object BigDLRemoteAttestationService {
     } else {
       val policyID = UUID.randomUUID.toString
       policyMap += (policyID -> curPolicy)
-      val res = AttestationUtil.mapToString(Map("policy_id" -> policyID))
+      val res = AttestationUtil.mapToString(Map("policyID" -> policyID))
       complete(200, res)
     }
   }
@@ -205,14 +205,14 @@ object BigDLRemoteAttestationService {
             "POST <bigdl_remote_attestation_address>/registerPolicy \n \n" +
             "Your post data should be json format, which contains appID, apiKey and the \n" +
             "MREnclave and MRSigner to be regisrtered, e.g.: \n" +
-            "{\"app_id\": \"your_app_id\",\"api_key\": \"your_api_key\"," +
-            "\"mr_enclave\": \"2b0376b7...\",\"mr_signer\": \"3ab0ac54...\"} \n \n" +
+            "{\"appID\": \"your_app_id\",\"apiKey\": \"your_api_key\"," +
+            "\"mrEnclave\": \"2b0376b7...\",\"mrSigner\": \"3ab0ac54...\"} \n \n" +
             "verify your quote like: " +
             "POST <bigdl_remote_attestation_address>/verifyQuote \n" +
             "Your post data should be json format, which contains appID, apiKey and your \n" +
             "BASE64 formatted quote to be verified, and optionally a policy to check, e.g.: \n" +
-            "{\"app_id\": \"your_app_id\",\"api_key\": \"your_api_key\"," +
-            "\"quote\": \"AwACAAAAAAAJ...\",\"policy_id\":\"a_policy_id\"} \n \n"
+            "{\"appID\": \"your_app_id\",\"apiKey\": \"your_api_key\"," +
+            "\"quote\": \"AwACAAAAAAAJ...\",\"policyID\":\"a_policy_id\"} \n \n"
             complete(res)
           } ~
           path("enroll") {
