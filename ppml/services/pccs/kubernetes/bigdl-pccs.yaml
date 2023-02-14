@@ -57,9 +57,9 @@ spec:
         - name: HTTPS_CERT_PASSWORD
           value: $httpsCertPassword
         - name: USER_PASSWORD
-          value: $user_password
+          value: $userPassword
         - name: ADMIN_PASSWORD
-          value: $admin_password
+          value: $adminPassword
         ports:
         - containerPort: 18081
           name: pccs-port
