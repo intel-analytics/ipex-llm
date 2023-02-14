@@ -378,18 +378,17 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-client-tutorial \
     --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
     --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
     --driver-cores ${RUNTIME_DRIVER_CORES} \
     --driver-memory ${RUNTIME_DRIVER_MEMORY} \
     --executor-cores ${RUNTIME_EXECUTOR_CORES} \
     --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
     --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
+    --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=./environment/bin/python \
-    --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/train.py,/path/to/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
