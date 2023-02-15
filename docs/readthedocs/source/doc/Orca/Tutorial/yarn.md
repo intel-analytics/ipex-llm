@@ -43,7 +43,27 @@ The difference between yarn-client mode and yarn-cluster mode is where you run y
 
 For yarn-client, the Spark driver runs in the client process, and the application master is only used for requesting resources from YARN, while for yarn-cluster the Spark driver runs inside an application master process which is managed by YARN in the cluster.
 
-For more details, please see [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
+Please see more details in [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
+
+For **yarn-client** mode, you can directly find the driver logs in the console. 
+
+For **yarn-cluster** mode, an `application_time_id` will be returned (`application_1668477395550_1045` in the following log) when the application master process is completed.
+
+```bash
+23/02/15 15:30:26 INFO yarn.Client: Application report for application_1668477395550_1045 (state: FINISHED)
+23/02/15 15:30:26 INFO yarn.Client:
+         client token: N/A
+         diagnostics: N/A
+         ApplicationMaster host: ...
+         ApplicationMaster RPC port: 46652
+         queue: ...
+         start time: 1676446090408
+         final status: SUCCEEDED
+         tracking URL: http://.../application_1668477395550_1045/
+         user: ...
+```
+
+Visit the tracking URL and then click `logs` in the table `ApplicationMaster` to see the driver logs.
 
 ### 1.3 Distributed storage on YARN
 __Note__:
@@ -255,7 +275,7 @@ bigdl-submit \
     --driver-memory 2g \
     --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
-    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
@@ -345,7 +365,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 2g \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
