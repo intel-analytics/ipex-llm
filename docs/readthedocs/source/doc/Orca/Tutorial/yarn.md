@@ -63,7 +63,7 @@ For **yarn-cluster** mode, an `application_time_id` will be returned (`applicati
          user: ...
 ```
 
-Visit the tracking URL and then click `logs` in the table `ApplicationMaster`, where you can see the train results at the end of `stdout` log.
+Visit the tracking URL and then click `logs` in the table `ApplicationMaster` to see the driver logs.
 
 ### 1.3 Distributed storage on YARN
 __Note__:
