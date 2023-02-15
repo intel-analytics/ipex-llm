@@ -291,12 +291,6 @@ class TestOnnx(TestCase):
         accmodel(x3)
 
     def test_onnx_inc_default_values(self):
-        from bigdl.nano.utils.common import compare_version
-        import operator
-        if not compare_version("neural_compressor", operator.ge, "2.0"):
-            # TODO debug this case
-            return
-
         # default bool values
         class Net(nn.Module):
             def __init__(self):
