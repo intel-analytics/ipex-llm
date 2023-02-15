@@ -334,11 +334,11 @@ If you prefer to use `spark-submit`, please follow the steps below to prepare th
     sc = init_orca_context(cluster_mode="spark-submit")
     ```
 
-2. Download the requirement file from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
+2. Download the requirement file(s) from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
     ```bash
     pip install -r /path/to/requirements.txt
     ```
-    Note that you are recommended **NOT** to pip install BigDL Orca in the conda environment if you use spark-submit to avoid possible conflicts.
+    Note that you are recommended **NOT** to install BigDL Orca with pip install command in the conda environment if you use spark-submit to avoid possible conflicts.
 
 3. Pack the current activate conda environment to an archive before submitting the example:
     ```bash
