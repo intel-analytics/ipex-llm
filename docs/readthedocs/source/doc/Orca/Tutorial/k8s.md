@@ -432,7 +432,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --archives file:///bigdl/nfsdata/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=environment/bin/python \
     --conf spark.pyspark.python=environment/bin/python \
-    --conf spark.executorEnv.PYTHONHOME=environment \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
