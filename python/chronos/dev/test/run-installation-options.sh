@@ -43,7 +43,7 @@ python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/pytorch \
                                     test/bigdl/chronos/simulator
        -k "not test_tcn_keras_forecaster_quantization"
-python -m pytest -s test/bigdl/chronos/forecaster/tf/\
+python -m pytest -s -m "${OPTIONS}" test/bigdl/chronos/forecaster/tf/\
 test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
 
 exit_status_0=$?
