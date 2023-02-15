@@ -35,10 +35,10 @@ object PPMLContextPython {
 class PPMLContextPython[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def createPPMLContext(sparkConf: SparkConf): PPMLContext = {
-    logger.debug("createPPMLContext with SparkConf" + "confs:\n" +
-      sparkConf.getAll.mkString("Array(", ", ", ")"))
-    PPMLContext.initPPMLContext(sparkConf)
+  def createPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    logger.debug("createPPMLContext with SparkSession" + "confs:\n" +
+      sparkSession.sparkContext.getConf.getAll.mkString("Array(", ", ", ")"))
+    PPMLContext.initPPMLContext(sparkSession)
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String,

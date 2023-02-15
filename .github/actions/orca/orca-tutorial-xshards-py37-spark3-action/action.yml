@@ -1,5 +1,5 @@
-name: 'Run Orca Tutorial Xshards'
-description: 'Run Orca Tutorial Xshards'
+name: 'Run Orca Tutorial Xshards Py37 Spark3'
+description: 'Run Orca Tutorial Xshards Py37 Spark3'
 runs:
   using: "composite"
   steps:

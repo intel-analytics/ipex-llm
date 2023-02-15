@@ -85,7 +85,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
         {  # type: ignore
             "original": TFAccelerationOption(),
-            "int8": TFAccelerationOption(inc=True),
+            "static_int8": TFAccelerationOption(inc=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
@@ -247,15 +247,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    if method == "original" and thread_num is not None:
+                    if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
                         # for original keras model, as tf.config.threading can't set thread
                         # during running, so here we use subprocess to calculate throughput
                         params = {"iterrun": latency_sample_num,
                                   "func": func_test,
-                                  "model": acce_model,
-                                  "input_sample": input_sample}
+                                  "model": model,  # save original model
+                                  "input_sample": input_sample,
+                                  "method": method}
                         with tempfile.TemporaryDirectory() as temp_dir:
+                            if method != "original":
+                                # save accelerated model
+                                InferenceOptimizer.save(acce_model, temp_dir)
                             _filename = os.path.join(temp_dir, "params")
                             cloudpickle.dump(params, open(_filename, "wb"))
                             my_env = os.environ.copy()
@@ -621,7 +625,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataset = calib_dataset.batch(batch)
 
             saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set:
+            if not model.built and not saved_model_input_spec_set or \
+                    not hasattr(model, 'output_shape'):
                 invalidInputError(input_spec is not None,
                                   "`input_spec` cannot be None when passing unbuilt model.")
                 # model cannot be saved either because the input shape is not available
@@ -768,12 +773,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Model, device=None):
+    def load(path, model: Optional[Model] = None, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load tensorflow model.
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or

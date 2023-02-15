@@ -20,21 +20,44 @@ import torch
 
 def generate_channels_last_available(inputs):
     '''
-    This function will generate a list of true and false to decide if the
-    elements of input can be converted to channels_last
+    This function will generate a list of string to decide if the
+    elements of input can be converted to
+
+    channel_last: "channel_last"
+    channel_last_3d: "channel_last_3d"
+    no change: "original"
     '''
     # try channels_last available
-    if isinstance(inputs, torch.Tensor):
-        inputs = [inputs]
     if inputs is not None:  # to avoid the situation of inputs == None
-        channels_last_available = [True] * len(inputs)
+        if isinstance(inputs, torch.Tensor):
+            inputs = tuple([inputs])  # make it an tuple for later process
+        channels_last_available = ["original"] * len(inputs)
         for idx, input in enumerate(inputs):
             try:
                 input.to(memory_format=torch.channels_last)
+                channels_last_available[idx] = "channels_last"
             except Exception as _e:
-                channels_last_available[idx] = False
-            else:
-                channels_last_available[idx] = True
+                try:
+                    input.to(memory_format=torch.channels_last_3d)
+                    channels_last_available[idx] = "channels_last_3d"
+                except Exception as _e:
+                    pass
     else:
         channels_last_available = []
     return channels_last_available
+
+
+def apply_proper_channels_last(flag, input_item):
+    '''
+    This function will apply proper channes_last to
+    input item. flag has 3 possible values:
+
+    channel_last: "channel_last"
+    channel_last_3d: "channel_last_3d"
+    no change: "original"
+    '''
+    if flag == "channels_last":
+        return input_item.to(memory_format=torch.channels_last)
+    if flag == "channels_last_3d":
+        return input_item.to(memory_format=torch.channels_last_3d)
+    return input_item

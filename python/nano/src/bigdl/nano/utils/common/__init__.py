@@ -43,6 +43,8 @@ from .inspect import get_default_args
 
 from .decorator import deprecated
 
+from .affinity_core import get_affinity_core_num
+
 from .env import _env_variable_is_set
 from .env import _find_library
 

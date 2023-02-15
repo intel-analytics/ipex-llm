@@ -1,12 +1,12 @@
-name: Scanner-Snyk 
+name: Scanner-Snyk-scala
 on:
   #pull_request:
   #branchs: [ main ]
 
   workflow_dispatch:
     inputs:
-      scan_type:
-        description: 'Scan type for Snyk'
+      snyk_apitoken:
+        description: 'Snyk token'
         required: false
         type: string        
         default: 'monitor'
@@ -15,20 +15,18 @@ on:
         required: true
         type: string
         default: 'iags_mlp'
-    secrets:
-      SNYK_API_TOKEN:
-        description: 'Enter Snyk Api Token:'
-        required: true
 
 jobs:
-  snyk-scan:
+  snyk-scala:
     runs-on: [self-hosted, SDL]
     steps:
     - uses: actions/checkout@v3
-    - name: "Auth Synk"
+    - name: set env
       run: |
-        snyk -d auth ${{ secrets.SNYK_API_TOKEN }}
-        snyk auth -d $SNYK_APITOKEN
+        echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
+#    - name: "Auth Synk"
+#      run: |
+#        snyk auth -d $SNYK_APITOKEN
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com
