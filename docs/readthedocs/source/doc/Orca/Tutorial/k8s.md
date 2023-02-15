@@ -179,7 +179,7 @@ In the script:
 * `RUNTIME_DRIVER_PORT`: a string that specifies the driver port (only required if you use k8s-client mode).
 
 __Notes:__
-* The __Client Container__ contains all the required environment except K8s configurations.
+* The __Client Container__ already contains all the required environment configurations for Spark and BigDL Orca.
 * You don't need to create Spark executor containers manually, which are scheduled by K8s at runtime.
 
 
