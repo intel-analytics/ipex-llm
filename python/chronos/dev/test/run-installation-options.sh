@@ -46,15 +46,6 @@ python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/simulator \
        -k "not test_tcn_keras_forecaster_quantization"
 
-# exit_status_0 is 5 when this ut is deselected
-# if [ -z "${OPTIONS}" ]; then
-#     python -m pytest -s test/bigdl/chronos/forecaster/tf/\
-# test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
-# elif [[ ${OPTIONS} =~ "tensorflow" ]] && ! [[ ${OPTIONS} =~ "not inference" ]]; then
-#     python -m pytest -s test/bigdl/chronos/forecaster/tf/\
-# test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
-# fi
-
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
