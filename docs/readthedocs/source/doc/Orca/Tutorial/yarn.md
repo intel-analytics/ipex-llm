@@ -310,14 +310,14 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
 
 4. Download the BigDL assembly package from [here](../Overview/install.html#download-bigdl-orca) and unzip it. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
     ```bash
-    export BIGDL_HOME=/path/to/unzipped_BigDL  # the folder path where you extract the BigDL package
     export BIGDL_VERSION="downloaded BigDL version"
+    export BIGDL_HOME=/path/to/unzipped_BigDL  # the folder path where you extract the BigDL package
     ```
 
 5. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for [Spark 2.4](https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz) and [Spark 3.1](https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz). Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
     ```bash
-    export SPARK_HOME=/path/to/uncompressed_spark  # the folder path where you extract the Spark package
     export SPARK_VERSION="downloaded Spark version"
+    export SPARK_HOME=/path/to/uncompressed_spark  # the folder path where you extract the Spark package
     ```
 
 Some runtime configurations for Spark are as follows:
