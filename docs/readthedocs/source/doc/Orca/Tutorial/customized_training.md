@@ -1,4 +1,7 @@
-# How to Customize Your Training Process
+# How to Customize Your Pytorch Training Process
+
+This tutorial provides a overall guide on how to customize your own pytorch training process with callbacks mechanism.
+
 
 ## Callback Mechanism Introduction
 
@@ -102,7 +105,39 @@ for epoch in range(epochs):
 call_hooks("on_run_end", self)
 
 ```
-So you may write down your forwarding logic by **accessing these runner's attributes** like:
+
+### What attributes user can access during the whole process?
+
+There are attributes that you can access **all the time** and others that can only be accessed **in some stages**:
+
+Globally Access:
+* num_epochs: Total epochs to be trained.
+* epochs: Current epoch number.
+* train_loader: The train dataloader returned by train_dataloader_creator.
+* val_loader: The validation dataloader returned by val_dataloader_creator.
+* rank: The rank of this runner.
+* model: The model returned by model_creator.
+* optimizer: The optimizer returned by optimizer_creator.
+* scheduler: The scheduler returned by scheduler_creator.
+* criterion: The loss function returned by loss_creator.
+
+Can be accessed within iterations(like `before_train_iter`, `after_train_iter` etc.):
+* batch: The data batch of this iteration.
+* batch_idx: The batch index of this iteration.
+* output: The output of the model in this iteration.
+* loss: The loss calculated in this iteration.
+
+## Callback Usage Examples
+
+### Usage 1
+Some popular image models like Mask-RCNN for object detection calculate the loss in a slightly different way that they calculate the loss inside the model.
+```python
+loss_dict = model(images, targets)
+losses = sum(loss for loss in loss_dict.values())
+```
+
+
+We can implement the following logic in MainCallback to meet this requirement:
 ```python
 class CustomMainCB(MainCallBack):
     def on_iter_forward(self, runner):
@@ -112,6 +147,37 @@ class CustomMainCB(MainCallBack):
         # Compute loss
         runner.loss = sum(loss for loss in runner.output.values())
 ```
-### What attributes user can access during the whole process?
 
-There are 
+Note that you must assign attributes `output` and `loss` back in `on_iter_forward`.
+
+### Usage 2
+In some cases user manually adjusts the learning rate without the help of the scheduler like:
+```python
+def adjust_learning_rate(optimizer, gamma, epoch, step_index, iteration, epoch_size):
+    """Sets the learning rate
+    # Adapted from PyTorch Imagenet example:
+    # https://github.com/pytorch/examples/blob/master/imagenet/main.py
+    """
+    warmup_epoch = -1
+    if epoch <= warmup_epoch:
+        lr = 1e-6 + (initial_lr-1e-6) * iteration / (epoch_size * warmup_epoch)
+    else:
+        lr = initial_lr * (gamma ** (step_index))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+    return lr
+```
+
+We can implement the following logic in MainCallback to meet this requirement:
+```python
+class CustomMainCB(MainCallBack):
+    def on_lr_adjust(self, runner):
+        warmup_epoch = 5
+        if runner.epochs <= warmup_epoch:
+            lr = 1e-6 + (initial_lr-1e-6) * runner.batch_idx / (epoch_size * warmup_epoch)
+        else:
+            lr = initial_lr * (gamma ** (step_index))
+        for param_group in runner.optimizer.param_groups:
+            param_group['lr'] = lr
+        return lr
+```
