@@ -171,7 +171,7 @@ In the script:
 * `-v /path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the container as the specified path (e.g. "/bigdl/nfsdata").
 * `NOTEBOOK_PORT`: an integer that specifies the port number for the Notebook. This is not necessary if you don't use notebook.
 * `NOTEBOOK_TOKEN`: a string that specifies the token for Notebook. This is not necessary if you don't use notebook.
-* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>.
+* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master: `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>`.
 * `RUNTIME_K8S_SERVICE_ACCOUNT`: a string that specifies the service account for the driver pod.
 * `RUNTIME_K8S_SPARK_IMAGE`: the name of the BigDL K8s Docker image.
 * `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
@@ -362,7 +362,7 @@ Some runtime configurations for Spark are as follows:
 * `--conf spark.driver.extraClassPath`: upload and register BigDL jars files to the driver's classpath.
 * `--conf spark.executor.extraClassPath`: upload and register BigDL jars files to the executors' classpath.
 * `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` to mount `persistentVolume` into executor pods.
-* `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` to executor pods.
+* `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into executor pods.
 
 
 #### 6.2.1 K8s Client
@@ -447,9 +447,11 @@ ${SPARK_HOME}/bin/spark-submit \
 In the `spark-submit` script:
 * `deploy-mode`: set it to `cluster` when running programs on k8s-cluster mode.
 * `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
-* `spark.pyspark.python`: sset the Python location in conda archive as each executor's Python environment.
-* `spark.executorEnv.PYTHONHOME`: the search path of Python libraries on executor pods.
-* `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
+* `--conf spark.pyspark.driver.python`: set the Python location in conda archive as the driver's Python environment.
+* `--conf spark.pyspark.python`: also set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
+* `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` to mount `persistentVolume` into the driver pod.
+* `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into the driver pod.
 
 
 ### 6.3 Use Kubernetes Deployment (with Conda Archive)
