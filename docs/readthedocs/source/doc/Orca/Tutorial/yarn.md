@@ -50,13 +50,13 @@ To see the train results, you can look into the driver logs. For **yarn-client**
 23/02/15 15:30:26 INFO yarn.Client:
          client token: N/A
          diagnostics: N/A
-         ApplicationMaster host: Almaren-Node-160
+         ApplicationMaster host: ...
          ApplicationMaster RPC port: 46652
-         queue: root.users.kai
+         queue: ...
          start time: 1676446090408
          final status: SUCCEEDED
-         tracking URL: http://Almaren-Node-105:8088/proxy/application_1668477395550_1045/
-         user: kai
+         tracking URL: http://.../application_1668477395550_1045/
+         user: ...
 ```
 
 Visit the tracking URL and then click `logs` in the table `ApplicationMaster`, where you can see the train results at the end of `stdout` log.
