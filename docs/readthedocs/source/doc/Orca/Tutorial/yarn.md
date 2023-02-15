@@ -91,7 +91,7 @@ __Note__:
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please __skip__ this step and __DO NOT__ pip install BigDL Orca in the conda environment.
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. *Note that if you use [`spark-submit`](#use-spark-submit), please __skip__ this step and __DO NOT__ install BigDL Orca with pip install command in the conda environment.*
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
     ```bash
