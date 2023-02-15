@@ -270,7 +270,7 @@ bigdl-submit \
     --num-executors 2 \
     --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
-    --conf spark.pyspark.driver.python=$( which python ) \
+    --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
@@ -358,7 +358,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --conf spark.pyspark.driver.python=$( which python ) \
+    --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
