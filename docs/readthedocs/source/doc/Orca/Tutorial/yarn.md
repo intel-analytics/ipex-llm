@@ -252,7 +252,7 @@ bigdl-submit \
     --num-executors 2 \
     --py-files model.py \
     --archives /path/to/environment.tar.gz#environment \
-    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.driver.python=$( which python ) \
     --conf spark.pyspark.python=environment/bin/python \
     train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
@@ -340,7 +340,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --num-executors 2 \
     --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --conf spark.pyspark.driver.python=/path/to/python \
+    --conf spark.pyspark.driver.python=$( which python ) \
     --conf spark.pyspark.python=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
@@ -375,3 +375,46 @@ In the `spark-submit` script:
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
+
+### 5.4 Possible Running Results
+
+#### 5.4.1 Yarn Client
+
+For `yarn-client` mode, you can directly see the training results in console output.
+
+```bash
+100%|███████████| 1869/1875 [00:15<00:00, 122.00batch/s, loss=0.798]
+Train results:
+num_samples: 60000
+epoch: 1.0
+batch_count: 1875.0
+train_loss: 1.2893621582110724
+last_train_loss: 0.5313035249710083
+
+Stopping orca context
+```
+
+#### 5.4.2 Yarn Cluster
+
+For `yarn-cluster` mode, you can find the application id (e.g. `application_1668477395550_1045`) and the final status (`SUCCEEDED` or `FAILED`) at the end of console output.
+
+```bash
+23/02/15 15:30:26 INFO yarn.Client: Application report for application_1668477395550_1045 (state: FINISHED)
+23/02/15 15:30:26 INFO yarn.Client:
+         client token: N/A
+         diagnostics: N/A
+         ApplicationMaster host: Almaren-Node-160
+         ApplicationMaster RPC port: 46652
+         queue: root.users.kai
+         start time: 1676446090408
+         final status: SUCCEEDED
+         tracking URL: http://Almaren-Node-105:8088/proxy/application_1668477395550_1045/
+         user: kai
+```
+
+In the above case, you can find the driver log by clicking the `logs` at the **lower right corner**, in the corresponding application id (e.g. `application_1668477395550_1045`), entry `ApplicationMaster`. And you can find the training results at the end of `stdout` log.
+
+|**Attempy Number**|**Start Time**|**Node**|**Logs**| 
+|:---:|:---:|:---:|:---:|
+|1 |	Wed Feb 15 15:28:10 +0800 2023 |Almaren-Node-160:8042 | $\text{\textcolor{red}{logs}}$
+|
