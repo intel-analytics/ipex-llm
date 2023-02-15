@@ -107,9 +107,9 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "pytorch_110 neural-compressor==1.13.1",
-          "pytorch_111 neural-compressor==1.13.1",
-          "pytorch_112 neural-compressor==1.13.1",
+          "pytorch_110 neural-compressor==1.14.2",
+          "pytorch_111 neural-compressor==1.14.2",
+          "pytorch_112 neural-compressor==1.14.2",
           "pytorch_113 neural-compressor==2.0",
           ]
     steps:
