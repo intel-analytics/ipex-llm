@@ -129,13 +129,27 @@ Can be accessed within iterations(like `before_train_iter`, `after_train_iter` e
 
 ## Callback Usage Examples
 
+You only need to pass callbacks to `est.fit`, `est.evaluate` and `est.predict` as parameters to let the runner do the work.
+```python
+est = Estimator.from_torch(...)
+
+# Will automatically detect whether there is a unique mainHook, and put it in the first place in runner._hook if so.
+est.fit(...,
+        callbacks=[CustomMainCB(), Hook_1(), Hook_2(), ...])
+
+# if you don't need to modify training process
+
+est.evaluate(...,
+        callbacks=[hook_1, hook_2, ...])
+
+```
+
 ### Usage 1
 Some popular image models like Mask-RCNN for object detection calculate the loss in a slightly different way that they calculate the loss inside the model.
 ```python
 loss_dict = model(images, targets)
 losses = sum(loss for loss in loss_dict.values())
 ```
-
 
 We can implement the following logic in MainCallback to meet this requirement:
 ```python
@@ -181,3 +195,26 @@ class CustomMainCB(MainCallBack):
             param_group['lr'] = lr
         return lr
 ```
+
+### Usage 3
+If you want to save the currently trained model at the end of each epoch automatically, you may just implement this in `after_train_epoch`:
+```python
+class ModelCheckpoint(Callback):
+    
+    ...
+    
+    def after_train_epoch(self, runner):
+        """
+        Called at the end of an epoch.
+        Subclasses should override for any actions to run. This function should only
+        be called during TRAIN mode.
+        :param epoch:  Integer, index of epoch.
+        """
+        stats = {"epoch": runner.epochs}
+        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                      filename=self.filename,
+                                                      stats=stats)
+        runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
+```
+
+Actually you can just pass `ModelCheckpoint` callback in `bigdl.orca.learn.pytorch.callbacks.model_checkpoint` to estimator.fit() to achieve this.
