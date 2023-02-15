@@ -1257,7 +1257,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
         def _latency_calculate_helper(iterrun, baseline_time, func,
-                                         model_path, original_model, *args):
+                                      model_path, original_model, *args):
             try:
                 model = InferenceOptimizer.load(model_path, original_model)
             except Exception:
