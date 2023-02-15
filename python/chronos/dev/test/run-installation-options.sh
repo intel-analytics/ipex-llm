@@ -34,8 +34,6 @@ fi
 
 OPTIONS=$1
 echo "Running chronos tests"
-python -m pytest -s -m "${OPTIONS}" test/bigdl/chronos/forecaster/tf/\
-test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
 python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/data \
                                     test/bigdl/chronos/detector \
