@@ -2,7 +2,7 @@ name: Scanner-snyk-docker
 on:
   #pull_request:
     #branchs: [ main ]
-  workflow_call:
+  workflow_dispatch:
     inputs:
       snyk_apitoken:
         description: 'Snyk token'
