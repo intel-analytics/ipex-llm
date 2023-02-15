@@ -180,7 +180,7 @@ In the script:
 
 __Notes:__
 * The __Client Container__ already contains all the required environment configurations for Spark and BigDL Orca.
-* You don't need to create Spark executor containers manually, which are scheduled by K8s at runtime.
+* Spark executor containers are scheduled by K8s at runtime and you don't need to create them manually.
 
 
 ### 2.3 Launch the K8s Client Container
