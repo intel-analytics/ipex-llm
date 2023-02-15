@@ -21,6 +21,11 @@ cd ../..
 
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
+
+# If init bigdl-nano, unset `MALLOC_CONF` and `OMP_NUM_THREADS` to avoid process kill
+unset MALLOC_CONF
+unset OMP_NUM_THREADS
+
 if [ -z "${OMP_NUM_THREADS}" ]; then
     export OMP_NUM_THREADS=1
 fi
@@ -37,6 +42,9 @@ python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/model \
                                     test/bigdl/chronos/pytorch \
                                     test/bigdl/chronos/simulator
+       -k "not test_tcn_keras_forecaster_quantization"
+python -m pytest -s test/bigdl/chronos/forecaster/tf/\
+test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

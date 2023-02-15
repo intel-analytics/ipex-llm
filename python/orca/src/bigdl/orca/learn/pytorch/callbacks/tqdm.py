@@ -27,6 +27,13 @@ except ImportError:
     pass
 
 
+def is_tqdm_exists(callbacks):
+    for callback in callbacks:
+        if isinstance(callback, TqdmCallback):
+            return True
+    return False
+
+
 class TqdmCallback(Callback):
 
     def __init__(self):
@@ -52,6 +59,28 @@ class TqdmCallback(Callback):
                                         desc=desc,
                                         unit="batch",
                                         leave=False)
+
+    def after_val_iter(self, runner):
+        if self._is_rank_zero(runner):
+            runner._progress_bar.n = runner.batch_idx
+            postfix = {}
+            postfix.update(loss=runner.loss.item())
+            runner._progress_bar.set_postfix(postfix)
+
+    def before_val_epoch(self, runner):
+        if self._is_rank_zero(runner):
+            desc = "1/1e"
+
+            invalidInputError(tqdm is not None,
+                              "tqdm is not installed, please install with 'pip install tqdm'")
+            runner._progress_bar = tqdm(total=len(runner.val_loader),
+                                        desc=desc,
+                                        unit="batch",
+                                        leave=False)
+
+    def after_pred_iter(self, runner):
+        if self._is_rank_zero(runner):
+            print("\r Predict batch_idx: {%d}" % runner.batch_idx, end="")
 
     def _is_rank_zero(self, runner):
         invalidInputError(runner, "Sanity check failed. Runner must not be None!")

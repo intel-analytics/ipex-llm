@@ -55,8 +55,8 @@ class PPMLContext(JavaValue):
             elif kms_type == "AzureKeyManagementService":
                 conf["spark.bigdl.kms.vault"] = check(ppml_args, "vault")
                 conf["spark.bigdl.kms.clientId"] = ppml_args.get("client_id", "")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key_path")
+                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
+                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
             elif kms_type == "BigDLKeyManagementService":
                 conf["spark.bigdl.kms.ip"] = check(ppml_args, "kms_server_ip")
                 conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
@@ -67,6 +67,7 @@ class PPMLContext(JavaValue):
             else:
                 invalidInputError(False, "invalid KMS type")
 
+        conf["spark.hadoop.io.compression.codecs"] = "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"
         spark_conf = init_spark_conf(conf)
 
         sc = SparkContext.getOrCreate(spark_conf)

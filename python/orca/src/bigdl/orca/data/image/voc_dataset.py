@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 import numpy as np
-import os
 import os.path as osp
-from PIL import Image
 import logging
 from bigdl.dllib.utils.log4Error import invalidInputError, invalidOperationError
 from typing import TYPE_CHECKING, List, Tuple, Optional, Dict, no_type_check
@@ -157,6 +155,7 @@ class VOCDatasets:
                           "ymax must in ({}, {}], given {}".format(ymin, height, ymax))
 
     def _read_image(self, image_path: str) -> Optional["ndarray"]:
+        from PIL import Image
         try:
             img = Image.open(image_path)
             img = np.array(img)

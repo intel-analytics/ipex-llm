@@ -32,9 +32,9 @@ from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, DDPK8sStrategy
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import create_ray_strategy
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.common import check_avx512
-from bigdl.nano.utils import deprecated
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import deprecated
 
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
@@ -121,7 +121,7 @@ class Trainer(pl.Trainer):
             precision = 32
 
         # Confirm if cpu supports avx512
-        if self.use_ipex and not check_avx512():
+        if self.use_ipex and not _avx512_checker():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.11 in a cpu instruction set"
                         " without avx512 will crash."
@@ -413,7 +413,7 @@ class Trainer(pl.Trainer):
                                            **export_kwargs)
 
     @staticmethod
-    def save(model: pl.LightningModule, path):
+    def save(model: nn.Module, path):
         """
         Save the model to local file.
 
@@ -424,15 +424,28 @@ class Trainer(pl.Trainer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: pl.LightningModule = None):
+    def load(path, model: Optional[nn.Module] = None, input_sample=None,
+             inplace=False, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
+        :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+               Only valid for inc ipex quantization model, otherwise will be ignored.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model)
+        return load_model(path, model, input_sample=input_sample,
+                          inplace=inplace, device=device)

@@ -15,7 +15,6 @@
 #
 
 import operator
-from pytorch_lightning.utilities.imports import _compare_version
 from types import MethodType
 import pytorch_lightning as pl
 from typing import Optional
@@ -24,22 +23,23 @@ import torch.nn as nn
 import copy
 import yaml
 from logging import warning
+from pathlib import Path
 from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
     load_ipex_quantization_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import compare_version
 from bigdl.nano.pytorch.context_manager import generate_context_manager
-from pathlib import Path
 
-TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
-TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
-TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-TORCH_VERSION_LESS_1_13 = _compare_version("torch", operator.lt, "1.13")
-TORCHVISION_VERSION_LESS_1_12 = _compare_version("torchvision", operator.lt, "0.12.0")
-TORCHVISION_VERSION_LESS_1_14 = _compare_version("torchvision", operator.lt, "0.14.0")
+TORCH_VERSION_LESS_1_10 = compare_version("torch", operator.lt, "1.10")
+TORCH_VERSION_LESS_1_11 = compare_version("torch", operator.lt, "1.11")
+TORCH_VERSION_LESS_1_12 = compare_version("torch", operator.lt, "1.12")
+TORCH_VERSION_LESS_1_13 = compare_version("torch", operator.lt, "1.13")
+TORCHVISION_VERSION_LESS_1_12 = compare_version("torchvision", operator.lt, "0.12.0")
+TORCHVISION_VERSION_LESS_1_14 = compare_version("torchvision", operator.lt, "0.14.0")
 
 
 def batch_call(func):
@@ -124,9 +124,10 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
     Load a model from local.
 
     :param path: Path to model to be loaded. Path should be a directory.
-    :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-            the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-            should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+    :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerated the model with accelerator=None by
+               InferenceOptimizer.trace/InferenceOptimizer.quantize.
+               2. you want to the loaded model contains the attributes of original model.
     :param input_sample: Input sample for your model, could be a Tensor or a tuple.
             Only valid for inc ipex quantization model, otherwise will be ignored.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
@@ -144,24 +145,26 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
     with open(meta_path, 'r') as f:
         metadata = yaml.safe_load(f)
     model_type = metadata.get('ModelType', None)
+    result = None
     if model_type == 'PytorchOpenVINOModel':
-        invalidInputError(model is None,
-                          "Argument 'model' must be None for OpenVINO loading.")
-        return load_openvino_model(path, device=device)
+        result = load_openvino_model(path, device=device)
     if model_type == 'PytorchONNXRuntimeModel':
-        invalidInputError(model is None,
-                          "Argument 'model' must be None for ONNX Runtime loading.")
-        return load_onnxruntime_model(path)
+        result = load_onnxruntime_model(path)
     if model_type == 'PytorchQuantizedModel':
-        return load_inc_model(path, model, 'pytorch', input_sample=input_sample)
+        result = load_inc_model(path, model, 'pytorch', input_sample=input_sample)
     if model_type == 'PytorchIPEXJITModel':
-        return load_ipexjit_model(path, model, inplace=inplace)
+        result = load_ipexjit_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXJITBF16Model':
-        return load_ipexjitbf16_model(path, model, inplace=inplace)
+        result = load_ipexjitbf16_model(path, model, inplace=inplace)
     if model_type == 'PytorchIPEXQuantizationModel':
-        return load_ipex_quantization_model(path, model, inplace=inplace)
+        result = load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
+    if result is not None:
+        if isinstance(model, torch.nn.Module):
+            # patch attributes to accelerated model
+            patch_attrs_from_model_to_object(model, result)
+        return result
     if isinstance(model, nn.Module):
         # typically for models of nn.Module, pl.LightningModule type
         model = copy.deepcopy(model)

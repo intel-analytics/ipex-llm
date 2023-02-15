@@ -18,12 +18,12 @@ import operator
 import tensorflow as tf
 from tensorflow.keras import Model
 from functools import partial
-from bigdl.nano.common.compare_version import _compare_version
-from bigdl.nano.utils.log4Error import invalidOperationError
+from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.common import invalidOperationError
 
 
-KERAS_VERSION_LESS_2_9 = _compare_version("keras", operator.lt, "2.9")
-KERAS_VERSION_LESS_2_10 = _compare_version("keras", operator.lt, "2.10")
+KERAS_VERSION_LESS_2_9 = compare_version("keras", operator.lt, "2.9")
+KERAS_VERSION_LESS_2_10 = compare_version("keras", operator.lt, "2.10")
 
 
 class _NanoPartial(partial):
@@ -66,6 +66,8 @@ def patch_attrs(target_obj: object, source_obj: object) -> object:
     :param source_obj: source object
     :return: `target_obj`
     """
+    if source_obj is None:
+        return target_obj
     if inspect.ismethod(target_obj.__setattr__):
         # `target_obj` has custom `__setattr__`
         wrapper_obj = _ModuleWrapper(target_obj, source_obj)

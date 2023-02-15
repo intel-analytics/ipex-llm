@@ -115,7 +115,7 @@ def setup_package():
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.0",
                             "torchvision==0.14.0",
-                            "intel_extension_for_pytorch==1.13.0;platform_system=='Linux'"]
+                            "intel_extension_for_pytorch==1.13.100;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
@@ -151,18 +151,21 @@ def setup_package():
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
                           "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
-                          "onnxruntime-extensions==0.3.1; platform_machine=='x86_64' and \
+                          "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
                           "neural-compressor==2.0",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
-                          "onnxsim==0.4.1; platform_machine=='x86_64' and \
+                          "onnxsim==0.4.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'"]
 
-    install_requires = ["intel-openmp; platform_machine=='x86_64'",
+    install_requires = ["intel-openmp; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
                         "cloudpickle",
                         "protobuf==3.19.5",
-                        "py-cpuinfo"]
+                        "py-cpuinfo",
+                        "pyyaml",
+                        "packaging",
+                        "setuptools<66"]
 
     package_data = [
         "libs/libjemalloc.so",

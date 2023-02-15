@@ -25,6 +25,7 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import tempfile
 import pytest
+import numpy as np
 
 
 class TestOpenVINO(TestCase):
@@ -165,6 +166,22 @@ class TestOpenVINO(TestCase):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
 
+        # save & load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
+        with pytest.raises(AttributeError):
+            load_model.channels == 3
+        with pytest.raises(AttributeError):
+            load_model.hello()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model, device='CPU')
+        assert load_model.channels == 3
+        load_model.hello()
+
     def test_openvino_quantize_dynamic_axes(self):
         class CustomModel(nn.Module):
             def __init__(self):
@@ -241,23 +258,23 @@ class TestOpenVINO(TestCase):
         x2 = torch.rand((10, 3, 256, 256))
 
         # test GPU fp16
-        openvino_model = InferenceOptimizer.quanize(model,
-                                                    input_sample=x,
-                                                    accelerator='openvino',
-                                                    device='GPU',
-                                                    precision='fp16')
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     input_sample=x,
+                                                     accelerator='openvino',
+                                                     device='GPU',
+                                                     precision='fp16')
         result = openvino_model(x)
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
             openvino_model(x2)
 
         # test GPU int8
-        openvino_model = InferenceOptimizer.quanize(model,
-                                                    input_sample=x,
-                                                    accelerator='openvino',
-                                                    device='GPU',
-                                                    precision='int8',
-                                                    calib_data=x)
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     input_sample=x,
+                                                     accelerator='openvino',
+                                                     device='GPU',
+                                                     precision='int8',
+                                                     calib_data=x)
         result = openvino_model(x)
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
@@ -279,12 +296,12 @@ class TestOpenVINO(TestCase):
         x2 = torch.rand((10, 3, 256, 256))
 
         # test VPU int8
-        openvino_model = InferenceOptimizer.quanize(model,
-                                                    input_sample=x,
-                                                    accelerator='openvino',
-                                                    device='VPUX',
-                                                    precision='int8',
-                                                    calib_data=x)
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     input_sample=x,
+                                                     accelerator='openvino',
+                                                     device='VPUX',
+                                                     precision='int8',
+                                                     calib_data=x)
         result = openvino_model(x)
         # VPU don't support dynamic shape
         with pytest.raises(RuntimeError):
@@ -293,26 +310,26 @@ class TestOpenVINO(TestCase):
         # test VPU fp16
         model = resnet50()
         with pytest.raises(RuntimeError):
-            openvino_model = InferenceOptimizer.quanize(model,
-                                                        input_sample=x,
-                                                        accelerator='openvino',
-                                                        device='VPUX',
-                                                        precision='fp16')
+            openvino_model = InferenceOptimizer.quantize(model,
+                                                         input_sample=x,
+                                                         accelerator='openvino',
+                                                         device='VPUX',
+                                                         precision='fp16')
 
-        openvino_model = InferenceOptimizer.quanize(model,
-                                                    input_sample=x,
-                                                    accelerator='openvino',
-                                                    device='VPUX',
-                                                    precision='fp16',
-                                                    mean_value=[123.68,116.78,103.94])  # first type of mean value
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     input_sample=x,
+                                                     accelerator='openvino',
+                                                     device='VPUX',
+                                                     precision='fp16',
+                                                     mean_value=[123.68,116.78,103.94])  # first type of mean value
         result = openvino_model(x)
 
-        openvino_model = InferenceOptimizer.quanize(model,
-                                                    input_sample=x,
-                                                    accelerator='openvino',
-                                                    device='VPUX',
-                                                    precision='fp16',
-                                                    mean_value="x[123.68,116.78,103.94]") # the second type of mean value
+        openvino_model = InferenceOptimizer.quantize(model,
+                                                     input_sample=x,
+                                                     accelerator='openvino',
+                                                     device='VPUX',
+                                                     precision='fp16',
+                                                     mean_value="x[123.68,116.78,103.94]") # the second type of mean value
         result = openvino_model(x)
 
         # VPU don't support dynamic shape
@@ -333,3 +350,27 @@ class TestOpenVINO(TestCase):
                                                )
         with InferenceOptimizer.get_context(ov_model):
             result = ov_model(x)
+
+    def test_quantize_openvino_fp16(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        x2 = torch.rand((1, 3, 256, 256))
+
+        ov_fp16_model = InferenceOptimizer.quantize(model,
+                                                    accelerator='openvino',
+                                                    input_sample=x,
+                                                    precision='fp16')
+
+        with InferenceOptimizer.get_context(ov_fp16_model):
+            preds1 = ov_fp16_model(x).numpy()
+            ov_fp16_model(x2).numpy()  # test dinamic shape
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_fp16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            preds2 = load_model(x).numpy()
+
+        np.testing.assert_almost_equal(preds1, preds2, decimal=5)

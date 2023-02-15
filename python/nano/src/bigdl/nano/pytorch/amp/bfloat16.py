@@ -18,11 +18,12 @@
 from logging import warning
 import torch
 import os
-from bigdl.nano.utils.inference.pytorch.model_utils import generate_channels_last_available
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.pytorch import generate_channels_last_available,\
+    apply_proper_channels_last
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
-from bigdl.nano.utils import CPUInfo
+from bigdl.nano.utils.common import _bf16_checker
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 invalidInputError(
@@ -50,7 +51,10 @@ class BF16Model(AcceleratedLightningModule):
         self.channels_last = channels_last
         self.thread_num = thread_num
         if self.channels_last is True:
-            self.model = self.model.to(memory_format=torch.channels_last)
+            try:
+                self.model = self.model.to(memory_format=torch.channels_last)
+            except Exception as _e:
+                self.model = self.model.to(memory_format=torch.channels_last_3d)
             if channels_last_available:  # init from load
                 self.channels_last_available = channels_last_available
             else:  # init without channels_last_available loaded
@@ -65,8 +69,7 @@ class BF16Model(AcceleratedLightningModule):
     @property
     def _has_bf16_isa(self):
         """Indicator to verify if bf16 instructions are available."""
-        cpuinfo = CPUInfo()
-        return cpuinfo.has_bf16
+        return _bf16_checker()
 
     @property
     def _allow_non_bf16(self):
@@ -115,16 +118,17 @@ class BF16Model(AcceleratedLightningModule):
         return inputs
 
     def forward_step(self, *inputs):
-        if self.channels_last is True:
-            if self.channels_last_available:
-                for idx, input in enumerate(inputs):
-                    if self.channels_last_available[idx]:
-                        input.to(memory_format=torch.channels_last)
-            else:
+        if self.channels_last:
+            # generate channels_last_available list is possible
+            # this won't affect inference latency much since it will only run 1 time
+            if not self.channels_last_available:
                 self.channels_last_available = generate_channels_last_available(inputs)
-                for idx, input in enumerate(inputs):
-                    if self.channels_last_available[idx]:
-                        input.to(memory_format=torch.channels_last)
+
+            # change the data to suitable mem format
+            inputs = tuple(map(lambda item: apply_proper_channels_last(
+                self.channels_last_available[item[0]], item[1]),
+                enumerate(inputs)))
+
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):

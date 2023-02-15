@@ -41,13 +41,9 @@ import torch.nn as nn
 import numpy as np
 from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
-from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
-from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP, SCHEDULER_STEP_EPOCH,
-                                                SCHEDULER_STEP_BATCH)
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import (get_filesystem, AverageMeterCollection,
-                                            NUM_SAMPLES, get_batchsize)
+from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES, get_batchsize)
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -196,7 +192,7 @@ class TorchRunner(BaseRunner):
             self.dist_backend = TorchDistBackend()
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
         self.num_epochs = epochs
@@ -244,13 +240,14 @@ class TorchRunner(BaseRunner):
             val_loader = None
             val_steps = None
 
+        self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
         for i in range(epochs):
             del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
-            stats = self.train_epoch(self.train_loader, profile=profile, info=info,
+            stats = self.train_epoch(self.train_loader, profile=profile,
                                      callbacks=callbacks, val_loader=val_loader,
                                      val_steps=val_steps)
             self.epoch_stats = stats
@@ -272,7 +269,6 @@ class TorchRunner(BaseRunner):
     def train_epoch(self,
                     data_loader,
                     profile=False,
-                    info=None,
                     callbacks=None,
                     val_loader=None,
                     val_steps=None):
@@ -286,12 +282,11 @@ class TorchRunner(BaseRunner):
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self._train_epoch(data_loader, info, callbacks)
+            train_stats = self._train_epoch(data_loader, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -318,7 +313,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def _train_epoch(self, iterator, info, callbacks=None):
+    def _train_epoch(self, iterator, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -350,8 +345,6 @@ class TorchRunner(BaseRunner):
         Args:
             iterator (iter): Iterator over the training data for the entire
                 epoch. This iterator is expected to be entirely consumed.
-            info (dict): Dictionary for information to be used for custom
-                training operations.
 
         Returns:
             A dict of metrics from training.
@@ -409,7 +402,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Information dict passed in from ``train_epoch``.
 
         Returns:
             A dictionary of metrics.
@@ -452,14 +444,13 @@ class TorchRunner(BaseRunner):
         del self.loss
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None, callbacks=None):
+                 wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
         config = copy.copy(self.config)
-        info = info or {}
         self._toggle_profiling(profile=profile)
 
         if OrcaContext.serialize_data_creator:
@@ -474,6 +465,7 @@ class TorchRunner(BaseRunner):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+        self.val_loader = loader
         loader = iter(loader)
 
         with self.timers.record("validation"):
@@ -498,8 +490,6 @@ class TorchRunner(BaseRunner):
         Args:
             val_iterator (iter): Iterable constructed from the
                 validation dataloader.
-            info: (dict): Dictionary for information to be used for custom
-                validation operations.
 
         Returns:
             A dict of metrics from the evaluation.
@@ -529,13 +519,13 @@ class TorchRunner(BaseRunner):
 
                 del self.batch_idx
 
-        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
 
         result["num_samples"] = total_samples
 
+        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         return result
 
     def forward_batch(self, batch, callbacks=None):
@@ -549,8 +539,6 @@ class TorchRunner(BaseRunner):
 
         Args:
             batch: One item of the validation iterator.
-            batch_info (dict): Contains information per batch from
-                ``validate()``.
 
         Returns:
             A dict of metrics.
@@ -581,15 +569,18 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        loss = self.loss
         del self.batch
         del self.output
+        del self.loss
 
-        return output, target, self.loss
+        return output, target, loss
 
-    def predict(self, partition, batch_size=32, profile=False):
+    def predict(self, partition, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
+        callbacks = callbacks or []
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -600,7 +591,7 @@ class TorchRunner(BaseRunner):
 
         def predict_fn(shard):
             if isinstance(partition, IterableDataset):
-                y = self._predict(shard)
+                y = self._predict(shard, callbacks=callbacks)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -608,24 +599,34 @@ class TorchRunner(BaseRunner):
                     tensors = [torch.from_numpy(shard["x"])]
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
-                y = self._predict(iter(data_loader))
+                y = self._predict(iter(data_loader), callbacks=callbacks)
             return {"prediction": y}
 
+        self.call_hook(callbacks, "before_pred_epoch")
         with self.timers.record("predict"):
             if isinstance(partition, IterableDataset):
                 new_part = [predict_fn(shard) for shard, shard_idx in partition]
             else:
                 new_part = [predict_fn(shard) for shard in partition]
+        self.call_hook(callbacks, "after_pred_epoch")
         return new_part
 
-    def _predict(self, pred_iterator):
+    def _predict(self, pred_iterator, callbacks=None):
         # switch to evaluate mode
         self._mode = 'predict'
         self.model.eval()
         result = []
         with torch.no_grad():
-            for batch in pred_iterator:
-                result.append(self.predict_batch(batch))
+            for batch_idx, batch in enumerate(pred_iterator):
+                self.batch = batch
+                self.batch_idx = batch_idx
+
+                self.call_hook(callbacks, "before_pred_iter")
+                result.append(self.predict_batch(self.batch))
+                self.call_hook(callbacks, "after_pred_iter")
+
+                del self.batch
+                del self.batch_idx
 
         return np.concatenate(result, axis=0)
 

@@ -32,6 +32,8 @@ from torch.utils.data import TensorDataset, DataLoader
 from .utils_hpo import GenericLightningModule, _format_metric_str, _config_has_search_space
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.chronos.data.tsdataset import TSDataset
+from bigdl.chronos.pytorch.context_manager import DummyForecasterContextManager,\
+    ForecasterContextManager
 
 
 class BasePytorchForecaster(Forecaster):
@@ -88,6 +90,8 @@ class BasePytorchForecaster(Forecaster):
 
             self.accelerated_model = None  # accelerated model obtained from various accelerators
             self.accelerate_method = None  # str indicates current accelerate method
+            self.cxt_manager = DummyForecasterContextManager()
+            self.context_enabled = False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -611,13 +615,13 @@ class BasePytorchForecaster(Forecaster):
 
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        # remove channels_last methods and temporarily disable bf16
+        # remove channels_last methods
         excludes = ["fp32_channels_last", "fp32_ipex_channels_last", "bf16_channels_last",
                     "bf16_ipex_channels_last", "jit_fp32_channels_last", "jit_bf16_channels_last",
-                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last",
-                    "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
+                    "jit_fp32_ipex_channels_last", "jit_bf16_ipex_channels_last"]
         if not self.quantize_available:
-            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear"]
+            excludes = excludes + ["static_int8", "openvino_int8", "onnxruntime_int8_qlinear",
+                                   "bf16", "bf16_ipex", "jit_bf16", "jit_bf16_ipex"]
         from bigdl.chronos.pytorch import TSInferenceOptimizer as InferenceOptimizer
         opt = InferenceOptimizer()
         opt.optimize(model=self.internal,
@@ -639,6 +643,19 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
         self.optimized_model_thread_num = thread_num
+
+    def get_context(self, thread_num=None, optimize=True):
+        """
+        Obtain context manager from forecaster.
+
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :param optimize: bool variable indicates whether use original model.
+               Default to True means use accelerated_model to generate context manager, which
+               requires to call .optimize(), otherwise the original model will be used.
+        :return: a context manager.
+        """
+        return ForecasterContextManager(self, thread_num, optimize)
 
     def predict(self, data, batch_size=32, quantize=False, acceleration: bool = True):
         """
@@ -726,25 +743,30 @@ class BasePytorchForecaster(Forecaster):
             if not self.fitted:
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
-            if quantize:
-                if self.accelerate_method != "pytorch_int8":
-                    invalidInputError(False,
-                                      "Can't find the quantized model, "
-                                      "please call .quantize() method first")
-                yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                  input_data=data,
-                                                  batch_size=batch_size)
+            if not self.context_enabled:
+                self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
             else:
-                if acceleration is False or self.accelerated_model is None:
-                    self.internal.eval()
-                    yhat = _pytorch_fashion_inference(model=self.internal,
-                                                      input_data=data,
-                                                      batch_size=batch_size)
-                else:
-                    self.accelerated_model.eval()
+                self.cxt_manager = DummyForecasterContextManager()
+            with self.cxt_manager:
+                if quantize:
+                    if self.accelerate_method != "pytorch_int8":
+                        invalidInputError(False,
+                                          "Can't find the quantized model, "
+                                          "please call .quantize() method first")
                     yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                       input_data=data,
                                                       batch_size=batch_size)
+                else:
+                    if acceleration is False or self.accelerated_model is None:
+                        self.internal.eval()
+                        yhat = _pytorch_fashion_inference(model=self.internal,
+                                                          input_data=data,
+                                                          batch_size=batch_size)
+                    else:
+                        self.accelerated_model.eval()
+                        yhat = _pytorch_fashion_inference(model=self.accelerated_model,
+                                                          input_data=data,
+                                                          batch_size=batch_size)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
@@ -806,22 +828,27 @@ class BasePytorchForecaster(Forecaster):
                                              feature_col=data.roll_feature,
                                              target_col=data.roll_target,
                                              shuffle=False)
-        if quantize:
-            if self.accelerate_method != "onnxruntime_int8":
-                invalidInputError(False,
-                                  "Can't find the quantized model, "
-                                  "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+        if not self.context_enabled:
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
-            if self.accelerate_method != "onnxruntime_fp32":
-                self.build_onnx()
-                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                     self.thread_num)
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+            self.cxt_manager = DummyForecasterContextManager()
+        with self.cxt_manager:
+            if quantize:
+                if self.accelerate_method != "onnxruntime_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
+            else:
+                if self.accelerate_method != "onnxruntime_fp32":
+                    self.build_onnx()
+                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                         self.thread_num)
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
 
     def predict_with_openvino(self, data, batch_size=32, quantize=False):
         """
@@ -882,22 +909,27 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
 
-        if quantize:
-            if self.accelerate_method != "openvino_int8":
-                invalidInputError(False,
-                                  "Can't find the quantized model, "
-                                  "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+        if not self.context_enabled:
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
-            if self.accelerate_method != "openvino_fp32":
-                self.build_openvino()
-                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                     self.thread_num)
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+            self.cxt_manager = DummyForecasterContextManager()
+        with self.cxt_manager:
+            if quantize:
+                if self.accelerate_method != "openvino_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
+            else:
+                if self.accelerate_method != "openvino_fp32":
+                    self.build_openvino()
+                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                         self.thread_num)
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
 
     def predict_with_jit(self, data, batch_size=32, quantize=False):
         """
@@ -958,22 +990,27 @@ class BasePytorchForecaster(Forecaster):
                                              target_col=data.roll_target,
                                              shuffle=False)
 
-        if quantize and False:
-            if self.accelerate_method != "jit_int8":
-                invalidInputError(False,
-                                  "Can't find the quantized model, "
-                                  "please call .quantize() method first")
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+        if not self.context_enabled:
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
-            if self.accelerate_method != "jit_fp32":
-                self.build_jit()
-                self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                     self.thread_num)
-            return _pytorch_fashion_inference(model=self.accelerated_model,
-                                              input_data=data,
-                                              batch_size=batch_size)
+            self.cxt_manager = DummyForecasterContextManager()
+        with self.cxt_manager:
+            if quantize:
+                if self.accelerate_method != "jit_int8":
+                    invalidInputError(False,
+                                      "Can't find the quantized model, "
+                                      "please call .quantize() method first")
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
+            else:
+                if self.accelerate_method != "jit_fp32":
+                    self.build_jit()
+                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
+                                                         self.thread_num)
+                return _pytorch_fashion_inference(model=self.accelerated_model,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False,
                  acceleration: bool = True):
@@ -1452,6 +1489,8 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = None
         # str indicates current accelerate method
         self.accelerate_method = None
+        self.cxt_manager = DummyForecasterContextManager()
+        self.context_enabled = False
         return self
 
     def get_model(self):

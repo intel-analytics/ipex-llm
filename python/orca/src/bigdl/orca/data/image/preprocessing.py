@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from PIL import Image, ImageDraw
 from bigdl.orca import OrcaContext
 from typing import TYPE_CHECKING, Any
 
@@ -162,6 +161,7 @@ def read_images_spark(file_path: str,
         else:
             invalidInputError(False, "invalid nChannels of spark image, "
                                      "please use read_images_pil instead")
+        from PIL import Image
         img = Image.frombytes(mode=mode, data=bytes(image_spark.image.data),
                               size=[image_spark.image.width, image_spark.image.height])
         if mode in ['RGB', 'RGBA']:

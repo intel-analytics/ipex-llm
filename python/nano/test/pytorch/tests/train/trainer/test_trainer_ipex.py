@@ -28,7 +28,6 @@ from torch import nn
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.common import check_avx512
 
 batch_size = 256
 max_epochs = 2
