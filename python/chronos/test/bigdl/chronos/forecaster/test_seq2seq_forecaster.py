@@ -727,22 +727,22 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
 
-    # def test_s2s_forecaster_ctx_manager(self):
-    #     train_loader, val_loader, test_loader = create_data(loader=True)
-    #     forecaster = Seq2SeqForecaster(past_seq_len=24,
-    #                                    future_seq_len=5,
-    #                                    input_feature_num=1,
-    #                                    output_feature_num=1,
-    #                                    loss="mse",
-    #                                    lr=0.01)
-    #     forecaster.fit(train_loader, epochs=1)
-    #     original_thread = torch.get_num_threads()
-    #     assert forecaster.thread_num == original_thread
+    def test_s2s_forecaster_ctx_manager(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
 
-    #     num = max(1, original_thread//2)
-    #     with forecaster.get_context(thread_num=num, optimize=True):
-    #         assert forecaster.context_enabled == True
-    #         current_thread = torch.get_num_threads()
-    #         assert current_thread == num
-    #         for x, y in test_loader:
-    #             yhat = forecaster.predict(x.numpy())
+        num = max(1, original_thread//2)
+        with forecaster.get_context(thread_num=num, optimize=True):
+            assert forecaster.context_enabled == True
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
+            for x, y in test_loader:
+                yhat = forecaster.predict(x.numpy())
