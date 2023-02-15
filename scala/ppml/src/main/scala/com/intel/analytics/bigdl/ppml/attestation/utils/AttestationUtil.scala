@@ -48,7 +48,7 @@ object AttestationUtil {
     new BigInteger(1, quote.slice(304, 306)).toString(16)
   }
 
-  def generateToken(length: Int = 64): String = {
+  def generateToken(length: Int = 32): String = {
     val secureRandom = new SecureRandom()
     val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     val token = new Array[Char](length)
