@@ -416,5 +416,4 @@ In the above case, you can find the driver log by clicking the `logs` at the **l
 
 |**Attempy Number**|**Start Time**|**Node**|**Logs**| 
 |:---:|:---:|:---:|:---:|
-|1 |	Wed Feb 15 15:28:10 +0800 2023 |Almaren-Node-160:8042 | $\text{\textcolor{red}{logs}}$
-|
+|1 |	Wed Feb 15 15:28:10 +0800 2023 |Almaren-Node-160:8042 | $\text{\textcolor{red}{logs}}$ |
