@@ -233,6 +233,7 @@ conda pack -o environment.tar.gz
 
 Some runtime configurations for Spark are as follows:
 
+* `--master`: the spark master, set it to "yarn".
 * `--num_executors`: the number of executors.
 * `--executor-cores`: the number of cores for each executor.
 * `--executor-memory`: the memory for each executor.
@@ -259,7 +260,6 @@ bigdl-submit \
     train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
-* `--master`: the spark master, set it to "yarn".
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find it by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
@@ -283,7 +283,6 @@ bigdl-submit \
     train.py --cluster_mode bigdl-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script:
-* `--master`: the spark master, set it to "yarn".
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
@@ -322,6 +321,7 @@ If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the
 
 Some runtime configurations for Spark are as follows:
 
+* `--master`: the spark master, set it to "yarn".
 * `--num_executors`: the number of executors.
 * `--executor-cores`: the number of cores for each executor.
 * `--executor-memory`: the memory for each executor.
@@ -352,7 +352,6 @@ ${SPARK_HOME}/bin/spark-submit \
     train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
-* `--master`: the spark master, set it to "yarn".
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
@@ -377,7 +376,6 @@ ${SPARK_HOME}/bin/spark-submit \
     train.py --cluster_mode spark-submit --data_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script:
-* `--master`: the spark master, set it to "yarn".
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
