@@ -266,8 +266,10 @@ class SparkRunner:
                                     def load_opt_weights():
                                         grad_vars = self.model.trainable_weights
                                         zero_grads = [tf.zeros_like(w) for w in grad_vars]
-                                        self.model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
-                                        self.model.optimizer.set_weights(self.optimizer_weights.value)
+                                        self.model.optimizer.apply_gradients(
+                                            zip(zero_grads, grad_vars))
+                                        self.model.optimizer.set_weights(
+                                            self.optimizer_weights.value)
                                     self.strategy.run(load_opt_weights)
                             else:
                                 self.model = tf.keras.models.load_model(self.model_load)

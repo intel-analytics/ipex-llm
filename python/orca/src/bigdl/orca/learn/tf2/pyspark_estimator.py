@@ -167,7 +167,7 @@ class SparkTFEstimator():
             weights = sc.broadcast(self.model_weights)
         else:
             weights = None
-        
+
         if self.optimizer_weights:
             opt_weights = sc.broadcast(self.optimizer_weights)
         else:
