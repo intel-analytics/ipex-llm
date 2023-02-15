@@ -380,7 +380,7 @@ In the `spark-submit` script:
 
 #### 5.4.1 Yarn Client
 
-For `yarn-client` mode, you can directly see the training results in console output.
+For the `yarn-client` mode, you can directly see the train results in console output.
 
 ```bash
 100%|███████████| 1869/1875 [00:15<00:00, 122.00batch/s, loss=0.798]
@@ -396,7 +396,7 @@ Stopping orca context
 
 #### 5.4.2 Yarn Cluster
 
-For `yarn-cluster` mode, you can find the application id (e.g. `application_1668477395550_1045`) and the final status (`SUCCEEDED` or `FAILED`) at the end of console output.
+For the `yarn-cluster` mode, you can find the application id (e.g. `application_1668477395550_1045`) and the final status (`SUCCEEDED` or `FAILED`) at the end of console output.
 
 ```bash
 23/02/15 15:30:26 INFO yarn.Client: Application report for application_1668477395550_1045 (state: FINISHED)
@@ -412,8 +412,20 @@ For `yarn-cluster` mode, you can find the application id (e.g. `application_1668
          user: kai
 ```
 
-In the above case, you can find the driver log by clicking the `logs` at the **lower right corner**, in the corresponding application id (e.g. `application_1668477395550_1045`), entry `ApplicationMaster`. And you can find the training results at the end of `stdout` log.
+To see the driver log, you can go to the corresponding application page (`application_1668477395550_1045` for the above result) on your local hadoop server. Then click `logs` in the table `ApplicationMaster`, where you can see the train results at the end of `stdout` log.
+
+<style>
+.center
+{
+    width: auto;
+    display: table;
+    margin: auto;
+}
+</style>
+<div class="center">
 
 |**Attempy Number**|**Start Time**|**Node**|**Logs**| 
 |:---:|:---:|:---:|:---:|
-|1 |	Wed Feb 15 15:28:10 +0800 2023 |Almaren-Node-160:8042 | $\text{\textcolor{red}{logs}}$ |
+|1 |	Wed Feb 15 15:28:10 +0800 2023 |Almaren-Node-160:8042 | logs |
+
+</div>
