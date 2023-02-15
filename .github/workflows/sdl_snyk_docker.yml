@@ -18,10 +18,15 @@ on:
         description: 'snyk image'
         required: true
         type: string
-        default: 'intelanalytics/bigdl-k8s:latest'
+        default: 'intelanalytics/bigdl-k8s'
+      snyk_tag:
+        description: 'snyk image tag'
+        required: true
+        type: string
+        default: 'latest'
 
 jobs:
-  snyk-scan:
+  snyk-docker:
     runs-on: [self-hosted, SDL]
     steps:
     - uses: actions/checkout@v3
@@ -32,7 +37,7 @@ jobs:
         echo "SNYK_ORG=${{inputs.snyk_org}}"
     - name: "Pull docker image"
       run: |
-        docker pull ${{inputs.snyk_image}}
+         docker pull ${{inputs.snyk_image}}:${{inputs.snyk_tag}}
 #    - name: "Auth Synk"
 #      run: |
 #        snyk auth -d ${{inputs.snyk_apitoken}}

@@ -18,7 +18,7 @@ on:
         default: 'iags_mlp'
 
 jobs:
-  snyk-scan:
+  snyk-python:
     runs-on: [self-hosted, SDL]
     steps:
     - uses: actions/checkout@v3
