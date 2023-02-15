@@ -43,7 +43,11 @@ The difference between yarn-client mode and yarn-cluster mode is where you run y
 
 For yarn-client, the Spark driver runs in the client process, and the application master is only used for requesting resources from YARN, while for yarn-cluster the Spark driver runs inside an application master process which is managed by YARN in the cluster.
 
-To see the train results, you can look into the driver logs. For **yarn-client** mode, you can directly find the driver logs in the console. For **yarn-cluster** mode, an `application_time_id` will be returned (`application_1668477395550_1045` in the following log) when the application master process is completed.
+Please see more details in [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
+
+For **yarn-client** mode, you can directly find the driver logs in the console. 
+
+For **yarn-cluster** mode, an `application_time_id` will be returned (`application_1668477395550_1045` in the following log) when the application master process is completed.
 
 ```bash
 23/02/15 15:30:26 INFO yarn.Client: Application report for application_1668477395550_1045 (state: FINISHED)
@@ -60,8 +64,6 @@ To see the train results, you can look into the driver logs. For **yarn-client**
 ```
 
 Visit the tracking URL and then click `logs` in the table `ApplicationMaster`, where you can see the train results at the end of `stdout` log.
-
-For more details, please see [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).
 
 ### 1.3 Distributed storage on YARN
 __Note__:
