@@ -34,15 +34,13 @@ class Pipeline():
         ]
 
     def run(self, inputs):
+        outputs = []
         for i in inputs:
             self.send_.send(i)
+            outputs.append(None)
 
-        output_list = []
-        for i in inputs:
-            output = self.recv_.recv()
-            output_list.append(output)
-
-        return output_list
+        outputs = [self.recv_.recv() for _ in outputs]
+        return outputs
 
     def _run_stage(self, stage: Tuple, recv_: Connection, send_: Connection):
         name, func, config = stage
