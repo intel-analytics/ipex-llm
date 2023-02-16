@@ -81,13 +81,19 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
 ```
 ```eval_rst
 .. important::
+
        Considering the image size, we build docker image with the default args and upload it to dockerhub. If you use it directly, only ``bigdl-chronos`` is installed inside this environment. There are two methods to install other necessary dependencies according to your own needs:
+
        1. Make sure network is available and run install command following `Install using Conda <https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda>`_ , such as ``pip install --pre --upgrade bigdl-chronos[pytorch]``.
+
        2. Make sure network is available and bash ``/opt/install-python-env.sh`` with build args. The values are introduced in `Build an image <## Build an image>`_.
+
+       ```eval_rst
        .. code-block:: python
        # bash /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
        # For example, if you want to install bigdl-chronos[pytorch,inference]
        bash /opt/install-python-env.sh pytorch n single y n
+       ```
 ```
 
 ## Run unittest examples on Jupyter Notebook for a quick use
