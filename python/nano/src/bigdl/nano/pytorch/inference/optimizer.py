@@ -356,13 +356,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if len(training_data) == 2:
                             input_label = training_data[1]
                         else:
-                            input_label = []
+                            input_label = torch.Tensor([])
                     else:
                         input_sample = tuple(training_data[:len(forward_args)])
                         input_label = tuple(training_data[len(forward_args):])
                 else:
                     input_sample = training_data
-                    input_label = []
+                    input_label = torch.Tensor([])
                 # turn training_data into dataset
                 dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
                 training_data = DataLoader(dataset, batch_size=1)
