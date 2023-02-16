@@ -9,7 +9,7 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         
-        bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
         # install dllib
         pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
@@ -25,7 +25,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-probability==0.7.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow-datasets==3.2.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} h5py==2.10.0
         
         chmod a+x python/orca/dev/test/run-pytests-spark.sh
