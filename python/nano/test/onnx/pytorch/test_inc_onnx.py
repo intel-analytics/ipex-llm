@@ -293,8 +293,8 @@ class TestOnnx(TestCase):
     def test_onnx_inc_default_values(self):
         from bigdl.nano.utils.common import compare_version
         import operator
-        if not compare_version("neural_compressor", operator.ge, "2.0"):
-            # TODO debug this case
+        if not compare_version("neural_compressor", operator.ge, "1.14.0"):
+            # this ut will fail when inc version < 1.14, it's bug of inc itself
             return
 
         # default bool values
