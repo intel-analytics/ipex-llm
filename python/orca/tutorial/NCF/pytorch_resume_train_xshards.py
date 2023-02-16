@@ -24,7 +24,6 @@ from utils import *
 
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
@@ -65,8 +64,7 @@ loss = nn.BCEWithLogitsLoss()
 
 # Step 4: Distributed training with Orca PyTorch Estimator after loading the model
 config = load_model_config(args.model_dir, "config.json")
-callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
-                                 freq=1000)] if args.tensorboard else []
+callbacks = get_callbacks(args)
 scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
