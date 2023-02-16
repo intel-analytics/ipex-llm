@@ -637,12 +637,13 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            params["filepath"] = temp_path
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
-                    self.model = self.process_model_load(**params)
+                    self.model = self.process_model_load(temp_path, custom_objects, compile,
+                                                         options)
             else:
-                self.model = self.process_model_load(**params)
+                self.model = self.process_model_load(temp_path, custom_objects, compile,
+                                                     options)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)
