@@ -111,25 +111,32 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
                                  input_sample=None, channels_last=None,
                                  thread_num=None, inplace=False,
-                                 jit_strict=True):
+                                 jit_strict=True, jit_method=None,
+                                 enable_onednn=True):
     '''
     :param model: the model(nn.module) to be transform.
     :param calib_data: calibration data is required for static quantization.
     :param q_config: describes how to quantize a layer or a part of the network
-            by providing settings (observer classes) for activations and weights
-            respectively.
+           by providing settings (observer classes) for activations and weights
+           respectively.
     :param input_sample: torch tensor indicate the data sample to be used
             for tracing.
     :param channels_last: if set model and data to be channels-last mode.
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
+    :param jit_method: use ``jit.trace`` or ``jit.script`` to convert a model
+           to TorchScript.
+    :param enable_onednn: Whether to use PyTorch JIT graph fuser based on
+           oneDNN Graph API, which provides a flexible API for aggressive
+           fusion. Default to ``True``.
     '''
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
     return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
                                         input_sample=input_sample, channels_last=channels_last,
                                         thread_num=thread_num, inplace=inplace,
-                                        jit_strict=jit_strict)
+                                        jit_strict=jit_strict, jit_method=jit_method,
+                                        enable_onednn=enable_onednn)
 
 
 def load_ipexjit_model(path, model, inplace=False, input_sample=None):

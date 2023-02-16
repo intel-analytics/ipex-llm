@@ -135,6 +135,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "jit_int8": TorchAccelerationOption(fx=True, jit=True),
             "jit_int8_channels_last": TorchAccelerationOption(fx=True, jit=True,
                                                               channels_last=True),
+            "jit_int8_ipex": TorchAccelerationOption(ipex_quant=True, jit=True),
+            "jit_int8_ipex_channels_last": TorchAccelerationOption(ipex_quant=True, jit=True,
+                                                                   channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
             "openvino_bf16": TorchAccelerationOption(openvino=True, bf16=True),
             "openvino_fp16": TorchAccelerationOption(openvino=True, fp16=True),
@@ -184,6 +187,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         "jit_fp32_channels_last", "jit_bf16", "jit_bf16_channels_last",
         "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
         "jit_bf16_ipex_channels_last", "jit_int8", "jit_int8_channels_last",
+        "jit_int8_ipex", "jit_int8_ipex_channels_last",
         "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
         "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
@@ -884,6 +888,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         return inc_quantize(**inc_quantize_arguments)
                     except Exception:
                         # use pure ipex quantization as a backup for inc ipex quantization
+                        print("using pure ipex quantization")
                         return PytorchIPEXQuantizationModel(model,
                                                             inc_calib_dataloader,
                                                             q_config=q_config,
@@ -891,7 +896,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             channels_last=channels_last,
                                                             thread_num=thread_num,
                                                             inplace=inplace,
-                                                            jit_strict=jit_strict)
+                                                            jit_strict=jit_strict,
+                                                            jit_method=jit_method,
+                                                            enable_onednn=enable_onednn)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
@@ -945,15 +952,27 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             elif accelerator == 'jit':
                 invalidInputError(jit_method in [None, 'trace', 'script'],
                                   "jit_method {} is invalid.".format(jit_method))
-                return PytorchJITINT8Model(model,
-                                           calib_dataloader,
-                                           q_config=q_config,
-                                           input_sample=input_sample,
-                                           channels_last=channels_last,
-                                           thread_num=thread_num,
-                                           jit_strict=jit_strict,
-                                           jit_method=jit_method,
-                                           enable_onednn=enable_onednn)
+                if use_ipex is True:
+                    return PytorchIPEXQuantizationModel(model,
+                                                        inc_calib_dataloader,
+                                                        q_config=q_config,
+                                                        input_sample=input_sample,
+                                                        channels_last=channels_last,
+                                                        thread_num=thread_num,
+                                                        inplace=inplace,
+                                                        jit_strict=jit_strict,
+                                                        jit_method=jit_method,
+                                                        enable_onednn=enable_onednn)
+                else:
+                    return PytorchJITINT8Model(model,
+                                               calib_dataloader,
+                                               q_config=q_config,
+                                               input_sample=input_sample,
+                                               channels_last=channels_last,
+                                               thread_num=thread_num,
+                                               jit_strict=jit_strict,
+                                               jit_method=jit_method,
+                                               enable_onednn=enable_onednn)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))

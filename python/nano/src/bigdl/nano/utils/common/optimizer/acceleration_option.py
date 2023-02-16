@@ -23,7 +23,7 @@ from bigdl.nano.utils.common import _inc_checker, _ipex_checker,\
 
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
-                               "bf16", "fp16", "jit", "fx", "channels_last"]
+                               "bf16", "fp16", "jit", "fx", "ipex_quant", "channels_last"]
 
 
 class AccelerationOption(object):
@@ -38,7 +38,7 @@ class AccelerationOption(object):
         self.method = kwargs.get("method", None)
 
     def get_precision(self):
-        if self.inc or self.pot or self.fx:
+        if self.inc or self.pot or self.fx or self.ipex_quant:
             return "int8"
         if self.bf16:
             return "bf16"
