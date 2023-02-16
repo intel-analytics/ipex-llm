@@ -18,7 +18,7 @@ on:
         - all
         - Orca-Pytest-Ray-Py37-Spark3
         - Orca-Pytest-Tf1-Py37-Spark3
-        - Orca-Example-Ray-Ctx-Py37-Spark3
+        - Orca-ExampleTest-Ray-Ctx-Py37-Spark3
         - Orca-Pytest-Horovod-Tf2-Py37-Spark3
         - Orca-Pytest-Horovod-Pytorch-Py37-Spark3
         - Orca-Pytest-Jep-Py37-Spark3
@@ -498,8 +498,8 @@ jobs:
         job-name: Orca-Pytest-Ray-Ctx-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
-  Orca-Example-Ray-Ctx-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Example-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+  Orca-ExampleTest-Ray-Ctx-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin-resources, ubuntu-20.04-lts]
 
     steps:
@@ -517,9 +517,9 @@ jobs:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
-        file-name: Orca-Example-Ray-Ctx-Py37-Spark3.json
+        file-name: Orca-ExampleTest-Ray-Ctx-Py37-Spark3.json
         type: job
-        job-name: Orca-Example-Ray-Ctx-Py37-Spark3
+        job-name: Orca-ExampleTest-Ray-Ctx-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
   Dllib-Scala-UT:
