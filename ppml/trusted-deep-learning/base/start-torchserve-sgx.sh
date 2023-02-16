@@ -73,7 +73,7 @@ do
         done
 done
 (
-        bash /ppml/torchserve/start-frontend-sgx.sh -c $configFile
+        bash /ppml/torchserve/start-frontend-sgx.sh -c $configFile -f $frontend_core
 )&
 wait
 
