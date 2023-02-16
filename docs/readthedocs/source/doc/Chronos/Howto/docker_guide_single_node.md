@@ -89,6 +89,7 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
        2. Make sure network is available and bash ``/opt/install-python-env.sh`` with build args. The values are introduced in `Build an image <## Build an image>`_.
 
        .. code-block:: python
+
               # bash /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
               # For example, if you want to install bigdl-chronos[pytorch,inference]
               bash /opt/install-python-env.sh pytorch n single y n
