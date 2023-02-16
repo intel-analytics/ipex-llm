@@ -14,44 +14,49 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.utils
+package com.intel.analytics.bigdl.ppml.kms.common
 
-import java.io.Serializable
+import java.io.{Serializable, File, FileWriter}
 import java.security.SecureRandom
 import javax.crypto.{KeyGenerator, SecretKey}
 import java.util.Base64
+import java.nio.charset.StandardCharsets
 import scala.collection.mutable.HashMap
 import com.intel.analytics.bigdl.ppml.kms.KeyManagementService
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import org.apache.hadoop.fs.Path
+import com.intel.analytics.bigdl.ppml.kms.common.KmsMetaFormatSerializer
 
 // load both encryptedDataKey and dataKeyPlainText
 case class KeyLoader(val fromKms: Boolean,
                      val primaryKeyMaterial: String = "",
                      val kms: KeyManagementService = null,
                      val primaryKeyPlainText: String = "") extends Serializable {
-    protected val keySize = 32
+    protected val keySize = 128
     protected val keyReaderWriter = new KeyReaderWriter
     val META_FILE_NAME = ".meta"
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
     
-    // retrieve an existing data key
+    // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
         val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
-        val encryptedDataKey = keyReaderWriter.readKeyFromFile(metaPath)
+        val jsonStr = scala.io.Source.fromFile(metaPath).mkString
+        val encryptedDataKey = KmsMetaFormatSerializer(jsonStr).encryptedDataKey
         if (fromKms) {
-            kms.retrieveDataKeyPlainText(primaryKeyMaterial, encryptedDataKey)
+          kms.retrieveDataKeyPlainText(primaryKeyMaterial, encryptedDataKey)
         } else {
-            val decrypt = new BigDLEncrypt()
-            decrypt.init(CRYPTO_MODE, DECRYPT, primaryKeyPlainText)
-            new String(decrypt.doFinal(encryptedDataKey.getBytes)._1)
+          val decrypt = new BigDLEncrypt()
+          decrypt.init(CRYPTO_MODE, DECRYPT, primaryKeyPlainText)
+          new String(decrypt.doFinal(encryptedDataKey.getBytes)._1,
+                     StandardCharsets.UTF_8)
         }
     }
 
-    // generate a data key and write it to meta as well
+    // generate a data key, and return the plaintext string
+    // and cache encryptedDataKey for meta writing after df writing
     def generateDataKeyPlainText(): String = {
         if(fromKms) {
             encryptedDataKey = kms.retrieveDataKey(primaryKeyMaterial).get
@@ -64,7 +69,8 @@ case class KeyLoader(val fromKms: Boolean,
             val encrypt = new BigDLEncrypt()
             encrypt.init(CRYPTO_MODE, ENCRYPT, primaryKeyPlainText)
             encryptedDataKey = new String(
-              encrypt.doFinal(dataKeyPlainText.getBytes)._1
+              encrypt.doFinal(dataKeyPlainText.getBytes)._1,
+              StandardCharsets.UTF_8
             )
             dataKeyPlainText
         }
@@ -73,7 +79,10 @@ case class KeyLoader(val fromKms: Boolean,
     // write encryptedDataKey to meta after spark df has been written
     def writeEncryptedDataKey(fileDirPath: String): Unit = {
       val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
-      keyReaderWriter.writeKeyToFile(metaPath, encryptedDataKey)
+      val jsonStr = KmsMetaFormatSerializer(KmsMetaFormat(encryptedDataKey))
+      val fw = new FileWriter(new File(metaPath))
+      fw.write(jsonStr)
+      fw.close()
     }
 }
 

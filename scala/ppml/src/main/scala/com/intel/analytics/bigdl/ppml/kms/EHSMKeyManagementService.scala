@@ -137,7 +137,7 @@ class EHSMKeyManagementService(
         Log4Error.invalidInputError(encryptedDataKeyString != "",
           "encryptedDataKeyString should be specified")
         encryptedDataKeyString
-      }
+    }
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
     val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPIKEY, timestamp)

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import com.intel.analytics.bigdl.ppml.utils.KeyLoaderManagement
+import com.intel.analytics.bigdl.ppml.kms.common.KeyLoaderManagement
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**

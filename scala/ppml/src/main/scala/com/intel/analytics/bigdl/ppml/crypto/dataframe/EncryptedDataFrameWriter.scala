@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.writeCsv
-import com.intel.analytics.bigdl.ppml.utils.{KeyReaderWriter, KeyLoaderManagement, KeyLoader}
+import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
+import com.intel.analytics.bigdl.ppml.kms.common.KeyLoaderManagement
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, AES_GCM_CTR_V1, AES_GCM_V1, Crypto, CryptoMode, ENCRYPT, PLAIN_TEXT}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
@@ -74,9 +75,6 @@ class EncryptedDataFrameWriter(
                                   .generateDataKeyPlainText
         sparkSession.sparkContext.hadoopConfiguration
                     .set("bigdl.dataKey.plainText", dataKeyPlainText)
-        sparkSession.sparkContext.hadoopConfiguration
-                    .set("hadoop.io.compression.codecs",
-                         "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
         option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
       case _ =>
         Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)

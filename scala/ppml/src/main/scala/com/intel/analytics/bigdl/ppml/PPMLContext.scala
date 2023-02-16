@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
-import com.intel.analytics.bigdl.ppml.utils.{Supportive, KeyLoader, KeyLoaderManagement}
+import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.kms.common.{KeyLoader, KeyLoaderManagement}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
