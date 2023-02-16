@@ -49,6 +49,7 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
 
 
 def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
+    print(_check_whether_add_label(model, dataloader, input_sample))
     if _check_whether_add_label(model, dataloader, input_sample):
         # need to add label automaticly
         # generate a warning for user first
@@ -73,7 +74,8 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
 
 def _need_dataloader_type_transformation(model, dataloader):
     # get forward method's parameter number
-    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    # forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    forward_args = get_conditional_args(model, include="all")
     forward_args_len = len(forward_args)
 
     # if the model is a simple model(x) format
@@ -85,7 +87,7 @@ def _need_dataloader_type_transformation(model, dataloader):
 
     # check if a dataloader has met inc format
     input_sample = next(iter(dataloader))
-    if isinstance(input_sample[0], Sequence):
+    if isinstance(input_sample, Sequence):
         if len(input_sample) == 2 and isinstance(input_sample[1], torch.Tensor) and \
                 len(input_sample[0]) <= forward_args_len:
             return False, forward_args_len
@@ -101,7 +103,10 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
     '''
     # get forward method's parameter number and input sample
     forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None),))
+    # forward_args = get_conditional_args(model, include="all")
     forward_args_len = len(forward_args)
+    print(__file__)
+    print(forward_args_len)
     loader_input_sample = next(iter(dataloader))
 
     if isinstance(loader_input_sample, torch.Tensor):
@@ -109,6 +114,7 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         if forward_args_len >= 1:
             return True
     elif isinstance(loader_input_sample, Sequence):
+        print(len(loader_input_sample[0]))
         if len(loader_input_sample[0]) == forward_args_len:
             # this means user returns a (x1, x2, ...), y
             return False
@@ -117,14 +123,22 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                 # this means users dataset returns at least 1 label
                 return False
             else:
-                # test run to check if input_sample meet input requirent
-                try:
-                    model(*input_sample)
-                    # additional check for kwargs paramter
-                    if input_sample is not None and len(loader_input_sample) > len(input_sample):
+                # test run to check if input_sample meet input requirement
+                if len(loader_input_sample) == 2:
+                    try:
+                        model(loader_input_sample[0])
                         return False
-                    return True
-                except Exception:
-                    # input sample may contain label already
+                    except Exception:
+                        if isinstance(loader_input_sample[0], Sequence):
+                            try:
+                                model(*loader_input_sample[0])
+                                return False
+                            except Exception:
+                                # input sample don't contain label
+                                return True
+                        else:
+                            return True
+                else:
+                    # TODO:
                     pass
     return False

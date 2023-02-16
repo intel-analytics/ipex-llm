@@ -43,6 +43,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     tensor_args = get_conditional_args(model)
     input_sample = get_input_example(model, input_sample, forward_args)
     input_sample = complement_input_sample(model, input_sample)
+    print("input sample for export:", len(input_sample))
 
     invalidInputError(input_sample is not None,
                       'You should implement at least one of model.test_dataloader, '
