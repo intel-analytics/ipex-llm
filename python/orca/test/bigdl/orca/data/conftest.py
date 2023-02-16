@@ -29,7 +29,6 @@ def orca_context_fixture(request):
                "AWS_SECRET_ACCESS_KEY": secret_access_key}
     else:
         env = None
-    sc = init_orca_context(cores=4, spark_log_level="INFO",
-                           env=env, object_store_memory="1g")
+    sc = init_orca_context(cores=4, spark_log_level="INFO", env=env)
     yield sc
     stop_orca_context()
