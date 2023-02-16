@@ -151,8 +151,8 @@ init_orca_context(..., num_ray_nodes=2, ray_node_cpu_cores=4)
 
 ### No Space Left on Device
 This error may happen when your disk even has free space, the reason could be:
-1. Inodes get not have enough space and run out.  
-2. Files that were deleted while processes were still running and keeping the space reserved.
+1. Inodes do not have enough space.  
+2. Processes are still using deleted files.
 
 To solve this issue, please follow the steps below:
 1. Checkout Spaces on Inodes
@@ -173,16 +173,18 @@ To solve this issue, please follow the steps below:
    tmpfs          98889585      19 98889566    1% /sys/fs/cgroup
    ```
 
-   If there is a disk that uses a small part but the inode table is full, you should delete useless files.
+   If there is a disk that uses a small part but the Inode table is full, you should delete useless files.
 
 2. Restart the Process to Free Space
+   
+   Files that were deleted (while processes are still running) could keep the space reserved, you should restart processes to free up the space.
 
    Please run the command below to see which processes have opened descriptors to deleted files:
    ```bash
    sudo lsof | grep deleted
    ```
 
-   Then you could restart the process to free the reserved space.
+   Then you could restart the processes to free up the reserved space.
    ```bash
    sudo systemctl restart service_name
    ```
