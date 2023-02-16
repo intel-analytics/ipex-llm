@@ -33,6 +33,7 @@ from .checker import _avx512_checker
 
 from .model import AcceleratedModel
 
+from .schedule import schedule_workers
 from .schedule import schedule_processors
 
 from .subprocess import spawn_new_process
