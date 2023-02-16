@@ -619,13 +619,12 @@ class TFRunner:
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
-        self.load_params = params
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
