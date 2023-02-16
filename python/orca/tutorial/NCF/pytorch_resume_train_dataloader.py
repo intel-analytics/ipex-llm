@@ -29,7 +29,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Resume Training with DataLoader")
-init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_dataset.py,pytorch_model.py,utils.py")
 
 
 # TODO: Save the processed data of the data loader as well?

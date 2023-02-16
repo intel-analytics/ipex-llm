@@ -29,7 +29,7 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Resume Training with Orca XShards")
-init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,pytorch_model.py,utils.py")
 
 
 # Step 2: Load the processed data
