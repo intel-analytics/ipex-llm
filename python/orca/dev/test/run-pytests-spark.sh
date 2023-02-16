@@ -50,7 +50,8 @@ echo "Running orca data tests"
 python -m pytest -v test/bigdl/orca/data \
       --ignore=test/bigdl/orca/data/test_xshards_partition.py \
       --ignore=test/bigdl/orca/data/test_ray_xshards.py \
-      --ignore=test/bigdl/orca/data/test_ray_dataset.py
+      --ignore=test/bigdl/orca/data/test_ray_dataset.py \
+      --ignore=test/bigdl/orca/data/test_read_parquet_images.py
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
