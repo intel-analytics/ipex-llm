@@ -770,11 +770,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 dataset = RepeatDataset(sample=calib_data, num=1)
                 calib_dataloader = DataLoader(dataset, batch_size=1)
                 calib_dataloader = remove_batch_dim_fn(calib_dataloader)
-                # debug
-                sample = next(iter(calib_dataloader))
-                print("1. sample length is : ", len(sample))
-                print(sample[0])
-                print(sample[1])
             else:
                 if calib_data is None and calib_dataloader is not None:
                     # will be deprecate in future release
@@ -790,20 +785,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataloader = automatic_add_label_in_dataloader(model,
                                                                      calib_dataloader,
                                                                      input_sample)
-                # debug
-                sample = next(iter(calib_dataloader))
-                print("2. sample length is : ", len(sample))
-                print(sample[0])
-                print(sample[1])
 
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
                                                                 calib_dataloader)
-            # debug
-            sample = next(iter(inc_calib_dataloader))
-            print("3. sample length is : ", len(sample), len(sample[0]), len(sample[1]))
-            print("3. sample length is : ", len(sample), sample[0], len(sample[1]))
 
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {

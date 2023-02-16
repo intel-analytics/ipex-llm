@@ -49,7 +49,6 @@ def transform_multiple_input_dataloader_to_inc_mode(model, dataloader):
 
 
 def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
-    print(_check_whether_add_label(model, dataloader, input_sample))
     if _check_whether_add_label(model, dataloader, input_sample):
         # need to add label automaticly
         # generate a warning for user first
@@ -105,8 +104,6 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
     forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None),))
     # forward_args = get_conditional_args(model, include="all")
     forward_args_len = len(forward_args)
-    print(__file__)
-    print(forward_args_len)
     loader_input_sample = next(iter(dataloader))
 
     if isinstance(loader_input_sample, torch.Tensor):
@@ -114,7 +111,6 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         if forward_args_len >= 1:
             return True
     elif isinstance(loader_input_sample, Sequence):
-        print(len(loader_input_sample[0]))
         if len(loader_input_sample[0]) == forward_args_len:
             # this means user returns a (x1, x2, ...), y
             return False
