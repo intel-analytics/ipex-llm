@@ -110,13 +110,15 @@ def schedule_func(epoch, lr):
     else:
         return lr * 0.5
 
+
 def get_callbacks(args):
     if args.tensorboard:
         from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
         return [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
-                                         freq=1000)]
+                                    freq=1000)]
     else:
         return []
+
 
 def save_model_config(config, model_dir, file_name="config.json"):
     if is_local_path(model_dir):  # save to local path
