@@ -30,9 +30,7 @@ EPSILON = 1e-10
 
 
 def _standardize_input(y_true: "ndarray", y_pred: "ndarray",
-                       multioutput: str) -> Union[Tuple["ndarray", "ndarray", Tuple[int, int]],
-                                                  Tuple["ndarray", "ndarray", Tuple[()]],
-                                                  Tuple["ndarray", "ndarray", Tuple[int]]]:
+                       multioutput: str) -> Tuple:
     """
     This function check the validation of the input
     input should be one of list/tuple/ndarray with same shape and not be None

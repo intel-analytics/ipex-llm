@@ -140,14 +140,11 @@ class AutoEstimator:
             metric_mode: Optional[str]=None,
             metric_threshold: Optional[Union["Function", "Float", "Integer"]]=None,
             n_sampling: int=1,
-            search_space: Optional[Dict[str, Union["Float", "Categorical", "Function", "Integer",
-                                                   Dict[str, List[bool]]]]]=None,
+            search_space: Optional[Dict]=None,
             search_alg: Optional[str]=None,
-            search_alg_params: Optional[
-                Dict[str, Dict[str, Union["Function", "Integer", "Float"]]]]=None,
+            search_alg_params: Optional[Dict]=None,
             scheduler: Optional[str]=None,
-            scheduler_params: Optional[
-                Dict[str, Dict[str, Union["Function", "Integer", "Float"]]]]=None,
+            scheduler_params: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             ) -> None:
