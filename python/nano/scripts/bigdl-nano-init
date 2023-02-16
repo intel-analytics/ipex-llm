@@ -184,39 +184,38 @@ if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
 elif [ $OS = "linux" ] && [ -f "${LIB_DIR}/libiomp5.so" ]; then
     OPENMP=1
     export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
+    cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
+    max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
+    # bash's array index starts from 0, while zsh's array index starts from 1,
+    # so we use -1, -2, -3 as index here for consistency
+    let cpu_=${max_cpu_info[-3]}+1
+    let sockets_=${max_cpu_info[-2]}+1
+    let core_=${max_cpu_info[-1]}+1
+    let threads_per_core=$cpu_/$core_
+    let cores_per_socket=$core_/$sockets_
 elif [ $OS = "macos" ] && [ -f "${LIB_DIR}/libiomp5.dylib" ]; then
     OPENMP=1
     export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libiomp5.dylib"
+    core_=$(sysctl -n hw.physicalcpu)
 else
     echo "No OpenMP library found in ${LIB_DIR}."
 fi
 
+if [[ "${PERF_VAR}" -eq 1 ]]; then
+    # experiment variable to speed up performance.
+    OPENMP=0
+    export OMP_NUM_THREADS=$core_
+    export KMP_AFFINITY=granularity=fine,compact,1,0
+    echo "Setting KMP_BLOCKTIME..."
+    export KMP_BLOCKTIME=1
+fi
+
 if [ "${OPENMP}" -eq 1 ]; then
     echo "Setting OMP_NUM_THREADS..."
-    if [ $OS = "linux" ]; then 
-        cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
-        max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
-        # bash's array index starts from 0, while zsh's array index starts from 1,
-        # so we use -1, -2, -3 as index here for consistency
-        let cpu_=${max_cpu_info[-3]}+1
-        let sockets_=${max_cpu_info[-2]}+1
-        let core_=${max_cpu_info[-1]}+1
-        let threads_per_core=$cpu_/$core_
-        let cores_per_socket=$core_/$sockets_
-        export OMP_NUM_THREADS=$core_
-    elif [ $OS = "macos" ]; then
-        export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
-    else
-        unset OMP_NUM_THREADS
-    fi
+    export OMP_NUM_THREADS=$core_
 
     echo "Setting KMP_AFFINITY..."
-    if [[ "${PERF_VAR}" -eq 1 ]]; then
-        # experiment variable to speed up performance.
-        export KMP_AFFINITY=granularity=fine,compact,1,0
-    else
-        export KMP_AFFINITY=granularity=fine,none
-    fi
+    export KMP_AFFINITY=granularity=fine,none
 
     echo "Setting KMP_BLOCKTIME..."
     export KMP_BLOCKTIME=1
@@ -252,7 +251,6 @@ else
         # bigdl-nano-init
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
         echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
-        echo "else" >> $ACTIVATED_PATH/nano_vars.sh
         echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $ACTIVATED_PATH/nano_vars.sh
 
