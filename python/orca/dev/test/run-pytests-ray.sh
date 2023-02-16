@@ -60,10 +60,8 @@ then
    exit $exit_status_3
 fi
 
-echo "Running orca data ray tests"
-python -m pytest -v test/bigdl/orca/data/test_ray_xshards.py
-python -m pytest -v test/bigdl/orca/data/test_ray_dataset.py
-python -m pytest -v test/bigdl/orca/data/test_read_parquet_images.py
+echo "Running orca data ray related tests"
+python -m pytest -v test/bigdl/orca/data/ray
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then
