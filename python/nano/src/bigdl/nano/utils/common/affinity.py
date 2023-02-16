@@ -16,17 +16,15 @@
 
 import os
 import warnings
-import torch
 
 
 def get_affinity_core_num():
     # When using proclist to bind cores,
     # `os.sched_getaffinity(0)` will return only the first bound core,
     # so we need to parse KMP_AFFINITY manually in this case
-    preset_thread_nums = torch.get_num_threads()
     KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
     if "compact" in KMP_AFFINITY:
-        affinity_core_num = preset_thread_nums
+        affinity_core_num = None
     elif "proclist" in KMP_AFFINITY:
         try:
             start_pos = KMP_AFFINITY.find('[', KMP_AFFINITY.find("proclist")) + 1
@@ -42,7 +40,7 @@ def get_affinity_core_num():
             affinity_core_num = len(core_list)
         except Exception as _e:
             warnings.warn(f"Failed to parse KMP_AFFINITY: '{KMP_AFFINITY}'.")
-            affinity_core_num = preset_thread_nums
+            affinity_core_num = None
     else:
         affinity_core_num = len(os.sched_getaffinity(0))
 
