@@ -27,12 +27,26 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
-echo "Running tf2estimator ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
-exit_status_1=$?
-if [ $exit_status_1 -ne 0 ];
-then
-   exit $exit_status_1
+echo "Running orca automl tests"
+python_version=$(python --version | awk '{print$2}')
+if [ $python_version == 3.7.10 ];then
+    python -m pytest -v test/bigdl/orca/automl
+    exit_status_1=$?
+    if [ $exit_status_1 -ne 0 ];
+    then
+        exit $exit_status_1
+    fi
+    ray stop -f
+else
+    python -m pytest -v test/bigdl/orca/automl \
+          --ignore=test/bigdl/orca/automl/model/test_base_keras_model.py \
+          --ignore=test/bigdl/orca/automl/autoestimator/
+    exit_status_1=$?
+    if [ $exit_status_1 -ne 0 ];
+    then
+        exit $exit_status_1
+    fi
+    ray stop -f
 fi
 
 ray stop -f

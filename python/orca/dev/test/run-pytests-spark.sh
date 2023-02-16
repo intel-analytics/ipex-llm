@@ -30,8 +30,8 @@ export PYSPARK_DRIVER_PYTHON=python
 python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
   python -m pytest -v test/bigdl/orca/tfpark
-  python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_tf_spark_estimator.py
-  python -m pytest -v test/bigdl/orca/learn/bigdl --ignore=test/bigdl/orca/learn/bigdl/test_estimator_openvino.py
+  python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
+  python -m pytest -v test/bigdl/orca/data/test_write_parquet.py
 fi
 python -m pytest -v test/bigdl/orca/learn/test_metrics.py
 python -m pytest -v test/bigdl/orca/learn/test_utils.py

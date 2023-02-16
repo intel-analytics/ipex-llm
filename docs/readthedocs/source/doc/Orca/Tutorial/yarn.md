@@ -47,7 +47,7 @@ Please see more details in [Launching Spark on YARN](https://spark.apache.org/do
 
 For **yarn-client** mode, you can directly find the driver logs in the console. 
 
-For **yarn-cluster** mode, an `application_time_id` will be returned (`application_1668477395550_1045` in the following log) when the application master process is completed.
+For **yarn-cluster** mode, an `application_time_id` will be returned (`application_1668477395550_1045` in the following log) when the application master process completes.
 
 ```bash
 23/02/15 15:30:26 INFO yarn.Client: Application report for application_1668477395550_1045 (state: FINISHED)
@@ -281,7 +281,7 @@ bigdl-submit \
 ```
 In the `bigdl-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
-* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find it by running `which python`.
+* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
 
 
@@ -373,7 +373,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 In the `spark-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
-* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment. You can find the location by running `which python`.
+* `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
 * `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
 
 #### 5.3.2 Yarn Cluster

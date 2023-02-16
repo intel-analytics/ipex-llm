@@ -22,7 +22,7 @@ on:
         - Orca-Pytest-Horovod-Tf2-Py37-Spark3
         - Orca-Pytest-Horovod-Pytorch-Py37-Spark3
         - Orca-Pytest-Jep-Py37-Spark3
-        - Orca-Pytest-Rayonspark-Tf2-Py37
+        - Orca-Pytest-AutoML-Py37-Spark3
         - Orca-ExampleTest-Jep-Py37-Spark3
         - Orca-ExampleTest-Py37-Spark3
         - Orca-ExampleTest-Ray-Py37-Spark3
@@ -30,7 +30,7 @@ on:
         - Orca-ExampleTest-Horovod-Tf-Py37-Spark3
         - Orca-ExampleTest-Horovod-Pytorch-Py38-Spark3
         - Orca-ExampleTest-Horovod-Tf-Py38-Spark3
-        - Orca-Pytest-Rayonspark-Tf2-Py37
+        - Orca-Pytest-AutoML-Py37-Spark3
         - Orca-Tutorial-Xshards-Py37-Spark3
         - Orca-Pytest-Ray-Ctx-Py37-Spark3
         - Dllib-Scala-UT
@@ -396,8 +396,8 @@ jobs:
         job-name: Orca-Pytest-Horovod-Pytorch-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
-  Orca-Pytest-Rayonspark-Tf2-Py37:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Rayonspark-Tf2-Py37' || github.event.inputs.artifact == 'all' }}
+  Orca-Pytest-AutoML-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-AutoML-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -409,7 +409,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
     - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-rayonspark-tf2-action/nightly-test
+      uses: ./.github/actions/orca/orca-pytest-automl-py37-spark3-action/nightly-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
@@ -420,9 +420,9 @@ jobs:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
-        file-name: Orca-Pytest-Rayonspark-Tf2-Py37.json
+        file-name: Orca-Pytest-AutoML-Py37-Spark3.json
         type: job
-        job-name: Orca-Pytest-Rayonspark-Tf2-Py37
+        job-name: Orca-Pytest-AutoML-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
   Orca-Pytest-Jep-Py37-Spark3:
@@ -455,7 +455,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
       
   Orca-Tutorial-Xshards-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -479,7 +479,7 @@ jobs:
         runner-hosted-on: 'Shanghai' 
 
   Orca-Pytest-Ray-Ctx-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin-Ctx]
 
     steps:
