@@ -10,7 +10,13 @@ hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 ```
 
 ## Arguments
-TODO
++ `--data_dir`: The path to load data from local or remote resources (default to be `./ml-1m`).
++ `--model_dir`: The path to save model and logs (default to be `./`).
++ `--cluster_mode`: The cluster mode, such as `local`, `yarn-client`, `yarn-cluster`, `k8s-client`, `k8s-cluster`, `spark-submit` or `bigdl-submit` (default to be `local`).
++ `--backend`: The backend of Orca Estimator, either ray or spark (default to be `spark`).
++ `--workers_per_node`: The number of workers on each node (default to be `1`).
++ `--tensorboard`: Only valid in train mode, whether to use TensorBoard as the train callback.
++ `--lr_scheduler`: Only valid in train mode, whether to use learning rate scheduler for training.
 
 ## Prepare the environment
 ```bash
