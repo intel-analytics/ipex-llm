@@ -29,10 +29,54 @@ export PYSPARK_DRIVER_PYTHON=python
 
 python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
+  # test_estimator_openvino.py is tested in run-pytests-spark-openvino.sh
+  echo "Running orca tfpark tests"
   python -m pytest -v test/bigdl/orca/tfpark
+  exit_status_1=$?
+  if [ $exit_status_1 -ne 0 ];
+  then
+      exit $exit_status_1
+  fi
   python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
-  python -m pytest -v test/bigdl/orca/data/test_write_parquet.py
+  exit_status_2=$?
+  if [ $exit_status_2 -ne 0 ];
+  then
+      exit $exit_status_2
+  fi
 fi
+
+echo "Running orca data tests"
+# test_xshards_partition.py is tested in run-pytests-basic-env.sh
+python -m pytest -v test/bigdl/orca/data \
+      --ignore=test/bigdl/orca/data/test_xshards_partition.py \
+      --ignore=test/bigdl/orca/data/test_ray_xshards.py \
+      --ignore=test/bigdl/orca/data/test_ray_dataset.py
+exit_status_3=$?
+if [ $exit_status_3 -ne 0 ];
+then
+   exit $exit_status_3
+fi
+
+echo "Running orca learn metrics tests"
 python -m pytest -v test/bigdl/orca/learn/test_metrics.py
+exit_status_4=$?
+if [ $exit_status_4 -ne 0 ];
+then
+   exit $exit_status_4
+fi
+
+echo "Running orca learn utils tests"
 python -m pytest -v test/bigdl/orca/learn/test_utils.py
+exit_status_5=$?
+if [ $exit_status_5 -ne 0 ];
+then
+   exit $exit_status_5
+fi
+
+echo "Running orca learn inference tests"
 python -m pytest -v test/bigdl/orca/inference
+exit_status_6=$?
+if [ $exit_status_6 -ne 0 ];
+then
+   exit $exit_status_6
+fi
