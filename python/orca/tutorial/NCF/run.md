@@ -59,34 +59,35 @@ The above command will return the following files
 ```bash
 Loading data...
 Train results:
-num_samples: 2882458
+num_samples: 3938789
 epoch: 1.0
-batch_count: 282.0
-train_loss: 0.3417230605540067
-last_train_loss: 0.29314390341794283
-val_accuracy: 0.874625027179718
-val_precision: 0.7700153589248657
-val_recall: 0.5436215400695801
-val_loss: 0.2966938563155457
-val_num_samples: 720335.0
+batch_count: 385.0
+train_loss: 0.332098191390063
+last_train_loss: 0.2929740669144447
+val_accuracy: 0.8761903047561646
+val_precision: 0.7543439269065857
+val_recall: 0.5766154527664185
+val_loss: 0.29692074001052177
+val_num_samples: 983776.0
 
-num_samples: 2882458
+num_samples: 3938789
 epoch: 2.0
-batch_count: 282.0
-train_loss: 0.2704732511598162
-last_train_loss: 0.26464769959350676
-val_accuracy: 0.8847938776016235
-val_precision: 0.7885202169418335
-val_recall: 0.5895587801933289
-val_loss: 0.2665152659829276
-val_num_samples: 720335.0
+batch_count: 385.0
+train_loss: 0.26862238181653536
+last_train_loss: 0.26927183309628583
+val_accuracy: 0.8856792449951172
+val_precision: 0.7758791446685791
+val_recall: 0.6126476526260376
+val_loss: 0.2679317132346567
+val_num_samples: 983776.0
 
-Evaluation results:
-num_samples: 720340
-Accuracy: 0.8834050297737122
-Precision: 0.7855872511863708
-Recall: 0.5875657200813293
-val_loss: 0.2684867502365162
+Evaluation results:                                                             
+num_samples: 983858
+Accuracy: 0.8859977722167969
+Precision: 0.7784695625305176
+Recall: 0.6156555414199829
+val_loss: 0.26760029486236536
+Stopping orca context  
 ```
 
 </details>
