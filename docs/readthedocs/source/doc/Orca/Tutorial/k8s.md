@@ -31,7 +31,7 @@ In `init_orca_context`, you may specify necessary runtime configurations for run
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
-* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) or [`Kubernetes deployment`](#use-kubernetes-deployment-with-conda-archive) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
+* All arguments __except__ `cluster_mode` will be ignored when using [`spark-submit`](#use-spark-submit) or [`Kubernetes deployment`](#use-kubernetes-deployment) to submit and run Orca programs, in which case you are supposed to specify these configurations via the submit command or the YAML file.
 
 After Orca programs finish, you should always call `stop_orca_context` at the end of the program to release resources and shutdown the underlying distributed runtime engine (such as Spark or Ray).
 ```python
@@ -275,12 +275,11 @@ If your program depends on a nested directory of Python files, you are recommend
 
 ---
 ## 6. Run Jobs on K8s
-In the following part, we will illustrate four ways to submit and run BigDL Orca applications on K8s.
+In the following part, we will illustrate three ways to submit and run BigDL Orca applications on K8s.
 
 * Use `python` command
 * Use `spark-submit`
-* Use Kubernetes Deployment (with Conda Archive)
-* Use Kubernetes Deployment (with Integrated Image)
+* Use Kubernetes Deployment
 
 You can choose one of them based on your preference or cluster settings.
 
@@ -456,8 +455,8 @@ In the `spark-submit` script:
 * `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into the driver pod.
 
 
-### 6.3 Use Kubernetes Deployment (with Conda Archive)
-BigDL supports users (which want to execute programs directly on __Develop Node__) to run an application by creating a Kubernetes Deployment object.
+### 6.3 Use Kubernetes Deployment
+BigDL supports users (which want to execute programs directly on __Develop Node__) to run an application by creating a Kubernetes Deployment object with Conda archive.
 
 Before submitting the Orca application, you should:
 * On the __Develop Node__
@@ -478,7 +477,7 @@ Before submitting the Orca application, you should:
         ```
 
 #### 6.3.1 K8s Client
-BigDL has provided an example YAML file (see __[orca-tutorial-client.yaml](../../../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -630,7 +629,7 @@ kubectl delete job orca-pytorch-job
 ```
 
 #### 6.3.2 K8s Cluster
-BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](../../../../../../python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
+BigDL has provided an example YAML file (see __[orca-tutorial-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__, which describes a Deployment that runs the `intelanalytics/bigdl-k8s:2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
 
 __Notes:__ 
 * Please call `init_orca_context` at very begining part of each Orca program.
@@ -770,315 +769,4 @@ kubectl logs `orca-pytorch-job-driver`
 After the task finish, you could delete the job as the command below.
 ```bash
 kubectl delete job orca-pytorch-job
-```
-
-
-### 6.4 Use Kubernetes Deployment (without Integrated Image)
-BigDL also supports uses to skip preparing envionment through providing a container image (`intelanalytics/bigdl-k8s:orca-2.1.0`) which has integrated all BigDL required environments.
-
-__Notes:__
-* The image will be pulled automatically when you deploy pods with the YAML file.
-* Conda archive is no longer needed in this method, please skip __[Section 3](#3-prepare-environment)__, since BigDL has integrated environment in `intelanalytics/bigdl-k8s:orca-2.1.0`. 
-* If you need to install extra Python libraries which may not included in the image, please submit applications with Conda archive (refer to __[Section 6.3](#63-use-kubernetes-deployment)__).
-
-Before submitting the example application, you should:
-* On the __Develop Node__
-    * Download dataset and upload it to NFS.
-        ```bash
-        mv /path/to/dataset /bigdl/nfsdata 
-        ```
-    * Upload example Python files and extra Python dependencies to NFS.
-        ```bash
-        # Upload example Python files
-        cp /path/to/train.py /bigdl/nfsdata
-
-        # Uplaod extra Python dependencies
-        cp /path/to/model.py /bigdl/nfsdata
-        ```
-
-#### 6.4.1 K8s Client
-BigDL has provided an example YAML file (see __[integrated_image_client.yaml](../../../../../../python/orca/tutorial/pytorch/docker/integrate_image_client.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-client mode:
-
-__Notes:__
-* Please call `init_orca_context` at very begining part of each Orca program.
-    ```python
-    from bigdl.orca import init_orca_context
-
-    init_orca_context(cluster_mode="spark-submit")
-    ```
-* Spark client needs to specify `spark.pyspark.driver.python`, this python env should be on NFS dir.
-    ```bash
-    --conf spark.pyspark.driver.python=/bigdl/nfsdata/orca_env/bin/python \
-    ```
-
-```bash
-#integrate_image_client.yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: orca-integrate-job
-spec:
-  template:
-    spec:
-      serviceAccountName: spark
-      restartPolicy: Never
-      hostNetwork: true
-      containers:
-      - name: spark-k8s-client
-        image: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
-        imagePullPolicy: IfNotPresent
-        command: ["/bin/sh","-c"]
-        args: ["
-                export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
-                ${SPARK_HOME}/bin/spark-submit \
-                --master ${RUNTIME_SPARK_MASTER} \
-                --deploy-mode ${SPARK_MODE} \
-                --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
-                --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
-                --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-                --name orca-integrate-pod \
-                --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-                --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata \
-                --conf spark.pyspark.driver.python=python \
-                --conf spark.pyspark.python=/usr/local/envs/bigdl/bin/python \
-                --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata/ \
-                --executor-cores 10 \
-                --executor-memory 50g \
-                --num-executors 4 \
-                --total-executor-cores 40 \
-                --driver-cores 10 \
-                --driver-memory 50g \
-                --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
-                --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
-                --conf spark.sql.catalogImplementation='in-memory' \
-                --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                local:///bigdl/nfsdata/train.py
-                --cluster_mode spark-submit
-                --data_dir file:///bigdl/nfsdata/dataset
-                "]
-        securityContext:
-          privileged: true
-        env:
-          - name: RUNTIME_K8S_SPARK_IMAGE
-            value: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
-          - name: RUNTIME_SPARK_MASTER
-            value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
-          - name: RUNTIME_DRIVER_PORT
-            value: !!str 54321
-          - name: SPARK_MODE
-            value: client
-          - name: RUNTIME_K8S_SERVICE_ACCOUNT
-            value: spark
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.1.0
-          - name: SPARK_HOME
-            value: /opt/spark
-          - name: SPARK_VERSION
-            value: 3.1.2
-          - name: BIGDL_VERSION
-            value: 2.1.0
-        resources:
-          requests:
-            cpu: 1
-          limits:
-            cpu: 4
-        volumeMounts:
-          - name: nfs-storage
-            mountPath: /bigdl/nfsdata
-          - name: nfs-storage
-            mountPath: /root/.kube/config
-            subPath: kubeconfig
-      volumes:
-      - name: nfs-storage
-        persistentVolumeClaim:
-          claimName: nfsvolumeclaim
-```
-
-In the YAML file:
-* `restartPolicy`: Restart policy for all Containers within the pod. One of Always, OnFailure, Never. Default to Always.
-* `containers`: A single application Container that you want to run within a pod.
-    * `name`: Name of the Container, each Container in a pod must have a unique name.
-    * `image`: Name of the Container image.
-    * `imagePullPolicy`: Image pull policy. One of Always, Never and IfNotPresent. Defaults to Always if `:latest` tag is specified, or IfNotPresent otherwise.
-    * `command`: command for the containers that run in the Pod.
-    * `args`: arguments to submit the spark application in the Pod. See more details of the `spark-submit` script in __[Section 6.2.1](#621-k8s-client)__.
-    * `securityContext`: SecurityContext defines the security options the container should be run with.
-    * `env`: List of environment variables to set in the Container, which will be used when submitting the application.
-        * `env.name`: Name of the environment variable.
-        * `env.value`: Value of the environment variable.
-    * `resources`: Allocate resources in the cluster to each pod.
-        * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
-        * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Declare where to mount volumes into containers.
-        * `name`: Match with the Name of a Volume.
-        * `mountPath`: Path within the Container at which the volume should be mounted.
-        * `subPath`: Path within the volume from which the Container's volume should be mounted.
-    * `volume`: specify the volumes to provide for the Pod.
-        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
-
-Create a Pod and run Fashion-MNIST application based on the YAML file.
-```bash
-kubectl apply -f integrate_image_client.yaml
-```
-
-List all pods to find the driver pod, which will be named as `orca-integrate-job-xxx`.
-```bash
-# find out driver pod
-kubectl get pods
-```
-
-View logs from the driver pod to retrive the training stats. 
-```bash
-# retrive training logs
-kubectl logs `orca-integrate-job-xxx`
-```
-
-After the task finish, you could delete the job as the command below.
-```bash
-kubectl delete job orca-integrate-job
-```
-
-#### 6.4.2 K8s Cluster
-BigDL has provided an example YAML file (see __[integrate_image_cluster.yaml](../../../../../../python/orca/tutorial/pytorch/docker/integrate_image_cluster.yaml)__, which describes a deployment that runs the `intelanalytics/bigdl-k8s:orca-2.1.0` image) to run the tutorial FashionMNIST program on k8s-cluster mode:
-
-__Notes:__
-* Please call `init_orca_context` at very begining part of each Orca program.
-    ```python
-    from bigdl.orca import init_orca_context
-
-    init_orca_context(cluster_mode="spark-submit")
-    ```
-
-```bash
-# integrate_image_cluster.yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: orca-integrate-job
-spec:
-  template:
-    spec:
-      serviceAccountName: spark
-      restartPolicy: Never
-      hostNetwork: true
-      containers:
-      - name: spark-k8s-cluster
-        image: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
-        imagePullPolicy: IfNotPresent
-        command: ["/bin/sh","-c"]
-        args: ["
-                ${SPARK_HOME}/bin/spark-submit \
-                --master ${RUNTIME_SPARK_MASTER} \
-                --deploy-mode ${SPARK_MODE} \
-                --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-                --name orca-integrate-pod \
-                --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata \
-                --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata/ \
-                --executor-cores 10 \
-                --executor-memory 50g \
-                --num-executors 4 \
-                --total-executor-cores 40 \
-                --driver-cores 10 \
-                --driver-memory 50g \
-                --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
-                --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
-                --conf spark.sql.catalogImplementation='in-memory' \
-                --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                local:///bigdl/nfsdata/train.py
-                --cluster_mode spark-submit
-                --data_dir file:///bigdl/nfsdata/dataset
-                "]
-        securityContext:
-          privileged: true
-        env:
-          - name: RUNTIME_K8S_SPARK_IMAGE
-            value: intelanalytics/bigdl-spark-3.1.2:orca-2.1.0
-          - name: RUNTIME_SPARK_MASTER
-            value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
-          - name: SPARK_MODE
-            value: cluster
-          - name: RUNTIME_K8S_SERVICE_ACCOUNT
-            value: spark
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.1.0
-          - name: SPARK_HOME
-            value: /opt/spark
-          - name: SPARK_VERSION
-            value: 3.1.2
-          - name: BIGDL_VERSION
-            value: 2.1.0
-        resources:
-          requests:
-            cpu: 1
-          limits:
-            cpu: 4
-        volumeMounts:
-          - name: nfs-storage
-            mountPath: /bigdl/nfsdata
-          - name: nfs-storage
-            mountPath: /root/.kube/config
-            subPath: kubeconfig
-      volumes:
-      - name: nfs-storage
-        persistentVolumeClaim:
-          claimName: nfsvolumeclaim
-```
-
-In the YAML file:
-* `restartPolicy`: Restart policy for all Containers within the pod. One of Always, OnFailure, Never. Default to Always.
-* `containers`: A single application Container that you want to run within a pod.
-    * `name`: Name of the Container, each Container in a pod must have a unique name.
-    * `image`: Name of the Container image.
-    * `imagePullPolicy`: Image pull policy. One of Always, Never and IfNotPresent. Defaults to Always if `:latest` tag is specified, or IfNotPresent otherwise.
-    * `command`: command for the containers that run in the Pod.
-    * `args`: arguments to submit the spark application in the Pod. See more details of the `spark-submit` script in __[Section 6.2.2](#622-k8s-cluster)__.
-    * `securityContext`: SecurityContext defines the security options the container should be run with.
-    * `env`: List of environment variables to set in the Container, which will be used when submitting the application.
-        * `env.name`: Name of the environment variable.
-        * `env.value`: Value of the environment variable.
-    * `resources`: Allocate resources in the cluster to each pod.
-        * `resource.limits`: Limits describes the maximum amount of compute resources allowed.
-        * `resource.requests`: Requests describes the minimum amount of compute resources required.
-    * `volumeMounts`: Declare where to mount volumes into containers.
-        * `name`: Match with the Name of a Volume.
-        * `mountPath`: Path within the Container at which the volume should be mounted.
-        * `subPath`: Path within the volume from which the Container's volume should be mounted.
-    * `volume`: specify the volumes to provide for the Pod.
-        * `persistentVolumeClaim`: mount a PersistentVolume into a Pod
-
-Create a Pod and run Fashion-MNIST application based on the YAML file.
-```bash
-kubectl apply -f integrate_image_cluster.yaml
-```
-
-List all pods to find the driver pod (since the client pod only returns training status), which will be named as `orca-integrate-job-driver`.
-```bash
-# checkout training status
-kubectl logs `orca-integrate-job-xxx`
-
-# find out driver pod
-kubectl get pods
-```
-
-View logs from the driver pod to retrive the training stats. 
-```bash
-# retrive training logs
-kubectl logs `orca-integrate-job-driver`
-```
-
-After the task finish, you could delete the job as the command below.
-```bash
-kubectl delete job orca-integrate-job
 ```
