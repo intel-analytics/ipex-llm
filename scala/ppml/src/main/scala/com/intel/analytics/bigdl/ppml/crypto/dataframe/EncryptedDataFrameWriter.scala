@@ -65,7 +65,7 @@ class EncryptedDataFrameWriter(
     this
   }
 
-  def setCryptoCodecContext(): Unit = {
+  def setCryptoCodecContext(path: String): Unit = {
     sparkSession.sparkContext.hadoopConfiguration
       .set("bigdl.crypto.mode", encryptMode.encryptionAlgorithm)
     encryptMode match {
@@ -73,6 +73,7 @@ class EncryptedDataFrameWriter(
       case AES_CBC_PKCS5PADDING =>
         val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
                                   .generateDataKeyPlainText
+        println(s"[INFO] dataKeyPlainText in reader for $path: $dataKeyPlainText")
         sparkSession.sparkContext.hadoopConfiguration
                     .set("bigdl.dataKey.plainText", dataKeyPlainText)
         option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
@@ -82,13 +83,13 @@ class EncryptedDataFrameWriter(
   }
 
   def csv(path: String): Unit = {
-    setCryptoCodecContext()
+    setCryptoCodecContext(path)
     df.write.options(extraOptions).mode(mode).csv(path)
     keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }
 
   def json(path: String): Unit = {
-    setCryptoCodecContext()
+    setCryptoCodecContext(path)
     df.write.options(extraOptions).mode(mode).json(path)
     keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }

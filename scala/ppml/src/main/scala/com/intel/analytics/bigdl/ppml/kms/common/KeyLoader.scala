@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.ppml.kms.common
 
 import java.io.{Serializable, File, FileWriter}
 import java.security.SecureRandom
-import javax.crypto.{KeyGenerator, SecretKey}
+import javax.crypto.{KeyGenerator, Cipher, SecretKey}
+import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 import scala.collection.mutable.HashMap
@@ -46,12 +47,12 @@ case class KeyLoader(val fromKms: Boolean,
         val jsonStr = scala.io.Source.fromFile(metaPath).mkString
         val encryptedDataKey = KmsMetaFormatSerializer(jsonStr).encryptedDataKey
         if (fromKms) {
-          kms.retrieveDataKeyPlainText(primaryKeyMaterial, encryptedDataKey)
+          kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
-          val decrypt = new BigDLEncrypt()
-          decrypt.init(CRYPTO_MODE, DECRYPT, primaryKeyPlainText)
-          new String(decrypt.doFinal(encryptedDataKey.getBytes)._1,
-                     StandardCharsets.UTF_8)
+          val cipher = dataKeyCipher(Cipher.DECRYPT_MODE)
+          val encryptedDataKeyBytes = Base64.getDecoder().decode(encryptedDataKey)
+          val dataKeyPlainTextBytes = cipher.doFinal(encryptedDataKeyBytes)
+          new String(dataKeyPlainTextBytes, StandardCharsets.UTF_8)
         }
     }
 
@@ -62,24 +63,38 @@ case class KeyLoader(val fromKms: Boolean,
             encryptedDataKey = kms.retrieveDataKey(primaryKeyMaterial).get
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
-            val generator = KeyGenerator.getInstance("AES")
-            generator.init(keySize, SecureRandom.getInstanceStrong())
-            val key: SecretKey = generator.generateKey()
-            val dataKeyPlainText = Base64.getEncoder().encodeToString(key.getEncoded())
-            val encrypt = new BigDLEncrypt()
-            encrypt.init(CRYPTO_MODE, ENCRYPT, primaryKeyPlainText)
-            encryptedDataKey = new String(
-              encrypt.doFinal(dataKeyPlainText.getBytes)._1,
-              StandardCharsets.UTF_8
-            )
+            val dataKeyPlainText: String = {
+              val generator = KeyGenerator.getInstance("AES")
+              generator.init(keySize, SecureRandom.getInstanceStrong())
+              val key: SecretKey = generator.generateKey()
+              Base64.getEncoder().encodeToString(key.getEncoded)
+            }
+            
+            encryptedDataKey = {
+              val cipher = dataKeyCipher(Cipher.ENCRYPT_MODE)
+              val encryptedDataKeyBytes = cipher.doFinal(
+                dataKeyPlainText.getBytes(StandardCharsets.UTF_8)
+              )
+              Base64.getEncoder().encodeToString(encryptedDataKeyBytes)
+            }
+
             dataKeyPlainText
         }
+    }
+
+    def dataKeyCipher(operateMode: Int): Cipher = {
+      val decodedPrimaryKey = Base64.getDecoder().decode(primaryKeyPlainText)
+      val skp = new SecretKeySpec(decodedPrimaryKey, 0, decodedPrimaryKey.length, "AES")
+      val cipher = Cipher.getInstance("AES")
+      cipher.init(operateMode, skp)
+      cipher
     }
 
     // write encryptedDataKey to meta after spark df has been written
     def writeEncryptedDataKey(fileDirPath: String): Unit = {
       val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
       val jsonStr = KmsMetaFormatSerializer(KmsMetaFormat(encryptedDataKey))
+      println(s"[INFO] encryptedDataKey in writeEncryptedDataKey: $encryptedDataKey")
       val fw = new FileWriter(new File(metaPath))
       fw.write(jsonStr)
       fw.close()
