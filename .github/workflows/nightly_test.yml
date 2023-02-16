@@ -449,9 +449,9 @@ jobs:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
-        file-name: Orca-Pytest-Jep-Py37-Spark2.json
+        file-name: Orca-Pytest-Jep-Py37-Spark3.json
         type: job
-        job-name: Orca-Pytest-Jep-Py37-Spark2
+        job-name: Orca-Pytest-Jep-Py37-Spark3
         runner-hosted-on: 'Shanghai'
       
   Orca-Tutorial-Xshards-Py37-Spark3:
