@@ -200,8 +200,9 @@ def read_images_spark(file_path: str,
     return SparkXShards(image_rdd)
 
 
+# https://github.com/intel-analytics/BigDL/blob/main/python/orca/src/bigdl/orca/data/image/voc_dataset.py
 def read_voc(file_path: str="VOCdevkit",
-             split_names: List[Tuple[int, str]]=[(2007, "trainval")],
+             split_names: List[Tuple[int, str]]=[(2009, "trainval")],
              diff=False,
              max_samples: int = 25
              ):
@@ -228,11 +229,18 @@ def read_voc(file_path: str="VOCdevkit",
         return img_ids
 
     def get_img_label(f):
-        image_file = image_path.format(f)
-        label_file = anno_path.format(f)
+        image_file = image_path.format(*f)
+        label_file = anno_path.format(*f)
+
         root = ET.parse(label_file).getroot()
         img = open_image(image_file)
+        print(img)
+        # img = np.array(img)
+        # img = img.astype(np.uint8)
+        # print(img)
+
         width, height = img.size
+        print(width, height)
 
         # load label [[x1, y1, x2, y2, cls, difficult]]
         labels = []
@@ -249,7 +257,7 @@ def read_voc(file_path: str="VOCdevkit",
             xmax = float(int(xml_box.find('xmax').text) / width)
             ymax = float(int(xml_box.find('ymax').text) / height)
             labels.append([xmin, ymin, xmax, ymax, cls_id, difficult])
-        # labels = np.array(labels).astype(np.float32)
+        labels = np.array(labels).astype(np.float32)
         if not diff:
             labels = labels[..., :5]
         return img, labels
@@ -259,7 +267,6 @@ def read_voc(file_path: str="VOCdevkit",
     node_num, core_num = get_node_and_core_number()
     total_cores = node_num * core_num
     num_partitions = num_files if num_files < total_cores else total_cores
-
     rdd = spark.sparkContext.parallelize(img_paths, num_partitions)
 
     def load_image(iterator):
@@ -268,5 +275,7 @@ def read_voc(file_path: str="VOCdevkit",
             yield img, labels
 
     image_rdd = rdd.mapPartitions(load_image)
+    if max_samples:
+        image_rdd = spark.sparkContext.parallelize(image_rdd.take(max_samples))
 
     return SparkXShards(image_rdd)
