@@ -26,7 +26,9 @@ pip install tensorflow==2.9.0
 # PyTorch
 pip install torch torchvision torchmetrics==0.10.0 tqdm
 # XShards
-pip install pandas scikit-learn
+pip install pandas scikit-learn pyarrow
+# Tensorboard
+pip install tensorboard
 ```
 
 ## 1. Run on local
@@ -39,9 +41,9 @@ You can replace the file name with other files. Need to run the train script fir
 
 ### Results
 
-The above command will generate the following files
-+ `NCF_model`: Zip file containing the trained PyTorch model 
-+ `config.json`: Model configuration for predict and resume training
+The above command will return the following files
++ `NCF_model`: A zip file containing the trained PyTorch model 
++ `config.json`: The model configuration for predict and resume training
 + Processed dataframe parquet under `data_dir`
     + `ml-1m/train_processed_dataframe.parquet`
     + `ml-1m/test_processed_dataframe.parquet`
@@ -87,8 +89,8 @@ val_loss: 0.2684867502365162
 
 ### Run Command
 ```bash
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-client
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-cluster
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF/ml-1m  --cluster_mode yarn-client
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF/ml-1m  --cluster_mode yarn-cluster
 ```
 
 ## 2-2 Run on YARN with bigdl-submit
@@ -105,13 +107,13 @@ bigdl-submit \
     --executor-cores 4 \
     --executor-memory 10g \
     --driver-memory 2g \
-    --py-files pytorch_model.py \
+    --py-files process_spark_dataframe.py,pytorch_model.py,utils.py \
     --archives environment.tar.gz#environment \
-    --conf spark.pyspark.driver.python=/home/anaconda3/envs/NCF-yarn/bin/python \
+    --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     pytorch_train_spark_dataframe.py \
     --cluster_mode bigdl-submit \
-    --data_dir hdfs://ip:port/data/NCF
+    --data_dir hdfs://ip:port/data/NCF/ml-1m
 ```
 
 ## 2-3 Run on YARN with spark-submit
@@ -134,11 +136,11 @@ ${SPARK_HOME}/bin/spark-submit \
    --driver-memory 2g \
    --archives environment.tar.gz#environment \
    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-   --conf spark.pyspark.driver.python=/home/anaconda3/envs/NCF-yarn/bin/python \
+   --conf spark.pyspark.driver.python=python \
    --conf spark.pyspark.python=environment/bin/python \
-   --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,pytorch_model.py \
+   --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,process_spark_dataframe.py,pytorch_model.py,utils.py \
    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
    pytorch_train_spark_dataframe.py \
    --cluster_mode spark-submit \
-   --data_dir hdfs://ip:port/data/NCF
+   --data_dir hdfs://ip:port/data/NCF/ml-1m
 ```
