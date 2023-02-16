@@ -106,6 +106,7 @@ conda pack -o environment.tar.gz
 ```
 
 ### Run Command
++ For `yarn-client` mode
 ```bash
 bigdl-submit \
     --master yarn \
@@ -123,16 +124,36 @@ bigdl-submit \
     --data_dir hdfs://ip:port/data/NCF/ml-1m
 ```
 
++ For `yarn-cluster` mode
+```bash
+bigdl-submit \
+   --master yarn \
+   --deploy-mode cluster \
+   --num-executors 2 \
+   --executor-cores 4 \
+   --executor-memory 10g \
+   --driver-cores 2 \
+   --driver-memory 2g \
+   --py-files process_spark_dataframe.py,utils.py,pytorch_model.py \
+   --archives environment.tar.gz#environment \
+   --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+   --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+   pytorch_train_spark_dataframe.py \
+   --cluster_mode bigdl-submit \
+   --data_dir hdfs://ip:port/data/NCF/ml-1m
+```
+
 ## 2-3 Run on YARN with spark-submit
 
 ### Prepare the Environment
-- Do not install bigdl-orca-spark3 in the conda environment.
+- **Do not** install bigdl-orca-spark3 in the conda environment.
 - Install the dependencies of bigdl-orca as listed in the dependency files.
 - `conda pack -o environment.tar.gz`
-- Download Spark and set SPARK_HOME and SPARK_VERSION.
-- Download BigDL and set BIGDL_HOME and BIGDL_VERSION.
+- Download Spark and set `SPARK_HOME` and `SPARK_VERSION`.
+- Download BigDL and set `BIGDL_HOME` and `BIGDL_VERSION`.
 
 ### Run Command
++ For `yarn-client` mode
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
    --master yarn \
@@ -150,4 +171,22 @@ ${SPARK_HOME}/bin/spark-submit \
    pytorch_train_spark_dataframe.py \
    --cluster_mode spark-submit \
    --data_dir hdfs://ip:port/data/NCF/ml-1m
+```
+
++ For `yarn-cluster` mode
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master yarn \
+    --deploy-mode cluster \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --executor-memory 10g \
+    --driver-memory 2g \
+    --archives environment.tar.gz#environment \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,utils.py,process_spark_dataframe.py,pytorch_model.py \
+    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF/ml-1m
 ```
