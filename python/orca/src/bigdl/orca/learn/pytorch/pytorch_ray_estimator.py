@@ -18,7 +18,6 @@ import types
 import copy
 import logging
 
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
@@ -33,7 +32,7 @@ from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer
@@ -321,7 +320,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
-                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
+                profile: bool=False,
+                callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
+                                                                     'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -340,10 +341,18 @@ class PyTorchRayEstimator(BaseRayEstimator):
         if batch_size <= 0:
             batch_size = 1
         from bigdl.orca.data import SparkXShards
+
+        callbacks = callbacks or []
+        make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
+
         param = dict(
             batch_size=batch_size,
-            profile=profile
+            profile=profile,
+            callbacks=callbacks
         )
+
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,

@@ -20,7 +20,6 @@ import ray
 import ray._private.services
 import uuid
 import random
-from packaging import version
 
 from bigdl.orca.data import XShards
 from bigdl.orca.ray import OrcaRayContext

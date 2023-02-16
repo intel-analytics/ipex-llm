@@ -224,6 +224,13 @@ class TestTrainer(TestCase):
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
+
     # This UT will fail with INC < 2.0
     @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")
     def test_ipex_int8_quantize_with_model_cannot_deepcopy(self):

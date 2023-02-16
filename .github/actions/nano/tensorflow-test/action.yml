@@ -132,6 +132,7 @@ runs:
         source bigdl-nano-init
 
         bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
+        bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
 
         source bigdl-nano-unset-env
         source $CONDA/bin/deactivate

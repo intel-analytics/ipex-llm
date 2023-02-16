@@ -391,7 +391,7 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         if not self.deploy_mode:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(self._is_pd_datetime,
                               "The time series data does not have a Pandas datetime format "
                               "(you can use pandas.to_datetime to convert a string"
@@ -474,7 +474,7 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         if not self.deploy_mode:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(self._is_pd_datetime,
                               "The time series data does not have a Pandas datetime format"
                               "(you can use pandas.to_datetime to convert a string into"
@@ -505,7 +505,7 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         # TODO: relationship with scale should be figured out.
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         try:
             from tsfresh import extract_features
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
@@ -574,7 +574,7 @@ class TSDataset:
         :return: the tsdataset instance.
         '''
         # TODO: relationship with scale should be figured out.
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         try:
             from tsfresh.utilities.dataframe_functions import roll_time_series
             from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -706,7 +706,7 @@ class TSDataset:
 
         '''
         if not self.deploy_mode:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
                 invalidInputError(False,
                                   "The time series data should be "
@@ -895,7 +895,7 @@ class TSDataset:
         """
         from torch.utils.data import TensorDataset, DataLoader
         import torch
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if roll:
             if horizon is None:
                 invalidInputError(False,
@@ -984,7 +984,7 @@ class TSDataset:
         """
         # TODO Requires a tf dataset creator method and can be use less memory.
         import tensorflow as tf
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.numpy_x is None:
             invalidInputError(False,
                               "Please call 'roll' method "
@@ -1016,7 +1016,7 @@ class TSDataset:
                  The ndarray is casted to float32.
         '''
         if not self.deploy_mode:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             if self.numpy_x is None:
                 invalidInputError(False,
                                   "Please call 'roll' method "
@@ -1069,7 +1069,7 @@ class TSDataset:
         else:
             if not self.deploy_mode:
                 from sklearn.utils.validation import check_is_fitted
-                from bigdl.nano.utils.log4Error import invalidInputError
+                from bigdl.nano.utils.common import invalidInputError
                 try:
                     invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
                 except Exception:
@@ -1154,7 +1154,7 @@ class TSDataset:
         Returns:
             Describe the value of the time period distribution.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(isinstance(top_k, int),
                           f"top_k type must be int, but found {type(top_k)}.")
         invalidInputError(isinstance(aggregate, str),

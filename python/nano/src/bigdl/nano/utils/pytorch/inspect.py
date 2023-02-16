@@ -77,7 +77,9 @@ def get_forward_annotations(model):
     return forward_annotations
 
 
-def get_conditional_args(model, include=(torch.Tensor,), exclude=()):
+def get_conditional_args(model,
+                         include=(torch.Tensor, torch.FloatTensor, torch.LongTensor),
+                         exclude=()):
     '''
     This function will return all the parameters that (might) in `condition`
     It will return a list or tensor args name

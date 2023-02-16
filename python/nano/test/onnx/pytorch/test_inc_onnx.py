@@ -241,6 +241,22 @@ class TestOnnx(TestCase):
         with pytest.raises(AttributeError):
             onnx_model.width
 
+        # save & load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(AttributeError):
+            load_model.channels == 3
+        with pytest.raises(AttributeError):
+            load_model.hello()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
+
     def test_onnx_quantize_dynamic_axes(self):
         class CustomModel(nn.Module):
             def __init__(self):
@@ -277,8 +293,8 @@ class TestOnnx(TestCase):
     def test_onnx_inc_default_values(self):
         from bigdl.nano.utils.common import compare_version
         import operator
-        if not compare_version("neural_compressor", operator.ge, "2.0"):
-            # TODO debug this case
+        if not compare_version("neural_compressor", operator.ge, "1.14.0"):
+            # this ut will fail when inc version < 1.14, it's bug of inc itself
             return
 
         # default bool values

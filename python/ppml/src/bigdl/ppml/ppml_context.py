@@ -67,10 +67,14 @@ class PPMLContext(JavaValue):
             else:
                 invalidInputError(False, "invalid KMS type")
 
+        conf["spark.hadoop.io.compression.codecs"] = "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"
         spark_conf = init_spark_conf(conf)
-        args = [spark_conf._jconf]
-        super().__init__(None, self.bigdl_type, *args)
+
+        sc = SparkContext.getOrCreate(spark_conf)
+
         self.spark = SparkSession.builder.getOrCreate()
+        args = [self.spark._jsparkSession]
+        super().__init__(None, self.bigdl_type, *args)
 
     def load_keys(self, primary_key_path, data_key_path):
         self.value = callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)

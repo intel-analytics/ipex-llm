@@ -636,7 +636,7 @@ class DeepGLO(object):
                    covariates_new=None,
                    dti_new=None):
         if self.Ymat.shape[0] != Ymat_new.shape[0]:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "Expected incremental input with {} time series, got {} instead."
                               .format(self.Ymat.shape[0], Ymat_new.shape[0]))

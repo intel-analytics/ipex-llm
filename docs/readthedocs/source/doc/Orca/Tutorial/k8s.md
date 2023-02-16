@@ -50,6 +50,8 @@ For k8s-client, the Spark driver runs in the client process (outside the K8s clu
 
 Please see more details in [K8s-Cluster](https://spark.apache.org/docs/latest/running-on-kubernetes.html#cluster-mode) and [K8s-Client](https://spark.apache.org/docs/latest/running-on-kubernetes.html#client-mode).
 
+For **k8s-client** mode, you can directly find the driver logs in the console.
+
 For **k8s-cluster** mode, a `driver-pod-name` (`train-py-fc5bec85fca28cb3-driver` in the following log) will be returned when the application is completed.
 ```
 23-01-29 08:34:47 INFO  LoggingPodStatusWatcherImpl:57 - Application status for spark-9341aa0ec6b249ad974676c696398b4e (phase: Succeeded)
@@ -66,7 +68,7 @@ For **k8s-cluster** mode, a `driver-pod-name` (`train-py-fc5bec85fca28cb3-driver
 23-01-29 08:34:47 INFO  ShutdownHookManager:57 - Deleting directory /tmp/spark-fa8eeb45-bebf-4da9-9c0b-8bb59543842d
 ```
 
-You can retrieve the results of the driver pod on the __Develop Node__ following the commands below:
+You can access the results of the driver pod on the __Develop Node__ following the commands below:
 
 * Retrieve the logs on the driver pod:
 ```bash
@@ -159,12 +161,6 @@ sudo docker run -itd --net=host \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
     -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_EXECUTOR_INSTANCES=2 \
-    -e RUNTIME_EXECUTOR_CORES=4 \
-    -e RUNTIME_EXECUTOR_MEMORY=2g \
-    -e RUNTIME_TOTAL_EXECUTOR_CORES=8 \
-    -e RUNTIME_DRIVER_CORES=2 \
-    -e RUNTIME_DRIVER_MEMORY=2g \
     intelanalytics/bigdl-k8s:latest bash
 ```
 
@@ -177,22 +173,16 @@ In the script:
 * `-v /path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the container as the specified path (e.g. "/bigdl/nfsdata").
 * `NOTEBOOK_PORT`: an integer that specifies the port number for the Notebook. This is not necessary if you don't use notebook.
 * `NOTEBOOK_TOKEN`: a string that specifies the token for Notebook. This is not necessary if you don't use notebook.
-* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>.
+* `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master: `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>`.
 * `RUNTIME_K8S_SERVICE_ACCOUNT`: a string that specifies the service account for the driver pod.
 * `RUNTIME_K8S_SPARK_IMAGE`: the name of the BigDL K8s Docker image.
 * `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
 * `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required if you use k8s-client mode).
 * `RUNTIME_DRIVER_PORT`: a string that specifies the driver port (only required if you use k8s-client mode).
-* `RUNTIME_EXECUTOR_INSTANCES`: an integer that specifies the number of executors.
-* `RUNTIME_EXECUTOR_CORES`: an integer that specifies the number of cores for each executor.
-* `RUNTIME_EXECUTOR_MEMORY`: a string that specifies the memory for each executor.
-* `RUNTIME_TOTAL_EXECUTOR_CORES`: an integer that specifies the number of cores for all executors.
-* `RUNTIME_DRIVER_CORES`: an integer that specifies the number of cores for the driver node.
-* `RUNTIME_DRIVER_MEMORY`: a string that specifies the memory for the driver node.
 
 __Notes:__
-* The __Client Container__ contains all the required environment except K8s configurations.
-* You don't need to create Spark executor containers manually, which are scheduled by K8s at runtime.
+* The __Client Container__ already contains all the required environment configurations for Spark and BigDL Orca.
+* Spark executor containers are scheduled by K8s at runtime and you don't need to create them manually.
 
 
 ### 2.3 Launch the K8s Client Container
@@ -209,7 +199,7 @@ In the launched BigDL K8s **Client Container**, please setup the environment fol
 
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment.
 
-- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment.
+- See [here](../Overview/install.md#to-install-orca-for-spark3) to install BigDL Orca in the created conda environment. *Note that if you use [`spark-submit`](#use-spark-submit), please __skip__ this step and __DO NOT__ install BigDL Orca with pip install command in the conda environment.*
 
 - You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example we provide:
 ```bash
@@ -339,34 +329,42 @@ python /bigdl/nfsdata/train.py --cluster_mode k8s-cluster --data_dir /bigdl/nfsd
 
 ### 6.2 Use `spark-submit`
 
-Set the cluster_mode to "bigdl-submit" in `init_orca_context`.
-```python
-init_orca_context(cluster_mode="spark-submit")
-```
+If you prefer to use `spark-submit`, please follow the steps below to prepare the environment in the __Client Container__. 
 
-Pack the current activate conda environment to an archive in the __Client Container__:
-```bash
-conda pack -o environment.tar.gz
-```
+1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
+    ```python
+    sc = init_orca_context(cluster_mode="spark-submit")
+    ```
+
+2. Download the requirement file(s) from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
+    ```bash
+    pip install -r /path/to/requirements.txt
+    ```
+    Note that you are recommended **NOT** to install BigDL Orca with pip install command in the conda environment if you use spark-submit to avoid possible conflicts.
+
+3. Pack the current activate conda environment to an archive before submitting the example:
+    ```bash
+    conda pack -o environment.tar.gz
+    ```
 
 Some runtime configurations for Spark are as follows:
 
 * `--master`: a URL format that specifies the Spark master: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>.
 * `--name`: the name of the Spark application.
 * `--conf spark.kubernetes.container.image`: the name of the BigDL K8s Docker image.
-* `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
-* `--conf spark.executor.instances`: the number of executors.
-* `--executor-memory`: the memory for each executor.
-* `--driver-memory`: the memory for the driver node.
+* `--num-executors`: the number of executors.
 * `--executor-cores`: the number of cores for each executor.
 * `--total-executor-cores`: the total number of executor cores.
+* `--executor-memory`: the memory for each executor.
+* `--driver-cores`: the number of cores for the driver.
+* `--driver-memory`: the memory for the driver.
 * `--properties-file`: the BigDL configuration properties to be uploaded to K8s.
 * `--py-files`: the extra Python dependency files to be uploaded to K8s.
 * `--archives`: the conda archive to be uploaded to K8s.
 * `--conf spark.driver.extraClassPath`: upload and register BigDL jars files to the driver's classpath.
 * `--conf spark.executor.extraClassPath`: upload and register BigDL jars files to the executors' classpath.
 * `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` to mount `persistentVolume` into executor pods.
-* `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` to executor pods.
+* `--conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into executor pods.
 
 
 #### 6.2.1 K8s Client
@@ -378,19 +376,17 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-client-tutorial \
     --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-    --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
-    --driver-cores ${RUNTIME_DRIVER_CORES} \
-    --driver-memory ${RUNTIME_DRIVER_MEMORY} \
-    --executor-cores ${RUNTIME_EXECUTOR_CORES} \
-    --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
-    --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
+    --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=./environment/bin/python \
-    --archives /path/to/environment.tar.gz#environment \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/train.py,/path/to/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -429,18 +425,18 @@ ${SPARK_HOME}/bin/spark-submit \
     --name orca-k8s-cluster-tutorial \
     --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-    --conf spark.executor.instances=${RUNTIME_EXECUTOR_INSTANCES} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 2g \
+    --driver-cores 2 \
+    --driver-memory 2g \
     --archives file:///bigdl/nfsdata/environment.tar.gz#environment \
+    --conf spark.pyspark.driver.python=environment/bin/python \
     --conf spark.pyspark.python=environment/bin/python \
-    --conf spark.executorEnv.PYTHONHOME=environment \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
-    --executor-cores ${RUNTIME_EXECUTOR_CORES} \
-    --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
-    --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
-    --driver-cores ${RUNTIME_DRIVER_CORES} \
-    --driver-memory ${RUNTIME_DRIVER_MEMORY} \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files local://${BIGDL_HOME}/python/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
     --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -452,9 +448,12 @@ ${SPARK_HOME}/bin/spark-submit \
 
 In the `spark-submit` script:
 * `deploy-mode`: set it to `cluster` when running programs on k8s-cluster mode.
-* `spark.pyspark.python`: sset the Python location in conda archive as each executor's Python environment.
-* `spark.executorEnv.PYTHONHOME`: the search path of Python libraries on executor pods.
-* `spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
+* `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
+* `--conf spark.pyspark.driver.python`: set the Python location in conda archive as the driver's Python environment.
+* `--conf spark.pyspark.python`: also set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
+* `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` to mount `persistentVolume` into the driver pod.
+* `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into the driver pod.
 
 
 ### 6.3 Use Kubernetes Deployment (with Conda Archive)

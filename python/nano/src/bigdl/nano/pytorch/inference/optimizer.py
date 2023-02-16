@@ -371,13 +371,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if len(training_data) == 2:
                             input_label = training_data[1]
                         else:
-                            input_label = []
+                            input_label = torch.Tensor([])
                     else:
                         input_sample = tuple(training_data[:len(forward_args)])
                         input_label = tuple(training_data[len(forward_args):])
                 else:
                     input_sample = training_data
-                    input_label = []
+                    input_label = torch.Tensor([])
                 # turn training_data into dataset
                 dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
                 training_data = DataLoader(dataset, batch_size=1)
@@ -1170,10 +1170,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by InferenceOptimizer.trace/
-               InferenceOptimizer.quantize. model should be set to None if you choose
-               accelerator="onnxruntime"/"openvino"/"jit".
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
         :param input_sample: Input sample for your model, could be a Tensor or a tuple.
                Only valid for inc ipex quantization model, otherwise will be ignored.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
