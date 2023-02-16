@@ -7,15 +7,19 @@ concurrency:
 
 # Controls when the action will run. 
 on:
-  # Triggers the workflow on pull request events but only for the main branch
+  # Triggers the workflow on merge events for nano/orca change
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/nano/src/**'
+      - 'python/orca/src/bigdl/orca/automl/**'
+      - 'python/orca/src/bigdl/orca/data/**'
+  # Triggers the workflow on pull request events for chronos change
   pull_request:
     branches: [ main ]
     paths:
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
-      - 'python/nano/src/**'
-      - 'python/orca/src/bigdl/orca/automl/**'
-      - 'python/orca/src/bigdl/orca/data/**'
       - '.github/workflows/chronos-prvn-python-spark-2.4-py37.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
