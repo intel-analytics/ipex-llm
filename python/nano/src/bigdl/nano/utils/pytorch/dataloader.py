@@ -102,7 +102,6 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
     '''
     # get forward method's parameter number and input sample
     forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None),))
-    # forward_args = get_conditional_args(model, include="all")
     forward_args_len = len(forward_args)
     loader_input_sample = next(iter(dataloader))
 
@@ -111,7 +110,8 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         if forward_args_len >= 1:
             return True
     elif isinstance(loader_input_sample, Sequence):
-        if len(loader_input_sample[0]) == forward_args_len:
+        if isinstance(loader_input_sample[0], Sequence) and \
+                len(loader_input_sample[0]) == forward_args_len:
             # this means user returns a (x1, x2, ...), y
             return False
         else:
@@ -119,7 +119,12 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                 # this means users dataset returns at least 1 label
                 return False
             else:
-                # test run to check if input_sample meet input requirement
+                # test run to check if whole sample can be used for inference
+                try:
+                    model(*loader_input_sample)
+                    return True
+                except Exception:
+                    pass
                 if len(loader_input_sample) == 2:
                     try:
                         model(loader_input_sample[0])
@@ -134,7 +139,4 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                                 return True
                         else:
                             return True
-                else:
-                    # TODO:
-                    pass
-    return False
+    return True
