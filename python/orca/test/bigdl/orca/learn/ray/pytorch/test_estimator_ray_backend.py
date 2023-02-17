@@ -428,7 +428,7 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["f1", "f2"])
         result.collect()
 
-    def test_unenven_data(self):
+    def test_uneven_data(self):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100).repartition(3)

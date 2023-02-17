@@ -318,3 +318,24 @@ def mean_reduce_stats(worker_stats, res_stats=None):
         else:
             res_stats[stat_key] = stat_value
     return res_stats
+
+def index_concatenate(x, axis=0):
+    if len(x)==0:
+        return None
+
+    if isinstance(x[0], np.ndarray):
+        return np.concatenate(x, axis)
+    elif isinstance(x[0], tuple):
+        return tuple(index_concatenate(item, axis) for item in x)
+    elif isinstance(x[0], list):
+        return [index_concatenate(item, axis) for item in x]
+    elif isinstance(x[0], dict):
+        res = {}
+        for k in x[0].keys():
+            res[k] = index_concatenate([item[k] for item in x])
+        return res
+    else:
+        invalidInputError(False,
+                          "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+                          " or a list of ndarrays, please check your input")
+

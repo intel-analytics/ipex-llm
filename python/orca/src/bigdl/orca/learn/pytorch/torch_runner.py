@@ -43,7 +43,8 @@ from torch.utils.data import DataLoader, IterableDataset
 from bigdl.orca.learn.metrics import Metric
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch import utils
-from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES, get_batchsize)
+from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES,
+                                            get_batchsize, index_concatenate)
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -618,6 +619,8 @@ class TorchRunner(BaseRunner):
         result = []
         with torch.no_grad():
             for batch_idx, batch in enumerate(pred_iterator):
+                if isinstance(batch, torch.Tensor):
+                    batch = [batch]
                 self.batch = batch
                 self.batch_idx = batch_idx
 
@@ -627,26 +630,19 @@ class TorchRunner(BaseRunner):
 
                 del self.batch
                 del self.batch_idx
+                del self.output
 
-        return np.concatenate(result, axis=0)
+        return index_concatenate(result, axis=0)
 
-    def predict_batch(self, batch):
+    def predict_batch(self, batch, callbacks=None):
 
-        if isinstance(batch, torch.Tensor):
-            batch = [batch]
+        self.batch = batch
 
         # compute output
         with self.timers.record("pred_fwd"):
-            output = self.model(*batch)
+            self.call_hook(callbacks, "on_pred_forward")
 
-            if len(output.size()) > 1:
-                # In case there is extra trailing dimensions.
-                for i in reversed(range(1, len(output.size()))):
-                    output = torch.squeeze(output, i)
-
-        # todo support multi-output model
-        np_output = output.detach().numpy()
-        return np_output
+        return self.output
 
     def _toggle_profiling(self, profile=False):
         """Enables/Disables and resets timing profiles."""
