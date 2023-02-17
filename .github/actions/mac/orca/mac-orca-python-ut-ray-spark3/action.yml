@@ -1,36 +1,21 @@
 name: 'Mac Orca Python UT Ray Spark3.1'
 description: 'Mac Orca Python UT Ray Spark3.1'
 on:
-  pull_request:
-    branches: [ main ]
+  push:
+    branches: [ "main" ]
+#  pull_request:
+#    branchs: [ main ]
   workflow_dispatch:
 
-          #runs:
-          #  using: "composite"
 jobs:
-  mac-ray-ut:
+  scan-virus:
     runs-on: [self-hosted, mac, macOS]
-    steps:
-    - uses: actions/checkout@v3
-      #    - name: Run Test
-      #      uses: ./.github/actions/mac/orca/mac-orca-python-ut-ray-spark3
-      #    - name: Create Job Badge
-      #      uses: ./.github/actions/create-job-status-badge
-      #      if: ${{ always() }}
-      #      with:
-      #        secret: ${{ secrets.GIST_SECRET}}
-      #        gist-id: ${{env.GIST_ID}}
-      #        is-self-hosted-runner: true
-      #        file-name: Mac-Orca-Python-UT-Ray-Spark3.json
-      #        type: job
-      #        job-name: Mac-Orca-Python-UT-Ray-Spark3
-      #        runner-hosted-on: 'Shanghai'
-      #  steps:
+  steps:
     - name: Run Test
       shell: bash
       run: |
         source ~/.bash_profile
-        source activate py37-tf2
+        source activate py37
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
         export SPARK_HOME=/opt/work/spark-3.1.3
