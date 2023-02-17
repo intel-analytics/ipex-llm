@@ -204,6 +204,8 @@ fi
 if [[ "${PERF_VAR}" -eq 1 ]]; then
     # experiment variable to speed up performance.
     OPENMP=0
+    export LD_PRELOAD=""
+    export DYLD_INSERT_LIBRARIES=""
     export OMP_NUM_THREADS=$core_
     export KMP_AFFINITY=granularity=fine,compact,1,0
     echo "Setting KMP_BLOCKTIME..."
