@@ -1,5 +1,7 @@
 #!/bin/bash
+# source code link: https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/ml/GradientBoostedTreeClassifierExample.scala
 
+cd /ppml
 export sgx_command="/opt/jdk8/bin/java \
     -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* -Xmx16g \
     org.apache.spark.deploy.SparkSubmit \
