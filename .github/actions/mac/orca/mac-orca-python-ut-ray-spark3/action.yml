@@ -1,10 +1,8 @@
 name: 'Mac Orca Python UT Ray Spark3.1'
 description: 'Mac Orca Python UT Ray Spark3.1'
 on:
-  push:
-    branches: [ "main" ]
-#  pull_request:
-#    branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
   workflow_dispatch:
 
 jobs:
