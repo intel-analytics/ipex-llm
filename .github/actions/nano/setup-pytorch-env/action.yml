@@ -12,11 +12,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ inputs.python-version }}
-
     - name: Install System Dependencies (Ubuntu)
       if: inputs.os=='ubuntu'
       shell: bash
@@ -36,6 +31,11 @@ runs:
       shell: bash
       run: |
         echo "123"
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
 
     - name: Install Nightly Nano
       if: github.event.pull_request == null
