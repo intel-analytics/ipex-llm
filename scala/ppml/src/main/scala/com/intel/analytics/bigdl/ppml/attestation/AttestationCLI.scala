@@ -36,7 +36,7 @@ import com.intel.analytics.bigdl.ppml.attestation.verifier._
  */
 object AttestationCLI {
     def hex(str: String): Array[Byte] = {
-      str.sliding(2,2).toArray.map(Integer.parseInt(_, 16).toByte)
+      str.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
     }
 
     def sha256(hex: Array[Byte]): Array[Byte] = {

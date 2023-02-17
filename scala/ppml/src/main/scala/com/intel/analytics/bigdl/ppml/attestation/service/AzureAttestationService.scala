@@ -83,8 +83,8 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
       Log4Error.invalidInputError(false,
         "Quote should be specified")
     }
-    val quote_plain=Base64.getDecoder().decode(quote.getBytes)
-    val quote_url=Base64.getUrlEncoder.encodeToString(quote_plain)
+    val quote_plain = Base64.getDecoder().decode(quote.getBytes)
+    val quote_url = Base64.getUrlEncoder.encodeToString(quote_plain)
     val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
       val postString: String = "{\"quote\": \"" + quote_url + "\", \"runtimeData\": " +
       "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
