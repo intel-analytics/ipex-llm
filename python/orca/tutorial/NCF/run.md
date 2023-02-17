@@ -10,7 +10,8 @@ hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 ```
 
 ## Arguments
-+ `--data_dir`: The path to load data from local or remote resources (default to be `./ml-1m`).
++ `--data_dir`: The path to load data from local or remote resources (default to be `./`).
++ `--dataset`: The name of dataset, ml-1m or ml-100k (default to be `ml-1m`).
 + `--model_dir`: The path to save model and logs (default to be `./`).
 + `--cluster_mode`: The cluster mode, such as `local`, `yarn-client`, `yarn-cluster`, `k8s-client`, `k8s-cluster`, `spark-submit` or `bigdl-submit` (default to be `local`).
 + `--backend`: The backend of Orca Estimator, either ray or spark (default to be `spark`).
@@ -96,8 +97,8 @@ Stopping orca context
 
 ### Run Command
 ```bash
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF/ml-1m  --cluster_mode yarn-client
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF/ml-1m  --cluster_mode yarn-cluster
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-client
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-cluster
 ```
 
 ## 2-2 Run on YARN with bigdl-submit
