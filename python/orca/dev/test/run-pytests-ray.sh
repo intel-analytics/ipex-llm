@@ -70,7 +70,16 @@ python -m pytest -v test/bigdl/orca/data \
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then
-exit $exit_status_4
+    exit $exit_status_4
 fi
 
+python_version=$(python --version | awk '{print$2}')
+if [ $python_version == 3.7.10 ];then
+    echo "Running orca mxnet tests"
+    python -m pytest -v test/bigdl/orca/learn/ray/mxnet/
+    exit_status_5=$?
+    if [ $exit_status_5 -ne 0 ];then
+        exit $exit_status_5
+    fi
+fi
 ray stop -f
