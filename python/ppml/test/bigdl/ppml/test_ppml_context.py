@@ -52,7 +52,7 @@ class TestPPMLContext(unittest.TestCase):
         init_spark_on_local(conf=conf)
 
         # generate primaryKey
-        init_keys(cls.app_id, cls.app_key, primary_key_path
+        init_keys(cls.app_id, cls.app_key, primary_key_path)
 
         args = {"kms_type": "SimpleKeyManagementService",
                 "app_id": cls.app_id,
