@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release all the bigdl sub-packages
-# built on top of Spark 3.1.2 for mac.
+# built on top of Spark3 (currently 3.1.3) for mac.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
@@ -26,10 +26,10 @@ BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../..; pwd)"
 echo $BIGDL_DIR
 
 if (( $# < 3)); then
-  echo "Usage: release_default_mac_spark313.sh version quick_build upload suffix mvn_parameters"
-  echo "Usage example: bash release_default_mac_spark313.sh default false true true"
-  echo "Usage example: bash release_default_mac_spark313.sh 0.14.0.dev1 false false true"
-  echo "Usage example: bash release_default_mac_spark246.sh 0.14.0.dev1 false false false -Ddata-store-url=.."
+  echo "Usage: release_default_mac_spark3.sh version quick_build upload suffix mvn_parameters"
+  echo "Usage example: bash release_default_mac_spark3.sh default false true true"
+  echo "Usage example: bash release_default_mac_spark3.sh 0.14.0.dev1 false false true"
+  echo "Usage example: bash release_default_mac_spark3.sh 0.14.0.dev1 false false false -Ddata-store-url=.."
   exit -1
 fi
 

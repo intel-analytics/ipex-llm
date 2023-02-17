@@ -330,7 +330,7 @@ jobs:
         apt-get install sshpass
         #spark2
         ## linux ##
-        bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark2.sh ${nb_version} false false
         
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
@@ -355,7 +355,7 @@ jobs:
         echo "test mac build"
         
         ## mac ##
-        bash python/dev/release_default_mac_spark246.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark2.sh ${nb_version} false false
 
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
@@ -376,7 +376,7 @@ jobs:
 
         #spark3
         ## linux ##
-        bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark3.sh ${nb_version} false false
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
@@ -395,7 +395,7 @@ jobs:
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
         ## mac ##
-        bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark3.sh ${nb_version} false false
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \
