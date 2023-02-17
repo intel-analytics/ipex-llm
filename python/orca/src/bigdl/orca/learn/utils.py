@@ -94,7 +94,7 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
     def transform_predict(predictions):
         # list of np array
         if isinstance(predictions[0], list):
-            predictions = np.array(predictions).T.tolist()
+            predictions = np.array(predictions, dtype=object).T.tolist()
             result = [np.array(predict) for predict in predictions]
             return result
         # np array
