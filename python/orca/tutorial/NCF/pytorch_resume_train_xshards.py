@@ -64,7 +64,7 @@ loss = nn.BCEWithLogitsLoss()
 
 # Step 4: Distributed training with Orca PyTorch Estimator after loading the model
 config = load_model_config(args.model_dir, "config.json")
-callbacks = get_callbacks(args)
+callbacks = get_pytorch_callbacks(args)
 scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,
