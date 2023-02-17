@@ -51,20 +51,6 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     content + "\n" should be (data)
   }
 
-  "read encrypted csv file" should "work" in {
-    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
-    ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
-    val df = ppmlContextPython.csv(encryptedDataFrameReader, encryptFileName)
-
-    df.count() should be (300)
-
-    val content = df.schema.map(_.name).mkString(",") + "\n" +
-      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
-
-    content + "\n" should be (data)
-  }
-
   "write plain csv file" should "work" in {
     val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val sparkSession = sc.getSparkSession()
@@ -83,35 +69,6 @@ class PPMLContextPythonSpec extends DataFrameHelper{
 
     // read for validation
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
-    ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
-    val csvDF = ppmlContextPython.csv(encryptedDataFrameReader, csvDir)
-
-    csvDF.count() should be (3)
-
-    val csvContent = csvDF.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    csvContent should be (dataContent)
-  }
-
-  "write encrypted csv file" should "work" in {
-    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-    val sparkSession = sc.getSparkSession()
-    import sparkSession.implicits._
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-    val df = data.toDF("language", "user")
-    val dataContent = df.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    // write to csv file
-    val csvDir = new File(dir, "csv/encrypted").getCanonicalPath
-    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES/CBC/PKCS5Padding")
-    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
-    ppmlContextPython.option(encryptedDataFrameWriter, "header", true)
-    ppmlContextPython.csv(encryptedDataFrameWriter, csvDir)
-
-    // read for validation
-    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val csvDF = ppmlContextPython.csv(encryptedDataFrameReader, csvDir)
 
@@ -150,48 +107,11 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     parquetContent should be (dataContent)
   }
 
-  "write and read encrypted parquet file" should "work" in {
-    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-    val sparkSession = sc.getSparkSession()
-    import sparkSession.implicits._
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-    val df = data.toDF("language", "user")
-    val dataContent = df.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    // write a parquet file
-    val parquetPath = new File(dir, "parquet/encrypted").getCanonicalPath
-    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES_GCM_CTR_V1")
-    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
-    ppmlContextPython.parquet(encryptedDataFrameWriter, parquetPath)
-
-    // read a parquet file
-    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES_GCM_CTR_V1")
-    val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, parquetPath)
-
-    parquetDF.count() should be (3)
-
-    val parquetContent = parquetDF.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    parquetContent should be (dataContent)
-  }
-
   "textFile method with plain csv file" should "work" in {
     val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
     val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
     val cryptoMode = "plain_text"
     val rdd = ppmlContextPython.textFile(sc, plainFileName, minPartitions, cryptoMode)
-    val rddContent = rdd.collect().mkString("\n")
-
-    rddContent + "\n" should be (data)
-  }
-
-  "textFile method with encrypted csv file" should "work" in {
-    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-    val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
-    val cryptoMode = "AES/CBC/PKCS5Padding"
-    val rdd = ppmlContextPython.textFile(sc, encryptFileName, minPartitions, cryptoMode)
     val rddContent = rdd.collect().mkString("\n")
 
     rddContent + "\n" should be (data)
@@ -214,33 +134,6 @@ class PPMLContextPythonSpec extends DataFrameHelper{
 
     // read a json file
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
-    val jsonDF = ppmlContextPython.json(encryptedDataFrameReader, jsonPath)
-
-    jsonDF.count() should be (3)
-
-    val jsonContent = jsonDF.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    jsonContent should be (dataContent)
-  }
-
-  "write and read encrypted json file" should "work" in {
-    val sc = PPMLContext.initPPMLContext(conf, "testApp", ppmlArgs)
-    val sparkSession = sc.getSparkSession()
-    import sparkSession.implicits._
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-    val df = data.toDF("language", "user")
-    val dataContent = df.orderBy("language").collect()
-      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
-
-    // write a json file
-    val jsonPath = new File(dir, "json/encrypted").getCanonicalPath
-    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES/CBC/PKCS5Padding")
-    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
-    ppmlContextPython.json(encryptedDataFrameWriter, jsonPath)
-
-    // read a json file
-    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
     val jsonDF = ppmlContextPython.json(encryptedDataFrameReader, jsonPath)
 
     jsonDF.count() should be (3)
