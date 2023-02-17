@@ -1,4 +1,4 @@
-export CUSTOM_IMAGE_NAME=bigdl-ppmltrusted-machine-learning-gramine-custom
+export CUSTOM_IMAGE_NAME=bigdl-ppmlt-rusted-machine-learning-gramine-custom
 export CUSTOM_IMAGE_TAG=2.3.0-SNAPSHOT
 export MACHINE_LEARNING_BASE_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-base
 export MACHINE_LEARNING_BASE_IMAGE_TAG=2.3.0-SNAPSHOT
