@@ -56,7 +56,7 @@ object AttestationCLI {
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
                              policyID: String = "",
-                             quoteType: String = "gramine",
+                             quoteType: String = QUOTE_CONVENTION.MODE_GRAMINE,
                              httpsEnabled: Boolean = false,
                              apiVersion: String = "2020-10-01",
                              userReport: String = "010203040506")
@@ -105,11 +105,11 @@ object AttestationCLI {
         }
 
         val quoteGenerator = params.quoteType match {
-          case "gramine" =>
+          case QUOTE_CONVENTION.MODE_GRAMINE =>
             new GramineQuoteGeneratorImpl()
-          case "occlum" =>
+          case QUOTE_CONVENTION.MODE_OCCLUM =>
             new OcclumQuoteGeneratorImpl()
-          case "TDX" =>
+          case QUOTE_CONVENTION.MODE_TDX =>
             new TDXQuoteGeneratorImpl()
           case _ => throw new AttestationRuntimeException("Wrong quote type")
         }

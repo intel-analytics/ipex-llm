@@ -88,13 +88,10 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
     val postResult: JSONObject = timing("AzureAttestationService request for VerifyQuote") {
       val postString: String = "{\"quote\": \"" + quote_url + "\", \"runtimeData\": " +
       "{\"data\": \"" + userReportData + "\",\"dataType\": \"Binary\"}}"
-      System.out.println(postString)
-      System.out.println(constructUrl())
       val response: String = retrieveResponse(constructUrl(), sslConSocFactory, postString)
       new JSONObject(response)
     }
 
-    System.out.println(postResult.toString)
     val token = postResult.getString(RES_TOKEN)
     val verifyQuoteResult = token.length() > 0
     (verifyQuoteResult, postResult.toString)

@@ -305,6 +305,9 @@ RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh
 
+RUN chmod a+x /ppml/trusted-big-data-ml/attestation.sh && \
+    cp /ppml/trusted-big-data-ml/attestation.sh /opt/attestation.sh
+    
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml/trusted-big-data-ml
 
