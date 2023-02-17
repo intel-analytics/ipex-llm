@@ -12,40 +12,47 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install System Dependencies (Ubuntu)
-      if: inputs.os=='ubuntu'
+    - name: Install System Dependencies
       shell: bash
       run: |
-        apt-get update && apt-get install -y wget libgl1
-
-    - name: Install System Dependencies (CentOS)
-      if: inputs.os == 'centos'
-      shell: bash
-      run: |
-        export http_proxy=$HTTP_PROXY
-        export https_proxy=$HTTPS_PROXY
-        yum install -y gcc mesa-libGL
-
-    - name: Install System Dependencies (Windows)
-      if: inputs.os=='windows'
-      shell: bash
-      run: |
-        echo "123"
+        if [ $OS = "ubuntu" ]; then
+          sudo apt-get update && sudo apt-get install -y wget libgl1
+        elif [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
+          yum install -y gcc mesa-libGL
+          export CONDA=$CONDA_HOME
+        else
+          :
+        fi
+      env:
+        OS: ${{ inputs.os }}
 
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: Install Nightly Nano
-      if: github.event.pull_request == null
+    - name: Install Nano
       shell: bash
-      run: pip install --pre --upgrade bigdl-nano[pytorch,inference]
-
-    - name: Install Main Branch Nano
-      if: github.event.pull_request != null
-      shell: bash
-      run: bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+      run: |
+        if [ $IS_PR = "false" ]; then
+          if [ ! $OS = "windows" ]; then
+            pip install --pre --upgrade bigdl-nano[pytorch,inference]
+          else   
+            pip install --pre --upgrade bigdl-nano[pytorch]
+          fi
+        else
+          pip install setuptools==65 wheel
+          if [ ! $OS = "windows" ]; then
+            bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+          else   
+            bash python/nano/dev/build_and_install.sh windows default false pytorch
+          fi
+        fi
+      env:
+        OS: ${{ inputs.os }}
+        IS_PR: ${{ github.event.pull_request != null }}
 
     - name: Install Python Dependencies
       shell: bash
