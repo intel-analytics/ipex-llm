@@ -315,3 +315,44 @@ class TestOpenVINO(TestCase):
                                             )
         with InferenceOptimizer.get_context(ov_model):
             result = ov_model(x)
+
+    def test_openvino_trace_stable_diffusion_unet(self):
+        from diffusers.models import UNet2DConditionModel
+        # reduce model size as action runner has limited memory
+        unet = UNet2DConditionModel(sample_size=64,
+                                    cross_attention_dim=10,
+                                    attention_head_dim=1,
+                                    down_block_types=("CrossAttnDownBlock2D", "DownBlock2D"),
+                                    block_out_channels=(32, 64),
+                                    up_block_types=("UpBlock2D", "CrossAttnUpBlock2D"),
+                                    layers_per_block=1)
+        latent_shape = (2, 4, 8, 8)
+        image_latents = torch.randn(latent_shape, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states = torch.randn((2, 12, 10), device = "cpu", dtype=torch.float32)
+        input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states, False)
+
+        latent_shape2 = (1, 4, 8, 8) # different shape
+        image_latents2 = torch.randn(latent_shape2, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states2 = torch.randn((1, 12, 10), device = "cpu", dtype=torch.float32)
+
+        unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        
+        dynamic_axes= {"sample": [0],
+                       "encoder_hidden_states": [0],
+                       "unet_output": [0]}
+        nano_unet = InferenceOptimizer.trace(unet, accelerator="openvino",
+                                             input_sample=input_sample,
+                                             input_names=["sample", "timestep",
+                                                          "encoder_hidden_states", "return_dict"],
+                                             output_names=["unet_output"],
+                                             dynamic_axes=dynamic_axes,
+                                             device='CPU')
+        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(nano_unet, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)

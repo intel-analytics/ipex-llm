@@ -1,4 +1,4 @@
-name: Scanner-Snyk 
+name: Scanner-Snyk-scala
 on:
   #pull_request:
   #branchs: [ main ]
@@ -17,16 +17,16 @@ on:
         default: 'iags_mlp'
 
 jobs:
-  snyk-scan:
+  snyk-scala:
     runs-on: [self-hosted, SDL]
     steps:
     - uses: actions/checkout@v3
     - name: set env
       run: |
         echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
-    - name: "Auth Synk"
-      run: |
-        snyk auth -d $SNYK_APITOKEN
+#    - name: "Auth Synk"
+#      run: |
+#        snyk auth -d $SNYK_APITOKEN
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com

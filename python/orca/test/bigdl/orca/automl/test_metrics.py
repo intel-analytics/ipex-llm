@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import pytest
 import numpy as np
 from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.orca.automl.metrics import ME, MAE, MSE, RMSE, MSLE, R2
@@ -163,3 +164,7 @@ class TestMetrics(ZooTestCase):
                             [100], decimal=2)
         assert_almost_equal(MAE(y_true, y_pred, multioutput='uniform_average'),
                             [1], decimal=2)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__])

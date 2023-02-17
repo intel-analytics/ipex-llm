@@ -30,8 +30,8 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl		
         
-        chmod a+x python/orca/dev/test/run-pytests-ray
-        python/orca/dev/test/run-pytests-ray
+        chmod a+x python/orca/dev/test/run-pytests-ray.sh
+        python/orca/dev/test/run-pytests-ray.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}

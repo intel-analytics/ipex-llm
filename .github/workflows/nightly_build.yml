@@ -197,14 +197,20 @@ jobs:
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
           --rm --no-cache -t $IMAGE-spark-3.1.3:${TAG} .
+        # tag 'latest'
         docker push ${IMAGE}-spark-3.1.3:${TAG}
         docker tag ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        # tag SNAPSHOT
+        export TAG=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG}
+        docker push ${IMAGE}-spark-3.1.3:${TAG} 
         docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
         export IMAGE=intelanalytics/bigdl-k8s
+        export TAG=latest
         echo "########################################"
         echo "################# bigdl-k8s 3.1.3 #######"
         echo "########################################"
@@ -216,12 +222,17 @@ jobs:
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}-spark-3.1.3:${TAG} .
+        # tag 'latest'
         docker push ${IMAGE}-spark-3.1.3:${TAG}
         docker tag ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
         docker push ${IMAGE}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG}
+        # tag SNAPSHOT
+        export TAG=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
+        docker push ${IMAGE}:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
 
     - name: Create Job Badge
       if: ${{ always() }}

@@ -60,7 +60,7 @@ class VanillaLSTM(KerasBaseModel):
 
     def _check_config(self, **config):
         super()._check_config(**config)
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(isinstance(config["input_dim"], int), "'input_dim' should be int")
         invalidInputError(isinstance(config["output_dim"], int), "'output_dim' should be int")
         lstm_name = "lstm_units"

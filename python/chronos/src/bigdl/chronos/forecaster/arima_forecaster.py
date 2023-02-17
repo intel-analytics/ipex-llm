@@ -83,7 +83,7 @@ class ARIMAForecaster(Forecaster):
                                       **self.model_config)
 
     def _check_data(self, data, validation_data):
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(data.ndim == 1,
                           "data should be an 1-D array),"
                           "Got data dimension of {}.".format(data.ndim))
@@ -101,7 +101,7 @@ class ARIMAForecaster(Forecaster):
         :return: A list in length of horizon reflects the predict result.
         """
         if self.internal.model is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         return self.internal.predict(horizon=horizon, rolling=rolling)
@@ -115,7 +115,7 @@ class ARIMAForecaster(Forecaster):
 
         :return: A list in length of len(metrics), where states the metrics in order.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if validation_data is None:
             invalidInputError(False,
                               "Input invalid validation_data of None")
@@ -131,7 +131,7 @@ class ARIMAForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster.
         """
         if self.internal.model is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
