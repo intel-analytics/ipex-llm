@@ -3,9 +3,29 @@ description: 'Mac Orca Python UT Ray Spark3.1'
 on:
   pull_request:
     branches: [ main ]
-runs:
-  using: "composite"
-  steps:
+  workflow_dispatch:
+
+          #runs:
+          #  using: "composite"
+jobs:
+  mac-ray-ut:
+    runs-on: [self-hosted, mac, macOS]
+    steps:
+    - uses: actions/checkout@v3
+      #    - name: Run Test
+      #      uses: ./.github/actions/mac/orca/mac-orca-python-ut-ray-spark3
+      #    - name: Create Job Badge
+      #      uses: ./.github/actions/create-job-status-badge
+      #      if: ${{ always() }}
+      #      with:
+      #        secret: ${{ secrets.GIST_SECRET}}
+      #        gist-id: ${{env.GIST_ID}}
+      #        is-self-hosted-runner: true
+      #        file-name: Mac-Orca-Python-UT-Ray-Spark3.json
+      #        type: job
+      #        job-name: Mac-Orca-Python-UT-Ray-Spark3
+      #        runner-hosted-on: 'Shanghai'
+      #  steps:
     - name: Run Test
       shell: bash
       run: |
