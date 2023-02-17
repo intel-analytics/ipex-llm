@@ -30,6 +30,9 @@ elif [ "$ATTESTATION" = "true" ]; then
   if [ -n "$ATTESTATION_POLICYID" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -o ${ATTESTATION_POLICYID}"
   fi
+  if [ -n "$ATTESTATION_TYPE" ]; then
+    ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -t ${ATTESTATION_TYPE}"
+  fi
   echo $ATTESTATION_COMMAND > temp_command_file
   echo 'if [ $? -gt 0 ]; then ' >> temp_command_file
   echo '  exit 1' >> temp_command_file
