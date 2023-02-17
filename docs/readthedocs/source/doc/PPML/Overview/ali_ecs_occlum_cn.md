@@ -13,9 +13,10 @@
 使用建议：
 * 建议1234或者4123的顺序阅读本文档。
 * 如果要将应用部署到生成环境中，请和管理员确认3和4中的内容是否符合内部的安全策略。
- 
 
-图 PPML基本架构
+
+![PPML基本架构](../images/spark_sgx_occlum.png)
+
 
 ## 1. 环境部署
 
@@ -44,12 +45,12 @@ sudo apt install --install-recommends linux-generic-hwe-20.04
 ### 2.1 基本概念
 
 SGX应用需要编译(build)成SGX enclave，才能加载到SGX中运行。通常情况下，开发人员需要用SGX SDK重新编写应用，才能编译成合法的enclave，但这样的开发代价较大，维护成本也较高。为了避免上述问题，我们可以用Occlum实现应用的无缝迁移。Occlum是为SGX开发的LibOS应用，它可以将应用的系统调用翻译成SGX可以识别的调用，从而避免修改应用。BigDL PPML在Occlum的基础上，又进行了一次封装和优化，使得大数据应用，如Spark/Flink可以无缝的运行在SGX上。
- 
-图 SGX enclave结构
+
+![SGX enclave结构](../images/ppml_sgx_enclave.png)
 
 作为硬件级的可信执行环境，SGX的攻击面非常小，攻击者即使攻破操作系统和BIOS也无法获取SGX中的应用和数据。但在端到端的应用中，用户还需要确保其他阶段的安全性。简而言之，用户需要确保数据或者文件在SGX外部是加密的，仅在SGX内部被解密和计算，如下图所示。为了实现这个目的，我们往往需要借助密钥管理服务 (Key Management Service, KMS) 的帮助。用户可以将密钥托管到KMS，等应用在SGX中启动后，再从KMS申请和下载密钥。
- 
-图 SGX应用设计原则
+
+![SGX应用设计原则](../images/ppml_dev_basic.png)
 
 PPML项目的核心功能是帮助用户迁移现有的应用，用户可以选择迁移现有的大数据AI应用，也可以选择开发全新的应用。PPML应用的开发和常规应用基本相同。例如PySpark的应用代码和常规应用并没有区别。但在设计、编译和部署时有一定的差异。具体表现为：
 * 设计时需要考虑加解密流程，确保明文数据只出现在SGX内部
@@ -414,8 +415,10 @@ bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{r
 4.	应用将计算结果加密后，写入到存储系统
 
 ### 3.2 构建部署生产应用image
- 
-图 编译和部署PPML应用
+
+
+![编译和部署PPML应用](../images/ppml_scope.png)
+
 在开发新应用时，SGX程序程序在启动前需要经历occlum init和occlum build两个阶段，才能构建可执行的occlum instance（opt/occlum_spark文件夹，所有依赖和程序都存储在当中）。但是，将build放到部署环境中，会导致build阶段用到的用户密钥（user key）暴露到非安全环境中。为了进一步提高安全性，在实际部署中需要将build阶段和实际运行分开，既在安全环境中build所需的image，然后在部署和运行该image。
 在这个过程中，用户也可对BigDL image直接进行修改，加入自己的程序和配置（User image），并提前执行occlum init和build构建实际部署所需的image（Runnable image）。
 ```bash
