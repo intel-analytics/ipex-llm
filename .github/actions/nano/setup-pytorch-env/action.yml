@@ -6,7 +6,7 @@ inputs:
     description: 'python version'
     required: true
   os:
-    description: 'ubuntu or windows'
+    description: 'ubuntu or centos or windows'
     required: true
 
 runs:
@@ -32,7 +32,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: Install Nano
+    - name: Install Nano[pytorch,inference]
       shell: bash
       run: |
         if [ $IS_PR = "false" ]; then
@@ -40,6 +40,8 @@ runs:
             pip install --pre --upgrade bigdl-nano[pytorch,inference]
           else   
             pip install --pre --upgrade bigdl-nano[pytorch]
+            pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions==0.4.2
+            pip install openvino-dev==2022.3.0 onnxsim==0.4.8
           fi
         else
           pip install wheel
