@@ -21,6 +21,82 @@ env:
   GIST_ID: bc8a699b455bced4a1aef138ad5df07e
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# jobs:
+#   Nano-PyTorch-UT-Test:
+#     runs-on: [ "ubuntu-20.04" ]
+
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python-version: ["3.7.10", "3.8", "3.9"]
+
+#     steps:
+#     - uses: actions/checkout@v3
+#     - name: Set up Nano PyTorch Env
+#       uses: ./.github/actions/nano/setup-pytorch-env
+#       with:
+#         python-version: ${{ matrix.python-version }}
+#     - name: Run Nano PyTorch Test
+#       uses: ./.github/actions/nano/pytorch-test
+#     - name: Remove Nano PyTorch Env
+#       uses: ./.github/actions/nano/remove-pytorch-env
+#     - name: Create Job Badge
+#       uses: ./.github/actions/create-job-status-badge
+#       if: ${{ always() }}
+#       with:
+#         secret: ${{ secrets.GIST_SECRET}}
+#         gist-id: ${{env.GIST_ID}}
+#         is-self-hosted-runner: false
+#         file-name: Nano-PyTorch-UT-Test.json
+#         type: job
+#         job-name: Nano-PyTorch-UT-Test
+#         runner-hosted-on: 'Shanghai'
+
+#   Nano-Tensorflow-UT-Test:
+#     runs-on: [ "ubuntu-20.04" ]
+
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         python-version: ["3.7.10", "3.8", "3.9"]
+
+#     steps:
+#     - uses: actions/checkout@v3
+#     - name: Set up Nano Tensorflow Env
+#       uses: ./.github/actions/nano/setup-tensorflow-env
+#       with:
+#         python-version: ${{ matrix.python-version }}
+#     - name: Run Nano Tensorflow Test
+#       uses: ./.github/actions/nano/tensorflow-test
+#     - name: Remove Nano Tensorflow Env
+#       uses: ./.github/actions/nano/remove-tensorflow-env
+#     - name: Create Job Badge
+#       uses: ./.github/actions/create-job-status-badge
+#       if: ${{ always() }}
+#       with:
+#         secret: ${{ secrets.GIST_SECRET}}
+#         gist-id: ${{env.GIST_ID}}
+#         is-self-hosted-runner: false
+#         file-name: Nano-Tensorflow-UT-Test.json
+#         type: job
+#         job-name: Nano-Tensorflow-UT-Test
+#         runner-hosted-on: 'Shanghai'
+  
+#   create-workflow-badge:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v3
+#     - name: create workflow badge
+#       if: ${{ always() }}
+#       uses: ./.github/actions/create-job-status-badge
+#       with:
+#         secret: ${{ secrets.GIST_SECRET }}
+#         gist-id: ${{env.GIST_ID}}
+#         file-name: nano-nightly-test.json
+#         type: workflow
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   Nano-PyTorch-UT-Test:
     runs-on: [ "ubuntu-20.04" ]
@@ -28,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10", "3.8", "3.9"]
+        python-version: ["3.7.10"]
 
     steps:
     - uses: actions/checkout@v3
@@ -36,61 +112,36 @@ jobs:
       uses: ./.github/actions/nano/setup-pytorch-env
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Run Nano PyTorch Test
-      uses: ./.github/actions/nano/pytorch-test
-    - name: Remove Nano PyTorch Env
-      uses: ./.github/actions/nano/remove-pytorch-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: false
-        file-name: Nano-PyTorch-UT-Test.json
-        type: job
-        job-name: Nano-PyTorch-UT-Test
-        runner-hosted-on: 'Shanghai'
+        os: "ubuntu"
 
-  Nano-Tensorflow-UT-Test:
-    runs-on: [ "ubuntu-20.04" ]
+  Nano-PyTorch-UT-Test (CentOS):
+    runs-on: [ "Gondolin-centos" ]
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10", "3.8", "3.9"]
+        python-version: ["3.7.10"]
+        os: "centos"
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Nano Tensorflow Env
-      uses: ./.github/actions/nano/setup-tensorflow-env
+    - name: Set up Nano PyTorch Env
+      uses: ./.github/actions/nano/setup-pytorch-env
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Run Nano Tensorflow Test
-      uses: ./.github/actions/nano/tensorflow-test
-    - name: Remove Nano Tensorflow Env
-      uses: ./.github/actions/nano/remove-tensorflow-env
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: false
-        file-name: Nano-Tensorflow-UT-Test.json
-        type: job
-        job-name: Nano-Tensorflow-UT-Test
-        runner-hosted-on: 'Shanghai'
-  
-  create-workflow-badge:
-    runs-on: ubuntu-latest
+
+  Nano-PyTorch-UT-Test (Windows):
+    runs-on: [ "windows-latest" ]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7.10"]
+        os: "windows"
+
     steps:
     - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
+    - name: Set up Nano PyTorch Env
+      uses: ./.github/actions/nano/setup-pytorch-env
       with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        file-name: nano-nightly-test.json
-        type: workflow
+        python-version: ${{ matrix.python-version }}

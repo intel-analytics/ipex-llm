@@ -5,25 +5,48 @@ inputs:
   python-version: 
     description: 'python version'
     required: true
+  os:
+    description: 'ubuntu or windows'
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Install dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install System Dependencies (Ubuntu)
+      if: inputs.os == "ubuntu"
       shell: bash
       run: |
         apt-get update && apt-get install -y wget libgl1
 
-        $CONDA/bin/conda remove -n nano-pytorch -y --all
-        $CONDA/bin/conda create -n nano-pytorch -y python==${PYTHON_VERSION} setuptools==58.0.4
-        source $CONDA/bin/activate nano-pytorch
+    - name: Install System Dependencies (CentOS)
+      if: inputs.os == "centos"
+      shell: bash
+      run: |
+        export http_proxy=$HTTP_PROXY
+        export https_proxy=$HTTPS_PROXY
+        yum install -y gcc mesa-libGL
 
+    - name: Install System Dependencies (Windows)
+      if: inputs.os == "windows"
+      shell: pwsh
+      run:
+
+    - name: Install Nightly Nano
+      if: github.event.pull_request == null
+      run: pip install --pre --upgrade bigdl-nano[pytorch,inference]
+
+    - name: Install Main Branch Nano
+      if: github.event.pull_request != null
+      run: bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
+
+    - name: Install Python Dependencies
+      run: |
         pip install pytest
-        if [ $IS_PR = "true" ]; then
-          bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
-        else
-          pip install --pre --upgrade bigdl-nano[pytorch,inference]
-        fi
 
         # required by Ray test
         pip install google-api-core==2.8.2
@@ -37,8 +60,3 @@ runs:
 
         # required by OpenVINO and IPEX test
         pip install diffusers==0.11.1
-
-        source $CONDA/bin/deactivate
-      env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        IS_PR: ${{ github.event.pull_request != null }}
