@@ -1,4 +1,4 @@
-name: 'Mac Orca Python UT Ray Spark3.1'
+name: 'Mac Orca Python UT Ray TEST'
 description: 'Mac Orca Python UT Ray Spark3.1'
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  scan-virus:
+  mac-orca-ray-debug:
     runs-on: [self-hosted, mac, macOS]
   steps:
     - name: Run Test
