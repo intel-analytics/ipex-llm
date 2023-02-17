@@ -65,8 +65,8 @@ object BigDLRemoteAttestationService {
 
   val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
 
-  var userMap : Map[String, Any] = Map.empty
-  var policyMap : Map[String, Any] = Map.empty
+  var userMap : Map[String, String] = Map.empty
+  var policyMap : Map[String, Policy] = Map.empty
 
   def checkAppIDAndApiKey(enroll: Enroll): Boolean = {
     val userMapRes = userMap.get(enroll.appID).mkString
@@ -192,9 +192,9 @@ object BigDLRemoteAttestationService {
     val enrollFilePath = params.basePath + "/" + params.enrollFilePath
     val policyFilePath = params.basePath + "/" + params.policyFilePath
     val userContent = Await.result(FileEncryptUtil.loadFile(enrollFilePath, secretKey), 5.seconds)
-    userMap = AttestationUtil.stringToMap(userContent)
+    userMap = AttestationUtil.stringToStrMap(userContent)
     val policyContent = Await.result(FileEncryptUtil.loadFile(policyFilePath, secretKey), 5.seconds)
-    policyMap = AttestationUtil.stringToMap(policyContent)
+    policyMap = AttestationUtil.stringToPolicyMap(policyContent)
 
     val t = new Thread {
       override def run(): Unit = {

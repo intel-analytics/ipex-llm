@@ -21,6 +21,7 @@ import org.json4s.jackson.Serialization
 import org.json4s._
 
 import scala.util.parsing.json._
+import com.intel.analytics.bigdl.ppml.attestation.Policy
 
 object AttestationUtil {
   implicit val formats = DefaultFormats
@@ -29,9 +30,31 @@ object AttestationUtil {
     Serialization.write(map)
   }
 
+  def strMapToString(map: Map[String, String]): String = {
+    Serialization.write(map)
+  }
+
+  def policyMapToString(map: Map[String, Policy]): String = {
+    Serialization.write(map)
+  }
+
   def stringToMap(str: String): Map[String, Any] = {
     JSON.parseFull(str) match {
       case Some(map: Map[String, Any]) => map
+      case None => Map.empty
+    }
+  }
+
+  def stringToStrMap(str: String): Map[String, String] = {
+    JSON.parseFull(str) match {
+      case Some(map: Map[String, String]) => map
+      case None => Map.empty
+    }
+  }
+
+  def stringToPolicyMap(str: String): Map[String, Policy] = {
+    JSON.parseFull(str) match {
+      case Some(map: Map[String, Policy]) => map
       case None => Map.empty
     }
   }
