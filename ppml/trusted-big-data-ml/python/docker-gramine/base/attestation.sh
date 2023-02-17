@@ -13,15 +13,17 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
   fi
-  if [ -z "$APP_ID" ]; then
-    echo "[ERROR] Attestation is enabled, but APP_ID is empty!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
-  fi
-  if [ -z "$API_KEY" ]; then
-    echo "[ERROR] Attestation is enabled, but API_KEY is empty!"
-    echo "[INFO] PPML Application Exit!"
-    exit 1
+  if [ -z "$ATTESTATION_TYPE" -o "$ATTESTATION_TYPE" ==  "EHSMAttestationService" ]; then
+    if [ -z "$APP_ID" ]; then
+      echo "[ERROR] Attestation is enabled, but APP_ID is empty!"
+      echo "[INFO] PPML Application Exit!"
+      exit 1
+    fi
+    if [ -z "$API_KEY" ]; then
+      echo "[ERROR] Attestation is enabled, but API_KEY is empty!"
+      echo "[INFO] PPML Application Exit!"
+      exit 1
+    fi
   fi
   ATTESTATION_COMMAND="java -Xmx1g -cp $BIGDL_HOME/jars/*:$SPARK_HOME/conf/:$SPARK_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${APP_ID} -k ${API_KEY}"
   if [ -n "$ATTESTATION_CHALLENGE" ]; then
