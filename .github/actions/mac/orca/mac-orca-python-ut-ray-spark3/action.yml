@@ -3,7 +3,7 @@ description: 'Mac Orca Python UT Ray Spark3.1'
 on:
   pull_request:
     branchs: [ main ]
-  workflow_dispatch:
+    #  workflow_dispatch:
 
 jobs:
   mac-orca-ray-debug:
