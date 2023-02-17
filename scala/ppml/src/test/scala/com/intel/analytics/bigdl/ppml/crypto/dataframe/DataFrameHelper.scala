@@ -72,7 +72,7 @@ class DataFrameHelper extends BigDLSpecHelper {
     logger.info("read source csv in to PPMLContext sc")
     val df = sc.read(PLAIN_TEXT).csv(fileName)
     logger.info("encrypt and write csv in to PPMLContext sc")
-    sc.write(df, AES_CBC_PKCS5PADDING).mode("overwrite").csv(encryptFileName)
+    sc.write(df, AES_CBC_PKCS5PADDING, "defaultKey").mode("overwrite").csv(encryptFileName)
     (fileName, encryptFileName, data.toString())
   }
 
