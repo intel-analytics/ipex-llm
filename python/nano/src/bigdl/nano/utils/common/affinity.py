@@ -15,6 +15,7 @@
 #
 
 import os
+import warnings
 
 
 def get_affinity_core_num():
@@ -22,9 +23,9 @@ def get_affinity_core_num():
     # `os.sched_getaffinity(0)` will return only the first bound core,
     # so we need to parse KMP_AFFINITY manually in this case
     KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-    if "proclist" not in KMP_AFFINITY:
-        affinity_core_num = len(os.sched_getaffinity(0))
-    else:
+    if "compact" in KMP_AFFINITY:
+        affinity_core_num = None
+    elif "proclist" in KMP_AFFINITY:
         try:
             start_pos = KMP_AFFINITY.find('[', KMP_AFFINITY.find("proclist")) + 1
             end_pos = KMP_AFFINITY.find(']', start_pos)
@@ -38,7 +39,9 @@ def get_affinity_core_num():
                     core_list.extend(range(int(start), int(end) + 1))
             affinity_core_num = len(core_list)
         except Exception as _e:
-            warnings.warn(f"Failed to parse KMP_AFFINITY: '{KMP_AFFINITY}'."
-                          f" Will use default thread number: {preset_thread_nums}")
-            affinity_core_num = preset_thread_nums
+            warnings.warn(f"Failed to parse KMP_AFFINITY: '{KMP_AFFINITY}'.")
+            affinity_core_num = None
+    else:
+        affinity_core_num = len(os.sched_getaffinity(0))
+
     return affinity_core_num
