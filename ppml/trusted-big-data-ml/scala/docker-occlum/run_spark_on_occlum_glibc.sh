@@ -112,6 +112,12 @@ init_instance() {
         fi
     fi
 
+    #check glic ENV MALLOC_ARENA_MAX for docker
+    if [[ -z "$MALLOC_ARENA_MAX" ]]; then
+        echo "No MALLOC_ARENA_MAX specified, set to 1."
+        export MALLOC_ARENA_MAX=1
+    fi
+
     # check occlum log level for docker
     if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
         echo "No ENABLE_SGX_DEBUG specified, set to off."
