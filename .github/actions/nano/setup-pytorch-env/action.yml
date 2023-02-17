@@ -21,7 +21,6 @@ runs:
           export http_proxy=$HTTP_PROXY
           export https_proxy=$HTTPS_PROXY
           yum install -y gcc mesa-libGL
-          export CONDA=$CONDA_HOME
         else
           :
         fi
@@ -43,11 +42,13 @@ runs:
             pip install --pre --upgrade bigdl-nano[pytorch]
           fi
         else
-          pip install setuptools==65 wheel
+          pip install wheel
           if [ ! $OS = "windows" ]; then
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           else   
             bash python/nano/dev/build_and_install.sh windows default false pytorch
+            pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions==0.4.2
+            pip install openvino-dev==2022.3.0 onnxsim==0.4.8
           fi
         fi
       env:

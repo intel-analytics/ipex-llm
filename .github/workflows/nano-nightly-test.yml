@@ -113,22 +113,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         os: "ubuntu"
-
-  Nano-PyTorch-UT-Test-CentOS:
-    runs-on: [ "Gondolin-centos" ]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.8"]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Nano PyTorch Env
-      uses: ./.github/actions/nano/setup-pytorch-env
-      with:
-        python-version: ${{ matrix.python-version }}
-        os: "centos"
+    - name: Run Nano PyTorch Test
+      uses: ./.github/actions/nano/pytorch-test
 
   Nano-PyTorch-UT-Test-Windows:
     runs-on: [ "windows-latest" ]
@@ -145,3 +131,5 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         os: "windows"
+    - name: Run Nano PyTorch Test
+      uses: ./.github/actions/nano/pytorch-test
