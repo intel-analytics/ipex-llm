@@ -8,7 +8,7 @@ export LOCAL_IP=172.168.0.205
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
-export MACHINE_LEARNING_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine
+export MACHINE_LEARNING_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-base
 export MACHINE_LEARNING_IMAGE_TAG=2.3.0-SNAPSHOT
 
 Proxy_Modified="sudo docker build \
