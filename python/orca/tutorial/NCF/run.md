@@ -41,7 +41,7 @@ pip install tensorboard
 
 ### Run Command
 ```bash
-python pytorch_train_spark_dataframe.py --data_dir file:///local/path/to/NCF/ml-1m
+python pytorch_train_spark_dataframe.py --data_dir file:///local/path/to/NCF
 ```
 You can replace the file name with other files. Need to run the train script first before resume training or prediction.
 
@@ -121,7 +121,7 @@ bigdl-submit \
     --conf spark.pyspark.python=environment/bin/python \
     pytorch_train_spark_dataframe.py \
     --cluster_mode bigdl-submit \
-    --data_dir hdfs://ip:port/data/NCF/ml-1m
+    --data_dir hdfs://ip:port/data/NCF
 ```
 
 + For `yarn-cluster` mode
@@ -140,7 +140,7 @@ bigdl-submit \
    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
    pytorch_train_spark_dataframe.py \
    --cluster_mode bigdl-submit \
-   --data_dir hdfs://ip:port/data/NCF/ml-1m
+   --data_dir hdfs://ip:port/data/NCF
 ```
 
 ## 2-3 Run on YARN with spark-submit
@@ -170,7 +170,7 @@ ${SPARK_HOME}/bin/spark-submit \
    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
    pytorch_train_spark_dataframe.py \
    --cluster_mode spark-submit \
-   --data_dir hdfs://ip:port/data/NCF/ml-1m
+   --data_dir hdfs://ip:port/data/NCF
 ```
 
 + For `yarn-cluster` mode
@@ -188,5 +188,5 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,utils.py,process_spark_dataframe.py,pytorch_model.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
-    pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF/ml-1m
+    pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
 ```
