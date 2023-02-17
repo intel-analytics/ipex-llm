@@ -7,11 +7,10 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 ARG SGX_MEM_SIZE     16G 
 ARG SGX_LOG_LEVEL    error
 
-# Only for demo purpose
-RUN mkdir -p /root/.config/gramine/ && \
-    openssl genrsa -3 -out /root/.config/gramine/enclave-key.pem 3072 && \
+ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
+
 # 1.1 make SGX and sign in a temp image
-    cd /ppml && \
+RUN cd /ppml && \
     echo SGX_MEM_SIZE:$SGX_MEM_SIZE && \
     echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL && \
     make SGX=1 DEBUG=1 THIS_DIR=/ppml  SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL
