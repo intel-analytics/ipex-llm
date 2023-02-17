@@ -36,7 +36,8 @@ from bigdl.nano.utils.pytorch import NanoMetric
 from bigdl.nano.utils.pytorch import RepeatDataset, remove_batch_dim_fn
 from bigdl.nano.utils.pytorch import transform_multiple_input_dataloader_to_inc_mode,\
     automatic_add_label_in_dataloader
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager

@@ -14,11 +14,15 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.pytorch import TORCHVISION_VERSION_LESS_1_12
-from torchvision.datasets import *
-del ImageFolder
-if not TORCHVISION_VERSION_LESS_1_12:
-    del OxfordIIITPet
-    from .oxfordpet_datasets import OxfordIIITPet
+import tensorflow as tf
 
-from .datasets import ImageFolder, SegmentationImageFolder
+
+def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
+    """Fake a `Tensor` from `TensorSpec`."""
+    shape = tensor_spec.shape
+    dtype = tensor_spec.dtype
+    shape = tuple(dim if dim is not None else 1 for dim in shape)
+    if shape == () and dtype == tf.bool:
+        # This may be the `training` parameter, we should assume it is False
+        return False
+    return tf.ones(shape=shape, dtype=dtype)

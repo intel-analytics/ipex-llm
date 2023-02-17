@@ -33,7 +33,7 @@ from pytorch_lightning.strategies import DeepSpeedStrategy
 
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_13
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_13
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
