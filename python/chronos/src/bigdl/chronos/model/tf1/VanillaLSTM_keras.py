@@ -71,7 +71,7 @@ class VanillaLSTM(KerasBaseModel):
                                   f"{lstm_name} should be int or an list/tuple of ints. "
                                   f"Got {config[lstm_name]}")
         if dropout_name in config:
-            if not check_iter_type(config[dropout_name], (float, np.float)):
+            if not check_iter_type(config[dropout_name], (float, np.float32)):
                 invalidInputError(False,
                                   f"{dropout_name} should be float or a list/tuple of floats. "
                                   f"Got {config[dropout_name]}")
