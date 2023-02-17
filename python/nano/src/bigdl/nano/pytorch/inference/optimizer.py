@@ -16,16 +16,15 @@
 import tempfile
 
 import torch
-from bigdl.nano.utils.common.optimizer.acceleration_env import AccelerationEnv
-from bigdl.nano.utils.common.optimizer.exec_with_worker import exec_with_worker
 from torch import nn
 import time
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
-    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination, \
+    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer, AccelerationEnv, \
+    exec_with_worker
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
@@ -422,8 +421,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         model._nano_context_manager = generate_context_manager(accelerator=None,
                                                                precision="fp32",
                                                                thread_num=thread_num)
-        self.baseline_time = baseline_time
-        self.input_sample = input_sample
+        self._baseline_time = baseline_time
+        self._input_sample = input_sample
+        self._latency_sample_num = latency_sample_num
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -1273,10 +1273,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         with tempfile.TemporaryDirectory() as tmp_dir_path:
             model_path = os.path.join(tmp_dir_path, 'model')
             InferenceOptimizer.save(model, model_path)
-            latency, _ = exec_with_worker(_latency_calculate_helper,
-                                          100, self.baseline_time, self._func_test, model_path,
+            latency, _ = exec_with_worker(_latency_calculate_helper, self._latency_sample_num,
+                                          self._baseline_time, self._func_test, model_path,
                                           self.optimized_model_dict['original']['model'],
-                                          self.input_sample, env=env)
+                                          self._input_sample, env=env)
         return latency
 
 

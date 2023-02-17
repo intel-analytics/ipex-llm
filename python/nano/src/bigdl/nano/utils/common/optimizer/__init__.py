@@ -26,3 +26,6 @@ from .format import format_optimize_result
 from .metric import CompareMetric
 
 from .optimizer import BaseInferenceOptimizer
+
+from .acceleration_env import AccelerationEnv
+from .exec_with_worker import exec_with_worker

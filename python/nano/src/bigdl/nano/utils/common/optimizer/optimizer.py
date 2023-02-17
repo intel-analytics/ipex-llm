@@ -40,8 +40,9 @@ class BaseInferenceOptimizer:
         # in {"method_name": {"latency": ..., "accuracy": ..., "model": ...}}
         self.optimized_model_dict = {}
         self._optimize_result = None
-        self.input_sample = None
-        self.baseline_time = None
+        self._input_sample = None
+        self._baseline_time = None
+        self._latency_sample_num = None
 
     @abstractmethod
     def optimize(self, *args, **kwargs):
@@ -182,7 +183,8 @@ class BaseInferenceOptimizer:
         invalidInputError(method_name,
                           'Must give specific model method for searching env.')
         invalidInputError(method_name in self.optimized_model_dict,
-                          'Must provide correct method name.')
+                          f'method_name should be one of {self.optimized_model_dict.keys()}, '
+                          f'but get {method_name}.')
         if 'env' not in self.optimized_model_dict[method_name]:
             print(f"=================Start searching for environment variables "
                   f"for {method_name} model=================")
@@ -214,7 +216,7 @@ class BaseInferenceOptimizer:
         model(input_sample)
 
     def _latency_calc_with_worker(self, model, env: Optional[dict] = None):
-        latency, _ = exec_with_worker(latency_calculate_helper,
-                                      100, self.baseline_time, self._func_test,
-                                      model, self.input_sample, env=env)
+        latency, _ = exec_with_worker(latency_calculate_helper, self._latency_sample_num,
+                                      self._baseline_time, self._func_test,
+                                      model, self._input_sample, env=env)
         return latency

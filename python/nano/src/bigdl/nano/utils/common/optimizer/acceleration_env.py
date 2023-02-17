@@ -16,6 +16,7 @@
 import os
 
 import bigdl
+from .optimizer import register_suggestion
 
 _whole_acceleration_env = ['tcmalloc', 'jemalloc', 'openmp', 'perf']
 
@@ -78,6 +79,10 @@ class AccelerationEnv(object):
                                              '../../../lib/libiomp5.so')):
                 omp_lib_path = os.path.join(AccelerationEnv._CONDA_DIR,
                                             '../../../lib/libiomp5.so')
+            else:
+                register_suggestion(f"No OpenMP library found in {AccelerationEnv._CONDA_DIR}."
+                                    f"You can install OpenMP by "
+                                    f"'conda install -c anaconda intel-openmp'")
         elif AccelerationEnv._NANO_DIR:
             if os.path.exists(os.path.join(AccelerationEnv._NANO_DIR,
                                            '../../../libiomp5.so')):
@@ -87,6 +92,10 @@ class AccelerationEnv(object):
                                              '../../../../../../lib/libiomp5.so')):
                 omp_lib_path = os.path.join(AccelerationEnv._NANO_DIR,
                                             '../../../../../../lib/libiomp5.so')
+            else:
+                register_suggestion(f"No OpenMP library found in {AccelerationEnv._NANO_DIR}."
+                                    f"You can install OpenMP by "
+                                    f"'pip install intel-openmp'")
 
         tmp_omp_lib = self.get_omp_lib()
         if tmp_omp_lib == 'openmp_perf':
