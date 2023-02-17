@@ -23,7 +23,7 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
   fi
-  ATTESTATION_COMMAND="java -Xmx1g -cp /ppml/trusted-big-data-ml/work/bigdl-2.3.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.3/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.3/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${APP_ID}  -k ${API_KEY}"
+  ATTESTATION_COMMAND="java -Xmx1g -cp $BIGDL_HOME/jars/*:$SPARK_HOME/conf/:$SPARK_HOME/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${APP_ID} -k ${API_KEY}"
   if [ -n "$ATTESTATION_CHALLENGE" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -c ${ATTESTATION_CHALLENGE}"
   fi
