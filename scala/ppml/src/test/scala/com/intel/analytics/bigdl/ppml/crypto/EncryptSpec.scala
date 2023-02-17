@@ -34,9 +34,9 @@ class EncryptSpec extends DataFrameHelper {
     val decryptFile = dir + "/decrypt_file.csv"
     val crypto = new BigDLEncrypt()
     crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
-    //crypto.doFinal(encryptFileName, decryptFile)
-    //val readData = Source.fromFile(decryptFile).getLines().mkString("\n")
-    //readData + "\n" should be (data)
+    // crypto.doFinal(encryptFileName, decryptFile)
+    // val readData = Source.fromFile(decryptFile).getLines().mkString("\n")
+    // readData + "\n" should be (data)
   }
 
   "encrypt stream" should "work" in {

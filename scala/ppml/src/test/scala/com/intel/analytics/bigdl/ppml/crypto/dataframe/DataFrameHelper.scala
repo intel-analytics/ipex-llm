@@ -68,7 +68,6 @@ class DataFrameHelper extends BigDLSpecHelper {
     )
     val sparkConf = new SparkConf().setMaster("local[4]")
     val sc = PPMLContext.initPPMLContext(sparkConf, "SimpleQuery", ppmlArgs)
-    
     logger.info("read source csv in to PPMLContext sc")
     val df = sc.read(PLAIN_TEXT).csv(fileName)
     logger.info("encrypt and write csv in to PPMLContext sc")

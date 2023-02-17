@@ -115,7 +115,7 @@ class EHSMKeyManagementService(
       val postResult = postRequest(constructUrl(action), sslConSocFactory, postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT)
     }
-    if (dataKeySavePath != ""){
+    if (dataKeySavePath != "") {
       keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext, config)
       Some(null)
     } else {

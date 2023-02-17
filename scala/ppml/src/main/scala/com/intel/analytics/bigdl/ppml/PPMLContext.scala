@@ -207,7 +207,7 @@ object PPMLContext{
         ppmlArgs: Map[String, String]): PPMLContext = {
     val conf = createSparkConf(sparkConf)
     ppmlArgs.foreach{arg =>
-      println(arg._1+": " + arg._2)
+      println(arg._1 + ": " + arg._2)
       conf.set(arg._1, arg._2)
     }
     initPPMLContext(conf, appName)
@@ -241,13 +241,13 @@ object PPMLContext{
     val primaryKeyNames = getPrimaryKeyNames(conf)
     primaryKeyNames.foreach{
       primaryKeyName => {
-        if(conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.plainText")){
+        if (conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.plainText")) {
           val primaryKeyPlainText = conf.get(
             s"spark.bigdl.primaryKey.$primaryKeyName.plainText")
           ppmlSc.keyLoaderManagement
                 .addKeyLoader(primaryKeyName,
                               KeyLoader(false, "", null, primaryKeyPlainText))
-        }else{
+        } else {
           Log4Error.invalidInputError(
             conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.material"),
                           s"spark.bigdl.primaryKey.$primaryKeyName.material not found.")

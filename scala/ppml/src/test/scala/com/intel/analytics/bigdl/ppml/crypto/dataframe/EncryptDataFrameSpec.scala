@@ -41,16 +41,16 @@ class EncryptDataFrameSpec extends DataFrameHelper {
 
   "textfile read from plaint text file" should "work" in {
     val file = sc.textFile(plainFileName).collect()
-    //file.mkString("\n") + "\n" should be (data)
+    // file.mkString("\n") + "\n" should be (data)
     val file2 = sc.textFile(encryptFileName, cryptoMode = AES_CBC_PKCS5PADDING).collect()
-    //file2.mkString("\n") + "\n" should be (data)
+    // file2.mkString("\n") + "\n" should be (data)
   }
 
   "sparkSession.read" should "work" in {
-    //val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    // val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val df = sc.read(PLAIN_TEXT).csv(plainFileName)
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
-    //d + "\n" should be (data)
+    // d + "\n" should be (data)
     val df2 = sc.read(PLAIN_TEXT).option("header", "true").csv(plainFileName)
     val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
       df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")

@@ -40,7 +40,6 @@ case class KeyLoader(val fromKms: Boolean,
     val META_FILE_NAME = ".meta"
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
-    
     // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
         val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
@@ -59,7 +58,7 @@ case class KeyLoader(val fromKms: Boolean,
     // generate a data key, and return the plaintext string
     // and cache encryptedDataKey for meta writing after df writing
     def generateDataKeyPlainText(): String = {
-        if(fromKms) {
+        if (fromKms) {
             encryptedDataKey = kms.retrieveDataKey(primaryKeyMaterial).get
             kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
@@ -69,7 +68,6 @@ case class KeyLoader(val fromKms: Boolean,
               val key: SecretKey = generator.generateKey()
               Base64.getEncoder().encodeToString(key.getEncoded)
             }
-            
             encryptedDataKey = {
               val cipher = dataKeyCipher(Cipher.ENCRYPT_MODE)
               val encryptedDataKeyBytes = cipher.doFinal(
@@ -104,13 +102,11 @@ case class KeyLoader(val fromKms: Boolean,
 class KeyLoaderManagement extends Serializable {
     // map from primaryKeyName to KeyLoader
     var multiKeyLoaders = new HashMap[String, KeyLoader]
-    
     def addKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
         Log4Error.invalidInputError(!(multiKeyLoaders.contains(primaryKeyName)),
                                     s"keyLoaders with name $primaryKeyName are replicated.")
         multiKeyLoaders += (primaryKeyName -> keyLoader)
     }
-    
     def retrieveKeyLoader(primaryKeyName: String): KeyLoader = {
         Log4Error.invalidInputError(multiKeyLoaders.contains(primaryKeyName),
                                     s"cannot get a not-existing kms.")
