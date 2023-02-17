@@ -80,7 +80,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
         result = load_ipexjitbf16_model(path, model, inplace=inplace,
                                         input_sample=input_sample)
     if model_type == 'PytorchIPEXQuantizationModel':
-        result = load_ipex_quantization_model(path, model, inplace=inplace)
+        result = load_ipex_quantization_model(path)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
     if model_type == 'PytorchJITINT8Model':

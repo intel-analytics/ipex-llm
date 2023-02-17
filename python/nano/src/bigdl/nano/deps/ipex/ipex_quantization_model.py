@@ -162,7 +162,7 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def _load(path, model, inplace=False):
+    def _load(path):
         status = PytorchIPEXQuantizationModel._load_status(path)
         checkpoint_path = path / status['checkpoint']
         model = torch.jit.load(checkpoint_path)
@@ -177,7 +177,6 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                                             channels_last=status['channels_last'],
                                             from_load=from_load,
                                             thread_num=thread_num,
-                                            inplace=inplace,
                                             jit_strict=status.get('jit_strict', True),
                                             jit_method=status.get('jit_method', None),
                                             enable_onednn=status.get('enable_onednn', False))

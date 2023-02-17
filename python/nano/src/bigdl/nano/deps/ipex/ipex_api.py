@@ -151,6 +151,6 @@ def load_ipexjitbf16_model(path, model, inplace=False, input_sample=None):
                                          input_sample=input_sample)
 
 
-def load_ipex_quantization_model(path, model, inplace=False):
+def load_ipex_quantization_model(path):
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
-    return PytorchIPEXQuantizationModel._load(path, model, inplace=inplace)
+    return PytorchIPEXQuantizationModel._load(path)
