@@ -121,7 +121,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7.10"]
-        os: "centos"
 
     steps:
     - uses: actions/checkout@v3
@@ -129,6 +128,7 @@ jobs:
       uses: ./.github/actions/nano/setup-pytorch-env
       with:
         python-version: ${{ matrix.python-version }}
+        os: "centos"
 
   Nano-PyTorch-UT-Test (Windows):
     runs-on: [ "windows-latest" ]
@@ -137,7 +137,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.7.10"]
-        os: "windows"
 
     steps:
     - uses: actions/checkout@v3
@@ -145,3 +144,4 @@ jobs:
       uses: ./.github/actions/nano/setup-pytorch-env
       with:
         python-version: ${{ matrix.python-version }}
+        os: "windows"
