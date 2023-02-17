@@ -18,13 +18,13 @@ runs:
         python-version: ${{ inputs.python-version }}
 
     - name: Install System Dependencies (Ubuntu)
-      if: inputs.os == "ubuntu"
+      if: inputs.os=='ubuntu'
       shell: bash
       run: |
         apt-get update && apt-get install -y wget libgl1
 
     - name: Install System Dependencies (CentOS)
-      if: inputs.os == "centos"
+      if: inputs.os == 'centos'
       shell: bash
       run: |
         export http_proxy=$HTTP_PROXY
@@ -32,19 +32,23 @@ runs:
         yum install -y gcc mesa-libGL
 
     - name: Install System Dependencies (Windows)
-      if: inputs.os == "windows"
-      shell: pwsh
-      run:
+      if: inputs.os=='windows'
+      shell: bash
+      run: |
+        echo "123"
 
     - name: Install Nightly Nano
       if: github.event.pull_request == null
+      shell: bash
       run: pip install --pre --upgrade bigdl-nano[pytorch,inference]
 
     - name: Install Main Branch Nano
       if: github.event.pull_request != null
+      shell: bash
       run: bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
 
     - name: Install Python Dependencies
+      shell: bash
       run: |
         pip install pytest
 
