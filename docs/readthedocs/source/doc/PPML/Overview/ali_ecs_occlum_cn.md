@@ -509,7 +509,7 @@ SGX被设计用于实现安全远程计算、安全网页浏览和数字版权�
 使用 Occlum 后，机器学习工作负载等只需修改极少量（甚至无需修改）源代码即可在英特尔® SGX 上运行，以高度透明的方式保护了用户数据的机密性和完整性。用于英特尔® SGX 的 Occlum 架构如图所示。
 
  
-![Occlum架构](https://github.com/occlum/occlum/blob/master/docs/images/arch_overview.png)
+![Occlum架构](https://raw.githubusercontent.com/occlum/occlum/master/docs/images/arch_overview.png)
 
 Occlum有以下显著特征:
 * 高效的多任务处理。 Occlum提供轻量级LibOS流程:它们是轻量级的，因为所有LibOS流程共享同一个SGX enclave。 与重型、per-enclave的LibOS进程相比，Occlum的轻型LibOS进程在启动时最高快1000倍，在IPC上快3倍。 此外，如果需要，Occlum还提供了一个可选的多域软件故障隔离方案来隔离Occlum LibOS进程。
