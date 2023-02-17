@@ -109,7 +109,18 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         # only one tensor provided, clearly we need a dummy label
         if forward_args_len >= 1:
             return True
-    elif isinstance(loader_input_sample, Sequence):
+    elif input_sample is not None:
+        if isinstance(input_sample, torch.Tensor):
+            # input_sample is a Tensor
+            if len(loader_input_sample) > 1:
+                return False
+            return True
+        if len(loader_input_sample) > len(input_sample):
+            # input_sample is also a sequence
+            return False
+        else:
+            return True
+    if isinstance(loader_input_sample, Sequence):
         if isinstance(loader_input_sample[0], Sequence) and \
                 len(loader_input_sample[0]) == forward_args_len:
             # this means user returns a (x1, x2, ...), y
