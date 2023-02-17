@@ -1,9 +1,9 @@
-export CUSTOM_IMAGE_NAME=bigdl-ppmlt-rusted-machine-learning-gramine-custom
+export CUSTOM_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-custom
 export CUSTOM_IMAGE_TAG=2.3.0-SNAPSHOT
 export MACHINE_LEARNING_BASE_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-base
 export MACHINE_LEARNING_BASE_IMAGE_TAG=2.3.0-SNAPSHOT
-export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
-export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
+export SGX_MEM_SIZE=16G
+export SGX_LOG_LEVEL=error
 
 if [[ "$SGX_MEM_SIZE" == "memory_size_of_sgx_in_custom_image" ]] || [[ "$SGX_LOG_LEVEL" == "log_level_of_sgx_in_custom_image" ]]
 then
