@@ -98,7 +98,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  Nano-PyTorch-UT-Test:
+  Nano-PyTorch-UT-Test-Ubuntu:
     runs-on: [ "ubuntu-20.04" ]
 
     strategy:
@@ -114,7 +114,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         os: "ubuntu"
 
-  Nano-PyTorch-UT-Test (CentOS):
+  Nano-PyTorch-UT-Test-CentOS:
     runs-on: [ "Gondolin-centos" ]
 
     strategy:
@@ -130,7 +130,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         os: "centos"
 
-  Nano-PyTorch-UT-Test (Windows):
+  Nano-PyTorch-UT-Test-Windows:
     runs-on: [ "windows-latest" ]
 
     strategy:
