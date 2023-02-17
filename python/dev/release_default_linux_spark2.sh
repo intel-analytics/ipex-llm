@@ -17,7 +17,7 @@
 #
 
 # This is the default script with maven parameters to release all the bigdl sub-packages
-# built on top of Spark2(2.4.6) for linux.
+# built on top of Spark2 (currently 2.4.6) for linux.
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
