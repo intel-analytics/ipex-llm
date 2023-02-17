@@ -1,19 +1,14 @@
 name: 'Mac Orca Python UT Ray TEST'
 description: 'Mac Orca Python UT Ray Spark3.1'
-on:
-  pull_request:
-    branchs: [ main ]
-    #  workflow_dispatch:
 
-jobs:
-  mac-orca-ray-debug:
-    runs-on: [self-hosted, mac, macOS]
+runs:
+  using: "composite"
   steps:
     - name: Run Test
       shell: bash
       run: |
         source ~/.bash_profile
-        source activate py37
+        source activate py37-tf2
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
         export SPARK_HOME=/opt/work/spark-3.1.3
