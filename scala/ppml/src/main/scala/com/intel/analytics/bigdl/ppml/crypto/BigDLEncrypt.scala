@@ -53,22 +53,20 @@ class BigDLEncrypt extends Crypto {
    */
   override def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
     opMode = mode
-    if (cryptoMode.encryptionAlgorithm != "plain_text") {
-      val secret = dataKeyPlaintext.getBytes()
-      // key encrypt
-      val signingKey = Arrays.copyOfRange(secret, 0, 16)
-      val encryptKey = Arrays.copyOfRange(secret, 16, 32)
-      //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
-      val r = new SecureRandom()
-      initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
-      ivParameterSpec = new IvParameterSpec(initializationVector)
-      encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
-      cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
-      cipher.init(mode.opmode, encryptionKeySpec, ivParameterSpec)
-      mac = Mac.getInstance(cryptoMode.signingAlgorithm)
-      val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
-      mac.init(signingKeySpec)
-    }
+    val secret = dataKeyPlaintext.getBytes()
+    // key encrypt
+    val signingKey = Arrays.copyOfRange(secret, 0, 16)
+    val encryptKey = Arrays.copyOfRange(secret, 16, 32)
+    //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
+    val r = new SecureRandom()
+    initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
+    ivParameterSpec = new IvParameterSpec(initializationVector)
+    encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
+    cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
+    cipher.init(mode.opmode, encryptionKeySpec, ivParameterSpec)
+    mac = Mac.getInstance(cryptoMode.signingAlgorithm)
+    val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
+    mac.init(signingKeySpec)
   }
 
   protected var signingDataStream: DataOutputStream = null

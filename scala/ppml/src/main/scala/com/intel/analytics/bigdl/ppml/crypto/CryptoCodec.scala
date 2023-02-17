@@ -133,7 +133,7 @@ object CryptoCodec {
   object CryptoDecompressStream{
     def apply(conf: Configuration, in: InputStream): CryptoDecompressStream = {
       val dataKey = conf.get("bigdl.dataKey.plainText")
-      val cryptoMode = PLAIN_TEXT//AES_CBC_PKCS5PADDING
+      val cryptoMode = AES_CBC_PKCS5PADDING
       val bufferSize = conf.getInt("io.file.buffer.size", 4 * 1024)
       // TODO
       new CryptoDecompressStream(in, bufferSize, cryptoMode, dataKey)
