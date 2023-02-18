@@ -26,7 +26,7 @@ if platform.system() == "Linux":
     preset_thread_nums = int(os.environ.get("OMP_NUM_THREADS", "0"))
     affinity_core_num = get_affinity_core_num()
 
-    if preset_thread_nums > affinity_core_num:
+    if affinity_core_num is not None and preset_thread_nums > affinity_core_num:
         register_suggestion(f"CPU Affinity is set to this program and {affinity_core_num} "
                             f"cores are binded. While Tensorflow OpenMP code block will use "
                             f"{preset_thread_nums} cores, which may cause severe performance "
