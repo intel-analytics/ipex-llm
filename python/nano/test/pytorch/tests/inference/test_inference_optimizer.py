@@ -28,7 +28,7 @@ import torch
 import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidOperationError
 

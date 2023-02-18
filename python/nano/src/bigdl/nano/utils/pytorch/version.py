@@ -14,11 +14,15 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.pytorch import TORCHVISION_VERSION_LESS_1_12
-from torchvision.datasets import *
-del ImageFolder
-if not TORCHVISION_VERSION_LESS_1_12:
-    del OxfordIIITPet
-    from .oxfordpet_datasets import OxfordIIITPet
 
-from .datasets import ImageFolder, SegmentationImageFolder
+import operator
+
+from bigdl.nano.utils.common import compare_version
+
+
+TORCH_VERSION_LESS_1_10 = compare_version("torch", operator.lt, "1.10")
+TORCH_VERSION_LESS_1_11 = compare_version("torch", operator.lt, "1.11")
+TORCH_VERSION_LESS_1_12 = compare_version("torch", operator.lt, "1.12")
+TORCH_VERSION_LESS_1_13 = compare_version("torch", operator.lt, "1.13")
+TORCHVISION_VERSION_LESS_1_12 = compare_version("torchvision", operator.lt, "0.12.0")
+TORCHVISION_VERSION_LESS_1_14 = compare_version("torchvision", operator.lt, "0.14.0")

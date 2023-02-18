@@ -21,7 +21,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.common import get_default_args
-from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
+from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
 from bigdl.nano.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.common import invalidInputError
 

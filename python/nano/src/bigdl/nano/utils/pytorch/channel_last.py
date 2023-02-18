@@ -14,8 +14,11 @@
 # limitations under the License.
 #
 
-
+from typing import Optional
+from types import MethodType
+from logging import warning
 import torch
+import pytorch_lightning as pl
 
 
 def generate_channels_last_available(inputs):
@@ -61,3 +64,54 @@ def apply_proper_channels_last(flag, input_item):
     if flag == "channels_last_3d":
         return input_item.to(memory_format=torch.channels_last_3d)
     return input_item
+
+
+def batch_call(func):
+    """
+    Decorator to extending hook of pl_module.
+
+    Extending behavior hook on_before_batch_transfer to convert data to channels_last
+    for each batch.
+    """
+
+    def on_before_batch_transfer(self, batch, dataloader_idx):
+
+        def convert_channels_last(batch):
+            if isinstance(batch, torch.Tensor) and batch.dim() == 4:
+                batch = batch.to(memory_format=torch.channels_last)
+            elif isinstance(batch, list) or isinstance(batch, tuple):
+                batch = list(batch)
+                for index, t in enumerate(batch):
+                    batch[index] = convert_channels_last(t)
+            return batch
+        batch = func(batch, dataloader_idx)
+        batch = convert_channels_last(batch)
+        return batch
+    return on_before_batch_transfer
+
+
+class ChannelsLastCallback(pl.Callback):
+    """Custom pl.Callback for converting model and data to channels_last."""
+
+    def setup(self, trainer, pl_module, stage: Optional[str] = None) -> None:
+        """Override hook setup to convert model to channels_last and wrap DataHook."""
+        # TODO: Add check for module_states
+        try:
+            pl_module = pl_module.to(memory_format=torch.channels_last)
+        except Exception as e:
+            warning(f"Convert model to channels last failed, \
+                    fall back to origin memory format. Exception msg: {e}")
+            return super().setup(trainer, pl_module, stage)
+        fn_old = getattr(pl_module, "on_before_batch_transfer")
+        fn = batch_call(fn_old)
+        setattr(pl_module, "on_before_batch_transfer_origin", fn_old)
+        pl_module.on_before_batch_transfer = MethodType(fn, pl_module)
+        return super().setup(trainer, pl_module, stage)
+
+    def teardown(self, trainer, pl_module, stage: Optional[str] = None) -> None:
+        """Undo the changes to pl_module at end of fit, validate, tests, or predict."""
+        if hasattr(pl_module, "on_before_batch_transfer_origin"):
+            setattr(pl_module, "on_before_batch_transfer",
+                    pl_module.on_before_batch_transfer_origin)
+            delattr(pl_module, "on_before_batch_transfer_origin")
+        return super().teardown(trainer, pl_module, stage)

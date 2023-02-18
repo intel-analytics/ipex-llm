@@ -14,11 +14,10 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.pytorch import TORCHVISION_VERSION_LESS_1_12
-from torchvision.datasets import *
-del ImageFolder
-if not TORCHVISION_VERSION_LESS_1_12:
-    del OxfordIIITPet
-    from .oxfordpet_datasets import OxfordIIITPet
+import operator
+import tensorflow as tf
+from bigdl.nano.utils.common import compare_version
 
-from .datasets import ImageFolder, SegmentationImageFolder
+
+KERAS_VERSION_LESS_2_9 = compare_version("keras", operator.lt, "2.9")
+KERAS_VERSION_LESS_2_10 = compare_version("keras", operator.lt, "2.10")

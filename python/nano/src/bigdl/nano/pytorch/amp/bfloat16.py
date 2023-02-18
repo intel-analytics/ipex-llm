@@ -22,7 +22,7 @@ from bigdl.nano.utils.pytorch import generate_channels_last_available,\
     apply_proper_channels_last
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils.common import _bf16_checker
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 

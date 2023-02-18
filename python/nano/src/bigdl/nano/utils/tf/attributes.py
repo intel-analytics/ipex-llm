@@ -13,17 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import inspect
-import operator
-import tensorflow as tf
-from tensorflow.keras import Model
 from functools import partial
-from bigdl.nano.utils.common import compare_version
+
+from tensorflow.keras import Model
+
 from bigdl.nano.utils.common import invalidOperationError
-
-
-KERAS_VERSION_LESS_2_9 = compare_version("keras", operator.lt, "2.9")
-KERAS_VERSION_LESS_2_10 = compare_version("keras", operator.lt, "2.10")
 
 
 class _NanoPartial(partial):
@@ -114,14 +110,3 @@ def patch_compiled_and_attrs(target_obj: object, source_obj: object) -> object:
     """
     patch_compiled(target_obj, source_obj)
     return patch_attrs(target_obj, source_obj)
-
-
-def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
-    """Fake a `Tensor` from `TensorSpec`."""
-    shape = tensor_spec.shape
-    dtype = tensor_spec.dtype
-    shape = tuple(dim if dim is not None else 1 for dim in shape)
-    if shape == () and dtype == tf.bool:
-        # This may be the `training` parameter, we should assume it is False
-        return False
-    return tf.ones(shape=shape, dtype=dtype)
