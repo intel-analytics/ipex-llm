@@ -733,10 +733,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         invalidInputError(not TORCH_VERSION_LESS_1_10,
                                           "torch version should >=1.10 to use ipex")
                     use_jit = (accelerator == "jit")
-                    if use_jit:
-                        invalidInputError(jit_method in [None, 'trace', 'script'],
-                                          "jit_method {} is invalid.".format(jit_method))
-                    return PytorchIPEXJITBF16Model(model, input_sample=input_sample,
+                    ipex_jit_bf16_model =  PytorchIPEXJITBF16Model(model, input_sample=input_sample,
                                                    use_ipex=use_ipex, use_jit=use_jit,
                                                    channels_last=channels_last,
                                                    thread_num=thread_num, inplace=inplace,
@@ -744,6 +741,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    jit_method=jit_method,
                                                    weights_prepack=weights_prepack,
                                                    enable_onednn=enable_onednn)
+                    if use_jit:
+                        invalidInputError(jit_method in [None, 'trace', 'script'],
+                                          "jit_method {} is invalid.".format(jit_method))
+                        for _ in range(2):
+                            ipex_jit_bf16_model(input_sample)
+                    return ipex_jit_bf16_model
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            input_sample=input_sample,
@@ -1071,15 +1074,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
                                   "torch version should >=1.10 to use ipex")
             use_jit = (accelerator == "jit")
+            ipex_jit_fp32_model = PytorchIPEXJITModel(model, input_sample=input_sample, 
+                                                    use_ipex=use_ipex, use_jit=use_jit, 
+                                                    channels_last=channels_last,
+                                                    thread_num=thread_num, inplace=inplace,
+                                                    jit_strict=jit_strict, jit_method=jit_method,
+                                                    weights_prepack=weights_prepack,
+                                                    enable_onednn=enable_onednn)
             if use_jit:
                 invalidInputError(jit_method in [None, 'trace', 'script'],
                                   "jit_method {} is invalid.".format(jit_method))
-            return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
-                                       use_jit=use_jit, channels_last=channels_last,
-                                       thread_num=thread_num, inplace=inplace,
-                                       jit_strict=jit_strict, jit_method=jit_method,
-                                       weights_prepack=weights_prepack,
-                                       enable_onednn=enable_onednn)
+                for _ in range(2):
+                    ipex_jit_fp32_model(input_sample)
+            return ipex_jit_fp32_model
+            
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
