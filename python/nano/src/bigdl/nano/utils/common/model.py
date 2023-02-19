@@ -47,7 +47,7 @@ class AcceleratedModel(ABC):
         with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
-    def _save_model(self, path):
+    def _save_model(self, path, compress_to_bf16=False):
         """
         Save the model file to directory.
 
@@ -55,7 +55,7 @@ class AcceleratedModel(ABC):
         """
         invalidInputError(False, "Saving function is not implemented.")
 
-    def _save(self, path):
+    def _save(self, path, compress_to_bf16=False):
         """
         Save the model to local file.
 
@@ -63,7 +63,7 @@ class AcceleratedModel(ABC):
         """
         path = Path(path)
         Path.mkdir(path, exist_ok=True)
-        self._save_model(path)
+        self._save_model(path, compress_to_bf16=compress_to_bf16)
         self._dump_status(path)
 
     @property

@@ -16,31 +16,55 @@
 
 import yaml
 from pathlib import Path
+import copy
 
 import torch
 import pytorch_lightning as pl
 
 
-def save_model(model: pl.LightningModule, path):
+def save_model(model: pl.LightningModule, path, compress_to_bf16=False):
     """
     Save the model to local file.
 
     :param model: Any model of torch.nn.Module, including all models accelareted by
             Trainer.trace/Trainer.quantize.
     :param path: Path to saved model. Path should be a directory.
+    :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
+            pytorch model with fp32 or bf16 precision.
     """
     path = Path(path)
     path.mkdir(parents=path.parent, exist_ok=True)
     if hasattr(model, '_save'):
-        model._save(path)
+        model._save(path, compress_to_bf16=compress_to_bf16)
     else:
         # typically for models of nn.Module, pl.LightningModule type
         meta_path = Path(path) / "nano_model_meta.yml"
-        with open(meta_path, 'w+') as f:
-            metadata = {
-                'ModelType': 'PytorchModel',
-                'checkpoint': 'saved_weight.pt'
-            }
-            yaml.safe_dump(metadata, f)
+        metadata = {
+            'ModelType': 'PytorchModel',
+            'checkpoint': 'saved_weight.pt',
+            'compress_to_bf16': False
+        }
         checkpoint_path = path / metadata['checkpoint']
-        torch.save(model.state_dict(), checkpoint_path)
+        if compress_to_bf16:
+            bf16_sd = transform_state_dict_to_dtype(model.state_dict(), dtype="bf16")
+            torch.save(bf16_sd, checkpoint_path)
+            metadata['compress_to_bf16'] = True
+        else:
+            torch.save(model.state_dict(), checkpoint_path)
+        with open(meta_path, 'w+') as f:
+            yaml.safe_dump(metadata, f)
+
+
+def transform_state_dict_to_dtype(original_state_dict, dtype="bf16"):
+    '''
+    This function will transform a state dict to bf16
+    '''
+    # following block may fail
+    sd_copy = copy.deepcopy(original_state_dict)
+    for name in original_state_dict:
+        if sd_copy[name].is_floating_point():
+            if dtype == "bf16":
+                sd_copy[name] = original_state_dict[name].bfloat16()
+            if dtype == "fp32":
+                sd_copy[name] = original_state_dict[name].float()
+    return sd_copy

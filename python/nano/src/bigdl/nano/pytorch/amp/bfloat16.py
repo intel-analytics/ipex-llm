@@ -209,5 +209,10 @@ class BF16Model(AcceleratedLightningModule):
                          channels_last_available=status['channels_last_available'],
                          thread_num=thread_num)
 
-    def _save_model(self, path):
-        torch.save(self.model.state_dict(), path / "ckpt.pth")
+    def _save_model(self, path, compress_to_bf16=False):
+        if compress_to_bf16:
+            bf16_model = self.model.bfloat16()
+            torch.save(bf16_model.state_dict(), path / "ckpt.pth")
+            self.model.float()
+        else:
+            torch.save(self.model.state_dict(), path / "ckpt.pth")

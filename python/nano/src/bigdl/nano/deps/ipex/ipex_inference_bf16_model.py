@@ -117,4 +117,5 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        jit_strict=status.get('jit_strict', True),
                                        jit_method=status.get('jit_method', None),
                                        weights_prepack=status.get('weights_prepack', None),
-                                       enable_onednn=status.get('enable_onednn', True))
+                                       enable_onednn=status.get('enable_onednn', True),
+                                       compress_to_bf16=status.get('compress_to_bf16', True),)

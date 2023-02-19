@@ -51,7 +51,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                        "compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path):
+    def _save_model(self, path, compress_to_bf16=False):
         self.model.save(path)
         # save normal attrs
         attrs = {"_output_shape": self._output_shape}

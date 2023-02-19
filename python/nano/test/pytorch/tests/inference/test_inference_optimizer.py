@@ -684,3 +684,42 @@ class TestInferencePipeline(TestCase):
         with InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model):
             ipex_model(input_sample)
             assert torch.get_num_threads() == 4
+
+    def test_compressed_saving(self):
+        input_sample = torch.rand(10, 3, 32, 32)
+
+        # original model
+        self.model.eval()
+        opt_output = self.model(input_sample)
+        InferenceOptimizer.save(self.model, "original")
+        original_size = os.path.getsize("original/saved_weight.pt")
+        opt_output_after_saving = self.model(input_sample)
+        InferenceOptimizer.save(self.model, "compressed", compress_to_bf16=True)
+
+        opt_model_load = InferenceOptimizer.load("compressed", self.model)
+        opt_output_after_loading = opt_model_load(input_sample)
+
+        compressed_size_ipex = os.path.getsize("compressed/ckpt.pth")
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.equal(opt_output, opt_output_after_saving)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # ipex
+        opt_model = InferenceOptimizer.trace(self.model, use_ipex=True)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        InferenceOptimizer.save(opt_model, "original")
+        original_size = os.path.getsize("original/ckpt.pth")
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        InferenceOptimizer.save(opt_model, "compressed", compress_to_bf16=True)
+
+        opt_model_load = InferenceOptimizer.load("compressed", self.model)
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+
+        compressed_size_ipex = os.path.getsize("compressed/ckpt.pth")
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.equal(opt_output, opt_output_after_saving)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)

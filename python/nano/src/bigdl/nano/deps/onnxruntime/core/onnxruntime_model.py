@@ -80,7 +80,7 @@ class ONNXRuntimeModel:
         self.ortsess = ort.InferenceSession(onnx_path_or_bytes, sess_options=sess_options)
         self._forward_args = list(map(lambda x: x.name, self.ortsess.get_inputs()))
 
-    def _save_model(self, path):
+    def _save_model(self, path, compress_to_bf16=False):
         """
         Save ONNXRuntimeModel to local as an onnx file
 

@@ -24,7 +24,8 @@ import torch.nn as nn
 import pytorch_lightning as pl
 
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
+    transform_state_dict_to_dtype
 
 
 def load_model(path, model: pl.LightningModule = None, input_sample=None,
@@ -92,6 +93,8 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
         if checkpoint_path:
             checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
+            if metadata['compress_to_bf16']:
+                state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             # patch ContextMagager to original model to keep behaviour consitent
             model._nano_context_manager = \

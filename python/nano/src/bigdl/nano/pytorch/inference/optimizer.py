@@ -1143,15 +1143,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return _context_manager
 
     @staticmethod
-    def save(model: nn.Module, path):
+    def save(model: nn.Module, path, compress_to_bf16=False):
         """
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
+        :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision.
         """
-        save_model(model, path)
+        save_model(model, path, compress_to_bf16)
 
     @staticmethod
     def load(path, model: Optional[nn.Module] = None, input_sample=None,
