@@ -202,7 +202,7 @@ jobs:
   Orca-Python-ExampleTest:
     needs: changes
     if: ${{ needs.changes.outputs.orca-example == 'true' }}
-    runs-on: [self-hosted, Gondolin-Ctx, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts ]
 
     steps:
     - uses: actions/checkout@v3
