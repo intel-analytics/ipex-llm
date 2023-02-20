@@ -98,6 +98,7 @@ if [ "$PYSPARK_MAJOR_PYTHON_VERSION" == "2" ]; then
   export PYSPARK_PYTHON="python"
   export PYSPARK_DRIVER_PYTHON="python"
 elif [ "$PYSPARK_MAJOR_PYTHON_VERSION" == "3" ]; then
+  export MALLOC_ARENA_MAX=4
   pyv3="$(python3 -V 2>&1)"
   export PYTHON_VERSION="${pyv3:7}"
   export PYSPARK_PYTHON="python3"
@@ -155,6 +156,7 @@ driver)
           fi
         fi
       echo $sgx_command &&
+        export MALLOC_ARENA_MAX=1 &&
         ./init.sh &&
         gramine-sgx bash 1>&2
       delete_file "/ppml/temp_command_file"
