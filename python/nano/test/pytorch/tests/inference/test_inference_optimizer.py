@@ -725,6 +725,8 @@ class TestInferencePipeline(TestCase):
         assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
 
         # bf16
+        if TORCH_VERSION_LESS_1_12:
+            return
         opt_model = InferenceOptimizer.quantize(self.model, precision="bf16")
         with InferenceOptimizer.get_context(opt_model):
             opt_output = opt_model(input_sample)
