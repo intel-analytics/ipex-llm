@@ -85,7 +85,7 @@ def read_data(data_dir, dataset):
                                  sep="|", schema=schema_user, header=False)
         df_item = spark.read.csv(os.path.join(data_dir, dataset, "u.item"),
                                  sep="|", schema=schema_item, header=False)
-        # merge multiple one-hot columns into one category column
+        # Merge multiple one-hot columns into one movie category column
         df_item = df_item.select(
             df_item.item,
             concat(*[df_item[f"col{i}"] for i in range(19)]).alias("category")
@@ -115,7 +115,6 @@ def generate_neg_sample(df, item_num, neg_scale):
 
     df = df.unionByName(df_neg)
     df = df.repartition(df.rdd.getNumPartitions())
-
     return df
 
 
@@ -169,7 +168,6 @@ def prepare_data(data_dir="./", dataset="ml-1m", neg_scale=4):
         merge_features(df_rating, df_user, df_item, sparse_features, dense_features)
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
-
     return train_df, val_df, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
@@ -183,11 +181,11 @@ def get_label_cols():
 
 
 if __name__ == "__main__":
-    from utils import *
+    from utils import init_orca, stop_orca_context
 
     init_orca("local")
     train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data()
-    train_df.write.parquet("./train_processed.parquet", mode="overwrite")
-    test_df.write.parquet("./test_processed.parquet", mode="overwrite")
+    train_df.write.parquet("./train_processed_dataframe.parquet", mode="overwrite")
+    test_df.write.parquet("./test_processed_dataframe.parquet", mode="overwrite")
     stop_orca_context()
