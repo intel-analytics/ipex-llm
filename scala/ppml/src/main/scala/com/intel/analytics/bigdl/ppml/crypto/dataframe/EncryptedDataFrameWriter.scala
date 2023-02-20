@@ -175,5 +175,3 @@ object EncryptedDataFrameWriter {
       s"footerKey: ${footKey}, key1: ${dataKey}")
   }
 }
-
-

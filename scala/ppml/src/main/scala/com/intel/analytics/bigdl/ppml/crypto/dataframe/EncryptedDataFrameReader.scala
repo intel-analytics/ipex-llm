@@ -98,5 +98,3 @@ object EncryptedDataFrameReader {
     EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
   }
 }
-
-

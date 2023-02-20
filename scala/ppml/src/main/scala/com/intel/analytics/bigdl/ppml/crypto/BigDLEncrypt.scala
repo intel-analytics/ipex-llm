@@ -247,7 +247,6 @@ class BigDLEncrypt extends Crypto {
     val headerBuffer = ByteBuffer.wrap(header)
     val dataKeyCipherTextBytesLength = headerBuffer.getInt
     val initializationVectorLength = headerBuffer.getInt
-    println(s"dataKeyCipherTextBytesLength in bigdlEncrypt is: $dataKeyCipherTextBytesLength")
     val dataKeyCipherTextBytes: Array[Byte] = header.slice(
       4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
     val initializationVector: Array[Byte] = header.slice(
@@ -347,4 +346,3 @@ class BigDLEncrypt extends Crypto {
   }
 
 }
-

@@ -102,7 +102,6 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        println(s"dataKeyCipherText in bigdlEncryptCompressor is: $dataKeyCipherText")
         bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
         bigdlEncrypt.genHeader
       }
@@ -144,7 +143,6 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.dataKey.plainText"),
       conf.get("bigdl.dataKey.cipherText")
     )
-    println(s"dataKeyCipherText in bigdlEncryptCompressor apply is: $dataKeyCipherText")
     val cryptoMode = AES_CBC_PKCS5PADDING
     new BigDLEncryptCompressor(cryptoMode, dataKeyPlainText, dataKeyCipherText)
   }
