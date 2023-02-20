@@ -90,35 +90,52 @@ class NCFData(data.Dataset):
         return self.features[idx] + [self.labels[idx]]
 
 
-def process_users_items(dataset_dir):
+def process_users_items(data_dir, dataset):
     sparse_features = ["gender", "zipcode", "category", "occupation"]
     dense_features = ["age"]
 
     # load datasets
     with tempfile.TemporaryDirectory() as tmpdirname:
-        if is_local_path(dataset_dir):
-            local_dir = dataset_dir
+        if is_local_path(data_dir):
+            local_dir = os.path.join(data_dir, dataset)
         else:
-            get_remote_dir_to_local(remote_dir=dataset_dir, local_dir=tmpdirname)
-            local_dir = os.path.join(tmpdirname, "ml-1m")
+            get_remote_dir_to_local(remote_dir=os.path.join(data_dir, dataset),
+                                    local_dir=tmpdirname)
+            local_dir = os.path.join(tmpdirname, dataset)
 
-        users = pd.read_csv(
-            os.path.join(local_dir, "users.dat"),
-            sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
-            usecols=[0, 1, 2, 3, 4],
-            dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str},
-            engine="python")
-        items = pd.read_csv(
-            os.path.join(local_dir, "movies.dat"),
-            sep="::", header=None, names=["item", "category"],
-            usecols=[0, 2], dtype={0: np.int64, 1: str},
-            engine="python", encoding="latin-1")
+        if dataset == "ml-1m":
+            users = pd.read_csv(
+                os.path.join(local_dir, "users.dat"),
+                sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
+                usecols=[0, 1, 2, 3, 4],
+                dtype={0: np.int64, 1: str, 2: np.int32, 3: np.int64, 4: str},
+                engine="python")
+            items = pd.read_csv(
+                os.path.join(local_dir, "movies.dat"),
+                sep="::", header=None, names=["item", "category"],
+                usecols=[0, 2], dtype={0: np.int64, 1: str},
+                engine="python", encoding="latin-1")
+        else:  # ml-100k
+            users = pd.read_csv(
+                os.path.join(local_dir, "u.user"),
+                sep="|", header=None, names=["user", "age", "gender", "occupation", "zipcode"],
+                usecols=[0, 1, 2, 3, 4],
+                dtype={0: np.int64, 1: np.int32, 2: str, 3: str, 4: str})
+            items = pd.read_csv(
+                os.path.join(local_dir, "u.item"),
+                sep="|", header=None, names=["item"]+[f"col{i}" for i in range(19)],
+                usecols=[0]+list(range(5, 24)),
+                dtype=np.int64, encoding="latin-1")
+
+            # merge multiple one-hot columns into one category column
+            items["category"] = items.iloc[:, 1:].apply(lambda x: "".join(str(x)), axis=1)
+            items.drop(columns=[f"col{i}" for i in range(19)], inplace=True)
 
     user_num = users["user"].max() + 1
     item_num = items["item"].max() + 1
 
     # categorical encoding
-    for i in sparse_features[:-1]:  # occupation is already indexed.
+    for i in sparse_features:
         df = users if i in users.columns else items
         df[i], _ = pd.Series(df[i]).factorize()
 
@@ -149,19 +166,22 @@ def get_input_dims(users, items, sparse_features, dense_features):
     return sparse_feats_input_dims, num_dense_feats
 
 
-def process_ratings(dataset_dir, user_num, item_num):
+def process_ratings(data_dir, dataset, user_num, item_num):
     # load datasets
     with tempfile.TemporaryDirectory() as tmpdirname:
-        if is_local_path(dataset_dir):
-            local_path = os.path.join(dataset_dir, "ratings.dat")
+        file_name = "ratings.dat" if dataset == "ml-1m" else "u.data"
+        sep = "::" if dataset == "ml-1m" else "\t"
+
+        if is_local_path(data_dir):
+            local_path = os.path.join(data_dir, dataset, file_name)
         else:
-            remote_path = os.path.join(dataset_dir, "ratings.dat")
-            local_path = os.path.join(tmpdirname, "ratings.dat")
+            remote_path = os.path.join(data_dir, dataset, file_name)
+            local_path = os.path.join(tmpdirname, file_name)
             get_remote_file_to_local(remote_path=remote_path, local_path=local_path)
 
         ratings = pd.read_csv(
             local_path,
-            sep="::", header=None, names=["user", "item"],
+            sep=sep, header=None, names=["user", "item"],
             usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
             engine="python")
 
@@ -172,14 +192,15 @@ def process_ratings(dataset_dir, user_num, item_num):
     return ratings, train_mat
 
 
-def load_dataset(dataset_dir, num_ng=4):
+def load_dataset(data_dir="./", dataset="ml-1m", num_ng=4):
     """
-    dataset_dir: the path of the datasets;
+    data_dir: the path of the datasets;
+    dataset: the name of the datasets;
     num_ng: number of negative samples to be sampled here.
     """
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(dataset_dir)
-    ratings, train_mat = process_ratings(dataset_dir, user_num, item_num)
+        total_cols = process_users_items(data_dir, dataset)
+    ratings, train_mat = process_ratings(data_dir, dataset, user_num, item_num)
 
     # sample negative items
     dataset = NCFData(ratings.values.tolist(),
@@ -195,4 +216,4 @@ def load_dataset(dataset_dir, num_ng=4):
 
 
 if __name__ == "__main__":
-    load_dataset("./ml-1m")
+    load_dataset()
