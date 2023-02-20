@@ -19,7 +19,6 @@ from .ipex_inference_model import PytorchIPEXJITModel
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 import torch
 
 

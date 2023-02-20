@@ -152,9 +152,11 @@ class Pytorch1_11:
         model.hello = hello
 
         # test jit + ipex + bf16
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             accelerator="jit", use_ipex=True,
-                                             input_sample=x)
+        new_model = InferenceOptimizer.quantize(model,
+                                                precision='bf16',
+                                                accelerator="jit",
+                                                use_ipex=True,
+                                                input_sample=x)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
@@ -172,9 +174,9 @@ class Pytorch1_11:
             load_model.strange_call()
 
         # test jit + bf16
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             accelerator="jit",
-                                             input_sample=x)
+        new_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                accelerator="jit",
+                                                input_sample=x)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
@@ -191,9 +193,9 @@ class Pytorch1_11:
         ):
             load_model.strange_call()
 
-        # test iepx + bf16
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             use_ipex=True)
+        # test ipex + bf16
+        new_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
@@ -243,7 +245,6 @@ class Pytorch1_11:
             output = loaded_model(input)
         assert output.shape[0] == expected_output_len
         assert loaded_model.jit_method == 'script'
-
 
         # test with jit.trace (with ipex)
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
@@ -353,11 +354,11 @@ class Pytorch1_11:
         model = DummyModelWith3d()
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
-        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                use_ipex=True, precision='bf16',
-                                                                input_sample=(x1, x2),
-                                                                enable_onednn=True,
-                                                                channels_last=True)
+        ipex_jit_channels_last_model = InferenceOptimizer.quantize(model, accelerator="jit", 
+                                                                   use_ipex=True, precision='bf16',
+                                                                   input_sample=(x1, x2),
+                                                                   enable_onednn=True,
+                                                                   channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
