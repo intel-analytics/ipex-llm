@@ -8,7 +8,7 @@ runs:
       shell: bash
       run: |
         source ~/.bash_profile
-        source activate py37-tf2
+        source activate py37-tf2ray
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
         export SPARK_HOME=/opt/work/spark-3.1.3
