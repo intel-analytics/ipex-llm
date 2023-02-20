@@ -21,31 +21,40 @@ import java.security.SecureRandom
 import javax.crypto.{KeyGenerator, Cipher, SecretKey}
 import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import scala.collection.mutable.HashMap
 import com.intel.analytics.bigdl.ppml.kms.KeyManagementService
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
-import org.apache.hadoop.fs.Path
 import com.intel.analytics.bigdl.ppml.kms.common.KmsMetaFormatSerializer
+import org.apache.hadoop.fs.{Path, FileSystem}
+import org.apache.hadoop.conf.Configuration
 
 // load both encryptedDataKey and dataKeyPlainText
 case class KeyLoader(val fromKms: Boolean,
                      val primaryKeyMaterial: String = "",
                      val kms: KeyManagementService = null,
-                     val primaryKeyPlainText: String = "") extends Serializable {
+                     val primaryKeyPlainText: String = "",
+                     config: Configuration = null) extends Serializable {
     protected val keySize = 128
     protected val keyReaderWriter = new KeyReaderWriter
     val META_FILE_NAME = ".meta"
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
+    protected val hadoopConfig = if (config != null) config else new Configuration()
     // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
-        val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
-        val jsonStr = scala.io.Source.fromFile(metaPath).mkString
-        val encryptedDataKey = KmsMetaFormatSerializer(jsonStr).encryptedDataKey
-        if (fromKms) {
+        val encryptedDataKey = {
+          val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+          val fs: FileSystem = FileSystem.get(new URI(metaPath), hadoopConfig)
+          val inStream = fs.open(new Path(metaPath))
+          val jsonStr = scala.io.Source.fromInputStream(inStream)
+            .takeWhile(_ != null).mkString
+          KmsMetaFormatSerializer(jsonStr).encryptedDataKey
+        }
+        val dataKeyPlainText = if (fromKms) {
           kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
           val cipher = dataKeyCipher(Cipher.DECRYPT_MODE)
@@ -53,6 +62,7 @@ case class KeyLoader(val fromKms: Boolean,
           val dataKeyPlainTextBytes = cipher.doFinal(encryptedDataKeyBytes)
           new String(dataKeyPlainTextBytes, StandardCharsets.UTF_8)
         }
+        dataKeyPlainText
     }
 
     // generate a data key, and return the plaintext string
@@ -75,7 +85,6 @@ case class KeyLoader(val fromKms: Boolean,
               )
               Base64.getEncoder().encodeToString(encryptedDataKeyBytes)
             }
-
             dataKeyPlainText
         }
     }
@@ -92,10 +101,7 @@ case class KeyLoader(val fromKms: Boolean,
     def writeEncryptedDataKey(fileDirPath: String): Unit = {
       val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
       val jsonStr = KmsMetaFormatSerializer(KmsMetaFormat(encryptedDataKey))
-      println(s"[INFO] encryptedDataKey in writeEncryptedDataKey: $encryptedDataKey")
-      val fw = new FileWriter(new File(metaPath))
-      fw.write(jsonStr)
-      fw.close()
+      keyReaderWriter.writeKeyToFile(metaPath, jsonStr, hadoopConfig)
     }
 }
 
