@@ -165,6 +165,11 @@ class Pytorch1_11:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test jit + bf16
         new_model = InferenceOptimizer.trace(model, precision='bf16',
@@ -180,6 +185,11 @@ class Pytorch1_11:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test iepx + bf16
         new_model = InferenceOptimizer.trace(model, precision='bf16',
@@ -196,6 +206,11 @@ class Pytorch1_11:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
     def test_bf16_ipex_jit_method(self):
 
