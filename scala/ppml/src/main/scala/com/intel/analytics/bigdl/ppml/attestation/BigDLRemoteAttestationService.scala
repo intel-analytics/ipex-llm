@@ -97,7 +97,7 @@ object BigDLRemoteAttestationService {
     } else {
       val policyID = UUID.randomUUID.toString
       policyMap += (policyID -> curPolicy)
-      val res = AttestationUtil.mapToString(Map("policyID" -> policyID))
+      val res = JsonUtil.toJson(Map("policyID" -> policyID))
       complete(200, res)
     }
   }
@@ -192,18 +192,29 @@ object BigDLRemoteAttestationService {
     val enrollFilePath = params.basePath + "/" + params.enrollFilePath
     val policyFilePath = params.basePath + "/" + params.policyFilePath
     val userContent = Await.result(FileEncryptUtil.loadFile(enrollFilePath, secretKey), 5.seconds)
-    userMap = AttestationUtil.stringToStrMap(userContent)
+    // userMap = AttestationUtil.stringToStrMap(userContent)\
+    userMap = userContent match {
+      case "" =>
+        Map.empty
+      case _ =>
+        JsonUtil.fromJson(classOf[Map[String, String]], userContent)
+    }
     val policyContent = Await.result(FileEncryptUtil.loadFile(policyFilePath, secretKey), 5.seconds)
-    policyMap = AttestationUtil.stringToPolicyMap(policyContent)
-
+    // policyMap = AttestationUtil.stringToPolicyMap(policyContent)
+    policyMap = policyContent match {
+      case "" =>
+        Map.empty
+      case _ =>
+        JsonUtil.fromJson(classOf[Map[String, Policy]], policyContent)
+    }
     val t = new Thread {
       override def run(): Unit = {
         while (true) {
           Thread.sleep(30 * 1000)
           FileEncryptUtil.saveFile(enrollFilePath,
-            AttestationUtil.mapToString(userMap), secretKey)
+            JsonUtil.toJson(userMap), secretKey)
           FileEncryptUtil.saveFile(policyFilePath,
-            AttestationUtil.mapToString(policyMap), secretKey)
+            JsonUtil.toJson(policyMap), secretKey)
         }
       }
     }
@@ -239,7 +250,6 @@ object BigDLRemoteAttestationService {
           entity(as[String]) { jsonMsg =>
             logger.info("registerPolicy\n")
             val enroll = JsonUtil.fromJson(classOf[Enroll], jsonMsg)
-            print(enroll)
             if (checkAppIDAndApiKey(enroll)) {
               registerPolicy(jsonMsg)
             } else {

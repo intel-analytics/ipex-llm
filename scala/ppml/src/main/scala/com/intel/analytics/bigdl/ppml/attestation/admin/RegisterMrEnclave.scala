@@ -30,7 +30,7 @@ import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}
 
 import com.intel.analytics.bigdl.ppml.attestation._
 import com.intel.analytics.bigdl.ppml.attestation.service.ATTESTATION_CONVENTION
-import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
+import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUtil}
 
 object RegisterMrEnclave {
   val sslConSocFactory = {
@@ -117,7 +117,7 @@ object RegisterMrEnclave {
             "mrEnclave" -> mrEnclave,
             "policyType" -> "SGXMREnclavePolicy"
           )
-          val postString = AttestationUtil.mapToString(postContent)
+          val postString = JsonUtil.toJson(postContent)
           val postUrl = s"https://$URL/registerPolicy"
           var response: String = HTTPSUtil.retrieveResponse(postUrl, sslConSocFactory, postString)
 

@@ -41,7 +41,7 @@ import scala.util.Random
 import scala.util.parsing.json._
 
 import com.intel.analytics.bigdl.ppml.attestation._
-import com.intel.analytics.bigdl.ppml.attestation.utils.AttestationUtil
+import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUtil}
 
 /**
  * Attestation Service provided by BigDL
@@ -101,7 +101,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
         "apiKey" -> apiKey,
         "quote" -> quote
       )
-      val postString = AttestationUtil.mapToString(postContent)
+      val postString = JsonUtil.toJson(postContent)
       val postUrl = constructUrl(action, httpsEnabled)
       var response: String = null
       if (httpsEnabled) {
@@ -141,7 +141,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
         "quote" -> quote,
         "policyID" -> policyID
       )
-      val postString = AttestationUtil.mapToString(postContent)
+      val postString = JsonUtil.toJson(postContent)
       val postUrl = constructUrl(action, httpsEnabled)
       var response: String = null
       if (httpsEnabled) {
