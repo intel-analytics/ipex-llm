@@ -378,7 +378,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
             remote_worker_stats = []
             for shard, worker in zip(shards, self.remote_workers):
-                worker_stats = worker.predict.remote(data_creator, batch_size, profile)
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile, callbacks)
                 remote_worker_stats.append(worker_stats)
             result = ray.data.from_numpy(remote_worker_stats).map(
                 lambda r: {"prediction_result": r["value"]})
