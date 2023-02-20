@@ -699,7 +699,7 @@ class TestInferencePipeline(TestCase):
         opt_model_load = InferenceOptimizer.load("compressed", self.model)
         opt_output_after_loading = opt_model_load(input_sample)
 
-        compressed_size_ipex = os.path.getsize("compressed/ckpt.pth")
+        compressed_size_ipex = os.path.getsize("compressed/saved_weight.pt")
         assert compressed_size_ipex < 0.8 * original_size
         assert torch.equal(opt_output, opt_output_after_saving)
         assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
