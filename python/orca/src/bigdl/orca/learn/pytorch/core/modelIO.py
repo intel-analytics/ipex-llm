@@ -14,10 +14,15 @@
 # limitations under the License.
 #
 
-from abc import ABCMeta, abstractmethod
+import os
 import io
+import shutil
+import tempfile
+from abc import ABCMeta, abstractmethod
+
 import torch
-from bigdl.orca.learn.pytorch.utils import get_filesystem
+
+from bigdl.orca.data.file import get_remote_file_to_local
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
@@ -54,12 +59,14 @@ class ModelIO(metaclass=ABCMeta):
         return self.load_state_dict(state_dict)
 
     def load_checkpoint(self, filepath):
-        fs = get_filesystem(filepath)
-        if not fs.exists(filepath):
-            invalidInputError(False,
-                              f"Checkpoint at {filepath} not found. Aborting training.")
-        with fs.open(filepath, "rb") as f:
-            state_dict = torch.load(f)
+        file_name = os.path.basename(filepath)
+        temp_dir = tempfile.mkdtemp()
+        temp_path = os.path.join(temp_dir, file_name)
+        try:
+            get_remote_file_to_local(filepath, temp_path)
+            state_dict = torch.load(temp_path)
+        finally:
+            shutil.rmtree(temp_dir)
         self.load_state_dict(state_dict)
 
     @staticmethod
