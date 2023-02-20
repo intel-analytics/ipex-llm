@@ -469,6 +469,9 @@ jobs:
     - uses: actions/checkout@v3
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-ray-ctx-py37-spark3-action
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
 
   Orca-Pytest-Openvino-Py37-Spark3:
     needs: changes
