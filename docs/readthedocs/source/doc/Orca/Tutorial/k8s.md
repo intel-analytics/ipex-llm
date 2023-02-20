@@ -160,7 +160,6 @@ sudo docker run -itd --net=host \
     -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:latest \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=x.x.x.x \
-    -e RUNTIME_DRIVER_PORT=54321 \
     intelanalytics/bigdl-k8s:latest bash
 ```
 
@@ -178,7 +177,6 @@ In the script:
 * `RUNTIME_K8S_SPARK_IMAGE`: the name of the BigDL K8s Docker image.
 * `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
 * `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required if you use k8s-client mode).
-* `RUNTIME_DRIVER_PORT`: a string that specifies the driver port (only required if you use k8s-client mode).
 
 __Notes:__
 * The __Client Container__ already contains all the required environment configurations for Spark and BigDL Orca.
