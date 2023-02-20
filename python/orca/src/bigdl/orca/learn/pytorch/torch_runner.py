@@ -581,7 +581,6 @@ class TorchRunner(BaseRunner):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
-        callbacks = callbacks or []
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -625,7 +624,7 @@ class TorchRunner(BaseRunner):
                 self.batch_idx = batch_idx
 
                 self.call_hook(callbacks, "before_pred_iter")
-                result.append(self.predict_batch(self.batch))
+                result.append(self.predict_batch(self.batch, callbacks=callbacks))
                 self.call_hook(callbacks, "after_pred_iter")
 
                 del self.batch
