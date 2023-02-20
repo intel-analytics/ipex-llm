@@ -88,7 +88,7 @@ cd BigDL/ppml/
                           --from-literal=policy_id=YOUR_POLICY_ID
     kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
     ```
-    **The secret created (`YOUR_SECRET`) should be the same as the password you specified in step 1**
+    **The secret created (`YOUR_SECRET`) should be the same as the password you specified in step *Prepare k8s secret***
 
 ### Key Management Service (KMS) and Attestation Service (AS) Setup
 Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker. You can choose to use the KMS and AS which PPML provides or your own one.
