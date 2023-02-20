@@ -103,7 +103,7 @@ def process_users_items(data_dir, dataset):
                                     local_dir=tmpdirname)
             local_dir = os.path.join(tmpdirname, dataset)
 
-        if dataset == "ml-1m":    
+        if dataset == "ml-1m":
             users = pd.read_csv(
                 os.path.join(local_dir, "users.dat"),
                 sep="::", header=None, names=["user", "gender", "age", "occupation", "zipcode"],
@@ -120,7 +120,7 @@ def process_users_items(data_dir, dataset):
                 os.path.join(local_dir, "u.user"),
                 sep="|", header=None, names=["user", "age", "gender", "occupation", "zipcode"],
                 usecols=[0, 1, 2, 3, 4],
-                dtype={0: np.int64, 1: np.int32, 2:str, 3: str, 4: str})
+                dtype={0: np.int64, 1: np.int32, 2: str, 3: str, 4: str})
             items = pd.read_csv(
                 os.path.join(local_dir, "u.item"),
                 sep="|", header=None, names=["item"]+[f"col{i}" for i in range(19)],
