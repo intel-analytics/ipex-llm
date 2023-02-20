@@ -100,13 +100,11 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
             sep="|", header=None,
             names=["item"]+[f"col{i}" for i in range(19)],
             usecols=[0]+list(range(5, 24)),
-            dtype=str)
+            dtype=np.int64)
 
         # merge multiple one-hot columns into one category column
         def merge_one_hot_cols(df):
-            df["item"] = df["item"].astype(np.int64)
-            category_cols = df.iloc[:, 1:]
-            df["category"] = pd.Series([''.join(row) for row in category_cols.values])
+            df["category"] = df.iloc[:, 1:].apply(lambda x: "".join(str(x)), axis=1)
             return df.drop(columns=[f"col{i}" for i in range(19)])
 
         items = items.transform_shard(merge_one_hot_cols)
@@ -114,8 +112,8 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     # calculate numbers of user and item
     user_set = set(users["user"].unique())
     item_set = set(items["item"].unique())
-    user_num = max(user_set) + 1
-    item_num = max(item_set) + 1
+    user_num = int(max(user_set) + 1)
+    item_num = int(max(item_set) + 1)
 
     print("Processing features...")
 
@@ -138,7 +136,7 @@ def prepare_data(data_dir="./", dataset="ml-1m", num_ng=4):
     for col in sparse_features:
         data = users if col in users.get_schema()["columns"] else items
         sparse_feat_set = set(data[col].unique())
-        sparse_feats_input_dims.append(max(sparse_feat_set) + 1)
+        sparse_feats_input_dims.append(int(max(sparse_feat_set) + 1))
 
     # scale dense features
     def rename(df, col):
@@ -181,9 +179,9 @@ def get_label_cols():
 
 
 if __name__ == "__main__":
-    from bigdl.orca import init_orca_context, stop_orca_context
+    from utils import *
 
-    sc = init_orca_context()
+    init_orca("local")
     train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data()
     train_data.save_pickle("./train_processed_xshards")
