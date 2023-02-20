@@ -1,4 +1,3 @@
-conda create -y -n chronos python=3.7 setuptools=58.0.4
 source activate chronos
 
 model=$1

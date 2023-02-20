@@ -12,7 +12,7 @@ attestation () {
             echo "bigdl-attestation-service initialization failed. Unable to connect bigdl-attestation-service."
         fi
         if [ -n "$ATTESTATIONSUCCESS" ]; then 
-            echo "bigdl-attestation-service initialization successful."
+            echo "bigdl-attestation-service initialization is successful."
         fi
     fi
 }
@@ -28,7 +28,7 @@ bigdl-kms () {
             echo "bigdl-kms initialization failed. Unable to connect BigDl KMS frontend."
         fi
         if [ -n "$BIGDLKMSSUCCESS" ]; then 
-            echo "bigdl-kms initialization successful."
+            echo "bigdl-kms initialization is successful."
         fi
     fi
 }
@@ -44,7 +44,7 @@ ehsm () {
             echo "ehsm initialization failed. Unable to connect EHSM at " $EHSM_IP "."
         fi
         if [ -n "$EHSMSUCCESS" ]; then 
-            echo "ehsm initialization successful."
+            echo "ehsm initialization is successful."
         fi
     fi
 }
@@ -60,7 +60,7 @@ kms-utils () {
             echo "kms-utils initialization failed. Unable to connect kms-utils at " $KMS_UTILS_IP "."
         fi
         if [ -n "$KMSUTILSSUCCESS" ]; then
-            echo "kms-utils initialization successful."
+            echo "kms-utils initialization is successful."
         fi
     fi
 }
@@ -76,7 +76,7 @@ pccs () {
             echo "pccs initalization failed. Unable to connect pccs at " $PCCS_IP "."
         fi
         if [ -n $"PCCSSUCCESS" ]; then 
-            echo "pccs initalization successful."
+            echo "pccs initialization is successful."
         fi
     fi
 }

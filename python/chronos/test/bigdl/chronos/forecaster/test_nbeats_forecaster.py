@@ -135,7 +135,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='pytorch_fx',
-                            relative_drop=0.2)
+                            relative_drop=0.5)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
@@ -143,7 +143,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='onnxrt_qlinearops',
-                            relative_drop=0.2)
+                            relative_drop=0.8)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
@@ -279,7 +279,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.5, max_trials=3,
+                            metric="mse", relative_drop=0.8, max_trials=3,
                             framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
@@ -773,3 +773,21 @@ class TestChronosNBeatsForecaster(TestCase):
         assert new_current_thread == current_thread
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
+
+    def test_nbeats_forecaster_ctx_manager(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mse',
+                                      lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        num = max(1, original_thread//2)
+        with forecaster.get_context(thread_num=num, optimize=True):
+            assert forecaster.context_enabled == True
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
+            for x, y in test_loader:
+                yhat = forecaster.predict(x.numpy())

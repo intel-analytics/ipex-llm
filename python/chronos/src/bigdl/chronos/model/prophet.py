@@ -121,7 +121,7 @@ class ProphetModel:
 
         :return: predicted result of length horizon
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling predict")
@@ -146,7 +146,7 @@ class ProphetModel:
 
         :return: a list of metric evaluation results
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if data is not None:
             invalidInputError(False,
                               "We don't support input data currently")
@@ -162,7 +162,7 @@ class ProphetModel:
                                   target_pred.yhat.values, aggregate="mean")
 
     def save(self, checkpoint):
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling save")

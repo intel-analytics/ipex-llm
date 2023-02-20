@@ -53,11 +53,10 @@ from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
-from bigdl.nano.common.cpu_schedule import schedule_processors
+from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 import logging
 import warnings

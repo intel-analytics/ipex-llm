@@ -4,7 +4,7 @@ export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/notebook/training/pytorch-lightning
 
-TORCH_VERSION_LESS_1_12=`python -c "from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12; print(TORCH_VERSION_LESS_1_12)"`
+TORCH_VERSION_LESS_1_12=`python -c "from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12; print(TORCH_VERSION_LESS_1_12)"`
 AVX512_AVAILABLE=`lscpu | grep avx512`
 
 set -e

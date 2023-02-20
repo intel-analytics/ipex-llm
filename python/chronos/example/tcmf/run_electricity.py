@@ -75,7 +75,7 @@ if __name__ == "__main__":
                       memory=args.memory, init_ray_on_spark=True)
 
     if not args.use_dummy_data:
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(args.data_dir is not None,
                           "--data_dir must be provided if not using dummy data")
 

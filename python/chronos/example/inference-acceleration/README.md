@@ -12,13 +12,11 @@ In this example, we show an example to train the model on GPU and accelerate the
 python cpu_inference_acceleration.py
 ```
 
-```note
 More inference acceleration info, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/speed_up.html#inference-acceleration).
-```
 
 ## Sample output
 ```bash
 Epoch 2: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████| 288/288
-original pytorch latency (ms): {'p50': 1.236, 'p90': 1.472, 'p95': 1.612, 'p99': 32.989}
-onnxruntime latency (ms): {'p50': 0.124, 'p90': 0.129, 'p95': 0.148, 'p99': 0.363}
+original pytorch latency (ms): {'p50': 1.984, 'p90': 2.024, 'p95': 2.039, 'p99': 2.461}
+onnxruntime latency (ms): {'p50': 0.231, 'p90': 0.24, 'p95': 0.245, 'p99': 0.516}
 ```

@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
-import com.intel.analytics.bigdl.ppml.utils.{Supportive, KMSManagement}
+import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.kms.common.{KeyLoader, KeyLoaderManagement}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
@@ -33,12 +34,10 @@ import org.apache.hadoop.fs.Path
  * PPMLContext who wraps a SparkSession and provides read functions to
  * read encrypted data files to plain-text RDD or DataFrame, also provides
  * write functions to save DataFrame to encrypted data files.
- * @param kms for single-data source/kms mode
- * @param sparkSession
  */
-class PPMLContext protected(kms: KeyManagementService = null, sparkSession: SparkSession = null) {
-  protected var dataKeyPlainText: String = "" // for single-data source/KMS mode
-  protected var kmsManagement: KMSManagement = null // for multi-data source/KMS mode
+class PPMLContext {
+  protected val keyLoaderManagement = new KeyLoaderManagement
+  protected var sparkSession: SparkSession = null
 
   /**
    * Read data files into RDD[String]
@@ -46,109 +45,48 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
    * @param minPartitions min partitions
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @param kmsName for multi-data source/KMS mode, name of kms which this data source uses
-   * @param primaryKey for multi-data source/KMS mode, primaryKey path/name apply to the data source
-   * @param dataKey for multi-data source/KMS mode, dataKey path/name apply to the data source
+   * @param primaryKeyName use the name-specific primary key to decrypt data key in file meata
    * @return
    */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
                cryptoMode: CryptoMode = PLAIN_TEXT,
-               kmsName: String = "",
-               primaryKey: String = "",
-               dataKey: String = ""): RDD[String] = {
+               primaryKeyName: String = "defaultKey"): RDD[String] = {
     cryptoMode match {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case _ =>
-        kmsName match {
-          case "" => // single mode
-            PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
-                                 cryptoMode, minPartitions)
-          case _ => // multi mode
-            val kms = getKmsByName(kmsName)
-            loadKeys(primaryKey, dataKey, kms)
-            PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
-                                 cryptoMode, minPartitions)
-        }
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                  .retrieveDataKeyPlainText(path)
+        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
+                             cryptoMode, minPartitions)
     }
   }
 
   /**
    * Interface for loading data in external storage to Dataset.
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
-   * @param kmsName for multi-data source/KMS mode, name of kms which this data source uses
-   * @param primaryKey for multi-data source/KMS mode, primaryKey path/name apply to the data source
-   * @param dataKey for multi-data source/KMS mode, dataKey path/name apply to the data source
+   * @param primaryKeyName use the name-specific primary key to decrypt data key in file meata
    * @return a EncryptedDataFrameReader
    */
   def read(cryptoMode: CryptoMode,
-           kmsName: String = "",
-           primaryKey: String = "",
-           dataKey: String = ""): EncryptedDataFrameReader = {
-    kmsName match {
-      case "" => // single mode
-        new EncryptedDataFrameReader(sparkSession, cryptoMode, dataKeyPlainText)
-      case _ => // multi mode
-        val kms = getKmsByName(kmsName)
-        loadKeys(primaryKey, dataKey, kms)
-        new EncryptedDataFrameReader(sparkSession, cryptoMode, dataKeyPlainText)
-    }
+           primaryKeyName: String = "defaultKey"): EncryptedDataFrameReader = {
+      new EncryptedDataFrameReader(sparkSession, cryptoMode,
+                                   primaryKeyName, keyLoaderManagement)
   }
 
   /**
    * Interface for saving the content of the non-streaming Dataset out into external storage.
    * @param dataFrame dataframe to save.
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
-   * @param kmsName for multi-data source/KMS mode, name of kms which this data sink uses
-   * @param primaryKey for multi-data source/KMS mode, primaryKey path/name
-   * @param dataKey for multi-data source/KMS mode, dataKey path/name
+   * @param primaryKeyName use the name-specific primary key to decrypt data key in file meata
    * @return a DataFrameWriter[Row]
    */
   def write(dataFrame: DataFrame,
             cryptoMode: CryptoMode,
-            kmsName: String = "",
-            primaryKey: String = "",
-            dataKey: String = ""): EncryptedDataFrameWriter = {
-    kmsName match {
-      case "" => // single mode
-        new EncryptedDataFrameWriter(sparkSession, dataFrame,
-                                     cryptoMode, dataKeyPlainText)
-      case _ => // multi mode
-        val kms = getKmsByName(kmsName)
-        loadKeys(primaryKey, dataKey, kms)
-        new EncryptedDataFrameWriter(sparkSession, dataFrame,
-                                     cryptoMode, dataKeyPlainText)
-    }
-  }
-
-  /**
-   * Load unique key for both read and write from a local file system for single-kms/dataSource mode
-   * @param primaryKey
-   * @param dataKey
-   * @param kms optional, request dataKeyPlaintext from this kms if not null,
-   *            otherwiese from class member
-   * @return
-   */
-  def loadKeys(primaryKey: String, dataKey: String, kms: KeyManagementService = null): this.type = {
-    dataKeyPlainText = kms match {
-      case null => getDataKeyPlainTextFromKms(primaryKey, dataKey, this.kms)
-      case _ => getDataKeyPlainTextFromKms(primaryKey, dataKey, kms)
-    }
-    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.dataKey.plaintext",
-                                                      dataKeyPlainText)
-    this
-  }
-
-
-  /**
-   * Get kms from kmsManagement according to the name string
-   * @return a kms that has been enrolled in kmsManagement
-   */
-  def getKmsByName(kmsName: String): KeyManagementService = {
-    Log4Error.invalidInputError(kmsManagement != null,
-        "kmsManagement has not been initialized." +
-        "Maybe calling a multi-data source/KMS method from single mode wrongly.")
-    kmsManagement.getKms(kmsName)
+            primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
+      new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode,
+                                   primaryKeyName, keyLoaderManagement)
   }
 
   /**
@@ -158,23 +96,6 @@ class PPMLContext protected(kms: KeyManagementService = null, sparkSession: Spar
   def getSparkSession(): SparkSession = {
     sparkSession
   }
-
-  def getDataKeyPlainTextFromKms(primaryKey: String,
-                                 dataKey: String,
-                                 kms: KeyManagementService): String = {
-    val dataKeyPlainText = kms.retrieveDataKeyPlainText(primaryKey, dataKey,
-        sparkSession.sparkContext.hadoopConfiguration)
-    dataKeyPlainText
-  }
-
-  def enrollKms(kmsName: String, kms: KeyManagementService): this.type = {
-    Log4Error.invalidInputError(kmsManagement != null,
-        "kmsManagement has not been initialized." +
-        "Maybe calling a multi-data source/KMS method from single mode wrongly.")
-    kmsManagement.enrollKms(kmsName, kms)
-    this
-  }
-
 }
 
 
@@ -239,6 +160,28 @@ object PPMLContext{
     initPPMLContext(conf)
   }
 
+   /**
+   * init ppml context with an existed SparkSession
+   * @param sparkSession a SparkSession
+   * @return a PPMLContext
+   */
+  def initPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    val conf = sparkSession.sparkContext.getConf
+    Log4Error.invalidInputError(conf.contains("spark.hadoop.io.compression.codecs"),
+        "spark.hadoop.io.compression.codecs not found!" +
+        "If you want to init PPMLContext with an existing SparkSession, " +
+        "must set the property before creating SparkSession!")
+    Log4Error.invalidInputError(
+      conf.get("spark.hadoop.io.compression.codecs")
+      == "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec",
+      "If you want to init PPMLContext with an existing SparkSession, " +
+      "spark.hadoop.io.compression.codecs property must be set to" +
+      "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" +
+      " before creating SparkSession!")
+    val ppmlSc = loadPPMLContext(sparkSession)
+    ppmlSc
+  }
+
   /**
    * init ppml context with app name and ppml args
    * @param appName the name of this Application
@@ -264,6 +207,7 @@ object PPMLContext{
         ppmlArgs: Map[String, String]): PPMLContext = {
     val conf = createSparkConf(sparkConf)
     ppmlArgs.foreach{arg =>
+      println(arg._1 + ": " + arg._2)
       conf.set(arg._1, arg._2)
     }
     initPPMLContext(conf, appName)
@@ -291,108 +235,71 @@ object PPMLContext{
    * @return a PPMLContext
    */
   def loadPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    val ppmlSc = new PPMLContext
+    ppmlSc.sparkSession = sparkSession
     val conf = sparkSession.sparkContext.getConf
-    val multiKmsEnabled = conf.get("spark.bigdl.enableMultiKms", defaultValue = "false")
-    val ppmlSc = multiKmsEnabled match {
-      case "false" => // single mode
-        val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")
-        val kms = loadTypedKms(conf, kmsType)
-        val ppmlSc = new PPMLContext(kms, sparkSession)
-        if (conf.contains("spark.bigdl.kms.primaryKey")) {
-          val (primaryKey, dataKey) = getKeysFromConf(conf)
-          ppmlSc.loadKeys(primaryKey, dataKey, kms)
-        }
-        ppmlSc
-      case "true" => // multi mode
-        val ppmlSc = new PPMLContext(sparkSession = sparkSession)
-        ppmlSc.kmsManagement = new KMSManagement
-        // init kmsManagement
-        val kmsNames = getKmsNames(conf)
-        kmsNames.foreach{
-            kmsName => {
-                val kms = loadNamedKms(conf, kmsName)
-                ppmlSc.enrollKms(kmsName, kms)
-            }
-        }
-        ppmlSc
+    val primaryKeyNames = getPrimaryKeyNames(conf)
+    primaryKeyNames.foreach{
+      primaryKeyName => {
+        if (conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.plainText")) {
+          val primaryKeyPlainText = conf.get(
+            s"spark.bigdl.primaryKey.$primaryKeyName.plainText")
+          ppmlSc.keyLoaderManagement
+                .addKeyLoader(primaryKeyName,
+                              KeyLoader(false, "", null, primaryKeyPlainText))
+        } else {
+          Log4Error.invalidInputError(
+            conf.contains(s"spark.bigdl.primaryKey.$primaryKeyName.material"),
+                          s"spark.bigdl.primaryKey.$primaryKeyName.material not found.")
+            val primaryKeyMaterial = conf.get(
+              s"spark.bigdl.primaryKey.$primaryKeyName.material")
+            val kms = loadKmsOfPrimaryKey(conf, primaryKeyName)
+            ppmlSc.keyLoaderManagement
+                  .addKeyLoader(primaryKeyName,
+                                KeyLoader(true, primaryKeyMaterial, kms, ""))
+         }
+      }
     }
     ppmlSc
   }
 
-  def getKmsNames(conf: SparkConf): Array[String] = {
-    val prefix = "spark.bigdl.kms"
+  def getPrimaryKeyNames(conf: SparkConf): Array[String] = {
+    val prefix = "spark.bigdl.primaryKey"
     val properties: Array[Tuple2[String, String]] = conf.getAllWithPrefix(prefix)
     val names = for { v <- properties } yield v._1.split('.')(1)
     names.distinct
   }
 
-  def getKeysFromConf(conf: SparkConf): (String, String) = {
-    Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.dataKey"),
-        "Data key not found, please provide " +
-        "both spark.bigdl.kms.primaryKey and spark.bigdl.kms.dataKey.")
-    val primaryKey = conf.get("spark.bigdl.kms.primaryKey")
-    val dataKey = conf.get("spark.bigdl.kms.dataKey")
-    (primaryKey, dataKey)
-  }
-
-  def loadTypedKms(conf: SparkConf, kmsType: String): KeyManagementService = {
+  def loadKmsOfPrimaryKey(conf: SparkConf, primaryKeyName: String): KeyManagementService = {
+    val kmsType = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.type",
+      defaultValue = KMS_CONVENTION.MODE_SIMPLE_KMS)
     val kms = kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
-        val ip = conf.get("spark.bigdl.kms.ip")
-        val port = conf.get("spark.bigdl.kms.port")
-        val appId = conf.get("spark.bigdl.kms.appId")
-        val apiKey = conf.get("spark.bigdl.kms.apiKey")
+        val ip = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.ip")
+        val port = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.port")
+        val appId = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.appId")
+        val apiKey = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.apiKey")
         new EHSMKeyManagementService(ip, port, appId, apiKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val appId = conf.get("spark.bigdl.kms.appId", defaultValue = "simpleAPPID")
-        val apiKey = conf.get("spark.bigdl.kms.simple.apiKey", defaultValue = "simpleAPIKEY")
+        val appId = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.appId",
+                             defaultValue = "simpleAPPID")
+        val apiKey = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.apiKey",
+                              defaultValue = "simpleAPIKEY")
         SimpleKeyManagementService(appId, apiKey)
       case KMS_CONVENTION.MODE_AZURE_KMS =>
-        val vaultName = conf.get("spark.bigdl.kms.vault")
-        val clientId = conf.get("spark.bigdl.kms.clientId")
+        val vaultName = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.vault")
+        val clientId = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.clientId")
         new AzureKeyManagementService(vaultName, clientId)
       case KMS_CONVENTION.MODE_BIGDL_KMS =>
-        val ip = conf.get("spark.bigdl.kms.ip")
-        val port = conf.get("spark.bigdl.kms.port")
-        val userName = conf.get("spark.bigdl.kms.user")
-        val userToken = conf.get("spark.bigdl.kms.token")
+        val ip = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.ip")
+        val port = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.port")
+        val userName = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.user")
+        val userToken = conf.get(s"spark.bigdl.primaryKey.$primaryKeyName.kms.token")
         new BigDLKeyManagementService(ip, port, userName, userToken)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
     kms
   }
-
-  def loadNamedKms(conf: SparkConf, kmsName: String): KeyManagementService = {
-    Log4Error.invalidInputError(conf.contains(s"spark.bigdl.kms.$kmsName.type"),
-        s"spark.bigdl.kms.$kmsName.type not found.")
-    val kmsType = conf.get(s"spark.bigdl.kms.$kmsName.type")
-    val kms = kmsType match {
-      case KMS_CONVENTION.MODE_EHSM_KMS =>
-        val ip = conf.get(s"spark.bigdl.kms.$kmsName.ip")
-        val port = conf.get(s"spark.bigdl.kms.$kmsName.port")
-        val appId = conf.get(s"spark.bigdl.kms.$kmsName.appId")
-        val apiKey = conf.get(s"spark.bigdl.kms.$kmsName.apiKey")
-        new EHSMKeyManagementService(ip, port, appId, apiKey)
-      case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val appId = conf.get(s"spark.bigdl.kms.$kmsName.appId", defaultValue = "simpleAPPID")
-        val apiKey = conf.get(s"spark.bigdl.kms.$kmsName.apiKey", defaultValue = "simpleAPIKEY")
-        SimpleKeyManagementService(appId, apiKey)
-      case KMS_CONVENTION.MODE_AZURE_KMS =>
-        val vaultName = conf.get(s"spark.bigdl.kms.$kmsName.vault")
-        val clientId = conf.get(s"spark.bigdl.kms.$kmsName.clientId")
-        new AzureKeyManagementService(vaultName, clientId)
-      case KMS_CONVENTION.MODE_BIGDL_KMS =>
-        val ip = conf.get(s"spark.bigdl.kms.$kmsName.ip")
-        val port = conf.get(s"spark.bigdl.kms.$kmsName.port")
-        val userName = conf.get(s"spark.bigdl.kms.$kmsName.user")
-        val userToken = conf.get(s"spark.bigdl.kms.$kmsName.token")
-        new BigDLKeyManagementService(ip, port, userName, userToken)
-      case _ =>
-        throw new EncryptRuntimeException("Wrong kms type")
-    }
-    kms
-  }
-
 }
 
