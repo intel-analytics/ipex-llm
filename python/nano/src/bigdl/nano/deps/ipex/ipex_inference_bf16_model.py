@@ -26,7 +26,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
-                 jit_method=None, weights_prepack=None, enable_onednn=True):
+                 jit_method=None, weights_prepack=None, enable_onednn=True,
+                 compress_to_bf16=False):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -54,6 +55,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
                API, which provides a flexible API for aggressive fusion. Default to
                ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+        :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision.
         '''
         if use_ipex:
             invalidInputError(
@@ -67,7 +70,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      channels_last=channels_last,
                                      channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
-                                     jit_method=jit_method, weights_prepack=weights_prepack)
+                                     jit_method=jit_method, weights_prepack=weights_prepack,
+                                     compress_to_bf16=compress_to_bf16)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
@@ -100,6 +104,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
+            if status['compress_to_bf16']:
+                state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             from_load = False
         thread_num = status.get('thread_num', None)
