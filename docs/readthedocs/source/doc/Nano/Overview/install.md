@@ -12,10 +12,10 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
         <tbody>
           <tr>
             <td colspan="1">FrameWork</td>
-            <td colspan="2"><button id="pytorch">Pytorch</button></td>
-            <td colspan="2"><button id="tensorflow">Tensorflow</button></td>
+            <td colspan="2"><button id="pytorch">PyTorch</button></td>
+            <td colspan="2"><button id="tensorflow">TensorFlow</button></td>
           </tr>
-          <tr id="version" class="taller_tr">
+          <tr id="version">
             <td colspan="1">Version</td>
             <td colspan="1"><button id="pytorch_113">1.13</button></td>
             <td colspan="1"><button id="pytorch_112">1.12</button></td>
@@ -24,16 +24,15 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
           </tr>
           <tr>
             <td colspan="1">Inference Optimization</td>
-            <td colspan="2"><button id="inferenceyes">Yes</button></td>
-            <td colspan="2"><button id="inferenceno">No</button></td>
-            </td>
+            <td colspan="2"><button id="inference_yes">Yes</button></td>
+            <td colspan="2"><button id="inference_no">No</button></td>
           </tr>
           <tr>
             <td colspan="1">Release</td>
             <td colspan="2"><button id="nightly">Nightly</button></td>
             <td colspan="2"><button id="stable">Stable</button></td>
           </tr>
-          <tr class="tallet_tr">
+          <tr>
             <td colspan="1">Install CMD</td>
             <td colspan="4" id="cmd">NA</td>
           </tr>
