@@ -723,3 +723,23 @@ class TestInferencePipeline(TestCase):
         assert compressed_size_ipex < 0.8 * original_size
         assert torch.equal(opt_output, opt_output_after_saving)
         assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # bf16
+        opt_model = InferenceOptimizer.quantize(self.model, precision="bf16")
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        InferenceOptimizer.save(opt_model, "original")
+        original_size = os.path.getsize("original/ckpt.pth")
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        InferenceOptimizer.save(opt_model, "compressed", compress_to_bf16=True)
+
+        opt_model_load = InferenceOptimizer.load("compressed", self.model)
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+
+        compressed_size_ipex = os.path.getsize("compressed/ckpt.pth")
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.equal(opt_output, opt_output_after_saving)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)

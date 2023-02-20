@@ -64,7 +64,7 @@ class AcceleratedModel(ABC):
         path = Path(path)
         Path.mkdir(path, exist_ok=True)
         self._save_model(path, compress_to_bf16=compress_to_bf16)
-        self._dump_status(path)
+        self._dump_status(path)  # don't move this before _save_model
 
     @property
     def status(self):

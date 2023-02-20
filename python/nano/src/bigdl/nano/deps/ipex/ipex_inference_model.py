@@ -253,4 +253,5 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 bf16_sd = transform_state_dict_to_dtype(self.original_state_dict, dtype="bf16")
                 torch.save(bf16_sd, path / "ckpt.pth")
             else:
+                self.compress_to_bf16 = False
                 torch.save(self.original_state_dict, path / "ckpt.pth")
