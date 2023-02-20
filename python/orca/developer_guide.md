@@ -52,7 +52,7 @@ source dev/prepare_env.sh
 
 ```bash
 cd BigDL/python/orca
-pytest test/bigdl/orca/learn/spark/test_estimator_pyspark_backend.py
+pytest test/bigdl/orca/learn/spark/test_pytorch_estimator.py
 ```
 
 4. Please raise an issue if the above steps does not work
