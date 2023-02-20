@@ -644,14 +644,14 @@ class SparkTFEstimator():
             model = load_model(**self.load_params)
 
         if set_weights:
-            if self.model_weights is not None:
-                model.set_weights(self.model_weights)
             if self.optimizer_weights is not None:
                 import tensorflow as tf
                 grad_vars = model.trainable_weights
                 zero_grads = [tf.zeros_like(w) for w in grad_vars]
                 model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
                 model.optimizer.set_weights(self.optimizer_weights)
+            if self.model_weights is not None:
+                model.set_weights(self.model_weights)
         return model
 
     @property

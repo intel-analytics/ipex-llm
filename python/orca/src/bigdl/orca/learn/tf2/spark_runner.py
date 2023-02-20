@@ -260,8 +260,6 @@ class SparkRunner:
                         else:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
-                                if self.model_weights:
-                                    self.model.set_weights(self.model_weights.value)
                                 if self.optimizer_weights:
                                     def load_opt_weights():
                                         grad_vars = self.model.trainable_weights
@@ -271,6 +269,8 @@ class SparkRunner:
                                         self.model.optimizer.set_weights(
                                             self.optimizer_weights.value)
                                     self.strategy.run(load_opt_weights)
+                                if self.model_weights:
+                                    self.model.set_weights(self.model_weights.value)
                             else:
                                 self.model = tf.keras.models.load_model(self.model_load)
 
