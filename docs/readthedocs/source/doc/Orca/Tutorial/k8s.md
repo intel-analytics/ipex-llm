@@ -490,7 +490,7 @@ __Notes:__
     ```
 
 ```bash
-# orca-tutorial-client.yaml
+orca-tutorial-k8s-client.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -638,7 +638,7 @@ __Notes:__
     ```
 
 ```bash
-# orca-tutorial-cluster.yaml
+orca-tutorial-k8s-cluster.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
