@@ -245,7 +245,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
     def _save_model(self, path, compress_to_bf16=False):
         if self.use_jit:
             if compress_to_bf16:
-                invalidInputError(False, "compress_to_bf16 does not support jit accelerator fow now.")
+                invalidInputError(False,
+                                  "compress_to_bf16 does not support jit accelerator fow now.")
             self.model.save(path / "ckpt.pth")
         else:
             if compress_to_bf16:
