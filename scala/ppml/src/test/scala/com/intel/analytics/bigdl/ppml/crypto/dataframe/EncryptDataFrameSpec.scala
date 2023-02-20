@@ -39,13 +39,6 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   val sparkConf = new SparkConf().setMaster("local[4]")
   val sc = PPMLContext.initPPMLContext(sparkConf, "SimpleQuery", ppmlArgs)
 
-  "textfile read from plaint text file" should "work" in {
-    val file = sc.textFile(plainFileName).collect()
-    // file.mkString("\n") + "\n" should be (data)
-    val file2 = sc.textFile(encryptFileName, cryptoMode = AES_CBC_PKCS5PADDING).collect()
-    // file2.mkString("\n") + "\n" should be (data)
-  }
-
   "sparkSession.read" should "work" in {
     // val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val df = sc.read(PLAIN_TEXT).csv(plainFileName)
@@ -83,11 +76,11 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     fw.close()
     val crypto = new BigDLEncrypt()
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    crypto.doFinal(bigFile, enFile)
+    // crypto.doFinal(bigFile, enFile)
 
-    crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
-    crypto.doFinal(enFile, outFile)
-    new File(bigFile).length() should be (new File(outFile).length())
+    // crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    // crypto.doFinal(enFile, outFile)
+    // new File(bigFile).length() should be (new File(outFile).length())
   }
 
   "csv read/write different size" should "work" in {

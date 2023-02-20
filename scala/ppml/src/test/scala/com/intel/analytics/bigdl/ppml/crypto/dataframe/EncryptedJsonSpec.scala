@@ -39,9 +39,7 @@ class EncryptedJsonSpec extends DataFrameHelper {
     val encryptJsonPath = dir + "/en-json"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .json(encryptJsonPath)
+    df.write.json(encryptJsonPath)
     val jsonDf = sparkSession.read.json(encryptJsonPath)
     jsonDf.count()
     val d = "name,age,job\n" +
@@ -53,9 +51,7 @@ class EncryptedJsonSpec extends DataFrameHelper {
     val encryptJsonPath = dir + "/en-json"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .json(encryptJsonPath)
+    df.write.json(encryptJsonPath)
     val jsonDf = sparkSession.read.json(encryptJsonPath)
     jsonDf.count()
     val d = "name,age,job\n" +

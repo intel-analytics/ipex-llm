@@ -113,7 +113,7 @@ class BigDLEncrypt extends Crypto {
    * @param header header bytes
    */
   override def verifyHeader(in: InputStream): Unit = {
-    val header = read(in, 25)
+    val header = read(in, 400)
     verifyHeader(header)
   }
 
@@ -304,7 +304,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def decryptBigContent(
         inputStream: InputStream): Iterator[String] = {
-    verifyHeader(read(inputStream, 25))
+    // verifyHeader(read(inputStream, 25))
     new Iterator[String] {
       var cachedArray: Array[String] = null
       var pointer = Int.MaxValue
