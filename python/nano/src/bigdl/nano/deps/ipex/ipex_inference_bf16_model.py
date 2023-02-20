@@ -27,7 +27,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True,
-                 compress_to_bf16=False):
+                 compression="fp32"):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -55,8 +55,12 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
                API, which provides a flexible API for aggressive fusion. Default to
                ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
-        :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
-               pytorch model with fp32 or bf16 precision.
+        :param compression: str. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision. Defaultly, all models are saved
+               by dtype=fp32 for their parameters. If users set a lower precision, a smaller
+               file sill be saved with some accuracy loss. Users always need to use nano
+               to load the compressed file if compression is set other than "fp32".
+               Currently, "bf16" and "fp32"(default) are supported.
         '''
         if use_ipex:
             invalidInputError(
@@ -71,7 +75,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
                                      jit_method=jit_method, weights_prepack=weights_prepack,
-                                     compress_to_bf16=compress_to_bf16)
+                                     compression=compression)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
@@ -104,7 +108,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
-            if status['compress_to_bf16']:
+            if status['compression'] == "bf16":
                 state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             from_load = False
@@ -124,4 +128,4 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        jit_method=status.get('jit_method', None),
                                        weights_prepack=status.get('weights_prepack', None),
                                        enable_onednn=status.get('enable_onednn', True),
-                                       compress_to_bf16=status.get('compress_to_bf16', True),)
+                                       compression=status.get('compression', "fp32"),)

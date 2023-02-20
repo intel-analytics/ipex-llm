@@ -74,5 +74,5 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             thread_num = int(status['thread_num'])
         return PytorchQuantizedModel(qmodel, thread_num=thread_num)
 
-    def _save_model(self, path, compress_to_bf16=False):
+    def _save_model(self, path, compression="fp32"):
         self.quantized.save(path)

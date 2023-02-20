@@ -165,5 +165,5 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                                             inplace=inplace,
                                             jit_strict=status["jit_strict"])
 
-    def _save_model(self, path, compress_to_bf16=False):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path / "ckpt.pth")

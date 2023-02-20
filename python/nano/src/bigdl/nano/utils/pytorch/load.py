@@ -93,7 +93,7 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
         if checkpoint_path:
             checkpoint_path = path / metadata['checkpoint']
             state_dict = torch.load(checkpoint_path, map_location='cpu')
-            if metadata['compress_to_bf16']:
+            if metadata['compression'] == "bf16":
                 state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             # patch ContextMagager to original model to keep behaviour consitent

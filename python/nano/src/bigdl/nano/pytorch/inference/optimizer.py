@@ -1143,17 +1143,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return _context_manager
 
     @staticmethod
-    def save(model: nn.Module, path, compress_to_bf16=False):
+    def save(model: nn.Module, path, compression="fp32"):
         """
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
-        :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
-               pytorch model with fp32 or bf16 precision.
+        :param compression: str. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision. Defaultly, all models are saved
+               by dtype=fp32 for their parameters. If users set a lower precision, a smaller
+               file sill be saved with some accuracy loss. Users always need to use nano
+               to load the compressed file if compression is set other than "fp32".
+               Currently, "bf16" and "fp32"(default) are supported.
         """
-        save_model(model, path, compress_to_bf16)
+        save_model(model, path, compression)
 
     @staticmethod
     def load(path, model: Optional[nn.Module] = None, input_sample=None,

@@ -694,7 +694,7 @@ class TestInferencePipeline(TestCase):
         InferenceOptimizer.save(self.model, "original")
         original_size = os.path.getsize("original/saved_weight.pt")
         opt_output_after_saving = self.model(input_sample)
-        InferenceOptimizer.save(self.model, "compressed", compress_to_bf16=True)
+        InferenceOptimizer.save(self.model, "compressed", compression="bf16")
 
         opt_model_load = InferenceOptimizer.load("compressed", self.model)
         opt_output_after_loading = opt_model_load(input_sample)
@@ -713,7 +713,7 @@ class TestInferencePipeline(TestCase):
         original_size = os.path.getsize("original/ckpt.pth")
         with InferenceOptimizer.get_context(opt_model):
             opt_output_after_saving = opt_model(input_sample)
-        InferenceOptimizer.save(opt_model, "compressed", compress_to_bf16=True)
+        InferenceOptimizer.save(opt_model, "compressed", compression="bf16")
 
         opt_model_load = InferenceOptimizer.load("compressed", self.model)
         with InferenceOptimizer.get_context(opt_model_load):
@@ -733,7 +733,7 @@ class TestInferencePipeline(TestCase):
         original_size = os.path.getsize("original/ckpt.pth")
         with InferenceOptimizer.get_context(opt_model):
             opt_output_after_saving = opt_model(input_sample)
-        InferenceOptimizer.save(opt_model, "compressed", compress_to_bf16=True)
+        InferenceOptimizer.save(opt_model, "compressed", compression="bf16")
 
         opt_model_load = InferenceOptimizer.load("compressed", self.model)
         with InferenceOptimizer.get_context(opt_model_load):

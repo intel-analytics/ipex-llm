@@ -28,7 +28,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True,
-                 compress_to_bf16=False):
+                 compression="fp32"):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -62,8 +62,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
                API, which provides a flexible API for aggressive fusion. Default to
                ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
-        :param compress_to_bf16: Bool. This parameter only effective for jit, ipex or pure
-               pytorch model with fp32 or bf16 precision.
+        :param compression: str. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision. Defaultly, all models are saved
+               by dtype=fp32 for their parameters. If users set a lower precision, a smaller
+               file sill be saved with some accuracy loss. Users always need to use nano
+               to load the compressed file if compression is set other than "fp32".
+               Currently, "bf16" and "fp32"(default) are supported.
         """
         super().__init__(model)
         if from_load:
@@ -73,7 +77,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             self.jit_strict = jit_strict
             self.jit_method = jit_method
             self.weights_prepack = weights_prepack
-            self.compress_to_bf16 = compress_to_bf16
+            self.compression = compression
             if self.channels_last:
                 try:
                     self.model = self.model.to(memory_format=torch.channels_last)
@@ -94,7 +98,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.jit_strict = jit_strict
         self.jit_method = jit_method
         self.weights_prepack = weights_prepack
-        self.compress_to_bf16 = compress_to_bf16
+        self.compression = compression
         self.original_model = model
         if self.channels_last:
             try:
@@ -203,7 +207,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                        "jit_method": self.jit_method,
                        "weights_prepack": self.weights_prepack,
                        "enable_onednn": self.enable_onednn,
-                       "compress_to_bf16": self.compress_to_bf16})
+                       "compression": self.compression})
         return status
 
     @staticmethod
@@ -220,7 +224,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
-            if status['compress_to_bf16']:
+            if status['compression'] == "bf16":
                 state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             from_load = False
@@ -240,19 +244,19 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    jit_method=status.get('jit_method', None),
                                    weights_prepack=status.get('weights_prepack', None),
                                    enable_onednn=status.get('enable_onednn', True),
-                                   compress_to_bf16=status.get('compress_to_bf16', True),)
+                                   compression=status.get('compression', "fp32"),)
 
-    def _save_model(self, path, compress_to_bf16=False):
+    def _save_model(self, path, compression="fp32"):
         if self.use_jit:
-            if compress_to_bf16:
+            if compression == "bf16":
                 invalidInputError(False,
-                                  "compress_to_bf16 does not support jit accelerator fow now.")
+                                  "compression does not support jit accelerator fow now.")
             self.model.save(path / "ckpt.pth")
         else:
-            if compress_to_bf16:
-                self.compress_to_bf16 = True
+            if compression == "bf16":
+                self.compression = "bf16"
                 bf16_sd = transform_state_dict_to_dtype(self.original_state_dict, dtype="bf16")
                 torch.save(bf16_sd, path / "ckpt.pth")
             else:
-                self.compress_to_bf16 = False
+                self.compression = "fp32"
                 torch.save(self.original_state_dict, path / "ckpt.pth")

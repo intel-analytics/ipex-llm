@@ -154,7 +154,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path, compress_to_bf16=False):
+    def _save_model(self, path, compression="fp32"):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)
         attrs = {"_default_kwargs": self._default_kwargs,
