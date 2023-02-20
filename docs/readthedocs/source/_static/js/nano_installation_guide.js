@@ -16,22 +16,22 @@ function refresh_cmd(){
     $("#intel_tensorflow").remove();
     if(framework == "pytorch"){
         $("#version").append("<td colspan='1'>PT Version</td>\
-                              <td colspan='1'><button id='pytorch_113'>1.13</button></td>\
-                              <td colspan='1'><button id='pytorch_112'>1.12</button></td>\
-                              <td colspan='1'><button id='pytorch_111'>1.11</button></td>\
-                              <td colspan='1'><button id='pytorch_110'>1.10</button></td>");
+                              <td colspan='1'><button id='pytorch_113' class='install_option_button'>1.13</button></td>\
+                              <td colspan='1'><button id='pytorch_112' class='install_option_button'>1.12</button></td>\
+                              <td colspan='1'><button id='pytorch_111' class='install_option_button'>1.11</button></td>\
+                              <td colspan='1'><button id='pytorch_110' class='install_option_button'>1.10</button></td>");
     }
     else if(framework == "tensorflow"){
         $("#version").append("<td colspan='1'>TF Version</td>\
-                              <td colspan='1'><button id='tensorflow_210'>2.10</button></td>\
-                              <td colspan='1'><button id='tensorflow_29'>2.9</button></td>\
-                              <td colspan='1'><button id='tensorflow_28'>2.8</button></td>\
-                              <td colspan='1'><button id='tensorflow_27'>2.7</button></td>");
+                              <td colspan='1'><button id='tensorflow_210' class='install_option_button'>2.10</button></td>\
+                              <td colspan='1'><button id='tensorflow_29' class='install_option_button'>2.9</button></td>\
+                              <td colspan='1'><button id='tensorflow_28' class='install_option_button'>2.8</button></td>\
+                              <td colspan='1'><button id='tensorflow_27' class='install_option_button'>2.7</button></td>");
 
         $("#version").after("<tr id='intel_tensorflow'>\
                                 <td colspan='1'>Intel TensorFlow</td>\
-                                <td colspan='2'><button id='intel_tensorflow_yes'>Yes</button></td>\
-                                <td colspan='2'><button id='intel_tensorflow_no'>No</button></td>\
+                                <td colspan='2'><button id='intel_tensorflow_yes' class='install_option_button'>Yes</button></td>\
+                                <td colspan='2'><button id='intel_tensorflow_no' class='install_option_button'>No</button></td>\
                              </tr>");
     }
 
@@ -48,16 +48,17 @@ function refresh_cmd(){
     set_color(release);
 
     // disable buttons for options that cannot be selected together
-    if (release == "nightly"){
+    if (release == "stable"){
         disable(["intel_tensorflow_no"])
     } else {
         enable(["intel_tensorflow_no"])
     }
 
-    if (intel_tensorflow_option == "intel_tensorflow_no"){
-        disable(["nightly"])
+    if (intel_tensorflow_option == "intel_tensorflow_no" &&
+        framework == "tensorflow"){
+        disable(["stable"])
     } else {
-        enable(["nightly"])
+        enable(["stable"])
     }
 
     // whether to include pre-release version
@@ -127,14 +128,13 @@ function enable(list){
 }
 
 //when clicked a button, update variables
-$(document).on('click',"button",function(){
+$(document).on('click',".install_option_button",function(){
     var id = $(this).attr("id");
 
     if (frameworks.includes(id)){
         framework = id;
         if (framework == "tensorflow"){
             version = "tensorflow_29";
-            intel_tensorflow_option = "intel_tensorflow_yes";
         }else{
             version="pytorch_113";
         }
@@ -168,6 +168,6 @@ $(document).on({
             $(this).css("color","var(--pst-color-text-base)");
         }
     }
-}, "button");
+}, ".install_option_button");
 
 refresh_cmd();
