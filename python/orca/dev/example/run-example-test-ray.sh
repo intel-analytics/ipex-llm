@@ -182,7 +182,8 @@ if [ -f ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small 
 then
     echo "imagenet-small already exists"
 else
-    wget -nv $FTP_URI/analytics-zoo-data/imagenet-small -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50
+    wget -nv $FTP_URI/analytics-zoo-data/imagenet-small.zip -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50
+    unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small.zip
 fi
 
 start=$(date "+%s")
