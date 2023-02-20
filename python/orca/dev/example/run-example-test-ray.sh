@@ -177,6 +177,19 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --ba
 now=$(date "+%s")
 time14=$((now-start))
 
+echo "#14 start example for orca resnet50 inference"
+if [ -f ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small ]
+then
+    echo "imagenet-small already exists"
+else
+    wget -nv $FTP_URI/analytics-zoo-data/imagenet-small -P ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50
+fi
+
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/inference.py ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small -w 2 --cores 8 --workers_per_node 2 --steps 10 --pretrained
+now=$(date "+%s")
+time15=$((now-start))
+
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
@@ -192,3 +205,4 @@ echo "#10 orca cifar10 example time used:$time11 seconds"
 echo "#11 auto-xgboost-regressor-spark-df example time used:$time12 seconds"
 echo "#12 ray-dataset-xgboost example time used:$time13 seconds"
 echo "#13 orca brainMRI example time used:$time14 seconds"
+echo "#14 orca resnet50 inference example time used:$time15 seconds"
