@@ -77,7 +77,7 @@ def read_data(data_dir, dataset):
                 StructField("vdate", StringType(), False),
                 StructField("URL", StringType(), False),
             ]
-            +[StructField(f"col{i}", StringType(), False) for i in range(19)]
+            + [StructField(f"col{i}", StringType(), False) for i in range(19)]
         )
         df_rating = spark.read.csv(os.path.join(data_dir, dataset, "u.data"),
                                    sep="\t", schema=schema, header=False)
@@ -183,9 +183,9 @@ def get_label_cols():
 
 
 if __name__ == "__main__":
-    from bigdl.orca import init_orca_context, stop_orca_context
+    from utils import *
 
-    sc = init_orca_context()
+    init_orca("local")
     train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
         feature_cols, label_cols = prepare_data()
     train_df.write.parquet("./train_processed.parquet", mode="overwrite")
