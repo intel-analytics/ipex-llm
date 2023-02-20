@@ -31,6 +31,7 @@ import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import com.intel.analytics.bigdl.ppml.kms.common.KmsMetaFormatSerializer
 import org.apache.hadoop.fs.{Path, FileSystem}
 import org.apache.hadoop.conf.Configuration
+import org.apache.spark.sql.SparkSession
 
 // load both encryptedDataKey and dataKeyPlainText
 case class KeyLoader(val fromKms: Boolean,
@@ -62,15 +63,20 @@ case class KeyLoader(val fromKms: Boolean,
           val dataKeyPlainTextBytes = cipher.doFinal(encryptedDataKeyBytes)
           new String(dataKeyPlainTextBytes, StandardCharsets.UTF_8)
         }
+        val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+        sparkSession.sparkContext.hadoopConfiguration
+          .set(s"bigdl.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
         dataKeyPlainText
     }
 
     // generate a data key, and return the plaintext string
     // and cache encryptedDataKey for meta writing after df writing
-    def generateDataKeyPlainText(): String = {
+    def generateDataKeyPlainText(): (String, String) = {
         if (fromKms) {
             encryptedDataKey = kms.retrieveDataKey(primaryKeyMaterial).get
-            kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
+            val dataKeyPlainText = kms.retrieveDataKeyPlainText(primaryKeyMaterial,
+              "", null, encryptedDataKey)
+            (dataKeyPlainText, encryptedDataKey)
         } else {
             val dataKeyPlainText: String = {
               val generator = KeyGenerator.getInstance("AES")
@@ -85,8 +91,15 @@ case class KeyLoader(val fromKms: Boolean,
               )
               Base64.getEncoder().encodeToString(encryptedDataKeyBytes)
             }
-            dataKeyPlainText
+            (dataKeyPlainText, encryptedDataKey)
         }
+    }
+
+    // write encryptedDataKey to meta after spark df has been written
+    def writeEncryptedDataKey(fileDirPath: String): Unit = {
+      val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+      val jsonStr = KmsMetaFormatSerializer(KmsMetaFormat(encryptedDataKey))
+      keyReaderWriter.writeKeyToFile(metaPath, jsonStr, hadoopConfig)
     }
 
     def dataKeyCipher(operateMode: Int): Cipher = {
@@ -95,13 +108,6 @@ case class KeyLoader(val fromKms: Boolean,
       val cipher = Cipher.getInstance("AES")
       cipher.init(operateMode, skp)
       cipher
-    }
-
-    // write encryptedDataKey to meta after spark df has been written
-    def writeEncryptedDataKey(fileDirPath: String): Unit = {
-      val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
-      val jsonStr = KmsMetaFormatSerializer(KmsMetaFormat(encryptedDataKey))
-      keyReaderWriter.writeKeyToFile(metaPath, jsonStr, hadoopConfig)
     }
 }
 
@@ -120,3 +126,4 @@ class KeyLoaderManagement extends Serializable {
     }
 
 }
+

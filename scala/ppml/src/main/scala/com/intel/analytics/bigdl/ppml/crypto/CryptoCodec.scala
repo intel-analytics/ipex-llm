@@ -105,10 +105,9 @@ object CryptoCodec {
         in: InputStream,
         bufferSize: Int,
         cryptoMode: CryptoMode,
-        dataKeyPlaintext: String) extends DecompressorStream(in) {
+        conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
     val bigdlEncrypt = new BigDLEncrypt()
-    bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlaintext)
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -119,7 +118,12 @@ object CryptoCodec {
       }
 
       if (!headerVerified) {
-        bigdlEncrypt.verifyHeader(in)
+        val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
+        println(s"encryptedDataKey in cryptocode is: $encryptedDataKey")
+        val dataKeyPlainText = conf.get(s"bigdl.dataKey.$encryptedDataKey.plainText")
+        println(s"dataKeyPlainText in cryptocode is: $dataKeyPlainText")
+        bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
+        bigdlEncrypt.verifyHeader(initializationVector)
         headerVerified = true
       }
 
@@ -132,12 +136,11 @@ object CryptoCodec {
 
   object CryptoDecompressStream{
     def apply(conf: Configuration, in: InputStream): CryptoDecompressStream = {
-      val dataKey = conf.get("bigdl.dataKey.plainText")
       val cryptoMode = AES_CBC_PKCS5PADDING
       val bufferSize = conf.getInt("io.file.buffer.size", 4 * 1024)
-      // TODO
-      new CryptoDecompressStream(in, bufferSize, cryptoMode, dataKey)
+      new CryptoDecompressStream(in, bufferSize, cryptoMode, conf)
     }
   }
 
 }
+
