@@ -94,7 +94,7 @@ def process_users_items(data_dir, dataset):
     sparse_features = ["gender", "zipcode", "category", "occupation"]
     dense_features = ["age"]
 
-    # load datasets
+    print("Loading user and movie data...")
     with tempfile.TemporaryDirectory() as tmpdirname:
         if is_local_path(data_dir):
             local_dir = os.path.join(data_dir, dataset)
@@ -127,19 +127,19 @@ def process_users_items(data_dir, dataset):
                 usecols=[0]+list(range(5, 24)),
                 dtype=np.int64, encoding="latin-1")
 
-            # merge multiple one-hot columns into one category column
+            # Merge multiple one-hot columns into one category column
             items["category"] = items.iloc[:, 1:].apply(lambda x: "".join(str(x)), axis=1)
             items.drop(columns=[f"col{i}" for i in range(19)], inplace=True)
 
     user_num = users["user"].max() + 1
     item_num = items["item"].max() + 1
 
-    # categorical encoding
+    # Categorical encoding
     for i in sparse_features:
         df = users if i in users.columns else items
         df[i], _ = pd.Series(df[i]).factorize()
 
-    # scale dense features
+    # Scale dense features
     for i in dense_features:
         scaler = MinMaxScaler()
         df = users if i in users.columns else items
@@ -167,7 +167,7 @@ def get_input_dims(users, items, sparse_features, dense_features):
 
 
 def process_ratings(data_dir, dataset, user_num, item_num):
-    # load datasets
+    print("Loading ratings...")
     with tempfile.TemporaryDirectory() as tmpdirname:
         file_name = "ratings.dat" if dataset == "ml-1m" else "u.data"
         sep = "::" if dataset == "ml-1m" else "\t"
@@ -185,7 +185,7 @@ def process_ratings(data_dir, dataset, user_num, item_num):
             usecols=[0, 1], dtype={0: np.int64, 1: np.int64},
             engine="python")
 
-    # load ratings as a dok matrix
+    # Load ratings as a dok matrix
     train_mat = sp.dok_matrix((user_num, item_num), dtype=np.int32)
     for x in ratings.values.tolist():
         train_mat[x[0], x[1]] = 1
@@ -194,23 +194,23 @@ def process_ratings(data_dir, dataset, user_num, item_num):
 
 def load_dataset(data_dir="./", dataset="ml-1m", num_ng=4):
     """
-    data_dir: the path of the datasets;
-    dataset: the name of the datasets;
+    data_dir: the path to the dataset;
+    dataset: the name of the dataset;
     num_ng: number of negative samples to be sampled here.
     """
     users, items, user_num, item_num, sparse_features, dense_features, \
         total_cols = process_users_items(data_dir, dataset)
     ratings, train_mat = process_ratings(data_dir, dataset, user_num, item_num)
 
-    # sample negative items
+    # Negative sampling
     dataset = NCFData(ratings.values.tolist(),
                       num_item=item_num, train_mat=train_mat, num_ng=num_ng)
     dataset.ng_sample()
 
-    # merge features
+    # Merge features
     dataset.merge_features(users, items, total_cols[: -1])
 
-    # train test split
+    # Split dataset
     train_dataset, test_dataset = dataset.train_test_split()
     return train_dataset, test_dataset
 
