@@ -15,14 +15,14 @@ function refresh_cmd(){
     $("#version").empty();
     $("#intel_tensorflow").remove();
     if(framework == "pytorch"){
-        $("#version").append("<td colspan='1'>PyTorch Version</td>\
+        $("#version").append("<td colspan='1'>PT Version</td>\
                               <td colspan='1'><button id='pytorch_113'>1.13</button></td>\
                               <td colspan='1'><button id='pytorch_112'>1.12</button></td>\
                               <td colspan='1'><button id='pytorch_111'>1.11</button></td>\
                               <td colspan='1'><button id='pytorch_110'>1.10</button></td>");
     }
     else if(framework == "tensorflow"){
-        $("#version").append("<td colspan='1'>TensorFlow Version</td>\
+        $("#version").append("<td colspan='1'>TF Version</td>\
                               <td colspan='1'><button id='tensorflow_210'>2.10</button></td>\
                               <td colspan='1'><button id='tensorflow_29'>2.9</button></td>\
                               <td colspan='1'><button id='tensorflow_28'>2.8</button></td>\
