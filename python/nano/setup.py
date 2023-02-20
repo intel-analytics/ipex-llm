@@ -78,47 +78,31 @@ def setup_package():
     tensorflow_27_requires = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.7.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                              platform_system=='Darwin'"]
 
     tensorflow_28_requires = ["intel-tensorflow==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.8.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                              platform_system=='Darwin'"]
 
     tensorflow_29_requires = ["intel-tensorflow==2.9.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.9.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                              platform_system=='Darwin'"]
 
     tensorflow_210_requires = ["intel-tensorflow==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                                platform_system!='Darwin'",
                                "tensorflow==2.10.0; platform_machine=='x86_64' and \
-                               platform_system=='Darwin'",
-                               "keras==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                               "tensorflow-estimator==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+                               platform_system=='Darwin'"]
 
     # options for stock tensorflow
-    stock_tensorflow_27_requires = ["tensorflow==2.7.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "keras==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "tensorflow-estimator==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+    stock_tensorflow_27_requires = ["tensorflow==2.7.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    stock_tensorflow_28_requires = ["tensorflow==2.8.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "keras==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "tensorflow-estimator==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+    stock_tensorflow_28_requires = ["tensorflow==2.8.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "keras==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "tensorflow-estimator==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]                         
+    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]                         
 
-    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "keras==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                                    "tensorflow-estimator==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]  
+    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]  
 
     tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
