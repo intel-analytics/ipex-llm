@@ -47,4 +47,5 @@ from .input_sample import complement_input_sample
 from .convert import export_to_onnx
 
 from .save import save_model
+from .save import transform_state_dict_to_dtype
 from .load import load_model

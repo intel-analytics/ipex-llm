@@ -166,7 +166,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         """
         Save KerasOpenVINOModel to local as xml and bin file
 
