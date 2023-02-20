@@ -70,8 +70,8 @@ fi
 
 ray stop -f
 
-echo "Running orca learn tf2 spark backend tests"
-python -m pytest -v test/bigdl/orca/learn/spark/test_tf_spark_estimator.py
+echo "Running orca learn spark backend tests"
+python -m pytest -v test/bigdl/orca/learn/spark/
 exit_status_5=$?
 if [ $exit_status_5 -ne 0 ];
 then

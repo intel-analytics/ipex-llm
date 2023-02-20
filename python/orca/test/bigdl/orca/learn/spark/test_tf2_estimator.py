@@ -54,7 +54,7 @@ def model_creator(config):
     return model
 
 
-class TestTFEstimator(TestCase):
+class TestTF2Estimator(TestCase):
     # todo need more test cases
     def test_dataframe_with_empty_partition(self):
         sc = OrcaContext.get_spark_context()
