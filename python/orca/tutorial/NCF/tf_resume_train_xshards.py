@@ -39,7 +39,7 @@ test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xsha
 # Step 3: Distributed training with Orca TF2 Estimator after loading the model
 est = Estimator.from_keras(backend=args.backend,
                            workers_per_node=args.workers_per_node)
-est.load(os.path.join(args.model_dir, "NCF_model"))
+est.load(os.path.join(args.model_dir, "NCF_model.h5"))
 
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
@@ -68,7 +68,7 @@ for k, v in train_stats.items():
 
 
 # Step 4: Save the trained TensorFlow model
-est.save(os.path.join(args.model_dir, "NCF_resume_model"))
+est.save(os.path.join(args.model_dir, "NCF_resume_model.h5"))
 
 
 # Step 5: Shutdown the Estimator and stop Orca Context when the program finishes
