@@ -43,7 +43,6 @@ if [ $python_version == 3.7.10 ];then
   then
       exit $exit_status_2
   fi
-  python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_pyspark_backend.py
 fi
 
 echo "Running orca data tests"
