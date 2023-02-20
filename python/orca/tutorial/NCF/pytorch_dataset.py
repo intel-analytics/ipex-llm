@@ -125,12 +125,10 @@ def process_users_items(data_dir, dataset):
                 os.path.join(local_dir, "u.item"),
                 sep="|", header=None, names=["item"]+[f"col{i}" for i in range(19)],
                 usecols=[0]+list(range(5, 24)),
-                dtype=str, encoding="latin-1")
+                dtype=np.int64, encoding="latin-1")
 
             # merge multiple one-hot columns into one category column
-            items["item"] = items["item"].astype(np.int64)
-            category_cols = items.iloc[:, 1:]
-            items["category"] = pd.Series([''.join(row) for row in category_cols.values])
+            items["category"] = items.iloc[:, 1:].apply(lambda x: "".join(str(x)), axis=1)
             items.drop(columns=[f"col{i}" for i in range(19)], inplace=True)
 
     user_num = users["user"].max() + 1
