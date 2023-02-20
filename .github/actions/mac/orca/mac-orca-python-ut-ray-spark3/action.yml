@@ -1,6 +1,5 @@
-name: 'Mac Orca Python UT Ray TEST'
+name: 'Mac Orca Python UT Ray Spark3.1'
 description: 'Mac Orca Python UT Ray Spark3.1'
-
 runs:
   using: "composite"
   steps:
