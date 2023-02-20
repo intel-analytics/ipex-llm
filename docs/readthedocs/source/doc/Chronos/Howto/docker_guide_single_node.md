@@ -16,11 +16,11 @@ The build args are similar to the install options in [Chronos documentation](htt
 
 ```
 model: which model or framework you want. 
-       value: pytorch (default)
+       value: pytorch
               tensorflow
               prophet
               arima
-              ml (for machine learning models).
+              ml (default, for machine learning models).
 
 auto_tuning: whether to enable auto tuning.
              value: y (for yes)
@@ -67,7 +67,7 @@ sudo docker build \
 ```
 According to your network status, this building will cost **15-30 mins**. 
 
-**Tips:** When errors happen like `E: Package 'apt-utils' has no installation candidate`, it's usually related to the bad network status. Please build with a proxy.
+**Tips:** When errors happen like `failed: Connection timed out.`, it's usually related to the bad network status. Please build with a proxy.
 
 ## Run the image
 ```bash
@@ -77,7 +77,23 @@ sudo docker run -it --rm --net=host chronos-nightly:b1 bash
 ## Use Chronos
 A conda environment is created for you automatically. `bigdl-chronos` and the necessary depenencies (based on the build args) are installed inside this environment.
 ```bash
-(chronos) root@cpx-3:/opt/work#
+(chronos) root@icx-5:/opt/work# 
+```
+```eval_rst
+.. important::
+
+       Considering the image size, we build docker image with the default args and upload it to dockerhub. If you use it directly, only ``bigdl-chronos`` is installed inside this environment. There are two methods to install other necessary dependencies according to your own needs:
+
+       1. Make sure network is available and run install command following `Install using Conda <https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda>`_ , such as ``pip install --pre --upgrade bigdl-chronos[pytorch]``.
+
+       2. Make sure network is available and bash ``/opt/install-python-env.sh`` with build args. The values are introduced in `Build an image <## Build an image>`_.
+
+       .. code-block:: python
+
+              # bash /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
+              # For example, if you want to install bigdl-chronos[pytorch,inference]
+              bash /opt/install-python-env.sh pytorch n single y n
+
 ```
 
 ## Run unittest examples on Jupyter Notebook for a quick use
@@ -85,10 +101,10 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
 
 You can run these on Jupyter Notebook on single node server if you pursue a quick use on Chronos.
 ```bash
-(chronos) root@cpx-3:/opt/work# cd /opt/work/colab-notebook #Unittest examples are here.
+(chronos) root@icx-5:/opt/work# cd /opt/work/colab-notebook #Unittest examples are here.
 ```
 ```bash
-(chronos) root@cpx-3:/opt/work# jupyter notebook --notebook-dir=./ --ip=* --allow-root #Start the Jupyter Notebook services.
+(chronos) root@icx-5:/opt/work/colab-notebook# jupyter notebook --notebook-dir=./ --ip=* --allow-root #Start the Jupyter Notebook services.
 ```
 After the Jupyter Notebook service is successfully started, you can connect to the Jupyter Notebook service from a browser.
 1. Get the IP address of the container
@@ -106,10 +122,10 @@ You should shut down the BigDL Docker container after using it.
    ```
    You will see your docker containers:
    ```bash
-   CONTAINER ID        IMAGE                                        COMMAND                  CREATED             STATUS              PORTS               NAMES
-   40de2cdad025        chronos-nightly:b1         "/opt/work/"   3 hours ago         Up 3 hours                              upbeat_al
+   CONTAINER ID   IMAGE                     COMMAND   CREATED       STATUS       PORTS     NAMES
+   d6db0ab27cac   chronos-nightly:b1        "bash"    2 hours ago   Up 2 hours             funny_aryabhata
    ```
 3. Shut down the corresponding docker container by its ID:
    ```bash
-   sudo docker rm -f 40de2cdad025
+   sudo docker rm -f d6db0ab27cac
    ```

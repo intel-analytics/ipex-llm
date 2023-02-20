@@ -202,10 +202,10 @@ jobs:
         docker tag ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         # tag SNAPSHOT
-        export TAG=2.3.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG}
-        docker push ${IMAGE}-spark-3.1.3:${TAG} 
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
+        docker push ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
@@ -229,10 +229,10 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         # tag SNAPSHOT
-        export TAG=2.3.0-SNAPSHOT
-        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
-        docker push ${IMAGE}:${TAG}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker push ${IMAGE}:${TAG_SNAPSHOT}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
 
     - name: Create Job Badge
       if: ${{ always() }}
