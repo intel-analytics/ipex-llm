@@ -81,7 +81,8 @@ class EncryptedDataFrameWriter(
                     .set("bigdl.cryptoMode", encryptMode.encryptionAlgorithm)
         option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
       case _ =>
-        Log4Error.invalidOperationError(false, "unknown or wrong encryptMode " + CryptoMode.toString)
+        Log4Error.invalidOperationError(false,
+          "unknown or wrong encryptMode " + CryptoMode.toString)
     }
   }
 
