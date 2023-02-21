@@ -24,7 +24,7 @@ import numpy as np
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
-from test.bigdl.chronos import op_tf2, op_distributed
+from test.bigdl.chronos import op_tf2, op_distributed, op_inference
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -252,6 +252,7 @@ class TestTCNForecaster(TestCase):
 
         stop_orca_context()
 
+    @op_inference
     def test_tcn_keras_forecaster_quantization(self):
         # Capturing behaviors during `pytest -v` influence generating the valid sampling log
         # during quantization. Work around by using `pytest -s` to test this ut.

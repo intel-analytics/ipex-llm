@@ -23,7 +23,7 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 import pytorch_lightning as pl
 import torch
 from torch import nn

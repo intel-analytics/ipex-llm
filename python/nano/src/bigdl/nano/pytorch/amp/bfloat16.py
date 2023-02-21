@@ -22,7 +22,8 @@ from bigdl.nano.utils.pytorch import generate_channels_last_available,\
     apply_proper_channels_last
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12, \
+    transform_state_dict_to_dtype
 from bigdl.nano.utils.common import _bf16_checker
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 
@@ -35,7 +36,8 @@ invalidInputError(
 class BF16Model(AcceleratedLightningModule):
     """Model of BFloat16 with auto mixed precision."""
 
-    def __init__(self, model, input_sample=None, channels_last=None, channels_last_available=[], thread_num=None):  # noqa
+    def __init__(self, model, input_sample=None, channels_last=None,
+                 channels_last_available=[], thread_num=None, compression="fp32"):  # noqa
         """
         This is the accelerated model for BFloat16 with auto mixed precision.
 
@@ -50,6 +52,7 @@ class BF16Model(AcceleratedLightningModule):
         self.model = model  # use mixed precision instead of complete precision
         self.channels_last = channels_last
         self.thread_num = thread_num
+        self.compression = compression
         if self.channels_last is True:
             try:
                 self.model = self.model.to(memory_format=torch.channels_last)
@@ -190,7 +193,8 @@ class BF16Model(AcceleratedLightningModule):
         status.update({"channels_last": self.channels_last,
                        "channels_last_available": self.channels_last_available,
                        "checkpoint": "ckpt.pth",
-                       "thread_num": self.thread_num})
+                       "thread_num": self.thread_num,
+                       "compression": self.compression})
         return status
 
     @staticmethod
@@ -199,6 +203,8 @@ class BF16Model(AcceleratedLightningModule):
         checkpoint_path = path / status['checkpoint']
         state_dict = torch.load(checkpoint_path)
         model.eval()
+        if status['compression'] == "bf16":
+            state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
         model.load_state_dict(state_dict)
         thread_num = status.get('thread_num', None)
         if thread_num == {}:
@@ -207,7 +213,15 @@ class BF16Model(AcceleratedLightningModule):
             thread_num = int(status['thread_num'])
         return BF16Model(model, channels_last=status['channels_last'],
                          channels_last_available=status['channels_last_available'],
-                         thread_num=thread_num)
+                         thread_num=thread_num,
+                         compression=status['compression'])
 
-    def _save_model(self, path):
-        torch.save(self.model.state_dict(), path / "ckpt.pth")
+    def _save_model(self, path, compression="fp32"):
+        if compression == "bf16":
+            bf16_model = self.model.bfloat16()
+            torch.save(bf16_model.state_dict(), path / "ckpt.pth")
+            self.compression = "bf16"
+            self.model.float()
+        else:
+            torch.save(self.model.state_dict(), path / "ckpt.pth")
+            self.compression = "fp32"

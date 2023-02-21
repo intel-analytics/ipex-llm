@@ -9,8 +9,8 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         #pip install wheel
-        chmod a+x python/dev/release_default_linux_spark313.sh
-        ./python/dev/release_default_linux_spark313.sh default false false
+        chmod a+x python/dev/release_default_linux_spark3.sh
+        ./python/dev/release_default_linux_spark3.sh default false false
 
         # install dllib
         pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib_spark3-*-py3-none-manylinux1_x86_64.whl

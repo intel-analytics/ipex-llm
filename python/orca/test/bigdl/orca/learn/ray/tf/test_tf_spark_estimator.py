@@ -248,6 +248,55 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_save_load_model_savemodel(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.2
+        }
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
+            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["feature"],
+                              label_cols=["label"],
+                              validation_data=df,
+                              validation_steps=1)
+
+            print("start saving")
+            trainer.save(os.path.join(temp_dir, "saved_model"))
+
+            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
+                                   label_cols=["label"])
+            print("validation result: ", res)
+
+            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in before_res])
+
+            trainer.load(os.path.join(temp_dir, "saved_model"))
+            
+            # continous predicting
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+
+            assert np.array_equal(expect_res, pred_res)
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_save_load_model_architecture(self):
         config = {
             "lr": 0.2
@@ -299,6 +348,9 @@ class TestTFEstimator(TestCase):
                         validation_data=df,
                         validation_steps=1)
 
+            # check optimizer weights
+            pre_model = trainer.get_model(set_weights=True)
+            pre_opt_weights = pre_model.optimizer.get_weights()
             # save model as h5 format
             trainer.save(os.path.join(temp_dir, "saved_model.h5"))
             before_res = trainer.predict(df, feature_cols=["feature"]).collect()
@@ -312,10 +364,14 @@ class TestTFEstimator(TestCase):
                 backend="spark")
 
             est.load(os.path.join(temp_dir, "saved_model.h5"))
+            # check optimizer weights
+            after_model = est.get_model(set_weights=True)
+            after_opt_weights = after_model.optimizer.get_weights()
             # test continous predicting
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
             assert np.array_equal(expect_res, pred_res)
+            assert np.array_equal(pre_opt_weights, after_opt_weights)
 
             # test continuous training
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
@@ -323,6 +379,10 @@ class TestTFEstimator(TestCase):
                     label_cols=["label"],
                     validation_data=df,
                     validation_steps=1)
+            # check optimizer weights
+            new_model = est.get_model(set_weights=True)
+            new_opt_weights = new_model.optimizer.get_weights()
+            assert not np.array_equal(after_opt_weights, new_opt_weights)
             # test continuous evaluation
             res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                label_cols=["label"])
@@ -384,6 +444,61 @@ class TestTFEstimator(TestCase):
             res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                label_cols=["label"])
             print("validation result: ", res)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_get_model(self):   
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {"lr": 0.2}
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="spark")
+
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
+
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"))
+            pre_model_weights = trainer.get_model().get_weights()
+
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in after_res])
+
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="spark")
+
+            est.load(os.path.join(temp_dir, "cifar10.h5"))
+            after_model_weights = est.get_model().get_weights()
+            est.save(os.path.join(temp_dir, "cifar10_new.h5"))
+
+            # continous predicting
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+            assert np.array_equal(expect_res, pred_res)
+
+            for pre_tensor, after_tensor in list(zip(pre_model_weights, after_model_weights)):
+                assert np.allclose(pre_tensor, after_tensor)
         finally:
             shutil.rmtree(temp_dir)
 

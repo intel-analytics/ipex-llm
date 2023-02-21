@@ -14,6 +14,45 @@ export commonName=server_fqdn_or_your_name
 export emailAddress=your_email_address
 export httpsCertPassword=your_https_cert_password_to_use 
 
+if [[ "$pccsImageName" == "your_pccs_image_name" ]] || \
+   [[ "$pccsIP" == "your_pccs_ip_to_use_as" ]]
+then
+    echo "modify pccs container configurations in the script please!"
+    exit -1
+fi
+
+if [[ "$apiKey" == "your_intel_pcs_server_subscription_key_obtained_through_web_registeration" ]]
+then
+    echo "register PCS and modify API_KEY in the script please!"
+    exit -1
+fi
+
+if [[ "$httpsProxyUrl" == "your_usable_https_proxy_url" ]]
+then
+    echo "set proxy for pccs container please!"
+    echo "if no proxy is needed in your container environment, set HTTPS_PROXY_URL= "" "
+    exit -1
+fi
+
+if [[ "$userPassword" == "a_password_for_pccs_user" ]] || \
+   [[ "$adminPassword" == "a_password_for_pccs_admin" ]] || \
+   [[ "$httpsCertPassword" == "your_https_cert_password_to_use" ]]
+then
+    echo "modify password configurations in the script please!"
+    echo "USER_PASSWORD for pccs user token, ADMIN_PASSWORD for pccs admin token and HTTPS_CERT_PASSWORD for https cert signing"
+    exit -1
+fi
+
+if [[ "$countryName" == "your_country_name" ]] || \
+   [[ "$cityName" == "your_city_name" ]] || \
+   [[ "$organizaitonName" == "your_organizaition_name" ]] || \
+   [[ "$emailAddress" == "your_email_address" ]] || \
+   [[ "$commonName" == "server_fqdn_or_your_name" ]]
+then
+    echo "modify https cert configurations in the script please!"
+    exit -1
+fi
+
 ## Create k8s namespace and apply BigDL-PCCS
 kubectl create namespace bigdl-pccs
 envsubst < bigdl-pccs.yaml | kubectl apply -f -

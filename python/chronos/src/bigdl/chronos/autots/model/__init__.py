@@ -71,7 +71,7 @@ class AutoModelFactory:
     @staticmethod
     def create_auto_model(name, search_space):
         name = name.lower()
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if name == "lstm":
             from .auto_lstm import AutoLSTM
             revised_search_space = search_space.copy()

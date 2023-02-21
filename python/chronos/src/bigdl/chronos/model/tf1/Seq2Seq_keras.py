@@ -253,7 +253,7 @@ class LSTMSeq2Seq(BaseModel):
         elif self.metric in compiled_metric_names:
             metric_name = self.metric
         else:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               f"Input metric in fit_eval should be one of the metrics that "
                               f"are used "
