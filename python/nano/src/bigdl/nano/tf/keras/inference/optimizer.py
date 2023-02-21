@@ -30,9 +30,9 @@ import keras
 from typing import Dict, Optional, List, Union, Callable
 from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
     AccelerationOption, latency_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
-from bigdl.nano.tf.utils import _ModuleWrapper
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import _ModuleWrapper
+from bigdl.nano.utils.tf import patch_compiled_and_attrs, patch_attrs
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric

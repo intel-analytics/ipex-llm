@@ -61,12 +61,8 @@ then
    exit $exit_status_3
 fi
 
-echo "Running orca data tests"
-# test_xshards_partition.py is tested in run-pytests-basic-env.sh
-# test_write_parquet.py is tested in run-pytests-spark.sh
-python -m pytest -v test/bigdl/orca/data \
-      --ignore=test/bigdl/orca/data/test_xshards_partition.py \
-      --ignore=test/bigdl/orca/data/test_write_parquet.py
+echo "Running orca data ray related tests"
+python -m pytest -v test/bigdl/orca/data/ray
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then

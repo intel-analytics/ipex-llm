@@ -15,8 +15,18 @@
 #
 
 
-from .channel_last import generate_channels_last_available,\
-    apply_proper_channels_last
+from .version import TORCH_VERSION_LESS_1_10
+from .version import TORCH_VERSION_LESS_1_11
+from .version import TORCH_VERSION_LESS_1_12
+from .version import TORCH_VERSION_LESS_1_13
+from .version import TORCHVISION_VERSION_LESS_1_12
+from .version import TORCHVISION_VERSION_LESS_1_14
+
+from .attributes import patch_attrs_from_model_to_object
+
+from .channel_last import ChannelsLastCallback
+from .channel_last import generate_channels_last_available
+from .channel_last import apply_proper_channels_last
 
 from .dataset import RepeatDataset
 from .dataset import remove_batch_dim_fn
@@ -35,3 +45,7 @@ from .input_sample import get_input_example
 from .input_sample import complement_input_sample
 
 from .convert import export_to_onnx
+
+from .save import save_model
+from .save import transform_state_dict_to_dtype
+from .load import load_model

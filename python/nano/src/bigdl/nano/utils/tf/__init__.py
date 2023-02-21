@@ -15,4 +15,14 @@
 #
 
 
+from .version import KERAS_VERSION_LESS_2_9
+from .version import KERAS_VERSION_LESS_2_10
+
+from .attributes import _ModuleWrapper
+from .attributes import patch_attrs
+from .attributes import patch_compiled
+from .attributes import patch_compiled_and_attrs
+
 from .backend import MultiprocessingBackend
+
+from .preprocess import fake_tensor_from_spec

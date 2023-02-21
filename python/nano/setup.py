@@ -113,8 +113,8 @@ def setup_package():
     tensorflow_27_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
-    pytorch_113_requires = ["torch==1.13.0",
-                            "torchvision==0.14.0",
+    pytorch_113_requires = ["torch==1.13.1",
+                            "torchvision==0.14.1",
                             "intel_extension_for_pytorch==1.13.100;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",

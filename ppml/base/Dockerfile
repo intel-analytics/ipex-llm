@@ -17,6 +17,8 @@ ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
+ENV MALLOC_ARENA_MAX                    1
+
 RUN mkdir -p /ppml/
 
 ADD ./bash.manifest.template /ppml/bash.manifest.template
