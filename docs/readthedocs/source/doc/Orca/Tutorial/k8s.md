@@ -637,7 +637,7 @@ Retrieve the logs on the driver pod:
 kubectl logs orca-pytorch-job-xxx
 ```
 
-After the task finishes, delete the job if necessary:
+After the task finishes, delete the job and all related pods if necessary:
 ```bash
 kubectl delete job orca-pytorch-job
 ```
@@ -752,7 +752,7 @@ Retrieve the logs on the driver pod:
 kubectl logs orca-pytorch-job-driver
 ```
 
-After the task finishes, delete the job if necessary:
+After the task finishes, delete the job and all related pods if necessary:
 ```bash
 kubectl delete job orca-pytorch-job
 ```
