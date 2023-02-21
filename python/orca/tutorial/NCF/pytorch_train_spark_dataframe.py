@@ -28,9 +28,9 @@ from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Training with Spark DataFrame")
-init_orca(args.cluster_mode, extra_python_lib='process_spark_dataframe.py,'
-                                              'pytorch_model.py,'
-                                              'utils.py')
+init_orca(args.cluster_mode, extra_python_lib="process_spark_dataframe.py,"
+                                              "pytorch_model.py,"
+                                              "utils.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
