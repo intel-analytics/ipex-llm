@@ -92,12 +92,12 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
                 yield size
 
     def transform_predict(predictions):
-        # list of np array
+        # case 1: each prediction is a list of np array
+        # [[[1,1],[1,1,1]],[[2,2],[2,2,2]]] -> [[[1,1],[2,2]],[[1,1,1],[2,2,2]]]
         if isinstance(predictions[0], list):
-            predictions = [[item[i] for item in predictions] for i in range(len(predictions[0]))]
-            result = [np.array(predict) for predict in predictions]
-            return result
-        # np array
+            return [np.array([prediction[i] for prediction in predictions])
+                    for i in range(len(predictions[0]))]
+        # case 2: each prediction is a single np array
         else:
             return np.array(predictions)
 
