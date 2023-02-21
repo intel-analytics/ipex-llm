@@ -239,11 +239,17 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    compression=status.get('compression', "fp32"),)
 
     def _save_model(self, path, compression="fp32"):
-        if self.use_jit:
+        if self.use_jit and not self.use_ipex:
+            # for pure jit
             if compression == "bf16":
+                bf16_jit = self.model.bfloat16()
+                bf16_jit.save(path / "ckpt.pth")
+            elif compression == "fp32":
+                self.model.save(path / "ckpt.pth")
+            else:
                 invalidInputError(False,
-                                  "compression does not support jit accelerator fow now.")
-            self.model.save(path / "ckpt.pth")
+                                  "compression does not support {} precision for jit accelerator "
+                                  "fow now.".format(compression))
         else:
             if compression == "bf16":
                 self.compression = "bf16"

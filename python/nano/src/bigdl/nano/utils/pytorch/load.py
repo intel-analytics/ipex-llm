@@ -21,14 +21,13 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
 
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
     transform_state_dict_to_dtype
 
 
-def load_model(path, model: pl.LightningModule = None, input_sample=None,
+def load_model(path, model: nn.Module = None, input_sample=None,
                inplace=False, device=None):
     """
     Load a model from local.
