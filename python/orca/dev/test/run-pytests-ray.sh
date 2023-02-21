@@ -69,6 +69,7 @@ then
     exit $exit_status_4
 fi
 
+# TODO: support mxnet test under python 3.8
 python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
     echo "Running orca mxnet tests"
