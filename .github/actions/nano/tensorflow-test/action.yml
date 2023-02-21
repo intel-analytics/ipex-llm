@@ -12,25 +12,23 @@ runs:
     - name: Run Nano TensorFlow Test (Train)
       shell: bash
       run: |
-        source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
-        bash python/nano/test/run-nano-tf-train-tests.sh
-
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-tf-train-tests.sh
+        fi
         source bigdl-nano-unset-env
-        source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Inference)
       shell: bash
       run: |
-        source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
-
-        bash python/nano/test/run-nano-tf-inference-tests.sh
-
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-tf-inference-tests.sh
+        fi
         source bigdl-nano-unset-env
-        source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         OS: ${{ inputs.os }}
