@@ -36,7 +36,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 simplification=True, dynamic_axes=True, output_tensors=True,**export_kwargs):
+                 simplification=True, dynamic_axes=True, output_tensors=True, **export_kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 

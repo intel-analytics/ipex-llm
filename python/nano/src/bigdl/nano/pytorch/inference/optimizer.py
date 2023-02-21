@@ -1022,7 +1022,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               onednn#pytorch---onednn-graph-api-bridge.
         :param output_tensors: boolean, default to True and output of the model will be Tensors,
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
-                               otherwise will be ignored. If output_tensors=False, output of the 
+                               otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
