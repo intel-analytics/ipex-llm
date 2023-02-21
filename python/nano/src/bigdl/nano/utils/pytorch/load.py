@@ -70,9 +70,11 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     if model_type == 'PytorchQuantizedModel':
         result = load_inc_model(path, model, 'pytorch', input_sample=input_sample)
     if model_type == 'PytorchIPEXJITModel':
-        result = load_ipexjit_model(path, model, inplace=inplace)
+        result = load_ipexjit_model(path, model, inplace=inplace,
+                                    input_sample=input_sample)
     if model_type == 'PytorchIPEXJITBF16Model':
-        result = load_ipexjitbf16_model(path, model, inplace=inplace)
+        result = load_ipexjitbf16_model(path, model, inplace=inplace,
+                                        input_sample=input_sample)
     if model_type == 'PytorchIPEXQuantizationModel':
         result = load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':

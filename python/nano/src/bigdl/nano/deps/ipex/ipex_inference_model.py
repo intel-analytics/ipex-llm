@@ -21,7 +21,9 @@ from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import transform_state_dict_to_dtype
 import torch
+import copy
 
 
 class PytorchIPEXJITModel(AcceleratedLightningModule):
@@ -101,6 +103,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         self.weights_prepack = weights_prepack
         self.compression = compression
         self.original_model = model
+        self.input_sample = input_sample
         if self.channels_last:
             try:
                 self.model = self.model.to(memory_format=torch.channels_last)
@@ -150,7 +153,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                          strict=jit_strict)
                         except Exception:
                             self.model = torch.jit.script(self.model)
-                    self.model = torch.jit.freeze(self.model)
+                    # self.model = torch.jit.freeze(self.model)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="fp32",
@@ -203,16 +206,25 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def _load(path, model, inplace=False):
+    def _load(path, model, input_sample=None, inplace=False):
         status = PytorchIPEXJITModel._load_status(path)
         checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
-            if status["use_ipex"]:
-                import intel_extension_for_pytorch as ipex
-            model = torch.jit.load(checkpoint_path)
-            model.eval()
-            model = torch.jit.freeze(model)
-            from_load = True
+            if status['compression'] == "bf16":
+                state_dict = torch.load(checkpoint_path, map_location='cpu')
+                if status['compression'] == "bf16":
+                    state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
+                model = copy.deepcopy(model)
+                model.load_state_dict(state_dict)
+                from_load = False
+            else:
+                # for fp32, normal jit loading
+                if status["use_ipex"]:
+                    import intel_extension_for_pytorch as ipex
+                model = torch.jit.load(checkpoint_path)
+                model.eval()
+                model = torch.jit.freeze(model)
+                from_load = True
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
@@ -225,10 +237,13 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             thread_num = None
         if thread_num is not None:
             thread_num = int(status['thread_num'])
-        return PytorchIPEXJITModel(model, use_ipex=status['use_ipex'],
+        return PytorchIPEXJITModel(model,
+                                   input_sample=input_sample,
+                                   use_ipex=status['use_ipex'],
                                    use_jit=status['use_jit'],
                                    channels_last=status['channels_last'],
-                                   channels_last_available=status['channels_last_available'],
+                                   channels_last_available=status.get('channels_last_available',
+                                                                      None),
                                    from_load=from_load,
                                    thread_num=thread_num,
                                    inplace=inplace,
@@ -239,12 +254,15 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    compression=status.get('compression', "fp32"),)
 
     def _save_model(self, path, compression="fp32"):
-        if self.use_jit and not self.use_ipex:
-            # for pure jit
+        if self.use_jit:
             if compression == "bf16":
-                bf16_jit = self.model.bfloat16()
-                bf16_jit.save(path / "ckpt.pth")
+                # for jit, if we want to compress its precision at saving,
+                # we need to save original model's state dict with compression precision
+                self.compression = "bf16"
+                bf16_sd = transform_state_dict_to_dtype(self.original_state_dict, dtype="bf16")
+                torch.save(bf16_sd, path / "ckpt.pth")
             elif compression == "fp32":
+                # normal torch.jit.save for fp32 model
                 self.model.save(path / "ckpt.pth")
             else:
                 invalidInputError(False,

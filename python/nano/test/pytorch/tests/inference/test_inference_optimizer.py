@@ -738,29 +738,30 @@ class TestInferencePipeline(TestCase):
 
         # test bf16
         if TORCH_VERSION_LESS_1_12:
-            return
-        opt_model = InferenceOptimizer.quantize(self.model, precision="bf16")
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output = opt_model(input_sample)
+            pass
+        else:
+            opt_model = InferenceOptimizer.quantize(self.model, precision="bf16")
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output = opt_model(input_sample)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            InferenceOptimizer.save(opt_model, tmpdir)
-            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output_after_saving = opt_model(input_sample)
-        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir)
+                original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
-            opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
-            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output_after_saving = opt_model(input_sample)
-        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
-        with InferenceOptimizer.get_context(opt_model_load):
-            opt_output_after_loading = opt_model_load(input_sample)
-        assert compressed_size_ipex < 0.8 * original_size
-        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+                opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
+                compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
+            with InferenceOptimizer.get_context(opt_model_load):
+                opt_output_after_loading = opt_model_load(input_sample)
+            assert compressed_size_ipex < 0.8 * original_size
+            assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
 
         # test pure jit
         opt_model = InferenceOptimizer.trace(self.model,
@@ -773,17 +774,120 @@ class TestInferencePipeline(TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             InferenceOptimizer.save(opt_model, tmpdir)
             original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
         with InferenceOptimizer.get_context(opt_model):
             opt_output_after_saving = opt_model(input_sample)
-        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
 
         with tempfile.TemporaryDirectory() as tmpdir:
             InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
-            opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
             compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
         with InferenceOptimizer.get_context(opt_model):
             opt_output_after_saving = opt_model(input_sample)
-        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit + ipex
+        opt_model = InferenceOptimizer.trace(self.model,
+                                             accelerator="jit",
+                                             input_sample=input_sample,
+                                             use_ipex=True)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit bf16
+        opt_model = InferenceOptimizer.quantize(self.model,
+                                                accelerator="jit",
+                                                input_sample=input_sample,
+                                                use_ipex=False,
+                                                precision='bf16')
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit + ipex + bf16
+        opt_model = InferenceOptimizer.quantize(self.model,
+                                                accelerator="jit",
+                                                input_sample=input_sample,
+                                                use_ipex=True,
+                                                precision='bf16')
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
         with InferenceOptimizer.get_context(opt_model_load):
             opt_output_after_loading = opt_model_load(input_sample)
         assert compressed_size_ipex < 0.8 * original_size
