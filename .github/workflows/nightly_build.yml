@@ -171,7 +171,7 @@ jobs:
 
   docker-build-bigdl:
     # needs: scala-build
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
     steps:
