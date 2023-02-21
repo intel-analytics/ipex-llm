@@ -77,9 +77,12 @@ class EncryptedDataFrameWriter(
                     .set("bigdl.dataKey.plainText", dataKeyPlainText)
         sparkSession.sparkContext.hadoopConfiguration
                     .set("bigdl.dataKey.cipherText", dataKeyCipherText)
+        sparkSession.sparkContext.hadoopConfiguration
+                    .set("bigdl.cryptoMode", encryptMode.encryptionAlgorithm)
         option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
       case _ =>
-        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
+        Log4Error.invalidOperationError(false,
+          "unknown or wrong encryptMode " + CryptoMode.toString)
     }
   }
 
@@ -92,6 +95,12 @@ class EncryptedDataFrameWriter(
   def json(path: String): Unit = {
     setCryptoCodecContext()
     df.write.options(extraOptions).mode(mode).json(path)
+    keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
+  }
+
+  def text(path: String): Unit = {
+    setCryptoCodecContext()
+    df.write.options(extraOptions).mode(mode).text(path)
     keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }
 
