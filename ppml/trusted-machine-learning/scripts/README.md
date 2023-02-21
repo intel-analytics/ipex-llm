@@ -149,8 +149,7 @@ The trusted-machine-learning image porvides some classic examples of machine lea
 cd scripts
 bash start-random-forest-classifier-on-local-sgx.sh
 ```
-
-Also, you can run your own machine learning program like below:
+You can also modify the jar path and class name, and run your own machine learning program like below:
 ```bash 
 /opt/jdk8/bin/java \
     -cp "/ppml/spark-${SPARK_VERSION}/conf/:your_jar_path" -Xmx1g \
