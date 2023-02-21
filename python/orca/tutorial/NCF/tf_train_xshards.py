@@ -106,8 +106,7 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-# TODO: fix save model to HDFS
-est.save(os.path.join(args.model_dir, "NCF_model"))
+est.save(os.path.join(args.model_dir, "NCF_model.h5"))
 save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
