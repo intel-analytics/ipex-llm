@@ -119,4 +119,6 @@ class KeyLoaderManagement extends Serializable {
         multiKeyLoaders.get(primaryKeyName).get
     }
 
+    def count(): Int = multiKeyLoaders.size
+
 }

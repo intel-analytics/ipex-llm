@@ -93,6 +93,12 @@ class EncryptedDataFrameWriter(
     keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
   }
 
+  def text(path: String): Unit = {
+    setCryptoCodecContext()
+    df.write.options(extraOptions).mode(mode).text(path)
+    keyLoaderManagement.retrieveKeyLoader(primaryKeyName).writeEncryptedDataKey(path)
+  }
+
   def parquet(path: String): Unit = {
     lazy val header = df.schema.fieldNames.mkString(",")
     encryptMode match {
