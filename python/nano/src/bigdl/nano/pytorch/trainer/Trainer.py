@@ -24,8 +24,9 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11
+from bigdl.nano.utils.pytorch import ChannelsLastCallback
+from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \

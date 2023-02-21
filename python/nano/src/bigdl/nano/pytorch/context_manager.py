@@ -69,7 +69,7 @@ class AutocastContextManager(BaseContextManager):
     def __enter__(self):
         super().__enter__()
         if self.accelerator == "jit" and self.enable_onednn is True:
-            if compare_version("torch", operator.le, "1.13.1"):
+            if compare_version("torch", operator.lt, "1.14"):
                 # onednn fusion for bf16 only work for torch version > 1.13
                 if compare_version("torch", operator.ge, "1.12.0"):
                     # onednn fusion be added to torch from version 1.12

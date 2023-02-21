@@ -35,14 +35,14 @@ init_orca(args.cluster_mode, extra_python_lib="pytorch_dataset.py,pytorch_model.
 # TODO: Save the processed data of the data loader as well?
 # Step 2: Define train and test datasets as PyTorch DataLoader
 def train_loader_func(config, batch_size):
-    train_dataset, _ = load_dataset(config["data_dir"], num_ng=4)
+    train_dataset, _ = load_dataset(config["data_dir"], config["dataset"], num_ng=4)
     train_loader = data.DataLoader(train_dataset, batch_size=batch_size,
                                    shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
-    _, test_dataset = load_dataset(config["data_dir"], num_ng=4)
+    _, test_dataset = load_dataset(config["data_dir"], config["dataset"], num_ng=4)
     test_loader = data.DataLoader(test_dataset, batch_size=batch_size,
                                   shuffle=False, num_workers=0)
     return test_loader
@@ -51,7 +51,7 @@ def test_loader_func(config, batch_size):
 # Step 3: Define the model, optimizer and loss
 def model_creator(config):
     users, items, user_num, item_num, sparse_features, dense_features, \
-        total_cols = process_users_items(config["data_dir"])
+        total_cols = process_users_items(config["data_dir"], config["dataset"])
     sparse_feats_input_dims, num_dense_feats = get_input_dims(users, items,
                                                               sparse_features, dense_features)
     model = NCF(user_num=user_num,

@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os.path
+import os
 
 from pyspark.ml.feature import StringIndexer, MinMaxScaler, VectorAssembler
 from pyspark.ml import Pipeline
 from pyspark.sql.types import StructField, StructType, IntegerType, LongType, ArrayType, StringType
-from pyspark.sql.functions import udf, lit, collect_list, explode
+from pyspark.sql.functions import udf, lit, collect_list, explode, concat
 
 from bigdl.orca import OrcaContext
 
@@ -29,34 +29,67 @@ sparse_features = ["zipcode", "gender", "category", "occupation"]
 dense_features = ["age"]
 
 
-def read_data(data_dir):
+def read_data(data_dir, dataset):
     spark = OrcaContext.get_spark_session()
+    print("Loading data...")
+
     schema = StructType([StructField("user", LongType(), False),
                          StructField("item", LongType(), False)])
-    schema_user = StructType(
-        [
-            StructField("user", LongType(), False),
-            StructField("gender", StringType(), False),
-            StructField("age", IntegerType(), False),
-            StructField("occupation", LongType(), False),
-            StructField("zipcode", StringType(), False)
-        ]
-    )
-    schema_item = StructType(
-        [
-            StructField("item", LongType(), False),
-            StructField("title", StringType(), False),
-            StructField("category", StringType(), False)
-        ]
-    )
-    print("Loading data...")
-    # Need spark3 to support delimiter with more than one character.
-    df_rating = spark.read.csv(os.path.join(data_dir, "ratings.dat"),
-                               sep="::", schema=schema, header=False)
-    df_user = spark.read.csv(os.path.join(data_dir, "users.dat"),
-                             sep="::", schema=schema_user, header=False)
-    df_item = spark.read.csv(os.path.join(data_dir, "movies.dat"),
-                             sep="::", schema=schema_item, header=False)
+    if dataset == "ml-1m":
+        schema_user = StructType(
+            [
+                StructField("user", LongType(), False),
+                StructField("gender", StringType(), False),
+                StructField("age", IntegerType(), False),
+                StructField("occupation", StringType(), False),
+                StructField("zipcode", StringType(), False)
+            ]
+        )
+        schema_item = StructType(
+            [
+                StructField("item", LongType(), False),
+                StructField("title", StringType(), False),
+                StructField("category", StringType(), False)
+            ]
+        )
+        # Need spark3 to support delimiter with more than one character.
+        df_rating = spark.read.csv(os.path.join(data_dir, dataset, "ratings.dat"),
+                                   sep="::", schema=schema, header=False)
+        df_user = spark.read.csv(os.path.join(data_dir, dataset, "users.dat"),
+                                 sep="::", schema=schema_user, header=False)
+        df_item = spark.read.csv(os.path.join(data_dir, dataset, "movies.dat"),
+                                 sep="::", schema=schema_item, header=False)
+    else:  # ml-100k
+        schema_user = StructType(
+            [
+                StructField("user", LongType(), False),
+                StructField("age", IntegerType(), False),
+                StructField("gender", StringType(), False),
+                StructField("occupation", StringType(), False),
+                StructField("zipcode", StringType(), False)
+            ]
+        )
+        schema_item = StructType(
+            [
+                StructField("item", LongType(), False),
+                StructField("title", StringType(), False),
+                StructField("date", StringType(), False),
+                StructField("vdate", StringType(), False),
+                StructField("URL", StringType(), False),
+            ]
+            + [StructField(f"col{i}", StringType(), False) for i in range(19)]
+        )
+        df_rating = spark.read.csv(os.path.join(data_dir, dataset, "u.data"),
+                                   sep="\t", schema=schema, header=False)
+        df_user = spark.read.csv(os.path.join(data_dir, dataset, "u.user"),
+                                 sep="|", schema=schema_user, header=False)
+        df_item = spark.read.csv(os.path.join(data_dir, dataset, "u.item"),
+                                 sep="|", schema=schema_item, header=False)
+        # Merge multiple one-hot columns into one movie category column
+        df_item = df_item.select(
+            df_item.item,
+            concat(*[df_item[f"col{i}"] for i in range(19)]).alias("category")
+        )
     return df_rating, df_user, df_item
 
 
@@ -82,7 +115,6 @@ def generate_neg_sample(df, item_num, neg_scale):
 
     df = df.unionByName(df_neg)
     df = df.repartition(df.rdd.getNumPartitions())
-
     return df
 
 
@@ -125,22 +157,17 @@ def merge_features(df, df_user, df_item, sparse_features, dense_features):
     return df_feat, sparse_feats_input_dims
 
 
-def prepare_data(data_dir, neg_scale=4):
-    df_rating, df_user, df_item = read_data(data_dir)
+def prepare_data(data_dir="./", dataset="ml-1m", neg_scale=4):
+    df_rating, df_user, df_item = read_data(data_dir, dataset)
 
     user_num = df_rating.agg({"user": "max"}).collect()[0]["max(user)"] + 1
     item_num = df_rating.agg({"item": "max"}).collect()[0]["max(item)"] + 1
 
     df_rating = generate_neg_sample(df_rating, item_num, neg_scale=neg_scale)
-    # occupation is already indexed.
     df, sparse_feats_input_dims = \
-        merge_features(df_rating, df_user, df_item, sparse_features[:-1], dense_features)
-
-    occupation_num = df.agg({"occupation": "max"}).collect()[0]["max(occupation)"] + 1
-    sparse_feats_input_dims.append(occupation_num)
+        merge_features(df_rating, df_user, df_item, sparse_features, dense_features)
 
     train_df, val_df = df.randomSplit([0.8, 0.2], seed=100)
-
     return train_df, val_df, user_num, item_num, \
         sparse_feats_input_dims, len(dense_features), get_feature_cols(), get_label_cols()
 
@@ -154,11 +181,11 @@ def get_label_cols():
 
 
 if __name__ == "__main__":
-    from bigdl.orca import init_orca_context, stop_orca_context
+    from utils import init_orca, stop_orca_context
 
-    sc = init_orca_context()
+    init_orca("local")
     train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-        feature_cols, label_cols = prepare_data("./ml-1m")
-    train_df.write.parquet("./train_processed.parquet", mode="overwrite")
-    test_df.write.parquet("./test_processed.parquet", mode="overwrite")
+        feature_cols, label_cols = prepare_data()
+    train_df.write.parquet("./train_processed_dataframe.parquet", mode="overwrite")
+    test_df.write.parquet("./test_processed_dataframe.parquet", mode="overwrite")
     stop_orca_context()

@@ -62,7 +62,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['pandas>=1.0.5, <=1.3.5', 'scikit-learn>=0.22.0, <=1.0.2',
-                          'bigdl-nano==' + VERSION, 'numpy<=1.23.5'],
+                          'bigdl-nano==' + VERSION],
         extras_require={'pytorch': ['bigdl-nano[pytorch]==' + VERSION],
                         'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],

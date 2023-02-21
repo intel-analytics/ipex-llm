@@ -15,6 +15,14 @@
 #
 from bigdl.orca.automl.search import SearchEngineFactory
 from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+from numpy import ndarray
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union, Any
+
+if TYPE_CHECKING:
+    from bigdl.orca.automl.model.base_pytorch_model import ModelBuilder
+    from pyspark.sql import DataFrame
+    from ray.tune.sample import Categorical, Float, Integer, Function
 
 
 class AutoEstimator:
@@ -36,11 +44,11 @@ class AutoEstimator:
     """
 
     def __init__(self,
-                 model_builder,
-                 logs_dir="/tmp/auto_estimator_logs",
-                 resources_per_trial=None,
-                 remote_dir=None,
-                 name=None):
+                 model_builder: "ModelBuilder",
+                 logs_dir: str="/tmp/auto_estimator_logs",
+                 resources_per_trial: Optional[Dict[str, int]]=None,
+                 remote_dir: Optional[str]=None,
+                 name: Optional[str]=None) -> None:
         self.model_builder = model_builder
         self.searcher = SearchEngineFactory.create_engine(
             backend="ray",
@@ -53,14 +61,14 @@ class AutoEstimator:
 
     @staticmethod
     def from_torch(*,
-                   model_creator,
-                   optimizer,
-                   loss,
-                   logs_dir="/tmp/auto_estimator_logs",
-                   resources_per_trial=None,
-                   name="auto_pytorch_estimator",
-                   remote_dir=None,
-                   ):
+                   model_creator: Callable,
+                   optimizer: Callable,
+                   loss: Callable,
+                   logs_dir: str="/tmp/auto_estimator_logs",
+                   resources_per_trial: Optional[Dict[str, int]]=None,
+                   name: str="auto_pytorch_estimator",
+                   remote_dir: Optional[str]=None,
+                   ) -> "AutoEstimator":
         """
         Create an AutoEstimator for torch.
 
@@ -95,12 +103,12 @@ class AutoEstimator:
 
     @staticmethod
     def from_keras(*,
-                   model_creator,
-                   logs_dir="/tmp/auto_estimator_logs",
-                   resources_per_trial=None,
-                   name="auto_keras_estimator",
-                   remote_dir=None,
-                   ):
+                   model_creator: Callable,
+                   logs_dir: str="/tmp/auto_estimator_logs",
+                   resources_per_trial: Optional[Dict[str, int]]=None,
+                   name: str="auto_keras_estimator",
+                   remote_dir: Optional[str]=None,
+                   ) -> "AutoEstimator":
         """
         Create an AutoEstimator for tensorflow keras.
 
@@ -124,21 +132,22 @@ class AutoEstimator:
                              name=name)
 
     def fit(self,
-            data,
-            epochs=1,
-            validation_data=None,
-            metric=None,
-            metric_mode=None,
-            metric_threshold=None,
-            n_sampling=1,
-            search_space=None,
-            search_alg=None,
-            search_alg_params=None,
-            scheduler=None,
-            scheduler_params=None,
-            feature_cols=None,
-            label_cols=None,
-            ):
+            data: Union[Callable, Tuple["ndarray", "ndarray"], "DataFrame"],
+            epochs: int=1,
+            validation_data: Optional[
+                Union[Callable, Tuple["ndarray", "ndarray"], "DataFrame"]]=None,
+            metric: Optional[Union[Callable, str]]=None,
+            metric_mode: Optional[str]=None,
+            metric_threshold: Optional[Union["Function", "Float", "Integer"]]=None,
+            n_sampling: int=1,
+            search_space: Optional[Dict]=None,
+            search_alg: Optional[str]=None,
+            search_alg_params: Optional[Dict]=None,
+            scheduler: Optional[str]=None,
+            scheduler_params: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
 
@@ -249,7 +258,8 @@ class AutoEstimator:
         return best_automl_model
 
     @staticmethod
-    def _validate_metric_mode(metric, mode):
+    def _validate_metric_mode(metric: Optional[Union[Callable, str]],
+                              mode: Optional[str]) -> Optional[str]:
         if not mode:
             if callable(metric):
                 invalidInputError(False,
@@ -270,11 +280,13 @@ class AutoEstimator:
         return mode
 
     @staticmethod
-    def _check_spark_dataframe_input(data,
-                                     validation_data,
-                                     feature_cols,
-                                     label_cols
-                                     ):
+    def _check_spark_dataframe_input(data: Union[Tuple["ndarray", "ndarray"],
+                                                 Callable, "DataFrame"],
+                                     validation_data: Union[Tuple["ndarray", "ndarray"],
+                                                            Callable, "DataFrame"],
+                                     feature_cols: Optional[List[str]],
+                                     label_cols: Optional[List[str]]
+                                     ) -> Tuple[Optional[List[str]], Optional[List[str]]]:
 
         def check_cols(cols, cols_name):
             if not cols:
