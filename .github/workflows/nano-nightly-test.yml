@@ -115,6 +115,8 @@ jobs:
         os: "ubuntu"
     - name: Run Nano PyTorch Test
       uses: ./.github/actions/nano/pytorch-test
+      with:
+        os: "ubuntu"
 
   Nano-PyTorch-UT-Test-Windows:
     runs-on: [ "windows-latest" ]
@@ -133,6 +135,8 @@ jobs:
         os: "windows"
     - name: Run Nano PyTorch Test
       uses: ./.github/actions/nano/pytorch-test
+      with:
+        os: "windows"
 
   Nano-TensorFlow-UT-Test-Ubuntu:
     runs-on: [ "ubuntu-20.04" ]
@@ -151,6 +155,8 @@ jobs:
         os: "ubuntu"
     - name: Run Nano Tensorflow Test
       uses: ./.github/actions/nano/tensorflow-test
+      with:
+        os: "ubuntu"
 
   Nano-TensorFlow-UT-Test-Windows:
     runs-on: [ "windows-latest" ]
@@ -169,3 +175,5 @@ jobs:
         os: "windows"
     - name: Run Nano Tensorflow Test
       uses: ./.github/actions/nano/tensorflow-test
+      with:
+        os: "windows"

@@ -1,6 +1,11 @@
 name: 'Nano TensorFlow Test'
 description: 'run nano tensorflow test'
 
+inputs:
+  os:
+    description: 'ubuntu or centos or windows'
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -9,7 +14,6 @@ runs:
       run: |
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
-
         bash python/nano/test/run-nano-tf-train-tests.sh
 
         source bigdl-nano-unset-env
@@ -29,6 +33,7 @@ runs:
         source $CONDA/bin/deactivate
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Horovod)
       shell: bash
@@ -39,35 +44,45 @@ runs:
         # source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Ray)
       shell: bash
       run: |
         source bigdl-nano-init
-        bash python/nano/test/run-nano-tf-ray-tests.sh
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-tf-ray-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Automl)
       shell: bash
       run: |
         source bigdl-nano-init
-        bash python/nano/test/run-nano-automl-common-tests.sh
-        bash python/nano/test/run-nano-automl-tf-tests.sh
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-automl-common-tests.sh
+          bash python/nano/test/run-nano-automl-tf-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (INC)
       shell: bash
       run: |
+        source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
-        # source bigdl-nano-init
-        # bash python/nano/test/run-nano-tf-inc-tests.sh
-        # source bigdl-nano-unset-env
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-tf-inc-tests.sh
+        fi
+        source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (OpenVINO)
       shell: bash
@@ -77,36 +92,47 @@ runs:
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (ONNXRuntime)
       shell: bash
       run: |
         source bigdl-nano-init
-        bash python/nano/test/run-nano-tf-onnx-tests.sh
+        # We disable this because it is hard to install inc on windows
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/test/run-nano-tf-onnx-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (NoteBook)
       shell: bash
       run: |
         source bigdl-nano-init
-        bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Tutorial)
       shell: bash
       run: |
         source bigdl-nano-init
+        if [ ! $OS = "windows" ]; then
+          bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
+        fi
         bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
-        bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
         bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_onnx.sh
         bash python/nano/tutorial/inference/tensorflow/run_nano_tf_inference_tests_openvino.sh
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (How To Guide)
       shell: bash
@@ -117,3 +143,4 @@ runs:
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+        OS: ${{ inputs.os }}
