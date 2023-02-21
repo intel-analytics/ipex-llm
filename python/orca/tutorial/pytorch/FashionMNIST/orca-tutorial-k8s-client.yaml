@@ -37,8 +37,8 @@ spec:
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
                 --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/kai/model.py \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
-                --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+                --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
                 /bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
                 --data_dir /bigdl/nfsdata/dataset
