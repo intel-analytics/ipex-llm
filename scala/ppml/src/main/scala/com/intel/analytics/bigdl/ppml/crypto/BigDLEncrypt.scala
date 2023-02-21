@@ -90,7 +90,8 @@ class BigDLEncrypt extends Crypto {
     signingByteBuffer.putInt(ivParameterSpec.getIV.length)
     signingByteBuffer.put(dataKeyCipherTextBytes)
     signingByteBuffer.put(ivParameterSpec.getIV())
-    val suffixLength = 400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length
+    val suffixLength = (
+      400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length).max(0)
     val suffix: Array[Byte] = Array.fill(suffixLength)((0x80).toByte)
     signingByteBuffer.put(suffix)
     signingByteBuffer.array()
