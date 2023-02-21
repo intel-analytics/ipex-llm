@@ -2,6 +2,8 @@ name: Scanner-snyk-docker
 on:
   #pull_request:
     #branchs: [ main ]
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
   workflow_dispatch:
     inputs:
       snyk_apitoken:
@@ -18,7 +20,7 @@ on:
         description: 'snyk image'
         required: true
         type: string
-        default: 'intelanalytics/bigdl-k8s'
+        default: 'intelanalytics/bigdl-k8s:latest'
       snyk_tag:
         description: 'snyk image tag'
         required: true
@@ -37,7 +39,7 @@ jobs:
         echo "SNYK_ORG=${{inputs.snyk_org}}"
     - name: "Pull docker image"
       run: |
-         docker pull ${{inputs.snyk_image}}:${{inputs.snyk_tag}}
+         docker pull ${{inputs.snyk_image}}
 #    - name: "Auth Synk"
 #      run: |
 #        snyk auth -d ${{inputs.snyk_apitoken}}
