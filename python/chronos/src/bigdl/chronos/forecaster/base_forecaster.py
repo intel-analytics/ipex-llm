@@ -1554,7 +1554,8 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                           input_sample=dummy_input,
                                                           accelerator="onnxruntime",
-                                                          onnxruntime_session_options=sess_options)
+                                                          onnxruntime_session_options=sess_options,
+                                                          output_tensors=False)
         self.accelerate_method = "onnxruntime_fp32"
         self.optimized_model_thread_num = thread_num
 
@@ -1592,7 +1593,8 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                           input_sample=dummy_input,
                                                           accelerator="openvino",
-                                                          thread_num=thread_num)
+                                                          thread_num=thread_num,
+                                                          output_tensors=False)
         self.accelerate_method = "openvino_fp32"
         self.optimized_model_thread_num = thread_num
 
@@ -1962,9 +1964,11 @@ class BasePytorchForecaster(Forecaster):
                                               onnxruntime_session_options=sess_options,
                                               thread_num=thread_num)
         if accelerator == 'onnxruntime':
+            q_model.output_tensors=False
             self.accelerated_model = q_model
             self.accelerate_method = "onnxruntime_int8"
         if accelerator == 'openvino':
+            q_model.output_tensors=False
             self.accelerated_model = q_model
             self.accelerate_method = "openvino_int8"
         if accelerator is None:
