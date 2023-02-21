@@ -52,8 +52,6 @@ class EncryptedDataFrameReader(
       case AES_CBC_PKCS5PADDING =>
         val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
                                                   .retrieveDataKeyPlainText(path)
-        sparkSession.sparkContext.hadoopConfiguration.set("bigdl.dataKey.plainText",
-                                                          dataKeyPlainText)
       case _ =>
         Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
     }
@@ -61,16 +59,12 @@ class EncryptedDataFrameReader(
 
   def csv(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    val df = sparkSession.read.options(extraOptions).csv(path)
-    df.cache.count
-    df
+    sparkSession.read.options(extraOptions).csv(path)
   }
 
   def json(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    val df = sparkSession.read.options(extraOptions).json(path)
-    df.cache.count
-    df
+    sparkSession.read.options(extraOptions).json(path)
   }
 
   def parquet(path: String): DataFrame = {
@@ -104,4 +98,3 @@ object EncryptedDataFrameReader {
     EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
   }
 }
-
