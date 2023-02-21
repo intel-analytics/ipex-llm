@@ -1176,7 +1176,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                you always pass in the original model for this case.
                3. you want to the loaded model contains the attributes of original model.
         :param input_sample: Input sample for your model, could be a Tensor or a tuple.
-               Only valid for inc ipex quantization model, otherwise will be ignored.
+               This parameter is needed if:
+               1. saving model is accelerated by INC IPEX quantization.
+               2. saving model is accelerated by JIT and you set compression='bf16'
+               when saving.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.

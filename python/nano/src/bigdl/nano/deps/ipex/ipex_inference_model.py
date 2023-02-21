@@ -263,6 +263,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 torch.save(bf16_sd, path / "ckpt.pth")
             elif compression == "fp32":
                 # normal torch.jit.save for fp32 model
+                self.compression = "fp32"
                 self.model.save(path / "ckpt.pth")
             else:
                 invalidInputError(False,
