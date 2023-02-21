@@ -278,7 +278,7 @@ you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tr
          --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
          local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
          --inputDataSourcePath file://</save/path/of/people.csv> \
-         --outputDataSinkPath file://</save/pazth/of/encrypted/people.csv> \
+         --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
          --cryptoMode aes/cbc/pkcs5padding \
          --dataSourceType csv
     ```
