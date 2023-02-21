@@ -47,7 +47,7 @@ object Encrypt extends Supportive {
         case "parquet" =>
           val df = sc.read(cryptoMode).parquet(inputDataSourcePath)
           sc.write(df, cryptoMode).parquet(outputDataSinkPath)
-        case "textfile" =>
+        case "textFile" =>
           import sparkSession.implicits._
           val df = sc.textFile(inputDataSourcePath).toDF
           sc.write(df, cryptoMode).text(outputDataSinkPath)
@@ -69,7 +69,7 @@ object Encrypt extends Supportive {
       .text("encryption mode, aes/cbc/pkcs5padding, aes_gcm_v1 or aes_gcm_ctr_v1")
     opt[String]('t', "dataSourceType")
       .action((x, c) => c.copy(dataSourceType = x))
-      .text("file type of input data source, csv, json, parquet or textfile")
+      .text("file type of input data source, csv, json, parquet or textFile")
   }
 }
 
