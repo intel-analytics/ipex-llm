@@ -625,13 +625,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            if input_spec is not None:
-                input_shape = tensor_spec_to_shape(input_spec)
-                _output_shape = model.compute_output_shape(input_shape)
-            elif hasattr(model, "input_shape"):
+            if hasattr(model, "input_shape"):
                 # Sequential and functional API model has
                 # `input_shape` and `output_shape` attributes
                 _output_shape = model.output_shape
+            elif input_spec is not None:
+                input_shape = tensor_spec_to_shape(input_spec)
+                _output_shape = model.compute_output_shape(input_shape)
             else:
                 invalidInputError(False,
                                   "Subclassed model must specify `input_spec` parameter.")

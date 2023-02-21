@@ -53,14 +53,14 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                if input_spec is not None:
-                    input_shape = tensor_spec_to_shape(input_spec)
-                    self._output_shape = model.compute_output_shape(input_shape)
-                elif hasattr(model, "input_shape"):
+                if hasattr(model, "input_shape"):
                     # Sequential and functional API model has
                     # `input_shape` and `output_shape` attributes
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
                     self._output_shape = model.output_shape
+                elif input_spec is not None:
+                    input_shape = tensor_spec_to_shape(input_spec)
+                    self._output_shape = model.compute_output_shape(input_shape)
                 else:
                     invalidInputError(False,
                                       "Subclassed model must specify `input_spec` parameter.")
