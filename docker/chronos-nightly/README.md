@@ -8,7 +8,7 @@ docker pull intelanalytics/bigdl-chronos:latest
 ```
 
 ## Build an image (Optional)
-**If you have downloaded docker image, you can just skip this part and go on [Use Chronos](#Use-Chronos).**
+**If you have downloaded docker image, you can just skip this part and go on [Use Chronos](#use-chronos).**
 
 First clone the repo `BigDL` to the local.
 ```bash
