@@ -141,6 +141,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         return PytorchONNXRuntimeModel(str(onnx_path),
                                        onnxruntime_session_options=onnxruntime_session_options)
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)

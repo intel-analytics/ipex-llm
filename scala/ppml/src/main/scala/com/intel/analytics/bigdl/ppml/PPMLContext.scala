@@ -149,7 +149,9 @@ object PPMLContext{
       iterator.flatMap{dataStream =>
         val inputDataStream = dataStream._2.open()
         val crypto = Crypto(cryptoMode)
+        val (encryptedDataKey, initializationVector) = crypto.getHeader(inputDataStream)
         crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
+        crypto.verifyHeader(initializationVector)
         crypto.decryptBigContent(inputDataStream)
       }
     }}
@@ -322,4 +324,3 @@ object PPMLContext{
     kms
   }
 }
-

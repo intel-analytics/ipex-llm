@@ -67,7 +67,7 @@ class ModelCannotCopy(ResNet18):
         invalidOperationError(False, "This model cannot be deepcopy")
 
 
-class TestTrainer(TestCase):
+class TestINC(TestCase):
     model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -218,6 +218,11 @@ class TestTrainer(TestCase):
         assert qmodel
         assert qmodel.channels == 3
         qmodel.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchQuantizedModel' object has no attribute 'width'"
+        ):
+            qmodel.width
 
         with InferenceOptimizer.get_context(qmodel):
             assert torch.get_num_threads() == 2
@@ -230,6 +235,11 @@ class TestTrainer(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchQuantizedModel' object has no attribute 'width'"
+        ):
+            load_model.width
 
     # This UT will fail with INC < 2.0
     @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")

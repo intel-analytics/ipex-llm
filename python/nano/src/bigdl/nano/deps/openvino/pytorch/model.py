@@ -171,7 +171,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                       config=config)
         return self
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         """
         Save PytorchOpenVINOModel to local as xml and bin file
 
