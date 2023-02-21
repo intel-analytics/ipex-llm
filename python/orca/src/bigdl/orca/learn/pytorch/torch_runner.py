@@ -469,10 +469,12 @@ class TorchRunner(BaseRunner):
         loader = iter(loader)
 
         with self.timers.record("validation"):
+            self.num_steps = num_steps
             validation_stats = self._validate(loader,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
                                               callbacks=callbacks)
+            del self.num_steps
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
@@ -569,7 +571,9 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        target = self.batch[-1]
         loss = self.loss
+
         del self.batch
         del self.output
         del self.loss
