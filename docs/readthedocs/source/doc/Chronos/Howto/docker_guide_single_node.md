@@ -1,7 +1,15 @@
 # Use Chronos in Container (docker)
-This dockerfile helps user to build a docker image where Chronos-nightly build version is deployed.
+This page helps user to build and use a docker image where Chronos-nightly build version is deployed.
 
-## Build an image
+## Download image from Docker Hub
+We provide docker image with Chronos-nightly build version deployed in [Docker Hub](https://hub.docker.com/r/intelanalytics/bigdl-chronos/tags). You can directly download it by running command:
+```bash
+docker pull intelanalytics/bigdl-chronos:latest
+```
+
+## Build an image (Optional)
+**If you have downloaded docker image, you can just skip this part and go on [Use Chronos](#Use-Chronos).**
+
 First clone the repo `BigDL` to the local.
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
@@ -43,7 +51,7 @@ extra_dep: whether to install some extra dependencies.
 
 If you want to build image with the default options, you can simply use the following command:
 ```bash
-sudo docker build -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+sudo docker build -t intelanalytics/bigdl-chronos:latest . # You may choose any NAME:TAG you want.
 ```
 
 You can also build with other options by specifying the build args:
@@ -54,7 +62,7 @@ sudo docker build \
     --build-arg hardware=single \
     --build-arg inference=n \
     --build-arg extra_dep=n \
-     -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+     -t intelanalytics/bigdl-chronos:latest . # You may choose any NAME:TAG you want.
 ```
 
 (Optional) If you need a proxy, you can add two additional build args to specify it:
@@ -63,7 +71,7 @@ sudo docker build \
 sudo docker build \
     --build-arg http_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
     --build-arg https_proxy=http://<your_proxy_ip>:<your_proxy_port> \ #optional
-    -t chronos-nightly:b1 . # You may choose any NAME:TAG you want.
+    -t intelanalytics/bigdl-chronos:latest . # You may choose any NAME:TAG you want.
 ```
 According to your network status, this building will cost **15-30 mins**. 
 
@@ -71,18 +79,18 @@ According to your network status, this building will cost **15-30 mins**.
 
 ## Run the image
 ```bash
-sudo docker run -it --rm --net=host chronos-nightly:b1 bash
+sudo docker run -it --rm --net=host intelanalytics/bigdl-chronos:latest bash
 ```
 
 ## Use Chronos
-A conda environment is created for you automatically. `bigdl-chronos` and the necessary depenencies (based on the build args) are installed inside this environment.
+A conda environment is created for you automatically. `bigdl-chronos` and the necessary depenencies (based on the build args when you build image) are installed inside this environment.
 ```bash
 (chronos) root@icx-5:/opt/work# 
 ```
 ```eval_rst
 .. important::
 
-       Considering the image size, we build docker image with the default args and upload it to dockerhub. If you use it directly, only ``bigdl-chronos`` is installed inside this environment. There are two methods to install other necessary dependencies according to your own needs:
+       Considering the image size, we build docker image with the default args and upload it to Docker Hub. If you use it directly, only ``bigdl-chronos`` is installed inside this environment. There are two methods to install other necessary dependencies according to your own needs:
 
        1. Make sure network is available and run install command following `Install using Conda <https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda>`_ , such as ``pip install --pre --upgrade bigdl-chronos[pytorch]``.
 
@@ -122,10 +130,10 @@ You should shut down the BigDL Docker container after using it.
    ```
    You will see your docker containers:
    ```bash
-   CONTAINER ID   IMAGE                     COMMAND   CREATED       STATUS       PORTS     NAMES
-   d6db0ab27cac   chronos-nightly:b1        "bash"    2 hours ago   Up 2 hours             funny_aryabhata
+   CONTAINER ID   IMAGE                                 COMMAND   CREATED       STATUS       PORTS     NAMES
+   ef133bd732d1   intelanalytics/bigdl-chronos:latest   "bash"    2 hours ago   Up 2 hours             happy_babbage
    ```
 3. Shut down the corresponding docker container by its ID:
    ```bash
-   sudo docker rm -f d6db0ab27cac
+   sudo docker rm -f ef133bd732d1
    ```
