@@ -34,7 +34,7 @@ init_orca(args.cluster_mode, extra_python_lib="tf_model.py,process_xshards.py")
 
 # Step 2: Read and process data using Orca XShards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, num_ng=4)
 
 
 # Step 3: Define the NCF model
@@ -106,8 +106,7 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-# TODO: fix save model to HDFS
-est.save(os.path.join(args.model_dir, "NCF_model"))
+est.save(os.path.join(args.model_dir, "NCF_model.h5"))
 save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))

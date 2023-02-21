@@ -53,7 +53,6 @@ case class Params(
                    trainingDataPath: String = "/host/data",
                    inputEncryptMode: CryptoMode = PLAIN_TEXT,
                    primaryKeyPath: String = "./primaryKeyPath",
-                   dataKeyPath: String = "./dataKeyPath",
                    kmsType: String = KMS_CONVENTION.MODE_SIMPLE_KMS,
                    kmsServerIP: String = "0.0.0.0",
                    kmsServerPort: String = "5984",
@@ -65,37 +64,38 @@ case class Params(
                    maxIter: Int = 100,
                    maxDepth: Int = 2,
                    userName: String = "bigdlKMSUserName",
-                   userToken: String = "bigdlKMSUserToken"
+                   userToken: String = "bigdlKMSUserToken",
+                   primaryKeyPlainText: String = ""
                  ) {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
-    kmsArgs("spark.bigdl.kms.type") = kmsType
+    kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.type") = kmsType
     kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
-        kmsArgs("spark.bigdl.kms.ehs.ip") = kmsServerIP
-        kmsArgs("spark.bigdl.kms.ehs.port") = kmsServerPort
-        kmsArgs("spark.bigdl.kms.ehs.id") = ehsmAPPID
-        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPIKEY
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.ip") = kmsServerIP
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.port") = kmsServerPort
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.appId") = ehsmAPPID
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.apiKey") = ehsmAPIKEY
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
-        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.appId") = simpleAPPID
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.apiKey") = simpleAPIKEY
       case KMS_CONVENTION.MODE_BIGDL_KMS =>
-        kmsArgs("spark.bigdl.kms.bigdl.user") = userName
-        kmsArgs("spark.bigdl.kms.bigdl.token") = userToken
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.user") = userName
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.token") = userToken
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
     if (new File(primaryKeyPath).exists()) {
-      kmsArgs("spark.bigdl.kms.key.primary") = primaryKeyPath
+      kmsArgs("spark.bigdl.primaryKey.defaultKey.material") = primaryKeyPath
     }
-    if (new File(dataKeyPath).exists()) {
-      kmsArgs("spark.bigdl.kms.key.data") = dataKeyPath
+    if (primaryKeyPlainText != "") {
+      kmsArgs("spark.bigdl.primaryKey.defaultKey.plainText") = primaryKeyPlainText
     }
     kmsArgs.toMap
   }
 }
 
-object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
+object GbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   val featureNum = 39
 
@@ -119,7 +119,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val tStart = System.nanoTime()
     // read csv files to dataframe
-    val csvDF = sc.read(inputEncryptMode)
+    val csvDF = sc.read(inputEncryptMode, "defaultKey")
       .option("header", "false")
       .option("inferSchema", "true")
       .option("delimiter", "\t")
@@ -220,10 +220,6 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
       .action((v, p) => p.copy(primaryKeyPath = v))
       .text("primaryKeyPath")
 
-    opt[String]('d', "dataKeyPath")
-      .action((v, p) => p.copy(dataKeyPath = v))
-      .text("dataKeyPath")
-
     opt[String]('k', "kmsType")
       .action((v, p) => p.copy(kmsType = v))
       .text("kmsType")
@@ -267,6 +263,10 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     opt[String]('y', "userToken")
       .action((x, c) => c.copy(userToken = x))
       .text("bigdlKMSUserToken")
+
+    opt[String]('d', "primaryKeyPlainText")
+      .action((x, c) => c.copy(primaryKeyPlainText = x))
+      .text("primaryKeyPlainText")
 
   }
 }

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyMan
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
 import com.intel.analytics.bigdl.ppml.crypto.EncryptRuntimeException
 
-object GenerateKeys extends App {
+object GeneratePrimaryKey extends App {
   val logger = LoggerFactory.getLogger(getClass)
 
   val arguments = {
@@ -45,5 +45,4 @@ object GenerateKeys extends App {
       throw new EncryptRuntimeException("Wrong kms type")
   }
   kms.retrievePrimaryKey(primaryKeySavePath)
-  kms.retrieveDataKey(primaryKeySavePath, dataKeySavePath)
 }
