@@ -1,5 +1,7 @@
-name: Scanner-Snyk-scala
+name: Scanner-snyk-scala
 on:
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
   #pull_request:
   #branchs: [ main ]
 
