@@ -463,7 +463,7 @@ jobs:
   Orca-Pytest-Ray-Ctx-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin-Ctx]
+    runs-on: [self-hosted, Gondolin-Ctx-Test]
 
     steps:
     - uses: actions/checkout@v3
