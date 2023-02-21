@@ -187,7 +187,7 @@ else
 fi
 
 start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/inference.py ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small -w 2 --cores 8 --workers_per_node 2 --steps 10
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/inference.py ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small -w 2 --cores 8 --workers_per_node 2 --steps 10 -j 0
 now=$(date "+%s")
 time15=$((now-start))
 
