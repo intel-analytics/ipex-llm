@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from PIL import Image, ImageDraw
 from bigdl.orca import OrcaContext
 from typing import TYPE_CHECKING, Any
 
@@ -23,7 +22,7 @@ if TYPE_CHECKING:
 from bigdl.orca.data.file import *
 from bigdl.orca.data.utils import *
 from bigdl.orca.data import SparkXShards
-from pyspark.sql.functions import col, explode
+from pyspark.sql.functions import col, explode, collect_list
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.dllib.utils.common import get_node_and_core_number
 
@@ -91,7 +90,7 @@ def read_images_pil(file_path: str,
 
     def load_image(iterator):
         for f in iterator:
-            img = open_image(f)
+            img = open_image(f).convert("RGB")
             if label_func:
                 img = img, label_func(f)
             yield img
@@ -148,6 +147,7 @@ def read_images_spark(file_path: str,
         return np.array((R, G, B)).T
 
     def to_pil(image_spark):
+        from PIL import Image, ImageDraw
         """ PIL mode of image is converted from  channel of spark image,
             it is referenced from spark code of ImageSchema.scala, decode method
             https://github.com/apache/spark/blob/master/mllib/src/main/scala/org/apache/spark/ml/image/ImageSchema.scala#L131-L190
@@ -196,61 +196,72 @@ def read_images_spark(file_path: str,
 
 
 def read_coco(file_path: str,
-              split: str = "train",
-              label_type: str = "segmentation",
-              max_samples: int = 25
-              ):
+              split: str = "train"):
+    """
+    Read coco 2017 images into a SparkXShards using Spark backend.
+
+    :param file_path: str. A HDFS path or local path of images.
+    :param split: str. a split to read.
+    :return: A new SparkXShards of tuple of image, target.
+            target is a dictionary with bbox, category_id, area, iscrouwd, segmentation
+    """
     spark = OrcaContext.get_spark_session()
     df = spark.read.json(file_path + "/annotations/instances_" + split + "2017.json")
-    annDF = df.select(explode(col("annotations")).alias("annotations"))
-    annDF = annDF.select(col("annotations.area").alias("area"),
+    ann_df = df.select(explode(col("annotations")).alias("annotations"))
+    ann_df = ann_df.select(col("annotations.area").alias("area"),
                          col("annotations.bbox").alias("bbox"),
                          col("annotations.category_id").alias("category_id"),
                          col("annotations.id").alias("id"),
                          col("annotations.image_id").alias("image_id"),
                          col("annotations.iscrowd").alias("iscrowd"),
-                         col("annotations." + label_type).alias(label_type))
+                         col("annotations.segmentation").alias("segmentation"))
 
-    catDF = df.select(explode(col("categories")).alias("categories"))
-    catDF = catDF.select(col("categories.id").alias("category_id"),
-                         col("categories.name").alias("name"),
-                         col("categories.supercategory").alias("supercategory"))
-    imgDF = df.select(explode(col("images")).alias("images"))
+    ann_df = ann_df.groupby("image_id")\
+        .agg(collect_list(col("bbox")).alias("bbox"),
+             collect_list(col("category_id")).alias("category_id"),
+             collect_list(col("area")).alias("area"),
+             collect_list(col("iscrowd")).alias("iscrowd"),
+             collect_list(col("segmentation")).alias("segmentation"))
 
-    imgDF = imgDF.selectExpr("images.coco_url as coco_url",
-                             "images.date_captured as date_captured",
-                             "images.file_name as file_name", "images.flickr_url as flickr_url",
-                             "images.height as height", "images.id as image_id",
-                             "images.license as license", "images.width as width")
+    ann_rdd =ann_df.rdd.map(
+        lambda x: (x['image_id'],
+                   (x['bbox'], x['category_id'], x["area"], x["iscrowd"], x["segmentation"])))
 
-    join1 = annDF.join(imgDF, annDF.image_id == imgDF.image_id)
-
-
-    meta_df = join1.join(catDF, join1.category_id == catDF.category_id)
-
-    image_path = file_path + "/" + split + "2017"
-    meta_rdd =meta_df.rdd.map(
-        lambda x: (image_path + x['file_name'],
-                   (x['id'], x['image_id'], x['bbox'], x['category_id'])))
-
-    file_names = meta_df.select("file_name").distinct().limit(max_samples).rdd.map(lambda r: r[0])\
-        .map(lambda x: file_path + x)
+    image_path = file_path + split + "2017/"
+    file_names = get_file_paths(image_path)
+    file_names = list(filter(
+        lambda fn: fn.endswith('.jpg') and (not fn.startswith(".")), file_names))
+    num_files = len(file_names)
+    node_num, core_num = get_node_and_core_number()
+    total_cores = node_num * core_num
+    num_partitions = num_files if num_files < total_cores else total_cores
+    file_names = spark.sparkContext.parallelize(file_names, num_partitions)\
+        .map(lambda x: (int(x.split("/")[-1].split(".")[0]), x))
 
     def load_image(iterator):
         for f in iterator:
-            img = open_image(f)
-            yield f, img
+            print(f)
+            try:
+                img = open_image(f[1]).convert("RGB")
+                yield f[0], img
+            except FileNotFoundError as e:
+                print(e)
+            yield f[0], None
 
-    image_rdd = file_names.mapPartitions(load_image)
+    image_rdd = file_names.mapPartitions(load_image)\
+        .filter(lambda x: x[1])
 
     def transform_data(x):
         image = x[1][0]
         target = dict()
-        target['bbox'] = x[1][1][2]
-        target['label'] = x[1][1][3]
+        target['bbox'] = x[1][1][0]
+        target['category_id'] = x[1][1][1]
+        target['area'] = x[1][1][2]
+        target['iscrowd'] = x[1][1][3]
+        target['segmentation'] = x[1][1][4]
         return image, target
 
-    out_rdd = image_rdd.join(meta_rdd)
+    out_rdd = image_rdd.join(ann_rdd)
     out_rdd = out_rdd.map(lambda x: transform_data(x))
 
     return SparkXShards(out_rdd)
