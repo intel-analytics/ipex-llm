@@ -66,7 +66,8 @@ object Encrypt extends Supportive {
       .text("output path to save encrypted data e.g. file://... or hdfs://...")
     opt[String]('m', "cryptoMode")
       .action((x, c) => c.copy(cryptoMode = x))
-      .text("encryption mode, aes/cbc/pkcs5padding, aes_gcm_v1 or aes_gcm_ctr_v1")
+      .text("encryption mode, aes/cbc/pkcs5padding for csv, json and textFile,"
+        + " and aes_gcm_v1 or aes_gcm_ctr_v1 for parquet")
     opt[String]('t', "dataSourceType")
       .action((x, c) => c.copy(dataSourceType = x))
       .text("file type of input data source, csv, json, parquet or textFile")
