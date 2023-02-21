@@ -199,7 +199,7 @@ jobs:
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
 
-  Orca-Python-ExampleTest:
+  Orca-ExampleTest-Ray-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-example == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts ]
