@@ -19,7 +19,7 @@ import torch
 import time
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.loops.dataloader.evaluation_loop import EvaluationLoop
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from collections import ChainMap
 from torchmetrics import Metric
 

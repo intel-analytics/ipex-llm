@@ -23,8 +23,8 @@ import os
 from scipy import stats
 import psutil
 import subprocess
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.utils.util import spawn_new_process
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import spawn_new_process
 
 
 def train(args, model_path, forecaster, train_loader, records):

@@ -30,8 +30,8 @@ import torchmetrics
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.utils.log4Error import invalidOperationError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidOperationError
+from bigdl.nano.utils.common import compare_version
 
 batch_size = 256
 num_workers = 0
@@ -223,6 +223,13 @@ class TestTrainer(TestCase):
             assert torch.get_num_threads() == 2
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
 
     # This UT will fail with INC < 2.0
     @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")

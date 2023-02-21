@@ -38,35 +38,34 @@ class PPMLContext(JavaValue):
             for (k, v) in spark_conf.getAll():
                 conf[k] = v
         if ppml_args:
-            kms_type = ppml_args.get("kms_type", "SimpleKeyManagementService")
-            conf["spark.bigdl.kms.type"] = kms_type
+            kms_type = ppml_args.get("kms_type", "")
+            conf["spark.bigdl.primaryKey.defaultKey.kms.type"] = kms_type
             if kms_type == "SimpleKeyManagementService":
-                conf["spark.bigdl.kms.appId"] = check(ppml_args, "app_id")
-                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "api_key")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.appId"] = check(ppml_args, "app_id")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.apiKey"] = check(ppml_args, "api_key")
+                conf["spark.bigdl.primaryKey.defaultKey.material"] = check(ppml_args, "primary_key_material")
             elif kms_type == "EHSMKeyManagementService":
-                conf["spark.bigdl.kms.ip"] = check(ppml_args, "kms_server_ip")
-                conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
-                conf["spark.bigdl.kms.id"] = check(ppml_args, "app_id")
-                conf["spark.bigdl.kms.apiKey"] = check(ppml_args, "api_key")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.ip"] = check(ppml_args, "kms_server_ip")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.port"] = check(ppml_args, "kms_server_port")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.id"] = check(ppml_args, "app_id")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.apiKey"] = check(ppml_args, "api_key")
+                conf["spark.bigdl.primaryKey.defaultKey.material"] = check(ppml_args, "primary_key_material")
             elif kms_type == "AzureKeyManagementService":
-                conf["spark.bigdl.kms.vault"] = check(ppml_args, "vault")
-                conf["spark.bigdl.kms.clientId"] = ppml_args.get("client_id", "")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key_path")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key_path")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.vault"] = check(ppml_args, "vault")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.clientId"] = ppml_args.get("client_id", "")
+                conf["spark.bigdl.primaryKey.defaultKey.material"] = check(ppml_args, "primary_key_material")
             elif kms_type == "BigDLKeyManagementService":
-                conf["spark.bigdl.kms.ip"] = check(ppml_args, "kms_server_ip")
-                conf["spark.bigdl.kms.port"] = check(ppml_args, "kms_server_port")
-                conf["spark.bigdl.kms.user"] = check(ppml_args, "kms_user_name")
-                conf["spark.bigdl.kms.token"] = check(ppml_args, "kms_user_token")
-                conf["spark.bigdl.kms.primaryKey"] = check(ppml_args, "primary_key")
-                conf["spark.bigdl.kms.dataKey"] = check(ppml_args, "data_key")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.ip"] = check(ppml_args, "kms_server_ip")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.port"] = check(ppml_args, "kms_server_port")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.user"] = check(ppml_args, "kms_user_name")
+                conf["spark.bigdl.primaryKey.defaultKey.kms.token"] = check(ppml_args, "kms_user_token")
+                conf["spark.bigdl.primaryKey.defaultKey.material"] = check(ppml_args, "primary_key_material")
+            elif kms_type == "":
+                conf["spark.bigdl.primaryKey.defaultKey.plainText"] = check(ppml_args, "primary_key_plaintext")
             else:
-                invalidInputError(False, "invalid KMS type")
+                invalidInputError(False, "invalid KMS type.")
 
+        conf["spark.hadoop.io.compression.codecs"] = "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"
         spark_conf = init_spark_conf(conf)
 
         sc = SparkContext.getOrCreate(spark_conf)
@@ -75,32 +74,29 @@ class PPMLContext(JavaValue):
         args = [self.spark._jsparkSession]
         super().__init__(None, self.bigdl_type, *args)
 
-    def load_keys(self, primary_key_path, data_key_path):
-        self.value = callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
-
-    def read(self, crypto_mode, kms_name = "", primary_key = "", data_key = ""):
+    def read(self, crypto_mode, primary_key_name = "defaultKey"):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
-        df_reader = callBigDlFunc(self.bigdl_type, "read", self.value, crypto_mode,
-                                      kms_name, primary_key, data_key)
+        df_reader = callBigDlFunc(self.bigdl_type, "read",
+                                  self.value, crypto_mode, primary_key_name)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
-    def write(self, dataframe, crypto_mode, kms_name = "", primary_key = "", data_key = ""):
+    def write(self, dataframe, crypto_mode, primary_key_name = "defaultKey"):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
-        df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode,
-                                      kms_name, primary_key, data_key)
+        df_writer = callBigDlFunc(self.bigdl_type, "write", self.value,
+                                  dataframe, crypto_mode, primary_key_name)
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
 
-    def textfile(self, path, min_partitions=None, crypto_mode="plain_text",
-                 kms_name = "", primary_key = "", data_key = ""):
+    def textfile(self, path, min_partitions=None,
+                 crypto_mode="plain_text", primary_key_name = "defaultKey"):
         if min_partitions is None:
             min_partitions = self.spark.sparkContext.defaultMinPartitions
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
-        return callBigDlFunc(self.bigdl_type, "textFile", self.value,
-                             path, min_partitions, crypto_mode,
-                             kms_name, primary_key, data_key)
+        return callBigDlFunc(self.bigdl_type, "textFile",
+                             self.value, path, min_partitions,
+                             crypto_mode, primary_key_name)
 
 
 class EncryptedDataFrameReader:
@@ -167,9 +163,8 @@ class CryptoMode(Enum):
     # CryptoMode AES_GCM_CTR_V1 for parquet only
     AES_GCM_CTR_V1 = "AES_GCM_CTR_V1"
 
-
-def init_keys(app_id, api_key, primary_key_path, data_key_path):
-    return callBigDlFunc("float", "initKeys", app_id, api_key, primary_key_path, data_key_path)
+def init_keys(app_id, api_key, primary_key_path):
+    return callBigDlFunc("float", "initKeys", app_id, api_key, primary_key_path)
 
 
 def generate_encrypted_file(kms, primary_key_path, data_key_path, input_path, output_path):

@@ -16,16 +16,22 @@
 #
 from bigdl.orca.automl.xgboost.XGBoost import XGBoostModelBuilder
 from bigdl.orca.automl.auto_estimator import AutoEstimator
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
+if TYPE_CHECKING:
+    from ray.tune.sample import Float, Function, Integer
+    from functools import partial
+    from pyspark.sql import DataFrame
+    from numpy import ndarray
 
 
 class AutoXGBClassifier(AutoEstimator):
     def __init__(self,
-                 logs_dir="/tmp/auto_xgb_classifier_logs",
-                 cpus_per_trial=1,
-                 name=None,
-                 remote_dir=None,
+                 logs_dir: str="/tmp/auto_xgb_classifier_logs",
+                 cpus_per_trial: int=1,
+                 name: Optional[str]=None,
+                 remote_dir: Optional[str]=None,
                  **xgb_configs
-                 ):
+                 ) -> None:
         """
         Automated xgboost classifier
 
@@ -69,21 +75,22 @@ class AutoXGBClassifier(AutoEstimator):
                          name=name)
 
     def fit(self,
-            data,
-            epochs=1,
-            validation_data=None,
-            metric=None,
-            metric_mode=None,
-            metric_threshold=None,
-            n_sampling=1,
-            search_space=None,
-            search_alg=None,
-            search_alg_params=None,
-            scheduler=None,
-            scheduler_params=None,
-            feature_cols=None,
-            label_cols=None,
-            ):
+            data: Union["partial", Tuple["ndarray", "ndarray"], "DataFrame"],
+            epochs: int=1,
+            validation_data: Optional[Union["partial",
+                                      Tuple["ndarray", "ndarray"], "DataFrame"]]=None,
+            metric: Optional[Union[Callable, str]]=None,
+            metric_mode: Optional[str]=None,
+            metric_threshold: Optional[Union[int, float]]=None,
+            n_sampling: int=1,
+            search_space: Optional[Dict]=None,
+            search_alg: Optional[str]=None,
+            search_alg_params: Optional[Dict]=None,
+            scheduler: Optional[str]=None,
+            scheduler_params: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
 
@@ -144,12 +151,12 @@ class AutoXGBClassifier(AutoEstimator):
 
 class AutoXGBRegressor(AutoEstimator):
     def __init__(self,
-                 logs_dir="/tmp/auto_xgb_regressor_logs",
-                 cpus_per_trial=1,
-                 name=None,
-                 remote_dir=None,
+                 logs_dir: str="/tmp/auto_xgb_regressor_logs",
+                 cpus_per_trial: int=1,
+                 name: Optional[str]=None,
+                 remote_dir: Optional[str]=None,
                  **xgb_configs
-                 ):
+                 ) -> None:
         """
         Automated xgboost regressor
 
@@ -193,21 +200,22 @@ class AutoXGBRegressor(AutoEstimator):
                          name=name)
 
     def fit(self,
-            data,
-            epochs=1,
-            validation_data=None,
-            metric=None,
-            metric_mode=None,
-            metric_threshold=None,
-            n_sampling=1,
-            search_space=None,
-            search_alg=None,
-            search_alg_params=None,
-            scheduler=None,
-            scheduler_params=None,
-            feature_cols=None,
-            label_cols=None,
-            ):
+            data: Union["partial", Tuple["ndarray", "ndarray"], "DataFrame"],
+            epochs: int=1,
+            validation_data: Optional[Union["partial",
+                                            Tuple["ndarray", "ndarray"], "DataFrame"]]=None,
+            metric: Optional[Union[Callable, str]]=None,
+            metric_mode: Optional[str]=None,
+            metric_threshold: Optional[Union["Float", "Integer"]]=None,
+            n_sampling: int=1,
+            search_space: Optional[Dict]=None,
+            search_alg: Optional[str]=None,
+            search_alg_params: Optional[Dict]=None,
+            scheduler: Optional[str]=None,
+            scheduler_params: Optional[Dict]=None,
+            feature_cols: Optional[List[str]]=None,
+            label_cols: Optional[List[str]]=None,
+            ) -> None:
         """
         Automatically fit the model and search for the best hyperparameters.
 
@@ -266,10 +274,11 @@ class AutoXGBRegressor(AutoEstimator):
                     label_cols=label_cols)
 
 
-def _merge_cols_for_spark_df(data,
-                             validation_data,
-                             feature_cols,
-                             label_cols):
+def _merge_cols_for_spark_df(data: Union["DataFrame", Tuple["ndarray", "ndarray"], "partial"],
+                             validation_data: Union["DataFrame",
+                                                    Tuple["ndarray", "ndarray"], "partial"],
+                             feature_cols: Optional[List[str]],
+                             label_cols: Optional[List[str]]) -> Tuple:
     # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and
     # label_cols in AutoEstimator, which correspond to the model inputs/outputs.
     from pyspark.sql import DataFrame

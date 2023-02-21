@@ -541,7 +541,7 @@ Using a new image to test,and Occlum instance is already built in it. image_name
 #test.sh
 bash /opt/mount.sh
 occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
-                -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
+                -XX:-UseCompressedOops \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \

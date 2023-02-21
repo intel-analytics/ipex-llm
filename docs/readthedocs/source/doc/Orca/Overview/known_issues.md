@@ -148,3 +148,43 @@ For Spark Dynamic Allocation mode, you are also recommended to manually set `num
 ```python
 init_orca_context(..., num_ray_nodes=2, ray_node_cpu_cores=4)
 ```
+
+### No Space Left on Device
+This error may happen when your disk even has free space, the reason could be:
+1. Inodes do not have enough space.  
+2. Processes are still using deleted files.
+
+To solve this issue, please follow the steps below:
+1. Checkout Spaces on Inodes
+
+   Please check the space on available inodes using the command below:
+      ```bash
+      sudo df -i
+      ```
+
+   Then you will see the overview information of all Inodes and the availability state.
+   ```bash
+   Filesystem       Inodes   IUsed    IFree IUse% Mounted on
+   udev           98880204    3552 98876652    1% /dev
+   tmpfs          98889585    3381 98886204    1% /run
+   /dev/sda2      14622720 2119508 12503212   15% /
+   tmpfs          98889585   18225 98871360    1% /dev/shm
+   tmpfs          98889585       5 98889580    1% /run/lock
+   tmpfs          98889585      19 98889566    1% /sys/fs/cgroup
+   ```
+
+   If there is a disk that uses a small part but the Inode table is full, you should delete useless files.
+
+2. Restart the Process to Free Space
+   
+   Files that were deleted (while processes are still running) could keep the space reserved, you should restart processes to free up the space.
+
+   Please run the command below to see which processes have opened descriptors to deleted files:
+   ```bash
+   sudo lsof | grep deleted
+   ```
+
+   Then you could restart the processes to free up the reserved space.
+   ```bash
+   sudo systemctl restart service_name
+   ```

@@ -16,12 +16,12 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from ..core.model import OpenVINOModel
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
+from bigdl.nano.tf.model import AcceleratedKerasModel
 from .utils import export
 from .dataloader import KerasOpenVINODataLoader
 from .metric import KerasOpenVINOMetric
 import tensorflow as tf
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from ..core.utils import save
 import pickle
 import os
@@ -166,7 +166,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         """
         Save KerasOpenVINOModel to local as xml and bin file
 

@@ -16,8 +16,8 @@
 from pathlib import Path
 import yaml
 from ..core import version as inc_version
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 from neural_compressor.model.model import TensorflowModel
 import pickle
 import os
@@ -51,7 +51,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                        "compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path)
         # save normal attrs
         attrs = {"_output_shape": self._output_shape}

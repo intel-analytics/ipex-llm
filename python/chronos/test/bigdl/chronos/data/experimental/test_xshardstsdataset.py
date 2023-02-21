@@ -40,7 +40,7 @@ def generate_spark_df():
     spark = SparkSession(sc)
     rdd = sc.range(0, 100)
     from pyspark.ml.linalg import DenseVector
-    df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+    df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                             int(np.random.randint(0, 2, size=())),
                             int(x))).toDF(["feature", "id", "date"])
     return df

@@ -17,7 +17,7 @@
 from collections.abc import Sequence
 import intel_extension_for_pytorch as ipex
 from intel_extension_for_pytorch.quantization import prepare, convert
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 import torch
 
@@ -165,5 +165,5 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                                             inplace=inplace,
                                             jit_strict=status["jit_strict"])
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path / "ckpt.pth")

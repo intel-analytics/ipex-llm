@@ -15,11 +15,10 @@
 #
 
 
-from ...utils.log4Error import invalidInputError
-
 from .ipex_inference_model import PytorchIPEXJITModel
 from bigdl.nano.pytorch.context_manager import generate_context_manager
-from bigdl.nano.utils import CPUInfo
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import invalidInputError
 import torch
 
 
@@ -27,7 +26,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     def __init__(self, model, input_sample=None, use_ipex=False,
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
-                 jit_method=None, weights_prepack=None, enable_onednn=True):
+                 jit_method=None, weights_prepack=None, enable_onednn=True,
+                 compression="fp32"):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -55,6 +55,12 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
                API, which provides a flexible API for aggressive fusion. Default to
                ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+        :param compression: str. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision. Defaultly, all models are saved
+               by dtype=fp32 for their parameters. If users set a lower precision, a smaller
+               file sill be saved with some accuracy loss. Users always need to use nano
+               to load the compressed file if compression is set other than "fp32".
+               Currently, "bf16" and "fp32"(default) are supported.
         '''
         if use_ipex:
             invalidInputError(
@@ -68,7 +74,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      channels_last=channels_last,
                                      channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
-                                     jit_method=jit_method, weights_prepack=weights_prepack)
+                                     jit_method=jit_method, weights_prepack=weights_prepack,
+                                     compression=compression)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
@@ -78,8 +85,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
     @property
     def _check_cpu_isa(self):
         """Indicator to verify if cpu supports avx512"""
-        cpuinfo = CPUInfo()
-        return cpuinfo.has_avx512
+        return _avx512_checker()
 
     @property
     def status(self):
@@ -102,6 +108,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
         else:
             state_dict = torch.load(checkpoint_path)
             model.eval()
+            if status['compression'] == "bf16":
+                state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
             model.load_state_dict(state_dict)
             from_load = False
         thread_num = status.get('thread_num', None)
@@ -119,4 +127,5 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                        jit_strict=status.get('jit_strict', True),
                                        jit_method=status.get('jit_method', None),
                                        weights_prepack=status.get('weights_prepack', None),
-                                       enable_onednn=status.get('enable_onednn', True))
+                                       enable_onednn=status.get('enable_onednn', True),
+                                       compression=status.get('compression', "fp32"),)

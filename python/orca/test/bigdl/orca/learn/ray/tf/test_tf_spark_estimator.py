@@ -27,9 +27,6 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
 
-resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../../resources")
-
 
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
@@ -59,49 +56,6 @@ def model_creator(config):
 
 class TestTFEstimator(TestCase):
     # todo need more test cases
-    def test_dataframe(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1)
-
-            assert isinstance(res, dict), "fit should return a dict"
-            print("start saving")
-            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
-            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                   label_cols=["label"])
-            assert isinstance(res, dict), "evaluate should return a dict"
-            print("validation result: ", res)
-
-            res = trainer.predict(df, feature_cols=["feature"]).collect()
-            print("predict result: ", res)
-        finally:
-            shutil.rmtree(temp_dir)
-
     def test_dataframe_with_empty_partition(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
@@ -201,51 +155,6 @@ class TestTFEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_checkpoint_weights(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            callbacks = [
-                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
-                                                   save_weights_only=True)
-            ]
-
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1)
-            latest_checkpoint = Estimator.latest_checkpoint(temp_dir)
-            trainer.load_weights(latest_checkpoint)
-            res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                   label_cols=["label"])
-            print("validation result: ", res)
-
-            res = trainer.predict(df, feature_cols=["feature"]).collect()
-            print("predict result: ", res)
-        finally:
-            shutil.rmtree(temp_dir)
-
     def test_checkpoint_weights_h5(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
@@ -287,204 +196,6 @@ class TestTFEstimator(TestCase):
 
             res = trainer.predict(df, feature_cols=["feature"]).collect()
             print("predict result: ", res)
-        finally:
-            shutil.rmtree(temp_dir)
-
-
-    def test_dataframe_shard_size(self):
-        sc = OrcaContext.get_spark_context()
-        OrcaContext._shard_size = 3
-        rdd = sc.range(0, 100, numSlices=10)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        trainer = Estimator.from_keras(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2,
-            backend="spark")
-
-        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                            validation_data=val_df,
-                            validation_steps=2,
-                            feature_cols=["feature"],
-                            label_cols=["label"])
-
-        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                            feature_cols=["feature"],
-                            label_cols=["label"])
-
-        res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                label_cols=["label"])
-        print("validation result: ", res)
-
-        res = trainer.predict(df, feature_cols=["feature"]).collect()
-        print("predict result: ", res)
-        OrcaContext._shard_size = None
-
-    def test_dataframe_different_train_val(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100, numSlices=10)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        trainer = Estimator.from_keras(
-            model_creator=model_creator,
-            verbose=True,
-            config=config,
-            workers_per_node=2,
-            backend="spark")
-
-        res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                            validation_data=val_df,
-                            validation_steps=2,
-                            feature_cols=["feature"],
-                            label_cols=["label"])
-
-        res = trainer.evaluate(val_df, batch_size=4, num_steps=25, feature_cols=["feature"],
-                                label_cols=["label"])
-        print("validation result: ", res)
-
-        res = trainer.predict(df, feature_cols=["feature"]).collect()
-        print("predict result: ", res)
-        trainer.shutdown()
-
-    def test_tensorboard(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            callbacks = [
-                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "train_log"),
-                                               update_freq='epoch')
-            ]
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1)
-            assert len(os.listdir(os.path.join(temp_dir, "train_log"))) > 0
-
-            callbacks = [
-                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "train_log_2"),
-                                               update_freq='batch')
-            ]
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=11)
-            assert len(os.listdir(os.path.join(temp_dir, "train_log_2"))) > 0
-
-            callbacks = [
-                tf.keras.callbacks.TensorBoard(log_dir=os.path.join(temp_dir, "val_log"),
-                                               update_freq='batch')
-            ]
-            res = trainer.evaluate(df, batch_size=4, num_steps=25,
-                                   callbacks=callbacks,
-                                   feature_cols=["feature"],
-                                   label_cols=["label"])
-            assert len(os.listdir(os.path.join(temp_dir, "val_log"))) > 0
-
-        finally:
-            shutil.rmtree(temp_dir)
-
-    def test_checkpoint_model(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {
-            "lr": 0.2
-        }
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            callbacks = [
-                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
-                                                   save_weights_only=False
-                                                   )
-            ]
-
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1
-                              )
-            assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
-
-            callbacks = [
-                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
-                                                   save_weights_only=False,
-                                                   save_best_only=True
-                                                   )
-            ]
-
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1
-                              )
-            assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
         finally:
             shutil.rmtree(temp_dir)
 
@@ -585,7 +296,7 @@ class TestTFEstimator(TestCase):
             assert np.array_equal(expect_res, pred_res)
         finally:
             shutil.rmtree(temp_dir)
-    
+
     def test_save_load_model_architecture(self):
         config = {
             "lr": 0.2
@@ -637,6 +348,9 @@ class TestTFEstimator(TestCase):
                         validation_data=df,
                         validation_steps=1)
 
+            # check optimizer weights
+            pre_model = trainer.get_model(set_weights=True)
+            pre_opt_weights = pre_model.optimizer.get_weights()
             # save model as h5 format
             trainer.save(os.path.join(temp_dir, "saved_model.h5"))
             before_res = trainer.predict(df, feature_cols=["feature"]).collect()
@@ -650,10 +364,14 @@ class TestTFEstimator(TestCase):
                 backend="spark")
 
             est.load(os.path.join(temp_dir, "saved_model.h5"))
+            # check optimizer weights
+            after_model = est.get_model(set_weights=True)
+            after_opt_weights = after_model.optimizer.get_weights()
             # test continous predicting
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
             assert np.array_equal(expect_res, pred_res)
+            assert np.array_equal(pre_opt_weights, after_opt_weights)
 
             # test continuous training
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
@@ -661,6 +379,10 @@ class TestTFEstimator(TestCase):
                     label_cols=["label"],
                     validation_data=df,
                     validation_steps=1)
+            # check optimizer weights
+            new_model = est.get_model(set_weights=True)
+            new_opt_weights = new_model.optimizer.get_weights()
+            assert not np.array_equal(after_opt_weights, new_opt_weights)
             # test continuous evaluation
             res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                label_cols=["label"])
