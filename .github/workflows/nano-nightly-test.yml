@@ -152,8 +152,8 @@ jobs:
     - name: Run Nano Tensorflow Test
       uses: ./.github/actions/nano/tensorflow-test
 
-  Nano-Tensorflow-UT-Test-Windows:
-    runs-on: [ "ubuntu-20.04" ]
+  Nano-TensorFlow-UT-Test-Windows:
+    runs-on: [ "windows-latest" ]
 
     strategy:
       fail-fast: false
@@ -166,6 +166,6 @@ jobs:
       uses: ./.github/actions/nano/setup-tensorflow-env
       with:
         python-version: ${{ matrix.python-version }}
-        os: "ubuntu"
+        os: "windows"
     - name: Run Nano Tensorflow Test
       uses: ./.github/actions/nano/tensorflow-test
