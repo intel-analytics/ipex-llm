@@ -1,9 +1,12 @@
-name: BigDL Release Docker
+name: BiWeekly Release Docker
 
 on:
-  pull_request:
-    branchs: [ main ]
-  
+  #pull_request:
+     #branchs: [ main ]
+  schedule:
+    - cron: '0 3 22 * *' # GMT time, 3:00 GMT == 11:00 China Every 22th in a month
+    - cron: '0 3 8 * *' # GMT time, 3:00 GMT == 11:00 China Every 22th in a month
+ 
   workflow_dispatch:
     inputs:
       tag:
@@ -18,16 +21,11 @@ permissions:
 
 jobs:
 
-  docker-build-bigdl:
+  docker-build-bigdl-weekly:
     runs-on: [self-hosted, Shire]
 
     steps:
     - uses: actions/checkout@v3
-    - name: set env
-      env:
-        DEFAULT_TAG: 'latest'
-      run: |
-        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
@@ -35,6 +33,8 @@ jobs:
       run: |
         cd docker/bigdl-k8s
         export IMAGE=intelanalytics/bigdl-k8s
+        export TIMESTAMP=`date '+%Y%m%d'`
+        export TAG=2.3.0-SNAPSHOT-${TIMESTAMP}
         echo "########################################"
         echo "################# bigdl-k8s 3.1.3 #######"
         echo "########################################"
@@ -51,5 +51,5 @@ jobs:
         docker push ${IMAGE}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
 
