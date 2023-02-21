@@ -35,7 +35,7 @@ spec:
                 --driver-cores 2 \
                 --driver-memory 2g \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,/bigdl/nfsdata/model.py \
+                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/kai/train.py,/bigdl/nfsdata/kai/model.py \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
@@ -52,14 +52,14 @@ spec:
             value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
           - name: SPARK_MODE
             value: client
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.2.0-SNAPSHOT
-          - name: SPARK_HOME
-            value: /opt/spark
           - name: SPARK_VERSION
             value: 3.1.3
+          - name: SPARK_HOME
+            value: /opt/spark
           - name: BIGDL_VERSION
             value: 2.2.0-SNAPSHOT
+          - name: BIGDL_HOME
+            value: /opt/bigdl-2.2.0-SNAPSHOT
         resources:
           requests:
             cpu: 1
