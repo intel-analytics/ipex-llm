@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 
+from typing import Sequence, Union
+
 import tensorflow as tf
 
 
-def fake_tensor_from_spec(tensor_spec: tf.TensorSpec):
-    """Fake a `Tensor` from `TensorSpec`."""
-    shape = tensor_spec.shape
-    dtype = tensor_spec.dtype
-    shape = tuple(dim if dim is not None else 1 for dim in shape)
-    if shape == () and dtype == tf.bool:
-        # This may be the `training` parameter, we should assume it is False
-        return False
-    return tf.ones(shape=shape, dtype=dtype)
+def tensor_spec_to_shape(tensor_specs: Union[tf.TensorSpec, Sequence[tf.TensorSpec]]):
+    """Convert TensorSpec(s) to shape(s)."""
+    if isinstance(tensor_specs, Sequence):
+        return tuple(spec.shape for spec in tensor_specs)
+    else:
+        return tensor_specs.shape

@@ -22,6 +22,7 @@ from .dataloader import KerasOpenVINODataLoader
 from .metric import KerasOpenVINOMetric
 import tensorflow as tf
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import tensor_spec_to_shape
 from ..core.utils import save
 import pickle
 import os
@@ -51,28 +52,24 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         :param **kwargs: will be passed to model optimizer function.
         """
         ov_model_path = model
-        with TemporaryDirectory() as dir:
-            dir = Path(dir)
+        with TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
-                saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-                if not model.built and not saved_model_input_spec_set:
-                    invalidInputError(input_spec is not None,
-                                      "`input_spec` cannot be None when passing unbuilt model.")
-                    # model cannot be saved either because the input shape is not available
-                    # or because the forward pass of the model is not defined
-                    if isinstance(input_spec, (tuple, list)):
-                        input_shape = (i.shape for i in input_spec)
-                    else:
-                        input_shape = input_spec.shape
+                if input_spec is not None:
+                    input_shape = tensor_spec_to_shape(input_spec)
                     self._output_shape = model.compute_output_shape(input_shape)
-                else:
+                elif hasattr(model, "input_shape"):
+                    # Sequential and functional API model has
+                    # `input_shape` and `output_shape` attributes
                     self._output_shape = model.output_shape
-
-                export(model, str(dir / 'tmp.xml'),
+                else:
+                    invalidInputError(False,
+                                      "Subclassed model must specify `input_spec` parameter.")
+                export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging,
                        **kwargs)
-                ov_model_path = dir / 'tmp.xml'
+                ov_model_path = tmp_dir / 'tmp.xml'
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
                                           precision=precision,
