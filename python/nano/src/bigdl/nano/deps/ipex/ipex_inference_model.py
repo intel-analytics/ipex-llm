@@ -20,6 +20,7 @@ from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 import torch
 
 
@@ -157,6 +158,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                               enable_onednn=enable_onednn)
         self.thread_num = thread_num
         self.enable_onednn = enable_onednn
+        # patch attributes from original model
+        patch_attrs_from_model_to_object(self.original_model, self)
 
     @property
     def forward_args(self):
@@ -182,17 +185,6 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
 
     def on_forward_end(self, outputs):
         return outputs
-
-    def __getattr__(self, name: str):
-        # the search order is:
-        # 1. current instance, like channels_last will be found at this place
-        # 2. super class, like model will be found at this place
-        # 3. original model, like additional attributes of original model
-        #    will be found at this place
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            return getattr(self.original_model, name)
 
     @property
     def status(self):

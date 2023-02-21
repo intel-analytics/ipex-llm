@@ -238,15 +238,21 @@ class TestOnnx(TestCase):
 
         assert onnx_model.channels == 3
         onnx_model.hello()
-        with pytest.raises(AttributeError):
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
             onnx_model.width
 
         # save & load without original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
-        with pytest.raises(AttributeError):
-            load_model.channels == 3
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'channels'"
+        ):
+            load_model.channels
         with pytest.raises(AttributeError):
             load_model.hello()
 
@@ -256,6 +262,11 @@ class TestOnnx(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
+            onnx_model.width
 
     def test_onnx_quantize_dynamic_axes(self):
         class CustomModel(nn.Module):
