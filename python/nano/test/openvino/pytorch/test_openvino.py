@@ -364,3 +364,26 @@ class TestOpenVINO(TestCase):
             new_model = InferenceOptimizer.load(tmp_dir_name)
         new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+    def test_openvino_trace_output_tensors(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01))
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, dataloader)
+
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=dataloader)
+        test_openvino_model = InferenceOptimizer.trace(model, accelerator='openvino',
+                                                       input_sample=dataloader, output_tensors=False)
+        
+        for x, y in dataloader:
+            model.eval()
+            forward_model_tensor = openvino_model(x).numpy()
+            forward_model_numpy = test_openvino_model(x)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
