@@ -62,7 +62,6 @@ mr_signer        : 6f0627955......
 ## Run machine learning example
 
 ### 1. Start the Docker container
-### 1. Start the spark client as Docker container
 #### 1.1 Prepare the keys/password/data/enclave-key.pem
 Please refer to the previous section about [preparing keys and passwords](#2-prepare-spark-ssl-key).
 
