@@ -300,24 +300,21 @@ python train.py --cluster_mode k8s-client --data_dir /bigdl/nfsdata/dataset
 
 
 #### 7.1.2 K8s-Cluster
-Before running the example on `k8s-cluster` mode, you should:
-* In the __Client Container__:
+Before running the example on `k8s-cluster` mode in the __Client Container__, you should:
 
-Pack the current activate conda environment to an archive:
-```bash
-conda pack -o environment.tar.gz
-```
-
-* On the __Develop Node__:
-1. Upload the conda archive to NFS:
+1. Pack the current activate conda environment to an archive:
     ```bash
-    docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
+    conda pack -o environment.tar.gz
     ```
-2. Upload the Python script (`train.py` in our example) to NFS:
+2. Upload the conda archive to NFS:
+    ```bash
+    cp /path/to/environment.tar.gz /bigdl/nfsdata
+    ```
+3. Upload the Python script (`train.py` in our example) to NFS:
     ```bash
     cp /path/to/train.py /bigdl/nfsdata
     ```
-3. Upload the extra Python dependency files (`model.py` in our example) to NFS:
+4. Upload the extra Python dependency files (`model.py` in our example) to NFS:
     ```bash
     cp /path/to/model.py /bigdl/nfsdata
     ```
@@ -399,21 +396,22 @@ In the `spark-submit` script:
 * `deploy-mode`: set it to `client` when running programs on k8s-client mode.
 * `--conf spark.driver.host`: the localhost for the driver pod.
 * `--conf spark.pyspark.driver.python`: set the activate Python location in __Client Container__ as the driver's Python environment.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.python`: set the Python location in the conda archive as each executor's Python environment.
 
 
 #### 7.2.2 K8s Cluster
 
-* On the __Develop Node__:
+Before running the example on `k8s-cluster` mode in the __Client Container__, you should:
+
 1. Upload the conda archive to NFS:
     ```bash
-    docker cp <containerID>:/path/to/environment.tar.gz /bigdl/nfsdata
+    cp /path/to/environment.tar.gz /bigdl/nfsdata
     ```
-2. Upload the example Python file to NFS:
+2. Upload the Python script (`train.py` in our example) to NFS:
     ```bash
     cp /path/to/train.py /bigdl/nfsdata
     ```
-3. Upload the extra Python dependency files to NFS:
+3. Upload the extra Python dependency files (`model.py` in our example) to NFS:
     ```bash
     cp /path/to/model.py /bigdl/nfsdata
     ```
@@ -450,15 +448,15 @@ ${SPARK_HOME}/bin/spark-submit \
 In the `spark-submit` script:
 * `deploy-mode`: set it to `cluster` when running programs on k8s-cluster mode.
 * `--conf spark.kubernetes.authenticate.driver.serviceAccountName`: the service account for the driver pod.
-* `--conf spark.pyspark.driver.python`: set the Python location in conda archive as the driver's Python environment.
-* `--conf spark.pyspark.python`: also set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.driver.python`: set the Python location in the conda archive as the driver's Python environment.
+* `--conf spark.pyspark.python`: also set the Python location in the conda archive as each executor's Python environment.
 * `--conf spark.kubernetes.file.upload.path`: the path to store files at spark submit side in k8s-cluster mode.
 * `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName`: specify the claim name of `persistentVolumeClaim` to mount `persistentVolume` into the driver pod.
 * `--conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path`: specify the path to be mounted as `persistentVolumeClaim` into the driver pod.
 
 
 ### 7.3 Use Kubernetes Deployment
-BigDL supports users who want to execute programs directly on __Develop Node__ to run an application by creating a Kubernetes Deployment object with Conda archive.
+BigDL supports users who want to execute programs directly on __Develop Node__ to run an application by creating a Kubernetes Deployment object.
 After preparing the [Conda environment](#prepare-environment) on the __Develop Node__, follow the steps below before submitting the application.
 
 1. Download the requirement file(s) from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
@@ -472,16 +470,13 @@ After preparing the [Conda environment](#prepare-environment) on the __Develop N
     conda pack -o environment.tar.gz
     ```
 
-3. Upload the Conda archive, Python script (`train.py` in our example) and extra Python dependency files (`model.py` in our example) to NFS.
+3. Upload the conda archive, Python script (`train.py` in our example) and extra Python dependency files (`model.py` in our example) to NFS.
     ```bash
-    # Upload Conda archive
-    cp /path/to/environment.tar.gz /bigdl/nfsdata
+    cp /path/to/environment.tar.gz /path/to/nfs
 
-    # Upload example Python files
-    cp /path/to/train.py /bigdl/nfsdata
+    cp /path/to/train.py /path/to/nfs
 
-    # Upload extra Python dependencies
-    cp /path/to/model.py /bigdl/nfsdata
+    cp /path/to/model.py /path/to/nfs
     ```
 
 4. Set the cluster_mode to "spark-submit" in `init_orca_context`.
@@ -515,17 +510,18 @@ We define a Kubernetes Deployment in a YAML file. Some fields of the YAML are ex
 
 
 #### 7.3.1 K8s Client
-BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__ to run the Fashion-MNIST example for k8s-client mode.
-Note that you need to change the version of the docker image, BIGDL_VERSION and BIGDL_HOME in the YAML file accordingly.
+BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__ to directly run the Fashion-MNIST example for k8s-client mode.
+Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, BIGDL_VERSION and BIGDL_HOME.
 
-__Notes:__ 
-* Spark client needs to specify `spark.pyspark.driver.python`, this python env should be on NFS dir.
-    ```bash
-    --conf spark.pyspark.driver.python=/bigdl/nfsdata/python_env/bin/python \
-    ```
+You need to uncompress the conda archive in NFS before submitting the job:
+```bash
+cd /path/to/nfs
+mkdir environment
+tar -xzvf environment.tar.gz --directory environment
+```
 
 ```bash
-orca-tutorial-k8s-client.yaml
+# orca-tutorial-k8s-client.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -538,7 +534,7 @@ spec:
       hostNetwork: true
       containers:
       - name: spark-k8s-client
-        image: intelanalytics/bigdl-k8s:2.1.0
+        image: intelanalytics/bigdl-k8s:latest
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh","-c"]
         args: ["
@@ -546,58 +542,47 @@ spec:
                 ${SPARK_HOME}/bin/spark-submit \
                 --master ${RUNTIME_SPARK_MASTER} \
                 --deploy-mode ${SPARK_MODE} \
+                --name orca-k8s-client-tutorial \
                 --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
-                --conf spark.driver.port=${RUNTIME_DRIVER_PORT} \
-                --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
-                --name orca-pytorch-tutorial \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
-                --archives file:///bigdl/nfsdata/environment.tar.gz#python_env \
-                --conf spark.pyspark.driver.python=/bigdl/nfsdata/python_env/bin/python \
-                --conf spark.pyspark.python=python_env/bin/python \
-                --conf spark.executorEnv.PYTHONHOME=python_env \
-                --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata/ \
+                --conf spark.pyspark.driver.python=/bigdl/nfsdata/environment/bin/python \
+                --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --num-executors 2 \
-                --executor-cores 16 \
-                --executor-memory 50g \
-                --total-executor-cores 32 \
-                --driver-cores 4 \
-                --driver-memory 50g \
+                --executor-cores 4 \
+                --executor-memory 2g \
+                --total-executor-cores 8 \
+                --driver-cores 2 \
+                --driver-memory 2g \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local:///bigdl/nfsdata/train.py,local:///bigdl/nfsdata/model.py \
-                --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
+                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/kai/model.py \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
-                --conf spark.sql.catalogImplementation='in-memory' \
-                --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
-                local:///bigdl/nfsdata/train.py
+                --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+                /bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
-                --data_dir file:///bigdl/nfsdata/dataset
+                --data_dir /bigdl/nfsdata/dataset
                 "]
         securityContext:
           privileged: true
         env:
           - name: RUNTIME_K8S_SPARK_IMAGE
-            value: intelanalytics/bigdl-k8s:2.1.0
+            value: intelanalytics/bigdl-k8s:latest
           - name: RUNTIME_SPARK_MASTER
             value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
-          - name: RUNTIME_DRIVER_PORT
-            value: !!str 54321
           - name: SPARK_MODE
             value: client
-          - name: RUNTIME_K8S_SERVICE_ACCOUNT
-            value: spark
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.1.0
+          - name: SPARK_VERSION
+            value: 3.1.3
           - name: SPARK_HOME
             value: /opt/spark
-          - name: SPARK_VERSION
-            value: 3.1.2
           - name: BIGDL_VERSION
-            value: 2.1.0
+            value: 2.2.0-SNAPSHOT
+          - name: BIGDL_HOME
+            value: /opt/bigdl-2.2.0-SNAPSHOT
         resources:
           requests:
             cpu: 1
@@ -644,7 +629,7 @@ kubectl delete job orca-pytorch-job
 
 #### 7.3.2 K8s Cluster
 BigDL has provided an example [orca-tutorial-k8s-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__ to run the Fashion-MNIST example for k8s-cluster mode.
-Note that you need to change the version of the docker image, BIGDL_VERSION and BIGDL_HOME in the YAML file accordingly.
+Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, BIGDL_VERSION and BIGDL_HOME.
 
 ```bash
 orca-tutorial-k8s-cluster.yaml

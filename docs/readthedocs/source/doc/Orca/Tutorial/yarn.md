@@ -282,7 +282,7 @@ bigdl-submit \
 In the `bigdl-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.python`: set the Python location in the conda archive as each executor's Python environment.
 
 
 #### 5.2.2 Yarn Cluster
@@ -304,8 +304,8 @@ bigdl-submit \
 ```
 In the `bigdl-submit` script:
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in the conda archive as the Python environment of the Application Master.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in the conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
 
 
 ### 5.3 Use `spark-submit`
@@ -374,7 +374,7 @@ ${SPARK_HOME}/bin/spark-submit \
 In the `spark-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.python`: set the Python location in the conda archive as each executor's Python environment.
 
 #### 5.3.2 Yarn Cluster
 Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
@@ -397,5 +397,5 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 In the `spark-submit` script:
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in the conda archive as the Python environment of the Application Master.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in the conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
