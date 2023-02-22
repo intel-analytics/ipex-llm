@@ -35,8 +35,7 @@ fi
 
 #check glic ENV MALLOC_ARENA_MAX for distributed application
 if [[ -z "$MALLOC_ARENA_MAX" ]]; then
-    echo "No MALLOC_ARENA_MAX specified, set to 1."
-    export MALLOC_ARENA_MAX=1
+    echo "No MALLOC_ARENA_MAX specified, set to 4."
 fi
 
 function delete_file {
