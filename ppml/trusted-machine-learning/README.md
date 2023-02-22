@@ -6,7 +6,7 @@ This image contains Gramine and some popular Machine Learning frameworks includi
 ### 1. Build Docker Images
 #### 1.1 Build Machine Learning Base Image
 
-The Machine learning base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
+The machine learning base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
 Before building your own base image, please modify the paths in `ppml/trusted-machine-learning/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -32,7 +32,7 @@ Then, use the `enclave-key.pem` and the machine learning base image to build you
 ./build-custom-image.sh
 ```
 
-The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
+The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to register your MREnclave in the following.
 
 ````bash
 ......
@@ -59,7 +59,7 @@ mr_signer        : 6f0627955......
   sudo bash BigDL/ppml/scripts/generate-password.sh          <used_password_when_generate_keys>
 ```
 
-## Run Machine Learning example
+## Run machine learning example
 
 ### 1. Start the Docker container
 ### 1. Start the spark client as Docker container
@@ -144,7 +144,7 @@ Execute `init.sh` to check the SGX and make some necessary settings.
 bash init.sh
 ```
 
-The trusted-machine-learning image porvides some classic examples of machine learning, including but not limited to random forest and linear regression. You can check the scripts in `/ppml/scripts` and execute one of them like this:
+The trusted machine learning image porvides some classic examples of machine learning, including but not limited to random forest and linear regression. You can check the scripts in `/ppml/scripts` and execute one of them like this:
 ```bash 
 cd scripts
 bash start-random-forest-classifier-on-local-sgx.sh
