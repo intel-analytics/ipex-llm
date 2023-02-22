@@ -188,7 +188,8 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
         # so add sampler for val_dataloder if there is a DistEvalHook.
         for hook in self._hooks:
             if isinstance(hook, DistEvalHook):
-                hook.dataloader = self.with_sampler(hook.dataloader)
+                # don't shuffle the val data
+                hook.dataloader = self.with_sampler(hook.dataloader, shuffle=False)
 
         return self.run(data_loaders, workflow, max_epochs, **kwargs)
 
