@@ -171,8 +171,8 @@ if [ ${uName: 0: 5} = "Linux" ]; then
 elif [ ${uName: 0: 6} = "Darwin" ]; then
     OS="macos"
 else
-    echo "Unsupported OS: ${uName}"
-    return 1
+    echo "Warning: Unsupported OS: ${uName}, bigdl-nano-init will do nothing"
+    return 0
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD

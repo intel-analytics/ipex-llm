@@ -251,14 +251,36 @@ To build a secure PPML image which can be used in production environment, BigDL 
     
 
 #### Step 2. Encrypt and Upload Data
-Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
+Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server.
 
 1. Generate the input data `people.csv` for SimpleQuery application
-you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`. The save path should be reachable by `people.csv`, like a shared docker-mount-path.
 
 2. Encrypt `people.csv`
     ```
-    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
+    docker exec -i bigdl-ppml-client-k8s bash
+
+    bash bigdl-ppml-submit.sh \
+         --master local[2] \
+         --sgx-enabled false \
+         --driver-memory 32g \
+         --driver-cores 4 \
+         --executor-memory 32g \
+         --executor-cores 4 \
+         --num-executors 2 \
+         --conf spark.cores.max=8 \
+         --conf spark.network.timeout=10000000 \
+         --conf spark.executor.heartbeatInterval=10000000 \
+         --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+         --conf spark.bigdl.primaryKey.dataSource1PK.plainText=<a/base64/string/as/primary/key> \
+         --verbose \
+         --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+         --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+         local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+         --inputDataSourcePath file://</save/path/of/people.csv> \
+         --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
+         --cryptoMode aes/cbc/pkcs5padding \
+         --dataSourceType csv
     ```
 #### Step 3. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.

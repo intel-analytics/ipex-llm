@@ -929,8 +929,8 @@ class TestTSDataset(TestCase):
 
         # target_col\extra_feature_col dtype is object(numeric).
         df = get_ts_df()
-        df.value = df.value.astype(np.object)
-        df['extra feature'] = df['extra feature'].astype(np.object)
+        df.value = df.value.astype(object)
+        df['extra feature'] = df['extra feature'].astype(object)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"], id_col="id")
         before_sampling = tsdata.df.columns
@@ -969,8 +969,8 @@ class TestTSDataset(TestCase):
 
         # target_col/extra_feature_col dtype is object(numeric).
         df = get_multi_id_ts_df()
-        df.value = df.value.astype(np.object)
-        df['extra feature'] = df['extra feature'].astype(np.object)
+        df.value = df.value.astype(object)
+        df['extra feature'] = df['extra feature'].astype(object)
         tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
                                        extra_feature_col=["extra feature"],
                                        id_col="id", repair=False)
