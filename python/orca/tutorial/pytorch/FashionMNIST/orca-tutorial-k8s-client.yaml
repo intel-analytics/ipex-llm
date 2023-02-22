@@ -31,9 +31,9 @@ spec:
                 --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
                 --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
-                --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
