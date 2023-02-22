@@ -50,7 +50,7 @@ python -m pytest -v test/bigdl/orca/learn/ray \
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
-   exit $exit_status_2
+    exit $exit_status_2
 fi
 
 echo "Running orca learn tf2 ray backend tests"
@@ -58,7 +58,7 @@ python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.p
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
-   exit $exit_status_3
+    exit $exit_status_3
 fi
 
 echo "Running orca data ray related tests"
@@ -80,3 +80,11 @@ if [ $python_version == 3.7.10 ];then
     fi
 fi
 ray stop -f
+
+echo "Running orca learn spark backend tests"
+python -m pytest -v test/bigdl/orca/learn/spark/
+exit_status_5=$?
+if [ $exit_status_5 -ne 0 ];
+then
+    exit $exit_status_5
+fi
