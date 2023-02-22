@@ -94,7 +94,7 @@ A conda environment is created for you automatically. `bigdl-chronos` and the ne
 
        1. Make sure network is available and run install command following `Install using Conda <https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/install.html#install-using-conda>`_ , such as ``pip install --pre --upgrade bigdl-chronos[pytorch]``.
 
-       2. Make sure network is available and bash ``/opt/install-python-env.sh`` with build args. The values are introduced in `Build an image <## Build an image>`_.
+       2. Make sure network is available and bash ``/opt/install-python-env.sh`` with build args. The values are introduced in `Build an image <## Build an image (Optional)>`_.
 
        .. code-block:: python
 
