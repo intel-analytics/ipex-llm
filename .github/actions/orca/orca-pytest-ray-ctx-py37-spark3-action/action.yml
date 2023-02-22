@@ -30,6 +30,7 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         pip install -r python/requirements/orca/requirements_ray.txt
+        pip install ray==1.11.0
 
         # This machine does not support GONDOLIN pip mirror
         pip install tensorflow==2.8.0
