@@ -25,9 +25,8 @@ spec:
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
-                --archives file:///bigdl/nfsdata/environment.tar.gz#environment \
                 --conf spark.pyspark.driver.python=/bigdl/nfsdata/environment/bin/python \
-                --conf spark.pyspark.python=environment/bin/python \
+                --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --num-executors 2 \
                 --executor-cores 4 \
                 --executor-memory 2g \
