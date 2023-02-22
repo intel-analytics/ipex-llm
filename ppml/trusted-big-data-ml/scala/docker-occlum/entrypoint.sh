@@ -18,6 +18,12 @@ if [ -z "$uidentry" ] ; then
     fi
 fi
 
+#check glic ENV MALLOC_ARENA_MAX for k8s
+if [[ -z "$MALLOC_ARENA_MAX" ]]; then
+    echo "No MALLOC_ARENA_MAX specified, set to 1."
+    export MALLOC_ARENA_MAX=1
+fi
+
 # check occlum log level for k8s
 export ENABLE_SGX_DEBUG=false
 export OCCLUM_LOG_LEVEL=off
