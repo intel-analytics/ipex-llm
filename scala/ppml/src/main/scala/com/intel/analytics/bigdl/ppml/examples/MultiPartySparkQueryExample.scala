@@ -23,20 +23,10 @@ import org.apache.spark.sql.SparkSession
 
 object MultiPartySparkQueryExample extends Supportive {
   def main(args: Array[String]): Unit = {
-
-    val ppmlArgs = Map(
-      "spark.bigdl.primaryKey.AmyPK.plainText" -> args(0),
-      "spark.bigdl.primaryKey.BobPK.kms.type" -> "EHSMKeyManagementService",
-      // path of ehsm encrypted_primary_key file
-      "spark.bigdl.primaryKey.BobPK.material" -> args(1),
-      "spark.bigdl.primaryKey.BobPK.kms.ip" -> args(2),
-      "spark.bigdl.primaryKey.BobPK.kms.port" -> args(3),
-      "spark.bigdl.primaryKey.BobPK.kms.appId" -> args(4),
-      "spark.bigdl.primaryKey.BobPK.kms.apiKey" -> args(5)
-    )
+    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val (amyEncryptedDataFileInputPath,
-         bobEncryptedDataFileInputPath) = (args(6), args(7))
-    val sc = PPMLContext.initPPMLContext("MultiPartySparkQueryExample", ppmlArgs)
+         bobEncryptedDataFileInputPath) = (args(0), args(1))
+    val sc = PPMLContext.initPPMLContext(sparkSession)
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
