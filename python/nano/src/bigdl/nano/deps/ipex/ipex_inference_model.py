@@ -214,7 +214,8 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 state_dict = torch.load(checkpoint_path, map_location='cpu')
                 if status['compression'] == "bf16":
                     state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")
-                model = copy.deepcopy(model)
+                if inplace is False:
+                    model = copy.deepcopy(model)
                 model.load_state_dict(state_dict)
                 from_load = False
             else:
