@@ -45,7 +45,8 @@ python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
       --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py \
       --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py \
-      --ignore=test/bigdl/orca/learn/ray/tf/
+      --ignore=test/bigdl/orca/learn/ray/tf/ \
+      --ignore=test/bigdl/orca/learn/ray/mxnet/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
@@ -68,6 +69,16 @@ then
     exit $exit_status_4
 fi
 
+# TODO: support mxnet test under python 3.8
+python_version=$(python --version | awk '{print$2}')
+if [ $python_version == 3.7.10 ];then
+    echo "Running orca mxnet tests"
+    python -m pytest -v test/bigdl/orca/learn/ray/mxnet/
+    exit_status_5=$?
+    if [ $exit_status_5 -ne 0 ];then
+        exit $exit_status_5
+    fi
+fi
 ray stop -f
 
 echo "Running orca learn spark backend tests"
