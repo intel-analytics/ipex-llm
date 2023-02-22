@@ -1964,11 +1964,11 @@ class BasePytorchForecaster(Forecaster):
                                               onnxruntime_session_options=sess_options,
                                               thread_num=thread_num)
         if accelerator == 'onnxruntime':
-            q_model.output_tensors=False
+            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.accelerate_method = "onnxruntime_int8"
         if accelerator == 'openvino':
-            q_model.output_tensors=False
+            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.accelerate_method = "openvino_int8"
         if accelerator is None:
