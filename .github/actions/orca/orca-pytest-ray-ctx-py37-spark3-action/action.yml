@@ -38,6 +38,7 @@ runs:
         pip install torchmetrics==0.10.0
         pip install tqdm
         pip install pyarrow
+        pip install pandas
 
         chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
         python/orca/dev/test/run-pytests-ray-ctx.sh
