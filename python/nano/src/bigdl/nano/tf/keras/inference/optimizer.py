@@ -44,6 +44,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.tf import tensor_spec_to_shape
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -624,20 +625,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set or \
-                    not hasattr(model, 'output_shape'):
-                invalidInputError(input_spec is not None,
-                                  "`input_spec` cannot be None when passing unbuilt model.")
-                # model cannot be saved either because the input shape is not available
-                # or because the forward pass of the model is not defined
-                if isinstance(input_spec, (tuple, list)):
-                    input_shape = (i.shape for i in input_spec)
-                else:
-                    input_shape = input_spec.shape
+            if hasattr(model, "input_shape"):
+                # Sequential and functional API model has
+                # `input_shape` and `output_shape` attributes
+                _output_shape = model.output_shape
+            elif input_spec is not None:
+                input_shape = tensor_spec_to_shape(input_spec)
                 _output_shape = model.compute_output_shape(input_shape)
             else:
-                _output_shape = model.output_shape
+                invalidInputError(False,
+                                  "Subclassed model must specify `input_spec` parameter.")
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
