@@ -439,8 +439,8 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,file:///bigdl/nfsdata/train.py,file:///bigdl/nfsdata/model.py \
-    --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-    --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -548,23 +548,23 @@ spec:
                 --name orca-k8s-client-tutorial \
                 --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
-                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
-                --conf spark.pyspark.driver.python=/bigdl/nfsdata/environment/bin/python \
-                --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --num-executors 2 \
                 --executor-cores 4 \
                 --executor-memory 2g \
                 --total-executor-cores 8 \
                 --driver-cores 2 \
                 --driver-memory 2g \
+                --conf spark.pyspark.driver.python=/bigdl/nfsdata/environment/bin/python \
+                --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
                 --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
+                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
                 /bigdl/nfsdata/train.py
                 --cluster_mode spark-submit
                 --data_dir /bigdl/nfsdata/dataset
