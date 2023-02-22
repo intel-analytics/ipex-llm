@@ -34,7 +34,7 @@ spec:
                 --driver-cores 2 \
                 --driver-memory 2g \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/kai/model.py \
+                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
