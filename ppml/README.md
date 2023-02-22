@@ -532,8 +532,9 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
   4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
 
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
-      </details>
-    <br />
+    
+  </details>
+  <br />
 
 
 #### Step 6. Monitor Job by History Server
