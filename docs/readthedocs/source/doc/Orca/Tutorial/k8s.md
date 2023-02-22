@@ -137,10 +137,13 @@ Please pull the BigDL [`bigdl-k8s`](https://hub.docker.com/r/intelanalytics/bigd
 # For the latest nightly build version
 sudo docker pull intelanalytics/bigdl-k8s:latest
 
-# For the release version, e.g. 2.1.0
-sudo docker pull intelanalytics/bigdl-k8s:2.1.0
+# For the release version, e.g. 2.2.0
+sudo docker pull intelanalytics/bigdl-k8s:2.2.0
 ```
 
+In the docker container:
+- Spark is located at `/opt/spark`. Spark version is 3.1.3.
+- BigDL is located at `/opt/bigdl-VERSION`. For the latest nightly build image, BigDL version would be `xxx-SNAPSHOT` (e.g. 2.3.0-SNAPSHOT).
 
 ---
 ## 3. Create BigDL K8s Container
@@ -511,7 +514,7 @@ We define a Kubernetes Deployment in a YAML file. Some fields of the YAML are ex
 
 #### 7.3.1 K8s Client
 BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__ to directly run the Fashion-MNIST example for k8s-client mode.
-Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, BIGDL_VERSION and BIGDL_HOME.
+Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
 
 You need to uncompress the conda archive in NFS before submitting the job:
 ```bash
@@ -629,7 +632,7 @@ kubectl delete job orca-pytorch-job
 
 #### 7.3.2 K8s Cluster
 BigDL has provided an example [orca-tutorial-k8s-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__ to run the Fashion-MNIST example for k8s-cluster mode.
-Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, BIGDL_VERSION and BIGDL_HOME.
+Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
 
 ```bash
 orca-tutorial-k8s-cluster.yaml
