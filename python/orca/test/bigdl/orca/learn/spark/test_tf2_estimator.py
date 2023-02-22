@@ -65,7 +65,7 @@ class TestTF2Estimator(TestCase):
 
         spark = OrcaContext.get_spark_session()
         from pyspark.ml.linalg import DenseVector
-        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                            int(np.random.randint(0, 2, size=())))) \
             .toDF(["feature", "label"])
 
@@ -161,7 +161,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -205,7 +205,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -254,7 +254,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -328,7 +328,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
         config = {"lr": 0.2}
 
@@ -396,7 +396,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
         config = {"lr": 0.2}
 
@@ -453,7 +453,7 @@ class TestTF2Estimator(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {"lr": 0.2}
