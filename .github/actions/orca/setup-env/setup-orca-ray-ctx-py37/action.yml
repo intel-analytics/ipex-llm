@@ -28,7 +28,7 @@ runs:
         
         wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-orca-python.txt -O ${{ github.workspace }}/requirements-orca-python.txt
         pip uninstall -r ${{ github.workspace }}/requirements-orca-python.txt -y
-        pip install -i ${PIP_MIRROR} --trusted-host ${TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python.txt 
+        pip install -r ${{ github.workspace }}/requirements-orca-python.txt 
         
       env:
         BIGDL_ROOT: ${{ github.workspace }}
