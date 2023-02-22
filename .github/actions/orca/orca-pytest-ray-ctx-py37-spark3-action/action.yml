@@ -31,11 +31,13 @@ runs:
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
         pip install -r python/requirements/orca/requirements_ray.txt
 
+        # This machine does not support GONDOLIN pip mirror
         pip install tensorflow==2.8.0
         pip install torch==1.7.1
         pip install torchvision==0.8.2
         pip install torchmetrics==0.10.0
         pip install tqdm
+        pip install pyarrow
 
         chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
         python/orca/dev/test/run-pytests-ray-ctx.sh
