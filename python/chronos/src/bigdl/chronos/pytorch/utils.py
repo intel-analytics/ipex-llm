@@ -70,14 +70,17 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None, output_tensor
 
     :return: numpy ndarray
     '''
-    if output_tensor:
-        if isinstance(input_data, list):
-            input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-        elif isinstance(input_data, DataLoader):
-            input_sample_list = [torch.cat(tuple(batch[0] for batch in input_data), dim=0)]
-        else:
-            input_sample_list = [torch.from_numpy(input_data)]
-        yhat = _tensor_inference(model, input_sample_list, batch_size=batch_size)
+    if hasattr(model, "output_tensors") and not model.output_tensors:
+        # Reduce time of type transformation between tensor and numpy
+        with torch.inference_mode():
+            if isinstance(input_data, DataLoader):
+                input_sample = tuple(batch[0].numpy() for batch in input_data)
+                input_sample_list = [np.concatenate(input_sample, axis=0)]
+            elif isinstance(input_data, np.ndarray):
+                input_sample_list = [input_data]
+            else:
+                input_sample_list = input_data
+            yhat = _numpy_inference(model, input_sample_list, batch_size=batch_size)
     else:
         # Reduce time of type transforms between tensor and numpy
         if isinstance(input_data, DataLoader):
