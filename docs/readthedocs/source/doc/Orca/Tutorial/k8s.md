@@ -509,9 +509,6 @@ We define a Kubernetes Deployment in a YAML file. Some fields of the YAML are ex
     * `env`: a list of environment variables to set in the container, which will be used when submitting the application. Note that you need to change the environment variables including `BIGDL_VERSION` and `BIGDL_HOME` accordingly.
         * `name`: the name of the environment variable.
         * `value`: the value of the environment variable.
-    * `resources`: the resources to be allocated in the cluster for each pod.
-        * `requests`: the minimum amount of computation resources required.
-        * `limits`: the maximum amount of computation resources allowed.
     * `volumeMounts`: the paths to mount Volumes into containers.
         * `name`: the name of a Volume.
         * `mountPath`: the path in the container to mount the Volume to.
@@ -593,11 +590,6 @@ spec:
             value: 2.2.0-SNAPSHOT
           - name: BIGDL_HOME
             value: /opt/bigdl-2.2.0-SNAPSHOT
-        resources:
-          requests:
-            cpu: 1
-          limits:
-            cpu: 4
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata
@@ -709,11 +701,6 @@ spec:
             value: 2.2.0-SNAPSHOT
           - name: BIGDL_HOME
             value: /opt/bigdl-2.2.0-SNAPSHOT
-        resources:
-          requests:
-            cpu: 1
-          limits:
-            cpu: 4
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata

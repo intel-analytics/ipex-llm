@@ -64,11 +64,6 @@ spec:
             value: 2.2.0-SNAPSHOT
           - name: BIGDL_HOME
             value: /opt/bigdl-2.2.0-SNAPSHOT
-        resources:
-          requests:
-            cpu: 1
-          limits:
-            cpu: 4
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata
