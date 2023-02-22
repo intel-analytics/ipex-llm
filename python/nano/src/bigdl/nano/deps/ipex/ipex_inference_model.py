@@ -153,7 +153,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                                          strict=jit_strict)
                         except Exception:
                             self.model = torch.jit.script(self.model)
-                    # self.model = torch.jit.freeze(self.model)
+                    self.model = torch.jit.freeze(self.model)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="fp32",
