@@ -22,7 +22,6 @@ from abc import ABCMeta, abstractmethod
 
 import torch
 
-from bigdl.orca.data.file import get_remote_file_to_local
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
@@ -59,6 +58,7 @@ class ModelIO(metaclass=ABCMeta):
         return self.load_state_dict(state_dict)
 
     def load_checkpoint(self, filepath):
+        from bigdl.orca.data.file import get_remote_file_to_local
         file_name = os.path.basename(filepath)
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file_name)
