@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-from typing import Sequence, Union
-
-import tensorflow as tf
+import pytest
 
 
-def tensor_spec_to_shape(tensor_specs: Union[tf.TensorSpec, Sequence[tf.TensorSpec]]):
-    """Convert TensorSpec(s) to shape(s)."""
-    if isinstance(tensor_specs, Sequence):
-        return tuple(spec.shape for spec in tensor_specs)
-    else:
-        return tensor_specs.shape
+@pytest.fixture(autouse=True, scope='package')
+def orca_context_fixture():
+    from bigdl.orca import init_orca_context
+    sc = init_orca_context(cores=4, spark_log_level="INFO")
+    yield sc
+    sc.stop()

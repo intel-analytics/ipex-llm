@@ -53,7 +53,13 @@ class ImageFolder(torchvision.datasets.ImageFolder):
             target and transforms it.
         """
         super(ImageFolder, self).__init__(root, transform, target_transform)
-        self.jpeg: Optional[TurboJPEG] = None
+        try:
+            # it will fail if `libturbojpeg.so.0.2.0` doesn't exist
+            # or load it on windows
+            self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
+        except Exception as _e:
+            warning(f"failed to load {local_libturbo_path}")
+            self.jpeg = None
 
     def _read_image_to_bytes(self, path: str):
         fd = open(path, 'rb')
@@ -62,8 +68,6 @@ class ImageFolder(torchvision.datasets.ImageFolder):
         return img_str
 
     def _decode_img_libjpeg_turbo(self, img_str: str):
-        if self.jpeg is None:
-            self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
         bgr_array = self.jpeg.decode(img_str)
         return bgr_array
 
@@ -71,7 +75,7 @@ class ImageFolder(torchvision.datasets.ImageFolder):
         path = self.imgs[idx][0]
         label = self.imgs[idx][1]
 
-        if path.endswith(".jpg") or path.endswith(".jpeg"):
+        if self.jpeg is not None and (path.endswith(".jpg") or path.endswith(".jpeg")):
             img_str = self._read_image_to_bytes(path)
             img = self._decode_img_libjpeg_turbo(img_str)
         else:
@@ -118,7 +122,13 @@ class SegmentationImageFolder:
         self.imgs = list(sorted(os.listdir(self.image_folder)))
         self.masks = list(sorted(os.listdir(self.mask_folder)))
         self.transforms = transforms
-        self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
+        try:
+            # The following code will fail if `libturbojpeg.so.0.2.0`
+            # doesn't exist or load it on windows
+            self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
+        except Exception as _e:
+            warning(f"failed to load {local_libturbo_path}")
+            self.jpeg = None
 
     def __getitem__(self, idx: int):
         img_path = os.path.join(self.image_folder, self.imgs[idx])
@@ -128,7 +138,7 @@ class SegmentationImageFolder:
         # note that we haven't converted the mask to RGB,
         # because each color corresponds to a different instance
         # with 0 being background
-        if img_path.endswith(".jpg") or img_path.endswith(".jpeg"):
+        if self.jpeg is not None and (img_path.endswith(".jpg") or img_path.endswith(".jpeg")):
             fd = open(img_path, 'rb')
             img = self.jpeg.decode(fd.read())
             fd.close()
@@ -136,7 +146,7 @@ class SegmentationImageFolder:
             img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        if mask_path.endswith(".jpg") or mask_path.endswith(".jpeg"):
+        if self.jpeg is not None and (mask_path.endswith(".jpg") or mask_path.endswith(".jpeg")):
             fd = open(mask_path, 'rb')
             mask = self.jpeg.decode(fd.read(), pixel_format=TJPF_GRAY)
             fd.close()

@@ -1,8 +1,10 @@
 name: Nightly Build
 
 on:
-  #pull_request:
-    #branchs: [ main ]
+  # pull_request:
+  #   branchs: [ main ]
+  #   paths:
+  #     - '.github/workflows/nightly_build.yml'
   schedule:
     - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
@@ -235,7 +237,7 @@ jobs:
         docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
     - name: docker deploy bigdl-chronos
       run: |
-        cd docker/chronos-nightly
+        mv docker/chronos-nightly/Dockerfile ./Dockerfile
         export IMAGE=intelanalytics/bigdl-chronos
         export TAG=latest
         echo "########################################"
@@ -254,6 +256,7 @@ jobs:
         docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+        mv ./Dockerfile docker/chronos-nightly/Dockerfile
 
     - name: Create Job Badge
       if: ${{ always() }}

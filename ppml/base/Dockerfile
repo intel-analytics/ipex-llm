@@ -17,7 +17,7 @@ ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
-ENV MALLOC_ARENA_MAX                    1
+ENV MALLOC_ARENA_MAX                    4
 
 RUN mkdir -p /ppml/
 

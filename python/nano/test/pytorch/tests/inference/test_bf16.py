@@ -169,6 +169,11 @@ class Pytorch1_12:
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
         assert bf16_model.channels == 3
         bf16_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'ResNet' object has no attribute 'strange_call'"
+        ):
+            bf16_model.strange_call()
 
         # test bf16 + channels_last
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
@@ -187,6 +192,11 @@ class Pytorch1_12:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'ResNet' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
     def test_bf16_channels_last_various_input_sample(self):
 
