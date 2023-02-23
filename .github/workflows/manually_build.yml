@@ -770,6 +770,7 @@ jobs:
         export base_image=intelanalytics/bigdl-ppml-gramine-base
         export bigdata_base_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
         sudo docker build \
+          --no-cache=true \
           --build-arg http_proxy=${HTTP_PROXY} \
           --build-arg https_proxy=${HTTPS_PROXY} \
           --build-arg HTTP_PROXY_HOST=${HTTP_PROXY_HOST_2} \
@@ -791,6 +792,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
@@ -804,6 +806,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=32G \
@@ -821,6 +824,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=64G \
@@ -834,6 +838,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
@@ -847,6 +852,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=32G \
@@ -860,6 +866,7 @@ jobs:
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all
         sudo docker build \
+          --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=64G \
