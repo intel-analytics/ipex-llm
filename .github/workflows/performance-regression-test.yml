@@ -40,8 +40,8 @@ jobs:
           pip install twine
           pip install psycopg2-binary
           pip install requests
-          # fix bug
-          pip uninstall -y pyOpenSSL
+          pip install pyOpenSSL
+          pip install flatbuffers==1.12
 
       - name: Run benchmark
         run: |
