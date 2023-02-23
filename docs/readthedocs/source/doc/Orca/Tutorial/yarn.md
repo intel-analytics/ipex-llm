@@ -251,7 +251,7 @@ Pack the current activate conda environment to an archive on the __Client Node__
 conda pack -o environment.tar.gz
 ```
 
-Some runtime configurations for Spark are as follows:
+Some runtime configurations for `bigdl-submit` are as follows:
 
 * `--master`: the spark master, set it to "yarn".
 * `--num_executors`: the number of executors.
@@ -282,7 +282,7 @@ bigdl-submit \
 In the `bigdl-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.python`: set the Python location in the conda archive as each executor's Python environment.
 
 
 #### 5.2.2 Yarn Cluster
@@ -304,42 +304,42 @@ bigdl-submit \
 ```
 In the `bigdl-submit` script:
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in the conda archive as the Python environment of the Application Master.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in the conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
 
 
 ### 5.3 Use `spark-submit`
 If you prefer to use `spark-submit` instead of `bigdl-submit`, please follow the steps below to prepare the environment on the __Client Node__. 
 
-1. Set the cluster_mode to "spark-submit" in `init_orca_context`.
-    ```python
-    sc = init_orca_context(cluster_mode="spark-submit")
-    ```
-
-2. Download the requirement file(s) from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
+1. Download the requirement file(s) from [here](https://github.com/intel-analytics/BigDL/tree/main/python/requirements/orca) and install the required Python libraries of BigDL Orca according to your needs.
     ```bash
     pip install -r /path/to/requirements.txt
     ```
     Note that you are recommended **NOT** to install BigDL Orca with pip install command in the conda environment if you use spark-submit to avoid possible conflicts.
 
-3. Pack the current activate conda environment to an archive before submitting the example:
+2. Pack the current activate conda environment to an archive:
     ```bash
     conda pack -o environment.tar.gz
     ```
 
-4. Download the BigDL assembly package from [here](../Overview/install.html#download-bigdl-orca) and unzip it. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
+3. Download the BigDL assembly package from [here](../Overview/install.html#download-bigdl-orca) and unzip it. Then setup the environment variables `${BIGDL_HOME}` and `${BIGDL_VERSION}`.
     ```bash
     export BIGDL_VERSION="downloaded BigDL version"
     export BIGDL_HOME=/path/to/unzipped_BigDL  # the folder path where you extract the BigDL package
     ```
 
-5. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for [Spark 2.4](https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz) and [Spark 3.1](https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz). Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
+4. Download and extract [Spark](https://archive.apache.org/dist/spark/). BigDL is currently released for [Spark 2.4](https://archive.apache.org/dist/spark/spark-2.4.6/spark-2.4.6-bin-hadoop2.7.tgz) and [Spark 3.1](https://archive.apache.org/dist/spark/spark-3.1.3/spark-3.1.3-bin-hadoop2.7.tgz). Make sure the version of your downloaded Spark matches the one that your downloaded BigDL is released with. Then setup the environment variables `${SPARK_HOME}` and `${SPARK_VERSION}`.
     ```bash
     export SPARK_VERSION="downloaded Spark version"
     export SPARK_HOME=/path/to/uncompressed_spark  # the folder path where you extract the Spark package
     ```
 
-Some runtime configurations for Spark are as follows:
+5. Set the cluster_mode to "spark-submit" in `init_orca_context`:
+    ```python
+    sc = init_orca_context(cluster_mode="spark-submit")
+    ```
+
+Some runtime configurations for `spark-submit` are as follows:
 
 * `--master`: the spark master, set it to "yarn".
 * `--num_executors`: the number of executors.
@@ -374,7 +374,7 @@ ${SPARK_HOME}/bin/spark-submit \
 In the `spark-submit` script:
 * `--deploy-mode`: set it to `client` when running programs on yarn-client mode.
 * `--conf spark.pyspark.driver.python`: set the activate Python location on __Client Node__ as the driver's Python environment.
-* `--conf spark.pyspark.python`: set the Python location in conda archive as each executor's Python environment.
+* `--conf spark.pyspark.python`: set the Python location in the conda archive as each executor's Python environment.
 
 #### 5.3.2 Yarn Cluster
 Submit and run the program for `yarn-cluster` mode following the `spark-submit` script below:
@@ -397,5 +397,5 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 In the `spark-submit` script:
 * `--deploy-mode`: set it to `cluster` when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in conda archive as the Python environment of the Application Master.
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python location in the conda archive as the Python environment of the Application Master.
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: also set the Python location in the conda archive as each executor's Python environment. The Application Master and the executors will all use the archive for the Python environment.
