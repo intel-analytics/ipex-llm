@@ -480,7 +480,7 @@ jobs:
 
   Orca-Pytest-Ray-Ctx-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Gondolin-Ctx-Test]
+    runs-on: [self-hosted, Gondolin-Ctx]
 
     steps:
     - uses: actions/checkout@v3
