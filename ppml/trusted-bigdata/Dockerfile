@@ -215,7 +215,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod -R 777 ${FLINK_HOME} && \
     chown -R flink:flink ${FLINK_HOME} && \
 # Python packages
-    pip3 install numpy
+    pip3 install numpy pandas
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 
