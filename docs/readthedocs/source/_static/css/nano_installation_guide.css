@@ -7,34 +7,32 @@
 
 #table-1 {
     border-bottom-width: 0px;
-    margin:auto;
+    margin: auto;
+    font-size: var(--pst-font-size-base);
+    font-family: Verdana;
+    color: var(--pst-color-text-base);
 }
 
 #table-1 tr, td{
+    padding: 0.5rem;
     background-color: var(--pst-color-on-surface);
-    height: 30px;
-    border-width: 2px;
-    border-style: solid;
-    border-color: white ;
-    padding: 5px;
+}
+
+#table-1 td{
+    border: 0.25rem solid var(--pst-color-background);
+    width: 150px;
 }
 
 #table-1 tr td:first-child{
     font-weight: 600;
-}
-
-#table-1 td{
-    font-size: 16px;
-    font-family: Verdana;
-    color: var(--pst-color-text-base);
-    text-align: center;
-    /* height: 56px;
-    line-height: 56px; */
-    width: 160px;
+    background-color: var(--pst-color-background);
+    border-left: 0.2rem solid var(--pst-color-on-surface);
+    text-align: left;
+    width: 170px;
+    font-size: 13.5px;
 }
 
 #table-1 button {
-    font-size: 16px;
     border-color: transparent;
     width: 100%;
     height: 100%;
@@ -43,10 +41,6 @@
 }
 
 #table-1 #cmd {
-    height: 2em;
     text-align: left;
-}
-
-#table-1 .taller_tr {
-    height: 71px;
+    padding: 0.5rem 0.25rem
 }

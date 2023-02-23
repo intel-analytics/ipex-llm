@@ -39,7 +39,7 @@ import logging
 
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
-    os.path.realpath(os.path.dirname(__file__)), "../../../resources")
+    os.path.realpath(os.path.dirname(__file__)), "../../resources")
 
 
 class LinearDataset(torch.utils.data.Dataset):
@@ -236,7 +236,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -283,7 +283,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([

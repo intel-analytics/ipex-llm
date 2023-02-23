@@ -259,7 +259,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -270,7 +270,7 @@ class TestPyTorchEstimator(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
 
         val_rdd = sc.range(0, 40)
-        val_data = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        val_data = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                           [float(np.random.randint(0, 2, size=()))])
                                )
         val_df = spark.createDataFrame(data=val_data, schema=schema)
@@ -306,7 +306,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -328,7 +328,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -576,7 +576,7 @@ class TestPyTorchEstimator(TestCase):
 
     #     sc = init_nncontext()
     #     rdd = sc.range(0, 100)
-    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
     #                             [int(np.random.randint(0, 2, size=()))])
     #                  ).toDF(["feature", "label"])
 
@@ -601,7 +601,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -651,7 +651,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -702,7 +702,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
