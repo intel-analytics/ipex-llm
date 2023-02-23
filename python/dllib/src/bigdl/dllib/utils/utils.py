@@ -237,6 +237,11 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                     result.append(np.array(row[name]).astype(np.float64))
                 else:
                     result.append(np.array(row[name]))
+            elif isinstance(feature_type, df_types.MapType):
+                keys = row[name].keys()
+                if isinstance(feature_type.valueType, df_types.ArrayType):
+                    if isinstance(feature_type.valueType.elementType, df_types.FloatType):
+                        result.append({k: np.array(row[name][k]).astype(np.float32) for k in keys})
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:

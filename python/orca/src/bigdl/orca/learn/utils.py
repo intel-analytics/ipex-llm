@@ -224,6 +224,9 @@ def _stack_arrs(arrs):
 
 
 def _merge_rows(results):
+    if isinstance(results, dict):
+        return results
+
     try:
         result_arrs = [_stack_arrs(l) for l in results]
     except ValueError:
@@ -288,23 +291,36 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             # pre allocate numpy array when shard_size is provided
             if isinstance(first_row, np.ndarray):
                 return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
+            if isinstance(first_row, dict):
+                res = dict()
+                for k, _ in first_row.items():
+                    res[k] = np.empty((shard_size,) + first_row[k].shape, first_row[k].dtype)
+                return res
             else:
                 return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
         else:
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list):
+        if not isinstance(data, list) and not isinstance(data, dict):
             arrays = [data]
         else:
             arrays = data
-
-        for i, arr in enumerate(arrays):
-            if shard_size:
-                current = current % shard_size
-                results[i][current] = arr
-            else:
-                results[i].append(arr)
+        
+        if isinstance(data, dict):
+            current = current % shard_size
+            for k in data.keys():
+                if shard_size:
+                    results[k][current] = arrays[k]
+                else:
+                    results[k].append(arrays[k])
+        else:
+            for i, arr in enumerate(arrays):
+                if shard_size:
+                    current = current % shard_size
+                    results[i][current] = arr
+                else:
+                    results[i].append(arr)
 
     feature_lists = None
     label_lists = None
@@ -317,7 +333,10 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         if label_cols is not None:
             if label_lists is None:
                 label_lists = init_result_lists(row[1], label_cols)
+            print(f"row[1]: {row[1]}")
+            print(f"before label_list: {label_lists}")
             add_row(row[1], label_lists, counter)
+            print(f"after label_list: {label_lists}")
         counter += 1
 
         if shard_size and counter % shard_size == 0:
@@ -332,7 +351,10 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             rest_size = counter % shard_size
             feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
-                label_lists = [label[0:rest_size] for label in label_lists]
+                if isinstance(label_lists, dict):
+                    label_lists = {k: v[0:rest_size] for k, v in label_lists.items()}
+                else:
+                    label_lists = [label[0:rest_size] for label in label_lists]
         # output last shard
         yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
 

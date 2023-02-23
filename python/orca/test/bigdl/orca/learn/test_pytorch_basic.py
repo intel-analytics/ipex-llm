@@ -22,9 +22,12 @@ import pytest
 
 import torch
 import torch.nn as nn
+from torch.nn import functional as F 
 
 from pyspark.sql import SparkSession
-from pyspark.sql.types import FloatType, ArrayType, DoubleType, StructType, StructField
+from pyspark.sql.types import (FloatType, ArrayType,
+                               DoubleType, StructType,
+                               StructField, MapType, StringType)
 
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.metrics import Accuracy
@@ -121,6 +124,20 @@ class MultiInputNet(nn.Module):
         return x
 
 
+class DictNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.out = nn.Linear(50, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.out(x)
+        x = self.out_act(x)
+        return {"y": x}
+
+
 class SimpleModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -174,12 +191,13 @@ def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
-def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
-                  log_level=logging.INFO, model_dir=None):
+def get_estimator(workers_per_node=1, model_fn=get_model,
+                  loss_fn=nn.BCELoss(), metrics=Accuracy(),
+                  sync_stats=False, log_level=logging.INFO, model_dir=None):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
-                                     loss=nn.BCELoss(),
-                                     metrics=Accuracy(),
+                                     loss=loss_fn,
+                                     metrics=metrics,
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
                                      backend="spark",
@@ -372,6 +390,38 @@ class TestPyTorchEstimatorBasic(TestCase):
         result = estimator.predict(df, batch_size=4,
                                    feature_cols=["f1", "f2"])
         result.collect()
+
+    def test_dict_outputs_model(self):
+
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(100))
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 50,
+                                  {"y": [float(np.random.randint(0, 2, size=()))]})
+                       )
+        schema = StructType([
+            StructField("f", ArrayType(FloatType()), True),
+            StructField("label", MapType(StringType(), ArrayType(FloatType())), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: DictNet(),
+                                  loss_fn=lambda config: lambda x, y: F.binary_cross_entropy(x["y"], y["y"]),
+                                  metrics=None)
+        estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
+                      feature_cols=["f"],
+                      label_cols=["label"])
+        # estimator.evaluate(df, batch_size=4,
+        #                    feature_cols=["f1", "f2"],
+        #                    label_cols=["label"])
+        # result = estimator.predict(df, batch_size=4,
+        #                            feature_cols=["f1", "f2"])
+        # result.collect()
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
