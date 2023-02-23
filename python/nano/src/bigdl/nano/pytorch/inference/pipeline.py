@@ -23,17 +23,63 @@ from torch import nn
 
 
 class Pipeline():
+    """
+    A two-stage pipeline, which will run all stages in parallel.
+
+    A simple usage:
+    ```
+        pipeline = Pipeline([
+            ("preprocess", preprocess, {}),
+            ("inference", model, {}),
+        ])
+        outputs = pipeline.run(inputs)
+    ```
+    """
     def __init__(self, stages: List[Tuple]):
+        """
+        Create a pipeline with given stages.
+
+        For example,
+        ```
+            pipeline = Pipeline([
+                ("preprocess", preprocess, {}),
+                ("inference", model, {}),
+            ])
+        ```
+        will create a pipeline which has stage "preprocess" and "inference",
+        and the "preprocess" stage will call `preprocess(input)`, while the
+        "inference" stage will call `model(input)`.
+
+        :param stages: A list of configurations for each stage, each stage should consist of
+            a 'name'(str), a 'function'(Callable), and a 'config'(dict).
+        """
         conns = [reversed(mp.Pipe(duplex=False)) for _i in range(len(stages) + 1)]
         conns = list(itertools.chain(*conns))
         self.send_ = conns[0]
         self.recv_ = conns[-1]
         self.ps = [
-            self._run_stage(stage, conns[i * 2 + 1], conns[i * 2 + 2])
+            self._launch_stage(stage, conns[i * 2 + 1], conns[i * 2 + 2])
             for i, stage in enumerate(stages)
         ]
 
     def run(self, inputs):
+        """
+        Conduct inference on the inputs in a pipeline.
+
+        For example,
+        ```
+            outputs = pipeline.run(inputs)
+        ```
+        is equivalent to
+        ```
+            outputs = [model(preprocess(i)) for i in inputs]
+        ```
+        except that the pipeline will run all stages in parallel
+        and handle inference automatically.
+
+        :param inputs: A list of batches.
+        :return: A list of the result of inference.
+        """
         outputs = []
         for i in inputs:
             self.send_.send(i)
@@ -42,10 +88,8 @@ class Pipeline():
         outputs = [self.recv_.recv() for _ in outputs]
         return outputs
 
-    def _run_stage(self, stage: Tuple, recv_: Connection, send_: Connection):
+    def _launch_stage(self, stage: Tuple, recv_: Connection, send_: Connection):
         name, func, config = stage
-        self._validate_name(name)
-        self._validate_config(config)
 
         p = mp.Process(target=self._stage_wrapper,
                        args=(func, recv_, send_),
@@ -67,15 +111,3 @@ class Pipeline():
                 inputs = recv_.recv()
                 outputs = func(inputs)
                 send_.send(outputs)
-
-    @staticmethod
-    def _validate_name(name: str):
-        pass
-
-    @staticmethod
-    def _validate_config(config: Dict):
-        pass
-
-    @staticmethod
-    def _apply_config(config: Dict):
-        pass
