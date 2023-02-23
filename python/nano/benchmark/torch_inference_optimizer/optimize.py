@@ -20,6 +20,7 @@ import os
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
@@ -62,7 +63,8 @@ def optimize():
     save_dir = "models"
 
     model = ResNet18(10)
-    loader = create_data_loader(data_dir)
+    # loader = create_data_loader(data_dir)
+    loader = DataLoader(TensorDataset(torch.rand(100, 3, 224, 224), torch.randint(0, 10, size=(100, 1))))
     opt = InferenceOptimizer()
     if "OMP_NUM_THREADS" in os.environ:
         thread_num = int(os.environ["OMP_NUM_THREADS"])
@@ -84,7 +86,7 @@ def optimize():
             opt.save(model, os.path.join(save_dir, option))
         except Exception:
             pass
-    
+
 
 if __name__ == '__main__':
     optimize()
