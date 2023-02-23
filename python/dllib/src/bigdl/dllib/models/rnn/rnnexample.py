@@ -101,7 +101,7 @@ def prepare_data(sc, folder, vocabsize, training_split):
     def padding(features, label, length):
         pad_len = length - len(label)
         padded_label = (label + [startIdx] * length)[:length]
-        feature_padding = np.zeros((pad_len, total_vocab_len), dtype=np.int)
+        feature_padding = np.zeros((pad_len, total_vocab_len), dtype=np.int32)
         feature_padding[:, endIdx + 1] = np.ones(pad_len)
         padded_feautres = np.concatenate((features, feature_padding), axis=0)
         return padded_feautres, padded_label

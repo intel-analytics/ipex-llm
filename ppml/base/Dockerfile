@@ -17,6 +17,8 @@ ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
 
+ENV MALLOC_ARENA_MAX                    4
+
 RUN mkdir -p /ppml/
 
 ADD ./bash.manifest.template /ppml/bash.manifest.template
@@ -43,6 +45,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ln -s /usr/bin/python3.8 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
+    pip3 install --upgrade requests && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Gramine

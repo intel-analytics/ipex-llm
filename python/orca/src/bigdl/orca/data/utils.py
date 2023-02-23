@@ -22,7 +22,6 @@ from bigdl.dllib.utils.log4Error import *
 import pyspark.sql.functions as F
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Dict,
     List,
     Optional,

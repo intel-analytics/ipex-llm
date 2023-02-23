@@ -15,7 +15,7 @@
 #
 from tempfile import TemporaryDirectory
 from ..core.utils import convert_onnx_to_xml
-from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
+from bigdl.nano.utils.pytorch import export_to_onnx
 from pathlib import Path
 import torch
 import inspect

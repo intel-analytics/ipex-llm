@@ -29,7 +29,7 @@ def cycle_length_est(data, top_k=3, adjust=False):
            The value is default to 3.
     :param adjust: if normalization is applied to the final result.
     '''
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError((data.size//2) > abs(top_k)+1,
                       "top_k must be less than half the length of the time series,"
                       " but top_k and data length are {top_k} and {data.size} respectively.")

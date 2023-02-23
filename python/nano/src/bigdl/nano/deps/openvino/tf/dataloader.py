@@ -18,7 +18,7 @@
 from openvino.tools.pot import DataLoader
 import tensorflow as tf
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 class KerasOpenVINODataLoader(DataLoader):

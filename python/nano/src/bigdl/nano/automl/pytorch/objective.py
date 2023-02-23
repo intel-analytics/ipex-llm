@@ -25,7 +25,7 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from ._helper import LatencyCallback, _remove_metric_prefix, BestMetricCallback
 import inspect
 import copy

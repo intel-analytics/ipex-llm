@@ -224,7 +224,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                     result.append(np.array(row[name]))
             elif isinstance(feature_type, df_types.ArrayType):
                 if accept_str_col and isinstance(feature_type.elementType, df_types.StringType):
-                    result.append(np.array(row[name]).astype(np.str))
+                    result.append(np.array(row[name]).astype(str))
                 elif isinstance(feature_type.elementType, df_types.FloatType):
                     result.append(np.array(row[name]).astype(np.float32))
                 elif isinstance(feature_type.elementType, df_types.DoubleType):

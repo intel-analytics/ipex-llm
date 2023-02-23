@@ -26,14 +26,13 @@ import numpy as np
 import traceback
 import inspect
 import tensorflow as tf
+import keras
 from typing import Dict, Optional, List, Union, Callable
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
-from bigdl.nano.tf.utils import _ModuleWrapper
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
+    AccelerationOption, latency_calculate_helper, format_optimize_result
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import _ModuleWrapper
+from bigdl.nano.utils.tf import patch_compiled_and_attrs, patch_attrs
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
@@ -44,7 +43,8 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.tf import tensor_spec_to_shape
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -86,7 +86,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
         {  # type: ignore
             "original": TFAccelerationOption(),
-            "int8": TFAccelerationOption(inc=True),
+            "static_int8": TFAccelerationOption(inc=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
@@ -248,15 +248,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 def func_test(model, sample):
                     model(sample)
                 try:
-                    if method == "original" and thread_num is not None:
+                    if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
                         # for original keras model, as tf.config.threading can't set thread
                         # during running, so here we use subprocess to calculate throughput
                         params = {"iterrun": latency_sample_num,
                                   "func": func_test,
-                                  "model": acce_model,
-                                  "input_sample": input_sample}
+                                  "model": model,  # save original model
+                                  "input_sample": input_sample,
+                                  "method": method}
                         with tempfile.TemporaryDirectory() as temp_dir:
+                            if method != "original":
+                                # save accelerated model
+                                InferenceOptimizer.save(acce_model, temp_dir)
                             _filename = os.path.join(temp_dir, "params")
                             cloudpickle.dump(params, open(_filename, "wb"))
                             my_env = os.environ.copy()
@@ -275,8 +279,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
                         result_map[method]["latency"], status =\
-                            throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample)
+                            latency_calculate_helper(latency_sample_num, baseline_time,
+                                                     func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
@@ -451,6 +455,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+                                Note that, mixed bf16 precision only works for ``keras.Model`` with
+                                explict input and output definition(e.g.,
+                                model = keras.Model(inputs=inputs, outputs=outputs)).
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
         :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
@@ -555,8 +562,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             original_model = model
 
         if precision == 'fp16':
-            invalidInputError('GPU' in device or device == 'VPUX',
-                              "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':
@@ -620,19 +625,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set:
-                invalidInputError(input_spec is not None,
-                                  "`input_spec` cannot be None when passing unbuilt model.")
-                # model cannot be saved either because the input shape is not available
-                # or because the forward pass of the model is not defined
-                if isinstance(input_spec, (tuple, list)):
-                    input_shape = (i.shape for i in input_spec)
-                else:
-                    input_shape = input_spec.shape
+            if hasattr(model, "input_shape"):
+                # Sequential and functional API model has
+                # `input_shape` and `output_shape` attributes
+                _output_shape = model.output_shape
+            elif input_spec is not None:
+                input_shape = tensor_spec_to_shape(input_spec)
                 _output_shape = model.compute_output_shape(input_shape)
             else:
-                _output_shape = model.output_shape
+                invalidInputError(False,
+                                  "Subclassed model must specify `input_spec` parameter.")
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -765,15 +767,23 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 }
                 yaml.safe_dump(metadata, f)
             checkpoint_path = path / metadata['checkpoint']
-            model.save_weights(checkpoint_path)
+            model.save(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Model, device=None):
+    def load(path, model: Optional[Model] = None, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load tensorflow model.
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
@@ -800,20 +810,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'BF16Model':
             result = load_bf16_model(path)
             return patch_attrs(result, model)
-        if isinstance(model, Model):
-            # typically for keras Model
-            model = copy.deepcopy(model)
-            checkpoint_path = metadata.get('checkpoint', None)
-            if checkpoint_path:
-                checkpoint_path = path / metadata['checkpoint']
-                model.load_weights(checkpoint_path)
-                return model
-            else:
-                invalidInputError(False, "Key 'checkpoint' must be specified.")
-        else:
-            invalidInputError(False,
-                              "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
-                              " loading.".format(model_type, type(model)))
+        checkpoint_path = metadata.get('checkpoint', None)
+        invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
+        checkpoint_path = path / metadata['checkpoint']
+        model = keras.models.load_model(checkpoint_path)
+        return model
 
 
 def _accuracy_calculate_helper(model, metric, data):

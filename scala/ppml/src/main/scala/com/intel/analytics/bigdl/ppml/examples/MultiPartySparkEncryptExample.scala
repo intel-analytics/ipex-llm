@@ -25,55 +25,45 @@ object MultiPartySparkEncryptExample extends Supportive {
   def main(args: Array[String]): Unit = {
 
     val ppmlArgs = Map(
-      "spark.bigdl.enableMultiKms" -> "true",
-      "spark.bigdl.kms.amyKms.type" -> "EHSMKeyManagementService",
-      "spark.bigdl.kms.amyKms.ip" -> args(0),
-      "spark.bigdl.kms.amyKms.port" -> args(1),
-      "spark.bigdl.kms.amyKms.appId" -> args(2),
-      "spark.bigdl.kms.amyKms.apiKey" -> args(3),
-      "spark.bigdl.kms.bobKms.type" -> "EHSMKeyManagementService",
-      "spark.bigdl.kms.bobKms.ip" -> args(4),
-      "spark.bigdl.kms.bobKms.port" -> args(5),
-      "spark.bigdl.kms.bobKms.appId" -> args(6),
-      "spark.bigdl.kms.bobKms.apiKey" -> args(7)
+      "spark.bigdl.primaryKey.AmyPK.plainText" -> args(0),
+      "spark.bigdl.primaryKey.BobPK.kms.type" -> "EHSMKeyManagementService",
+      // path of ehsm encrypted_primary_key file
+      "spark.bigdl.primaryKey.BobPK.material" -> args(1),
+      "spark.bigdl.primaryKey.BobPK.kms.ip" -> args(2),
+      "spark.bigdl.primaryKey.BobPK.kms.port" -> args(3),
+      "spark.bigdl.primaryKey.BobPK.kms.appId" -> args(4),
+      "spark.bigdl.primaryKey.BobPK.kms.apiKey" -> args(5)
     )
+    val (amyPlainTextDataFileInputPath,
+         bobPlainTextDataFileInputPath) = (args(6), args(7))
     val sc = PPMLContext.initPPMLContext("MultiPartySparkEncryptExample", ppmlArgs)
 
     timing("loading") {
       // load csv file to data frame with ppmlcontext.
       val amyDf = timing("1/4 read Amy's plaintext data source into data frame") {
-        // read encrypted data
-        sc.read(PLAIN_TEXT, // crypto mode
-                "amyKms", // name of kms which data key is retrieved from
-                "./amy_encrypted_primary_key", // primary key file path
-                "./amy_encrypted_data_key") // data key file path
-          .option("header", "true")
-          .csv("./amyDataSource.csv") // input file path
+        // read plaintext data
+        sc.read(PLAIN_TEXT).option("header", "true")
+          .csv(amyPlainTextDataFileInputPath)
       }
 
       val bobDf = timing("2/4 read Bob's plaintext data source") {
-        sc.read(PLAIN_TEXT, "bobKms",
-                "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
-          .option("header", "true")
-          .csv("./bobDataSource.csv")
+        sc.read(PLAIN_TEXT).option("header", "true")
+          .csv(bobPlainTextDataFileInputPath)
       }
 
-      timing("3/4 encrypt and save amy data") {
+      timing("3/4 encrypt and save Amy data") {
         // save data frame using spark kms context
         // write encrypted data
-        sc.write(amyDf, // target data frame
-                 AES_CBC_PKCS5PADDING, // encrypt mode
-                 "amyKms", // name of kms which data key is retrieved from
-                 "./amy_encrypted_primary_key", // primary key file path
-                 "./amy_encrypted_data_key") // data key file path
+        sc.write(dataFrame = amyDf,
+                 cryptoMode = AES_CBC_PKCS5PADDING,
+                 primaryKeyName = "AmyPK")
           .mode("overwrite")
           .option("header", true)
           .csv("./encrypted_amy_data")
       }
 
       timing("4/4 encrypt and save Bob encrypted data") {
-        sc.write(bobDf, AES_CBC_PKCS5PADDING, "bobKms",
-                 "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
+        sc.write(bobDf, AES_CBC_PKCS5PADDING, "BobPK")
           .mode("overwrite").option("header", true).csv("./encrypted_bob_data")
       }
     }

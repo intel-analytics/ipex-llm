@@ -16,6 +16,21 @@
 import platform
 import os
 import warnings
+from bigdl.nano.utils.common import register_suggestion
+from bigdl.nano.utils.common import get_affinity_core_num
+
+
+# reset the num of threads
+if platform.system() == "Linux":
+    # only UNIX-like system applied
+    preset_thread_nums = int(os.environ.get("OMP_NUM_THREADS", "0"))
+    affinity_core_num = get_affinity_core_num()
+
+    if affinity_core_num is not None and preset_thread_nums > affinity_core_num:
+        register_suggestion(f"CPU Affinity is set to this program and {affinity_core_num} "
+                            f"cores are binded. While Tensorflow OpenMP code block will use "
+                            f"{preset_thread_nums} cores, which may cause severe performance "
+                            f"downgrade. Please set `OMP_NUM_THREADS` to {affinity_core_num}.")
 
 
 if platform.system() != "Darwin":
