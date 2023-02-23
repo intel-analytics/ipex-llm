@@ -19,8 +19,8 @@ import math
 
 import tensorflow as tf
 
-from utils import *
 from process_xshards import get_feature_cols, get_label_cols
+from utils import *
 
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,7 +28,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Orca XShards")
-init_orca(args.cluster_mode)
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,utils.py")
 
 
 # Step 2: Read and process data using Xshards

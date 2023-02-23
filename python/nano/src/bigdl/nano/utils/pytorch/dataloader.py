@@ -73,7 +73,8 @@ def automatic_add_label_in_dataloader(model, dataloader, input_sample=None):
 
 def _need_dataloader_type_transformation(model, dataloader):
     # get forward method's parameter number
-    forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    # forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
+    forward_args = get_conditional_args(model, include="all")
     forward_args_len = len(forward_args)
 
     # if the model is a simple model(x) format
@@ -85,7 +86,7 @@ def _need_dataloader_type_transformation(model, dataloader):
 
     # check if a dataloader has met inc format
     input_sample = next(iter(dataloader))
-    if isinstance(input_sample[0], Sequence):
+    if isinstance(input_sample, Sequence):
         if len(input_sample) == 2 and isinstance(input_sample[1], torch.Tensor) and \
                 len(input_sample[0]) <= forward_args_len:
             return False, forward_args_len
@@ -108,8 +109,20 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         # only one tensor provided, clearly we need a dummy label
         if forward_args_len >= 1:
             return True
-    elif isinstance(loader_input_sample, Sequence):
-        if len(loader_input_sample[0]) == forward_args_len:
+    elif input_sample is not None:
+        if isinstance(input_sample, torch.Tensor):
+            # input_sample is a Tensor
+            if len(loader_input_sample) > 1:
+                return False
+            return True
+        if len(loader_input_sample) > len(input_sample):
+            # input_sample is also a sequence
+            return False
+        else:
+            return True
+    if isinstance(loader_input_sample, Sequence):
+        if isinstance(loader_input_sample[0], Sequence) and \
+                len(loader_input_sample[0]) == forward_args_len:
             # this means user returns a (x1, x2, ...), y
             return False
         else:
@@ -117,14 +130,24 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                 # this means users dataset returns at least 1 label
                 return False
             else:
-                # test run to check if input_sample meet input requirent
+                # test run to check if whole sample can be used for inference
                 try:
-                    model(*input_sample)
-                    # additional check for kwargs paramter
-                    if input_sample is not None and len(loader_input_sample) > len(input_sample):
-                        return False
+                    model(*loader_input_sample)
                     return True
                 except Exception:
-                    # input sample may contain label already
                     pass
-    return False
+                if len(loader_input_sample) == 2:
+                    try:
+                        model(loader_input_sample[0])
+                        return False
+                    except Exception:
+                        if isinstance(loader_input_sample[0], Sequence):
+                            try:
+                                model(*loader_input_sample[0])
+                                return False
+                            except Exception:
+                                # input sample don't contain label
+                                return True
+                        else:
+                            return True
+    return True

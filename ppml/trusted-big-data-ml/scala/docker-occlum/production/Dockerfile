@@ -163,6 +163,7 @@ RUN cd /opt && bash ./install_python_with_conda.sh
 
 FROM occlum/occlum:0.29.5-ubuntu20.04 as ppml
 
+MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG SPARK_VERSION
 ARG HADOOP_VERSION

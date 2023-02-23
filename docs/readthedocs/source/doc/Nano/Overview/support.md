@@ -14,6 +14,7 @@
 | **BF16**              | BFloat16 mixed precision training and inference                         |
 | **IPEX**              | Intel-extension-for-pytorch optimization                                |
 | **Multi-instance**    | Multi-process training and inference                                    |
+| **ray**               | Use ray as multi-process backend                                        |
 
 ## Common Feature Support (Can be used in both PyTorch and TensorFlow)
 
@@ -25,6 +26,7 @@
 | **Neural-Compressor** | ✅                    | ✅       | ❌                  | ❌                     | ?       |
 | **OpenVINO**          | ✅                    | ①       | ❌                  | ❌                     | ④       |
 | **ONNXRuntime**       | ✅                    | ①       | ✅                  | ❌                     | ✅       |
+| **ray**               | ✅                    | ?       | ?                  | ?                     | ④       |
 
 ## PyTorch Feature Support
 
