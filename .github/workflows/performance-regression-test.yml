@@ -27,8 +27,8 @@ jobs:
         with:
           ref: ${{ format('refs/pull/{0}/merge', github.event.issue.number) }}
 
-      - name: Set up Python 
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.7'
 
@@ -41,7 +41,6 @@ jobs:
           pip install psycopg2-binary
           pip install requests
           pip install pyOpenSSL==22.0.0
-          pip install flatbuffers==1.12
 
       - name: Run benchmark
         run: |
