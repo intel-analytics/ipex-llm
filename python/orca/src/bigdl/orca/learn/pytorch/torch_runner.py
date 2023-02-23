@@ -282,6 +282,10 @@ class TorchRunner(BaseRunner):
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
 
+        if not self.optimizers:
+            invalidInputError(False,
+                              "You must provide the optimizer for train and evaluate.")
+
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("train_epoch"):
@@ -449,6 +453,9 @@ class TorchRunner(BaseRunner):
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
+        if not self.optimizers:
+            invalidInputError(False,
+                              "You must provide the optimizer for train and evaluate.")
 
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
