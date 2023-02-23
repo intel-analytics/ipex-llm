@@ -138,16 +138,15 @@ def train_data_creator(config, batch_size):
 ### 2 Pull Docker Image
 Please pull the BigDL [`bigdl-k8s`](https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags) image (built on top of Spark 3.1.3) from Docker Hub beforehand as follows:
 ```bash
+# For the release version, e.g. 2.2.0
+sudo docker pull intelanalytics/bigdl-k8s:version
+
 # For the latest nightly build version
 sudo docker pull intelanalytics/bigdl-k8s:latest
-
-# For the release version, e.g. 2.2.0
-sudo docker pull intelanalytics/bigdl-k8s:2.2.0
 ```
 
-In the BigDL K8s Docker image:
-- Spark is located at `/opt/spark`. Spark version is 3.1.3.
-- BigDL is located at `/opt/bigdl-VERSION`. For the latest nightly build image, BigDL version would be `xxx-SNAPSHOT` (e.g. 2.3.0-SNAPSHOT).
+* The environment for Spark (including SPARK_VERSION and SPARK_HOME) and BigDL (including BIGDL_VERSION and BIGDL_HOME) are already configured in the BigDL K8s Docker image.
+* Spark executor containers are scheduled by K8s at runtime and you don't need to create them manually.
 
 ---
 ## 3. Create BigDL K8s Container
@@ -168,28 +167,24 @@ sudo docker run -itd --net=host \
     -e https_proxy=https://your-proxy-host:your-proxy-port \
     -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
     -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:latest \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:version \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=${RUNTIME_DRIVER_HOST} \
-    intelanalytics/bigdl-k8s:latest bash
+    intelanalytics/bigdl-k8s:version bash
 ```
 
 In the script:
-* **Please switch the version tag according to the BigDL K8s Docker image you pull.**
+* **Please modify the version tag according to the BigDL K8s Docker image you pull.**
 * **Please make sure you are mounting the correct Volume path (e.g. NFS) into the container.**
 * `--net=host`: use the host network stack for the Docker container.
 * `-v /etc/kubernetes:/etc/kubernetes`: specify the path of Kubernetes configurations to mount into the Docker container.
 * `-v /root/.kube:/root/.kube`: specify the path of Kubernetes installation to mount into the Docker container.
 * `-v /path/to/nfsdata:/bigdl/nfsdata`: mount NFS path on the host into the Docker container as the specified path (e.g. "/bigdl/nfsdata").
 * `RUNTIME_SPARK_MASTER`: a URL format that specifies the Spark master: `k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>`.
-* `RUNTIME_K8S_SERVICE_ACCOUNT`: a string that specifies the service account for the driver pod.
+* `RUNTIME_K8S_SERVICE_ACCOUNT`: the service account for the driver pod.
 * `RUNTIME_K8S_SPARK_IMAGE`: the name of the BigDL K8s Docker image. Note that you need to change the version accordingly.
-* `RUNTIME_PERSISTENT_VOLUME_CLAIM`: a string that specifies the Kubernetes volumeName (e.g. "nfsvolumeclaim").
+* `RUNTIME_PERSISTENT_VOLUME_CLAIM`: the Kubernetes volumeName (e.g. "nfsvolumeclaim").
 * `RUNTIME_DRIVER_HOST`: a URL format that specifies the driver localhost (only required if you use k8s-client mode).
-
-__Notes:__
-* The __Client Container__ already contains all the required environment configurations for Spark and BigDL Orca.
-* Spark executor containers are scheduled by K8s at runtime and you don't need to create them manually.
 
 
 ### 3.2 Launch the K8s Client Container
@@ -512,7 +507,7 @@ We define a Kubernetes Deployment in a YAML file. Some fields of the YAML are ex
 
 #### 7.3.1 K8s Client
 BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml) to directly run the Fashion-MNIST example for k8s-client mode.
-Note that you need to change the configurations in the YAML file accordingly, including the version of the Docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
+The environment variables for Spark (including SPARK_VERSION and SPARK_HOME) and BigDL (including BIGDL_VERSION and BIGDL_HOME) are already configured in the BigDL K8s Docker image.
 
 You need to uncompress the conda archive in NFS before submitting the job:
 ```bash
@@ -521,7 +516,7 @@ mkdir environment
 tar -xzvf environment.tar.gz --directory environment
 ```
 
-orca-tutorial-k8s-client.yaml
+*orca-tutorial-k8s-client.yaml*
 
 ```bash
 apiVersion: batch/v1
@@ -543,7 +538,7 @@ spec:
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 ${SPARK_HOME}/bin/spark-submit \
                 --master ${RUNTIME_SPARK_MASTER} \
-                --deploy-mode ${SPARK_MODE} \
+                --deploy-mode client \
                 --name orca-k8s-client-tutorial \
                 --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
@@ -557,9 +552,9 @@ spec:
                 --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
                 --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
-                --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.kubernetes.executor.deleteOnTermination=True \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
                 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
                 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
@@ -575,16 +570,6 @@ spec:
             value: intelanalytics/bigdl-k8s:latest
           - name: RUNTIME_SPARK_MASTER
             value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
-          - name: SPARK_MODE
-            value: client
-          - name: SPARK_VERSION
-            value: 3.1.3
-          - name: SPARK_HOME
-            value: /opt/spark
-          - name: BIGDL_VERSION
-            value: 2.2.0-SNAPSHOT
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.2.0-SNAPSHOT
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata
@@ -626,9 +611,9 @@ kubectl delete job orca-pytorch-job
 
 #### 7.3.2 K8s Cluster
 BigDL has provided an example [orca-tutorial-k8s-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml) to run the Fashion-MNIST example for k8s-cluster mode.
-Note that you need to change the configurations in the YAML file accordingly, including the version of the Docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
+The environment variables for Spark (including SPARK_VERSION and SPARK_HOME) and BigDL (including BIGDL_VERSION and BIGDL_HOME) are already configured in the BigDL K8s Docker image.
 
-orca-tutorial-k8s-cluster.yaml
+*orca-tutorial-k8s-cluster.yaml*
 
 ```bash
 apiVersion: batch/v1
@@ -650,7 +635,7 @@ spec:
                 ${SPARK_HOME}/bin/spark-submit \
                 --master ${RUNTIME_SPARK_MASTER} \
                 --name orca-k8s-cluster-tutorial \
-                --deploy-mode ${SPARK_MODE} \
+                --deploy-mode cluster \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
                 --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
                 --num-executors 2 \
@@ -685,16 +670,6 @@ spec:
             value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
           - name: RUNTIME_K8S_SERVICE_ACCOUNT
             value: spark
-          - name: SPARK_MODE
-            value: cluster
-          - name: SPARK_VERSION
-            value: 3.1.3
-          - name: SPARK_HOME
-            value: /opt/spark
-          - name: BIGDL_VERSION
-            value: 2.2.0-SNAPSHOT
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.2.0-SNAPSHOT
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata
