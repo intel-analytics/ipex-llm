@@ -41,6 +41,7 @@ jobs:
           pip install psycopg2-binary
           pip install requests
           pip install pyOpenSSL==22.0.0
+          pip install flatbuffers==23.1.21
 
       - name: Run benchmark
         run: |
