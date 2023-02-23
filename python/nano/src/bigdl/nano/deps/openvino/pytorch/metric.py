@@ -21,8 +21,11 @@ from torchmetrics import Metric
 
 class PytorchOpenVINOMetric(BaseOpenVINOMetric):
     def __init__(self, metric, higher_better=True):
-        forecast_metric = hasattr(metric, '__name__') and\
-                          metric.__name__ in ['mae', 'mse', 'rmse', 'mape', 'smape', 'r2']
+        # to support openvino quantization of chronos forecasters
+        if hasattr(metric, '__name__'):
+            forecast_metric = metric.__name__ in ['mae', 'mse', 'rmse', 'mape', 'smape', 'r2']
+        else:
+            forecast_metric = False
         invalidInputError(isinstance(metric, Metric) or forecast_metric,
                           "Please provide an instance of torchmetrics.Metric.")
         super().__init__(metric, higher_better)
