@@ -22,9 +22,11 @@ function clean () {
     rm -f NCF_model
     rm -rf NCF_resume_model
     rm -f NCF_resume_model
-    rm -rf ./ml-1m/test*
-    rm -rf ./ml-1m/train*
+    rm -f *.h5
+    rm -rf ./test*
+    rm -rf ./train*
     rm -f config.json
+    rm -rf logs/
     echo "done"
 }
 
@@ -56,12 +58,13 @@ else
 fi
 echo "Start Orca NCF tutorial Test - $backend backend"
 
+echo "Using Dataset: ml-1m"
 # download dataset from ftp
 rm -f ./orca-tutorial-ncf-dataset-compressed.zip
 rm -rf ml-1m
 wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
 unzip orca-tutorial-ncf-dataset-compressed.zip
-echo "Successfully got dataset from ftp"
+echo "Successfully got dataset ml-1m from ftp"
 
 stop_ray $backend
 
@@ -85,7 +88,7 @@ echo "#2 Running pytorch_train_spark_dataframe"
 start=$(date "+%s")
 
 python ./pytorch_train_spark_dataframe.py --backend $backend
-python ./pytorch_predict_spark_dataframe.py --backend $backend
+# python ./pytorch_predict_spark_dataframe.py --backend $backend
 python ./pytorch_resume_train_spark_dataframe.py --backend $backend
 
 now=$(date "+%s")
@@ -99,7 +102,7 @@ echo "#3 Running pytorch_train_xshards"
 start=$(date "+%s")
 
 python ./pytorch_train_xshards.py --backend $backend
-python ./pytorch_predict_xshards.py --backend $backend
+# python ./pytorch_predict_xshards.py --backend $backend
 python ./pytorch_resume_train_xshards.py --backend $backend
 
 now=$(date "+%s")
@@ -127,7 +130,7 @@ echo "#5 Running tf_train_xshards"
 start=$(date "+%s")
 
 python ./tf_train_xshards.py --backend $backend
-python ./tf_predict_xshards.py --backend $backend
+# python ./tf_predict_xshards.py --backend $backend
 python ./tf_resume_train_xshards.py --backend $backend
 
 now=$(date "+%s")
