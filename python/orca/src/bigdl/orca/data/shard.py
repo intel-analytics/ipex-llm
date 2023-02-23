@@ -232,7 +232,7 @@ class SparkXShards(XShards):
         self._uncache()
         return transformed_shard
 
-    def collect(self)-> List[Any]:
+    def collect(self) -> List[Any]:
         """
 
         Returns a list that contains all of the elements in this SparkXShards
@@ -247,6 +247,13 @@ class SparkXShards(XShards):
         :return: a record of data.
         """
         return self.rdd.first()
+
+    def take(self, n) -> List[Any]:
+        """
+        Returns n element in the rdd of SparkXShards
+        :return: n records of data.
+        """
+        return self.rdd.take(n)
 
     def cache(self) -> "SparkXShards":
         """

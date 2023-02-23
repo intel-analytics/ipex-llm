@@ -202,19 +202,19 @@ def read_images_spark(file_path: str,
 
 # https://github.com/intel-analytics/BigDL/blob/main/python/orca/src/bigdl/orca/data/image/voc_dataset.py
 def read_voc(file_path: str="VOCdevkit",
-             split_names: List[Tuple[int, str]]=[(2009, "trainval")],
+             split_names: List[Tuple[int, str]] = [(2009, "trainval")],
              diff=False,
              max_samples: int = 25
              ):
 
-    CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
-                'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
-                'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
-
-    cat2label = {cat: i for i, cat in enumerate(CLASSES)}
     spark = OrcaContext.get_spark_session()
     anno_path = osp.join('{}', 'Annotations', '{}.xml')
     image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
+
+    CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+                'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
+                'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+    cat2label = {cat: i for i, cat in enumerate(CLASSES)}
 
     def get_imgids(splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
         img_ids = []
@@ -228,39 +228,61 @@ def read_voc(file_path: str="VOCdevkit",
                 continue
         return img_ids
 
+    def _check_label(label: "ndarray", width: int=1, height: int=1) -> None:
+        """Check if label is correct."""
+        from bigdl.dllib.utils.log4Error import invalidInputError
+        xmin = label[:, 0]
+        ymin = label[:, 1]
+        xmax = label[:, 2]
+        ymax = label[:, 3]
+        invalidInputError(((0 <= xmin) & (xmin < width)).any(),
+                          "xmin must in [0, {}), given {}".format(width, xmin))
+        invalidInputError(((0 <= ymin) & (ymin < height)).any(),
+                          "ymin must in [0, {}), given {}".format(height, ymin))
+        invalidInputError(((xmin < xmax) & (xmax <= width)).any(),
+                          "xmax must in ({}, {}], given {}".format(xmin, width, xmax))
+        invalidInputError(((ymin < ymax) & (ymax <= height)).any(),
+                          "ymax must in ({}, {}], given {}".format(ymin, height, ymax))
+
     def get_img_label(f):
         image_file = image_path.format(*f)
         label_file = anno_path.format(*f)
 
         root = ET.parse(label_file).getroot()
-        img = open_image(image_file)
-        print(img)
-        # img = np.array(img)
-        # img = img.astype(np.uint8)
-        # print(img)
+        try:
+            img = open_image(image_file)
+        except FileNotFoundError as e:
+            invalidOperationError(False, str(e), cause=e)
 
         width, height = img.size
-        print(width, height)
 
         # load label [[x1, y1, x2, y2, cls, difficult]]
-        labels = []
+        label = []
         for obj in root.iter('object'):
             try:
                 difficult = int(obj.find('difficult').text)
             except ValueError:
                 difficult = 0
             cls_name = obj.find('name').text.strip().lower()
+            if cls_name not in CLASSES:
+                logging.warning(f"{cls_name} isn't included in {CLASSES}")
+                continue
             cls_id = cat2label[cls_name]
             xml_box = obj.find('bndbox')
             xmin = float(int(xml_box.find('xmin').text) / width)
             ymin = float(int(xml_box.find('ymin').text) / height)
             xmax = float(int(xml_box.find('xmax').text) / width)
             ymax = float(int(xml_box.find('ymax').text) / height)
-            labels.append([xmin, ymin, xmax, ymax, cls_id, difficult])
-        labels = np.array(labels).astype(np.float32)
+            label.append([xmin, ymin, xmax, ymax, cls_id, difficult])
+        label = np.array(label).astype(np.float32)
         if not diff:
-            labels = labels[..., :5]
-        return img, labels
+            label = label[..., :5]
+
+        try:
+            _check_label(label, width, height)
+        except RuntimeError as e:
+            logging.warning("Invalid label at %s, %s", anno_path, e)
+        return img, label
 
     img_paths = get_imgids(split_names)
     num_files = len(img_paths)
@@ -277,5 +299,4 @@ def read_voc(file_path: str="VOCdevkit",
     image_rdd = rdd.mapPartitions(load_image)
     if max_samples:
         image_rdd = spark.sparkContext.parallelize(image_rdd.take(max_samples))
-
     return SparkXShards(image_rdd)
