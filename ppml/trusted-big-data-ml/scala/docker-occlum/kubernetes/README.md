@@ -4,10 +4,10 @@
 some configuration in *.yaml is introduced in [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md), you can refer to it for more information.
 The two new configs 'spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE' and 'spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE' are the same as driver-memory and executor-memory in spark. We use original driver-memory and original executor-memory to alloc extra common memory for libos.   You can refer to [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#configuration-explainations) for more information.
 
-### Linux Arena thread memory pool
+### Linux glibc2.12+ Arena thread memory pool
 The default value of MALLOC_ARENA_MAX in linux is the number of CPU cores * 8, and it will cost most MALLOC_ARENA_MAX * 128M EPC in SGX.
 So we set MALLOC_ARENA_MAX=1 by default to disable it to reduce EPC usage, but sometimes it may makes the performance a little bit worse.
-Using 1 is fine in most cases. Hadoop recommend to set MALLOC_ARENA_MAX=4, you can set it by this way:
+After our many tests, Using MALLOC_ARENA_MAX=1 is fine in most cases. Hadoop recommend to set MALLOC_ARENA_MAX=4, you can set it by this way:
 ```bash
 --conf spark.kubernetes.driverEnv.MALLOC_ARENA_MAX=4 \
 --conf spark.executorEnv.MALLOC_ARENA_MAX=4 \
