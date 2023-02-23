@@ -14,12 +14,10 @@ spec:
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh","-c"]
         args: ["
-                export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 ${SPARK_HOME}/bin/spark-submit \
                 --master ${RUNTIME_SPARK_MASTER} \
                 --name orca-k8s-cluster-tutorial \
                 --deploy-mode ${SPARK_MODE} \
-                --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
                 --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
                 --num-executors 2 \

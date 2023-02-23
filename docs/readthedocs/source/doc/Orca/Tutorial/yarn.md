@@ -18,12 +18,12 @@ sc = init_orca_context(cluster_mode, cores, memory, num_nodes,
 
 In `init_orca_context`, you may specify necessary runtime configurations for running the example on YARN, including:
 * `cluster_mode`: one of `"yarn-client"`, `"yarn-cluster"`, `"bigdl-submit"` or `"spark-submit"` when you run on Hadoop/YARN clusters.
-* `cores`: an integer that specifies the number of cores for each executor (default to be `2`).
-* `memory`: a string that specifies the memory for each executor (default to be `"2g"`).
-* `num_nodes`: an integer that specifies the number of executors (default to be `1`).
-* `driver_cores`: an integer that specifies the number of cores for the driver node (default to be `4`).
-* `driver_memory`: a string that specifies the memory for the driver node (default to be `"2g"`).
-* `extra_python_lib`: a string that specifies the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
+* `cores`: the number of cores for each executor (default to be `2`).
+* `memory`:  memory for each executor (default to be `"2g"`).
+* `num_nodes`: the number of executors (default to be `1`).
+* `driver_cores`: the number of cores for the driver node (default to be `4`).
+* `driver_memory`: the memory for the driver node (default to be `"2g"`).
+* `extra_python_lib`: the path to extra Python packages, separated by comma (default to be `None`). `.py`, `.zip` or `.egg` files are supported.
 * `conf`: a dictionary to append extra conf for Spark (default to be `None`).
 
 __Note__: 
@@ -111,9 +111,9 @@ __Note__:
 ### 2.2 Install Python Libraries
 - See [here](../Overview/install.md#install-anaconda) to install conda and prepare the Python environment on the __Client Node__.
 
-- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. *Note that if you use [`spark-submit`](#use-spark-submit), please __skip__ this step and __DO NOT__ install BigDL Orca with pip install command in the conda environment.*
+- See [here](../Overview/install.md#install-bigdl-orca) to install BigDL Orca in the created conda environment. Note that if you use [`spark-submit`](#use-spark-submit), please __SKIP__ this step and __DO NOT__ install BigDL Orca with pip install command in the conda environment.
 
-- You should install all the other Python libraries that you need in your program in the conda environment as well. `torch` and `torchvision` are needed to run the Fashion-MNIST example:
+- You should install all the other Python libraries that you need in your program in the conda environment as well. `torch`, `torchvision` and `tqdm` are needed to run the Fashion-MNIST example:
     ```bash
     pip install torch torchvision tqdm
     ```
@@ -130,7 +130,7 @@ __Note__:
 
 ---
 ## 3. Prepare Dataset 
-To run the Fashion-MNIST example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3).   
+To run the Fashion-MNIST example provided by this tutorial on YARN, you should upload the Fashion-MNIST dataset to a distributed storage (such as HDFS or S3) beforehand.   
 
 First, download the Fashion-MNIST dataset manually on your __Client Node__. Note that PyTorch `FashionMNIST Dataset` requires unzipped files located in `FashionMNIST/raw/` under the dataset folder.
 ```bash
@@ -176,7 +176,6 @@ For more details, please see [Spark Python Dependencies](https://spark.apache.or
     from model import model_creator, optimizer_creator
     ```
 
-__Note__:
 
 If your program depends on a nested directory of Python files, you are recommended to follow the steps below to use a zipped package instead.
 
@@ -193,7 +192,7 @@ If your program depends on a nested directory of Python files, you are recommend
 
 ---
 ## 5. Run Jobs on YARN
-In the following part, we will illustrate three ways to submit and run BigDL Orca applications on YARN.
+In the remaining part of this tutorial, we will illustrate three ways to submit and run BigDL Orca applications on YARN.
 
 * Use `python` command
 * Use `bigdl-submit`
