@@ -14,6 +14,14 @@ the log of Occlum can be turned on by setting the `OCCLUM_LOG_LEVEL` environment
 `OCCLUM_LOG_LEVEL=error`, `OCCLUM_LOG_LEVEL=info`, `OCCLUM_LOG_LEVEL=trace`).
 You can add 'OCCLUM_LOG_LEVEL=trace' in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L3) and change set this [config](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L46) true without " ".
 
+### Linux glibc2.12+ Arena thread memory pool
+The default value of MALLOC_ARENA_MAX in linux is the number of CPU cores * 8, and it will cost most MALLOC_ARENA_MAX * 128M EPC in SGX.
+So we set MALLOC_ARENA_MAX=1 by default to disable it to reduce EPC usage, but sometimes it may makes the performance a little bit worse.
+After our many tests, Using MALLOC_ARENA_MAX=1 is fine in most cases. Hadoop recommend to set MALLOC_ARENA_MAX=4, you can set it by this way:
+```bash
+-e MALLOC_ARENA_MAX=4
+```
+
 ## Prerequisites
 
 Pull image from dockerhub.
