@@ -19,7 +19,6 @@ from unittest import TestCase
 import ray
 from ray.data import Dataset
 import tensorflow as tf
-import numpy as np
 
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
