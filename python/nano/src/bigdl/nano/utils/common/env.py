@@ -91,8 +91,5 @@ class EnvContext(object):
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         # it seems `os.environ = self.env_backup` will cause bug
-        for k, v in self.env_backup.items():
-            if k not in os.environ:
-                os.environ.pop(k)
-            else:
-                os.environ[k] = v
+        os.environ.clear()
+        os.environ.update(self.env_backup)
