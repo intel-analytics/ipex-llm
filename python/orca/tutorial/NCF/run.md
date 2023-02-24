@@ -135,7 +135,7 @@ bigdl-submit \
    --executor-memory 10g \
    --driver-cores 2 \
    --driver-memory 2g \
-   --py-files process_spark_dataframe.py,utils.py,pytorch_model.py \
+   --py-files process_spark_dataframe.py,pytorch_model.py,utils.py \
    --archives environment.tar.gz#environment \
    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -187,7 +187,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
     --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,utils.py,process_spark_dataframe.py,pytorch_model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,process_spark_dataframe.py,pytorch_model.py,utils.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
 ```
