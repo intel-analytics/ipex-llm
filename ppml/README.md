@@ -226,7 +226,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     export DATA_PATH=/YOUR_DIR/data
     export KEYS_PATH=/YOUR_DIR/keys
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export KUBECONFIG_PATH=/YOUR_DIR/config
     export LOCAL_IP=$LOCAL_IP
     export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
 

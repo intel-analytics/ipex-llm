@@ -77,7 +77,7 @@ cd BigDL/ppml/
 
     ```bash
     kubectl config use-context spark-context
-    kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+    kubectl config view --flatten --minify > /YOUR_DIR/config
     ```
 3. Create k8s secret
     ```bash
@@ -86,7 +86,7 @@ cd BigDL/ppml/
                           --from-literal=app_id=YOUR_KMS_APP_ID \
                           --from-literal=api_key=YOUR_KMS_API_KEY \
                           --from-literal=policy_id=YOUR_POLICY_ID
-    kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
+    kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/config
     ```
     **The secret created (`YOUR_SECRET`) should be the same as the password you specified in step *Prepare k8s secret***
 
