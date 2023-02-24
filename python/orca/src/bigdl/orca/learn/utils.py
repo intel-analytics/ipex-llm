@@ -333,10 +333,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         if label_cols is not None:
             if label_lists is None:
                 label_lists = init_result_lists(row[1], label_cols)
-            print(f"row[1]: {row[1]}")
-            print(f"before label_list: {label_lists}")
             add_row(row[1], label_lists, counter)
-            print(f"after label_list: {label_lists}")
         counter += 1
 
         if shard_size and counter % shard_size == 0:

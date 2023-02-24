@@ -239,6 +239,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                     result.append(np.array(row[name]))
             elif isinstance(feature_type, df_types.MapType):
                 keys = row[name].keys()
+                # TODO: Support more types with recursion 
                 if isinstance(feature_type.valueType, df_types.ArrayType):
                     if isinstance(feature_type.valueType.elementType, df_types.FloatType):
                         result.append({k: np.array(row[name][k]).astype(np.float32) for k in keys})

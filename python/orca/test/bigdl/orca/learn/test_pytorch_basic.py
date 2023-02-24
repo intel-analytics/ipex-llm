@@ -416,11 +416,12 @@ class TestPyTorchEstimatorBasic(TestCase):
                       validation_data=df,
                       feature_cols=["f"],
                       label_cols=["label"])
-        # estimator.evaluate(df, batch_size=4,
-        #                    feature_cols=["f1", "f2"],
-        #                    label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["f"],
+                           label_cols=["label"])
+        # TODO: Support this in #7607
         # result = estimator.predict(df, batch_size=4,
-        #                            feature_cols=["f1", "f2"])
+        #                            feature_cols=["f"])
         # result.collect()
 
     def test_data_parallel_sgd_correctness(self):
