@@ -12,8 +12,8 @@ runs:
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
 
         pip list
-        chmod a+x python/orca/dev/test/run-pytests-basic-env.sh
-        python/orca/dev/test/run-pytests-basic-env.sh
+        chmod a+x python/orca/dev/test/run-pytests-basic-pytorch.sh
+        python/orca/dev/test/run-pytests-basic-pytorch.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
