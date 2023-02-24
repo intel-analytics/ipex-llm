@@ -30,6 +30,7 @@ class ModelCheckpoint(Callback):
     def __init__(self,
                  filepath=None,
                  save_weights_only=False,
+                 resume_training=False
                  ):
         """
         ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
@@ -49,6 +50,7 @@ class ModelCheckpoint(Callback):
         self.last_ckpt_path = ""
         self.filename = os.path.basename(self.filepath)
         self.dirname = os.path.dirname(self.filepath)
+        self.resume_training = resume_training
 
     def after_train_epoch(self, runner):
         """
@@ -57,11 +59,7 @@ class ModelCheckpoint(Callback):
         be called during TRAIN mode.
         :param epoch:  Integer, index of epoch.
         """
-        stats = {"epoch": runner.epochs}
-        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
-                                                      filename=self.filename,
-                                                      stats=stats)
-        runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
+        pass
 
     def before_run(self, runner):
         """
@@ -78,8 +76,9 @@ class ModelCheckpoint(Callback):
             files = [x for x in files if "ckpt" in x]
             if len(files) == 0:
                 return None
-            invalidInputError(False,
-                              f"Find non-empty dirname with filepath of {self.filepath}.")
+            if not self.resume_training:
+                invalidInputError(False,
+                                  f"Find non-empty dirname with filepath of {self.filepath}.")
         else:
             makedirs(dirname)
 
@@ -88,10 +87,9 @@ class ModelCheckpoint(Callback):
         Called at the end of training.
         Subclasses should override for any actions to run.
         """
-        stats = {"epoch": runner.epochs}
         last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
-                                                      filename=self.CHECKPOINT_NAME_LAST,
-                                                      stats=stats)
+                                                      filename=self.CHECKPOINT_NAME_LAST
+                                                      )
         previous, self.last_ckpt_path = self.last_ckpt_path, last_ckpt_path
         runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
         if previous and previous != last_ckpt_path:
@@ -123,10 +121,10 @@ class ModelCheckpoint(Callback):
             for group in groups:
                 name = group[1:]
 
-                if "epoch" not in name:
-                    warnings.warn("We only support filepath with {epoch} for now.")
+                if "epoch" not in name and "step" not in name:
+                    warnings.warn("We only support filepath with {epoch} or {step} for now.")
 
-                filename = filename.replace(group, name + "={" + name)
+                # filename = filename.replace(group, name + "={" + name)
 
                 if name not in stats:
                     stats[name] = 0
@@ -134,3 +132,58 @@ class ModelCheckpoint(Callback):
         ckpt_name = f"{filename}{cls.FILE_EXTENSION}"
         ckpt_path = os.path.join(dirname, ckpt_name)
         return ckpt_path
+
+
+class EpochCheckpoint(ModelCheckpoint):
+    def __init__(self,
+                 filepath=None,
+                 save_weights_only=False,
+                 resume_training=False
+                 ):
+        super().__init__(filepath, save_weights_only, resume_training)
+
+    def after_train_epoch(self, runner):
+        """
+        Called at the end of an epoch.
+        Subclasses should override for any actions to run. This function should only
+        be called during TRAIN mode.
+        """
+        stats = {"epoch": runner.epochs}
+        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                      filename=self.filename,
+                                                      stats=stats)
+        runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
+
+
+class StepModelCheckpointCallback(ModelCheckpoint):
+    def __init__(self,
+                 filepath=None,
+                 save_weights_only=False,
+                 step_frequency=None,
+                 resume_training=False,
+
+                 ):
+        """
+                ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
+                a model or weights (in a checkpoint file) at some interval, so the model or weights can be
+                loaded later to continue the training from the state saved.
+                Example:
+                    >>> checkpoint_callback = ModelCheckpoint(
+                    ...     filepath='my/path/sample-mnist-step_{step:02d}',
+                    ... )
+                And checkpoints will be saved as file with path like 'my/path/sample-mnist-epoch=1.ckpt'
+                with different epoch values.
+                :param filepath: path to save the model file.
+                :param step_frequency: step interval to save checkpoint
+                """
+        super().__init__(filepath, save_weights_only, resume_training)
+        self.step_frequency = step_frequency
+
+    def after_train_iter(self, runner):
+        if self.step_frequency and isinstance(self.step_frequency, int):
+            if runner.global_step % self.step_frequency == 0:
+                stats = {"step": runner.global_step}
+                last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                              filename=self.filename,
+                                                              stats=stats)
+                runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
