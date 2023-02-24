@@ -1038,6 +1038,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         # device name might be: CPU, GPU, GPU.0 ...
         invalidInputError(device == 'CPU' or 'GPU' in device,
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
+        # can't set precision for trace
+        invalidInputError("precision" not in kwargs,
+                          "Don't pass precision when call InferenceOptimizer.trace, otherwise you"
+                          "should call InferenceOptimizer.quantize(precision=...)")
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
