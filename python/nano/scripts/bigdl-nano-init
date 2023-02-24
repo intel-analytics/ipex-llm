@@ -68,7 +68,7 @@ function display-error {
 }
 
 function display-var {
-    echo "Internel Variables:"
+    echo "Internal Variables:"
     echo "  ENABLE_JEMALLOC_VAR = $ENABLE_JEMALLOC_VAR"
     echo "  ENABLE_TCMALLOC_VAR = $ENABLE_TCMALLOC_VAR"
     echo "  DISABLE_OPENMP_VAR  = $DISABLE_OPENMP_VAR"
@@ -104,10 +104,10 @@ function display-help {
         echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
-        echo "    -d, --debug               Print all internel and exported variables (for debug)"
+        echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
-# Init internel variables
+# Init internal variables
 ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
 unset DISABLE_OPENMP_VAR
