@@ -306,7 +306,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             arrays = [data]
         else:
             arrays = data
-        
+
         iter = arrays.items() if isinstance(arrays, dict) else enumerate(arrays)
         for i, arr in iter:
             if shard_size:
