@@ -24,8 +24,9 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
-from bigdl.nano.pytorch.utils import ChannelsLastCallback, save_model, load_model
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11
+from bigdl.nano.utils.pytorch import ChannelsLastCallback
+from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
@@ -413,7 +414,7 @@ class Trainer(pl.Trainer):
                                            **export_kwargs)
 
     @staticmethod
-    def save(model: pl.LightningModule, path):
+    def save(model: nn.Module, path):
         """
         Save the model to local file.
 
@@ -424,15 +425,28 @@ class Trainer(pl.Trainer):
         save_model(model, path)
 
     @staticmethod
-    def load(path, model: pl.LightningModule = None):
+    def load(path, model: Optional[nn.Module] = None, input_sample=None,
+             inplace=False, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by Trainer.trace/Trainer.quantize. model
-               should be set to None if you choose accelerator="onnxruntime"/"openvino"/"jit".
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
+        :param input_sample: Input sample for your model, could be a Tensor or a tuple.
+               Only valid for inc ipex quantization model, otherwise will be ignored.
+        :param inplace: whether to perform inplace optimization. Default: ``False``.
+        :param device: A string represents the device of the inference. Default to None.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        return load_model(path, model)
+        return load_model(path, model, input_sample=input_sample,
+                          inplace=inplace, device=device)

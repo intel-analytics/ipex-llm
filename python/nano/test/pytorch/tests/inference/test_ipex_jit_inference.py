@@ -26,7 +26,7 @@ from torch import nn
 import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.common import compare_version
 import tempfile
 from typing import List
@@ -66,6 +66,19 @@ class DummyMultiInputModel(nn.Module):
 
     def forward(self, x1, x2, x3: List[float]):
         return x1, x2, x3
+
+
+class DummyModelWith3d(nn.Module):
+    """
+    A simple model for test various inputs of channels last format
+    """
+    def __init__(self):
+        super(DummyModelWith3d, self).__init__()
+        self.conv3d_1 = nn.Conv3d(3, 33, 3, stride=2)
+
+    def forward(self, x1, x2:int):
+        return self.conv3d_1(x1), x2
+
 
 class MultipleInputWithKwargsNet(nn.Module):
     def __init__(self):
@@ -129,6 +142,20 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
 
+    def test_ipex_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None, 
+                                                            channels_last=True, use_ipex=True)
+        with InferenceOptimizer.get_context(ipex_channels_last_model):
+            ipex_channels_last_model(x1, x2)
+        assert ipex_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
+
     def test_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
         x1 = torch.rand(1, 1) # 3-dim input test
@@ -143,19 +170,47 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
 
+    def test_jit_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+                                                           use_ipex=False, channels_last=True)
+        with InferenceOptimizer.get_context(jit_channels_last_model):
+            jit_channels_last_model(x1, x2)
+        assert jit_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
+
     def test_ipex_jit_channels_last_inference(self):
         model = DummyMultiInputModel()
         x1 = torch.rand(1, 1) # 3-dim input test
         x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
         x3 = [1, 2, 3, 4] # input without .to() method
         ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                use_ipex=True)
+                                                                use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2, x3)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
+
+    def test_ipex_jit_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+                                                                use_ipex=True, channels_last=True)
+        with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
+            ipex_jit_channels_last_model(x1, x2)
+        assert ipex_jit_channels_last_model.channels_last_available == ["channels_last_3d", "original"]
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
 
     def test_ipex_jit_inference_additional_attrs(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -174,6 +229,23 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
         assert new_model.channels == 3
         new_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            new_model.strange_call()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test jit + ipex + inplace
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
@@ -201,6 +273,19 @@ class IPEXJITInference_gt_1_10:
         assert new_model.channels == 3
         new_model.hello()
 
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
+
         # test ipex
         new_model = InferenceOptimizer.trace(model, use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
@@ -209,6 +294,19 @@ class IPEXJITInference_gt_1_10:
         new_model.hello()
         with pytest.raises(AttributeError):
             new_model.width
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test ipex inplace
         new_model = InferenceOptimizer.trace(model, use_ipex=True, inplace=True)
@@ -443,6 +541,42 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.enable_onednn is True
+
+    def test_ipex_jit_inference_stable_diffusion_unet(self):
+        from diffusers.models import UNet2DConditionModel
+        # reduce model size as action runner has limited memory
+        unet = UNet2DConditionModel(sample_size=64,
+                                    cross_attention_dim=10,
+                                    attention_head_dim=1,
+                                    down_block_types=("CrossAttnDownBlock2D", "DownBlock2D"),
+                                    block_out_channels=(32, 64),
+                                    up_block_types=("UpBlock2D", "CrossAttnUpBlock2D"),
+                                    layers_per_block=1)
+        latent_shape = (2, 4, 8, 8)
+        image_latents = torch.randn(latent_shape, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states = torch.randn((2, 6, 10), device = "cpu", dtype=torch.float32)
+        input_sample = (image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+
+        latent_shape2 = (1, 4, 8, 8) # different shape
+        image_latents2 = torch.randn(latent_shape2, device = "cpu", dtype=torch.float32)
+        encoder_hidden_states2 = torch.randn((1, 12, 10), device = "cpu", dtype=torch.float32)
+
+        unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+        nano_unet = InferenceOptimizer.trace(unet, accelerator="jit",
+                                             use_ipex=True,
+                                             input_sample=input_sample,
+                                             jit_strict=False,
+                                             weights_prepack=False)
+        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(nano_unet, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):

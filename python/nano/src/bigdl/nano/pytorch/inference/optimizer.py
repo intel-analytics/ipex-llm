@@ -36,7 +36,8 @@ from bigdl.nano.utils.pytorch import NanoMetric
 from bigdl.nano.utils.pytorch import RepeatDataset, remove_batch_dim_fn
 from bigdl.nano.utils.pytorch import transform_multiple_input_dataloader_to_inc_mode,\
     automatic_add_label_in_dataloader
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, save_model, load_model
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
@@ -356,13 +357,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         if len(training_data) == 2:
                             input_label = training_data[1]
                         else:
-                            input_label = []
+                            input_label = torch.Tensor([])
                     else:
                         input_sample = tuple(training_data[:len(forward_args)])
                         input_label = tuple(training_data[len(forward_args):])
                 else:
                     input_sample = training_data
-                    input_label = []
+                    input_label = torch.Tensor([])
                 # turn training_data into dataset
                 dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
                 training_data = DataLoader(dataset, batch_size=1)
@@ -854,7 +855,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             thread_num=thread_num,
                                                             inplace=inplace,
                                                             jit_strict=jit_strict)
-                        print("using pure ipex quantization")
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
@@ -1142,15 +1142,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             return _context_manager
 
     @staticmethod
-    def save(model: nn.Module, path):
+    def save(model: nn.Module, path, compression="fp32"):
         """
         Save the model to local file.
 
         :param model: Any model of torch.nn.Module, including all models accelareted by
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
         :param path: Path to saved model. Path should be a directory.
+        :param compression: str. This parameter only effective for jit, ipex or pure
+               pytorch model with fp32 or bf16 precision. Defaultly, all models are saved
+               by dtype=fp32 for their parameters. If users set a lower precision, a smaller
+               file sill be saved with some accuracy loss. Users always need to use nano
+               to load the compressed file if compression is set other than "fp32".
+               Currently, "bf16" and "fp32"(default) are supported.
         """
-        save_model(model, path)
+        save_model(model, path, compression)
 
     @staticmethod
     def load(path, model: Optional[nn.Module] = None, input_sample=None,
@@ -1159,12 +1165,20 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load pytorch model, it is needed if you accelerated
-               the model with accelerator=None by InferenceOptimizer.trace/
-               InferenceOptimizer.quantize. model should be set to None if you choose
-               accelerator="onnxruntime"/"openvino"/"jit".
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
         :param input_sample: Input sample for your model, could be a Tensor or a tuple.
-               Only valid for inc ipex quantization model, otherwise will be ignored.
+               This parameter is needed if:
+               1. saving model is accelerated by INC IPEX quantization.
+               2. saving model is accelerated by JIT and you set compression='bf16'
+               when saving.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.

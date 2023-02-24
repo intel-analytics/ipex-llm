@@ -18,7 +18,7 @@ import os
 import torch
 from logging import warning
 
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 
 
 CPU_DEVICE = torch.device("cpu")

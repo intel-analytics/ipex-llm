@@ -145,6 +145,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
+          pip install diffusers==0.11.1
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
@@ -252,6 +253,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
           pip install pytest
+          pip install diffusers==0.11.1
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable

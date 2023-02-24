@@ -17,7 +17,7 @@
 import os
 import numpy as np
 from torch import nn
-import torch
+import tempfile
 from unittest import TestCase
 import pytest
 import torchvision.transforms as transforms
@@ -28,7 +28,8 @@ import torch
 import torch.nn.functional as F
 from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidOperationError
 
 
@@ -81,6 +82,19 @@ class NestedInputNet2(nn.Module):
     def forward(self, x1, x2):
         xx1, xx2 = x1
         return self.dense1(xx1) + self.dense2(xx2) + self.dense3(x2)
+
+class NestedInputNet3(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+        self.dense3 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2, x3):
+        xx1, xx2 = x1
+        y = self.dense1(xx1+xx2) + self.dense2(x2)
+        y = y + self.dense3(x3)
+        return  y
 
 class MultipleInputNet(nn.Module):
     def __init__(self):
@@ -320,8 +334,14 @@ class TestInferencePipeline(TestCase):
                                latency_sample_num=10)
         if TORCH_VERSION_LESS_1_12:
             return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
         optim_dict = inference_opt.optimized_model_dict
         for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
             assert result["status"] in ("successful", "early stopped"), \
                 "optimization failed with dict: {optim_dict}"
 
@@ -334,8 +354,14 @@ class TestInferencePipeline(TestCase):
                                latency_sample_num=10)
         if TORCH_VERSION_LESS_1_12:
             return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
         optim_dict = inference_opt.optimized_model_dict
         for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
             # TODO: nested tensor currently not work for openvino and onnx
             if "openvino" not in method and "onnxruntime_int8_qlinear" != method:
                 assert result["status"] in ("successful", "early stopped"), \
@@ -351,7 +377,38 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         if TORCH_VERSION_LESS_1_12:
             return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
         for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
+            # TODO: nested tensor currently not work for openvino and onnx and inc
+            if "openvino" not in method and "onnxruntime_int8_qlinear" != method:
+                assert result["status"] in ("successful", "early stopped"), \
+                    f"optimization failed with dict: {optim_dict}"
+
+    def test_pipeline_with_nested_tensor_three_inputs(self):
+        input_sample = (((torch.rand(1, 10),
+                          torch.rand(1, 10)),
+                        torch.rand(1, 10),
+                        torch.rand(1, 10)),)
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=NestedInputNet3(),
+                               training_data=input_sample,
+                               thread_num=1,
+                               latency_sample_num=10)
+        optim_dict = inference_opt.optimized_model_dict
+        if TORCH_VERSION_LESS_1_12:
+            return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
+        for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
             # TODO: nested tensor currently not work for openvino and onnx and inc
             if "openvino" not in method and "onnxruntime_int8_qlinear" != method:
                 assert result["status"] in ("successful", "early stopped"), \
@@ -369,7 +426,13 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         if TORCH_VERSION_LESS_1_12:
             return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
         for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
             assert result["status"] in ("successful", "early stopped"), \
                 f"optimization failed with dict: {optim_dict}"
 
@@ -424,7 +487,13 @@ class TestInferencePipeline(TestCase):
         optim_dict = inference_opt.optimized_model_dict
         if TORCH_VERSION_LESS_1_12:
             return
+        exclude_test_method = []
+        if not _avx512_checker():
+            # Applying IPEX BF16 optimization needs the cpu support avx512
+            exclude_test_method = ["jit_bf16_ipex", "jit_bf16_ipex_channels_last"]
         for method, result in optim_dict.items():
+            if method in exclude_test_method:
+                continue
             assert result["status"] in ("successful", "early stopped"), \
                 f"optimization failed with dict: {optim_dict}"
 
@@ -615,3 +684,215 @@ class TestInferencePipeline(TestCase):
         with InferenceOptimizer.get_context(jit_thread_model, ipex_thread_model):
             ipex_model(input_sample)
             assert torch.get_num_threads() == 4
+
+    def test_compressed_saving(self):
+        input_sample = torch.rand(10, 3, 32, 32)
+
+        # original model
+        self.model.eval()
+        with InferenceOptimizer.get_context(self.model):
+            opt_output = self.model(input_sample)
+        # test save load original model
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(self.model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "saved_weight.pt"))
+        with InferenceOptimizer.get_context(self.model):
+            opt_output_after_saving = self.model(input_sample)
+        assert torch.equal(opt_output, opt_output_after_saving)
+
+        # test save load compressed model
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(self.model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "saved_weight.pt"))
+        with InferenceOptimizer.get_context(self.model):
+            opt_output_after_saving = self.model(input_sample)
+        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
+        opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test ipex
+        opt_model = InferenceOptimizer.trace(self.model, use_ipex=True)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test bf16
+        if TORCH_VERSION_LESS_1_12:
+            pass
+        else:
+            opt_model = InferenceOptimizer.quantize(self.model, precision="bf16")
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output = opt_model(input_sample)
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir)
+                original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+                opt_model_load = InferenceOptimizer.load(tmpdir, self.model)
+                compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.equal(opt_output, opt_output_after_saving)  # output is the same with model before saving compression
+            with InferenceOptimizer.get_context(opt_model_load):
+                opt_output_after_loading = opt_model_load(input_sample)
+            assert compressed_size_ipex < 0.8 * original_size
+            assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test pure jit
+        opt_model = InferenceOptimizer.trace(self.model,
+                                             accelerator="jit",
+                                             input_sample=input_sample,
+                                             use_ipex=False)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit + ipex
+        opt_model = InferenceOptimizer.trace(self.model,
+                                             accelerator="jit",
+                                             input_sample=input_sample,
+                                             use_ipex=True)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit bf16
+        self.model.eval()
+        opt_model = InferenceOptimizer.quantize(self.model,
+                                                accelerator="jit",
+                                                input_sample=input_sample,
+                                                use_ipex=False,
+                                                precision='bf16')
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+
+        # TODO: locate why jit have different result for same sample
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=5e-02)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=5e-02)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+        # test jit + ipex + bf16
+        opt_model = InferenceOptimizer.quantize(self.model,
+                                                accelerator="jit",
+                                                input_sample=input_sample,
+                                                use_ipex=True,
+                                                precision='bf16')
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output = opt_model(input_sample)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir)
+            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            opt_model_load = InferenceOptimizer.load(tmpdir)
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading= opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                     input_sample=input_sample)
+            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+        with InferenceOptimizer.get_context(opt_model):
+            opt_output_after_saving = opt_model(input_sample)
+        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+        with InferenceOptimizer.get_context(opt_model_load):
+            opt_output_after_loading = opt_model_load(input_sample)
+        assert compressed_size_ipex < 0.8 * original_size
+        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)

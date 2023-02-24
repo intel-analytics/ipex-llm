@@ -62,7 +62,10 @@ python -m pytest -v test/bigdl/chronos/forecaster \
            not TestChronosNBeatsForecaster and \
            not TestChronosModelSeq2SeqForecaster and \
            not TestChronosModelTCNForecaster and \
-           not test_forecast_tcmf_distributed"
+           not test_forecast_tcmf_distributed and \
+           not test_tcn_keras_forecaster_quantization"
+python -m pytest -s test/bigdl/chronos/forecaster/tf/\
+test_tcn_keras_forecaster.py::TestTCNForecaster::test_tcn_keras_forecaster_quantization
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then

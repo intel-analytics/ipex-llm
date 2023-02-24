@@ -35,7 +35,7 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
     :param kwargs: extra arguments passed to initialize the tsdataset,
            including with_split, val_ratio and test_ratio.
     """
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(isinstance(name, str) and isinstance(path, str),
                       "Name and path must be string.")
 

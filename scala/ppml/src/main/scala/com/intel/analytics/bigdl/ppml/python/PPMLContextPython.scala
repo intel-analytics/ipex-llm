@@ -35,39 +35,31 @@ object PPMLContextPython {
 class PPMLContextPython[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def createPPMLContext(sparkConf: SparkConf): PPMLContext = {
-    logger.debug("createPPMLContext with SparkConf" + "confs:\n" +
-      sparkConf.getAll.mkString("Array(", ", ", ")"))
-    PPMLContext.initPPMLContext(sparkConf)
+  def createPPMLContext(sparkSession: SparkSession): PPMLContext = {
+    logger.debug("createPPMLContext with SparkSession" + "confs:\n" +
+      sparkSession.sparkContext.getConf.getAll.mkString("Array(", ", ", ")"))
+    PPMLContext.initPPMLContext(sparkSession)
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String,
-           kmsName: String = "", primaryKey: String = "",
-           dataKey: String = ""): EncryptedDataFrameReader = {
+    primaryKeyName: String = "defaultKey"): EncryptedDataFrameReader = {
     logger.debug("read file with crypto mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.read(cryptoMode, kmsName, primaryKey, dataKey)
+    sc.read(cryptoMode, primaryKeyName)
   }
 
   def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String,
-            kmsName: String = "", primaryKey: String = "",
-            dataKey: String = ""): EncryptedDataFrameWriter = {
+    primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
     logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.write(dataFrame, cryptoMode, kmsName, primaryKey, dataKey)
+    sc.write(dataFrame, cryptoMode, primaryKeyName)
   }
 
-  def loadKeys(sc: PPMLContext,
-               primaryKeyPath: String, dataKeyPath: String): PPMLContext = {
-    sc.loadKeys(primaryKeyPath, dataKeyPath)
-  }
-
-  def textFile(sc: PPMLContext, path: String, minPartitions: Int,
-               cryptoModeStr: String, kmsName: String = "",
-               primaryKey: String = "", dataKey: String = ""): RDD[String] = {
+  def textFile(sc: PPMLContext, path: String,
+    minPartitions: Int, cryptoModeStr: String,
+    primaryKeyName: String = "defaultKey"): RDD[String] = {
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.textFile(path, minPartitions, cryptoMode,
-                kmsName, primaryKey, dataKey)
+    sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
 
   /**
@@ -129,11 +121,10 @@ class PPMLContextPython[T]() {
    * support for test
    */
 
-  def initKeys(appId: String, apiKey: String, primaryKeyPath: String,
-               dataKeyPath: String): SimpleKeyManagementService = {
+  def initKeys(appId: String, apiKey: String,
+               primaryKeyPath: String): SimpleKeyManagementService = {
     val kms = SimpleKeyManagementService.apply(appId, apiKey)
     kms.retrievePrimaryKey(primaryKeyPath)
-    kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
     kms
   }
 

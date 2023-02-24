@@ -147,7 +147,7 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
         my_context = model.no_sync if WORLD_SIZE > 1 and args.mini_batch > 0 and batch % args.mini_batch != 0 else nullcontext
         with my_context():
             X, y = X.to(device), y.to(device)
-        # Forward pass
+            # Forward pass
             pred = model(X)
             loss = loss_fn(pred, y)
             loss.backward()

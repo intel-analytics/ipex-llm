@@ -240,6 +240,7 @@ class TorchRunner(BaseRunner):
             val_loader = None
             val_steps = None
 
+        self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
@@ -464,13 +465,16 @@ class TorchRunner(BaseRunner):
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+        self.val_loader = loader
         loader = iter(loader)
 
         with self.timers.record("validation"):
+            self.num_steps = num_steps
             validation_stats = self._validate(loader,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
                                               callbacks=callbacks)
+            del self.num_steps
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
@@ -517,13 +521,13 @@ class TorchRunner(BaseRunner):
 
                 del self.batch_idx
 
-        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         result = {name: metric.compute() for name, metric in metrics.items()}
 
         result["val_loss"] = sum(losses) / total_samples
 
         result["num_samples"] = total_samples
 
+        self.call_hook(callbacks=callbacks, fn_name="after_val_epoch")
         return result
 
     def forward_batch(self, batch, callbacks=None):
@@ -567,15 +571,20 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        target = self.batch[-1]
+        loss = self.loss
+
         del self.batch
         del self.output
+        del self.loss
 
-        return output, target, self.loss
+        return output, target, loss
 
-    def predict(self, partition, batch_size=32, profile=False):
+    def predict(self, partition, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
+        callbacks = callbacks or []
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -586,7 +595,7 @@ class TorchRunner(BaseRunner):
 
         def predict_fn(shard):
             if isinstance(partition, IterableDataset):
-                y = self._predict(shard)
+                y = self._predict(shard, callbacks=callbacks)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
                     tensors = [torch.from_numpy(arr) for arr in shard["x"]]
@@ -594,24 +603,34 @@ class TorchRunner(BaseRunner):
                     tensors = [torch.from_numpy(shard["x"])]
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
-                y = self._predict(iter(data_loader))
+                y = self._predict(iter(data_loader), callbacks=callbacks)
             return {"prediction": y}
 
+        self.call_hook(callbacks, "before_pred_epoch")
         with self.timers.record("predict"):
             if isinstance(partition, IterableDataset):
                 new_part = [predict_fn(shard) for shard, shard_idx in partition]
             else:
                 new_part = [predict_fn(shard) for shard in partition]
+        self.call_hook(callbacks, "after_pred_epoch")
         return new_part
 
-    def _predict(self, pred_iterator):
+    def _predict(self, pred_iterator, callbacks=None):
         # switch to evaluate mode
         self._mode = 'predict'
         self.model.eval()
         result = []
         with torch.no_grad():
-            for batch in pred_iterator:
-                result.append(self.predict_batch(batch))
+            for batch_idx, batch in enumerate(pred_iterator):
+                self.batch = batch
+                self.batch_idx = batch_idx
+
+                self.call_hook(callbacks, "before_pred_iter")
+                result.append(self.predict_batch(self.batch))
+                self.call_hook(callbacks, "after_pred_iter")
+
+                del self.batch
+                del self.batch_idx
 
         return np.concatenate(result, axis=0)
 

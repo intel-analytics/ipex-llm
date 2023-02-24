@@ -57,7 +57,7 @@ runs:
         echo "If there is conflict above, please refer to kill command."
         echo ""
         echo "Check whether there is remaining container:"
-        export container_check=$(docker ps|grep ${CONTAINER_NAME})
+        export container_check=$(docker ps -a|grep ${CONTAINER_NAME})
         if [ "$container_check" != "" ];then
           docker stop /${CONTAINER_NAME}
           docker rm /${CONTAINER_NAME}

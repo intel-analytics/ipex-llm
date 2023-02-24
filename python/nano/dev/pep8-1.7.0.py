@@ -129,9 +129,9 @@ COMMENT_WITH_NL = tokenize.generate_tokens(['#\n'].pop).send(None)[1] == '#\n'
 
 def trailing_blacklist_words(physical_line):
     if physical_line.find("assert ") != -1:
-        return 0, "Please don't use assert, use log4Error.invalidInputError instead"
+        return 0, "Please don't use assert, use bigdl.nano.utils.common.invalidInputError instead"
     if physical_line.find("raise ") != -1:
-        return 0, "Please don't use raise, use log4Error.invalidInputError instead"
+        return 0, "Please don't use raise, use bigdl.nano.utils.common.invalidInputError instead"
 
 
 

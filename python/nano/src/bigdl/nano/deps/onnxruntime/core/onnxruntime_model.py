@@ -42,11 +42,14 @@ class ONNXRuntimeModel:
         '''
         flattened_inputs = []
         _flatten(inputs, flattened_inputs)
-        invalidInputError(len(self._forward_args) >= len(flattened_inputs),
-                          "The length of inputs is "
-                          "inconsistent with the length of ONNX Runtime session's inputs, "
-                          f"got model_forward_args: {self._forward_args}, "
-                          f"and flattened inputs: {flattened_inputs}")
+        if len(self._forward_args) != len(flattened_inputs):
+            # formatting a Tensor will cost much time,
+            # so we put it in this `if` statement
+            invalidInputError(False,
+                              "The length of inputs is "
+                              "inconsistent with the length of ONNX Runtime session's inputs, "
+                              f"got model_forward_args: {self._forward_args}, "
+                              f"and flattened inputs: {flattened_inputs}")
         zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
         ort_outs = self.ortsess.run(None, zipped_inputs)
         return ort_outs
@@ -77,7 +80,7 @@ class ONNXRuntimeModel:
         self.ortsess = ort.InferenceSession(onnx_path_or_bytes, sess_options=sess_options)
         self._forward_args = list(map(lambda x: x.name, self.ortsess.get_inputs()))
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         """
         Save ONNXRuntimeModel to local as an onnx file
 

@@ -192,6 +192,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
+ADD ./zeppelin /ppml/zeppelin
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -214,7 +215,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod -R 777 ${FLINK_HOME} && \
     chown -R flink:flink ${FLINK_HOME} && \
 # Python packages
-    pip3 install numpy
+    pip3 install numpy pandas
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
 

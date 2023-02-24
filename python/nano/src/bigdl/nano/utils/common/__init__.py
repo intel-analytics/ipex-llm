@@ -33,6 +33,7 @@ from .checker import _avx512_checker
 
 from .model import AcceleratedModel
 
+from .schedule import schedule_workers
 from .schedule import schedule_processors
 
 from .subprocess import spawn_new_process
@@ -42,6 +43,8 @@ from .version import compare_version
 from .inspect import get_default_args
 
 from .decorator import deprecated
+
+from .affinity import get_affinity_core_num
 
 from .env import _env_variable_is_set
 from .env import _find_library

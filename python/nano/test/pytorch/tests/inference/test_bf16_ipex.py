@@ -33,6 +33,7 @@ class CaseWithoutAVX512:
                            match="Applying IPEX BF16 optimization needs the cpu support avx512."):
             bf16_model = InferenceOptimizer.quantize(model, precision='bf16', use_ipex=True)
 
+
 class DummyMultiInputModel(nn.Module):
     """
     A simple model for test various inputs of channels last format
@@ -42,6 +43,19 @@ class DummyMultiInputModel(nn.Module):
 
     def forward(self, x1, x2, x3: List[float]):
         return x1, x2, x3
+
+
+class DummyModelWith3d(nn.Module):
+    """
+    A simple model for test various inputs of channels last format
+    """
+    def __init__(self):
+        super(DummyModelWith3d, self).__init__()
+        self.conv3d_1 = nn.Conv3d(3, 33, 3, stride=2)
+
+    def forward(self, x1, x2:int):
+        return self.conv3d_1(x1), x2
+
 
 class Pytorch1_11:
     @patch('bigdl.nano.deps.ipex.ipex_inference_bf16_model.PytorchIPEXJITBF16Model._check_cpu_isa', new_callable=PropertyMock)
@@ -136,30 +150,69 @@ class Pytorch1_11:
             print("hello world!")
         # patch a function
         model.hello = hello
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             accelerator="jit", use_ipex=True,
-                                             input_sample=x)
+
+        # test jit + ipex + bf16
+        new_model = InferenceOptimizer.quantize(model,
+                                                precision='bf16',
+                                                accelerator="jit",
+                                                use_ipex=True,
+                                                input_sample=x)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
         new_model.hello()
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             accelerator="jit",
-                                             input_sample=x)
+        # test jit + bf16
+        new_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                accelerator="jit",
+                                                input_sample=x)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
         new_model.hello()
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
-        new_model = InferenceOptimizer.trace(model, precision='bf16',
-                                             use_ipex=True)
+        # test ipex + bf16
+        new_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
         assert new_model.channels == 3
         new_model.hello()
         with pytest.raises(AttributeError):
             new_model.width
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(new_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITBF16Model' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
     def test_bf16_ipex_jit_method(self):
 
@@ -192,7 +245,6 @@ class Pytorch1_11:
             output = loaded_model(input)
         assert output.shape[0] == expected_output_len
         assert loaded_model.jit_method == 'script'
-
 
         # test with jit.trace (with ipex)
         accmodel = InferenceOptimizer.quantize(model, precision='bf16',
@@ -297,6 +349,25 @@ class Pytorch1_11:
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
             assert new_model.enable_onednn is True
+
+    def test_ipex_jit_channels_last_3d_inference(self):
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+        ipex_jit_channels_last_model = InferenceOptimizer.quantize(model,
+                                                                   accelerator="jit", 
+                                                                   use_ipex=True,
+                                                                   precision='bf16',
+                                                                   input_sample=(x1, x2),
+                                                                   enable_onednn=True,
+                                                                   channels_last=True)
+        with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
+            ipex_jit_channels_last_model(x1, x2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+            with InferenceOptimizer.get_context(load_model):
+                load_model(x1, x2)
 
 
 TORCH_VERSION_CLS = Pytorch1_11

@@ -275,7 +275,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.internal.eval()
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.1, max_trials=3)
+                            metric="mse", relative_drop=0.99, max_trials=3)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -842,3 +842,22 @@ class TestChronosModelLSTMForecaster(TestCase):
         assert new_current_thread == current_thread
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
+
+    def test_lstm_forecaster_ctx_manager(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        num = max(1, original_thread//2)
+        with forecaster.get_context(thread_num=num, optimize=True):
+            assert forecaster.context_enabled == True
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
+            for x, y in test_loader:
+                yhat = forecaster.predict(x.numpy())

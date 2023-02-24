@@ -12,28 +12,27 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
         <tbody>
           <tr>
             <td colspan="1">FrameWork</td>
-            <td colspan="2"><button id="pytorch">Pytorch</button></td>
-            <td colspan="2"><button id="tensorflow">Tensorflow</button></td>
+            <td colspan="2"><button id="pytorch" class="install_option_button">PyTorch</button></td>
+            <td colspan="2"><button id="tensorflow" class="install_option_button">TensorFlow</button></td>
           </tr>
-          <tr id="version" class="taller_tr">
+          <tr id="version">
             <td colspan="1">Version</td>
-            <td colspan="1"><button id="pytorch_113">1.13</button></td>
-            <td colspan="1"><button id="pytorch_112">1.12</button></td>
-            <td colspan="1"><button id="pytorch_111">1.11</button></td>
-            <td colspan="1"><button id="pytorch_110">1.10</button></td>
+            <td colspan="1"><button id="pytorch_113" class="install_option_button">1.13</button></td>
+            <td colspan="1"><button id="pytorch_112" class="install_option_button">1.12</button></td>
+            <td colspan="1"><button id="pytorch_111" class="install_option_button">1.11</button></td>
+            <td colspan="1"><button id="pytorch_110" class="install_option_button">1.10</button></td>
           </tr>
           <tr>
-            <td colspan="1">Inference Optimization</td>
-            <td colspan="2"><button id="inferenceyes">Yes</button></td>
-            <td colspan="2"><button id="inferenceno">No</button></td>
-            </td>
+            <td colspan="1">Inference Opt</td>
+            <td colspan="2"><button id="inference_yes" class="install_option_button">Yes</button></td>
+            <td colspan="2"><button id="inference_no" class="install_option_button">No</button></td>
           </tr>
           <tr>
             <td colspan="1">Release</td>
-            <td colspan="2"><button id="nightly">Nightly</button></td>
-            <td colspan="2"><button id="stable">Stable</button></td>
+            <td colspan="2"><button id="nightly" class="install_option_button">Nightly</button></td>
+            <td colspan="2"><button id="stable" class="install_option_button">Stable</button></td>
           </tr>
-          <tr class="tallet_tr">
+          <tr>
             <td colspan="1">Install CMD</td>
             <td colspan="4" id="cmd">NA</td>
           </tr>

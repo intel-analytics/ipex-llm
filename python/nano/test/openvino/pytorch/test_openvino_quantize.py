@@ -159,12 +159,39 @@ class TestOpenVINO(TestCase):
                                                      thread_num=2)
         assert openvino_model.channels == 3
         openvino_model.hello()
-        with pytest.raises(AttributeError):
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchOpenVINOModel' object has no attribute 'width'"
+        ):
             openvino_model.width
 
         with InferenceOptimizer.get_context(openvino_model):
             assert torch.get_num_threads() == 2
             y1 = openvino_model(x[0:1])
+
+        # save & load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, device='CPU')
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchOpenVINOModel' object has no attribute 'channels'"
+        ):
+            load_model.channels
+        with pytest.raises(AttributeError):
+            load_model.hello()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model, device='CPU')
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchOpenVINOModel' object has no attribute 'width'"
+        ):
+            openvino_model.width
 
     def test_openvino_quantize_dynamic_axes(self):
         class CustomModel(nn.Module):

@@ -19,8 +19,8 @@ import math
 
 import tensorflow as tf
 
-from utils import *
 from process_xshards import get_feature_cols, get_label_cols
+from utils import *
 
 from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf2 import Estimator
@@ -28,7 +28,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Orca XShards")
-init_orca(args.cluster_mode)
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,utils.py")
 
 
 # Step 2: Read and process data using Xshards
@@ -39,7 +39,7 @@ test_data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xsha
 # Step 3: Distributed training with Orca TF2 Estimator after loading the model
 est = Estimator.from_keras(backend=args.backend,
                            workers_per_node=args.workers_per_node)
-est.load(os.path.join(args.model_dir, "NCF_model"))
+est.load(os.path.join(args.model_dir, "NCF_model.h5"))
 
 batch_size = 10240
 train_steps = math.ceil(len(train_data) / batch_size)
@@ -68,7 +68,7 @@ for k, v in train_stats.items():
 
 
 # Step 4: Save the trained TensorFlow model
-est.save(os.path.join(args.model_dir, "NCF_resume_model"))
+est.save(os.path.join(args.model_dir, "NCF_resume_model.h5"))
 
 
 # Step 5: Shutdown the Estimator and stop Orca Context when the program finishes

@@ -17,7 +17,7 @@
 
 import torch
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11
 from bigdl.nano.utils.pytorch import get_forward_args, get_conditional_args,\
     get_input_example, complement_input_sample
 
