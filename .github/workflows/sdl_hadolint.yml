@@ -15,11 +15,10 @@ jobs:
     - uses: actions/checkout@v3
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
-        docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile > bigdl-k8s-hadolint.txt
-        cat bigdl-k8s-hadolint.txt
+        docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile
     - name: "bigdl-dockerfile-scanning"
       run: |
-        docker run --rm -i hadolint/hadolint < ./docker/bigdl/Dockerfile > bigdl-hadolint.txt
+        docker run --rm -i hadolint/hadolint < ./docker/bigdl/Dockerfile
     - name: "bigdl-chronos-dockerfile-scanning"
       run: |
         docker run --rm -i hadolint/hadolint < ./docker/chronos-nightly/Dockerfile
