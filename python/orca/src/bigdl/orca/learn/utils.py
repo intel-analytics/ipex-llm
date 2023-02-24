@@ -346,7 +346,10 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         if shard_size:
             # remove empty part of the ndarray in the last shard
             rest_size = counter % shard_size
-            feature_lists = [feature[0:rest_size] for feature in feature_lists]
+            if isinstance(feature_lists, dict):
+                feature_lists = {k: v[0:rest_size] for k, v in feature_lists.items()}
+            else:
+                feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
                 if isinstance(label_lists, dict):
                     label_lists = {k: v[0:rest_size] for k, v in label_lists.items()}
