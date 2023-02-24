@@ -61,7 +61,7 @@ class ModelCheckpoint(Callback):
         be called during TRAIN mode.
         :param epoch:  Integer, index of epoch.
         """
-        if self.every_n_train_steps and isinstance(self.every_n_train_steps, int):
+        if self.every_n_train_steps and isinstance(self.every_n_train_steps, int) and self.every_n_train_steps > 0:
             return
         else:
             stats = {"epoch": runner.epochs}
@@ -71,7 +71,7 @@ class ModelCheckpoint(Callback):
             runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
 
     def after_train_iter(self, runner):
-        if self.every_n_train_steps and isinstance(self.every_n_train_steps, int):
+        if self.every_n_train_steps and isinstance(self.every_n_train_steps, int) and self.every_n_train_steps > 0:
             if runner.global_step % self.every_n_train_steps == 0:
                 stats = {"step": runner.global_step}
                 last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
