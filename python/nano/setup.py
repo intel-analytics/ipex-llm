@@ -95,6 +95,11 @@ def setup_package():
                                "tensorflow==2.10.0; platform_machine=='x86_64' and \
                                platform_system=='Darwin'"]
 
+    tensorflow_211_requires = ["intel-tensorflow==2.11.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
+                               platform_system!='Darwin'",
+                               "tensorflow==2.11.0; platform_machine=='x86_64' and \
+                               platform_system=='Darwin'"]
+
     # options for stock tensorflow
     stock_tensorflow_27_requires = ["tensorflow==2.7.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
@@ -104,18 +109,22 @@ def setup_package():
 
     stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
+    stock_tensorflow_211_requires = ["tensorflow==2.11.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+
     tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
     # default tensorflow_dep
     tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
-    tensorflow_210_requires += tensorflow_common_requires
-    tensorflow_29_requires += tensorflow_common_requires
-    tensorflow_28_requires += tensorflow_common_requires
     tensorflow_27_requires += tensorflow_common_requires
+    tensorflow_28_requires += tensorflow_common_requires
+    tensorflow_29_requires += tensorflow_common_requires
+    tensorflow_210_requires += tensorflow_common_requires
+    tensorflow_211_requires += tensorflow_common_requires
     stock_tensorflow_27_requires += tensorflow_common_requires
     stock_tensorflow_28_requires += tensorflow_common_requires
     stock_tensorflow_29_requires += tensorflow_common_requires
     stock_tensorflow_210_requires += tensorflow_common_requires
+    stock_tensorflow_211_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.1",
@@ -201,10 +210,12 @@ def setup_package():
                         "tensorflow_28": tensorflow_28_requires,
                         "tensorflow_29": tensorflow_29_requires,
                         "tensorflow_210": tensorflow_210_requires,
+                        "tensorflow_211": tensorflow_210_requires,
                         "stock_tensorflow_27": stock_tensorflow_27_requires,
                         "stock_tensorflow_28": stock_tensorflow_28_requires,
                         "stock_tensorflow_29": stock_tensorflow_29_requires,
                         "stock_tensorflow_210": stock_tensorflow_210_requires,
+                        "stock_tensorflow_211": stock_tensorflow_211_requires,
                         "pytorch": pytorch_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,
