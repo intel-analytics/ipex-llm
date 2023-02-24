@@ -21,9 +21,7 @@ cd "`dirname $0`"
 export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
-ray stop -f
-
 cd ../../
 
 echo "Running openvino test"
-python -m pytest -v test/bigdl/orca/learn/spark/test_estimator_openvino.py
+python -m pytest -v test/bigdl/orca/learn/bigdl/test_estimator_openvino.py

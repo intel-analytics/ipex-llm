@@ -21,14 +21,13 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
 
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
     transform_state_dict_to_dtype
 
 
-def load_model(path, model: pl.LightningModule = None, input_sample=None,
+def load_model(path, model: nn.Module = None, input_sample=None,
                inplace=False, device=None):
     """
     Load a model from local.
@@ -39,7 +38,10 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
                InferenceOptimizer.trace/InferenceOptimizer.quantize.
                2. you want to the loaded model contains the attributes of original model.
     :param input_sample: Input sample for your model, could be a Tensor or a tuple.
-            Only valid for inc ipex quantization model, otherwise will be ignored.
+               This parameter is needed if:
+               1. saving model is accelerated by INC IPEX quantization.
+               2. saving model is accelerated by JIT and you set compression='bf16'
+               when saving.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param device: A string represents the device of the inference. Default to None.
                    Only valid for openvino model, otherwise will be ignored.
@@ -71,9 +73,11 @@ def load_model(path, model: pl.LightningModule = None, input_sample=None,
     if model_type == 'PytorchQuantizedModel':
         result = load_inc_model(path, model, 'pytorch', input_sample=input_sample)
     if model_type == 'PytorchIPEXJITModel':
-        result = load_ipexjit_model(path, model, inplace=inplace)
+        result = load_ipexjit_model(path, model, inplace=inplace,
+                                    input_sample=input_sample)
     if model_type == 'PytorchIPEXJITBF16Model':
-        result = load_ipexjitbf16_model(path, model, inplace=inplace)
+        result = load_ipexjitbf16_model(path, model, inplace=inplace,
+                                        input_sample=input_sample)
     if model_type == 'PytorchIPEXQuantizationModel':
         result = load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
