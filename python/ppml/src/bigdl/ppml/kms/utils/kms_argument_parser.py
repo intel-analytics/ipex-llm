@@ -15,9 +15,8 @@
 #
 
 class KmsArgumentParser:
-    import argparse
-    
     def __init__(self):
+        import argparse
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument("--app_id", type=str, help="app id")
         self.parser.add_argument("--api_key", type=str, help="app key")
@@ -38,4 +37,5 @@ class KmsArgumentParser:
     def get_arg_dict(self):
        args = self.parser.parse_args()
        arg_dict = vars(args)
+       return arg_dict
 

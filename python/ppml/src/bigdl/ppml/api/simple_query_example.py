@@ -24,7 +24,7 @@ execute the following command to run this example on local
 
 python simple_query_example.py \
 --app_id your_simple_kms_app_id \
---app_key your_simple_kms_app_key \
+--api_key your_simple_kms_app_key \
 --primary_key_material /your/primary/key/path/primaryKey \
 --input_path /your/file/input/path \
 --output_path /your/file/output/path \
