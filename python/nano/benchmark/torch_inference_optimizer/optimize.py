@@ -64,7 +64,7 @@ def optimize():
 
     model = ResNet18(10)
     # loader = create_data_loader(data_dir)
-    loader = DataLoader(TensorDataset(torch.rand(100, 3, 224, 224), torch.randint(0, 10, size=(100, 1))))
+    loader = DataLoader(TensorDataset(torch.rand(100, 3, 128, 128), torch.randint(0, 10, size=(100, 1))))
     opt = InferenceOptimizer()
     if "OMP_NUM_THREADS" in os.environ:
         thread_num = int(os.environ["OMP_NUM_THREADS"])
