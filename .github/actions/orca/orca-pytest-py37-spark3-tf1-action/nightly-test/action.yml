@@ -9,6 +9,8 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220811'/g" python/dllib/src/setup.py
+        
+        # unit test test_inference_model requires "app.properties"
         bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
         
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
