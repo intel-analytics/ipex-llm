@@ -65,7 +65,7 @@ case class KeyLoader(val fromKms: Boolean,
         }
         val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
         sparkSession.sparkContext.hadoopConfiguration
-          .set(s"bigdl.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
+          .set(s"bigdl.read.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
         dataKeyPlainText
     }
 
