@@ -107,10 +107,7 @@ class ResNetPerfCallback(MainCallback):
             runner.num_steps = len(runner.val_loader)
         invalidInputError(runner.num_steps > runner.config["warmup_iterations"],
                           "total steps should be larger than warmup iterations")
-        if runner.config["warmup_iterations"] > 0:
-            print("running warmup iterations")
 
-    def on_val_forward(self, runner):
         if runner.config["dummy"]:
             images = torch.randn(runner.config["batch"], 3, 224, 224)
             target = torch.arange(1, runner.config["batch"] + 1).long()
@@ -119,7 +116,18 @@ class ResNetPerfCallback(MainCallback):
                 images = images.contiguous(memory_format=torch.channels_last)
             if runner.config["bf16"]:
                 images = images.to(torch.bfloat16)
-        if not runner.config["dummy"]:
+            runner.put("images", images)
+            runner.put("target", target)
+        
+        if runner.config["warmup_iterations"] > 0:
+            print("running warmup iterations")
+
+
+    def on_val_forward(self, runner):
+        if runner.config["dummy"]:
+            images = runner.get("images")
+            target = runner.get("target")
+        else:
             images, target = next(iter(runner.val_loader))
             if runner.config["ipex"]:
                 images = images.contiguous(memory_format=torch.channels_last)
