@@ -57,6 +57,7 @@ from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import EnvContext
 
 import logging
 import warnings
@@ -92,9 +93,6 @@ class _DDPSpawnLauncher(_SpawnLauncher):
                 "OMP_NUM_THREADS": str(len(cpu_procs[i]))
             } for i in range(self._strategy.num_processes)]
 
-        init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-        init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-
         mp = multiprocessing.get_context(self._start_method)
         return_queue = mp.SimpleQueue()
         error_queues = []
@@ -103,27 +101,23 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         patch_status = _get_patch_status()
 
         for i in range(self._strategy.num_processes):
-            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
-            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
-            log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
-            log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
-            error_queue = mp.SimpleQueue()
-            process = mp.Process(   # type: ignore
-                target=self._wrap,
-                args=(self._wrapping_function, i, args, error_queue, patch_status),
-                daemon=False,
-            )
-            process.start()
-            error_queues.append(error_queue)
-            processes.append(process)
+            with EnvContext(envs[i]):
+                log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
+                log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
+                error_queue = mp.SimpleQueue()
+                process = mp.Process(   # type: ignore
+                    target=self._wrap,
+                    args=(self._wrapping_function, i, args, error_queue, patch_status),
+                    daemon=False,
+                )
+                process.start()
+                error_queues.append(error_queue)
+                processes.append(process)
 
         context = ProcessContext(processes, error_queues)
 
         while not context.join():
             pass
-
-        os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
-        os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
 
         # restore the state of child process
         spawn_output = return_queue.get()

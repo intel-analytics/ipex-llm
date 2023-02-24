@@ -39,6 +39,7 @@ from bigdl.nano.utils.pytorch import transform_multiple_input_dataloader_to_inc_
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.common import EnvContext
 from bigdl.nano.pytorch.context_manager import generate_context_manager,\
     BaseContextManager, AutocastContextManager
 from .multi_instance import _MultiInstanceModel, _multi_instance_helper
@@ -1218,8 +1219,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         recv_queue = mp.Queue()
         next_idx = mp.Value('i', 0, lock=True)
 
-        KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-        OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
         if cpu_for_each_process is None:
             if cores_per_process is None:
                 envs = schedule_processors(p_num)
@@ -1239,15 +1238,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             } for i in range(p_num)]
         ps = []
         for i in range(p_num):
-            os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
-            os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
-
-            p = mp.Process(target=_multi_instance_helper,
-                           args=(model, send_queue, recv_queue, next_idx), daemon=True)
-            p.start()
-            ps.append(p)
-        os.environ["KMP_AFFINITY"] = KMP_AFFINITY
-        os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
+            with EnvContext(envs[i]):
+                p = mp.Process(target=_multi_instance_helper,
+                               args=(model, send_queue, recv_queue, next_idx), daemon=True)
+                p.start()
+                ps.append(p)
 
         return _MultiInstanceModel(model, ps, send_queue, recv_queue, next_idx)
 

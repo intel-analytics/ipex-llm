@@ -14,12 +14,17 @@
 # limitations under the License.
 #
 
+import os
+import warnings
 import itertools
 import multiprocessing as mp
 from multiprocessing.connection import Connection
 from typing import List, Tuple, Dict, Callable
 
 from torch import nn
+
+from bigdl.nano.utils.common import schedule_workers
+from bigdl.nano.utils.common import EnvContext
 
 
 class Pipeline():
@@ -42,13 +47,13 @@ class Pipeline():
         For example,
         ```
             pipeline = Pipeline([
-                ("preprocess", preprocess, {}),
-                ("inference", model, {}),
+                ("preprocess", preprocess, {"core_num": 4}),
+                ("inference", model, {"core_num": 8}),
             ])
         ```
         will create a pipeline which has stage "preprocess" and "inference",
-        and the "preprocess" stage will call `preprocess(input)`, while the
-        "inference" stage will call `model(input)`.
+        and the "preprocess" stage will call `preprocess(input)` with 4 CPU cores,
+        while the "inference" stage will call `model(input)` with 8 CPU cores.
 
         :param stages: A list of configurations for each stage, each stage should consist of
             a 'name'(str), a 'function'(Callable), and a 'config'(dict).
@@ -57,6 +62,7 @@ class Pipeline():
         conns = list(itertools.chain(*conns))
         self.send_ = conns[0]
         self.recv_ = conns[-1]
+        self.cores = schedule_workers(1)[0]
         self.ps = [
             self._launch_stage(stage, conns[i * 2 + 1], conns[i * 2 + 2])
             for i, stage in enumerate(stages)
@@ -91,10 +97,23 @@ class Pipeline():
     def _launch_stage(self, stage: Tuple, recv_: Connection, send_: Connection):
         name, func, config = stage
 
-        p = mp.Process(target=self._stage_wrapper,
-                       args=(func, recv_, send_),
-                       daemon=True)
-        p.start()
+        subprocess_env = {}
+        if isinstance(config.get("core_num", None), int):
+            core_num = config["core_num"]
+            cores = self.cores[:core_num]
+            self.cores = self.cores[core_num:]
+            if len(cores) < core_num:
+                warnings.warn(f"stage {name} requires {core_num} cores,"
+                              f" but there are only {len(cores)} cores left")
+            subprocess_env["KMP_AFFINITY"] = (f"granularity=fine,proclist"
+                                              f"=[{','.join([str(i) for i in cores])}],explicit")
+            subprocess_env["OMP_NUM_THREADS"] = str(len(cores))
+
+        with EnvContext(env=subprocess_env):
+            p = mp.Process(target=self._stage_wrapper,
+                           args=(func, recv_, send_),
+                           daemon=True)
+            p.start()
         return p
 
     @staticmethod
