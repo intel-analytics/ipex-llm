@@ -17,7 +17,7 @@
 import argparse
 
 from bigdl.ppml.ppml_context import *
-from bigdl.ppml.kms.utils import KmsArgumentParser
+from bigdl.ppml.kms.utils.kms_argument_parser import KmsArgumentParser
 
 """
 execute the following command to run this example on local
