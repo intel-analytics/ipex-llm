@@ -27,16 +27,16 @@ import tarfile
 np.random.seed(1337)  # for reproducibility
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
-property_path = os.path.join(os.path.dirname(__file__),
-                             "../../../../../../scala/target/classes/app.properties")
-data_url = "https://s3-ap-southeast-1.amazonaws.com"
-with open(property_path) as f:
-    for _ in range(2):  # skip the first two lines
-        next(f)
-    for line in f:
-        if "data-store-url" in line:
-            line = line.strip()
-            data_url = line.split("=")[1].replace("\\", "")
+# property_path = os.path.join(os.path.dirname(__file__),
+#                             "../../../../../../scala/target/classes/app.properties")
+data_url = "https://sourceforge.net/projects/analytics-zoo/files/"
+# with open(property_path) as f:
+#     for _ in range(2):  # skip the first two lines
+#         next(f)
+#     for line in f:
+#         if "data-store-url" in line:
+#             line = line.strip()
+#             data_url = line.split("=")[1].replace("\\", "")
 
 
 class TestInferenceModel(ZooTestCase):
