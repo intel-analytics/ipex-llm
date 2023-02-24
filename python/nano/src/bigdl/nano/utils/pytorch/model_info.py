@@ -84,8 +84,9 @@ class ModelInfo:
         return forward_annotations
 
     def get_conditional_args(self,
-                             include: Optional[Union[tuple, str]] = (
-                                     torch.Tensor, torch.FloatTensor, torch.LongTensor),
+                             include: Optional[Union[tuple, str]] = (torch.Tensor,
+                                                                     torch.FloatTensor,
+                                                                     torch.LongTensor),
                              exclude: Optional[Union[tuple, str]] = ()):
         """
         This function will return all the parameters that (might) in `condition`
