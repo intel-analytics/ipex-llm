@@ -37,6 +37,7 @@ from bigdl.orca.data.file import get_remote_file_to_local, put_local_file_to_rem
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -136,6 +137,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "Must provide a function for model_creator")
 
         self.model_dir = parse_model_dir(model_dir)
+        self.use_tqdm = use_tqdm
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -162,7 +164,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             optimizer_creator=optimizer_creator,
             loss_creator=loss_creator,
             scheduler_creator=scheduler_creator,
-            use_tqdm=use_tqdm,
             config=copy.copy(self.config),
             metrics=metrics,
             size=self.num_workers,
@@ -201,7 +202,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
-            info: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
@@ -228,8 +228,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner for
-               train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
         :param validation_data: validation data. Validation data type should be the same
@@ -289,15 +287,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
+            callbacks.append(TqdmCallback())
 
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
             profile=profile,
-            info=info,
             callbacks=callbacks
         )
 
@@ -412,7 +410,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
-                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
+                profile: bool=False,
+                callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
+                                                                     'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -445,9 +445,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=cluster_info)
         init_params.update(self.worker_init_params)
 
+        callbacks = callbacks or []
+        make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
+
         params = dict(
             batch_size=batch_size,
-            profile=profile
+            profile=profile,
+            callbacks=callbacks
         )
 
         if isinstance(data, DataFrame):  # Computation would be triggered by the user
@@ -486,7 +492,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                  num_steps: Optional[int]=None,
                  profile: bool=False,
                  reduce_results: bool=True,
-                 info: Optional[Dict]=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols: Optional[List[str]]=None,
                  callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
@@ -512,8 +517,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner
-               for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame.
         :param label_cols: label column names if train data is Spark DataFrame.
         :param callbacks: A list for all callbacks. Note that only one MainCallback
@@ -544,15 +547,15 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
-        if not callbacks:
-            callbacks = []
+        callbacks = callbacks or []
         make_only_mainCallback(callbacks)
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
+            callbacks.append(TqdmCallback())
 
         params = dict(
             batch_size=batch_size,
             num_steps=num_steps,
             profile=profile,
-            info=info,
             callbacks=callbacks
         )
 
@@ -707,4 +710,4 @@ class PyTorchPySparkEstimator(BaseEstimator):
         Shutdown estimator and release resources.
         """
         if self.need_to_log_to_driver:
-            stop_log_server(self.log_server_thread, self.ip, self.port)
+            stop_log_server(self.log_server_thread, self.ip, self.log_port)

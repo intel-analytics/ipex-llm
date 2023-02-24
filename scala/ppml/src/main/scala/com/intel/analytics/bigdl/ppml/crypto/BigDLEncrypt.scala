@@ -26,6 +26,7 @@ import java.time.Instant
 import java.util.Arrays
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
+import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
@@ -41,6 +42,7 @@ class BigDLEncrypt extends Crypto {
   protected var encryptionKeySpec: SecretKeySpec = null
   protected var opMode: OperationMode = null
   protected var initializationVector: Array[Byte] = null
+  protected var encryptedDataKey: String = ""
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
@@ -57,7 +59,7 @@ class BigDLEncrypt extends Crypto {
     // key encrypt
     val signingKey = Arrays.copyOfRange(secret, 0, 16)
     val encryptKey = Arrays.copyOfRange(secret, 16, 32)
-//    initializationVector = Arrays.copyOfRange(secret, 0, 16)
+    //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
     val r = new SecureRandom()
     initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     ivParameterSpec = new IvParameterSpec(initializationVector)
@@ -78,26 +80,29 @@ class BigDLEncrypt extends Crypto {
   override def genHeader(): Array[Byte] = {
     Log4Error.invalidOperationError(cipher != null,
       s"you should init BigDLEncrypt first.")
-    val timestamp: Instant = Instant.now()
-    val signingByteBuffer = ByteBuffer.allocate(1 + 8 + ivParameterSpec.getIV.length)
-    val version: Byte = (0x80).toByte
-    signingByteBuffer.put(version)
-    signingByteBuffer.putLong(timestamp.getEpochSecond())
+    // val timestamp: Instant = Instant.now()
+    val dataKeyCipherTextBytes = encryptedDataKey.getBytes(StandardCharsets.UTF_8)
+    val signingByteBuffer = ByteBuffer.allocate(400)
+    // val version: Byte = (0x80).toByte
+    // signingByteBuffer.put(version)
+    // signingByteBuffer.putLong(timestamp.getEpochSecond())
+    signingByteBuffer.putInt(dataKeyCipherTextBytes.length)
+    signingByteBuffer.putInt(ivParameterSpec.getIV.length)
+    signingByteBuffer.put(dataKeyCipherTextBytes)
     signingByteBuffer.put(ivParameterSpec.getIV())
+    val suffixLength = (
+      400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length).max(0)
+    val suffix: Array[Byte] = Array.fill(suffixLength)((0x80).toByte)
+    signingByteBuffer.put(suffix)
     signingByteBuffer.array()
   }
 
   /**
    * Verify the header bytes when decrypt.
    * @param header header bytes
+   * @return encryptedDataKey String
    */
-  override def verifyHeader(header: Array[Byte]): Unit = {
-    val headerBuffer = ByteBuffer.wrap(header)
-    val version: Byte = headerBuffer.get()
-    Log4Error.invalidInputError(version.compare((0x80).toByte) == 0,
-      "File header version error!")
-    val timestampSeconds: Long = headerBuffer.getLong
-    val initializationVector: Array[Byte] = header.slice(1 + 8, header.length)
+  override def verifyHeader(initializationVector: Array[Byte]): Unit = {
     if (!initializationVector.sameElements(this.initializationVector)) {
       ivParameterSpec = new IvParameterSpec(initializationVector)
       cipher.init(opMode.opmode, encryptionKeySpec, ivParameterSpec)
@@ -109,7 +114,7 @@ class BigDLEncrypt extends Crypto {
    * @param header header bytes
    */
   override def verifyHeader(in: InputStream): Unit = {
-    val header = read(in, 25)
+    val header = read(in, 400)
     verifyHeader(header)
   }
 
@@ -234,6 +239,23 @@ class BigDLEncrypt extends Crypto {
     }
   }
 
+  def setEncryptedDataKey(encryptedDataKey: String): Unit = {
+    this.encryptedDataKey = encryptedDataKey
+  }
+
+  def getHeader(in: InputStream): (String, Array[Byte]) = {
+    val header = read(in, 400)
+    val headerBuffer = ByteBuffer.wrap(header)
+    val dataKeyCipherTextBytesLength = headerBuffer.getInt
+    val initializationVectorLength = headerBuffer.getInt
+    val dataKeyCipherTextBytes: Array[Byte] = header.slice(
+      4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
+    val initializationVector: Array[Byte] = header.slice(
+      4 + 4 + dataKeyCipherTextBytesLength,
+      4 + 4 + dataKeyCipherTextBytesLength + initializationVectorLength)
+    (new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8), initializationVector)
+  }
+
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
@@ -283,7 +305,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def decryptBigContent(
         inputStream: InputStream): Iterator[String] = {
-    verifyHeader(read(inputStream, 25))
+    // verifyHeader(read(inputStream, 25))
     new Iterator[String] {
       var cachedArray: Array[String] = null
       var pointer = Int.MaxValue

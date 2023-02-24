@@ -1,0 +1,68 @@
+name: 'Run Orca Tutorial Xshards Py37 Spark3'
+description: 'Run Orca Tutorial Xshards Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Env
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install wget
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools==58.0.4
+        
+    - name: Run Test
+      shell: bash
+      run: |
+        conda remove -n orca-tutorial-xshards-py37 -y --all
+        conda create -n orca-tutorial-xshards-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+        conda info -e
+        source activate orca-tutorial-xshards-py37
+
+        export SPARK_LOCAL_HOSTNAME=localhost
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+
+        pip uninstall -y intel-tensorflow
+        pip uninstall -y tensorflow
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r python/requirements/orca/requirements_ray.txt
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==1.15.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cloudpickle
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+        
+
+        wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-orca-python.txt -O ${{ github.workspace }}/requirements-orca-python.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-orca-python.txt -y
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python.txt
+        
+        export SPARK_LOCAL_HOSTNAME=localhost
+        export FTP_URI=${FTP_URI}
+        chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
+        python/orca/dev/test/run-tutorial-xshards.sh
+
+        source deactivate
+        conda remove -n orca-tutorial-xshards-py37 -y --all
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

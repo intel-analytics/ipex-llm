@@ -17,7 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Union  # for typehint
 from openvino.runtime import Core
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from openvino.runtime import Model
 from .utils import save
 from openvino.runtime import AsyncInferQueue

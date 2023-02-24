@@ -16,7 +16,7 @@
 
 import pyspark.sql.functions as F
 from pyspark.sql import Row
-from pyspark.sql.types import IntegerType, DataType, StructType, StringType, StructField
+from pyspark.sql.types import IntegerType, StructType, StringType, StructField
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.data import SparkXShards
 from bigdl.orca import OrcaContext

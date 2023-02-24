@@ -4,13 +4,26 @@ description: 'run nano tensorflow test'
 runs:
   using: "composite"
   steps:
-    - name: Run Nano TensorFlow Test (TensorFlow)
+    - name: Run Nano TensorFlow Test (Train)
       shell: bash
       run: |
         source $CONDA/bin/activate nano-tensorflow
         source bigdl-nano-init
 
-        bash python/nano/test/run-nano-tf-tests.sh
+        bash python/nano/test/run-nano-tf-train-tests.sh
+
+        source bigdl-nano-unset-env
+        source $CONDA/bin/deactivate
+      env:
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+    - name: Run Nano TensorFlow Test (Inference)
+      shell: bash
+      run: |
+        source $CONDA/bin/activate nano-tensorflow
+        source bigdl-nano-init
+
+        bash python/nano/test/run-nano-tf-inference-tests.sh
 
         source bigdl-nano-unset-env
         source $CONDA/bin/deactivate
@@ -132,6 +145,7 @@ runs:
         source bigdl-nano-init
 
         bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
+        bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
 
         source bigdl-nano-unset-env
         source $CONDA/bin/deactivate

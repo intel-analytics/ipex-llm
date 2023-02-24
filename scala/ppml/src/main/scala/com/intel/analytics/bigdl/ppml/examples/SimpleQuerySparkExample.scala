@@ -44,7 +44,9 @@ object SimpleQuerySparkExample extends Supportive {
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
       val df = timing("1/3 loadInputs") {
-        sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
+        sc.read(cryptoMode = arguments.inputEncryptMode,
+                primaryKeyName = "defaultKey")
+          .option("header", "true")
           .csv(arguments.inputPath)
       }
 
@@ -68,7 +70,10 @@ object SimpleQuerySparkExample extends Supportive {
 
       timing("3/3 encryptAndSaveOutputs") {
         // save data frame using spark kms context
-        sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
+        sc.write(developers,
+                 cryptoMode = arguments.outputEncryptMode,
+                 primaryKeyName = "defaultKey")
+          .mode("overwrite")
           .option("header", true).csv(arguments.outputPath)
       }
     }

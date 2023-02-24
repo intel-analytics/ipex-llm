@@ -15,7 +15,7 @@
 #
 
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from typing import List
 import pytorch_lightning as pl
 from torchmetrics.metric import Metric

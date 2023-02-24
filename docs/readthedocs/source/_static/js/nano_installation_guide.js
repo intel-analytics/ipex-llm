@@ -1,138 +1,94 @@
-var inferences=["inferenceyes", "inferenceno"];
-var frameworks=["pytorch", "tensorflow"];
-var versions=["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113", "tf2_27", "tf2_28", "tf2_29", "tf2_210"];
-var releases=["stable", "nightly"];
+var frameworks = ["pytorch", "tensorflow"];
+var versions = ["pytorch_110", "pytorch_111", "pytorch_112", "pytorch_113",
+                "tensorflow_27", "tensorflow_28", "tensorflow_29", "tensorflow_210"];
+var intel_tensorflow_options = ["intel_tensorflow_yes", "intel_tensorflow_no"]
+var inferences = ["inference_yes", "inference_no"];
+var releases = ["stable", "nightly"];
 
-var inference="inferenceyes";
-var framework="pytorch";
-var version="pytorch_113";
-var release="nightly";
+var framework = "pytorch";
+var version = "pytorch_113";
+var intel_tensorflow_option = "intel_tensorflow_yes"
+var inference = "inference_yes";
+var release = "nightly";
 
 function refresh_cmd(){
+    $("#version").empty();
+    $("#intel_tensorflow").remove();
+    if(framework == "pytorch"){
+        $("#version").append("<td colspan='1'>PT Version</td>\
+                              <td colspan='1'><button id='pytorch_113' class='install_option_button'>1.13</button></td>\
+                              <td colspan='1'><button id='pytorch_112' class='install_option_button'>1.12</button></td>\
+                              <td colspan='1'><button id='pytorch_111' class='install_option_button'>1.11</button></td>\
+                              <td colspan='1'><button id='pytorch_110' class='install_option_button'>1.10</button></td>");
+    }
+    else if(framework == "tensorflow"){
+        $("#version").append("<td colspan='1'>TF Version</td>\
+                              <td colspan='1'><button id='tensorflow_210' class='install_option_button'>2.10</button></td>\
+                              <td colspan='1'><button id='tensorflow_29' class='install_option_button'>2.9</button></td>\
+                              <td colspan='1'><button id='tensorflow_28' class='install_option_button'>2.8</button></td>\
+                              <td colspan='1'><button id='tensorflow_27' class='install_option_button'>2.7</button></td>");
+
+        $("#version").after("<tr id='intel_tensorflow'>\
+                                <td colspan='1'>Intel TensorFlow</td>\
+                                <td colspan='2'><button id='intel_tensorflow_yes' class='install_option_button'>Yes</button></td>\
+                                <td colspan='2'><button id='intel_tensorflow_no' class='install_option_button'>No</button></td>\
+                             </tr>");
+    }
+
     reset_color(frameworks);
+    reset_color(versions);
+    reset_color(intel_tensorflow_options);
     reset_color(inferences);
     reset_color(releases);
 
     set_color(framework);
+    set_color(version);
+    set_color(intel_tensorflow_option);
     set_color(inference);
     set_color(release);
 
-    var cmd="NA";
-
-    $("#version").empty();
-    if(framework=="pytorch"){
-        $("#version").append("<td colspan='1'>Pytorch Version</td>\
-        <td colspan='1'><button id='pytorch_113'>1.13</button></td>\
-        <td colspan='1'><button id='pytorch_112'>1.12</button></td>\
-        <td colspan='1'><button id='pytorch_111'>1.11</button></td>\
-        <td colspan='1'><button id='pytorch_110'>1.10</button></td>");
-    }
-    else if(framework=="tensorflow"){
-        $("#version").append("<td colspan='1'>Tensorflow Version</td>\
-        <td colspan='1'><button id='tf2_210'>2.10</button></td>\
-        <td colspan='1'><button id='tf2_29'>2.9</button></td>\
-        <td colspan='1'><button id='tf2_28'>2.8</button></td>\
-        <td colspan='1'><button id='tf2_27'>2.7</button></td>");
-    }
-    reset_color(versions);
-    set_color(version);
-
-    if(release!="nightly"){
-        disable(versions);
-        disable(inferences);
-    }
-    else{
-        enable(versions);
-        enable(inferences);
+    // disable buttons for options that cannot be selected together
+    if (release == "stable"){
+        disable(["intel_tensorflow_no"])
+    } else {
+        enable(["intel_tensorflow_no"])
     }
 
-    // if (framework=="pytorch"){
-    //     document.getElementById("cmd").style.whiteSpace = "normal";
-    // }
-    // else{
-    //     document.getElementById('cmd').style.whiteSpace = "nowrap";
-    // }
-        if(framework=="pytorch"){
-            if(release=="stable"){
-                cmd="pip install bigdl-nano[pytorch]==2.1.0";
-            }else if(release=="nightly"){
-                if(inference=="inferenceyes"){
-                    if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110,inference] -f https://software.intel.com/ipex-whl-stable";
-                    }else if(version=="pytorch_111"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_111,inference]";
-                    }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_112,inference]";
-                    }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch,inference]";
-                    }
-                }else if(inference="inferenceno"){
-                    if(version=="pytorch_110"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_110] -f https://software.intel.com/ipex-whl-stable";
-                    }else if(version=="pytorch_111"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_111]";
-                    }else if(version=="pytorch_112"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch_112]";
-                    }else if(version=="pytorch_113"){
-                        cmd="pip install --pre --upgrade bigdl-nano[pytorch]";
-                    }
-                }
-            }
-        }else if(framework="tensorflow"){
-            if(inference=="inferenceyes"){
-                if (version=="tf2_27"){
-                    if (release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_27,inference]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_28"){
-                    if (release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_28,inference]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_29"){
-                    if (release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow,inference]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_210"){
-                    if (release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_210,inference]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }
-            }else if(inference=="inferenceno"){
-                if(version=="tf2_27"){
-                    if(release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_27]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_28"){
-                    if(release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_28]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_29"){
-                    if(release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }else if(version=="tf2_210"){
-                    if(release=="nightly"){
-                        cmd="pip install --pre --upgrade bigdl-nano[tensorflow_210]";
-                    }else if(release=="stable"){
-                        cmd="pip install bigdl-nano[tensorflow]==2.1.0";
-                    }
-                }
-            }
-        }
+    if (intel_tensorflow_option == "intel_tensorflow_no" &&
+        framework == "tensorflow"){
+        disable(["stable"])
+    } else {
+        enable(["stable"])
+    }
+
+    // whether to include pre-release version
+    var cmd_pre = (release == "nightly") ? " --pre --upgrade" : "";
+
+    // decide on the bigdl-nano install option for framework
+    var cmd_options_framework = version;
+
+    if (intel_tensorflow_option == "intel_tensorflow_no"){
+        cmd_options_framework = "stock_" + cmd_options_framework;
+    }
+    // for default version
+    if (version == "pytorch_113"){
+        cmd_options_framework = "pytorch";
+    } else if (version == "tensorflow_29" && intel_tensorflow_option == "intel_tensorflow_yes"){
+        cmd_options_framework = "tensorflow";
+    }
+
+    // decide on the bigdl-nano install option for including inference or not
+    var cmd_options_inference = (inference == "inference_yes") ? ",inference" : "";
+
+    // other options needed at the end of the installation command
+    var cmd_other = "";
+    if (version == "pytorch_110"){
+        cmd_other = " -f https://software.intel.com/ipex-whl-stable";
+    }
+
+    var cmd = "pip install" + cmd_pre + " bigdl-nano[" + cmd_options_framework
+              + cmd_options_inference + "]" + cmd_other;
+
     $("#cmd").html(cmd);
 }
 
@@ -172,27 +128,29 @@ function enable(list){
 }
 
 //when clicked a button, update variables
-$(document).on('click',"button",function(){
+$(document).on('click',".install_option_button",function(){
     var id = $(this).attr("id");
 
-    if (frameworks.indexOf(id)>=0){
-        framework=id;
-        if (framework=="tensorflow"){
-            version="tf2_29";
+    if (frameworks.includes(id)){
+        framework = id;
+        if (framework == "tensorflow"){
+            version = "tensorflow_29";
         }else{
             version="pytorch_113";
         }
     }
-    else if (releases.indexOf(id)>=0){
-        release=id;
+    else if (versions.includes(id)){
+        version = id;
     }
-    else if (inferences.indexOf(id)>=0){
-        inference=id;
+    else if (intel_tensorflow_options.includes(id)){
+        intel_tensorflow_option = id;
     }
-    else if (versions.indexOf(id)>=0){
-        version=id;
+    else if (inferences.includes(id)){
+        inference = id;
     }
-
+    else if (releases.includes(id)){
+        release = id;
+    }
     refresh_cmd();
 })
 
@@ -210,6 +168,6 @@ $(document).on({
             $(this).css("color","var(--pst-color-text-base)");
         }
     }
-}, "button");
+}, ".install_option_button");
 
 refresh_cmd();

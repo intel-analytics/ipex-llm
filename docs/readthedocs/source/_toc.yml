@@ -156,10 +156,10 @@ subtrees:
                           title: "PyTorch"
                           subtrees:
                             - entries: 
+                              - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
                               - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_onnx
                               - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_openvino
                               - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_jit_ipex
-                              - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
                               - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_inc
                               - file: doc/Nano/Howto/Inference/PyTorch/quantize_pytorch_inference_pot
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager
@@ -167,7 +167,7 @@ subtrees:
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_jit
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
-                              - file: doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize
+                              - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
                         - file: doc/Nano/Howto/Inference/TensorFlow/index
                           title: "TensorFlow"
                           subtrees:
@@ -186,6 +186,8 @@ subtrees:
               title: "Tips and Known Issues"
             - file: doc/Nano/Overview/troubshooting
               title: "Troubleshooting Guide"
+            - file: doc/Nano/Overview/support
+              title: "OS Support"
             - file: doc/PythonAPI/Nano/index
               title: "API Reference"
 
@@ -305,6 +307,7 @@ subtrees:
                   - file: doc/PPML/QuickStart/end-to-end
                   - file: doc/PPML/Overview/devguide
                   - file: doc/PPML/Overview/azure_ppml
+                  - file: doc/PPML/Overview/ali_ecs_occlum_cn
             - file: doc/PPML/Overview/misc
               title: "Advanced Topics"
               subtrees:

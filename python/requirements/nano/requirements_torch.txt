@@ -1,0 +1,15 @@
+# These are mirrored in python/nano/setup.py, 
+# which is what the users of the bigdl-nano[pytorch] package will install.
+#
+# In short, if you change it here, PLEASE also change it in setup.py
+# Actrual installation logic will follow setup.py
+
+torch==1.13.1
+torchvision==0.14.1
+intel_extension_for_pytorch==1.13.100
+pytorch_lightning==1.6.4
+torchmetrics==0.11.0
+opencv-python-headless
+PyTurboJPEG
+opencv-transforms
+cryptography==3.3.2

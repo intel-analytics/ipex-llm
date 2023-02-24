@@ -11,7 +11,7 @@ mkdir /opt/intel/pccs/ssl_key
 cd /opt/intel/pccs/ssl_key
 openssl genrsa -out private.pem 2048
 openssl req -new -key private.pem -out csr.pem \
-        -subj "/C=$COUNTRY_NAME/ST=$CITY_NAME/L=$CITY_NAME/O=$ORGANIZATION_NAME/OU=$ORGANIZATION_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL_ADDRESS/" -passout pass:$SERVER_CERT_PASSWORD -passout pass:$SERVER_CERT_PASSWORD
+        -subj "/C=$COUNTRY_NAME/ST=$CITY_NAME/L=$CITY_NAME/O=$ORGANIZATION_NAME/OU=$ORGANIZATION_NAME/CN=$COMMON_NAME/emailAddress=$EMAIL_ADDRESS/" -passout pass:$HTTPS_CERT_PASSWORD -passout pass:$HTTPS_CERT_PASSWORD
 openssl x509 -req -days 365 -in csr.pem -signkey private.pem -out file.crt
 rm -rf csr.pem
 chmod 644 ../ssl_key/*

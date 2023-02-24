@@ -1,0 +1,12 @@
+bert
+boto3
+cloudpickle
+onnx
+onnxruntime
+Pillow
+py4j
+pyarrow
+tensorflow
+torch
+torchmetrics==0.10.0
+tqdm

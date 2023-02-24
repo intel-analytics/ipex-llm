@@ -21,6 +21,7 @@ import tempfile
 import shutil
 
 from bigdl.dllib.utils import log4Error
+from bigdl.dllib.utils.common import callBigDlFunc
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
@@ -91,12 +92,11 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
                 yield size
 
     def transform_predict(predictions):
-        # list of np array
+        # case 1: each prediction is a list of np array
         if isinstance(predictions[0], list):
-            predictions = np.array(predictions).T.tolist()
-            result = [np.array(predict) for predict in predictions]
-            return result
-        # np array
+            return [np.array([prediction[i] for prediction in predictions])
+                    for i in range(len(predictions[0]))]
+        # case 2: each prediction is a single np array
         else:
             return np.array(predictions)
 
@@ -515,6 +515,22 @@ def make_data_creator(refs):
         return refs
 
     return data_creator
+
+
+def openvino_output_to_sdf(df, rdd, names, shapes):
+    return callBigDlFunc("float", "openVINOOutputToSDF", df, rdd, names, shapes)
+
+
+def get_arrow_hex_str(batched_data, names):
+    import pyarrow as pa
+    sink = pa.BufferOutputStream()
+    pred_arrow = pa.record_batch(batched_data, names=names)
+    with pa.ipc.new_stream(sink, pred_arrow.schema) as writer:
+        writer.write_batch(pred_arrow)
+    pred_arrow = sink.getvalue().hex()
+    pred_arrow = pred_arrow.decode("utf-8")
+    sink.close()
+    return pred_arrow
 
 
 def make_dataloader_list_wrapper(func):
