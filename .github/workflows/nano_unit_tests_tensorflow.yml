@@ -34,10 +34,12 @@ jobs:
           "tensorflow_28",
           "tensorflow_29",
           "tensorflow_210",
+          "tensorflow_211",
           "stock_tensorflow_27",
           "stock_tensorflow_28",
           "stock_tensorflow_29",
-          "stock_tensorflow_210"
+          "stock_tensorflow_210",
+          "stock_tensorflow_211"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -102,10 +104,12 @@ jobs:
           "tensorflow_28",
           "tensorflow_29",
           "tensorflow_210",
+          "tensorflow_211",
           "stock_tensorflow_27",
           "stock_tensorflow_28",
           "stock_tensorflow_29",
-          "stock_tensorflow_210"
+          "stock_tensorflow_210",
+          "stock_tensorflow_211"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
