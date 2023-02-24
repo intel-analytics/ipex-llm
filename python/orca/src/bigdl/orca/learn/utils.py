@@ -307,20 +307,13 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         else:
             arrays = data
         
-        if isinstance(data, dict):
-            current = current % shard_size
-            for k in data.keys():
-                if shard_size:
-                    results[k][current] = arrays[k]
-                else:
-                    results[k].append(arrays[k])
-        else:
-            for i, arr in enumerate(arrays):
-                if shard_size:
-                    current = current % shard_size
-                    results[i][current] = arr
-                else:
-                    results[i].append(arr)
+        iter = arrays.items() if isinstance(arrays, dict) else enumerate(arrays)
+        for i, arr in iter:
+            if shard_size:
+                current = current % shard_size
+                results[i][current] = arr
+            else:
+                results[i].append(arr)
 
     feature_lists = None
     label_lists = None

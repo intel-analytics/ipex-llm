@@ -138,6 +138,28 @@ class DictNet(nn.Module):
         return {"y": x}
 
 
+class MultiDictNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.out = nn.Linear(50, 1)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.out(x)
+        x = self.out_act(x)
+        return {"y": x, "PlaceHolder": torch.ones_like(x)}
+
+
+def multi_dict_loss_fn(config):
+    def mock_BCELoss(x, y):
+         assert x["PlaceHolder"].size() == y["y"].size()
+         assert x["PlaceHolder"][0][0].item() == 1.0
+         return F.binary_cross_entropy(x["y"], y["y"])
+    return mock_BCELoss
+
+
 class SimpleModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -411,6 +433,39 @@ class TestPyTorchEstimatorBasic(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: DictNet(),
                                   loss_fn=lambda config: lambda x, y: F.binary_cross_entropy(x["y"], y["y"]),
+                                  metrics=None)
+        estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
+                      feature_cols=["f"],
+                      label_cols=["label"])
+        estimator.evaluate(df, batch_size=4,
+                           feature_cols=["f"],
+                           label_cols=["label"])
+        # TODO: Support this in #7607
+        # result = estimator.predict(df, batch_size=4,
+        #                            feature_cols=["f"])
+        # result.collect()
+
+    def test_dict_multi_outputs_model(self):
+
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(100))
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 50,
+                                  {"y": [float(np.random.randint(0, 2, size=()))]})
+                       )
+        schema = StructType([
+            StructField("f", ArrayType(FloatType()), True),
+            StructField("label", MapType(StringType(), ArrayType(FloatType())), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: MultiDictNet(),
+                                  loss_fn=multi_dict_loss_fn,
                                   metrics=None)
         estimator.fit(df, batch_size=4, epochs=2,
                       validation_data=df,
