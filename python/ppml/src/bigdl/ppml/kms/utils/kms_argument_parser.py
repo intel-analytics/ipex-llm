@@ -33,8 +33,9 @@ class KmsArgumentParser:
         self.parser.add_argument("--input_path", type=str, required=True, help="input path")
         self.parser.add_argument("--output_path", type=str, required=True, help="output path")
         self.parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
-                                 help="SimpleKeyManagementService, EHSMKeyManagementService or AzureKeyManagementService")
-   def get_arg_dict(self):
+                help="SimpleKeyManagementService, EHSMKeyManagementService or AzureKeyManagementService")
+
+    def get_arg_dict(self):
        args = self.parser.parse_args()
        arg_dict = vars(args)
 
