@@ -435,7 +435,6 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         loss_item = self.loss.item()
-        # self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: batchsize}
         self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(target)}
         # self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
