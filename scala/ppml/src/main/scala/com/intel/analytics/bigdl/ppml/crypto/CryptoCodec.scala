@@ -119,7 +119,7 @@ object CryptoCodec {
 
       if (!headerVerified) {
         val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
-        val dataKeyPlainText = conf.get(s"bigdl.dataKey.$encryptedDataKey.plainText")
+        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
         bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
         bigdlEncrypt.verifyHeader(initializationVector)
         headerVerified = true
