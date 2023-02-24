@@ -1,11 +1,11 @@
-.displayed {
+.installation-panel-wrapper {
     display: block;
     text-align: center;
     margin-left: auto;
     margin-right: auto;
 }
 
-#table-1 {
+.installation-panel-table {
     border-bottom-width: 0px;
     margin: auto;
     font-size: var(--pst-font-size-base);
@@ -16,16 +16,16 @@
     table-layout: fixed; /* make cells have even width */
 }
 
-#table-1 tr, td{
+.installation-panel-table tr, td{
     padding: 0.5rem;
     background-color: var(--pst-color-on-surface);
 }
 
-#table-1 td{
+.installation-panel-table td{
     border: 0.25rem solid var(--pst-color-background);
 }
 
-#table-1 tr td:first-child{
+.installation-panel-table tr td:first-child{
     font-weight: 600;
     background-color: var(--pst-color-background);
     border-left: 0.2rem solid var(--pst-color-on-surface);
@@ -34,7 +34,7 @@
     font-size: 13.5px;
 }
 
-#table-1 button {
+.installation-panel-table button {
     border-color: transparent;
     width: 100%;
     height: 100%;
@@ -42,7 +42,13 @@
     cursor: pointer;
 }
 
-#table-1 #cmd {
+.installation-panel-table #cmd {
     text-align: left;
-    padding: 0.5rem 0.25rem
+    padding: 0.5rem 0.25rem;
+}
+
+/* for cells that is a little bit longer to put inside a single line */
+.installation-panel-table .fitting-cell{
+    padding: 0rem;
+    font-size: 14.5px;
 }
