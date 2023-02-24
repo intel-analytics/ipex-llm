@@ -255,25 +255,6 @@ def train_loader_creator(config, batch_size):
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
-    # Labels
-    # if config.task_name is not None:
-    #     is_regression = config.task_name == "stsb"
-    #     if not is_regression:
-    #         label_list = raw_datasets["train"].features["label"].names
-    #         num_labels = len(label_list)
-    #     else:
-    #         num_labels = 1
-    # else:
-    #     # Trying to have good defaults here, don't hesitate to tweak to your needs.
-    #     is_regression = raw_datasets["train"].features["label"].dtype in ["float32", "float64"]
-    #     if is_regression:
-    #         num_labels = 1
-    #     else:
-    #         # A useful fast method:
-    #         # https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.unique
-    #         label_list = raw_datasets["train"].unique("label")
-    #         label_list.sort()  # Let's sort it for determinism
-    #         num_labels = len(label_list)
 
     # Load pretrained tokenizer
     #
@@ -296,36 +277,6 @@ def train_loader_creator(config, batch_size):
             else:
                 sentence1_key, sentence2_key = non_label_column_names[0], None
 
-    # Some models have set the order of the labels to use, so let's make sure we do use it.
-    # label_to_id = None
-    # if (
-    #         model.config.label2id != PretrainedConfig(num_labels=num_labels).label2id
-    #         and config.task_name is not None
-    #         and not is_regression
-    # ):
-    #     # Some have all caps in their config, some don't.
-    #     label_name_to_id = {k.lower(): v for k, v in model.config.label2id.items()}
-    #     if list(sorted(label_name_to_id.keys())) == list(sorted(label_list)):
-    #         logger.info(
-    #             f"The configuration of the model provided the following label correspondence: {label_name_to_id}. "
-    #             "Using it!"
-    #         )
-    #         label_to_id = {i: label_name_to_id[label_list[i]] for i in range(num_labels)}
-    #     else:
-    #         logger.warning(
-    #             "Your model seems to have been trained with labels, but they don't match the dataset: ",
-    #             f"model labels: {list(sorted(label_name_to_id.keys()))}, dataset labels: {list(sorted(label_list))}."
-    #             "\nIgnoring the model labels as a result.",
-    #         )
-    # elif config.task_name is None and not is_regression:
-    #     label_to_id = {v: i for i, v in enumerate(label_list)}
-    #
-    # if label_to_id is not None:
-    #     model.config.label2id = label_to_id
-    #     model.config.id2label = {id: label for label, id in config.label2id.items()}
-    # elif config.task_name is not None and not is_regression:
-    #     model.config.label2id = {l: i for i, l in enumerate(label_list)}
-    #     model.config.id2label = {id: label for label, id in config.label2id.items()}
 
     padding = "max_length" if config['pad_to_max_length'] else False
 
