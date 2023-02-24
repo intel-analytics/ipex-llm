@@ -76,8 +76,7 @@ def model_creator(config):
 
 class TestTF2Estimator(TestCase):
     def setUp(self):
-        conf = {"spark.python.worker.reuse": "false"}
-        init_orca_context(runtime="ray", address="localhost:6379", conf=conf)
+        init_orca_context(runtime="ray", address="localhost:6379")
 
     def tearDown(self):
         stop_orca_context()
