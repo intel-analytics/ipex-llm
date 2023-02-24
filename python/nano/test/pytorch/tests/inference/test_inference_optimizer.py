@@ -785,12 +785,12 @@ class TestInferencePipeline(TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
             with pytest.raises(RuntimeError,
-                               match="You must pass model when loading a PytorchIPEXJITModel "
-                                     "which is saving with compression precision."):
+                               match="You must pass model when loading this model "
+                                     "which was saved with compression precision."):
                 InferenceOptimizer.load(tmpdir)
             with pytest.raises(RuntimeError,
-                               match="You must pass input_sample when loading a PytorchIPEXJITModel "
-                                     "which is saving with compression precision."):
+                               match="You must pass input_sample when loading this model "
+                                     "which was saved with compression precision."):
                 InferenceOptimizer.load(tmpdir, model=self.model)
             opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
                                                      input_sample=input_sample)

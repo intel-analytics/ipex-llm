@@ -345,24 +345,26 @@ class TestINC(TestCase):
         with InferenceOptimizer.get_context(load_model):
             load_model(input_sample)
         
-        # test pytorch_ipex with wrong input
-        qmodel = InferenceOptimizer.quantize(model,
-                                             calib_data=input_sample,
-                                             method='ipex')
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(qmodel, tmp_dir_name)
-            with pytest.raises(
-                RuntimeError,
-                match="For INC ipex quantizated model, you need to set input_sample when loading model."
-                ):
-                load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            # save & load of INC ipex quantized model only works when inc version >= 2.0
+            # test pytorch_ipex with wrong input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                with pytest.raises(
+                    RuntimeError,
+                    match="For INC ipex quantizated model, you need to set input_sample when loading model."
+                    ):
+                    load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
 
-        # test pytorch_ipex with right input
-        qmodel = InferenceOptimizer.quantize(model,
-                                             calib_data=input_sample,
-                                             method='ipex')
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(qmodel, tmp_dir_name)
-            load_model = InferenceOptimizer.load(tmp_dir_name, model=model, input_sample=input_sample)
-        with InferenceOptimizer.get_context(load_model):
-            load_model(input_sample)
+            # test pytorch_ipex with right input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name, model=model, input_sample=input_sample)
+            with InferenceOptimizer.get_context(load_model):
+                load_model(input_sample)
