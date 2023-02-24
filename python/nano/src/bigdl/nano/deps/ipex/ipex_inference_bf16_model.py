@@ -105,7 +105,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                   "You must pass model when loading a PytorchIPEXJITModel "
                                   "which is saving with compression precision.")
                 invalidInputError(input_sample is not None,
-                                  "You must pass model when loading a PytorchIPEXJITModel "
+                                  "You must pass input_sample when loading a PytorchIPEXJITModel "
                                   "which is saving with compression precision.")
                 state_dict = torch.load(checkpoint_path, map_location='cpu')
                 if status['compression'] == "bf16":

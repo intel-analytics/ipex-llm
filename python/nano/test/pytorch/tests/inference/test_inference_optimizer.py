@@ -784,6 +784,14 @@ class TestInferencePipeline(TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+            with pytest.raises(RuntimeError,
+                               match="You must pass model when loading a PytorchIPEXJITModel "
+                                     "which is saving with compression precision."):
+                InferenceOptimizer.load(tmpdir)
+            with pytest.raises(RuntimeError,
+                               match="You must pass input_sample when loading a PytorchIPEXJITModel "
+                                     "which is saving with compression precision."):
+                InferenceOptimizer.load(tmpdir, model=self.model)
             opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
                                                      input_sample=input_sample)
             compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
@@ -896,3 +904,11 @@ class TestInferencePipeline(TestCase):
             opt_output_after_loading = opt_model_load(input_sample)
         assert compressed_size_ipex < 0.8 * original_size
         assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-02)
+
+    def test_wrong_input_for_trace(self):
+        input_sample = torch.rand(10, 3, 32, 32)
+        self.model.eval()
+        with pytest.raises(RuntimeError):
+            InferenceOptimizer.trace(self.model, accelerator="jit",
+                                     use_ipex=True, input_sample=input_sample,
+                                     precision="bf16")

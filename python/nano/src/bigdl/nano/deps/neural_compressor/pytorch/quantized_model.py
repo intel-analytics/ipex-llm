@@ -55,7 +55,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         )
         ipex_quantization = False
         # only ipex quantization saves this file
-        if os.path.exists(os.path.join(path, "best_configure.jason")):
+        if os.path.exists(os.path.join(path, "best_configure.json")):
             ipex_quantization = True
         if ipex_quantization:
             invalidInputError(example_inputs is not None,
