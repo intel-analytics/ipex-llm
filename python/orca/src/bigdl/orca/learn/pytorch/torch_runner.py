@@ -278,6 +278,10 @@ class TorchRunner(BaseRunner):
             data_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
@@ -450,6 +454,10 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
@@ -585,10 +593,14 @@ class TorchRunner(BaseRunner):
         return output, target, loss
 
     def predict(self, partition, batch_size=32, profile=False, callbacks=None):
-        """Evaluates the model on the validation data set."""
+        """Predict the model."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
         callbacks = callbacks or []
+
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for predicting.")
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
