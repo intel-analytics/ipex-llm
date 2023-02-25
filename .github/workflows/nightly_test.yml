@@ -309,7 +309,7 @@ jobs:
         job-name: Orca-Pytest-Ray-Py37-Spark3
         runner-hosted-on: 'Shanghai'
 
-  Orca-Pytest-Tf1-Py37-Spark3:
+  Orca-Pytest-Py37-Spark3-Tf1:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Tf1-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -484,8 +484,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-ray-ctx-py37
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-ray-ctx-py37-spark3-action
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}

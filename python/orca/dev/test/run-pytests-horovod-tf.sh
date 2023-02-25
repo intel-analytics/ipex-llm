@@ -26,6 +26,4 @@ ray stop -f
 cd ../../
 echo "Running RayOnSpark tests"
 python -m pytest -v test/bigdl/orca/learn/ray/tf/ \
-    --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py \
-    --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py \
     --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
