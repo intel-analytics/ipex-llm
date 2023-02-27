@@ -1,0 +1,13 @@
+# These are mirrored in python/nano/setup.py, 
+# which is what the users of the bigdl-nano package will install.
+#
+# In short, if you change it here, PLEASE also change it in setup.py
+# Actrual installation logic will follow setup.py
+
+intel-openmp
+cloudpickle
+protobuf==3.19.5
+py-cpuinfo
+pyyaml
+packaging
+setuptools<66

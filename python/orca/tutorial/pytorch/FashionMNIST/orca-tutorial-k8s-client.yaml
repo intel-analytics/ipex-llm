@@ -17,7 +17,7 @@ spec:
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 ${SPARK_HOME}/bin/spark-submit \
                 --master ${RUNTIME_SPARK_MASTER} \
-                --deploy-mode ${SPARK_MODE} \
+                --deploy-mode client \
                 --name orca-k8s-client-tutorial \
                 --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
                 --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
@@ -49,16 +49,6 @@ spec:
             value: intelanalytics/bigdl-k8s:latest
           - name: RUNTIME_SPARK_MASTER
             value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
-          - name: SPARK_MODE
-            value: client
-          - name: SPARK_VERSION
-            value: 3.1.3
-          - name: SPARK_HOME
-            value: /opt/spark
-          - name: BIGDL_VERSION
-            value: 2.2.0-SNAPSHOT
-          - name: BIGDL_HOME
-            value: /opt/bigdl-2.2.0-SNAPSHOT
         volumeMounts:
           - name: nfs-storage
             mountPath: /bigdl/nfsdata

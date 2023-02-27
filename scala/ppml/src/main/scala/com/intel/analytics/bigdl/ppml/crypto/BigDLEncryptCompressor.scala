@@ -140,8 +140,8 @@ object BigDLEncryptCompressor {
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
     val (dataKeyPlainText, dataKeyCipherText) = (
-      conf.get("bigdl.dataKey.plainText"),
-      conf.get("bigdl.dataKey.cipherText")
+      conf.get("bigdl.write.dataKey.plainText"),
+      conf.get("bigdl.write.dataKey.cipherText")
     )
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
       dataKeyPlainText, dataKeyCipherText)
