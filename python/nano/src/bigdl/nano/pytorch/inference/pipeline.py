@@ -52,8 +52,9 @@ class Pipeline():
             ])
         ```
         will create a pipeline which has stage "preprocess" and "inference",
-        and the "preprocess" stage will call `preprocess(input)` with 4 CPU cores,
-        while the "inference" stage will call `model(input)` with 8 CPU cores.
+        and the "preprocess" stage will call `preprocess(input)` with 4 CPU cores
+        for openmp worload, while the "inference" stage will call `model(input)`
+        with 8 CPU cores for openmp workload.
 
         :param stages: A list of configurations for each stage, each stage should consist of
             a 'name'(str), a 'function'(Callable), and a 'config'(dict).
