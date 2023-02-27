@@ -23,7 +23,7 @@ import pytest
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 NBeatsForecaster = LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
-from .. import op_torch, op_distributed, op_inference, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_diff_set_all, op_automl
 
 
 def create_data(loader=False):
@@ -791,3 +791,51 @@ class TestChronosNBeatsForecaster(TestCase):
             assert current_thread == num
             for x, y in test_loader:
                 yhat = forecaster.predict(x.numpy())
+
+    @op_automl
+    def test_nbeats_forecaster_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      metrics=['mae', 'mse', 'mape'],
+                                      lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize")
+        train_data = (train_data[0] * 10000.0, train_data[1] * 10000.0)
+        forecaster.fit(train_data, epochs=2)
+        train_loss = forecaster.trainer.callback_metrics['train/loss']
+        assert train_loss > 10
+
+    @op_automl
+    def test_nbeats_forecaster_multi_objective_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                     future_seq_len=5,
+                                     loss="mae",
+                                     metrics=['mae', 'mse', 'mape'],
+                                     lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'],
+                        direction=None,
+                        directions=["minimize", "minimize"])
+
+    @op_automl
+    @op_diff_set_all
+    @op_inference
+    def test_nbeats_forecaster_multi_objective_tune_acceleration(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      metrics=['mae', 'mse', 'mape'],
+                                      lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)
