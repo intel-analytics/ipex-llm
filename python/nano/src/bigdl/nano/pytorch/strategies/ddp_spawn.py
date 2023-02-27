@@ -58,9 +58,20 @@ from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.common import EnvContext
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 
 import logging
 import warnings
+
+
+# we must import torch_ccl to use ccl as backend
+try:
+    if TORCH_VERSION_LESS_1_12:
+        import torch_ccl
+    else:
+        import oneccl_bindings_for_pytorch
+except Exception as _e:
+    pass
 
 
 log = logging.getLogger(__name__)

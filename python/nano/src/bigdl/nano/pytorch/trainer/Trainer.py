@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_12
 from bigdl.nano.utils.pytorch import ChannelsLastCallback
 from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
@@ -155,7 +155,10 @@ class Trainer(pl.Trainer):
                                   f"Process group backends supported now are None and 'ccl'",
                                   f" but got {process_group_backend}.")
                 try:
-                    import oneccl_bindings_for_pytorch
+                    if TORCH_VERSION_LESS_1_12:
+                        import torch_ccl
+                    else:
+                        import oneccl_bindings_for_pytorch
                 except Exception as _e:
                     invalidInputError(False,
                                       "Failed to import oneccl_bindings_for_pytorch, "
