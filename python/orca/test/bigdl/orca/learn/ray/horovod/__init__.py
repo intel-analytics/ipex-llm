@@ -13,17 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-set -ex
-
-cd "`dirname $0`"
-
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-
-ray stop -f
-
-cd ../../
-echo "Running RayOnSpark tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/ \
-    --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py

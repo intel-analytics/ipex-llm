@@ -1,5 +1,5 @@
-name: 'Run Orca Python Horovod Tf2 Py37 Spark3'
-description: 'Run Orca Python Horovod Tf2 Py37 Spark3'
+name: 'Run Orca Python Horovod Py37 Spark3'
+description: 'Run Orca Python Horovod Py37 Spark3'
 runs:
   using: "composite"
   steps:
@@ -18,8 +18,8 @@ runs:
         
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         
-        chmod a+x python/orca/dev/test/run-pytests-horovod-tf.sh
-        python/orca/dev/test/run-pytests-horovod-tf.sh
+        chmod a+x python/orca/dev/test/run-pytests-horovod.sh
+        python/orca/dev/test/run-pytests-horovod.sh
         ray stop
         source deactivate
       env:
