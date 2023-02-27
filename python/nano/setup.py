@@ -210,7 +210,7 @@ def setup_package():
                         "tensorflow_28": tensorflow_28_requires,
                         "tensorflow_29": tensorflow_29_requires,
                         "tensorflow_210": tensorflow_210_requires,
-                        "tensorflow_211": tensorflow_210_requires,
+                        "tensorflow_211": tensorflow_211_requires,
                         "stock_tensorflow_27": stock_tensorflow_27_requires,
                         "stock_tensorflow_28": stock_tensorflow_28_requires,
                         "stock_tensorflow_29": stock_tensorflow_29_requires,
