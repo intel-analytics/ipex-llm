@@ -58,6 +58,7 @@ class Trainer(pl.Trainer):
     def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend="subprocess",
+                 process_group_backend: Optional[str] = None,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  channels_last: bool = False,
@@ -71,6 +72,9 @@ class Trainer(pl.Trainer):
         :param use_ipex: whether we use ipex as accelerator for trainer. default: ``False``.
         :param distributed_backend: use which backend in distributed mode, defaults to
             ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param process_group_backend: use which process group backend in distributed mode, defaults
+            to ``None``, means using ``gloo`` with CPU, while using ``nccl`` with GPU, now avaiable
+            backends are ``None`` and ``'ccl'``.
         :param cpu_for_each_process: A list of length ``num_processes``, each containing a list of
             indices of cpus each process will be using. default: ``None``, and the cpu will be
             automatically and evenly distributed among processes.
@@ -146,6 +150,18 @@ class Trainer(pl.Trainer):
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
+            if process_group_backend is not None:
+                invalidInputError(process_group_backend == 'ccl',
+                                  f"Process group backends supported now are None and 'ccl'",
+                                  f" but got {process_group_backend}.")
+                try:
+                    import oneccl_bindings_for_pytorch
+                except Exception as _e:
+                    invalidInputError(False,
+                                      "Failed to import oneccl_bindings_for_pytorch, "
+                                      "maybe you should install it first: "
+                                      "pip install oneccl_bind_pt -f "
+                                      "https://developer.intel.com/ipex-whl-stable-cpu")
             if "checkpoint_callback" in kwargs:
                 if not kwargs["checkpoint_callback"]:
                     invalidInputError(False,
@@ -158,7 +174,8 @@ class Trainer(pl.Trainer):
                                     cpu_for_each_process=cpu_for_each_process,
                                     use_ipex=self.use_ipex,
                                     dtype=dtype,
-                                    auto_lr=auto_lr)
+                                    auto_lr=auto_lr,
+                                    process_group_backend=process_group_backend)
 
             kwargs["strategy"] = strategy
             super().__init__(*args, **kwargs)

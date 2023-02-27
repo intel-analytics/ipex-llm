@@ -148,6 +148,7 @@ class TorchNano(LightningLite):
     def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend: str = "subprocess",
+                 process_group_backend: Optional[str] = None,
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
@@ -160,6 +161,9 @@ class TorchNano(LightningLite):
         :param use_ipex: whether use ipex acceleration, defaults to ``False``
         :param distributed_backend: use which backend in distributed mode, defaults to
             ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param process_group_backend: use which process group backend in distributed mode, defaults
+            to ``None``, means using ``gloo`` with CPU, while using ``nccl`` with GPU, now avaiable
+            backends are ``None`` and ``'ccl'``.
         :param precision: Double precision (``64``), full precision (``32``),
             half precision (``16``) or bfloat16 precision (``'bf16'``), defaults to ``32``.
             Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
@@ -208,11 +212,24 @@ class TorchNano(LightningLite):
             else:
                 strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
+            if process_group_backend is not None:
+                invalidInputError(process_group_backend == 'ccl',
+                                  f"Process group backends supported now are None and 'ccl'",
+                                  f" but got {process_group_backend}.")
+                try:
+                    import oneccl_bindings_for_pytorch
+                except Exception as _e:
+                    invalidInputError(False,
+                                      "Failed to import oneccl_bindings_for_pytorch, "
+                                      "maybe you should install it first: "
+                                      "pip install oneccl_bind_pt -f "
+                                      "https://developer.intel.com/ipex-whl-stable-cpu")
             cls = backends_class_map[distributed_backend]
             strategy = cls(num_processes=self.num_processes,   # type: ignore
                            cpu_for_each_process=self.cpu_for_each_process,
                            use_ipex=self.use_ipex,
-                           dtype=self.dtype)
+                           dtype=self.dtype,
+                           process_group_backend=process_group_backend)
         else:
             warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
                     f"'{distributed_backend}' strategy of pytorch_lightning will be used. "
