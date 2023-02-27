@@ -118,10 +118,9 @@ class ResNetPerfCallback(MainCallback):
                 images = images.to(torch.bfloat16)
             runner.put("images", images)
             runner.put("target", target)
-        
+
         if runner.config["warmup_iterations"] > 0:
             print("running warmup iterations")
-
 
     def on_val_forward(self, runner):
         if runner.config["dummy"]:
