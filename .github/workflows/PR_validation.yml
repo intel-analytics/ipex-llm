@@ -289,7 +289,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
-      uses: ./.github/actions/orca/orca-basic-pytorch-py37-spark3-action
+      uses: ./.github/actions/orca/orca-basic-pytorch-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
@@ -308,7 +308,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
-      uses: ./.github/actions/orca/orca-basic-tf2-py37-spark3-action
+      uses: ./.github/actions/orca/orca-basic-tf2-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
