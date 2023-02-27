@@ -116,22 +116,10 @@ init_instance() {
         echo "No MALLOC_ARENA_MAX specified, set to 1."
         export MALLOC_ARENA_MAX=1
     fi
-    
-    # check occlum log level for docker
-    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
-        echo "No ENABLE_SGX_DEBUG specified, set to off."
-        export ENABLE_SGX_DEBUG=false
-    fi
-    export OCCLUM_LOG_LEVEL=off
-    if [[ -z "$SGX_LOG_LEVEL" ]]; then
-        echo "No SGX_LOG_LEVEL specified, set to off."
-    else
-        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
-            export ENABLE_SGX_DEBUG=true
-            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-        fi
-    fi
+
+    # ENABLE_SGX_DEBUG
+    export ENABLE_SGX_DEBUG=true
+
 
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
@@ -163,6 +151,17 @@ attestation_init() {
     # make source mount file exit to avoid occlum mout fail
     cd /opt/occlum_spark
     bash /opt/mount.sh
+
+    # check occlum log level for docker
+    export OCCLUM_LOG_LEVEL=off
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then
+        echo "No SGX_LOG_LEVEL specified, set to off."
+    else
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+        fi
+    fi
 
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
