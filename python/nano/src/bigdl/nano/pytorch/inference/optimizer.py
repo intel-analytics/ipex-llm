@@ -19,7 +19,7 @@ from torch import nn
 import time
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
     latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
@@ -770,6 +770,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if calib_data is not None and not isinstance(calib_data, DataLoader):
                 dataset = RepeatDataset(sample=calib_data, num=1)
                 calib_dataloader = DataLoader(dataset, batch_size=1)
+
+                # reduce the dataset to sample_size
+                if sample_size and sample_size < len(dataset):
+                    sample_indices = torch.arange(sample_size)
+                    sample_dataset = Subset(calib_dataloader.dataset, sample_indices)
+                    calib_dataloader = DataLoader(sample_dataset, batch_size=1)
                 calib_dataloader = remove_batch_dim_fn(calib_dataloader)
             else:
                 if calib_data is None and calib_dataloader is not None:
@@ -780,6 +786,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     calib_dataloader = calib_dataloader
                 else:
                     calib_dataloader = calib_data
+
+                # Reduce dataloader size to sample_size
+                if sample_size and sample_size < len(calib_dataloader):
+                    sample_indices = torch.arange(sample_size)
+                    sample_dataset = Subset(calib_dataloader.dataset, sample_indices)
+                    calib_dataloader = DataLoader(sample_dataset, batch_size=1)
+
             # judge whether contains label in calib_datalaoder
             # if not, will append label at last
             if accelerator is not None:
