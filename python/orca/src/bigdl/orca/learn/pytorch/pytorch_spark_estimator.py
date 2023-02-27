@@ -453,3 +453,5 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         :return:
         """
         self.estimator.set_l2_norm_gradient_clipping(clip_norm=clip_norm)
+
+# modified in 1
