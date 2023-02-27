@@ -131,7 +131,7 @@ class TorchRunner(BaseRunner):
         self.sync_stats = sync_stats
         self.epoch_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
-        self.pocket = dict() # Used to store some customized attributes
+        self._pocket = dict() # Used to store some customized attributes
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -751,19 +751,28 @@ class TorchRunner(BaseRunner):
                 getattr(hook, fn_name)(self)
     
     def put(self, k, v):
-        self.pocket[k] = v
+        if k in self._pocket.keys():
+            self.logger.warning(f"Key {k} has already been in runner._pocket,"
+                                "please use runner.update instead.")
+        self._pocket[k] = v
+    
+    def update(self, k, v):
+        if k not in self._pocket.keys():
+            self.logger.warning(f"Key {k} is not in runner._pocket,"
+                                "please use runner.put instead.")
+        self._pocket[k] = v
     
     def get(self, k):
-        invalidInputError(k in self.pocket.keys(),
-                          f"KeyError, key {k} is not in runner.pocket,"
+        invalidInputError(k in self._pocket.keys(),
+                          f"KeyError, key {k} is not in runner._pocket,"
                           "please check your input.")
-        return self.pocket[k]
+        return self._pocket[k]
 
     def remove(self, k):
-        invalidInputError(k in self.pocket.keys(),
+        invalidInputError(k in self._pocket.keys(),
                           f"KeyError, key {k} is not in runner.pocket,"
                           "please check your input.")
-        del self.pocket[k]
+        del self._pocket[k]
 
     @property
     def given_models(self):
