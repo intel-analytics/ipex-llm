@@ -22,18 +22,22 @@ from torchvision.models import resnet18
 from bigdl.nano.pytorch import Pipeline
 
 
+def empty_stage():
+    pass
+
+
+def preprocess(_i):
+    return torch.rand((1, 3, 224, 224))
+
+
 class TestPipeline(TestCase):
     def test_pipeline_create(self):
-        def stage1():
-            pass
         _pipeline = Pipeline([
-            ("preprocess", stage1, {}),
-            ("inference", stage1, {}),
+            ("preprocess", empty_stage, {}),
+            ("inference", empty_stage, {}),
         ])
 
     def test_pipeline_inference(self):
-        def preprocess(_i):
-            return torch.rand((1, 3, 224, 224))
         model = resnet18(num_classes=10)
         pipeline = Pipeline([
             ("preprocess", preprocess, {}),
@@ -44,7 +48,8 @@ class TestPipeline(TestCase):
         assert len(outputs) == 10 and all(map(lambda o: o.shape == (1, 10), outputs))
 
     @pytest.mark.skipif(platform.system() == "Windows",
-                        reason="os.sched_getaffinity() is unavaiable on Windows.")
+                        reason=("os.sched_getaffinity() is unavaiable on Windows, "
+                                "and Windows doesn't support pickle local function"))
     def test_pipeline_core_control(self):
         def preprocess(_i):
             import os
