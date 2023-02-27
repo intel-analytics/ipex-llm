@@ -764,10 +764,6 @@ jobs:
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
-        sudo docker tag ${bigdata_custom_image}:${TAG} intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
-        sudo docker push intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
-        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
-        sudo docker push 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
         sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
 
         export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g
