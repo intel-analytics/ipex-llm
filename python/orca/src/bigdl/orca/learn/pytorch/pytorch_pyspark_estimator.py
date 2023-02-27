@@ -183,8 +183,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
-        if self.model_creator:
-            self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self) -> 'TCPStore':
         import torch.distributed as dist
