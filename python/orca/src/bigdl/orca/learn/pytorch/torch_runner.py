@@ -280,11 +280,11 @@ class TorchRunner(BaseRunner):
 
         if not self.models:
             invalidInputError(False,
-                              "You must provide a model for train.")
+                              "You must provide a model for train and evaluate.")
 
         if not self.criterion:
             invalidInputError(False,
-                              "You must provide a loss for train.")
+                              "You must provide a loss for train and evaluate.")
 
         if not self.optimizers:
             invalidInputError(False,
