@@ -17,6 +17,7 @@ import pytest
 from unittest import TestCase
 from bigdl.chronos.aiops.config_generator import ConfigGenerator, triggerbyclock
 import time
+from .. import op_diff_set_all
 
 
 class TestConfigGenerator(TestCase):
@@ -26,6 +27,7 @@ class TestConfigGenerator(TestCase):
     def teardown_method(self, method):
         pass
 
+    @op_diff_set_all
     def test_triggerbyclock(self):
 
         class MyConfigGenerator(ConfigGenerator):
