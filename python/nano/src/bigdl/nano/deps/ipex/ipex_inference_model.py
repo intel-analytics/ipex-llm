@@ -212,7 +212,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         if status["use_jit"]:
             if status['compression'] == "bf16":
                 invalidInputError(model is not None,
-                                  "You must pass input_sample when loading this model "
+                                  "You must pass model when loading this model "
                                   "which was saved with compression precision.")
                 invalidInputError(input_sample is not None,
                                   "You must pass input_sample when loading this model "
