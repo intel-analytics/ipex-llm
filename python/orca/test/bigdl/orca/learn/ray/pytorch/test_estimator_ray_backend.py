@@ -396,7 +396,10 @@ class TestPyTorchEstimator(TestCase):
         estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
                            label_cols=["label"])
         result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
-        result.collect()
+        predictions = result.collect()[0]
+        import pandas as pd
+        assert isinstance(predictions, pd.DataFrame), "predict should return a pandas dataframe"
+        print(predictions.head(n=1))
 
     def test_multiple_inputs_model(self):
 
