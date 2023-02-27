@@ -26,3 +26,8 @@ ray stop -f
 cd ../../
 echo "Running Horovod backend tests"
 python -m pytest -v test/bigdl/orca/learn/ray/horovod/
+exit_status_1=$?
+if [ $exit_status_1 -ne 0 ];
+then
+    exit $exit_status_1
+fi
