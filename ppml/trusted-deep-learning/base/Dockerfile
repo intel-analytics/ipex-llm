@@ -3,7 +3,6 @@ ARG TINI_VERSION=v0.18.0
 ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
 ARG JDK_VERSION=11
-ARG GRAMINE_VERSION=devel-v1.3.1-2022-12-28
 
 #Stage.1 Torchserve Frontend
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
@@ -29,7 +28,6 @@ ARG no_proxy
 ARG TINI_VERSION
 ENV TINI_VERSION                        $TINI_VERSION
 ARG JDK_VERSION
-ARG GRAMINE_VERSION
 ENV JDK_HOME                            /opt/jdk${JDK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 # Environment used for build pytorch
@@ -91,7 +89,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # PyTorch
     rm -rf /usr/local/lib/python3.8/dist-packages/torch && \
     git clone https://github.com/analytics-zoo/pytorch /pytorch && \
-    cd /pytorch && git checkout $GRAMINE_VERSION && \
+    cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
     rm -rf ./third_party/gloo && \
     cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
