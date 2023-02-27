@@ -47,18 +47,18 @@ function refresh_cmd(){
     $("#model").empty();
     if(functionality=="Forecasting"){
         $("#model").append("<td colspan='1'>Model</td>\
-        <td colspan='1'><button id='Deep_learning_models'>Deep learning models</button></td>\
+        <td colspan='2'><button id='Deep_learning_models'>Deep learning</button></td>\
         <td colspan='2'><button id='Prophet'>Prophet</button></td>\
-        <td colspan='1'><button id='ARIMA'>ARIMA</button></td>");
+        <td colspan='2'><button id='ARIMA'>ARIMA</button></td>");
     }
     else if(functionality=="Anomaly"){
         $("#model").append("<td colspan='1'>Model</td>\
-        <td colspan='2'><button id='Deep_learning_models'>Deep learning models</button>\
-        <td colspan='2'><button id='Machine_learning_models'>Machine learning models</button></td>");
+        <td colspan='3'><button id='Deep_learning_models'>Deep learning</button>\
+        <td colspan='3'><button id='Machine_learning_models'>Machine learning</button></td>");
     }
     else if(functionality=="Simulation"){
         $("#model").append("<td colspan='1'>Model</td>\
-        <td colspan='4'><button id='Deep_learning_models'>Deep learning models</button>");
+        <td colspan='6'><button id='Deep_learning_models'>Deep learning</button>");
     }
     reset_color(models);
     set_color(model);
@@ -547,6 +547,6 @@ $(document).on({
             $(this).css("color","var(--pst-color-text-base)");
         }
     }
-}, "button");
+}, "installation-panel-table button");
 
 refresh_cmd();

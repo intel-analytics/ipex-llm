@@ -18,8 +18,8 @@ bash bigdl-ppml-submit.sh \
         --conf spark.kubernetes.executor.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
-        --conf spark.executor.extraClassPath=/jars/* \
-        --conf spark.driver.extraClassPath=/jars/* \
+        --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+        --conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
         --conf spark.kubernetes.file.upload.path=file:///tmp \
         --name weekly-tpc-h-on-gramine \
         --verbose \

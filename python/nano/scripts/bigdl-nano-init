@@ -67,6 +67,30 @@ function display-error {
     display-help
 }
 
+function display-var {
+    echo "Internal Variables:"
+    echo "  ENABLE_JEMALLOC_VAR = $ENABLE_JEMALLOC_VAR"
+    echo "  ENABLE_TCMALLOC_VAR = $ENABLE_TCMALLOC_VAR"
+    echo "  DISABLE_OPENMP_VAR  = $DISABLE_OPENMP_VAR"
+    echo "  OPENMP              = $OPENMP"
+    echo "  PERF_VAR            = $PERF_VAR"
+    echo "  BIN_DIR             = $BIN_DIR"
+    echo "  LIB_DIR             = $LIB_DIR"
+    echo "  NANO_DIR            = $NANO_DIR"
+    echo "  uName               = $uName"
+    echo "  OS                  = $OS"
+    echo ""
+    echo "Exported Variables:"
+    echo "  LD_PRELOAD            = $LD_PRELOAD"
+    echo "  DYLD_INSERT_LIBRARIES = $DYLD_INSERT_LIBRARIES"
+    echo "  MALLOC_CONF           = $MALLOC_CONF"
+    echo "  OMP_NUM_THREADS       = $OMP_NUM_THREADS"
+    echo "  KMP_AFFINITY          = $KMP_AFFINITY"
+    echo "  KMP_BLOCKTIME         = $KMP_BLOCKTIME"
+    echo "  TF_ENABLE_ONEDNN_OPTS = $TF_ENABLE_ONEDNN_OPTS"
+    echo ""
+}
+
 function display-help {
     echo "Usage: source bigdl-nano-init [-o] [--option]"
         echo ""
@@ -80,9 +104,10 @@ function display-help {
         echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
+        echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
-# Init internel variables
+# Init internal variables
 ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
 unset DISABLE_OPENMP_VAR
@@ -93,7 +118,7 @@ export TF_ENABLE_ONEDNN_OPTS=1
 
 OPTIND=1
 
-while getopts ":ojhtcp-:" opt; do
+while getopts "ojhtcpd-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -114,6 +139,10 @@ while getopts ":ojhtcp-:" opt; do
                     ;;
                 help)
                     display-help
+                    return 0
+                    ;;
+                debug)
+                    display-var
                     return 0
                     ;;
                 *)
@@ -140,6 +169,10 @@ while getopts ":ojhtcp-:" opt; do
             ;;
         h )
             display-help
+            return 0
+            ;;
+        d )
+            display-var
             return 0
             ;;
         \? )
@@ -181,43 +214,44 @@ export LD_PRELOAD=""
 export DYLD_INSERT_LIBRARIES=""
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
     : # do nothing
+elif [ "${PERF_VAR}" -eq 1 ]; then
+    OPENMP=1
 elif [ $OS = "linux" ] && [ -f "${LIB_DIR}/libiomp5.so" ]; then
     OPENMP=1
     export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
-    cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
-    max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
-    # bash's array index starts from 0, while zsh's array index starts from 1,
-    # so we use -1, -2, -3 as index here for consistency
-    let cpu_=${max_cpu_info[-3]}+1
-    let sockets_=${max_cpu_info[-2]}+1
-    let core_=${max_cpu_info[-1]}+1
-    let threads_per_core=$cpu_/$core_
-    let cores_per_socket=$core_/$sockets_
 elif [ $OS = "macos" ] && [ -f "${LIB_DIR}/libiomp5.dylib" ]; then
     OPENMP=1
     export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libiomp5.dylib"
-    core_=$(sysctl -n hw.physicalcpu)
 else
     echo "No OpenMP library found in ${LIB_DIR}."
 fi
 
-if [[ "${PERF_VAR}" -eq 1 ]]; then
-    # experiment variable to speed up performance.
-    OPENMP=0
-    export LD_PRELOAD=""
-    export DYLD_INSERT_LIBRARIES=""
-    export OMP_NUM_THREADS=$core_
-    export KMP_AFFINITY=granularity=fine,compact,1,0
-    echo "Setting KMP_BLOCKTIME..."
-    export KMP_BLOCKTIME=1
-fi
-
 if [ "${OPENMP}" -eq 1 ]; then
     echo "Setting OMP_NUM_THREADS..."
-    export OMP_NUM_THREADS=$core_
+    if [ $OS = "linux" ]; then
+        cpu_infos=($(lscpu -p=CPU,Socket,Core | grep -P '^(\d*),(\d*),(\d*)$'))
+        max_cpu_info=($(echo ${cpu_infos[-1]} | sed 's/,/\ /g'))
+        # bash's array index starts from 0, while zsh's array index starts from 1,
+        # so we use -1, -2, -3 as index here for consistency
+        let cpu_=${max_cpu_info[-3]}+1
+        let sockets_=${max_cpu_info[-2]}+1
+        let core_=${max_cpu_info[-1]}+1
+        let threads_per_core=$cpu_/$core_
+        let cores_per_socket=$core_/$sockets_
+        export OMP_NUM_THREADS=$core_
+    elif [ $OS = "macos" ]; then
+        export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
+    else
+        unset OMP_NUM_THREADS
+    fi
 
     echo "Setting KMP_AFFINITY..."
-    export KMP_AFFINITY=granularity=fine,none
+    if [[ "${PERF_VAR}" -eq 1 ]]; then
+        # experiment variable to speed up performance.
+        export KMP_AFFINITY=granularity=fine,compact,1,0
+    else
+        export KMP_AFFINITY=granularity=fine,none
+    fi
 
     echo "Setting KMP_BLOCKTIME..."
     export KMP_BLOCKTIME=1
@@ -270,15 +304,15 @@ else
 fi
 
 echo "+++++ Env Variables +++++"
-if [ $OS = "linux" ]; then 
-    echo "LD_PRELOAD=${LD_PRELOAD}"
+if [ $OS = "linux" ]; then
+    echo "LD_PRELOAD            = ${LD_PRELOAD}"
 elif [ $OS = "macos" ]; then
-    echo "DYLD_INSERT_LIBRARIES=${DYLD_INSERT_LIBRARIES}"
+    echo "DYLD_INSERT_LIBRARIES = ${DYLD_INSERT_LIBRARIES}"
 fi
-echo "MALLOC_CONF=${MALLOC_CONF}"
-echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
-echo "KMP_AFFINITY=${KMP_AFFINITY}"
-echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
-echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
+echo "MALLOC_CONF           = ${MALLOC_CONF}"
+echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
+echo "KMP_AFFINITY          = ${KMP_AFFINITY}"
+echo "KMP_BLOCKTIME         = ${KMP_BLOCKTIME}"
+echo "TF_ENABLE_ONEDNN_OPTS = ${TF_ENABLE_ONEDNN_OPTS}"
 echo "+++++++++++++++++++++++++"
 echo "Complete."
