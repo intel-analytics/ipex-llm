@@ -25,6 +25,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from mmcv.runner import EpochBasedRunner
+from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.utils import get_logger
 from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
@@ -35,6 +36,21 @@ MAX_EPOCH = 4
 NUM_SAMPLES = 1000
 LAST_EVAL_LOSS = 0.0
 TEMP_WORK_DIR = os.path.join(tempfile.gettempdir(), "mmcv_test_work_dir")
+
+
+class DistEvalHook(BaseDistEvalHook):
+
+    def _do_evaluate(self, runner):
+        """
+        when use DistEvalHook with multi worker, make sure the val data is
+        correctly split into multi worker.
+        """
+        worker_nums = 2
+        samples_per_worker = NUM_SAMPLES / worker_nums
+        actual_samplers_per_worker = 0
+        for data, label in self.dataloader:
+            actual_samplers_per_worker += len(data)
+        assert samples_per_worker == actual_samplers_per_worker
 
 
 class Model(nn.Module):
@@ -128,6 +144,13 @@ def runner_creator(cfg):
         checkpoint_config=checkpoint_config,
         log_config=log_config)
 
+    if cfg.add_eval_hook:
+        val_set = LinearDataset(size=NUM_SAMPLES)
+        val_loader = DataLoader(
+            val_set, batch_size=64, shuffle=True, num_workers=2)
+        eval_hook = DistEvalHook(val_loader)
+        runner.register_hook(eval_hook, priority='LOW')
+
     return runner
 
 
@@ -156,12 +179,13 @@ def train_dataloader_creator(config):
     return train_loader
 
 
-def get_estimator(creator, cfg=None):
+def get_estimator(creator, cfg=None, workers_per_node=1):
     if cfg is None:
         cfg = {}
     estimator = MMCVRayEstimator(
         mmcv_runner_creator=creator,
-        config=cfg
+        config=cfg,
+        workers_per_node=workers_per_node
     )
     return estimator
 
@@ -192,6 +216,26 @@ class TestMMCVRayEstimator(unittest.TestCase):
         dloss = end_stats["loss"] - start_stats["loss"]
         print(f"dLoss: {dloss}")
         assert dloss < 0
+
+        if os.path.exists(TEMP_WORK_DIR):
+            shutil.rmtree(TEMP_WORK_DIR)
+
+    def test_run_with_dist_eval_hook(self):
+        model = Model()
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        cfg = dict(
+            model=model,
+            optimizer=optimizer,
+            batch_processor=None,
+            lr_config=dict(policy='step', step=[2, 3]),
+            optimizer_config=dict(grad_clip=None),
+            checkpoint_config=None,
+            log_config=dict(interval=4, hooks=[dict(type='TextLoggerHook')]),
+            add_eval_hook=True
+        )
+        estimator = get_estimator(runner_creator, cfg, workers_per_node=2)
+        epoch_stats = estimator.run([train_dataloader_creator], [('train', 1)])
+        self.assertEqual(len(epoch_stats), MAX_EPOCH)
 
         if os.path.exists(TEMP_WORK_DIR):
             shutil.rmtree(TEMP_WORK_DIR)

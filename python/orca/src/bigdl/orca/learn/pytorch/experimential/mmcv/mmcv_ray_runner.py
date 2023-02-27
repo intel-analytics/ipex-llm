@@ -184,7 +184,7 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
                         creator in data_loaders_creators]
         # runner was created in method setup_components, which may contains the
         # creation of DistEvalHook. At that time, ddp env was not initialized, so
-        # the val_dataloder in DistEvalHook is not correctly build with a sampler.
+        # the val_dataloder in DistEvalHook is not correctly built with a sampler.
         # so add sampler for val_dataloder if there is a DistEvalHook.
         for hook in self._hooks:
             if isinstance(hook, DistEvalHook):
