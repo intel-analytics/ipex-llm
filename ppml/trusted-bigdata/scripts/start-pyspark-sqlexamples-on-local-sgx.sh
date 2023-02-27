@@ -38,6 +38,7 @@ fi
 
 if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
+export MALLOC_ARENA_MAX=16
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \

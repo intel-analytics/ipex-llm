@@ -283,7 +283,7 @@ kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-u
 #### 1.2.2 Generate k8s config file
 ```bash
 kubectl config use-context spark-context
-kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+kubectl config view --flatten --minify > /YOUR_DIR/config
 ```
 #### 1.2.3 Create k8s secret
 ```bash
@@ -292,7 +292,7 @@ kubectl create secret generic kms-secret \
                       --from-literal=app_id=YOUR_KMS_APP_ID \
                       --from-literal=api_key=YOUR_KMS_API_KEY \
                       --from-literal=policy_id=YOUR_POLICY_ID
-kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
+kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/config
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
@@ -304,7 +304,7 @@ Configure the environment variables in the following script before running it. C
    export DATA_PATH=/YOUR_DIR/data
    export KEYS_PATH=/YOUR_DIR/keys
    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-   export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+   export KUBECONFIG_PATH=/YOUR_DIR/config
    export LOCAL_IP=$LOCAL_IP
    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
     

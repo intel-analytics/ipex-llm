@@ -23,39 +23,25 @@ import org.apache.spark.sql.SparkSession
 
 object MultiPartySparkQueryExample extends Supportive {
   def main(args: Array[String]): Unit = {
-
-    val ppmlArgs = Map(
-      "spark.bigdl.enableMultiKms" -> "true",
-      "spark.bigdl.kms.amyKms.type" -> "EHSMKeyManagementService",
-      "spark.bigdl.kms.amyKms.ip" -> args(0),
-      "spark.bigdl.kms.amyKms.port" -> args(1),
-      "spark.bigdl.kms.amyKms.appId" -> args(2),
-      "spark.bigdl.kms.amyKms.apiKey" -> args(3),
-      "spark.bigdl.kms.bobKms.type" -> "EHSMKeyManagementService",
-      "spark.bigdl.kms.bobKms.ip" -> args(4),
-      "spark.bigdl.kms.bobKms.port" -> args(5),
-      "spark.bigdl.kms.bobKms.appId" -> args(6),
-      "spark.bigdl.kms.bobKms.apiKey" -> args(7)
-    )
-    val sc = PPMLContext.initPPMLContext("MultiPartySparkExample", ppmlArgs)
+    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val (amyEncryptedDataFileInputPath,
+         bobEncryptedDataFileInputPath) = (args(0), args(1))
+    val sc = PPMLContext.initPPMLContext(sparkSession)
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
       val amyDf = timing("1/8 read Amy's data source into data frame") {
         // read encrypted data
-        sc.read(AES_CBC_PKCS5PADDING, // crypto mode
-                "amyKms", // name of kms which data key is retrieved from
-                "./amy_encrypted_primary_key", // primary key file path
-                "./amy_encrypted_data_key") // data key file path
+        sc.read(cryptoMode = AES_CBC_PKCS5PADDING,
+                primaryKeyName = "AmyPK")
           .option("header", "true")
-          .csv("./encrypted_amy_data") // input file path
+          .csv(amyEncryptedDataFileInputPath)
       }
 
       val bobDf = timing("2/8 read Bob's data source") {
-        sc.read(AES_CBC_PKCS5PADDING, "bobKms",
-                "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
+        sc.read(AES_CBC_PKCS5PADDING, "BobPK")
           .option("header", "true")
-          .csv("./encrypted_bob_data")
+          .csv(bobEncryptedDataFileInputPath)
       }
 
       val amyDevelopers = timing("3/8 do SQL operations on Amy data frame") {
@@ -86,11 +72,9 @@ object MultiPartySparkQueryExample extends Supportive {
       timing("6/8 encrypt and save union outputs") {
         // save data frame using spark kms context
         // write encrypted data
-        sc.write(unionDf, // target data frame
-                 AES_CBC_PKCS5PADDING, // encrypt mode
-                 "amyKms", // name of kms which data key is retrieved from
-                 "./amy_encrypted_primary_key", // primary key file path
-                 "./amy_encrypted_data_key") // data key file path
+        sc.write(dataFrame = unionDf,
+                 cryptoMode = AES_CBC_PKCS5PADDING,
+                 primaryKeyName = "AmyPK")
           .mode("overwrite")
           .option("header", true)
           .csv("./union_output")
@@ -109,8 +93,7 @@ object MultiPartySparkQueryExample extends Supportive {
       }
 
       timing("6/8 encrypt and save join outputs") {
-        sc.write(joinDf, AES_CBC_PKCS5PADDING, "bobKms",
-                 "./bob_encrypted_primary_key", "./bob_encrypted_data_key")
+        sc.write(joinDf, AES_CBC_PKCS5PADDING, "BobPK")
           .mode("overwrite").option("header", true).csv("./join_output")
       }
     }

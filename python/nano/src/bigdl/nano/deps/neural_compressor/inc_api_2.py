@@ -38,7 +38,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
         from .pytorch.quantized_model import PytorchQuantizedModel
         quantized_model = PytorchQuantizedModel(q_model, thread_num)
 
-        from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+        from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
         patch_attrs_from_model_to_object(model, quantized_model)
         return quantized_model
 
@@ -66,7 +66,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
             quantized_model = PytorchONNXRuntimeModel(q_model.model, None,
                                                       onnxruntime_session_options)
 
-            from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+            from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
             patch_attrs_from_model_to_object(model, quantized_model)
             return quantized_model
 

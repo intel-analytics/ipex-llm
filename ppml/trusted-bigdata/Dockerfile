@@ -215,9 +215,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod -R 777 ${FLINK_HOME} && \
     chown -R flink:flink ${FLINK_HOME} && \
 # Python packages
-    pip3 install numpy
-
-RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
+    pip3 install numpy pandas && \
+    cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+    cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/
 
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

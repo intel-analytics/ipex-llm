@@ -22,25 +22,28 @@ runs:
 
         pip install --upgrade pip
 
-        pip install tensorflow==2.8.0
+        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220917'/g" python/dllib/src/setup.py
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install -r python/requirements/orca/requirements_ray.txt
         pip install ray==1.11.0
 
-        pip install --pre --upgrade bigdl-orca
-
-        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220917'/g" python/dllib/src/setup.py
-        #build dllib whl without make_dist
-        ./python/dllib/dev/release/release.sh linux default false True
-        pip install ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
-
-        #build orca whl without make_dist
-        ./python/orca/dev/release/release.sh linux default false True
-        pip install ./python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
-
+        # This machine does not support GONDOLIN pip mirror
+        pip install tensorflow==2.8.0
+        pip install torch==1.7.1
+        pip install torchvision==0.8.2
+        pip install torchmetrics==0.10.0
+        pip install tqdm
+        pip install pyarrow
+        pip install pandas
 
         chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
         python/orca/dev/test/run-pytests-ray-ctx.sh
 
-        pip uninstall -y bigdl-dllib bigdl-orca pyspark
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}

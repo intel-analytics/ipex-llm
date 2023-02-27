@@ -27,7 +27,7 @@ from pytorch_lightning.plugins.precision.double import DoublePrecisionPlugin
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 
 from test.pytorch.utils._train_torch_lightning import (create_data_loader,
                                                        create_test_data_loader,

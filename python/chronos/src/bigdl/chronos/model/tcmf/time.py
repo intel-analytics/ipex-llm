@@ -59,45 +59,45 @@ class TimeCovariates(object):
         self.dti = pd.date_range(self.start_date, periods=self.num_ts, freq=self.freq)
 
     def _minute_of_hour(self):
-        minutes = np.array(self.dti.minute, dtype=np.float)
+        minutes = np.array(self.dti.minute, dtype=np.float32)
         if self.normalized:
             minutes = minutes / 59.0 - 0.5
         return minutes
 
     def _hour_of_day(self):
-        hours = np.array(self.dti.hour, dtype=np.float)
+        hours = np.array(self.dti.hour, dtype=np.float32)
         if self.normalized:
             hours = hours / 23.0 - 0.5
         return hours
 
     def _day_of_week(self):
-        dayWeek = np.array(self.dti.dayofweek, dtype=np.float)
+        dayWeek = np.array(self.dti.dayofweek, dtype=np.float32)
         if self.normalized:
             dayWeek = dayWeek / 6.0 - 0.5
         return dayWeek
 
     def _day_of_month(self):
-        dayMonth = np.array(self.dti.day, dtype=np.float)
+        dayMonth = np.array(self.dti.day, dtype=np.float32)
         if self.normalized:
             dayMonth = dayMonth / 30.0 - 0.5
         return dayMonth
 
     def _day_of_year(self):
-        dayYear = np.array(self.dti.dayofyear, dtype=np.float)
+        dayYear = np.array(self.dti.dayofyear, dtype=np.float32)
         if self.normalized:
             dayYear = dayYear / 364.0 - 0.5
         return dayYear
 
     def _month_of_year(self):
-        monthYear = np.array(self.dti.month, dtype=np.float)
+        monthYear = np.array(self.dti.month, dtype=np.float32)
         if self.normalized:
             monthYear = monthYear / 11.0 - 0.5
         return monthYear
 
     def _week_of_year(self):
-        weekYear = np.array(pd.Int64Index(self.dti.isocalendar().week), dtype=np.float) if\
+        weekYear = np.array(pd.Int64Index(self.dti.isocalendar().week), dtype=np.float32) if\
             version.parse(pd.__version__) >= version.parse("1.1.0") else\
-            np.array(self.dti.weekofyear, dtype=np.float)
+            np.array(self.dti.weekofyear, dtype=np.float32)
         if self.normalized:
             weekYear = weekYear / 51.0 - 0.5
         return weekYear

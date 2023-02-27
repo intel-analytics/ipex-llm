@@ -238,15 +238,21 @@ class TestOnnx(TestCase):
 
         assert onnx_model.channels == 3
         onnx_model.hello()
-        with pytest.raises(AttributeError):
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
             onnx_model.width
 
         # save & load without original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
-        with pytest.raises(AttributeError):
-            load_model.channels == 3
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'channels'"
+        ):
+            load_model.channels
         with pytest.raises(AttributeError):
             load_model.hello()
 
@@ -256,6 +262,11 @@ class TestOnnx(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
+            onnx_model.width
 
     def test_onnx_quantize_dynamic_axes(self):
         class CustomModel(nn.Module):
@@ -312,7 +323,7 @@ class TestOnnx(TestCase):
 
         data = torch.zeros(1,3,1,1) - 1
         result_true = model(data)
-        # sample with only required parameters (in a tuple)
+        # sample with only required parameters (a Tensor)
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="onnxruntime",
                                                calib_data=torch.rand(2,3,1,1))
@@ -328,13 +339,21 @@ class TestOnnx(TestCase):
         result_m = accmodel(data)
         assert abs(torch.sum(result_m).item()) < 1e-5
 
-        # default bool values
+        # default int values
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
             def forward(self, x, a=3):
                 return x + a
         model = Net()
+
+        # sample with only required parameters (in a tuple with label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((torch.rand(2,3,1,1), 5), torch.zeros(2,3,1,1)))
+        data = torch.zeros(1,3,1,1) - 5
+        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
+        assert abs(torch.sum(result_m).item()) < 1e-5
 
         # sample with only required parameters (in a tuple)
         accmodel = InferenceOptimizer.quantize(model,
@@ -363,6 +382,55 @@ class TestOnnx(TestCase):
                                                calib_data=torch.rand(2,3,1,1))
         result_m = accmodel(data)
         assert abs(torch.sum(result_m).item()) < 1e-5
+
+        # default more None values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x1, x2, x3, x4, a=None, b=None, c=None):
+                output = x1 + x2 + x3 + x4
+                if a is not None:
+                    output += a
+                if b is not None:
+                    output += b
+                if c is not None:
+                    output += c
+                return output
+
+        model = Net()
+
+        x1 = torch.zeros(1,3,1,1)
+        x2 = torch.zeros(1,3,1,1)
+        x3 = torch.zeros(1,3,1,1)
+        x4 = torch.zeros(1,3,1,1)
+
+        # sample with only required parameters (in a tuple with a label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((x1,x2,x3,x4), torch.zeros(1,3,1,1)))
+        result_m = accmodel(x1,x2,x3,x4)
+        assert abs(torch.sum(result_m).item()) < 1e-5
+
+        # sample with only required parameters (in a tuple with a label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((x1,x2,x3,x4, 1, 1), torch.zeros(1,3,1,1)))
+        result_m = accmodel(x1,x2,x3,x4,np.array([1]),np.array([1]))
+        assert abs(torch.sum(result_m).item()) < 1e-5 + 6
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(x1,x2,x3,x4))
+        result_m = accmodel(x1,x2,x3,x4)
+        assert abs(torch.sum(result_m).item()) < 1e-5
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(x1,x2,x3,x4, 1))
+        result_m = accmodel(x1,x2,x3,x4, np.array([2]))
+        assert abs(torch.sum(result_m).item()) < 1e-5 + 6
 
 
 if __name__ == '__main__':

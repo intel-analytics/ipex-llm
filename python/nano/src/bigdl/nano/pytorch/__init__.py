@@ -35,7 +35,7 @@ if platform.system() == "Linux":
     preset_thread_nums = torch.get_num_threads()
     affinity_core_num = get_affinity_core_num()
 
-    if preset_thread_nums > affinity_core_num:
+    if affinity_core_num is not None and preset_thread_nums > affinity_core_num:
         register_suggestion(f"CPU Affinity is set to this program and {affinity_core_num} "
                             f"cores are binded. While PyTorch OpenMP code block will use "
                             f"{preset_thread_nums} cores, which may cause severe performance "
@@ -43,6 +43,7 @@ if platform.system() == "Linux":
 
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer
+from bigdl.nano.pytorch.inference import Pipeline
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.torch_nano import TorchNano
 from bigdl.nano.pytorch.torch_nano import nano
