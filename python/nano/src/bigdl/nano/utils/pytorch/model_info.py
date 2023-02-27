@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import inspect
 from typing import Optional, Union
 
@@ -22,31 +23,18 @@ from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
 class ModelInfo:
     def __init__(self, model):
-        self.forward_args = ModelInfo.get_forward_args(model)
-        self.forward_defaults = ModelInfo.get_forward_defaults(model)
-        self.forward_annotations = ModelInfo.get_forward_annotations(model)
+        self.forward_fullargspec = ModelInfo.get_forward_fullargspec(model)
 
-    @staticmethod
-    def get_forward_args(model):
         """
         This function is to get all the arguments(excepts *args and **kwargs)
         It will return a list of arg name
         E.g.
         def forward(self, a, b=1, c: int = 3, *args, **kwargs):
-            pass
+           pass
         it will return ['a', 'b', 'c']
         """
-        from bigdl.nano.pytorch.lightning import LightningModule
+        self.forward_args = self.forward_fullargspec.args[1:]
 
-        forward_args = inspect.getfullargspec(model.forward).args[1:]
-        if isinstance(model, LightningModule):
-            if not isinstance(model, AcceleratedLightningModule):
-                # forward param list for compiled model
-                forward_args = ModelInfo.get_forward_args(model.model)
-        return forward_args
-
-    @staticmethod
-    def get_forward_defaults(model):
         """
         This function is to get all the defaults
         It will return a list of default values
@@ -55,17 +43,8 @@ class ModelInfo:
             pass
         it will return (1, 3)
         """
-        from bigdl.nano.pytorch.lightning import LightningModule
+        self.forward_defaults = self.forward_fullargspec.defaults
 
-        forward_defaults = inspect.getfullargspec(model.forward).defaults
-        if isinstance(model, LightningModule):
-            if not isinstance(model, AcceleratedLightningModule):
-                # forward param list for compiled model
-                forward_defaults = ModelInfo.get_forward_defaults(model.model)
-        return forward_defaults
-
-    @staticmethod
-    def get_forward_annotations(model):
         """
         This function is to get all the annotations
         It will return a dict of {args: annotations}
@@ -74,14 +53,29 @@ class ModelInfo:
             pass
         it will return {'c': <class 'int'>}
         """
+        self.forward_annotations = self.forward_fullargspec.annotations
+
+    @staticmethod
+    def get_forward_fullargspec(model):
+        """
+        This function is to get all the arguments(excepts *args and **kwargs)
+        It will return a tuple of seven things is returned:
+        (args, varargs, varkw, defaults, kwonlyargs, kwonlydefaults, annotations).
+        'args' is a list of the parameter names.
+        'varargs' and 'varkw' are the names of the * and ** parameters or None.
+        'defaults' is an n-tuple of the default values of the last n parameters.
+        'kwonlyargs' is a list of keyword-only parameter names.
+        'kwonlydefaults' is a dictionary mapping names from kwonlyargs to defaults.
+        'annotations' is a dictionary mapping parameter names to annotations.
+        """
         from bigdl.nano.pytorch.lightning import LightningModule
 
-        forward_annotations = inspect.getfullargspec(model.forward).annotations
+        forward_fullargspec = inspect.getfullargspec(model.forward)
         if isinstance(model, LightningModule):
             if not isinstance(model, AcceleratedLightningModule):
                 # forward param list for compiled model
-                forward_annotations = ModelInfo.get_forward_annotations(model.model)
-        return forward_annotations
+                forward_fullargspec = ModelInfo.get_forward_fullargspec(model.model)
+        return forward_fullargspec
 
     def get_conditional_args(self,
                              include: Optional[Union[tuple, str]] = (torch.Tensor,
