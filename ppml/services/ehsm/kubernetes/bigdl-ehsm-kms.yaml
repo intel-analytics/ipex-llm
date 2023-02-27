@@ -183,7 +183,7 @@ spec:
               command:
               - sh
               - -c
-              - "echo [couchdb] single_node=true >> /opt/couchdb/etc/local.d/docker.ini; echo [couchdb] single_node=true >> /opt/couchdb/etc/local.ini"
+              - "echo [couchdb] >> /opt/couchdb/etc/local.d/docker.ini; echo single_node=true >> /opt/couchdb/etc/local.d/docker.ini; echo [couchdb] >> /opt/couchdb/etc/local.ini; echo single_node=true >> /opt/couchdb/etc/local.ini"
         readinessProbe:
           httpGet:
             port: couchdb-port
