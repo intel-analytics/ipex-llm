@@ -140,14 +140,15 @@ class PytorchPysparkWorker(TorchRunner):
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
-        if self.rank == 0:
-            if self.model_dir is not None:
-                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
-
         if self.model_dir is not None:
+            if self.rank == 0:
+                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
             return [stats_list]
         else:
-            return [state_dict, stats_list]
+            if self.rank == 0:
+                return [state_dict, stats_list]
+            else:
+                return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
