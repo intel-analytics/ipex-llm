@@ -548,7 +548,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                accelerator=("openvino", ))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 3
+        assert len(optim_dict) == 5
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(accelerator="onnxruntime")
 
@@ -563,7 +563,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 14
+        assert len(optim_dict) == 15
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(precision="fp32")
 
@@ -873,38 +873,38 @@ class TestInferencePipeline(TestCase):
             assert compressed_size_ipex < 0.8 * original_size
             assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-01)
 
-        # test jit + ipex + bf16
-        opt_model = InferenceOptimizer.quantize(self.model,
-                                                accelerator="jit",
-                                                input_sample=input_sample,
-                                                use_ipex=True,
-                                                precision='bf16')
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output = opt_model(input_sample)
+            # test jit + ipex + bf16
+            opt_model = InferenceOptimizer.quantize(self.model,
+                                                    accelerator="jit",
+                                                    input_sample=input_sample,
+                                                    use_ipex=True,
+                                                    precision='bf16')
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output = opt_model(input_sample)
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            InferenceOptimizer.save(opt_model, tmpdir)
-            original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
-            opt_model_load = InferenceOptimizer.load(tmpdir)
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output_after_saving = opt_model(input_sample)
-        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
-        with InferenceOptimizer.get_context(opt_model_load):
-            opt_output_after_loading= opt_model(input_sample)
-        assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir)
+                original_size = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+                opt_model_load = InferenceOptimizer.load(tmpdir)
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+            with InferenceOptimizer.get_context(opt_model_load):
+                opt_output_after_loading= opt_model(input_sample)
+            assert torch.allclose(opt_output, opt_output_after_loading, atol=1e-05)  # output is the same with model after loading
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
-            opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
-                                                     input_sample=input_sample)
-            compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
-        with InferenceOptimizer.get_context(opt_model):
-            opt_output_after_saving = opt_model(input_sample)
-        assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
-        with InferenceOptimizer.get_context(opt_model_load):
-            opt_output_after_loading = opt_model_load(input_sample)
-        assert compressed_size_ipex < 0.8 * original_size
-        assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-01)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                InferenceOptimizer.save(opt_model, tmpdir, compression="bf16")
+                opt_model_load = InferenceOptimizer.load(tmpdir, model=self.model,
+                                                        input_sample=input_sample)
+                compressed_size_ipex = os.path.getsize(os.path.join(tmpdir, "ckpt.pth"))
+            with InferenceOptimizer.get_context(opt_model):
+                opt_output_after_saving = opt_model(input_sample)
+            assert torch.allclose(opt_output, opt_output_after_saving, atol=1e-05)  # output is the same with model before saving
+            with InferenceOptimizer.get_context(opt_model_load):
+                opt_output_after_loading = opt_model_load(input_sample)
+            assert compressed_size_ipex < 0.8 * original_size
+            assert torch.allclose(opt_output, opt_output_after_loading, atol=5e-01)
 
     def test_wrong_input_for_trace(self):
         input_sample = torch.rand(10, 3, 32, 32)

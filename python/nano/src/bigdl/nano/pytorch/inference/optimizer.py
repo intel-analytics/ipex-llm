@@ -129,6 +129,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                    ipex=True,
                                                                    channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
+            "openvino_bf16": TorchAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TorchAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
