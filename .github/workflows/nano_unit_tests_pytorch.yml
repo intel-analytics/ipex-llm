@@ -55,7 +55,6 @@ jobs:
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
-            pip install ${requirements[2]} -f https://developer.intel.com/ipex-whl-stable-cpu
           fi
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
@@ -92,6 +91,7 @@ jobs:
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[2]} -f https://developer.intel.com/ipex-whl-stable-cpu
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
