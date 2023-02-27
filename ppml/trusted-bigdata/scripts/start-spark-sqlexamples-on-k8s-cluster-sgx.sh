@@ -12,11 +12,11 @@ export SPARK_LOCAL_IP=$LOCAL_IP && \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $deploy_mode \
     --name $driver_name \
-    --conf spark.driver.memory=32g \
+    --conf spark.driver.memory=8g \
     --conf spark.executor.cores=8 \
-    --conf spark.executor.memory=32g \
+    --conf spark.executor.memory=8g \
     --conf spark.executor.instances=2 \
-    --conf spark.cores.max=32 \
+    --conf spark.cores.max=16 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \

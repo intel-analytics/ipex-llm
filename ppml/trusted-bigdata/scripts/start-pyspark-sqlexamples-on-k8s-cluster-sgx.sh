@@ -13,9 +13,9 @@ export SPARK_LOCAL_IP=$LOCAL_IP && \
     --name $driver_name \
     --conf spark.driver.host=$LOCAL_IP \
     --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=32g \
+    --conf spark.driver.memory=8g \
     --conf spark.executor.cores=8 \
-    --conf spark.executor.memory=32g \
+    --conf spark.executor.memory=8g \
     --conf spark.executor.instances=4 \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \

@@ -6,16 +6,15 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-driver-jvm-memory 20g\
-        --sgx-executor-jvm-memory 10g\
+        --sgx-driver-jvm-memory 1g\
+        --sgx-executor-jvm-memory 3g\
         --num-executors 8 \
-        --driver-memory 20g \
+        --driver-memory 3g \
         --driver-cores 8 \
-        --executor-memory 10g \
+        --executor-memory 1g \
         --executor-cores 8\
         --conf spark.cores.max=64 \
-        --conf spark.kubernetes.driver.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g:$BIGDL_VERSION \
-        --conf spark.kubernetes.executor.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
+        --conf spark.kubernetes.driver.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
         --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
@@ -23,7 +22,7 @@ bash bigdl-ppml-submit.sh \
         --conf spark.kubernetes.file.upload.path=file:///tmp \
         --name weekly-tpc-h-on-gramine \
         --verbose \
-        local:///jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
         hdfs://172.168.0.206:9000/tpc-h/1g-native \
         /ppml/data/weekly-test/tpc-h \
         plain_text \

@@ -6,15 +6,15 @@ bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
     --sgx-enabled true \
-    --sgx-driver-jvm-memory 20g\
-    --sgx-executor-jvm-memory 10g\
+    --sgx-driver-jvm-memory 6g\
+    --sgx-executor-jvm-memory 6g\
     --num-executors 4 \
-    --driver-memory 10g \
+    --driver-memory 8g \
     --driver-cores 8 \
-    --executor-memory 10g \
+    --executor-memory 8g \
     --executor-cores 8\
     --conf spark.cores.max=32 \
-    --conf spark.kubernetes.executor.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
+    --conf spark.kubernetes.executor.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.container.image.pullPolicy=Always \
     --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
     --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \

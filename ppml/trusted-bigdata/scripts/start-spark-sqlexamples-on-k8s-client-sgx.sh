@@ -15,7 +15,7 @@ export sgx_command="/opt/jdk8/bin/java \
     --name spark-pi-sgx \
     --conf spark.driver.host=$SPARK_LOCAL_IP \
     --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=10g \
+    --conf spark.driver.memory=8g \
     --conf spark.kubernetes.authenticate.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
@@ -32,7 +32,7 @@ export sgx_command="/opt/jdk8/bin/java \
     --properties-file /ppml/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.mem=32g \
-    --conf spark.kubernetes.sgx.jvm.mem=16g \
+    --conf spark.kubernetes.sgx.jvm.mem=6g \
     --class org.apache.spark.examples.sql.SparkSQLExample \
     /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar"
 gramine-sgx bash 2>&1 | tee k8s-spark-sql-example-sgx.log
