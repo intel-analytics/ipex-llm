@@ -67,13 +67,13 @@ do
                 for ((i=0;i<num;i++,port++))
                 do
                 (
-                        bash /ppml/torchserve/start-backend-sgx.sh -p $port -c ${cores[$i]}
+                        bash /ppml/torchserve/start-torchserve-backend-sgx.sh -p $port -c ${cores[$i]}
                 )&
                 done
         done
 done
 (
-        bash /ppml/torchserve/start-frontend-sgx.sh -c $configFile -f $frontend_core
+        bash /ppml/torchserve/start-torchserve-frontend-sgx.sh -c $configFile -f $frontend_core
 )&
 wait
 
