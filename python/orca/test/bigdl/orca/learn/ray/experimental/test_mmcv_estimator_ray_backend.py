@@ -47,10 +47,10 @@ class DistEvalHook(BaseDistEvalHook):
         """
         worker_nums = 2
         samples_per_worker = NUM_SAMPLES / worker_nums
-        actual_samplers_per_worker = 0
+        actual_samples_per_worker = 0
         for data, label in self.dataloader:
-            actual_samplers_per_worker += len(data)
-        assert samples_per_worker == actual_samplers_per_worker
+            actual_samples_per_worker += len(data)
+        assert samples_per_worker == actual_samples_per_worker
 
 
 class Model(nn.Module):
@@ -144,7 +144,7 @@ def runner_creator(cfg):
         checkpoint_config=checkpoint_config,
         log_config=log_config)
 
-    if cfg.add_eval_hook:
+    if cfg.get('add_eval_hook'):
         val_set = LinearDataset(size=NUM_SAMPLES)
         val_loader = DataLoader(
             val_set, batch_size=64, shuffle=True, num_workers=2)
