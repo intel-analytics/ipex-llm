@@ -69,7 +69,8 @@ class FGBoostAggregator(config: FLConfig,
   def loadModel(modelPath: String): Unit = {
     if (new File(modelPath).exists()) {
       val is = new ObjectInputStream(new FileInputStream(modelPath))
-      val wis = new WhitelistedObjectInputStream(is, new java.util.HashSet[String](List("ArrayBuffer").asJava))
+      val wis = new WhitelistedObjectInputStream(
+        is, new java.util.HashSet[String](List("scala.collection.mutable.ArrayBuffer").asJava))
       serverTreeLeaf = wis.readObject().asInstanceOf[ArrayBuffer[Map[Int, Float]]]
     } else {
       logger.warn(s"$modelPath does not exist, will create new model")
