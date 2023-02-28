@@ -381,7 +381,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-memory 2g \
     --archives /path/to/environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=python \
-    --conf spark.pyspark.python=./environment/bin/python \
+    --conf spark.pyspark.python=environment/bin/python \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/path/to/model.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
