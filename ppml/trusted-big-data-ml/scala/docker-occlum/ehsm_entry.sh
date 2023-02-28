@@ -18,13 +18,8 @@ if [ "$action" = "enroll" ]; then
 		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
 	elif [ "$KMS_TYPE" = "simple" ]; then
 		echo "Simple KMS is dummy. You can choose any appid and apikey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
-	elif [ "$KMS_TYPE" = "azure" ]; then
-	    keyVaultName=$2
-	    id=$3
-		az keyvault set-policy --name $keyVaultName --object-id $id \
-		--secret-permissions all --key-permissions all --certificate-permissions all
 	else
-		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple"
 		return -1
 	fi
 elif [ "$action" = "generatekeys" ]; then
@@ -50,16 +45,8 @@ elif [ "$action" = "generatekeys" ]; then
 		--kmsType SimpleKeyManagementService \
 		--simpleAPPID $appid \
 		--simpleAPIKEY $apikey
-	elif [ "$KMS_TYPE" = "azure" ]; then
-	    keyVaultName=$2
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
-		--primaryKeyPath /home/key/simple_encrypted_primary_key \
-		--dataKeyPath /home/key/simple_encrypted_data_key \
-		--kmsType AzureKeyManagementService \
-		--vaultName $keyVaultName
 	else
-		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
 		return -1
 	fi
 elif [ "$action" = "encrypt" ]; then
@@ -90,17 +77,8 @@ elif [ "$action" = "encrypt" ]; then
                 --kmsType SimpleKeyManagementService \
 		--simpleAPPID $appid \
                 --simpleAPIKEY $apikey
-    elif [ "$KMS_TYPE" = "azure" ]; then
-        keyVaultName=$2
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.Encrypt \
-                --inputPath $input_path \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-                --kmsType AzureKeyManagementService \
-		--vaultName $keyVaultName
 	else
-		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
         fi
 elif [ "$action" = "encryptwithrepartition" ]; then
@@ -140,23 +118,8 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		--kmsType SimpleKeyManagementService \
                 --simpleAPPID $appid \
                 --simpleAPIKEY $apikey
-    elif [ "$KMS_TYPE" = "azure" ]; then
-        keyVaultName=$2
-        input_path=$3
-	    output_path=$input_path.encrypted
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
-		--inputPath $input_path \
-		--outputPath $output_path \
-		--inputEncryptModeValue plain_text \
-                --outputEncryptModeValue AES/CBC/PKCS5Padding \
-		--outputPartitionNum 4 \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-		--kmsType AzureKeyManagementService \
-                --vaultName $keyVaultName
 	else
-                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
         fi
 elif [ "$action" = "decrypt" ]; then
@@ -194,22 +157,8 @@ elif [ "$action" = "decrypt" ]; then
                 --kmsType SimpleKeyManagementService \
                 --simpleAPPID $appid \
                 --simpleAPIKEY $apikey
-    elif [ "$KMS_TYPE" = "azure" ]; then
-        keyVaultName=$2
-        input_path=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.Decrypt \
-                --inputPath $input_path \
-                --inputPartitionNum 8 \
-                --outputPartitionNum 8 \
-                --inputEncryptModeValue AES/CBC/PKCS5Padding \
-                --outputEncryptModeValue plain_text \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-                --kmsType AzureKeyManagementService \
-                --vaultName $keyVaultName
 	else
-                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
         fi
 else
