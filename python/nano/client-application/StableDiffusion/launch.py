@@ -1,8 +1,25 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import gradio as gr
 import os
+import multiprocessing
+import time
 from stable_diffusion.runner import StableDiffusionRunner
 import psutil
-from launch_full import pipeline, pipeline_process
 from stable_diffusion.converter import convert, model_version_map 
 from stable_diffusion.pipelines import NanoStableDiffusionPipeline
 from stable_diffusion.utils import get_snapshot_dir_from_model_version
@@ -11,6 +28,66 @@ import click
 
 MODEL_CHOICES = ["v2.1-base"]
 DEVICE_CHOICES = ["CPU FP32", "CPU/iGPU FP16"]
+
+def unpack_args(l):
+    # gradio unpack does not support dict, need to use this to unpack
+    # the order should match the btn.click in main
+    args_list = ['prompt', 'guidance_scale', 'num_inference_steps', 'height', 'width', 'negative_prompt']
+    unpacked = {args_list[i]: l[i] for i in range(len(l))}
+    return unpacked
+
+
+def pipeline(
+    model_dir=None,
+    var_dict=None,
+    optization_methods=None, 
+    scheduler=None,  
+    seed=-1,
+    *args
+    ):    
+    kwargs = unpack_args(args)
+    start_time = time.time()
+    
+    if var_dict is not None:
+        ps = psutil.Process()    
+        ps.cpu_affinity([i for i in range(1, multiprocessing.cpu_count())])
+        # no need to check StableDiffusionRunner here, because the instance created is not in the static memory field
+        p = multiprocessing.current_process()
+        image = p.runner._run(
+            model_dir,
+            optimization_methods=optization_methods,
+            scheduler=scheduler, 
+            seed=seed, 
+            **kwargs)
+        time_cost = time.time() - start_time
+        var_dict['image'], var_dict['time'] = image, time_cost        
+        return
+    else:
+        StableDiffusionRunner.initialize()
+        image = StableDiffusionRunner.run(
+            model_dir,
+            optimization_methods=optization_methods,
+            scheduler=scheduler, 
+            seed=seed, 
+            **kwargs)    
+        time_cost = time.time() - start_time    
+        return image, time_cost
+
+
+def pipeline_process(
+    model_dir=None,
+    optization_methods=None, 
+    scheduler=None,  
+    seed=-1,
+    *args
+    ):
+    if runner_process.pool is None:
+        runner_process.pool = runner_process.RunnerPool()
+    if runner_process.var_dict is None:
+        runner_process.var_dict = multiprocessing.Manager().dict()
+    runner_process.pool.apply(pipeline, args=(model_dir, runner_process.var_dict, optization_methods, scheduler, seed, *args))
+    return runner_process.var_dict['image'], runner_process.var_dict['time']
+
 
 opt_model = None
 opt_device = None
