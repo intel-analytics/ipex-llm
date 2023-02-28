@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.fl;
 import java.io.*;
 import java.util.*;
 
-class WhitelistedObjectInputStream extends ObjectInputStream {
+public class WhitelistedObjectInputStream extends ObjectInputStream {
     public Set whitelist;
 
     public WhitelistedObjectInputStream(InputStream inputStream, Set wl) throws IOException {
