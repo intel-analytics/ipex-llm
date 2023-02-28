@@ -1,5 +1,5 @@
-# These are mirrored in python/orca/src/setup.py as install_requires, 
-# which is what the users of the bigdl-orca[ray] package will install.
+# These are mirrored in python/orca/src/setup.py as install_requires,
+# which is what the users of the bigdl-friesian[train] package will install.
 #
 # In short, if you change it here, PLEASE also change it in setup.py
 
