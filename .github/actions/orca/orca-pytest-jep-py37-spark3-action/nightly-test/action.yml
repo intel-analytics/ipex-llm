@@ -8,6 +8,14 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
+
+        pip install -i https://pypi.org/simple bigdl-orca-spark3
+
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cloudpickle
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
+
         chmod a+x python/orca/dev/test/run-pytests-jep.sh
         bash python/orca/dev/test/run-pytests-jep.sh
         source deactivate
