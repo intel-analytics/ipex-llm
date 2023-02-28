@@ -763,7 +763,7 @@ class BasePytorchForecaster(Forecaster):
                         yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                           input_data=data,
                                                           batch_size=batch_size,
-                                                          output_tensor=\
+                                                          output_tensor=
                                                             self.optimized_model_output_tensor)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
