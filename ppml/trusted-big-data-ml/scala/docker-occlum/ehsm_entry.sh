@@ -11,18 +11,7 @@ mkdir -p /opt/occlum_spark/data/key/
 mkdir -p /opt/occlum_spark/data/encrypt/
 export KMS_TYPE=ehsm
 #only support ehsm now
-if [ "$action" = "enroll" ]; then
-  # no support
-	if [ "$KMS_TYPE" = "ehsm" ]; then
-		cd /home/ehsm/out/ehsm-kms_enroll_app/
-		./ehsm-kms_enroll_app -a http://$EHSM_KMS_IP:$EHSM_KMS_PORT/ehsm/
-	elif [ "$KMS_TYPE" = "simple" ]; then
-		echo "Simple KMS is dummy. You can choose any appid and apikey. If you want to generate the corresponding primarykey and datakey, the appid must be 12 characters long."
-	else
-		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple"
-		return -1
-	fi
-elif [ "$action" = "generatekeys" ]; then
+if [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
@@ -162,5 +151,5 @@ elif [ "$action" = "decrypt" ]; then
                 return -1
         fi
 else
-	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt, and (5) encryptwithrepartition."
+	echo "Wrong action! Action can be (1) generatekeys, (2) encrypt, (3) decrypt, and (4) encryptwithrepartition."
 fi
