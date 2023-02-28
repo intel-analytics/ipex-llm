@@ -141,6 +141,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
+        self.state_dict = None
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
