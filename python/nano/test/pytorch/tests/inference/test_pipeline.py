@@ -53,16 +53,21 @@ class TestPipeline(TestCase):
     def test_pipeline_core_control(self):
         def preprocess(_i):
             import os
-            return os.sched_getaffinity(0)
+            affinity = os.environ.get("KMP_AFFINITY", "")
+            beg = affinity.find("[")
+            end = affinity.find("]", beg) + 1
+            return affinity[beg: end]
         def inference(i):
             import os
-            return (i, os.sched_getaffinity(0))
-        model = resnet18(num_classes=10)
+            affinity = os.environ.get("KMP_AFFINITY", "")
+            beg = affinity.find("[")
+            end = affinity.find("]", beg) + 1
+            return (i, affinity[beg: end])
         pipeline = Pipeline([
             ("preprocess", preprocess, {"core_num": 1}),
             ("inference", inference, {"core_num": 1}),
         ])
         output = pipeline.run([None])[0]
-        # The first stage's affinity should be {0}, and the second stage's affinity should be {1}
-        assert output == (set([0]), set([1]))
+        # The first stage's affinity should be '[0]', and the second stage's affinity should be '[1]'
+        assert output == ('[0]', '[1]')
 
