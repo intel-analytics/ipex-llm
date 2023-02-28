@@ -102,7 +102,7 @@ def np_to_xshard(x, workers_num, prefix="x"):
 
 
 def check_data(x, y, data_config):
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(data_config["past_seq_len"] == x.shape[-2],
                       "The x shape should be (batch_size, past_seq_len, input_feature_num), "
                       "Got past_seq_len of {} in config while x input shape of {}."
@@ -122,7 +122,7 @@ def check_data(x, y, data_config):
 
 
 def check_transformer_data(x, y, x_enc, y_enc, data_config):
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(data_config["past_seq_len"] == x.shape[-2],
                       "The x shape should be (batch_size, past_seq_len, input_feature_num), "
                       "Got past_seq_len of {} in config while x input shape of {}."
@@ -199,11 +199,11 @@ class ExportForecastingPipeline(nn.Module):
         return postprocess_output
 
 
-def get_exported_module(tsdata, forecaster_path, drop_dtcol):
+def get_exported_module(tsdata, forecaster_path, drop_dt_col):
     from bigdl.chronos.data.utils.export_torchscript \
         import get_processing_module_instance, get_index
 
-    if drop_dtcol:
+    if drop_dt_col:
         tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
 
     id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,

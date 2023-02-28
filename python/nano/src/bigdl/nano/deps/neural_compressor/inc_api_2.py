@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from .core.base_metric import BaseINCMetric
 
 
@@ -38,7 +38,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
         from .pytorch.quantized_model import PytorchQuantizedModel
         quantized_model = PytorchQuantizedModel(q_model, thread_num)
 
-        from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+        from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
         patch_attrs_from_model_to_object(model, quantized_model)
         return quantized_model
 
@@ -66,7 +66,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
             quantized_model = PytorchONNXRuntimeModel(q_model.model, None,
                                                       onnxruntime_session_options)
 
-            from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+            from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
             patch_attrs_from_model_to_object(model, quantized_model)
             return quantized_model
 
@@ -117,7 +117,7 @@ def _quantize(
             # `dataloader` is tensorflow (x,y)
             # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
             from .onnx.tensorflow.quantization import KerasNumpyDataset
-            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1], model.dtype)
+            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         # INC requires a batched dataloader,
         # A torch.Dataset doesn't have `batch_size` attribute,
@@ -125,7 +125,6 @@ def _quantize(
         # So we construct a INC DataLoader from them
         dataloader = DataLoader(framework, dataloader)
 
-    inc_metric = metric
     if 'pytorch' in framework:
         # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
         from bigdl.nano.pytorch.lightning import LightningModule

@@ -17,15 +17,15 @@
 import argparse
 
 from bigdl.ppml.ppml_context import *
+from bigdl.ppml.kms.utils.kms_argument_parser import KmsArgumentParser
 
 """
 execute the following command to run this example on local
 
 python simple_query_example.py \
---simple_app_id your_app_id \
---simple_app_key your_app_key \
---primary_key_path /your/primary/key/path/primaryKey \
---data_key_path /your/data/key/path/dataKey \
+--app_id your_simple_kms_app_id \
+--api_key your_simple_kms_app_key \
+--primary_key_material /your/primary/key/path/primaryKey \
 --input_path /your/file/input/path \
 --output_path /your/file/output/path \
 --input_encrypt_mode AES/CBC/PKCS5Padding \
@@ -33,27 +33,9 @@ python simple_query_example.py \
 
 """
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--simple_app_id", type=str, help="simple app id")
-parser.add_argument("--simple_app_key", type=str, help="simple app key")
-parser.add_argument("--kms_server_ip", type=str, help="ehsm kms server ip")
-parser.add_argument("--kms_server_port", type=str, help="ehsm kms server port")
-parser.add_argument("--ehsm_app_id", type=str, help="ehsm app id")
-parser.add_argument("--ehsm_app_key", type=str, help="ehsm app key")
-parser.add_argument("--azure_vault", type=str, help="Azure Key Vault name")
-parser.add_argument("--azure_client_id", type=str, default="", help="Azure client id")
-parser.add_argument("--primary_key_path", type=str, required=True, help="primary key path")
-parser.add_argument("--data_key_path", type=str, required=True, help="data key path")
-parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input encrypt mode")
-parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
-parser.add_argument("--input_path", type=str, required=True, help="input path")
-parser.add_argument("--output_path", type=str, required=True, help="output path")
-parser.add_argument("--kms_type", type=str, required=True, default="SimpleKeyManagementService",
-                    help="SimpleKeyManagementService, EHSMKeyManagementService or AzureKeyManagementService")
-args = parser.parse_args()
-arg_dict = vars(args)
+arg_dict = KmsArgumentParser.get_arg_dict()
 
-sc = PPMLContext('testApp', arg_dict)
+sc = PPMLContext('pyspark-simple-query', arg_dict)
 
 # create a DataFrame
 data = [("Tom", "20", "Developer"), ("Jane", "21", "Developer"), ("Tony", "19", "Developer")]

@@ -20,10 +20,11 @@ import pickle
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
-from bigdl.nano.utils.util import get_default_args
-from bigdl.nano.tf.utils import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import get_default_args
+from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
+from bigdl.nano.utils.tf import tensor_spec_to_shape
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
@@ -52,21 +53,28 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                onnx_path = os.path.join(tmpdir, "tmp.onnx")
-                if input_spec is None:
-                    input_spec = tf.TensorSpec((model.input_shape), model.dtype)
+                if hasattr(model, "input_shape"):
+                    # Sequential and functional API model has
+                    # `input_shape` and `output_shape` attributes
+                    input_spec = tf.TensorSpec(model.input_shape, model.dtype)
+                    self._output_shape = model.output_shape
+                elif input_spec is not None:
+                    input_shape = tensor_spec_to_shape(input_spec)
+                    self._output_shape = model.compute_output_shape(input_shape)
+                else:
+                    invalidInputError(False,
+                                      "Subclassed model must specify `input_spec` parameter.")
                 if not isinstance(input_spec, (tuple, list)):
+                    # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )
+                self._nesting_level = 0
+                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
+                    # A workaround, may be changed in the future
+                    self._nesting_level += 1
+                    self._output_shape = self._output_shape[0]
+                onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
-                # save the nesting level of inference output
-                fake_inputs = [fake_tensor_from_spec(spec) for spec in input_spec]
-                fake_outputs = model(*fake_inputs)
-                self._nesting_level = 0
-                while isinstance(fake_outputs, (tuple, list)) and len(fake_outputs) == 1:
-                    self._nesting_level += 1
-                    fake_outputs = fake_outputs[0]
-
                 self._inputs_dtypes = [inp.dtype for inp in input_spec]
                 self._default_kwargs = get_default_args(model.call)
                 if KERAS_VERSION_LESS_2_10:
@@ -146,13 +154,14 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
                  "_inputs_dtypes": self._inputs_dtypes,
-                 "_nesting_level": self._nesting_level}
+                 "_nesting_level": self._nesting_level,
+                 "_output_shape": self._output_shape}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
         if self._is_compiled:

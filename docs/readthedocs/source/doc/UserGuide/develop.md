@@ -19,10 +19,10 @@ To generate a new [whl](https://pythonwheels.com/) package for pip install, you 
 
 ```bash
 cd BigDL/python/dev
-bash release_default_linux_spark246.sh default false false false  # build on Spark 2.4.6 for linux
-# Use release_default_linux_spark313.sh to build on Spark 3.1.3 for linux
-# Use release_default_mac_spark246.sh to build on Spark 2.4.6 for mac
-# Use release_default_mac_spark313.sh to build on Spark 3.1.3 for mac
+bash release_default_linux_spark2.sh default false false false  # build on Spark 2.4.6 for linux
+# Use release_default_linux_spark3.sh to build on Spark 3.1.3 for linux
+# Use release_default_mac_spark2.sh to build on Spark 2.4.6 for mac
+# Use release_default_mac_spark3.sh to build on Spark 3.1.3 for mac
 ```
 
 **Arguments:**

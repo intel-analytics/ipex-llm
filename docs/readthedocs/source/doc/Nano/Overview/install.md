@@ -5,35 +5,34 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
 ```eval_rst
 .. raw:: html
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/nano_installation_guide.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/installation_panel.css" />
 
-    <div class="displayed">
-      <table id="table-1">
+    <div class="installation-panel-wrapper">
+      <table class="installation-panel-table">
         <tbody>
           <tr>
             <td colspan="1">FrameWork</td>
-            <td colspan="2"><button id="pytorch">Pytorch</button></td>
-            <td colspan="2"><button id="tensorflow">Tensorflow</button></td>
+            <td colspan="2"><button id="pytorch" class="install_option_button">PyTorch</button></td>
+            <td colspan="2"><button id="tensorflow" class="install_option_button">TensorFlow</button></td>
           </tr>
-          <tr id="version" class="taller_tr">
+          <tr id="version">
             <td colspan="1">Version</td>
-            <td colspan="1"><button id="pytorch_113">1.13</button></td>
-            <td colspan="1"><button id="pytorch_112">1.12</button></td>
-            <td colspan="1"><button id="pytorch_111">1.11</button></td>
-            <td colspan="1"><button id="pytorch_110">1.10</button></td>
+            <td colspan="1"><button id="pytorch_113" class="install_option_button">1.13</button></td>
+            <td colspan="1"><button id="pytorch_112" class="install_option_button">1.12</button></td>
+            <td colspan="1"><button id="pytorch_111" class="install_option_button">1.11</button></td>
+            <td colspan="1"><button id="pytorch_110" class="install_option_button">1.10</button></td>
           </tr>
           <tr>
-            <td colspan="1">Inference Optimization</td>
-            <td colspan="2"><button id="inferenceyes">Yes</button></td>
-            <td colspan="2"><button id="inferenceno">No</button></td>
-            </td>
+            <td colspan="1">Inference Opt</td>
+            <td colspan="2"><button id="inference_yes" class="install_option_button">Yes</button></td>
+            <td colspan="2"><button id="inference_no" class="install_option_button">No</button></td>
           </tr>
           <tr>
             <td colspan="1">Release</td>
-            <td colspan="2"><button id="nightly">Nightly</button></td>
-            <td colspan="2"><button id="stable">Stable</button></td>
+            <td colspan="2"><button id="nightly" class="install_option_button">Nightly</button></td>
+            <td colspan="2"><button id="stable" class="install_option_button">Stable</button></td>
           </tr>
-          <tr class="tallet_tr">
+          <tr>
             <td colspan="1">Install CMD</td>
             <td colspan="4" id="cmd">NA</td>
           </tr>
@@ -41,7 +40,7 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
       </table>
     </div>
 
-    <script src="../../../_static/js/nano_installation_guide.js"></script>
+    <script src="../../../_static/js/nano_installation_panel.js"></script>
 ```
 
 ```eval_rst
@@ -85,15 +84,15 @@ We support a wide range of PyTorch and Tensorflow. We only care the MAJOR.MINOR 
 Some specific note should be awared of when installing `bigdl-nano`.`
 
 ### Install on Linux
-For Linux, Ubuntu (22.04/20.04/18.04) is recommended.
+For Linux, Ubuntu (22.04/20.04) is recommended.
 
-### Install on Windows
+### Install on Windows (experimental support)
 
 For Windows OS, users could only run `bigdl-nano-init` every time they open a new cmd terminal.
 
-We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/windows_guide.md) for instructions.
+We recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Nano. Please refer to [Nano Windows install guide](../Howto/Install/windows_guide.md) for instructions.
 
-### Install on MacOS
+### Install on MacOS (experimental support)
 #### MacOS with Intel Chip
 Same usage as Linux, while some of the funcions now rely on lower version dependencies.
 

@@ -2,49 +2,13 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled three kinds of graph mode format and corresponding runtime in `InferenceOptimizer.trace()`: ONNXRuntime, OpenVINO and TorchScript.
 
-```eval_rst
-.. warning::
-    ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+## Automatically Choose the Best Optimization
 
-    Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
-```
+If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
 
-For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now.
+Let's take mobilenetv3 as an example model, you can use it as following:
 
-```eval_rst
-.. warning::
-    ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
-
-    Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
-```
-
-Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
-
-```eval_rst
-.. note::
-    You can install all required dependencies by
-
-    ::
-
-        pip install --pre --upgrade bigdl-nano[pytorch,inference]
-
-    This will install all dependencies required by BigDL-Nano PyTorch inference.
-
-    Or if you just want to use one of supported optimizations:
-
-    - `INC (Intel Neural Compressor) <https://github.com/intel/neural-compressor>`_: ``pip install neural-compressor``
-
-    - `OpenVINO <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_: ``pip install openvino-dev``
-
-    - `ONNXRuntime <https://onnxruntime.ai/>`_: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
-
-    We recommand installing all dependencies by ``pip install --pre --upgrade bigdl-nano[pytorch,inference]``, because you may run into version issues if you install dependencies manually.
-```
-
-## Graph Mode Acceleration
-All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. Let's take mobilenetv3 as an example model and here is a short script that you might have before applying any BigDL-Nano's optimizations:
 ```python
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
@@ -62,7 +26,84 @@ ds = TensorDataset(x, y)
 dataloader = DataLoader(ds, batch_size=2)
 
 # (Optional) step 3: Something else, like training ...
+
+# try all supproted optimizations
+opt = InferenceOptimizer()
+opt.optimize(model, training_data=dataloader, thread_num=4)
+
+# get the best optimization
+best_model, option = opt.get_best_model()
+
+# use the quantized model as before
+with InferenceOptimizer.get_context(best_model):
+    y_hat = best_model(x)
 ```
+
+`InferenceOptimizer.optimize()` will try all supported optimizations and choose the best one by `get_best_model()`.
+The output table of `optimize()` looks like:
+```bash
+ -------------------------------- ---------------------- --------------
+|             method             |        status        | latency(ms)  |
+ -------------------------------- ---------------------- --------------
+|            original            |      successful      |    9.337     |
+|              bf16              |      successful      |    8.974     |
+|          static_int8           |      successful      |    8.934     |
+|         jit_fp32_ipex          |      successful      |    10.013    |
+|  jit_fp32_ipex_channels_last   |      successful      |    4.955     |
+|         jit_bf16_ipex          |      successful      |    2.563     |
+|  jit_bf16_ipex_channels_last   |      successful      |    3.135     |
+|         openvino_fp32          |      successful      |    1.727     |
+|         openvino_int8          |      successful      |    1.635     |
+|        onnxruntime_fp32        |      successful      |    3.801     |
+|    onnxruntime_int8_qlinear    |      successful      |    4.727     |
+ -------------------------------- ---------------------- --------------
+Optimization cost 58.3s in total.
+```
+
+For more details, you can refer [How-to guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize.html) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch-inferenceoptimizer). 
+
+
+Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
+
+```eval_rst
+.. note::
+    You can install all required dependencies by
+
+    .. code-block:: bash
+
+        pip install --pre --upgrade bigdl-nano[pytorch,inference]
+
+    This will install all dependencies required by BigDL-Nano PyTorch inference. It's recommanded since it will install all dependencies required by BigDL-Nano PyTorch inference with no version conflict issue.
+
+    Or if you just want to use one of supported optimizations, you could install BigDL-Nano for PyTorch with manually installed dependencies:
+
+    .. code-block:: bash
+
+        pip install --pre --upgrade bigdl-nano[pytorch]
+
+    with
+
+    - `INC (Intel Neural Compressor) <https://github.com/intel/neural-compressor>`_: ``pip install neural-compressor``
+
+    - `OpenVINO <https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html>`_: ``pip install openvino-dev``
+
+    - `ONNXRuntime <https://onnxruntime.ai/>`_: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
+```
+
+
+## Runtime Acceleration
+
+For runtime acceleration, BigDL-Nano has enabled three kinds of graph mode format and corresponding runtime in `InferenceOptimizer.trace()`: ONNXRuntime, OpenVINO and TorchScript.
+
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
+```
+
+All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. 
+
 ### ONNXRuntime Acceleration
 You can simply append the following part to enable your [ONNXRuntime](https://onnxruntime.ai/) acceleration.
 ```python
@@ -71,8 +112,19 @@ You can simply append the following part to enable your [ONNXRuntime](https://on
 ort_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = ort_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(ort_model):
+    y_hat = ort_model(x)
+```
+
+```eval_rst
+.. note::
+    For all Nano optimized models, you need to wrap the inference process with the automatic context manager provided by Nano through the API ``InferenceOptimizer.get_context(model=...)``.
+
+    Please note that the context manager is not needed for `multi-instance inference <#multi-instance-acceleration>`_.
+
+    For more details about the context manager, you could refer to section `Automatic Context Management <#automatic-context-management>`_.
 ```
 ### OpenVINO Acceleration
 The [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) usage is quite similar to ONNXRuntime, the following usage is for OpenVINO:
@@ -82,8 +134,10 @@ The [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-
 ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = ov_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(ov_model):
+    y_hat = ov_model(x)
 ```
 
 ### TorchScript Acceleration
@@ -97,12 +151,23 @@ jit_model = InferenceOptimizer.trace(model, accelerator='jit',
                                      use_ipex=True, input_sample=x)
 
 # step 5: use returned model for transparent acceleration
-# The usage is almost the same with any PyTorch module
-y_hat = jit_model(x)
+# The usage is almost the same with any PyTorch module,
+# except for the change to wrap the inference process with Nano context manager
+with InferenceOptimizer.get_context(jit_model):
+    y_hat = jit_model(x)
 ```
 
 ## Quantization
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. For quantization precision, BigDL-Nano supports two common choices: `int8` and `bfloat16`. The usage of the two kinds of precision is quite different.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. 
+
+For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now.
+
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
+```
 
 ### Int8 Quantization
 BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a int8 quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options.
@@ -118,7 +183,8 @@ Without extra accelerator, `InferenceOptimizer.quantize()` returns a PyTorch mod
 ```python
 q_model = InferenceOptimizer.quantize(model, calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = q_model(x)
+with InferenceOptimizer.get_context(q_model):
+    y_hat = q_model(x)
 ```
 This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.
 
@@ -129,7 +195,8 @@ Still taking the example in [Runtime Acceleration](pytorch_inference.md#runtime-
 ```python
 ort_q_model = InferenceOptimizer.quantize(model, accelerator='onnxruntime', calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = ort_q_model(x)
+with InferenceOptimizer.get_context(ort_q_model):
+    y_hat = ort_q_model(x)
 ```
 
 #### Quantization using Post-training Optimization Tools
@@ -138,7 +205,8 @@ Take the example in [Runtime Acceleration](#runtime-acceleration), and add quant
 ```python
 ov_q_model = InferenceOptimizer.quantize(model, accelerator='openvino', calib_data=dataloader)
 # run simple prediction with transparent acceleration
-y_hat = ov_q_model(x)
+with InferenceOptimizer.get_context(ov_q_model):
+    y_hat = ov_q_model(x)
 ```
 
 #### Quantization with Accuracy Control
@@ -204,8 +272,6 @@ with InferenceOptimizer.get_context(bf16_model):
 ```eval_rst
 .. note::
     For BFloat16 quantization, make sure your inference is under ``with InferenceOptimizer.get_context(bf16_model):``. Otherwise, the whole inference process is actually FP32 precision.
-
-    For more details about the context manager provided by ``InferenceOptimizer.get_context()``, you could refer related `How-to guide <https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/pytorch_context_manager.html>`_.
 ```
 
 #### Channels Last Memory Format
@@ -248,47 +314,6 @@ with InferenceOptimizer.get_context(bf16_model):
     y_hat = bf16_model(x)
 ```
 
-## Automatically Choose the Best Optimization
-
-If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
-
-Still taking the example in [Runtime Acceleration](#runtime-acceleration), you can use it as following:
-```python
-# try all supproted optimizations
-opt = InferenceOptimizer()
-opt.optimize(model, training_data=dataloader, thread_num=4)
-
-# get the best optimization
-best_model, option = opt.get_best_model()
-
-# use the quantized model as before
-with InferenceOptimizer.get_context(best_model):
-    y_hat = best_model(x)
-```
-
-`InferenceOptimizer.optimize()` will try all supported optimizations and choose the best one by `get_best_model()`.
-The output table of `optimize()` looks like:
-```bash
- -------------------------------- ---------------------- --------------
-|             method             |        status        | latency(ms)  |
- -------------------------------- ---------------------- --------------
-|            original            |      successful      |    9.337     |
-|              bf16              |      successful      |    8.974     |
-|          static_int8           |      successful      |    8.934     |
-|         jit_fp32_ipex          |      successful      |    10.013    |
-|  jit_fp32_ipex_channels_last   |      successful      |    4.955     |
-|         jit_bf16_ipex          |      successful      |    2.563     |
-|  jit_bf16_ipex_channels_last   |      successful      |    3.135     |
-|         openvino_fp32          |      successful      |    1.727     |
-|         openvino_int8          |      successful      |    1.635     |
-|        onnxruntime_fp32        |      successful      |    3.801     |
-|    onnxruntime_int8_qlinear    |      successful      |    4.727     |
- -------------------------------- ---------------------- --------------
-Optimization cost 58.3s in total.
-```
-
-For more details, you can refer [How-to guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize.html) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch-inferenceoptimizer). 
-
 ## Multi-instance Acceleration
 
 BigDL-Nano also provides multi-instance inference. To use it, you should call `multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=n)` first, where `num_processes` specifies the number of processes you want to use.
@@ -326,14 +351,21 @@ multi_model = InferenceOptimizer.to_multi_instance(model, num_processes=4, cores
 multi_model = InferenceOptimizer.to_multi_instance(model, cpu_for_each_process=[[0], [1], [2,3], [4,5]])
 ```
 
-## Automatic Context Management
-BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model, it usually contains part of or all of following three types of context managers:
+```eval_rst
+.. note::
+    During multi-instance infernece, the context manager ``InferenceOptimizer.get_context(model=...)`` is not needed to be maunally added.
+```
 
-1. ``torch.no_grad()`` to disable gradients, which will be used for all model
-   
-2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related model
-   
+## Automatic Context Management
+BigDL-Nano provides ``InferenceOptimizer.get_context(model=...)`` API to enable automatic context management for PyTorch inference. With only one line of code change, BigDL-Nano will automatically provide suitable context management for each accelerated model optimized by ``InferenceOptimizer.trace``/``quantize``/``optimize``, it usually contains part of or all of following four types of context managers:
+
+1. ``torch.inference_mode(True)`` to disable gradients, which will be used for all models. For the case when ``torch <= 1.12``, ``torch.no_grad()`` will be used for PyTorch mixed precision inference as a replacement of ``torch.inference_mode(True)``
+
+2. ``torch.cpu.amp.autocast(dtype=torch.bfloat16)`` to run in mixed precision, which will be provided for bf16 related models
+
 3. ``torch.set_num_threads()`` to control thread number, which will be used only if you specify thread_num when applying ``InferenceOptimizer.trace``/``quantize``/``optimize``
+
+4. ``torch.jit.enable_onednn_fusion(True)`` to support ONEDNN fusion for jit when using jit as accelerator
 
 For model accelerated by ``InferenceOptimizer.trace``, usage now looks like below codes, here we just take ``ipex`` for example:
 ```python
@@ -369,6 +401,10 @@ with InferenceOptimizer.get_context(ipex_model, classifer):
     assert torch.get_num_threads() == 4  # this line just to let you know Nano has provided thread control automatically : )
 ```
 
+```eval_rst
+.. seealso::
+   You could refer to the related `how-to guide <../Howto/Inference/PyTorch/pytorch_context_manager.nblink>`_ for more detailed usage of the context manager.
+```
 ## One-click Accleration Without Code Change
 ```eval_rst
 .. note::

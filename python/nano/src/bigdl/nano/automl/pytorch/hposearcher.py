@@ -19,7 +19,7 @@ import pytorch_lightning as pl
 import copy
 import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
 from ._helper import ResetCallback, CustomEvaluationLoop
@@ -156,6 +156,11 @@ class HPOSearcher:
         _sampler_kwargs.update(user_sampler_kwargs)
         if "sampler" in kwargs and kwargs["sampler"] in [SamplerType.Grid]:
             search_kwargs["sampler_kwargs"] = _sampler_kwargs
+            # Following condition will be met when user state non-catagory problem
+            invalidInputError(len(model._lazyobj.kwspaces_) <= len(_sampler_kwargs),
+                              "Only `space.Categorical` is supported for `SamplerType.Grid` "
+                              "sampler. Please try replace other space to `space.Categorical` "
+                              "or use another SamplerType.")
 
         (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
             = _prepare_args(search_kwargs,

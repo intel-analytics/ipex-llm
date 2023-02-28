@@ -19,7 +19,7 @@ spec:
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
-      #      key: app_key
+      #      key: api_key
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem

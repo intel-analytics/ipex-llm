@@ -17,7 +17,7 @@
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.tcn import model_creator, optimizer_creator, loss_creator
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 class TCNForecaster(BasePytorchForecaster):

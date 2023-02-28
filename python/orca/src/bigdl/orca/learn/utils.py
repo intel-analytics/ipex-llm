@@ -21,6 +21,7 @@ import tempfile
 import shutil
 
 from bigdl.dllib.utils import log4Error
+from bigdl.dllib.utils.common import callBigDlFunc
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
@@ -91,12 +92,11 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
                 yield size
 
     def transform_predict(predictions):
-        # list of np array
+        # case 1: each prediction is a list of np array
         if isinstance(predictions[0], list):
-            predictions = np.array(predictions).T.tolist()
-            result = [np.array(predict) for predict in predictions]
-            return result
-        # np array
+            return [np.array([prediction[i] for prediction in predictions])
+                    for i in range(len(predictions[0]))]
+        # case 2: each prediction is a single np array
         else:
             return np.array(predictions)
 
@@ -224,6 +224,9 @@ def _stack_arrs(arrs):
 
 
 def _merge_rows(results):
+    if isinstance(results, dict):
+        return results
+
     try:
         result_arrs = [_stack_arrs(l) for l in results]
     except ValueError:
@@ -288,18 +291,24 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             # pre allocate numpy array when shard_size is provided
             if isinstance(first_row, np.ndarray):
                 return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
+            if isinstance(first_row, dict):
+                res = dict()
+                for k, _ in first_row.items():
+                    res[k] = np.empty((shard_size,) + first_row[k].shape, first_row[k].dtype)
+                return res
             else:
                 return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
         else:
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list):
+        if not isinstance(data, list) and not isinstance(data, dict):
             arrays = [data]
         else:
             arrays = data
 
-        for i, arr in enumerate(arrays):
+        iter = arrays.items() if isinstance(arrays, dict) else enumerate(arrays)
+        for i, arr in iter:
             if shard_size:
                 current = current % shard_size
                 results[i][current] = arr
@@ -330,9 +339,15 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         if shard_size:
             # remove empty part of the ndarray in the last shard
             rest_size = counter % shard_size
-            feature_lists = [feature[0:rest_size] for feature in feature_lists]
+            if isinstance(feature_lists, dict):
+                feature_lists = {k: v[0:rest_size] for k, v in feature_lists.items()}
+            else:
+                feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
-                label_lists = [label[0:rest_size] for label in label_lists]
+                if isinstance(label_lists, dict):
+                    label_lists = {k: v[0:rest_size] for k, v in label_lists.items()}
+                else:
+                    label_lists = [label[0:rest_size] for label in label_lists]
         # output last shard
         yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
 
@@ -515,6 +530,22 @@ def make_data_creator(refs):
         return refs
 
     return data_creator
+
+
+def openvino_output_to_sdf(df, rdd, names, shapes):
+    return callBigDlFunc("float", "openVINOOutputToSDF", df, rdd, names, shapes)
+
+
+def get_arrow_hex_str(batched_data, names):
+    import pyarrow as pa
+    sink = pa.BufferOutputStream()
+    pred_arrow = pa.record_batch(batched_data, names=names)
+    with pa.ipc.new_stream(sink, pred_arrow.schema) as writer:
+        writer.write_batch(pred_arrow)
+    pred_arrow = sink.getvalue().hex()
+    pred_arrow = pred_arrow.decode("utf-8")
+    sink.close()
+    return pred_arrow
 
 
 def make_dataloader_list_wrapper(func):

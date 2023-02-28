@@ -16,7 +16,7 @@
 
 import pandas as pd
 import numpy as np
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 import logging
 
 

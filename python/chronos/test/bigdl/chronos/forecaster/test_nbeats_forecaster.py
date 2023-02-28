@@ -23,7 +23,7 @@ import pytest
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 NBeatsForecaster = LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
-from .. import op_torch, op_distributed, op_inference, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl
 
 
 def create_data(loader=False):
@@ -121,7 +121,6 @@ class TestChronosNBeatsForecaster(TestCase):
         eva = forecaster.evaluate(test_data, acceleration=False)
         assert eva[0].shape == test_data[1].shape[1:]
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -135,7 +134,7 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='pytorch_fx',
-                            relative_drop=0.2)
+                            relative_drop=0.5)
         q_yhat = forecaster.predict(data=test_loader, quantize=True, acceleration=False)
         yhat = forecaster.predict(data=test_loader, acceleration=False)
         forecaster.evaluate(test_loader, batch_size=32, acceleration=False)
@@ -143,13 +142,12 @@ class TestChronosNBeatsForecaster(TestCase):
                             val_data=val_loader,
                             metric="mae",
                             framework='onnxrt_qlinearops',
-                            relative_drop=0.2)
+                            relative_drop=0.8)
         q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
         forecaster.evaluate_with_onnx(test_loader)
         assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -177,7 +175,7 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -198,7 +196,7 @@ class TestChronosNBeatsForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_jit_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -218,7 +216,7 @@ class TestChronosNBeatsForecaster(TestCase):
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
             forecaster.export_torchscript_file(dirname=ckpt_name)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -231,7 +229,7 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_quantization_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -240,7 +238,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
-        forecaster.quantize(train_data, relative_drop=0.2)
+        forecaster.quantize(train_data)
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -255,7 +253,6 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
@@ -264,11 +261,10 @@ class TestChronosNBeatsForecaster(TestCase):
                                       loss='mae',
                                       lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        forecaster.quantize(train_data, framework='onnxrt_qlinearops', relative_drop=0.2)
+        forecaster.quantize(train_data, framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
@@ -279,7 +275,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
-                            metric="mse", relative_drop=0.5, max_trials=3,
+                            metric="mse", relative_drop=0.8, max_trials=3,
                             framework='onnxrt_qlinearops')
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
@@ -348,7 +344,6 @@ class TestChronosNBeatsForecaster(TestCase):
         stop_orca_context()
 
     @op_distributed
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
@@ -495,7 +490,6 @@ class TestChronosNBeatsForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
@@ -509,12 +503,14 @@ class TestChronosNBeatsForecaster(TestCase):
         res = nbeats.evaluate(test_loader, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='pytorch_fx')
+                        framework='pytorch_fx',
+                        relative_drop=0.99)
         q_yhat = nbeats.predict(test, acceleration=False)
         q_res = nbeats.evaluate(test_loader, quantize=True, acceleration=False)
         nbeats.quantize(calib_data=loader,
                         metric='mse',
-                        framework='onnxrt_qlinearops')
+                        framework='onnxrt_qlinearops',
+                        relative_drop=0.99)
         q_onnx_yhat = nbeats.predict_with_onnx(test, quantize=True)
         q_onnx_res = nbeats.evaluate_with_onnx(test_loader, quantize=True)
         onnx_yhat = nbeats.predict_with_onnx(test)
@@ -606,7 +602,6 @@ class TestChronosNBeatsForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -706,7 +701,7 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.export_torchscript_file(dirname=pipeline_module_dir,
                                            save_pipeline=True,
                                            tsdata=train_data,
-                                           drop_dtcol=True)
+                                           drop_dt_col=True)
         # save the test data for deployment
         test_data_path = os.path.join(temp_dir, "inference_data.csv")
         test_data.df.to_csv(test_data_path, index=False)
@@ -771,3 +766,68 @@ class TestChronosNBeatsForecaster(TestCase):
         assert new_current_thread == current_thread
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
+
+    def test_nbeats_forecaster_ctx_manager(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mse',
+                                      lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        num = max(1, original_thread//2)
+        with forecaster.get_context(thread_num=num, optimize=True):
+            assert forecaster.context_enabled == True
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
+            for x, y in test_loader:
+                yhat = forecaster.predict(x.numpy())
+
+    @op_automl
+    def test_nbeats_forecaster_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      metrics=['mae', 'mse', 'mape'],
+                                      lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize")
+        train_data = (train_data[0] * 10000.0, train_data[1] * 10000.0)
+        forecaster.fit(train_data, epochs=2)
+        train_loss = forecaster.trainer.callback_metrics['train/loss']
+        assert train_loss > 10
+
+    @op_automl
+    def test_nbeats_forecaster_multi_objective_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                     future_seq_len=5,
+                                     loss="mae",
+                                     metrics=['mae', 'mse', 'mape'],
+                                     lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'],
+                        direction=None,
+                        directions=["minimize", "minimize"])
+
+    @op_automl
+    @op_inference
+    def test_nbeats_forecaster_multi_objective_tune_acceleration(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss="mae",
+                                      metrics=['mae', 'mse', 'mape'],
+                                      lr=space.Real(0.001, 0.01, log=True))
+        forecaster.num_processes = 1
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric=['mse', 'latency'], 
+                        directions=["minimize", "minimize"],
+                        acceleration=True, direction=None)

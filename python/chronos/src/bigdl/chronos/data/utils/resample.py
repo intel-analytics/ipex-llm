@@ -41,7 +41,7 @@ def resample_timeseries_dataframe(df,
            defaults to False.
     '''
     if not deploy_mode:
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
         invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
         invalidInputError(merge_mode in ['max', 'min', 'mean', 'sum'],

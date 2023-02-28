@@ -102,7 +102,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         """
         # ("generic", "generic") not support orca distributed.
         if stack_types[-1] == "generic" and distributed:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "Please set distributed=False or change the type "
                               "of 'stack_types' to 'trend', 'seasonality', "
@@ -167,7 +167,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = True
         self.checkpoint_callback = True
-        self.use_hpo = False
+        self.use_hpo = True
 
         super().__init__()
 
@@ -190,7 +190,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         :return: A NBeats Forecaster Model.
         """
         from bigdl.chronos.data.tsdataset import TSDataset
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(isinstance(tsdataset, TSDataset),
                           f"We only supports input a TSDataset, but get{type(tsdataset)}.")
 

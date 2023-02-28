@@ -16,8 +16,8 @@
 from pathlib import Path
 import yaml
 from ..core import version as inc_version
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.tf.model import AcceleratedKerasModel
+from bigdl.nano.utils.common import invalidInputError
 from neural_compressor.model.model import TensorflowModel
 import pickle
 import os
@@ -47,11 +47,16 @@ class KerasQuantizedModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"compile_path": "inc_saved_model_compile.pkl"})
+        status.update({"attr_path": "inc_saved_model_attr.pkl",
+                       "compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path)
+        # save normal attrs
+        attrs = {"_output_shape": self._output_shape}
+        with open(Path(path) / self.status['attr_path'], "wb") as f:
+            pickle.dump(attrs, f)
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
@@ -61,10 +66,11 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
             if self.compiled_metrics is not None:
                 user_metric = self.compiled_metrics._user_metrics
-                if isinstance(user_metric, (list, tuple)):
-                    kwargs["metrics"] = [m._name for m in user_metric]
-                else:
-                    kwargs["metrics"] = user_metric._name
+                if user_metric is not None:
+                    if isinstance(user_metric, (list, tuple)):
+                        kwargs["metrics"] = [m._name for m in user_metric]
+                    else:
+                        kwargs["metrics"] = user_metric._name
                 weighted_metrics = self.compiled_metrics._user_weighted_metrics
                 if weighted_metrics is not None:
                     if isinstance(weighted_metrics, (list, str)):
@@ -90,6 +96,10 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         model = KerasQuantizedModel(qmodel)
+        with open(Path(path) / status['attr_path'], "rb") as f:
+            attrs = pickle.load(f)
+        for attr_name, attr_value in attrs.items():
+            setattr(model, attr_name, attr_value)
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)

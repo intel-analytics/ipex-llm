@@ -18,7 +18,7 @@ import tempfile
 import os
 import torch
 import time
-from bigdl.nano.utils.util import spawn_new_process
+from bigdl.nano.utils.common import spawn_new_process
 from torchvision.models import resnet18
 
 

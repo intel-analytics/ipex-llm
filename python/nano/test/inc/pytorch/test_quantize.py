@@ -26,12 +26,13 @@ from pytorch_lightning import LightningModule
 from torch import nn
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 import torchmetrics
+from torchvision.models import resnet18
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.utils.log4Error import invalidOperationError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidOperationError
+from bigdl.nano.utils.common import compare_version
 
 batch_size = 256
 num_workers = 0
@@ -67,7 +68,7 @@ class ModelCannotCopy(ResNet18):
         invalidOperationError(False, "This model cannot be deepcopy")
 
 
-class TestTrainer(TestCase):
+class TestINC(TestCase):
     model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -218,11 +219,28 @@ class TestTrainer(TestCase):
         assert qmodel
         assert qmodel.channels == 3
         qmodel.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchQuantizedModel' object has no attribute 'width'"
+        ):
+            qmodel.width
 
         with InferenceOptimizer.get_context(qmodel):
             assert torch.get_num_threads() == 2
             out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchQuantizedModel' object has no attribute 'width'"
+        ):
+            load_model.width
 
     # This UT will fail with INC < 2.0
     @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")
@@ -313,3 +331,40 @@ class TestTrainer(TestCase):
                                              max_trials=10,
                                              thread_num=8)
         assert qmodel
+
+    def test_quantize_loading_behavior(self):
+        # test nn.Module
+        model = resnet18()
+        input_sample = torch.randn(1, 3, 224, 224)
+        # test pytorch_fx
+        qmodel = InferenceOptimizer.quantize(model,
+                                             calib_data=input_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        with InferenceOptimizer.get_context(load_model):
+            load_model(input_sample)
+        
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            # save & load of INC ipex quantized model only works when inc version >= 2.0
+            # test pytorch_ipex with wrong input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                with pytest.raises(
+                    RuntimeError,
+                    match="For INC ipex quantizated model, you need to set input_sample when loading model."
+                    ):
+                    load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+
+            # test pytorch_ipex with right input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name, model=model, input_sample=input_sample)
+            with InferenceOptimizer.get_context(load_model):
+                load_model(input_sample)
