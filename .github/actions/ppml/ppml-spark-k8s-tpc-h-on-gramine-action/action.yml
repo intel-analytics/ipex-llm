@@ -52,5 +52,5 @@ runs:
     - name: Spark K8S TPC-H Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-tpc-h-on-k8s-cluster-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-tpc-h-on-k8s-client-sgx.sh"
         docker rm -f ${CONTAINER_NAME}

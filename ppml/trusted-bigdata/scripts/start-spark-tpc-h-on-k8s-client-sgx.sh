@@ -6,15 +6,15 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-driver-jvm-memory 1g\
-        --sgx-executor-jvm-memory 3g\
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
         --num-executors 8 \
-        --driver-memory 3g \
+        --driver-memory 4g \
         --driver-cores 8 \
-        --executor-memory 1g \
+        --executor-memory 4g \
         --executor-cores 8\
         --conf spark.cores.max=64 \
-        --conf spark.kubernetes.driver.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
         --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \

@@ -7,7 +7,7 @@ secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/pa
 export SPARK_LOCAL_IP=$LOCAL_IP && \
 /opt/jdk8/bin/java \
     -cp $SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-    -Xmx10g org.apache.spark.deploy.SparkSubmit \
+    -Xmx5g org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $deploy_mode \
     --name $driver_name \

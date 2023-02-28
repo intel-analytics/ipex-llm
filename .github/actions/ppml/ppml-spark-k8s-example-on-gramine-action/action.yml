@@ -53,7 +53,7 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-k8s-cluster-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-sqlexamples-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlexamples-on-k8s-client-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-pi-on-k8s-client-sgx.sh"

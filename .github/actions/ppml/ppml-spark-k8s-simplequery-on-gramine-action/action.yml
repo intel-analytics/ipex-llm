@@ -53,5 +53,5 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-simplequery-on-k8s-cluster-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simplequery-on-k8s-cluster-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-simplequery-on-k8s-client-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simplequery-on-k8s-client-sgx.sh"

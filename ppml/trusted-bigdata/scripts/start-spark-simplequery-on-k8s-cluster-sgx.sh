@@ -6,8 +6,8 @@ bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode cluster \
     --sgx-enabled true \
-    --sgx-driver-jvm-memory 1g\
-    --sgx-executor-jvm-memory 3g\
+    --sgx-driver-jvm-memory 6g\
+    --sgx-executor-jvm-memory 6g\
     --num-executors 4 \
     --driver-memory 3g \
     --driver-cores 8 \
@@ -22,7 +22,7 @@ bash bigdl-ppml-submit.sh \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --name simple-query-sgx-on-cluster \
     --verbose \
-    local:///ppml/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+    local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
     --inputPath /ppml/data/test_path_do_not_change/simplequery/people.csv \
     --outputPath /ppml/data/test_path_do_not_change/simplequery/output \
     --inputPartitionNum 8 \
