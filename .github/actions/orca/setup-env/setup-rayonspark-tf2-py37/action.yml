@@ -1,5 +1,5 @@
-name: 'Run Orca Python Jep Exampletest Py37'
-description: 'Run Orca Python Jep Exampletest Py37'
+name: 'Run Orca Python RayonSpark Py37'
+description: 'Run Orca Python RayonSpark Py37'
 runs:
   using: "composite"
   steps:

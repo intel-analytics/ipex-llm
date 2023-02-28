@@ -13,11 +13,14 @@ sed -i "s/Trainer(max_epochs=1)/Trainer(max_epochs=1, fast_dev_run=True)/" $NANO
 sed -i "s/latency_sample_num=100/latency_sample_num=10/" $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 sed -i "s/latency_sample_num=20/latency_sample_num=10/" $NANO_HOWTO_GUIDES_TEST_DIR/inference_optimizer_optimize.ipynb
 
+# It seems windows's bash cannot expand * wildcard
+all_ipynb=`find "$NANO_HOWTO_GUIDES_TEST_DIR" -maxdepth 1 -name "*.ipynb"`
+
 # comment out the install commands
-sed -i "s/!pip install/#!pip install/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!pip install/#!pip install/" $all_ipynb
 
 # comment out the environment setting commands
-sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $all_ipynb
 
 echo "Start testing"
 start=$(date "+%s")

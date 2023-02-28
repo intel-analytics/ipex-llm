@@ -24,10 +24,10 @@ import os
 import stat
 
 long_description = '''
-BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
+BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines
 by applying modern CPU optimizations.
 
-See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)
 for more information.
 '''
 
@@ -100,9 +100,9 @@ def setup_package():
 
     stock_tensorflow_28_requires = ["tensorflow==2.8.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]                         
+    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]  
+    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
     tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
@@ -159,7 +159,7 @@ def setup_package():
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
-                          "neural-compressor==2.0",
+                          "neural-compressor==2.0; platform_system!='Windows'",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'"]
