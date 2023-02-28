@@ -481,7 +481,6 @@ class TestTFRayEstimator(TestCase):
         predictions = result.collect()[0]
         import pandas as pd
         assert isinstance(predictions, pd.DataFrame), "predict should return a pandas dataframe"
-        print(predictions.head(n=1))
 
     def test_dataframe_shard_size(self):
         from bigdl.orca import OrcaContext

@@ -399,7 +399,6 @@ class TestPyTorchEstimator(TestCase):
         predictions = result.collect()[0]
         import pandas as pd
         assert isinstance(predictions, pd.DataFrame), "predict should return a pandas dataframe"
-        print(predictions.head(n=1))
 
     def test_multiple_inputs_model(self):
 
