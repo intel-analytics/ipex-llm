@@ -30,6 +30,8 @@ class ModelCheckpoint(Callback):
     def __init__(self,
                  filepath=None,
                  save_weights_only=False,
+                 by_epoch=True,
+                 interval=1,
                  ):
         """
         ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
@@ -46,6 +48,8 @@ class ModelCheckpoint(Callback):
         super().__init__()
         self.filepath = filepath
         self.save_weights_only = save_weights_only
+        self.by_epoch = by_epoch
+        self.interval = interval
         self.last_ckpt_path = ""
         self.filename = os.path.basename(self.filepath)
         self.dirname = os.path.dirname(self.filepath)
@@ -57,11 +61,24 @@ class ModelCheckpoint(Callback):
         be called during TRAIN mode.
         :param epoch:  Integer, index of epoch.
         """
+        if not self.by_epoch:
+            return
         stats = {"epoch": runner.epochs}
         last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
                                                       filename=self.filename,
                                                       stats=stats)
         runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
+
+    def after_train_iter(self, runner):
+        if self.by_epoch:
+            return
+
+        if self.every_n_iter(runner, self.interval):
+            stats = {"iter": runner.global_step + 1}
+            last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                          filename=self.filename,
+                                                          stats=stats)
+            runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
 
     def before_run(self, runner):
         """
@@ -123,8 +140,8 @@ class ModelCheckpoint(Callback):
             for group in groups:
                 name = group[1:]
 
-                if "epoch" not in name:
-                    warnings.warn("We only support filepath with {epoch} for now.")
+                if "epoch" not in name and "iter" not in name:
+                    warnings.warn("We only support filepath with {epoch} or {iter} for now.")
 
                 filename = filename.replace(group, name + "={" + name)
 

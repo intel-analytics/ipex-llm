@@ -70,3 +70,6 @@ class Callback(object):
 
     def after_pred_iter(self, runner):
         self.after_iter(runner)
+
+    def every_n_iter(self, runner, n):
+        return (runner.global_step + 1) % n == 0 if n > 0 else False
