@@ -518,7 +518,7 @@ run_spark_sql_e2e() {
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
                 --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --inputPath /host/data/encrypt/ \
+                --inputPath /host/data/encryptEhsm/ \
                 --outputPath /host/data/model/ \
                 --inputEncryptModeValue AES/CBC/PKCS5Padding \
                 --outputEncryptModeValue AES/CBC/PKCS5Padding \

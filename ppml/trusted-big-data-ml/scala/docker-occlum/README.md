@@ -392,9 +392,9 @@ And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
-2.To generate keys for encrypt and decrypt.
+2.To generate primary key for encrypt and decrypt.
 ```
-bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
 ```
 3.To generate input data
 you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
@@ -403,20 +403,14 @@ python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
 ```
 4.To encrypt input data. For example, you mount a file called people.csv.
 ```
-bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
 ```
-5.Change the suffix of the encrypted file to cbc and move to right place.
-```
-mv /opt/occlum_spark/data/people.csv.encrypted /opt/occlum_spark/data/encrypt/people.csv.encrypted.cbc
-```
-6.To run the BigDL SimpleQuery e2e Example.
+5.To run the BigDL SimpleQuery e2e Example.
 ```
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-7.To decrypt the result.You can find sql result under folder `/opt/occlum_spark/data/model`.
-```
-bash /opt/ehsm_entry.sh decrypt $APP_ID $API_KEY /opt/occlum_spark/data/model/{result_file_name}.
-```
+6.You can find sql result under folder `/opt/occlum_spark/data/model`.
+
 
 ## PySpark 3.1.3 Pi example
 

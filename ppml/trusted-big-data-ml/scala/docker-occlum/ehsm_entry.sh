@@ -4,17 +4,17 @@ rm /etc/sgx_default_qcnl.conf
 echo 'PCCS_URL='${PCCS_URL}'/sgx/certification/v3/' > /etc/sgx_default_qcnl.conf
 echo "USE_SECURE_CERT=FALSE" >> /etc/sgx_default_qcnl.conf
 action=$1
+KMS_TYPE=$2
 EHSM_URL=${ATTESTATION_URL}
 EHSM_KMS_IP=${EHSM_URL%:*}
 EHSM_KMS_PORT=${EHSM_URL#*:}
 mkdir -p /opt/occlum_spark/data/key/
 mkdir -p /opt/occlum_spark/data/encrypt/
-export KMS_TYPE=ehsm
 #only support ehsm now
 if [ "$action" = "generatekey" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-	    appid=$2
-	    apikey=$3
+	    appid=$3
+	    apikey=$4
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GeneratePrimaryKey \
 		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
@@ -37,9 +37,9 @@ if [ "$action" = "generatekey" ]; then
 		return -1
 	fi
 elif [ "$action" = "encrypt" ]; then
-	appid=$2
-	apikey=$3
-	input_path=$4
+	appid=$3
+	apikey=$4
+	input_path=$5
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	  /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                     -XX:-UseCompressedOops \
@@ -58,13 +58,13 @@ elif [ "$action" = "encrypt" ]; then
                     --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
                     $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                     --inputDataSourcePath $input_path \
-                    --outputDataSinkPath /opt/occlum_spark/data/encryptBob/
+                    --outputDataSinkPath /opt/occlum_spark/data/encryptEhsm/
 
 	elif [ "$KMS_TYPE" = "simple" ]; then
 		appid=123456123456
-                apikey=123456123456
-                input_path=$4
-                /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+    apikey=123456123456
+    input_path=$5
+    /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                     -XX:-UseCompressedOops \
                     -XX:ActiveProcessorCount=4 \
                     -Divy.home="/tmp/.ivy" \
@@ -79,7 +79,7 @@ elif [ "$action" = "encrypt" ]; then
                     --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
                     $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                     --inputDataSourcePath $input_path \
-                    --outputDataSinkPath /opt/occlum_spark/data/encryptAmy/
+                    --outputDataSinkPath /opt/occlum_spark/data/encryptSimple/
 	else
 		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
@@ -87,9 +87,9 @@ elif [ "$action" = "encrypt" ]; then
 elif [ "$action" = "encryptwithrepartition" ]; then
   #not test completely
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-	    appid=$2
-            apikey=$3
-	    input_path=$4
+	    appid=$3
+            apikey=$4
+	    input_path=$5
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
@@ -105,9 +105,9 @@ elif [ "$action" = "encryptwithrepartition" ]; then
                 --ehsmAPPID $appid \
                 --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
-	    appid=$2
-            apikey=$3
-	    input_path=$4
+	    appid=$3
+            apikey=$4
+	    input_path=$5
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
@@ -127,9 +127,9 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 elif [ "$action" = "decrypt" ]; then
   #Deprecated
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-	appid=$2
-        apikey=$3
-        input_path=$4
+	appid=$3
+        apikey=$4
+        input_path=$5
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
 		--inputPath $input_path \
@@ -144,9 +144,9 @@ elif [ "$action" = "decrypt" ]; then
                 --ehsmAPPID $appid \
                 --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
-	appid=$2
-        apikey=$3
-        input_path=$4
+	appid=$3
+        apikey=$4
+        input_path=$5
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
                 --inputPath $input_path \
