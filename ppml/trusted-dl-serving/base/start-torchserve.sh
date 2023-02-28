@@ -52,11 +52,11 @@ declare -a cores=($(echo "$backend_core_list" | tr "," " "))
 # In case we change the path name in future
 cd /ppml || exit
 
-./init.sh
 port=9000
 sgx_flag=""
 
 if [[ $SGX_ENABLED == "true" ]]; then
+    ./init.sh
     sgx_flag=" -x "
 fi
 
