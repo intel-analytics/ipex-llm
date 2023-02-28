@@ -760,11 +760,11 @@ class BasePytorchForecaster(Forecaster):
                                                           batch_size=batch_size)
                     else:
                         self.accelerated_model.eval()
-                        yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                          input_data=data,
-                                                          batch_size=batch_size,
-                                                          output_tensor=
-                                                            self.optimized_model_output_tensor)
+                        yhat = _pytorch_fashion_inference(
+                            model=self.accelerated_model,
+                            input_data=data,
+                            batch_size=batch_size,
+                            output_tensor=self.optimized_model_output_tensor)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
@@ -1123,10 +1123,11 @@ class BasePytorchForecaster(Forecaster):
                                                           batch_size=batch_size)
                     else:
                         self.accelerated_model.eval()
-                        yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                          input_data=input_data,
-                                                          batch_size=batch_size,
-                                                          output_tensor=self.optimized_model_output_tensor)
+                        yhat = _pytorch_fashion_inference(
+                            model=self.accelerated_model,
+                            input_data=input_data,
+                            batch_size=batch_size,
+                            output_tensor=self.optimized_model_output_tensor)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, target,
@@ -1218,7 +1219,6 @@ class BasePytorchForecaster(Forecaster):
                 target = np.concatenate(tuple(val[1] for val in data), axis=0)
         else:
             input_data, target = data
-
         if not self.context_enabled:
             self.cxt_manager = ForecasterContextManager(self, self.thread_num, True)
         else:
