@@ -57,7 +57,7 @@ then
 fi
 
 echo "Running orca learn mmcv ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/experimental/
+python -m pytest -v test/bigdl/orca/learn/ray/experimental/
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];then
     exit $exit_status_4
