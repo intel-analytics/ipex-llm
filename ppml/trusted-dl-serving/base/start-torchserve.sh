@@ -1,3 +1,4 @@
+#!/bin/bash
 configFile=""
 backend_core_list=""
 frontend_core=""
@@ -46,9 +47,11 @@ if [ ! -f "${configFile}" ]; then
     usage
 fi
 
-declare -a cores=($(echo $backend_core_list | tr "," " "))
+declare -a cores=($(echo "$backend_core_list" | tr "," " "))
 
-cd /ppml
+# In case we change the path name in future
+cd /ppml || exit
+
 ./init.sh
 port=9000
 sgx_flag=""
@@ -59,14 +62,14 @@ fi
 
 
 # Consider the situation where we have multiple models, and each load serveral workers.
-cat $configFile | while read line
+while read -r line
 do
     if [[ $line =~ "minWorkers" ]]; then
         line=${line#*\"minWorkers\": }
         num=${line%%,*}
         line=${line#*,}
 
-        if [ ${#cores[@]} != $num ]; then
+        if [ ${#cores[@]} != "$num" ]; then
             echo "Error: worker number does not equal to the length of core list"
             exit 1
         fi
@@ -76,15 +79,13 @@ do
         for ((i=0;i<num;i++,port++))
         do
         (
-            # TODO:change back
-            bash ./start-torchserve-backend-sgx.sh -p $port -c ${cores[$i]} $sgx_flag
+            bash /ppml/torchserve/start-torchserve-backend.sh -p $port -c "${cores[$i]}" $sgx_flag
         )&
         done
     fi
-done
+done < "$configFile"
 (
-    # TODO: change back
-    bash ./start-torchserve-frontend-sgx.sh -c $configFile -f $frontend_core $sgx_flag
+    bash /ppml/torchserve/start-torchserve-frontend.sh -c "$configFile" -f "$frontend_core" $sgx_flag
 )&
 wait
 
