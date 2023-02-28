@@ -11,12 +11,12 @@ mkdir -p /opt/occlum_spark/data/key/
 mkdir -p /opt/occlum_spark/data/encrypt/
 export KMS_TYPE=ehsm
 #only support ehsm now
-if [ "$action" = "generatekeys" ]; then
+if [ "$action" = "generatekey" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
+		com.intel.analytics.bigdl.ppml.examples.GeneratePrimaryKey \
 		--primaryKeyPath /opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
 		--kmsType EHSMKeyManagementService \
 		--kmsServerIP $EHSM_KMS_IP \
@@ -24,11 +24,11 @@ if [ "$action" = "generatekeys" ]; then
 		--ehsmAPPID $appid \
 		--ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
-	    appid=$2
-	    apikey=$3
+	    appid=123456654321
+	    apikey=123456654321
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
-		--primaryKeyPath /home/key/simple_encrypted_primary_key \
+		com.intel.analytics.bigdl.ppml.examples.GeneratePrimaryKey \
+		--primaryKeyPath /opt/occlum_spark/data/key/simple_encrypted_primary_key \
 		--kmsType SimpleKeyManagementService \
 		--simpleAPPID $appid \
 		--simpleAPIKEY $apikey
@@ -143,5 +143,5 @@ elif [ "$action" = "decrypt" ]; then
                 return -1
         fi
 else
-	echo "Wrong action! Action can be (1) generatekeys, (2) encrypt, (3) decrypt, and (4) encryptwithrepartition."
+	echo "Wrong action! Action can be (1) generatekey, (2) encrypt, (3) decrypt, and (4) encryptwithrepartition."
 fi
