@@ -33,7 +33,6 @@ scheduler_map = {
 }
 
 
-
 class StableDiffusionRunner:
     # uncomment the below class attributes loading to accelerate the test of the UI layout only
     
@@ -55,22 +54,11 @@ class StableDiffusionRunner:
         self.opt_postfix = "" # one optimization method could have multiple options
         self.device = None
         self.precision = None
-        # model_id = "CompVis/stable-diffusion-v1-4"
-        # TODO: may need a patch manager here
-        # after applying the patch, need to re-import the module
     
     def init_scheduler(self, scheduler):
         if scheduler != self.scheduler or self.pipe.scheduler == None:
             local_scheduler = os.path.join(self.model_dir, "scheduler")
             self.pipe.switch_scheduler(scheduler, local_scheduler)
-            # scheduler_cls = scheduler_map[scheduler]
-            # # modify the line below if you want to download the scheduler config
-            # local_scheduler = os.path.join(self.model_dir, "scheduler")
-            # if os.path.isdir(local_scheduler):
-            #     self.d_scheduler = scheduler_cls.from_pretrained(local_scheduler)
-            # else:
-            #     raise Exception("No scheduler config found in directory")
-            # self.scheduler = scheduler
 
     def init_generator(self, seed):
         if self.generator is None:

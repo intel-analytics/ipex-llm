@@ -18,9 +18,9 @@ import gradio as gr
 import os
 import multiprocessing
 import time
-from stable_diffusion.runner import StableDiffusionRunner
 import psutil
-from stable_diffusion.converter import convert, model_version_map 
+from stable_diffusion.runner import StableDiffusionRunner
+from stable_diffusion.converter import convert
 from stable_diffusion.pipelines import NanoStableDiffusionPipeline
 from stable_diffusion.utils import get_snapshot_dir_from_model_version
 from stable_diffusion import runner_process

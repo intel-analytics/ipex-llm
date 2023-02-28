@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 
-import copy
 import os
-import time
 import torch
 import inspect
 import numpy as np
@@ -26,8 +24,6 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from typing import Callable, List, Optional, Union
 from diffusers import AutoencoderKL
 from transformers import CLIPTokenizer, CLIPTextModel
-from .multi_instance import *
-
 from diffusers.schedulers import *
 from diffusers.utils import logging
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
@@ -641,57 +637,8 @@ class NanoStableDiffusionPipeline:
             imgs = self.generate(prompt=prompt, **kwargs)
             if hasattr(imgs, "images"):
                 imgs = imgs.images
-            if save_paths is not None:
-                img_per_prompt = kwargs.get("num_images_per_prompt", 1)
-                if img_per_prompt > 1:
-                    save_paths = get_new_path_list(save_paths, img_per_prompt)
-                for i, p in zip(imgs, save_paths):
-                    i.save(p)
             return imgs
-        else:
-            if not isinstance(prompt, list):
-                prompt = [prompt]
-            from bigdl.nano.deps.openvino.pytorch.model import PytorchOpenVINOModel
-            from bigdl.nano.utils.common import schedule_processors
-            # from bigdl.nano.common.cpu_schedule import schedule_processors
 
-            input_idx = np.array_split(range(length), self.num_workers)
-
-            KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-            OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
-    
-            if isinstance(self.unet, PytorchOpenVINOModel):
-                # TODO: Modify nano ov, test
-                envs = [{"KMP_AFFINITY": "granularity=fine,none", "OMP_NUM_THREADS": "1"} for _ in range(self.num_workers)]
-            else:
-                envs = schedule_processors(self.num_workers)
-    
-            result_queues = [mp.Queue() for _ in range(self.num_workers)]
-    
-            ps = []
-            for i in range(self.num_workers):
-                os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
-                os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
-
-                idx_list = input_idx[i]
-                sub_prompts = [prompt[idx] for idx in idx_list]
-                sub_paths = None
-                if save_paths is not None:
-                    sub_paths = [save_paths[idx] for idx in idx_list]
-                p = mp.Process(target=multi_instance_generate,
-                            args=(self, sub_prompts, sub_paths, result_queues[i]), kwargs=kwargs)
-                p.start()
-                ps.append(p)
-            results = []
-            for q in result_queues:
-                results.extend(q.get())
-            for p in ps:
-                p.join()
-    
-            os.environ["KMP_AFFINITY"] = KMP_AFFINITY
-            os.environ["OMP_NUM_THREADS"] = OMP_NUM_THREADS
-            return results
-   
     def get_openvino_config(self, precision):
         config = {}
         if precision == "float32":
