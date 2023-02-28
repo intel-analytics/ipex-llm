@@ -623,21 +623,11 @@ class NanoStableDiffusionPipeline:
         model_dir = "_".join(model_dir)
         return os.path.join(base_dir, model_dir)
 
-    def __call__(self, prompt, save_paths=None, **kwargs):		
-        length = len(prompt) if isinstance(prompt, list) else 1
-   
-        if save_paths is not None:
-            logger.warning(f"The pipeline will save the generated images to the save_paths and return an empty list if the save_paths is not None.")
-            if not isinstance(save_paths, list):
-                save_paths = [save_paths]
-            if len(save_paths) != length:
-                raise ValueError("The length of `save_paths` should be the same as the length of `prompt`.")
-    
-        if self.num_workers == 1:
-            imgs = self.generate(prompt=prompt, **kwargs)
-            if hasattr(imgs, "images"):
-                imgs = imgs.images
-            return imgs
+    def __call__(self, prompt, **kwargs):
+        imgs = self.generate(prompt=prompt, **kwargs)
+        if hasattr(imgs, "images"):
+            imgs = imgs.images
+        return imgs
 
     def get_openvino_config(self, precision):
         config = {}
