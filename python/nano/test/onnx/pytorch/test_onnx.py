@@ -334,17 +334,15 @@ class TestOnnx(TestCase):
         accmodel(x3)
 
     def test_onnx_trace_output_tensors(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        trainer = Trainer(max_epochs=1)
 
         pl_model = Trainer.compile(model, loss, optimizer)
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
         train_loader = DataLoader(ds, batch_size=2)
-        trainer.fit(pl_model, train_loader)
 
         onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
                                               input_sample=train_loader)
