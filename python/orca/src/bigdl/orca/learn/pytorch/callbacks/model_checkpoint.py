@@ -31,7 +31,7 @@ class ModelCheckpoint(Callback):
                  filepath=None,
                  save_weights_only=False,
                  by_epoch=True,
-                 interval=1,
+                 interval=-1,
                  ):
         """
         ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
@@ -44,6 +44,9 @@ class ModelCheckpoint(Callback):
         And checkpoints will be saved as file with path like 'my/path/sample-mnist-epoch=1.ckpt'
         with different epoch values.
         :param filepath: path to save the model file.
+        :param by_epoch: save chekpoint by epoch or by iteration
+        :param interval: The saving period. If ``by_epoch=True``, interval
+            indicates epochs, otherwise it indicates iterations. Default: -1, which means "never".
         """
         super().__init__()
         self.filepath = filepath
