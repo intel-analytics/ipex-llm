@@ -31,7 +31,7 @@ def get_roll_start_idx(df, id_col, window_size):
         id_start_idxes = df.index[df[id_col] != df[id_col].shift(1)].tolist() + [len(df.index)]
     roll_start_idx_iter = ((range(id_start_idxes[i], id_start_idxes[i+1] - window_size + 1))
                            for i in range(len(id_start_idxes) - 1))
-    roll_start_idxes = np.fromiter(itertools.chain.from_iterable(roll_start_idx_iter), np.int)
+    roll_start_idxes = np.fromiter(itertools.chain.from_iterable(roll_start_idx_iter), np.int32)
     return roll_start_idxes
 
 

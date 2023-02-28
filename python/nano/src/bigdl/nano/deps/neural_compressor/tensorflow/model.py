@@ -51,7 +51,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                        "compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path)
         # save normal attrs
         attrs = {"_output_shape": self._output_shape}
@@ -66,10 +66,11 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
             if self.compiled_metrics is not None:
                 user_metric = self.compiled_metrics._user_metrics
-                if isinstance(user_metric, (list, tuple)):
-                    kwargs["metrics"] = [m._name for m in user_metric]
-                else:
-                    kwargs["metrics"] = user_metric._name
+                if user_metric is not None:
+                    if isinstance(user_metric, (list, tuple)):
+                        kwargs["metrics"] = [m._name for m in user_metric]
+                    else:
+                        kwargs["metrics"] = user_metric._name
                 weighted_metrics = self.compiled_metrics._user_weighted_metrics
                 if weighted_metrics is not None:
                     if isinstance(weighted_metrics, (list, str)):

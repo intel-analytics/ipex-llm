@@ -26,7 +26,7 @@ from torch import nn
 import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.common import compare_version
 import tempfile
 from typing import List
@@ -229,6 +229,11 @@ class IPEXJITInference_gt_1_10:
             new_model(self.data_sample)
         assert new_model.channels == 3
         new_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            new_model.strange_call()
 
         # save & load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -236,6 +241,11 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test jit + ipex + inplace
         new_model = InferenceOptimizer.trace(model, accelerator="jit",
@@ -270,6 +280,12 @@ class IPEXJITInference_gt_1_10:
         assert load_model.channels == 3
         load_model.hello()
 
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
+
         # test ipex
         new_model = InferenceOptimizer.trace(model, use_ipex=True)
         with InferenceOptimizer.get_context(new_model):
@@ -285,6 +301,12 @@ class IPEXJITInference_gt_1_10:
             load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
         assert load_model.channels == 3
         load_model.hello()
+
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchIPEXJITModel' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
         # test ipex inplace
         new_model = InferenceOptimizer.trace(model, use_ipex=True, inplace=True)

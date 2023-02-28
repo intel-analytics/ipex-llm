@@ -33,6 +33,11 @@ if [ "$PCCS_URL" != "" ]; then
   echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
 fi
 
+#check glic ENV MALLOC_ARENA_MAX for distributed application
+if [[ -z "$MALLOC_ARENA_MAX" ]]; then
+    echo "No MALLOC_ARENA_MAX specified, set to 4."
+fi
+
 function delete_file {
   if [ -f $1 ]; then
       rm -f $1

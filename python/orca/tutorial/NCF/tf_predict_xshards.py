@@ -24,7 +24,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Prediction with Orca XShards", mode="predict")
-init_orca(args.cluster_mode)
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,utils.py")
 
 
 # Step 2: Load the processed data
@@ -34,7 +34,7 @@ data = XShards.load_pickle(os.path.join(args.data_dir, "test_processed_xshards")
 # Step 3: Load the model
 est = Estimator.from_keras(backend=args.backend,
                            workers_per_node=args.workers_per_node)
-est.load(os.path.join(args.model_dir, "NCF_model"))
+est.load(os.path.join(args.model_dir, "NCF_model.h5"))
 
 
 # Step 4: Distributed inference of the loaded model

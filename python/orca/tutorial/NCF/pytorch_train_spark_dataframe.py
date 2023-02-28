@@ -23,18 +23,18 @@ from pytorch_model import NCF
 from utils import *
 
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Training with Spark DataFrame")
-init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py")
+init_orca(args.cluster_mode, extra_python_lib="process_spark_dataframe.py,"
+                                              "pytorch_model.py,utils.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, neg_scale=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, neg_scale=4)
 
 
 # Step 3: Define the model, optimizer and loss
@@ -76,8 +76,7 @@ loss = nn.BCEWithLogitsLoss()
 
 
 # Step 4: Distributed training with Orca PyTorch Estimator
-callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
-                                 freq=1000)] if args.tensorboard else []
+callbacks = get_pytorch_callbacks(args)
 scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,

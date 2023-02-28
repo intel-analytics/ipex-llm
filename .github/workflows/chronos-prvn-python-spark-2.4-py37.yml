@@ -56,7 +56,7 @@ jobs:
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark246.sh default false false
+          bash python/dev/release_default_linux_spark2.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -102,7 +102,7 @@ jobs:
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark246.sh default false false
+          bash python/dev/release_default_linux_spark2.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -148,7 +148,7 @@ jobs:
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark246.sh default false false
+          bash python/dev/release_default_linux_spark2.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -194,7 +194,7 @@ jobs:
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark246.sh default false false
+          bash python/dev/release_default_linux_spark2.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]

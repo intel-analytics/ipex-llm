@@ -131,6 +131,7 @@ class TorchRunner(BaseRunner):
         self.sync_stats = sync_stats
         self.epoch_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
+        self._pocket = dict()  # Used to store some customized attributes
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -469,10 +470,12 @@ class TorchRunner(BaseRunner):
         loader = iter(loader)
 
         with self.timers.record("validation"):
+            self.num_steps = num_steps
             validation_stats = self._validate(loader,
                                               metrics=self.metrics,
                                               num_steps=num_steps,
                                               callbacks=callbacks)
+            del self.num_steps
         if profile:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
@@ -504,8 +507,8 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
-        self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
+            self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
             for batch_idx, batch in enumerate(val_iterator):
                 self.batch_idx = batch_idx
                 if num_steps and batch_idx == num_steps:
@@ -569,7 +572,9 @@ class TorchRunner(BaseRunner):
 
         # User should not see batch from last iteration
         output = self.output
+        target = self.batch[-1]
         loss = self.loss
+
         del self.batch
         del self.output
         del self.loss
@@ -744,6 +749,30 @@ class TorchRunner(BaseRunner):
         for hook in callbacks:
             if hasattr(hook, fn_name):
                 getattr(hook, fn_name)(self)
+
+    def put(self, k, v):
+        if k in self._pocket.keys():
+            self.logger.warning(f"Key {k} has already been in runner._pocket,"
+                                "please use runner.update instead.")
+        self._pocket[k] = v
+
+    def update(self, k, v):
+        if k not in self._pocket.keys():
+            self.logger.warning(f"Key {k} is not in runner._pocket,"
+                                "please use runner.put instead.")
+        self._pocket[k] = v
+
+    def get(self, k):
+        invalidInputError(k in self._pocket.keys(),
+                          f"KeyError, key {k} is not in runner._pocket,"
+                          "please check your input.")
+        return self._pocket[k]
+
+    def remove(self, k):
+        invalidInputError(k in self._pocket.keys(),
+                          f"KeyError, key {k} is not in runner.pocket,"
+                          "please check your input.")
+        del self._pocket[k]
 
     @property
     def given_models(self):

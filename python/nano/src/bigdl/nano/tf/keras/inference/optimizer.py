@@ -30,9 +30,9 @@ import keras
 from typing import Dict, Optional, List, Union, Callable
 from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
     AccelerationOption, latency_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
-from bigdl.nano.tf.utils import _ModuleWrapper
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import _ModuleWrapper
+from bigdl.nano.utils.tf import patch_compiled_and_attrs, patch_attrs
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
@@ -44,6 +44,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.tf import tensor_spec_to_shape
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -86,7 +87,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         {  # type: ignore
             "original": TFAccelerationOption(),
             "static_int8": TFAccelerationOption(inc=True),
+            "bf16": TFAccelerationOption(bf16=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
+            "openvino_bf16": TFAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TFAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TFAccelerationOption(onnxruntime=True, inc=True,
@@ -624,20 +628,16 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set or \
-                    not hasattr(model, 'output_shape'):
-                invalidInputError(input_spec is not None,
-                                  "`input_spec` cannot be None when passing unbuilt model.")
-                # model cannot be saved either because the input shape is not available
-                # or because the forward pass of the model is not defined
-                if isinstance(input_spec, (tuple, list)):
-                    input_shape = (i.shape for i in input_spec)
-                else:
-                    input_shape = input_spec.shape
+            if hasattr(model, "input_shape"):
+                # Sequential and functional API model has
+                # `input_shape` and `output_shape` attributes
+                _output_shape = model.output_shape
+            elif input_spec is not None:
+                input_shape = tensor_spec_to_shape(input_spec)
                 _output_shape = model.compute_output_shape(input_shape)
             else:
-                _output_shape = model.output_shape
+                invalidInputError(False,
+                                  "Subclassed model must specify `input_spec` parameter.")
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14

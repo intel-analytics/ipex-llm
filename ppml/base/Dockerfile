@@ -1,11 +1,13 @@
 ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
+ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
 FROM ubuntu:20.04
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
 ARG BIGDL_VERSION
+ARG GRAMINE_BRANCH
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_VERSION
@@ -16,6 +18,8 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+
+ENV MALLOC_ARENA_MAX                    4
 
 RUN mkdir -p /ppml/
 
@@ -56,7 +60,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
-    git checkout devel-v1.3.1-2022-10-08 && \
+    git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
     meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
     ninja -C build/ && \

@@ -16,3 +16,4 @@
 
 
 from .optimizer import InferenceOptimizer
+from .pipeline import Pipeline

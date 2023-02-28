@@ -32,8 +32,8 @@ runs:
         pip install tensorflow==2.3.0
         HOROVOD_WITH_TENSORFLOW=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.2
 
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
         pip install ray==1.11.0
-        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca
         
     - name: Run Test
       shell: bash

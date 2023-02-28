@@ -1,8 +1,10 @@
 name: Nightly Build
 
 on:
-  #pull_request:
-    #branchs: [ main ]
+  # pull_request:
+  #   branchs: [ main ]
+  #   paths:
+  #     - '.github/workflows/nightly_build.yml'
   schedule:
     - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
@@ -197,14 +199,20 @@ jobs:
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg no_proxy=${NO_PROXY} \
           --rm --no-cache -t $IMAGE-spark-3.1.3:${TAG} .
+        # tag 'latest'
         docker push ${IMAGE}-spark-3.1.3:${TAG}
         docker tag ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        # tag SNAPSHOT
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
+        docker push ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
         export IMAGE=intelanalytics/bigdl-k8s
+        export TAG=latest
         echo "########################################"
         echo "################# bigdl-k8s 3.1.3 #######"
         echo "########################################"
@@ -216,12 +224,39 @@ jobs:
         --build-arg JDK_URL=${JDK_URL} \
         --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}-spark-3.1.3:${TAG} .
+        # tag 'latest'
         docker push ${IMAGE}-spark-3.1.3:${TAG}
         docker tag ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG}
         docker push ${IMAGE}:${TAG}
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG}
+        # tag SNAPSHOT
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker push ${IMAGE}:${TAG_SNAPSHOT}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+    - name: docker deploy bigdl-chronos
+      run: |
+        mv docker/chronos-nightly/Dockerfile ./Dockerfile
+        export IMAGE=intelanalytics/bigdl-chronos
+        export TAG=latest
+        echo "########################################"
+        echo "################# bigdl-chronos #######"
+        echo "########################################"
+        docker build \
+        --build-arg http_proxy=${HTTP_PROXY} \
+        --build-arg https_proxy=${HTTPS_PROXY} \
+        --rm --no-cache -t ${IMAGE}:${TAG} .
+        # tag 'latest'
+        docker push ${IMAGE}:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
+        # tag SNAPSHOT
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker push ${IMAGE}:${TAG_SNAPSHOT}
+        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+        mv ./Dockerfile docker/chronos-nightly/Dockerfile
 
     - name: Create Job Badge
       if: ${{ always() }}
@@ -319,7 +354,7 @@ jobs:
         apt-get install sshpass
         #spark2
         ## linux ##
-        bash python/dev/release_default_linux_spark246.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark2.sh ${nb_version} false false
         
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
@@ -344,7 +379,7 @@ jobs:
         echo "test mac build"
         
         ## mac ##
-        bash python/dev/release_default_mac_spark246.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark2.sh ${nb_version} false false
 
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
@@ -365,7 +400,7 @@ jobs:
 
         #spark3
         ## linux ##
-        bash python/dev/release_default_linux_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_linux_spark3.sh ${nb_version} false false
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl \
@@ -384,7 +419,7 @@ jobs:
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
         ## mac ##
-        bash python/dev/release_default_mac_spark312.sh ${nb_version} false false
+        bash python/dev/release_default_mac_spark3.sh ${nb_version} false false
         # upload
         sshpass -p "${SOURCEFORGE_PW}" \
         scp ./python/dllib/src/dist/bigdl_dllib*-py3-none-macosx_10_11_x86_64.whl \

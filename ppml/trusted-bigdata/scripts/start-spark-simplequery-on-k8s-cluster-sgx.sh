@@ -18,8 +18,8 @@ bash bigdl-ppml-submit.sh \
     --conf spark.kubernetes.executor.container.image=10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
     --conf spark.kubernetes.container.image.pullPolicy=Always \
     --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
-    --conf spark.executor.extraClassPath=/ppml/jars/* \
-    --conf spark.driver.extraClassPath=/ppml/jars/* \
+    --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+    --conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --name simple-query-sgx-on-cluster \
     --verbose \
