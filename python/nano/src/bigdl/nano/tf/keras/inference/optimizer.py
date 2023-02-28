@@ -87,7 +87,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         {  # type: ignore
             "original": TFAccelerationOption(),
             "static_int8": TFAccelerationOption(inc=True),
+            "bf16": TFAccelerationOption(bf16=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
+            "openvino_bf16": TFAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TFAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TFAccelerationOption(onnxruntime=True, inc=True,

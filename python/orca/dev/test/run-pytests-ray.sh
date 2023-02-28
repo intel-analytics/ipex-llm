@@ -43,9 +43,8 @@ ray stop -f
 echo "Running orca learn ray backend tests"
 python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
-      --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_runtime.py \
-      --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py \
       --ignore=test/bigdl/orca/learn/ray/tf/ \
+      --ignore=test/bigdl/orca/learn/ray/ctx/ \
       --ignore=test/bigdl/orca/learn/ray/mxnet/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];

@@ -168,6 +168,6 @@ $(document).on({
             $(this).css("color","var(--pst-color-text-base)");
         }
     }
-}, ".install_option_button");
+}, "installation-panel-table button");
 
 refresh_cmd();

@@ -1,5 +1,5 @@
-name: 'Run Orca Python Py37 Clean Env'
-description: 'Run Orca Python Py37 Clean Env'
+name: 'Run Orca Basic Py37 Spark3'
+description: 'Run Orca Basic Py37 Spark3'
 runs:
   using: "composite"
   steps:
