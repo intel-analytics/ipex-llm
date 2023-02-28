@@ -33,23 +33,19 @@ runs:
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
-        -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $DATA_PATH:/ppml/data \
+        -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
         -v $KEYS_PATH:/ppml/keys \
-        -e LOCAL_IP=$LOCAL_IP \
-        -e HDFS_ADDRESS=$HDFS_ADDRESS \
-        -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+        -v $SECURE_PASSWORD_PATH:/ppml/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -v $NFS_INPUT_PATH:/ppml/data \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e LOCAL_IP=$LOCAL_IP \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_EXECUTOR_INSTANCES=1 \
-        -e RUNTIME_EXECUTOR_CORES=4 \
-        -e RUNTIME_EXECUTOR_MEMORY=80g \
-        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-        -e RUNTIME_DRIVER_CORES=4 \
-        -e RUNTIME_DRIVER_MEMORY=10g \
+        -e RUNTIME_DRIVER_MEMORY=5g \
         $IMAGE bash
     - name: Spark Examples Test
       shell: bash

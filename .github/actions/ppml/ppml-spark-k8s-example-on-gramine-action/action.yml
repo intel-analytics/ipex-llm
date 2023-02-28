@@ -31,7 +31,7 @@ runs:
         --privileged \
         --net=host \
         --name ${CONTAINER_NAME} \
-        --cpuset-cpus=12-16 \
+        --cpus=10 \
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
@@ -44,23 +44,10 @@ runs:
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
         -e LOCAL_IP=$LOCAL_IP \
-        -e SGX_MEM_SIZE=32G \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_EXECUTOR_INSTANCES=2 \
-        -e RUNTIME_EXECUTOR_CORES=4 \
-        -e RUNTIME_EXECUTOR_MEMORY=20g \
-        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-        -e RUNTIME_DRIVER_CORES=4 \
-        -e RUNTIME_DRIVER_MEMORY=10g \
-        -e SGX_MEM_SIZE=64G \
-        -e SGX_DRIVER_MEM=64g \
-        -e SGX_DRIVER_JVM_MEM=12g \
-        -e SGX_EXECUTOR_MEM=64g \
-        -e SGX_EXECUTOR_JVM_MEM=12g \
-        -e SGX_ENABLED=true \
-        -e SGX_LOG_LEVEL=error \
+        -e RUNTIME_DRIVER_MEMORY=5g \
         $IMAGE bash
     - name: Spark K8S Examples Test
       shell: bash
