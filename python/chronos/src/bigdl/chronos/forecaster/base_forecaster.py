@@ -1231,7 +1231,8 @@ class BasePytorchForecaster(Forecaster):
                                       "please call .quantize() method first")
                 yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
                     self.build_onnx()
