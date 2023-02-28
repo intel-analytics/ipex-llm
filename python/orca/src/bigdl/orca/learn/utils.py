@@ -157,14 +157,22 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
         data = data["prediction"]
         is_list = isinstance(data, list)
         is_tuple = isinstance(data, tuple)
+        is_dict = isinstance(data, dict)
         if is_list or is_tuple:
             length = data[0].shape[0]
             ls_data = data
+        elif is_dict:
+            length = list(data.values())[0].shape[0]
+            ls_data = data.items()
         else:
             length = data.shape[0]
             ls_data = [data]
 
         for i in range(length):
+            if is_dict:
+                yield {k: v[i] for k, v in ls_data}
+                continue
+
             row = [elem[i] for elem in ls_data]
             if is_list:
                 yield row
@@ -188,6 +196,10 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
         if isinstance(pair[1], list):
             row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                         [[Vectors.dense(elem) for elem in pair[1]]]))
+        # dict of np array as values
+        elif isinstance(pair[1], dict):
+            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
+                        [{k: Vectors.dense(elem) for k, elem in pair[1].items()}]))
         # scalar
         elif len(pair[1].shape) == 0:
             row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))

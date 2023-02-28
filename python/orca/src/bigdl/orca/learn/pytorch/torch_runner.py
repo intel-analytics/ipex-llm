@@ -781,5 +781,3 @@ class TorchRunner(BaseRunner):
         """First or only scheduler(s) created by the ``scheduler_creator``."""
         if self.schedulers:
             return self.schedulers[0]
-
-# Modified in 1

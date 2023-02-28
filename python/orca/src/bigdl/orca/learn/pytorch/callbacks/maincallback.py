@@ -95,8 +95,8 @@ class MainCallback(Callback):
 
     def on_pred_forward(self, runner):
         """
-        Called during validate.
-        Any behavior inconsistent with the default training behavior should be overridden here.
+        Called during prediction.
+        Any behavior inconsistent with the default prediction behavior should be overridden here.
         """
         output = runner.model(*runner.batch)
 
