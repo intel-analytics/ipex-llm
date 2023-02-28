@@ -136,7 +136,7 @@ def train_data_creator(config, batch_size):
 ```
 
 ---
-### 2 Pull Docker Image
+## 2 Pull Docker Image
 Please pull the BigDL [`bigdl-k8s`](https://hub.docker.com/r/intelanalytics/bigdl-k8s/tags) image (built on top of Spark 3.1.3) from Docker Hub beforehand as follows:
 ```bash
 # For the latest nightly build version
@@ -517,7 +517,7 @@ We define a Kubernetes Deployment in a YAML file. Some fields of the YAML are ex
 
 
 #### 7.3.1 K8s Client
-BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-client.yaml)__ to directly run the Fashion-MNIST example for k8s-client mode.
+BigDL has provided an example [orca-tutorial-k8s-client.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/orca-tutorial-k8s-client.yaml) to directly run the Fashion-MNIST example for k8s-client mode.
 Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
 
 You need to uncompress the conda archive in NFS before submitting the job:
@@ -630,7 +630,7 @@ kubectl delete job orca-pytorch-job
 ```
 
 #### 7.3.2 K8s Cluster
-BigDL has provided an example [orca-tutorial-k8s-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/docker/orca-tutorial-cluster.yaml)__ to run the Fashion-MNIST example for k8s-cluster mode.
+BigDL has provided an example [orca-tutorial-k8s-cluster.yaml](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/FashionMNIST/orca-tutorial-k8s-cluster.yaml) to run the Fashion-MNIST example for k8s-cluster mode.
 Note that you need to change the configurations in the YAML file accordingly, including the version of the docker image, RUNTIME_SPARK_MASTER, BIGDL_VERSION and BIGDL_HOME.
 
 ```bash
