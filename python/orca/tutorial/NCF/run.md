@@ -7,6 +7,7 @@
 ```bash
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
+hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
 ```
 
 ## Arguments
@@ -32,6 +33,8 @@ pip install --pre --upgrade bigdl-orca-spark3[ray]
 pip install tensorflow==2.9.0
 # PyTorch
 pip install torch torchvision torchmetrics==0.10.0 tqdm
+# Data Lodaer
+pip install pandas scikit-learn
 # XShards
 pip install pandas scikit-learn pyarrow
 # Tensorboard
