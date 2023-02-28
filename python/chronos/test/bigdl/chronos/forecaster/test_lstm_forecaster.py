@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 LSTMForecaster = LazyImport('bigdl.chronos.forecaster.lstm_forecaster.LSTMForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_inference, op_automl, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl
 
 
 def create_data(loader=False):
@@ -122,7 +122,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data, acceleration=False)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @op_diff_set_all
     @op_inference
     def test_lstm_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -151,7 +150,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 1, 2)
 
-    @op_diff_set_all
     @op_inference
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -182,7 +180,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_lstm_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -204,7 +202,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
-    @op_diff_set_all
+    @op_inference
     def test_lstm_forecaster_openvino_methods_loader(self):
         train_data, _, test_data = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -220,7 +218,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_lstm_forecaster_jit_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -241,7 +239,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
             forecaster.export_torchscript_file(dirname=ckpt_name)
 
-    @op_diff_set_all
+    @op_inference
     def test_lstm_forecaster_jit_methods_loader(self):
         train_data, _, test_data = create_data(loader=True)
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -257,7 +255,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_lstm_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -290,7 +288,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @op_diff_set_all
     @op_inference
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
@@ -305,7 +302,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @op_diff_set_all
     @op_inference
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
@@ -397,7 +393,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         stop_orca_context()
 
     @op_distributed
-    @op_diff_set_all
     @op_inference
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -539,7 +534,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
@@ -670,7 +664,6 @@ class TestChronosModelLSTMForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
