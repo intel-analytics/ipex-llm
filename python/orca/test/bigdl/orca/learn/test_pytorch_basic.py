@@ -211,9 +211,14 @@ class CustomCallback(Callback):
 class DictMCB(MainCallback):
     def on_pred_forward(self, runner):
         output = runner.model(*runner.batch)
-
-        # todo support multi-output model
         runner.output = {k: v.detach().numpy() for k, v in output.items()}
+
+
+class ComplicatedMCB(MainCallback):
+    def on_pred_forward(self, runner):
+        output = runner.model(*runner.batch)
+        runner.output = (output[0].detach().numpy(),
+                        {k: v.detach().numpy() for k, v in output[1].items()})
 
 
 def train_data_loader(config, batch_size):
@@ -530,6 +535,7 @@ class TestPyTorchEstimatorBasic(TestCase):
                                   model_fn=lambda config: ComplicatedOutputNet()
                                   )
         result = estimator.predict(df, batch_size=4,
+                                   callbacks=[ComplicatedMCB()],
                                    feature_cols=["f"])
         result.collect()
 

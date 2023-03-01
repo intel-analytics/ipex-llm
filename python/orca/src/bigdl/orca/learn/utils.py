@@ -152,34 +152,31 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
     return result
 
 
+def get_length(input):
+    if isinstance(input, (list, tuple)):
+        return get_length(input[0])
+    elif isinstance(input, dict):
+        return get_length(list(input.values())[0])
+    else:
+        return input.shape[0]
+
+
+def filter_elem(input, i):
+    if isinstance(input, (list, tuple)):
+        return [filter_elem(elem, i) for elem in input]
+    elif isinstance(input, dict):
+        return {k: filter_elem(v, i) for k, v in input.items()}
+    else:
+        return input[i]
+
+
 def convert_predict_xshards_to_dataframe(df, pred_shards):
     def flatten(data):
         data = data["prediction"]
-        is_list = isinstance(data, list)
-        is_tuple = isinstance(data, tuple)
-        is_dict = isinstance(data, dict)
-        if is_list or is_tuple:
-            length = data[0].shape[0]
-            ls_data = data
-        elif is_dict:
-            length = list(data.values())[0].shape[0]
-            ls_data = data.items()
-        else:
-            length = data.shape[0]
-            ls_data = [data]
+        length = get_length(data)
 
         for i in range(length):
-            if is_dict:
-                yield {k: v[i] for k, v in ls_data}
-                continue
-
-            row = [elem[i] for elem in ls_data]
-            if is_list:
-                yield row
-            elif is_tuple:
-                yield tuple(row)
-            else:
-                yield row[0]
+            yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
     result = convert_predict_rdd_to_dataframe(df, pred_rdd)
@@ -192,6 +189,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.ml.linalg import Vectors
 
     def combine(pair):
+        print(pair[0])
         # list of np array
         if isinstance(pair[1], list):
             row = Row(*([pair[0][col] for col in pair[0].__fields__] +
