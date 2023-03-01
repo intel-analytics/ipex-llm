@@ -297,9 +297,9 @@ Start run BigDL Spark GBT example:
 bash start-spark-local.sh gbt
 ```
 
-You can find GBT result under folder `/path/to/data/`.
+You can find GBT result under folder `/opt/occlum_spark/model/`.
 ```
-/path/to/data/
+/opt/occlum_spark/data/model/
 ├── data
 ├── treesMetadata
 └── metadata
@@ -356,9 +356,9 @@ bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/gb
 ```
 bash /opt/run_spark_on_occlum_glibc.sh gbt_e2e
 ```
-You can find GBT result under folder `/path/to/data/`.
+You can find GBT result under folder `/opt/occlum_spark/data/model/`.
 ```
-/path/to/data/
+/opt/occlum_spark/data/model/
 ├── data
 ├── treesMetadata
 └── metadata
@@ -407,6 +407,49 @@ bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
 6.You can find encrypt result under folder `/opt/occlum_spark/data/model`.
 
+## BigDL MultiPartySparkQuery e2e Example
+
+You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=30GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e PCCS_URL=https://PCCS_IP:PCCS_PORT \
+-e ATTESTATION_URL=ESHM_IP:EHSM_PORT \
+-e APP_ID=your_app_id \
+-e API_KEY=your_api_key \
+```
+
+Start run BigDL MultiParty Spark Query e2e example:
+
+1.Input PCCS_URL,ATTESTATION_URL,APP_ID and API_KEY first. Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY for simple kms.
+```
+bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people_csv.py /opt/occlum_spark/data/Amy.csv <num_lines>
+python generate_people_csv.py /opt/occlum_spark/data/Bob.csv <num_lines>
+```
+4.To encrypt input data. For example:
+```
+bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/Bob.csv
+bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/Amy.csv
+```
+5.To run the BigDL MultiParty Spark Query e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh multi_sql_e2e
+```
+6.You can find encrypt result under folder `/opt/occlum_spark/data/multiModel`.
 
 ## PySpark 3.1.3 Pi example
 

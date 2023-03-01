@@ -515,7 +515,6 @@ run_spark_sql_e2e() {
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
                 --inputPath /host/data/encryptEhsm/ \
                 --outputPath /host/data/model/ \
