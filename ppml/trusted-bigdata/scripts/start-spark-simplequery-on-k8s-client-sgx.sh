@@ -3,8 +3,9 @@ cd /ppml
 
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 bash bigdl-ppml-submit.sh \
-    --master local[4] \
-    --sgx-enabled false \
+    --master $RUNTIME_SPARK_MASTER \
+    --deploy-mode client \
+    --sgx-enabled true \
     --sgx-driver-jvm-memory 6g\
     --sgx-executor-jvm-memory 6g\
     --num-executors 4 \
