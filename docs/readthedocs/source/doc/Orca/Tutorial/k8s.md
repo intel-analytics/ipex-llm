@@ -516,8 +516,6 @@ mkdir environment
 tar -xzvf environment.tar.gz --directory environment
 ```
 
-*orca-tutorial-k8s-client.yaml*
-
 ```bash
 apiVersion: batch/v1
 kind: Job
