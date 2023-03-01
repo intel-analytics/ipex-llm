@@ -756,11 +756,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         # onnx model
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_data[0])
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_data[0])
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_data[0])
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_data[0])
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
 
@@ -777,11 +779,13 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         # onnx model
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_loader)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_loader)
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_loader)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_loader)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
 
@@ -798,10 +802,12 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         # onnx model
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test)
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)

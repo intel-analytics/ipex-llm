@@ -1518,6 +1518,7 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="onnxrt_qlinearops")
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_data[0], quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_data[0], quantize=True)
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
@@ -1526,6 +1527,7 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="openvino")
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_data[0], quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_data[0], quantize=True)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
 
@@ -1547,6 +1549,7 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="onnxrt_qlinearops")
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
@@ -1555,6 +1558,7 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="openvino")
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_loader, quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_loader, quantize=True)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
 
@@ -1575,6 +1579,7 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="onnxrt_qlinearops")
         q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test, quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test, quantize=True)
         np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
         # openvino model
@@ -1582,5 +1587,6 @@ class TestChronosModelTCNForecaster(TestCase):
                             framework="openvino")
         q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test, quantize=True)
         forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test, quantize=True)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
