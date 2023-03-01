@@ -310,9 +310,9 @@ You can find GBT result under folder `/path/to/data/`.
 ## BigDL GBT e2e Example
 
 ### Download data
-You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/` to container's `/opt/occlum_spark/data/` in `start-spark-local.sh` via:
 ```
--v /path/to/data/1g_data:/opt/occlum_spark/data
+-v /path/to/data/gbt/1g_data:/opt/occlum_spark/gbt/1g_data
 ```
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
@@ -346,17 +346,13 @@ bash start-spark-local.sh
 ```
 2.To generate keys for encrypt and decrypt.
 ```
-bash /opt/ehsm_entry.sh generatekeys $APP_ID $API_KEY
+bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
 ```
 3.To encrypt input data. For example, you mount a file called day_0_1g.csv.
 ```
-bash /opt/ehsm_entry.sh  encrypt $APP_ID $API_KEY /opt/occlum_spark/data/day_0_1g.csv
+bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/gbt/day_0_1g.csv
 ```
-4.Change the suffix of the encrypted file to cbc and move to right place.
-```
-mv /opt/occlum_spark/data/day_0_1g.csv.encrypted /opt/occlum_spark/data/encrypt/day_0_1g.csv.encrypted.cbc
-```
-5.To run the BigDL GBT e2e Example.
+4.To run the BigDL GBT e2e Example.
 ```
 bash /opt/run_spark_on_occlum_glibc.sh gbt_e2e
 ```
@@ -409,7 +405,7 @@ bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/pe
 ```
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-6.You can find sql result under folder `/opt/occlum_spark/data/model`.
+6.You can find encrypt result under folder `/opt/occlum_spark/data/model`.
 
 
 ## PySpark 3.1.3 Pi example

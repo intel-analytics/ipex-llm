@@ -469,19 +469,18 @@ run_spark_gbt_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
                 --conf spark.task.cpus=2 \
-                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --class com.intel.analytics.bigdl.ppml.examples.GbtClassifierTrainingExampleOnCriteoClickLogsDataset \
                 --num-executors 2 \
                 --executor-cores 2 \
                 --executor-memory 9G \
                 --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --trainingDataPath /host/data/encrypt/ \
+                --trainingDataPath /host/data/encryptEhsm/ \
                 --modelSavePath /host/data/model/ \
                 --inputEncryptMode AES/CBC/PKCS5Padding \
                 --kmsServerIP $EHSM_KMS_IP \
@@ -506,7 +505,7 @@ run_spark_sql_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
                 --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
