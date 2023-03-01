@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, check_ccl
 from bigdl.nano.utils.pytorch import ChannelsLastCallback
 from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
@@ -73,8 +73,8 @@ class Trainer(pl.Trainer):
         :param distributed_backend: use which backend in distributed mode, defaults to
             ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
         :param process_group_backend: use which process group backend in distributed mode, defaults
-            to ``None``, means using ``gloo`` with CPU, while using ``nccl`` with GPU, now avaiable
-            backends are ``None`` and ``'ccl'``.
+            to ``None``, means using ``'gloo'`` with CPU, while using ``'nccl'`` with GPU, now
+            avaiable backends are ``None`` and ``'ccl'``.
         :param cpu_for_each_process: A list of length ``num_processes``, each containing a list of
             indices of cpus each process will be using. default: ``None``, and the cpu will be
             automatically and evenly distributed among processes.
@@ -150,21 +150,7 @@ class Trainer(pl.Trainer):
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
-            if process_group_backend is not None:
-                invalidInputError(process_group_backend == 'ccl',
-                                  f"Process group backends supported now are None and 'ccl'",
-                                  f" but got {process_group_backend}.")
-                try:
-                    if TORCH_VERSION_LESS_1_12:
-                        import torch_ccl
-                    else:
-                        import oneccl_bindings_for_pytorch
-                except Exception as _e:
-                    invalidInputError(False,
-                                      "Failed to import oneccl_bindings_for_pytorch, "
-                                      "maybe you should install it first: "
-                                      "pip install oneccl_bind_pt -f "
-                                      "https://developer.intel.com/ipex-whl-stable-cpu")
+            check_ccl(process_group_backend)
             if "checkpoint_callback" in kwargs:
                 if not kwargs["checkpoint_callback"]:
                     invalidInputError(False,
