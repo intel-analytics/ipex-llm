@@ -14,3 +14,4 @@ prophet==1.1.0
 tsfresh==0.17.0
 pyarrow==6.0.1
 matplotlib
+inotify_simple

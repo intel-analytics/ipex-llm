@@ -129,6 +129,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                    ipex=True,
                                                                    channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
+            "openvino_bf16": TorchAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TorchAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TorchAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TorchAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TorchAccelerationOption(onnxruntime=True, inc=True,
@@ -1039,6 +1041,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         # device name might be: CPU, GPU, GPU.0 ...
         invalidInputError(device == 'CPU' or 'GPU' in device,
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
+        # can't set precision for trace
+        invalidInputError("precision" not in kwargs,
+                          "Don't pass precision when call InferenceOptimizer.trace, otherwise you "
+                          "should call InferenceOptimizer.quantize(precision=...)")
         if device != 'CPU' and accelerator != 'openvino':
             invalidInputError(False,
                               "Now we only support {} device when accelerator "

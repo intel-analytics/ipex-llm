@@ -23,7 +23,7 @@ import pytest
 from bigdl.chronos.utils import LazyImport
 torch = LazyImport('torch')
 NBeatsForecaster = LazyImport('bigdl.chronos.forecaster.nbeats_forecaster.NBeatsForecaster')
-from .. import op_torch, op_distributed, op_inference, op_diff_set_all, op_automl
+from .. import op_torch, op_distributed, op_inference, op_automl
 
 
 def create_data(loader=False):
@@ -121,7 +121,6 @@ class TestChronosNBeatsForecaster(TestCase):
         eva = forecaster.evaluate(test_data, acceleration=False)
         assert eva[0].shape == test_data[1].shape[1:]
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -149,7 +148,6 @@ class TestChronosNBeatsForecaster(TestCase):
         forecaster.evaluate_with_onnx(test_loader)
         assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
@@ -177,7 +175,7 @@ class TestChronosNBeatsForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -198,7 +196,7 @@ class TestChronosNBeatsForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_jit_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -218,7 +216,7 @@ class TestChronosNBeatsForecaster(TestCase):
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
             forecaster.export_torchscript_file(dirname=ckpt_name)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -231,7 +229,7 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict(test_data[0], quantize=True, acceleration=False)
         eval_q = forecaster.evaluate(test_data, quantize=True, acceleration=False)
 
-    @op_diff_set_all
+    @op_inference
     def test_nbeats_forecaster_quantization_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -255,7 +253,6 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
@@ -268,7 +265,6 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
@@ -348,7 +344,6 @@ class TestChronosNBeatsForecaster(TestCase):
         stop_orca_context()
 
     @op_distributed
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
@@ -495,7 +490,6 @@ class TestChronosNBeatsForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
@@ -608,7 +602,6 @@ class TestChronosNBeatsForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -824,7 +817,6 @@ class TestChronosNBeatsForecaster(TestCase):
                         directions=["minimize", "minimize"])
 
     @op_automl
-    @op_diff_set_all
     @op_inference
     def test_nbeats_forecaster_multi_objective_tune_acceleration(self):
         import bigdl.nano.automl.hpo.space as space

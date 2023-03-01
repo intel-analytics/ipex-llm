@@ -15,6 +15,7 @@
 #
 
 import os
+import platform
 import pytest
 from unittest import TestCase
 
@@ -63,7 +64,7 @@ class MyNano(TorchNano):
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
-                
+
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
@@ -124,6 +125,10 @@ class TestLite(TestCase):
 
     def test_torch_nano_ray_correctness(self):
         MyNanoCorrectness(num_processes=2, distributed_backend="ray", auto_lr=False).train(0.5)
+
+    @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    def test_torch_nano_ray_with_ccl(self):
+        MyNano(num_processes=2, distributed_backend="ray", process_group_backend='ccl').train()
 
     def test_torch_nano_cuda_patch_ray(self):
         from bigdl.nano.pytorch import patch_torch, unpatch_torch
