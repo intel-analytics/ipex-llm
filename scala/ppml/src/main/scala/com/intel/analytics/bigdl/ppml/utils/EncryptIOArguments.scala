@@ -66,7 +66,8 @@ case class EncryptIOArguments(
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
-    if (new File(primaryKeyPath).exists() || (inputEncryptMode == PLAIN_TEXT && outputEncryptMode == PLAIN_TEXT)) {
+    if (new File(primaryKeyPath).exists() ||
+        (inputEncryptMode == PLAIN_TEXT && outputEncryptMode == PLAIN_TEXT)) {
       kmsArgs("spark.bigdl.primaryKey.defaultKey.material") = primaryKeyPath
     }
     if (primaryKeyPlainText != "") {
