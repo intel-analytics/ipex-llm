@@ -5,7 +5,7 @@
 
 
 
-This guide will walk you through step-by-step on how to use the web UI to generation images w/ **_Stable Diffusion_** on your Intel laptop. The [Performance Section](#performance) shows some performance data.  
+This guide will walk you through step-by-step on how to use the web UI to generation images w/ **_Stable Diffusion_** on your Intel laptop.
 
 Here's an overview of the entire workflow. 
 
@@ -31,7 +31,6 @@ flowchart LR
 * [Launch Web UI](#launch-web-ui)
 * [Optimize Model](#optimize-model)
 * [Image Generation](#image-generation)
-* [Performance](#performance)
 
 
 ## Install
