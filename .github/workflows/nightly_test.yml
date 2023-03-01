@@ -35,6 +35,8 @@ on:
         - Orca-ExampleTest-Horovod-Tf2-Py38-Spark3
         - Orca-Pytest-AutoML-Py37-Spark3
         - Orca-Tutorial-Xshards-Py37-Spark3
+        - Orca-Tutorial-Notebook-Xshards-Py37-Spark3
+        - Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
         - Orca-Pytest-Ray-Ctx-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
@@ -539,7 +541,8 @@ jobs:
         runner-hosted-on: 'Shanghai'
       
   Orca-Tutorial-Xshards-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ always() }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -548,19 +551,84 @@ jobs:
       uses: ./.github/actions/jdk-setup-action
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
-      uses: ./.github/actions/orca/orca-tutorial-xshards-py37-spark3-action
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
+      uses: ./.github/actions/orca/orca-tutorial-xshards-py37-spark3-action/nightly-test
+    - name: Remove Env
       if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Orca-Tutorial-Xshards-Py37-Spark3.json
-        type: job
-        job-name: Orca-Tutorial-Xshards-Py37-Spark3
-        runner-hosted-on: 'Shanghai' 
+      uses: ./.github/actions/remove-env
+    # - name: Create Job Badge
+    #   uses: ./.github/actions/create-job-status-badge
+    #   if: ${{ always() }}
+    #   with:
+    #     secret: ${{ secrets.GIST_SECRET}}
+    #     gist-id: ${{env.GIST_ID}}
+    #     is-self-hosted-runner: true
+    #     file-name: Orca-Tutorial-Xshards-Py37-Spark3.json
+    #     type: job
+    #     job-name: Orca-Tutorial-Xshards-Py37-Spark3
+    #     runner-hosted-on: 'Shanghai' 
+
+  Orca-Tutorial-Notebook-Xshards-Py37-Spark3:
+    if: ${{ always() }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-py37-spark3/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    # - name: Create Job Badge
+    #   uses: ./.github/actions/create-job-status-badge
+    #   if: ${{ always() }}
+    #   with:
+    #     secret: ${{ secrets.GIST_SECRET}}
+    #     gist-id: ${{env.GIST_ID}}
+    #     is-self-hosted-runner: true
+    #     file-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3.json
+    #     type: job
+    #     job-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3
+    #     runner-hosted-on: 'Shanghai' 
+  
+  Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3:
+    if: ${{ always() }}
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-image-py37-spark3/nightly-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+    # - name: Create Job Badge
+    #   uses: ./.github/actions/create-job-status-badge
+    #   if: ${{ always() }}
+    #   with:
+    #     secret: ${{ secrets.GIST_SECRET}}
+    #     gist-id: ${{env.GIST_ID}}
+    #     is-self-hosted-runner: true
+    #     file-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3.json
+    #     type: job
+    #     job-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
+    #     runner-hosted-on: 'Shanghai' 
 
   Orca-Pytest-Ray-Ctx-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
