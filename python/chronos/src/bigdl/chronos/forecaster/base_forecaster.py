@@ -760,9 +760,11 @@ class BasePytorchForecaster(Forecaster):
                                                           batch_size=batch_size)
                     else:
                         self.accelerated_model.eval()
-                        yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                          input_data=data,
-                                                          batch_size=batch_size)
+                        yhat = _pytorch_fashion_inference(
+                            model=self.accelerated_model,
+                            input_data=data,
+                            batch_size=batch_size,
+                            output_tensor=self.optimized_model_output_tensor)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, self.workers_per_node, prefix="prediction")
             return yhat
@@ -834,7 +836,8 @@ class BasePytorchForecaster(Forecaster):
                                       "please call .quantize() method first")
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
                     self.build_onnx()
@@ -842,7 +845,8 @@ class BasePytorchForecaster(Forecaster):
                                                          self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
 
     def predict_with_openvino(self, data, batch_size=32, quantize=False):
         """
@@ -912,7 +916,8 @@ class BasePytorchForecaster(Forecaster):
                                       "please call .quantize() method first")
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "openvino_fp32":
                     self.build_openvino()
@@ -920,7 +925,8 @@ class BasePytorchForecaster(Forecaster):
                                                          self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
 
     def predict_with_jit(self, data, batch_size=32, quantize=False):
         """
@@ -1117,9 +1123,11 @@ class BasePytorchForecaster(Forecaster):
                                                           batch_size=batch_size)
                     else:
                         self.accelerated_model.eval()
-                        yhat = _pytorch_fashion_inference(model=self.accelerated_model,
-                                                          input_data=input_data,
-                                                          batch_size=batch_size)
+                        yhat = _pytorch_fashion_inference(
+                            model=self.accelerated_model,
+                            input_data=input_data,
+                            batch_size=batch_size,
+                            output_tensor=self.optimized_model_output_tensor)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, target,
@@ -1223,13 +1231,15 @@ class BasePytorchForecaster(Forecaster):
                                       "please call .quantize() method first")
                 yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
                     self.build_onnx()
                 yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
-                                                  batch_size=batch_size)
+                                                  batch_size=batch_size,
+                                                  output_tensor=self.optimized_model_output_tensor)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
@@ -1554,7 +1564,9 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                           input_sample=dummy_input,
                                                           accelerator="onnxruntime",
-                                                          onnxruntime_session_options=sess_options)
+                                                          onnxruntime_session_options=sess_options,
+                                                          output_tensors=False)
+        self.optimized_model_output_tensor = False
         self.accelerate_method = "onnxruntime_fp32"
         self.optimized_model_thread_num = thread_num
 
@@ -1592,7 +1604,9 @@ class BasePytorchForecaster(Forecaster):
         self.accelerated_model = InferenceOptimizer.trace(self.internal,
                                                           input_sample=dummy_input,
                                                           accelerator="openvino",
-                                                          thread_num=thread_num)
+                                                          thread_num=thread_num,
+                                                          output_tensors=False)
+        self.optimized_model_output_tensor = False
         self.accelerate_method = "openvino_fp32"
         self.optimized_model_thread_num = thread_num
 
@@ -1962,10 +1976,14 @@ class BasePytorchForecaster(Forecaster):
                                               onnxruntime_session_options=sess_options,
                                               thread_num=thread_num)
         if accelerator == 'onnxruntime':
+            q_model.output_tensors = False
             self.accelerated_model = q_model
+            self.optimized_model_output_tensor = False
             self.accelerate_method = "onnxruntime_int8"
         if accelerator == 'openvino':
+            q_model.output_tensors = False
             self.accelerated_model = q_model
+            self.optimized_model_output_tensor = False
             self.accelerate_method = "openvino_int8"
         if accelerator is None:
             self.accelerated_model = q_model

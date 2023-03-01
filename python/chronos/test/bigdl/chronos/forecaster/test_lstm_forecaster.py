@@ -854,3 +854,85 @@ class TestChronosModelLSTMForecaster(TestCase):
             assert current_thread == num
             for x, y in test_loader:
                 yhat = forecaster.predict(x.numpy())
+
+    @op_inference
+    def test_lstm_forecaster_numpy_inference(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        # onnx model
+        forecaster.quantize(calib_data=train_data,
+                            val_data=val_data,
+                            framework="onnxrt_qlinearops")
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_data[0], quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_data[0], quantize=True)
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        forecaster.quantize(calib_data=train_data,
+                            val_data=val_data,
+                            framework="openvino")
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_data[0], quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_data[0], quantize=True)
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
+
+    @op_inference
+    def test_lstm_forecaster_numpy_inference_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        # onnx model
+        forecaster.quantize(calib_data=train_loader,
+                            val_data=val_loader,
+                            framework="onnxrt_qlinearops")
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        forecaster.quantize(calib_data=train_loader,
+                            val_data=val_loader,
+                            framework="openvino")
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_loader, quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_loader, quantize=True)
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
+
+    @op_inference
+    def test_lstm_forecaster_numpy_inference_tsdataset(self):
+        train, test = create_tsdataset(roll=True)
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mse",
+                                    lr=0.01)
+        forecaster.fit(train, epochs=1)
+        # onnx model
+        forecaster.quantize(calib_data=train,
+                            framework="onnxrt_qlinearops")
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test, quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test, quantize=True)
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        forecaster.quantize(calib_data=train,
+                            framework="openvino")
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test, quantize=True)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test, quantize=True)
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)

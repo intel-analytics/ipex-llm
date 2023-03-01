@@ -950,6 +950,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               inplace: bool = False,
               weights_prepack: Optional[bool] = None,
               enable_onednn: bool = True,
+              output_tensors: bool = True,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -1019,6 +1020,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               ignored. For more details, please refer https://github.com/pytorch/
                               pytorch/tree/master/torch/csrc/jit/codegen/
                               onednn#pytorch---onednn-graph-api-bridge.
+        :param output_tensors: boolean, default to True and output of the model will be Tensors,
+                               only valid when accelerator='onnxruntime' or accelerator='openvino',
+                               otherwise will be ignored. If output_tensors=False, output of the
+                               export model will be ndarray.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -1059,6 +1064,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         dynamic_axes=dynamic_axes,
                                         logging=logging,
                                         config=final_openvino_option,
+                                        output_tensors=output_tensors,
                                         **kwargs)
         if accelerator == 'onnxruntime':  # onnxruntime backend will not care about ipex usage
             if onnxruntime_session_options is None:
@@ -1071,6 +1077,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            onnxruntime_session_options,
                                            simplification=simplification,
                                            dynamic_axes=dynamic_axes,
+                                           output_tensors=output_tensors,
                                            **kwargs)
         if accelerator == 'jit' or use_ipex is True or channels_last is True:
             if use_ipex:
