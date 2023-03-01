@@ -50,12 +50,11 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
 
     :return: numpy ndarray
     '''
-    with torch.inference_mode():
-        if isinstance(input_data, list):
-            input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-        elif isinstance(input_data, DataLoader):
-            input_sample_list = [torch.cat(tuple(batch[0] for batch in input_data), dim=0)]
-        else:
-            input_sample_list = [torch.from_numpy(input_data)]
-        yhat = _inference(model, input_sample_list, batch_size=batch_size)
+    if isinstance(input_data, list):
+        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
+    elif isinstance(input_data, DataLoader):
+        input_sample_list = [torch.cat(tuple(batch[0] for batch in input_data), dim=0)]
+    else:
+        input_sample_list = [torch.from_numpy(input_data)]
+    yhat = _inference(model, input_sample_list, batch_size=batch_size)
     return yhat

@@ -11,6 +11,7 @@ runs:
         
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
 
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip list
         chmod a+x python/orca/dev/test/run-pytests-basic-pytorch.sh
         python/orca/dev/test/run-pytests-basic-pytorch.sh
