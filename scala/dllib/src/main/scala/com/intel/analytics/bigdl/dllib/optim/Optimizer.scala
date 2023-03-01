@@ -364,6 +364,15 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
+   * Get a state(learning rate, epochs...) in the optimizer
+   *
+   * @return state the state in this optimizer
+   */
+  def getState(): Table = {
+    this.state
+  }
+
+  /**
    * Set an optimization method
    *
    * @param method optimization method
