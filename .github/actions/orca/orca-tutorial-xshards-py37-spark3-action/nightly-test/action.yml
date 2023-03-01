@@ -1,0 +1,29 @@
+name: 'Run Orca Tutorial Xshards Py37 Spark3'
+description: 'Run Orca Tutorial Xshards Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export SPARK_LOCAL_HOSTNAME=localhost
+
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==1.15.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cloudpickle
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+        
+        export FTP_URI=${FTP_URI}
+        chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
+        python/orca/dev/test/run-tutorial-xshards.sh
+
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
