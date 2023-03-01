@@ -34,7 +34,6 @@ runs:
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $ENCLAVE_KEY:/root/.config/gramine/enclave-key.pem \
         -v $KEYS_PATH:/ppml/keys \
         -v $SECURE_PASSWORD_PATH:/ppml/password \
         -v $KUBECONFIG_PATH:/root/.kube/config \
