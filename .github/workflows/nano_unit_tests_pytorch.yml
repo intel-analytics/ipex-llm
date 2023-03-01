@@ -5,7 +5,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
@@ -29,10 +29,10 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "pytorch_110 neural-compressor==1.13.1",
-          "pytorch_111 neural-compressor==1.13.1",
-          "pytorch_112 neural-compressor==1.13.1",
-          "pytorch_113 neural-compressor==2.0",
+          "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
+          "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
+          "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
+          "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
           ]
     steps:
       - uses: actions/checkout@v2
@@ -91,6 +91,7 @@ jobs:
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[2]} -f https://developer.intel.com/ipex-whl-stable-cpu
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
@@ -107,10 +108,10 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "pytorch_110 neural-compressor==1.13.1",
-          "pytorch_111 neural-compressor==1.13.1",
-          "pytorch_112 neural-compressor==1.13.1",
-          "pytorch_113 neural-compressor==2.0",
+          "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
+          "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
+          "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
+          "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
           ]
     steps:
       - uses: actions/checkout@v3
@@ -129,6 +130,7 @@ jobs:
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[2]} -f https://developer.intel.com/ipex-whl-stable-cpu
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-ray-tests.sh

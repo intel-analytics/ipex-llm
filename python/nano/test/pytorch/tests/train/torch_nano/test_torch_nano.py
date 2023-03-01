@@ -16,6 +16,7 @@
 
 import os
 import math
+import platform
 import pytest
 from unittest import TestCase
 
@@ -68,7 +69,7 @@ class MyNano(TorchNano):
                 loss = loss_func(model(X), y)
                 self.backward(loss)
                 optimizer.step()
-                
+
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
@@ -143,7 +144,7 @@ class MyNanoMultiOptimizer(TorchNano):
                 self.backward(loss)
                 for optimizer in optimizers:
                     optimizer.step()
-                
+
                 total_loss += loss.sum()
                 num += 1
             print(f'avg_loss: {total_loss / num}')
@@ -170,7 +171,7 @@ class MyNanoLoadStateDict(TorchNano):
         model, optimizer, train_loader = self.setup(origin_model, origin_optimizer, train_loader)
         model.train()
         train_one_epoch(model, optimizer, loss_func, train_loader)
-        
+
         # load state dict using original pytorch model
         origin_model.load_state_dict(model.state_dict())
         origin_optimizer.load_state_dict(optimizer.state_dict())
@@ -255,6 +256,14 @@ class TestLite(TestCase):
 
     def test_torch_nano_subprocess_correctness(self):
         MyNanoCorrectness(num_processes=2, distributed_backend="subprocess", auto_lr=False).train(0.5)
+
+    @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    def test_torch_nano_spawn_with_ccl(self):
+        MyNano(num_processes=2, distributed_backend="spawn", process_group_backend='ccl').train()
+
+    @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    def test_torch_nano_subprocess_with_ccl(self):
+        MyNano(num_processes=2, distributed_backend="subprocess", process_group_backend='ccl').train()
 
     def test_torch_nano_attribute_access(self):
         MyNanoAccess().train()
