@@ -40,9 +40,9 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 # Start Script for Torchserve
-ADD ./start-backend-sgx.sh      /ppml/torchserve/start-backend-sgx.sh
-ADD ./start-frontend-sgx.sh     /ppml/torchserve/start-frontend-sgx.sh
-ADD ./start-torchserve-sgx.sh   /ppml/torchserve/start-torchserve-sgx.sh
+ADD ./start-torchserve-backend.sh      /ppml/torchserve/start-torchserve-backend.sh
+ADD ./start-torchserve-frontend.sh     /ppml/torchserve/start-torchserve-frontend.sh
+ADD ./start-torchserve.sh              /ppml/torchserve/start-torchserve.sh
 
 
 # Dependencies
@@ -64,9 +64,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
     sed -i '/import json/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
     cp /usr/local/lib/python3.8/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-backend.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-frontend.sh && \
+    chmod +x /ppml/torchserve/start-torchserve.sh && \
 #generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \

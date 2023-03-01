@@ -2,18 +2,21 @@
 configFile=""
 backend_core_list=""
 frontend_core=""
+SGX_ENABLED="false"
 
 usage() {
-    echo "Usage: $0 [-c <configfile>] [-b <core# for each backend worker>] [-f <core# for frontend worker>]"
+    echo "Usage: $0 [-c <configfile>] [-b <core# for each backend worker>] [-f <core# for frontend worker>] [-x]"
 
     echo "The following example command will launch 2 backend workers (as specified in /ppml/torchserve_config)."
     echo "The first backend worker will be pinned to core 0 while the second backend worker will be pinned to core 1."
     echo "The frontend worker will be pinned to core 5"
     echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f 5"
+    echo "To launch within SGX environment using gramine"
+    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f 5 -x"
     exit 0
 }
 
-while getopts ":b:c:f:" opt
+while getopts ":b:c:f:x" opt
 do
     case $opt in
         b)
@@ -25,15 +28,15 @@ do
         f)
             frontend_core=$OPTARG
             ;;
+        x)
+            SGX_ENABLED="true"
+            ;;
         *)
             echo "Error: unknown positional arguments"
             usage
             ;;
     esac
 done
-
-# TODO: decide if we want to read it from environment or just specify as a flag?
-SGX_ENABLED="true"
 
 # Check backend_core_list and frontend_core has values
 if [ -z "${backend_core_list}" ] || [ -z "${frontend_core}" ]; then
