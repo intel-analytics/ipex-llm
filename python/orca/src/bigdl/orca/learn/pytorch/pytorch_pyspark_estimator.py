@@ -92,7 +92,7 @@ def partition_to_creator(partition):
         data_loader = DataLoader(dataset, **params)
         return data_loader
 
-    return data_creator
+    return reload_dataloader_creator(data_creator)
 
 
 def parse_model_dir(model_dir):

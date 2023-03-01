@@ -77,7 +77,7 @@ def partition_refs_to_creator(partition_refs):
         data_loader = DataLoader(dataset, **params)
         return data_loader
 
-    return data_creator
+    return reload_dataloader_creator(data_creator)
 
 
 class PyTorchRayEstimator(BaseRayEstimator):
