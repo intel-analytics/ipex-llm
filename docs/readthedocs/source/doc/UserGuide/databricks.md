@@ -14,6 +14,9 @@ You can run BigDL program on the [Databricks](https://databricks.com/) cluster a
 
 [Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** into [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
 
+__Note:__
+* To use the Python 3.8 environment (recommended version by BigDL), please set the Databricks runtime version to 9.1 LTS or 10.4 LTS.
+
 **a. Generate init script in Databricks notebook**
 
 Create a Databricks notebook and execute
@@ -61,13 +64,17 @@ Create a file **init.sh**(or any other filename) in your computer, the file cont
 cp /databricks/python/lib/python3.8/site-packages/bigdl/share/*/lib/*.jar /databricks/jars
 ```
 
-Then upload **init.sh** to DBFS.  In Databricks left panel, click **Data > DBFS > Choose or create upload directory > Right click > Upload here**.
+Then upload **init.sh** to DBFS. In Databricks left panel, click **Data > DBFS > Choose or create upload directory > Right click > Upload here**.
 
 ![](images/upload-init-script.png)
 
 Now the init script is in DBFS, right click the init.sh and choose **Copy path**, copy the **Spark API Format** path.
 
 ![](images/copy-script-path.png)
+
+__Notes:__
+* If Databricks returns an init script failure, please check your Databricks runtime and Python version.
+* If your Databricks runtime version is 11.2 or later, click the `Edit` button and change the version to 9.1 LTS or 10.4 LTS.
 
 ### 3. Set Spark configuration
 
