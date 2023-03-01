@@ -14,7 +14,7 @@ bash bigdl-ppml-submit.sh \
     --executor-memory 1g \
     --executor-cores 8\
     --conf spark.cores.max=32 \
-    --conf spark.kubernetes.driver.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.container.image.pullPolicy=Always \
     --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
     --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
