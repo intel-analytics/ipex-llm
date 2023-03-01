@@ -542,7 +542,7 @@ run_multi_spark_sql_e2e() {
                 --conf spark.bigdl.primaryKey.AmyPK.material=/host/data/key/simple_encrypted_primary_key \
                 --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
-                /host/data/encryptSimple /host/data/encryptEhsm
+                /host/data/encryptSimple /host/data/encryptEhsm /host/data/ /host/data/
 }
 
 
