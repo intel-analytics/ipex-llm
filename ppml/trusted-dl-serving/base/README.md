@@ -148,3 +148,10 @@ Running 5m test @ http://127.0.0.1:8085/predictions/NANO_FP32CL
 Requests/sec:     21.26
 Transfer/sec:      5.04KB
 ```
+
+
+### Triton Server (WIP)
+
+
+
+### TensorFlow Serving (WIP)
