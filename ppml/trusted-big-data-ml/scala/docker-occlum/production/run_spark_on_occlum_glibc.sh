@@ -437,7 +437,7 @@ run_spark_gbt_e2e() {
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
                 -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
-                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --class com.intel.analytics.bigdl.ppml.examples.GbtClassifierTrainingExampleOnCriteoClickLogsDataset \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
                 --kmsType EHSMKeyManagementService \

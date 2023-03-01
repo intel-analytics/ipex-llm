@@ -297,7 +297,7 @@ Start run BigDL Spark GBT example:
 bash start-spark-local.sh gbt
 ```
 
-You can find GBT result under folder `/opt/occlum_spark/model/`.
+You can find GBT result under folder `/opt/occlum_spark/data/model/`.
 ```
 /opt/occlum_spark/data/model/
 ├── data
@@ -312,7 +312,7 @@ You can find GBT result under folder `/opt/occlum_spark/model/`.
 ### Download data
 You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/` to container's `/opt/occlum_spark/data/` in `start-spark-local.sh` via:
 ```
--v /path/to/data/gbt/1g_data:/opt/occlum_spark/gbt/1g_data
+-v /path/to/data/gbt/1g_data:/opt/occlum_spark/data/gbt/1g_data
 ```
 
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
@@ -344,11 +344,11 @@ And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
-2.To generate keys for encrypt and decrypt.
+2.To generate keys for encrypt and decrypt. The primary key will be generated in `/opt/occlum_spark/data/key/ehsm_encrypted_primary_key`.
 ```
 bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
 ```
-3.To encrypt input data. For example, you mount a file called day_0_1g.csv.
+3.To encrypt input data. For example, you mount a file called day_0_1g.csv. It will be encrypted in `/opt/occlum_spark/data/encryptEhsm`.
 ```
 bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/gbt/day_0_1g.csv
 ```
@@ -388,7 +388,7 @@ And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
-2.To generate primary key for encrypt and decrypt.
+2.To generate primary key for encrypt and decrypt. The primary key will be generated in `/opt/occlum_spark/data/key/ehsm_encrypted_primary_key`
 ```
 bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
 ```
@@ -397,7 +397,7 @@ you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tr
 ```bash
 python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
 ```
-4.To encrypt input data. For example, you mount a file called people.csv.
+4.To encrypt input data. For example, you generate a file called people.csv. It will be encrypted in `/opt/occlum_spark/data/encryptEhsm`.
 ```
 bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
 ```
@@ -429,7 +429,8 @@ And then run `bash start-spark-local.sh` to enter docker container.
 ```
 bash start-spark-local.sh
 ```
-2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY for simple kms.
+2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY = `123456654321` for simple KMS.
+The EHSM primary key will be generated in `/opt/occlum_spark/data/key/ehsm_encrypted_primary_key`. The simple KMS primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`
 ```
 bash /opt/ehsm_entry.sh generatekey ehsm $APP_ID $API_KEY
 bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
@@ -440,7 +441,7 @@ you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tr
 python generate_people_csv.py /opt/occlum_spark/data/Amy.csv <num_lines>
 python generate_people_csv.py /opt/occlum_spark/data/Bob.csv <num_lines>
 ```
-4.To encrypt input data. For example:
+4.To encrypt input data.Using EHSM, the Bob.csv will be encrypted in `/opt/occlum_spark/data/encryptEhsm`. Using simple KMS, the Bob.csv will be encrypted in `/opt/occlum_spark/data/encryptSimple`. For example:
 ```
 bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/Bob.csv
 bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/Amy.csv

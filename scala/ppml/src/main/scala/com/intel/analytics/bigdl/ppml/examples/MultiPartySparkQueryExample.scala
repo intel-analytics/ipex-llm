@@ -102,7 +102,8 @@ object MultiPartySparkQueryExample extends Supportive {
 
       timing("6/8 encrypt and save join outputs") {
         sc.write(joinDf, AES_CBC_PKCS5PADDING, "BobPK")
-          .mode("overwrite").option("header", true).csv(bobEncryptedDataFileOutputPath + "./join_output")
+          .mode("overwrite").option("header", true)
+          .csv(bobEncryptedDataFileOutputPath + "./join_output")
       }
     }
   }
