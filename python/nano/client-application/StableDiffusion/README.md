@@ -48,12 +48,15 @@ Follow the steps in [Anaconda Installation Guide on Windows](https://docs.anacon
   
   You need to install Stable Diffusion WebUI before using it for the first time. Follow below steps to install. 
   
-  
-  * 1) Obtain the source code by git cloning this repo, or download zip [here](https://github.com/intel-analytics/client-stable-diffusion/archive/refs/heads/main.zip). Extract the zip file to a local folder.   
+  * 1) Obtain the source code via
+    - option1: clone whole BigDL(https://github.com/intel-analytics/BigDL) by git cloning this repo or download zip [here](https://github.com/intel-analytics/BigDL/archive/refs/heads/main.zip). Extract the zip file to a local folder and step into "python/nano/client-application/StableDiffusion" folder.
+
+    - option2: download [this folder](https://github.com/intel-analytics/BigDL/tree/main/python/nano/client-application/StableDiffusion) on [gitzip](http://kinolien.github.io/gitzip/) directly then extract the zip file (**recommend**)
+  <img src="https://user-images.githubusercontent.com/105281011/222049376-aff03f80-5520-4f74-8d1b-b0767f94b327.png" width="80%" />
 
   * 2) Copy the path of the source code directory in File Explorer. 
 
-<img src="https://user-images.githubusercontent.com/1995599/220282256-c24763c7-a70e-48f2-9ad0-2040ca8b4d5c.png" width="80%" />
+<img src="https://user-images.githubusercontent.com/105281011/222051608-726d4906-90a9-4f17-9df1-f0ce840fb4fc.png" width="80%" />
 
 
   * 3) From Windows Start menu, search for “Anaconda Prompt” and open it. 
@@ -63,7 +66,7 @@ Follow the steps in [Anaconda Installation Guide on Windows](https://docs.anacon
 
   In “Anaconda Prompt” window,  type `cd`, space, and paste the source code path copied in step ii). Execute the command.  
 
-<img src="https://user-images.githubusercontent.com/1995599/220285117-7edd4c0d-fb5c-4425-8560-bd01b2bb8790.png" width="50%" />
+<img src="https://user-images.githubusercontent.com/105281011/222053050-3a035c2c-fc8f-47b3-bc29-27a4ecb4f75c.png" width="50%" />
 
   Continue to type and execute below commands to create environment and install dependent libraries. 
 
