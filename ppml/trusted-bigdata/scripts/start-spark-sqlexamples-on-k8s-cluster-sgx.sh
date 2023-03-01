@@ -7,16 +7,16 @@ secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/pa
 export SPARK_LOCAL_IP=$LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp $SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-    -Xmx10g \
+    -Xmx5g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $deploy_mode \
     --name $driver_name \
-    --conf spark.driver.memory=32g \
+    --conf spark.driver.memory=8g \
     --conf spark.executor.cores=8 \
-    --conf spark.executor.memory=32g \
+    --conf spark.executor.memory=8g \
     --conf spark.executor.instances=2 \
-    --conf spark.cores.max=32 \
+    --conf spark.cores.max=16 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \

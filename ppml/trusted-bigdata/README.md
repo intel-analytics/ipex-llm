@@ -422,6 +422,13 @@ export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </
 --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
 --conf spark.kubernetes.executor.deleteOnTermination=false \
 ```
+
+##### 1.5.6 env MALLOC_ARENA_MAX explanations
+
+env MALLOC_ARENA_MAX can reduce EPC usage but may cause some error especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+
+You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
+
 ## Thrift Server
 
 Spark SQL Thrift server is a port of Apache Hive’s HiverServer2 which allows the clients of JDBC or ODBC to execute queries of SQL over their respective protocols on Spark.
