@@ -61,8 +61,8 @@ elif [ "$action" = "encrypt" ]; then
                     --outputDataSinkPath /opt/occlum_spark/data/encryptEhsm/
 
 	elif [ "$KMS_TYPE" = "simple" ]; then
-		appid=123456123456
-    apikey=123456123456
+		appid=123456654321
+    apikey=123456654321
     input_path=$5
     /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                     -XX:-UseCompressedOops \
@@ -105,8 +105,8 @@ elif [ "$action" = "encryptwithrepartition" ]; then
                 --ehsmAPPID $appid \
                 --ehsmAPIKEY $apikey
 	elif [ "$KMS_TYPE" = "simple" ]; then
-	    appid=$3
-            apikey=$4
+	    appid=123456654321
+            apikey=123456654321
 	    input_path=$5
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \

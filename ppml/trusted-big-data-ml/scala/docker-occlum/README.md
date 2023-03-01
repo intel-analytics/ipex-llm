@@ -449,7 +449,7 @@ bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/
 ```
 bash /opt/run_spark_on_occlum_glibc.sh multi_sql_e2e
 ```
-6.You can find encrypt result under folder `/opt/occlum_spark/data/multiModel`.
+6.You can find encrypt result under folder `/opt/occlum_spark/ultiModel` and `/opt/occlum_spark/`.
 
 ## PySpark 3.1.3 Pi example
 
