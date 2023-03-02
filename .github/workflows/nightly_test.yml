@@ -557,17 +557,17 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-    # - name: Create Job Badge
-    #   uses: ./.github/actions/create-job-status-badge
-    #   if: ${{ always() }}
-    #   with:
-    #     secret: ${{ secrets.GIST_SECRET}}
-    #     gist-id: ${{env.GIST_ID}}
-    #     is-self-hosted-runner: true
-    #     file-name: Orca-Tutorial-Xshards-Py37-Spark3.json
-    #     type: job
-    #     job-name: Orca-Tutorial-Xshards-Py37-Spark3
-    #     runner-hosted-on: 'Shanghai' 
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Tutorial-Xshards-Py37-Spark3.json
+        type: job
+        job-name: Orca-Tutorial-Xshards-Py37-Spark3
+        runner-hosted-on: 'Shanghai' 
 
   Orca-Tutorial-Notebook-Xshards-Py37-Spark3:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -586,17 +586,17 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-    # - name: Create Job Badge
-    #   uses: ./.github/actions/create-job-status-badge
-    #   if: ${{ always() }}
-    #   with:
-    #     secret: ${{ secrets.GIST_SECRET}}
-    #     gist-id: ${{env.GIST_ID}}
-    #     is-self-hosted-runner: true
-    #     file-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3.json
-    #     type: job
-    #     job-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3
-    #     runner-hosted-on: 'Shanghai' 
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3.json
+        type: job
+        job-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3
+        runner-hosted-on: 'Shanghai' 
   
   Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3:
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
@@ -615,17 +615,17 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-    # - name: Create Job Badge
-    #   uses: ./.github/actions/create-job-status-badge
-    #   if: ${{ always() }}
-    #   with:
-    #     secret: ${{ secrets.GIST_SECRET}}
-    #     gist-id: ${{env.GIST_ID}}
-    #     is-self-hosted-runner: true
-    #     file-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3.json
-    #     type: job
-    #     job-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
-    #     runner-hosted-on: 'Shanghai' 
+    - name: Create Job Badge
+      uses: ./.github/actions/create-job-status-badge
+      if: ${{ always() }}
+      with:
+        secret: ${{ secrets.GIST_SECRET}}
+        gist-id: ${{env.GIST_ID}}
+        is-self-hosted-runner: true
+        file-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3.json
+        type: job
+        job-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
+        runner-hosted-on: 'Shanghai' 
 
   Orca-Pytest-Ray-Ctx-Py37-Spark3:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Ctx-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
