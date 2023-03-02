@@ -385,3 +385,23 @@ class TestOpenVINO(TestCase):
             preds2 = load_model(x).numpy()
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
+
+    def test_openvino_quantize_output_tensors(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        openvino_model = InferenceOptimizer.quantize(model, accelerator='openvino',
+                                                     calib_data=dataloader)
+        test_openvino_model = InferenceOptimizer.quantize(model, accelerator='openvino',
+                                                          calib_data=dataloader,
+                                                          output_tensors=False)
+        for x, y in dataloader:
+            model.eval()
+            forward_model_tensor = openvino_model(x).numpy()
+            forward_model_numpy = test_openvino_model(x)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)

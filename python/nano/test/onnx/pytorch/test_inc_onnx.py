@@ -432,6 +432,27 @@ class TestOnnx(TestCase):
         result_m = accmodel(x1,x2,x3,x4, np.array([2]))
         assert abs(torch.sum(result_m).item()) < 1e-5 + 6
 
+    def test_onnx_quantize_output_tensors(self):
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+
+        onnx_model = InferenceOptimizer.quantize(pl_model, accelerator='onnxruntime',
+                                                 method='qlinear', calib_data=train_loader)
+        test_onnx_model = InferenceOptimizer.quantize(pl_model, accelerator="onnxruntime",
+                                                      method='qlinear', calib_data=train_loader,
+                                                      output_tensors=False)
+        for x, y in train_loader:
+            model.eval()
+            forward_res_tensor = onnx_model(x).numpy()
+            forward_res_numpy = test_onnx_model(x)
+            np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
 
 if __name__ == '__main__':
     pytest.main([__file__])

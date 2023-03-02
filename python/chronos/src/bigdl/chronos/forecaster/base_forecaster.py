@@ -629,6 +629,7 @@ class BasePytorchForecaster(Forecaster):
                      metric=metric,
                      direction="min",
                      thread_num=thread_num,
+                     output_tensors=False,
                      excludes=excludes,
                      input_sample=dummy_input)
         try:
@@ -641,6 +642,7 @@ class BasePytorchForecaster(Forecaster):
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
+        self.optimized_model_output_tensor = False
         self.optimized_model_thread_num = thread_num
 
     def get_context(self, thread_num=None, optimize=True):
@@ -1977,14 +1979,13 @@ class BasePytorchForecaster(Forecaster):
                                               timeout=timeout,
                                               max_trials=max_trials,
                                               onnxruntime_session_options=sess_options,
-                                              thread_num=thread_num)
+                                              thread_num=thread_num,
+                                              output_tensors=False)
         if accelerator == 'onnxruntime':
-            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.optimized_model_output_tensor = False
             self.accelerate_method = "onnxruntime_int8"
         if accelerator == 'openvino':
-            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.optimized_model_output_tensor = False
             self.accelerate_method = "openvino_int8"
