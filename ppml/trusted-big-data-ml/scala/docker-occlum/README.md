@@ -318,7 +318,7 @@ You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.cri
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=30GB \
+-e SGX_MEM_SIZE=20GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -371,7 +371,7 @@ You can find GBT result under folder `/opt/occlum_spark/data/model/`.
 You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=30GB \
+-e SGX_MEM_SIZE=20GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -405,14 +405,18 @@ bash /opt/ehsm_entry.sh  encrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/pe
 ```
 bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
-6.You can find encrypted result under folder `/opt/occlum_spark/data/model`.
+6.You can find encrypted result under folder `/opt/occlum_spark/data/model`. And decrypt the result by:
+```
+bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/model
+```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptEhsm`.
 
 ## BigDL MultiPartySparkQuery e2e Example
 
 You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
 ``` bash
 #start-spark-local.sh
--e SGX_MEM_SIZE=30GB \
+-e SGX_MEM_SIZE=20GB \
 -e SGX_THREAD=1024 \
 -e SGX_HEAP=1GB \
 -e SGX_KERNEL_HEAP=1GB \
@@ -451,6 +455,12 @@ bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/
 bash /opt/run_spark_on_occlum_glibc.sh multi_sql_e2e
 ```
 6.You can find encrypted result under folder `/opt/occlum_spark/data/unoin_output` and `/opt/occlum_spark/data/join_output`.
+ And decrypt the result by:
+```
+bash /opt/ehsm_entry.sh  decrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/union_output
+bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/join_output
+```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple` and `/opt/occlum_spark/data/decryptEhsm`.
 
 ## PySpark 3.1.3 Pi example
 
