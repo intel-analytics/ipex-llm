@@ -17,7 +17,6 @@ on:
         options:
         - all
         - scala-build
-        - python-build
         - python-sourceforge-build
         - docker-bigdl-build
       tag:
@@ -272,7 +271,7 @@ jobs:
   
     
   python-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-build' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule }} 
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
     steps:
