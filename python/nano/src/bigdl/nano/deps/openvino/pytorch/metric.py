@@ -26,8 +26,6 @@ class PytorchOpenVINOMetric(BaseOpenVINOMetric):
             invalidInputError(len(inspect.signature(metric).parameters)==2,
                               "Please provide an instance of torchmetrics.Metric or"
                               "a metric function with input (preds, targets).")
-        # invalidInputError(isinstance(metric, Metric),
-        #                   "Please provide an instance of torchmetrics.Metric.")
         super().__init__(metric, higher_better)
 
     def stack(self, output):
