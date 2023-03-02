@@ -42,10 +42,10 @@ object Encrypt extends Supportive {
           val df = sc.read(PLAIN_TEXT).csv(inputDataSourcePath)
           sc.write(df, cryptoMode).csv(outputDataSinkPath)
         case "json" =>
-          val df = sc.read(cryptoMode).json(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
           sc.write(df, cryptoMode).json(outputDataSinkPath)
         case "parquet" =>
-          val df = sc.read(cryptoMode).parquet(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).parquet(inputDataSourcePath)
           sc.write(df, cryptoMode).parquet(outputDataSinkPath)
         case "textFile" =>
           import sparkSession.implicits._
