@@ -288,6 +288,12 @@ RUN cd /opt/intel && \
     apt-get install -y libsgx-enclave-common-dev  libsgx-ae-qe3 libsgx-ae-qve libsgx-urts libsgx-dcap-ql libsgx-dcap-default-qpl libsgx-dcap-quote-verify-dev libsgx-dcap-ql-dev libsgx-dcap-default-qpl-dev libsgx-quote-ex-dev libsgx-uae-service libsgx-ra-network libsgx-ra-uefi
 
 # Azure support
+RUN apt purge -y libsgx-dcap-default-qpl
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list
+RUN wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+RUN apt update
+RUN apt install -y az-dcap-client
+
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 RUN apt-get install bsdmainutils
 RUN curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
@@ -299,6 +305,9 @@ RUN chmod a+x /ppml/trusted-big-data-ml/azure/create-aks.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh
 
+RUN chmod a+x /ppml/trusted-big-data-ml/attestation.sh && \
+    cp /ppml/trusted-big-data-ml/attestation.sh /opt/attestation.sh
+    
 ENV PYTHONPATH                          /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages
 WORKDIR /ppml/trusted-big-data-ml
 
