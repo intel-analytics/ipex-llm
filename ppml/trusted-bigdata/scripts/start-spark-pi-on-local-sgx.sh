@@ -1,7 +1,7 @@
 #!/bin/bash
  
 export sgx_command="/opt/jdk8/bin/java \
-    -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* -Xmx16g \
+    -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
     --executor-memory 8g \

@@ -16,6 +16,7 @@
 
 
 import os
+import platform
 from unittest import TestCase
 
 import pytest
@@ -79,6 +80,14 @@ class TestTrainer(TestCase):
 
     def test_trainer_ray_compile(self):
         trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray")
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.fit(pl_model, self.train_loader)
+
+    @pytest.mark.skipif(platform.system() != "Linux",
+                        reason="torch_ccl is only avaiable on Linux")
+    def test_trainer_ray_with_ccl(self):
+        trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray",
+                          process_group_backend='ccl')
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 

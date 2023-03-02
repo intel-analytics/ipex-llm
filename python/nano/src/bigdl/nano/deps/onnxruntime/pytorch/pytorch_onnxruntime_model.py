@@ -36,7 +36,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 simplification=True, dynamic_axes=True, **export_kwargs):
+                 simplification=True, dynamic_axes=True, output_tensors=True, **export_kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -63,6 +63,8 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                              | are axis names. If a list, each element is an axis index.
 
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
+        :param output_tensors: boolean, default to True and output of the model will be Tensors.
+                               If output_tensors=False, output of the ONNX model will be ndarray.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         # Typically, when model is int8, we use this path
@@ -94,6 +96,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             # patch original model's attr to current new model
             patch_attrs_from_model_to_object(model, self)
+        self.output_tensors = output_tensors
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
@@ -103,7 +106,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         return inputs
 
     def on_forward_end(self, outputs):
-        outputs = self.numpy_to_tensors(outputs)
+        if self.output_tensors:
+            outputs = self.numpy_to_tensors(outputs)
+        elif len(outputs) == 1:
+            outputs = outputs[0]
         return outputs
 
     @property

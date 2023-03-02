@@ -19,14 +19,12 @@ from unittest import TestCase
 
 import ray
 from ray.data import Dataset
-import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import MSE, Accuracy
+from bigdl.orca.learn.metrics import MSE
 
 def train_data_creator(a=5, b=10, size=1000):
     def get_dataset(a, b, size) -> Dataset:
