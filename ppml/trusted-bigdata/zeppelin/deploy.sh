@@ -13,13 +13,13 @@ mv yaml-file-05 ClusterRole.yaml
 mv yaml-file-06 RoleBinding.yaml
 
 # Set the required environment variables, you should uncomment it
-#APISERVER= <YOUR_K8S_APISERVER>
+APISERVER=https://172.168.0.205:6443
 # like https://127.0.0.1:8000
-#TOKEN= <YOUR_ZEPPELIN_SERVICE_ACCOUNT_TOKEN>
+TOKEN=eyJhbGciOiJSUzI1NiIsImtpZCI6Imc0YldfWmtmTlNyYWNybmJpazhLMTJQOVNKUk1TYThCb2tjTnFMNk1fSncifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6InplcHBlbGluLXRva2VuLW5zNGh0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6InplcHBlbGluIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiNjM4M2QwNzctOTA5MC00OTRmLTg5MGItZDNmM2UwYmU1YzJlIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50OmRlZmF1bHQ6emVwcGVsaW4ifQ.fHpD5IDftlKMi_UCITUkAfKsoYrw9SzZpGZYj_nOki8tfs1iW6zQWss3OLbWRlxGI99x3ayRrsAxWTD4ONE_isyWe4bMlNr4BDraO-q44mi6iVZX_owobYI49M2pYX5HBvX9KrHyVdF3Y8ljw3_M3nqvw_4TFjBo9WWt22BnCQcGFxtiA8_O_sLj6E2gkX0yWrwD1nq5i2O4j8uYysv4QWrhv22wdxrL8fhzJbtUYpYpwPGmJlcq6VzWuz4IBchsmVfOEufRdxTGIphv8M6jzq9Fa4JR8mE4pnyhY-No9Bpw9m4BVEghxn2kABjjOkpMCbonPB5dfIxzwerjA58HeQ
 set -x
-CLUSTER_NAME="kubernetes"
-APISERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name==\"$CLUSTER_NAME\")].cluster.server}")
-TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='zeppelin')].data.token}"|base64 -d)
+#CLUSTER_NAME="kubernetes"
+#APISERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name==\"$CLUSTER_NAME\")].cluster.server}")
+#TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='zeppelin')].data.token}"|base64 -d)
 
 # Deploy zeppelin-server-conf-map
 curl -k -X POST \
