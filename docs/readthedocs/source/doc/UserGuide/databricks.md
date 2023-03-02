@@ -14,8 +14,7 @@ You can run BigDL program on the [Databricks](https://databricks.com/) cluster a
 
 [Init script](https://learn.microsoft.com/en-us/azure/databricks/clusters/init-scripts) is used to Install BigDL or other libraries. First, you need to put the **init script** into [DBFS](https://docs.databricks.com/dbfs/index.html), you can use one of the following ways.
 
-__Note:__
-* To use the Python 3.8 environment (recommended version by BigDL), please set the Databricks runtime version to 9.1 LTS or 10.4 LTS.
+Note that as Python 3.8 is highly recommended by BigDL, please set the Databricks runtime version to 9.1 LTS or 10.4 LTS to use the Python 3.8 environment.
 
 **a. Generate init script in Databricks notebook**
 
