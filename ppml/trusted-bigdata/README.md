@@ -86,6 +86,9 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
 
 `16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
+
+**attention:** If there is `SNAPSHOT` in a image tag, the image is developing continuosly, which means you need to update the image to use the latest feature.
+
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
