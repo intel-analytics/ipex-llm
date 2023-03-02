@@ -8,6 +8,7 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_JAR_REPO_URL
 ARG SCALA_VERSION=2.12
+ARG LGBM_NETWORK_MODE_BUILD
 
 # stage.1 bigdata image 
 FROM $BIGDATA_IMAGE_NAME:$BIGDATA_IMAGE_TAG as bigdata 
@@ -23,13 +24,14 @@ ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
+ARG LGBM_NETWORK_MODE_BUILD
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
 ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
-
+ENV LGBM_NETWORK_MODE_BUILD             ${LGBM_NETWORK_MODE_BUILD}
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -47,6 +49,7 @@ ADD ./scripts /ppml/scripts
 ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
+ADD ./make-lgbm.sh /ppml/make-lgbm.sh
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN echo $http_proxy && \
@@ -63,11 +66,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
-    cd LightGBM && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make -j4
+    ./ppml/make-lgbm.sh
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars

@@ -7,7 +7,7 @@ export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
 
 if [[ "$SGX_MEM_SIZE" == "memory_size_of_sgx_in_custom_image" ]] || [[ "$SGX_LOG_LEVEL" == "log_level_of_sgx_in_custom_image" ]]
 then
-    echo "Please specific SGX_MEM_SIZE and SGX_LOG_LEVEL."
+    echo "Please specific SGX_MEM_SIZE, SGX_LOG_LEVEL."
 else
     sudo docker build \
         --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${MACHINE_LEARNING_BASE_IMAGE_NAME} \

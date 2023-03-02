@@ -5,6 +5,7 @@ export HTTPS_PROXY_PORT=your_https_proxy_port
 export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
 export SPARK_JAR_REPO_URL=http://10.239.45.10:8081/repository/raw/spark
 export LOCAL_IP=172.168.0.205
+export LGBM_NETWORK_MODE_BUILD=SSL_OR_PLAIN
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
 export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
@@ -24,6 +25,7 @@ Proxy_Modified="sudo docker build \
     --build-arg no_proxy=${LOCAL_IP} \
     --build-arg BASE_IMAGE_NAME=${BASE_IMAGE_NAME} \
     --build-arg BASE_IMAGE_TAG=${BASE_IMAGE_TAG} \
+    --build-arg LGBM_NETWORK_MODE_BUILD=${LGBM_NETWORK_MODE_BUILD} \
     -t ${MACHINE_LEARNING_IMAGE_NAME}:${MACHINE_LEARNING_IMAGE_TAG} -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
@@ -31,6 +33,7 @@ No_Proxy_Modified="sudo docker build \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
     --build-arg no_proxy=${LOCAL_IP} \
+    --build-arg LGBM_NETWORK_MODE_BUILD=${LGBM_NETWORK_MODE_BUILD} \
     -t ${BASE_IMAGE_NAME}:${BASE_IMAGE_TAG} -f ./Dockerfile ."
 
 if [[ "$JDK_URL" == "http://your-http-url-to-download-jdk" ]] || [[ "$SPARK_JAR_REPO_URL" == "http://your_spark_jar_repo_url" ]]
