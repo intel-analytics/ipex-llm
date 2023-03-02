@@ -6,12 +6,12 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-driver-jvm-memory 20g\
-        --sgx-executor-jvm-memory 20g\
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
         --num-executors 2 \
-        --driver-memory 8g \
+        --driver-memory 4g \
         --driver-cores 8 \
-        --executor-memory 8g \
+        --executor-memory 4g \
         --executor-cores 8\
         --conf spark.cores.max=16 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \

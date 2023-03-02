@@ -214,7 +214,7 @@ export LD_PRELOAD=""
 export DYLD_INSERT_LIBRARIES=""
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
     : # do nothing
-elif [ "${PERF_VAR}" -eq 1 ]; then
+elif [[ "${PERF_VAR}" -eq 1 ]]; then
     OPENMP=1
 elif [ $OS = "linux" ] && [ -f "${LIB_DIR}/libiomp5.so" ]; then
     OPENMP=1

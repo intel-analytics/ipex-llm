@@ -161,7 +161,7 @@ object TensorflowLoader{
   }
 
   private def loadBinFiles[T: ClassTag](file: String)(implicit ev: TensorNumeric[T]): Context[T] = {
-    val m = File.load(file).asInstanceOf[JHashMap[String, JTensor]].asScala
+    val m = File.load[JHashMap[String, JTensor]](file).asScala
     val map = new mutable.HashMap[String, (Tensor[T], Tensor[T], Option[Seq[(Int, Int)]])]()
     for (k <- m.keys) {
       val tensor = ev.getType() match {

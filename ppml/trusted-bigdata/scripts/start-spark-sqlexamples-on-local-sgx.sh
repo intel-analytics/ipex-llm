@@ -15,7 +15,7 @@ LOCAL_IP=$LOCAL_IP
 if [ $status_2_scala_sql_example -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-  -Xmx10g \
+  -Xmx1g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
@@ -29,7 +29,7 @@ if [ $status_3_scala_sql_RDDRelation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
     -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-    -Xmx10g \
+    -Xmx1g \
     -XX:ActiveProcessorCount=24 \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
@@ -43,7 +43,7 @@ if [ $status_4_scala_sql_SimpleTypedAggregator -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-  -Xmx10g \
+  -Xmx1g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
@@ -57,7 +57,7 @@ if [ $status_5_scala_sql_UserDefinedScalar -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-  -Xmx10g \
+  -Xmx1g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
@@ -71,7 +71,7 @@ if [ $status_6_scala_sql_UserDefinedTypedAggregation -ne 0 ]; then
 rm -rf pair.parquet
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-  -Xmx10g \
+  -Xmx1g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
@@ -84,7 +84,7 @@ status_6_scala_sql_UserDefinedTypedAggregation=$(echo $?)
 if [ $status_7_scala_sql_UserDefinedUntypedAggregation -ne 0 ]; then
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-  -Xmx10g \
+  -Xmx1g \
   -XX:ActiveProcessorCount=24 \
   org.apache.spark.deploy.SparkSubmit \
   --master local[4] \
@@ -102,7 +102,7 @@ status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 #    rm -rf pair.parquet && \
 #    /opt/jdk8/bin/java \
 #        -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/* \
-#        -Xmx10g \
+#        -Xmx1g \
 #        -XX:ActiveProcessorCount=24 \
 #        org.apache.spark.deploy.SparkSubmit \
 #        --master local[4] \
@@ -119,7 +119,7 @@ status_7_scala_sql_UserDefinedUntypedAggregation=$(echo $?)
 #        --class org.apache.spark.examples.sql.hive.SparkHiveExample \
 #        --executor-cores 4 \
 #        --total-executor-cores 4 \
-#        --executor-memory 10G \
+#        --executor-memory 1G \
 #        /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar hdfs://$LOCAL_IP:9000/spark-warehouse" > secured_argvs
 #./init.sh
 #gramine-sgx bash 2>&1 | tee test-scala-spark-sql-SparkHiveExample-sgx.log

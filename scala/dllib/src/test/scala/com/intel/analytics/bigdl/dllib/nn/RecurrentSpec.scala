@@ -537,10 +537,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println(input)
     val gru = GRU[Double](inputSize, hiddenSize, 0.2)
     val model = Recurrent[Double]().add(gru)
-
-    val field = model.getClass.getDeclaredField("cells")
-    field.setAccessible(true)
-    val cells = field.get(model).asInstanceOf[ArrayBuffer[Cell[Double]]]
+    val cells = model.cells
 
     val dropoutsRecurrent = model.asInstanceOf[Container[_, _, Double]].findModules("Dropout")
     val dropoutsCell = gru.cell.asInstanceOf[Container[_, _, Double]].findModules("Dropout")

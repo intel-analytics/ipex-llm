@@ -4,18 +4,17 @@ rm /ppml/data/weekly-test/tpc-ds/performance/_SUCCESS
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode cluster \
+        --deploy-mode client \
         --sgx-enabled true \
-        --sgx-driver-jvm-memory 20g\
-        --sgx-executor-jvm-memory 10g\
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
         --num-executors 8 \
-        --driver-memory 20g \
+        --driver-memory 4g \
         --driver-cores 8 \
-        --executor-memory 10g \
+        --executor-memory 4g \
         --executor-cores 8\
-        --conf spark.cores.max=72 \
-        --conf spark.kubernetes.driver.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g:$BIGDL_VERSION \
-        --conf spark.kubernetes.executor.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:$BIGDL_VERSION \
+        --conf spark.cores.max=64 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --class "TPCDSBenchmark" \
         --conf spark.kubernetes.file.upload.path=file:///tmp \

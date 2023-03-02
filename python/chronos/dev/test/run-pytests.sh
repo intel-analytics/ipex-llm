@@ -91,7 +91,8 @@ fi
 if [ $RUN_PART4 = 1 ]; then
 echo "Running chronos tests Part 4"
 python -m pytest -v test/bigdl/chronos/autots\
-                    test/bigdl/chronos/data
+                    test/bigdl/chronos/data\
+                    test/bigdl/chronos/aiops
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
 then
