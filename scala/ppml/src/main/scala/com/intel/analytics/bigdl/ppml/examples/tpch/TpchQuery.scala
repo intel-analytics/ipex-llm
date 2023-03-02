@@ -123,14 +123,14 @@ object TpchQuery {
 
     val queries = Queue[TpchQuery]()
 
-    for (queryNo <- fromNum to toNum){
+    for (queryNo <- fromNum to toNum) {
       val query = Class.forName(f"com.intel.analytics.bigdl.ppml.examples.tpch.Q${queryNo}%02d")
         .newInstance.asInstanceOf[TpchQuery]
 
       queries.enqueue(query)
     }
 
-    while(queries.nonEmpty){
+    while(queries.nonEmpty) {
       val query = queries.dequeue
 
       val t0 = System.nanoTime()
