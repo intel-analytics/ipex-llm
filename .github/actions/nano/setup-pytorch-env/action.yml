@@ -24,7 +24,7 @@ runs:
         fi
       env:
         OS: ${{ inputs.os }}
-.
+
     - name: Setup Python (Ubuntu and Windows)
       uses: actions/setup-python@v4
       if: ${{ inputs.os != 'centos' }}
