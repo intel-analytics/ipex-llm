@@ -53,7 +53,7 @@ runs:
     - name: Run Nano TensorFlow Test (Ray)
       shell: bash
       run: |
-        if [ $SYSTEM = "centos" ]; then
+        if [ $SYSTEM = "centos" ] && [ ! $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
