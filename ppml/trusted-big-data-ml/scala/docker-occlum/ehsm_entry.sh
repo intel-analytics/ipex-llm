@@ -147,12 +147,13 @@ elif [ "$action" = "decrypt" ]; then
                         --conf spark.bigdl.primaryKey.BobPK.kms.appId=$appid \
                         --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=$apikey \
                         --conf spark.bigdl.primaryKey.BobPK.material=/opt/occlum_spark/data/key/ehsm_encrypted_primary_key \
-                        --class com.intel.analytics.bigdl.ppml.utils.Decrypt \
+                        --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
                         $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                         --inputDataSourcePath $input_path \
                         --outputDataSinkPath /opt/occlum_spark/data/decryptEhsm/ \
                         --cryptoMode aes/cbc/pkcs5padding \
                         --dataSourceType csv
+                        --action decrypt
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    	appid=123456654321
             apikey=123456654321
@@ -169,12 +170,13 @@ elif [ "$action" = "decrypt" ]; then
                             --conf spark.bigdl.primaryKey.AmyPK.kms.appId=$appid \
                             --conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=$apikey \
                             --conf spark.bigdl.primaryKey.AmyPK.material=/opt/occlum_spark/data/key/simple_encrypted_primary_key \
-                            --class com.intel.analytics.bigdl.ppml.utils.Decrypt \
+                            --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
                             $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                             --inputDataSourcePath $input_path \
                             --outputDataSinkPath /opt/occlum_spark/data/decryptSimple/ \
                             --cryptoMode aes/cbc/pkcs5padding \
                             --dataSourceType csv
+                            --action decrypt
 	else
                 echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
