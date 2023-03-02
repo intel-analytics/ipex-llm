@@ -103,8 +103,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
-        if not isinstance(model_creator, types.FunctionType):
-            # Torch model is also callable.
+        if not isinstance(model_creator, types.FunctionType):  # Torch model is also callable.
             invalidInputError(False,
                               "Must provide a function for model_creator.")
 
