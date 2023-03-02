@@ -152,7 +152,7 @@ elif [ "$action" = "decrypt" ]; then
                         --inputDataSourcePath $input_path \
                         --outputDataSinkPath /opt/occlum_spark/data/decryptEhsm/ \
                         --cryptoMode aes/cbc/pkcs5padding \
-                        --dataSourceType csv
+                        --dataSourceType csv \
                         --action decrypt
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    	appid=123456654321
@@ -175,7 +175,7 @@ elif [ "$action" = "decrypt" ]; then
                             --inputDataSourcePath $input_path \
                             --outputDataSinkPath /opt/occlum_spark/data/decryptSimple/ \
                             --cryptoMode aes/cbc/pkcs5padding \
-                            --dataSourceType csv
+                            --dataSourceType csv \
                             --action decrypt
 	else
                 echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "

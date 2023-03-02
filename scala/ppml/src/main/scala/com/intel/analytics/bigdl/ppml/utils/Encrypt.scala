@@ -95,7 +95,7 @@ object Encrypt extends Supportive {
         .action((x, c) => c.copy(dataSourceType = x))
         .text("file type of input data source, csv, json, parquet or textFile")
       opt[String]('a', "action")
-        .action((x, c) => c.copy(dataSourceType = x))
+        .action((x, c) => c.copy(action = x))
         .text("action type of encrypt or decrypt file, default is encrypt")
     }
 }
