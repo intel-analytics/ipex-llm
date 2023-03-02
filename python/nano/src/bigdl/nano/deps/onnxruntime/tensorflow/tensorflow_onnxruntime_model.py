@@ -22,7 +22,7 @@ from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.common import get_default_args
 from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
-from bigdl.nano.utils.tf import tensor_spec_to_shape
+from bigdl.nano.utils.tf import try_compute_output_shape
 from bigdl.nano.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.common import invalidInputError
 
@@ -53,17 +53,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                if hasattr(model, "input_shape"):
-                    # Sequential and functional API model has
-                    # `input_shape` and `output_shape` attributes
-                    input_spec = tf.TensorSpec(model.input_shape, model.dtype)
-                    self._output_shape = model.output_shape
-                elif input_spec is not None:
-                    input_shape = tensor_spec_to_shape(input_spec)
-                    self._output_shape = model.compute_output_shape(input_shape)
-                else:
-                    invalidInputError(False,
-                                      "Subclassed model must specify `input_spec` parameter.")
+                self._output_shape = try_compute_output_shape(model, input_spec)
                 if not isinstance(input_spec, (tuple, list)):
                     # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )

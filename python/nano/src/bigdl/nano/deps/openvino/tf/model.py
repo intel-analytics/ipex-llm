@@ -22,7 +22,7 @@ from .dataloader import KerasOpenVINODataLoader
 from .metric import KerasOpenVINOMetric
 import tensorflow as tf
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.tf import tensor_spec_to_shape
+from bigdl.nano.utils.tf import try_compute_output_shape
 from ..core.utils import save
 import pickle
 import os
@@ -55,16 +55,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
-                if hasattr(model, "input_shape"):
-                    # Sequential and functional API model has
-                    # `input_shape` and `output_shape` attributes
-                    self._output_shape = model.output_shape
-                elif input_spec is not None:
-                    input_shape = tensor_spec_to_shape(input_spec)
-                    self._output_shape = model.compute_output_shape(input_shape)
-                else:
-                    invalidInputError(False,
-                                      "Subclassed model must specify `input_spec` parameter.")
+                self._output_shape = try_compute_output_shape(model, input_spec)
                 export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging,
