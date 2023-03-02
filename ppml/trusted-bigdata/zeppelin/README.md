@@ -38,7 +38,7 @@ export TOKEN=<output of echo $TOKEN in the previous step>
 ```bash
 # Make sure you are inside the container.
 cd /ppml/zeppelin
-chmod +x deploy.sh
+
 ./deploy.sh  # zeppelin deployment is now completed
 
 ./delete.sh  # Delete zeppelin deployment
