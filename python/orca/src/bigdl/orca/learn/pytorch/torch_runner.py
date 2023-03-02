@@ -288,7 +288,7 @@ class TorchRunner(BaseRunner):
 
         if not self.optimizers:
             invalidInputError(False,
-                              "You must provide the optimizer for train.")
+                              "You must provide the optimizer for train and evaluate.")
 
         self._toggle_profiling(profile=profile)
 
@@ -600,7 +600,7 @@ class TorchRunner(BaseRunner):
 
         if not self.models:
             invalidInputError(False,
-                              "You must provide a model for predicting.")
+                              "You must provide a model for predict.")
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
