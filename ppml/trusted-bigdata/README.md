@@ -7,8 +7,14 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 ## Before Running Code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production.
-
+**Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(16G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
+`16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
@@ -66,7 +72,7 @@ mr_signer        : 6f0627955......
   sudo bash BigDL/ppml/scripts/generate-password.sh <used_password_when_generate_keys>
 ```
 
-### 3. Register MREnclave
+### 3. Register MREnclave(optional)
 
 #### 3.1 Deploy EHSM KMS&AS
 
@@ -153,11 +159,12 @@ python register-mrenclave.py --appid <your_appid> \
 # Spark
 
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [Using Helm to run your Spark job][https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes#25-using-helm-to-run-your-spark-job].
-
-#### 1.1 Prepare k8s service account and kubeconfig
+## SGX
+### Spark Submit
+#### 1 Prepare k8s service account and kubeconfig
 Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
 
-#### 1.3 Start the client container
+#### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
@@ -171,7 +178,7 @@ sudo docker run -itd \
     --privileged \
     --net=host \
     --name=gramine-bigdata \
-    --cpuset-cpus="20-24" \
+    --cpuset-cpus=10 \
     --oom-kill-disable \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
@@ -189,9 +196,9 @@ sudo docker run -itd \
 ```
 run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-#### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
+#### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
 
-##### 1.4.1 Configure `spark-executor-template.yaml` in the container
+##### 3.1 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
@@ -200,7 +207,7 @@ Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
-##### 1.4.2 Submit spark command
+##### 3.2 Submit spark command
 
 ```bash
 ./init.sh
@@ -266,24 +273,24 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 1. `local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
-##### 1.4.3 Spark-Pi example
+##### 3.3 Spark-Pi example
 
 ```bash
 gramine-sgx bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
-#### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
+#### 4 Use bigdl-ppml-submit.sh to submit ppml jobs
 
 Here, we assume you have started the client container and executed `init.sh`.
 
-##### 1.5.1 Spark-Pi on local mode
+##### 4.1 Spark-Pi on local mode
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
         --master local[2] \
-        --driver-memory 32g \
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
@@ -293,7 +300,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-##### 1.5.2 Spark-Pi on local sgx mode
+##### 4.2 Spark-Pi on local sgx mode
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
 ```
 #!/bin/bash
@@ -301,11 +308,11 @@ bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
@@ -316,7 +323,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 
 ```
-##### 1.5.3 Spark-Pi on client mode
+##### 4.3 Spark-Pi on client mode
 ![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
 
 ```
@@ -327,11 +334,11 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode client \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
@@ -343,7 +350,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
-##### 1.5.4 Spark-Pi on cluster mode
+##### 4.4 Spark-Pi on cluster mode
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 
 ```
@@ -354,11 +361,11 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode cluster \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --num-executors 2 \
@@ -369,7 +376,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-##### 1.5.5 bigdl-ppml-submit.sh explanations
+##### 4.5 bigdl-ppml-submit.sh explanations
 
 bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 
@@ -377,13 +384,13 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 ```
 --master $RUNTIME_SPARK_MASTER \
 --deploy-mode cluster \
---driver-memory 32g \
+--driver-memory 8g \
 --driver-cores 8 \
---executor-memory 32g \
+--executor-memory 8g \
 --executor-cores 8 \
 --sgx-enabled true \
---sgx-driver-jvm-memory 12g \
---sgx-executor-jvm-memory 12g \
+--sgx-driver-jvm-memory 6g \
+--sgx-executor-jvm-memory 6g \
 --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 --num-executors 2 \
 --name spark-pi \
@@ -395,10 +402,10 @@ local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 300
 if you are want to enable sgx, don't forget to set the sgx-related arguments
 ```
 --sgx-enabled true \
---sgx-driver-memory 64g \
---sgx-driver-jvm-memory 12g \
---sgx-executor-memory 64g \
---sgx-executor-jvm-memory 12g \
+--sgx-driver-memory 8g \
+--sgx-driver-jvm-memory 6g \
+--sgx-executor-memory 8g \
+--sgx-executor-jvm-memory 6g \
 ```
 you can update the application arguments to anything you want to run
 ```
@@ -425,13 +432,8 @@ export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </
 --conf spark.kubernetes.executor.deleteOnTermination=false \
 ```
 
-##### 1.5.6 env MALLOC_ARENA_MAX explanations
 
-env MALLOC_ARENA_MAX can reduce EPC usage but may cause some error especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
-
-You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
-
-## Thrift Server
+## Spark Thrift Server
 
 Spark SQL Thrift server is a port of Apache Hive’s HiverServer2 which allows the clients of JDBC or ODBC to execute queries of SQL over their respective protocols on Spark.
 
@@ -649,9 +651,9 @@ SET hive.exec.compress.output=true;
 SET mapreduce.output.fileoutputformat.compress.codec=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
 ```
 
-## Configuration Explainations
+## Spark Configuration Explainations
 
-### 1. Bigdl ppml SGX related configurations
+### 1. BigDL PPML SGX related configurations
 
 <img title="" src="../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
 
@@ -740,6 +742,12 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
+
+##### 3 env MALLOC_ARENA_MAX explanations
+
+env MALLOC_ARENA_MAX can reduce EPC usage but may cause some error especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+
+You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
 
 ## Run Flink
 The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
