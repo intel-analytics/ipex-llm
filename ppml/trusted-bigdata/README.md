@@ -56,6 +56,11 @@
           - [2.1.4 SSL Configuration](#214-ssl-configuration)
       - [3 env MALLOC\_ARENA\_MAX explanations](#3-env-malloc_arena_max-explanations)
   - [TDXVM](#tdxvm)
+    - [1. Deploy PCCS](#1-deploy-pccs)
+    - [2. Deploy BigDL Remote Attestation Service](#2-deploy-bigdl-remote-attestation-service)
+    - [3. Start BigDL bigdata client](#3-start-bigdl-bigdata-client)
+    - [4. Enable Attestation in configuration](#4-enable-attestation-in-configuration)
+    - [5. Submit spark task](#5-submit-spark-task)
 - [Flink](#flink)
   - [SGX](#sgx-1)
     - [1. Enter the client contianer](#1-enter-the-client-contianer)
@@ -817,14 +822,14 @@ You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.htm
 
 ## TDXVM
 
-1. Deploy PCCS
+### 1. Deploy PCCS
 You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
-2. Deploy BigDL Remote Attestation Service 
+### 2. Deploy BigDL Remote Attestation Service 
 [Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
-3. Start BigDL bigdata client 
-docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT
+### 3. Start BigDL bigdata client 
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
 ```bash
-export NFS_INPUT_PATH=/disk1/nfsdata/default-nfsvolumeclaim-pvc-decb9dcf-dc7a-4dd0-8bd2-e2c669fd50af
+export NFS_INPUT_PATH=your_nfs_path
 sudo docker run -itd --net=host \
     --privileged \
     -v /etc/kubernetes:/etc/kubernetes \
@@ -833,7 +838,7 @@ sudo docker run -itd --net=host \
     -v /dev/tdx-attest:/dev/tdx-attest \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT  \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_EXECUTOR_INSTANCES=2 \
     -e RUNTIME_EXECUTOR_CORES=2 \
@@ -843,9 +848,9 @@ sudo docker run -itd --net=host \
     -e RUNTIME_DRIVER_CORES=4 \
     -e RUNTIME_DRIVER_MEMORY=5g \
     --name tdx-attestation-test \
-    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT bash
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT bash
 ```
-4. Enable Attestation in configuration
+### 4. Enable Attestation in configuration
 Upload `appid` and `apikey` to kubernetes as secrets:
 ```bash
 kubectl create secret generic kms-secret \
@@ -883,7 +888,7 @@ spec:
       - name: QUOTE_TYPE
         value: TDX
 ```
-5. Submit spark task
+### 5. Submit spark task
 ```bash
 ${SPARK_HOME}/bin/spark-submit \
      --master k8s://https://172.29.19.131:6443 \
