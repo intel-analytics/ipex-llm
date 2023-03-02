@@ -55,7 +55,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec)
+                self._output_shape = try_compute_output_shape(model, input_spec,
+                                                              try_fake_inference=not model.built)
                 export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging,

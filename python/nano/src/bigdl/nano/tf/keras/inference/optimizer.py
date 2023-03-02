@@ -628,7 +628,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            _output_shape = try_compute_output_shape(model, input_spec)
+            _output_shape = try_compute_output_shape(model, input_spec,
+                                                     try_fake_inference=not model.built)
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
