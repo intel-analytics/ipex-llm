@@ -1,6 +1,6 @@
-# Gramine Bigdata Toolkit Overall
+# Gramine Bigdata Toolkit Overview
 
-This image is designed for the big data field in Privacy Preserving Machine Learning. Users can run end-to-end big data analytics application (Spark, Flink, Hive and Flink) with distributed cluster on Intel Software Guard Extensions (Intel SGX) or Intel Trust Domain Extensions (Intel TDX).
+This image is designed for the big data field in Privacy Preserving Machine Learning (PPML). Users can run end-to-end big data analytics application (Spark, Flink, Hive and Flink) with distributed cluster on Intel Software Guard Extensions (SGX) or Trust Domain Extensions (TDX).
 
 ## Before Running Code
 ### 1. Build Docker Images
