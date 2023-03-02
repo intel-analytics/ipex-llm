@@ -218,6 +218,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install numpy pandas && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/
-
+# zeppelin
+    chmod +x /ppml/zeppelin/deploy.sh
+    chmod +x /ppml/zeppelin/delete.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
