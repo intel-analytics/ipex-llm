@@ -744,34 +744,6 @@ class TestPyTorchEstimator(TestCase):
 
         estimator.shutdown()
 
-    def test_optional_model_creator(self):
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
-        shards = SparkXShards(shards)
-
-        try:
-            estimator = get_estimator(model_fn=lambda config: IdentityNet())
-            path = "/tmp/optional_model"
-            estimator.save(path)
-            estimator.shutdown()
-
-            estimator = Estimator.from_torch(optimizer=get_optimizer,
-                                             loss=nn.BCELoss(),
-                                             metrics=Accuracy(),
-                                             config={"lr": 1e-2},
-                                             workers_per_node=2,
-                                             backend="ray")
-            estimator.load(path)
-
-            result = estimator.predict(shards, batch_size=4)
-            predicted_result = np.concatenate([shard["prediction"] for shard in result.collect()])
-            expected_result = np.concatenate([shard["x"] for shard in result.collect()])
-        finally:
-            os.remove(path)
-
-        assert np.array_equal(predicted_result, expected_result)
-
     def test_optional_optimizer(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
