@@ -151,11 +151,6 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                 except Exception:
                     self.model = torch.jit.script(self.model)
             self.model = torch.jit.freeze(self.model)
-            
-    @property
-    def forward_args(self):
-        return [input_value.debugName() for input_value in self.model.graph.inputs()
-                if not input_value.debugName().startswith('self')]
 
     def on_forward_start(self, inputs):
         return inputs
