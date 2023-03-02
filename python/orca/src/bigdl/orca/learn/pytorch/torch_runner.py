@@ -288,7 +288,7 @@ class TorchRunner(BaseRunner):
 
         if not self.optimizers:
             invalidInputError(False,
-                              "You must provide the optimizer for train and evaluate.")
+                              "You must provide the optimizer for train.")
 
         self._toggle_profiling(profile=profile)
 
