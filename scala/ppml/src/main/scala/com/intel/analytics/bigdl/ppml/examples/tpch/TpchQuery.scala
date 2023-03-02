@@ -130,7 +130,9 @@ object TpchQuery {
       queries.enqueue(query)
     }
 
-    queries.foreach((query:TpchQuery) => {
+    while(queries.nonEmpty){
+      val query = queries.dequeue
+
       val t0 = System.nanoTime()
 
       outputDF(query.execute(sc, schemaProvider), outputDir, query.getName(), sc, outputCryptoMode)
@@ -138,8 +140,19 @@ object TpchQuery {
       val t1 = System.nanoTime()
 
       val elapsed = (t1 - t0) / 1000000000.0f // second
+      
       results += new Tuple2(query.getName(), elapsed)
-    })
+    }
+    // queries.foreach((query:TpchQuery) => {
+    //   val t0 = System.nanoTime()
+
+    //   outputDF(query.execute(sc, schemaProvider), outputDir, query.getName(), sc, outputCryptoMode)
+
+    //   val t1 = System.nanoTime()
+
+    //   val elapsed = (t1 - t0) / 1000000000.0f // second
+    //   results += new Tuple2(query.getName(), elapsed)
+    // })
 
     return results
   }
