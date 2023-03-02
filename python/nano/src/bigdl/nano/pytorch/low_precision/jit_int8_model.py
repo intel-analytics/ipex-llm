@@ -71,9 +71,13 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         # error in fx quantization during inference. Therefore, we disable it by hand.
         # Actually, prepare_fx supports the onednn backend, related design is in here:
         # https://github.com/pytorch/pytorch/pull/69820
+        #
         # To use it, we can use below statement to replace the fbgemm(default) backend
         # in line 104.
         # qconfig_mapping = get_default_qconfig_mapping("onednn")
+        #
+        # A simple test of performance is shown in
+        # https://github.com/intel-analytics/BigDL/pull/7483
 
         if from_load:
             self.channels_last = channels_last
