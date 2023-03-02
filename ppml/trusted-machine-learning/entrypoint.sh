@@ -33,7 +33,7 @@ if [ "$PCCS_URL" != "" ]; then
   echo 'USE_SECURE_CERT=FALSE' >>/etc/sgx_default_qcnl.conf
 fi
 
-./ppml/make-lgbm.sh
+bash /ppml/make-lgbm.sh
 
 function delete_file {
   if [ -f $1 ]; then

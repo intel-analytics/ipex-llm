@@ -66,7 +66,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
-    ./ppml/make-lgbm.sh
+    apt-get install libssl-dev  && \
+    bash /ppml/make-lgbm.sh
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
