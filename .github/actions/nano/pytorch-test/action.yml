@@ -12,6 +12,9 @@ runs:
     - name: Run Nano PyTorch Test (PyTorch)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         bash python/nano/test/run-nano-pytorch-tests.sh
         source bigdl-nano-unset-env
@@ -22,6 +25,9 @@ runs:
     - name: Run Nano PyTorch Test (Ray)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         bash python/nano/test/run-nano-pytorch-ray-tests.sh
         source bigdl-nano-unset-env
@@ -32,6 +38,9 @@ runs:
     - name: Run Nano PyTorch Test (Automl)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         # We disable this because there are some encoding errors on windows
         if [ ! $OS = "windows" ]; then
@@ -45,6 +54,9 @@ runs:
     - name: Run Nano PyTorch Test (INC)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
         if [ ! $OS = "windows" ]; then
@@ -58,6 +70,9 @@ runs:
     - name: Run Nano PyTorch Test (OpenVINO)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         bash python/nano/test/run-nano-basic-openvino-tests.sh
         if [ ! $OS = "windows" ]; then
@@ -71,6 +86,9 @@ runs:
     - name: Run Nano PyTorch Test (ONNXRuntime)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
         if [ ! $OS = "windows" ]; then
@@ -84,6 +102,9 @@ runs:
     - name: Run Nano PyTorch Test (IPEX)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         # We disable this because ipex doesn't support windows
         if [ ! $OS = "windows" ]; then
@@ -108,6 +129,9 @@ runs:
     - name: Run Nano PyTorch Test (NoteBook)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh false
@@ -123,6 +147,9 @@ runs:
     - name: Run Nano PyTorch Test (Tutorial)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_onnx.sh
@@ -140,6 +167,9 @@ runs:
     - name: Run Nano PyTorch Test (How To Guide)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-pytorch
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh

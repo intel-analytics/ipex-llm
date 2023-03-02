@@ -12,8 +12,11 @@ runs:
     - name: Run Nano TensorFlow Test (Train)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $OS = "windows" ] && [ ! $OS = "centos" ]; then
           bash python/nano/test/run-nano-tf-train-tests.sh
         fi
         source bigdl-nano-unset-env
@@ -24,6 +27,9 @@ runs:
     - name: Run Nano TensorFlow Test (Inference)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/test/run-nano-tf-inference-tests.sh
@@ -47,6 +53,9 @@ runs:
     - name: Run Nano TensorFlow Test (Ray)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/test/run-nano-tf-ray-tests.sh
@@ -59,6 +68,9 @@ runs:
     - name: Run Nano TensorFlow Test (Automl)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/test/run-nano-automl-common-tests.sh
@@ -72,6 +84,9 @@ runs:
     - name: Run Nano TensorFlow Test (INC)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
         if [ ! $OS = "windows" ]; then
@@ -85,6 +100,9 @@ runs:
     - name: Run Nano TensorFlow Test (OpenVINO)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         bash python/nano/test/run-nano-tf-openvino-tests.sh
         source bigdl-nano-unset-env
@@ -95,6 +113,9 @@ runs:
     - name: Run Nano TensorFlow Test (ONNXRuntime)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
         if [ ! $OS = "windows" ]; then
@@ -108,6 +129,9 @@ runs:
     - name: Run Nano TensorFlow Test (NoteBook)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
@@ -120,6 +144,9 @@ runs:
     - name: Run Nano TensorFlow Test (Tutorial)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
@@ -135,6 +162,9 @@ runs:
     - name: Run Nano TensorFlow Test (How To Guide)
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         source bigdl-nano-init
         if [ ! $OS = "windows" ]; then
           bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
