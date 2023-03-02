@@ -110,7 +110,7 @@ class BasePytorchForecaster(Forecaster):
             loss_creator=self.loss_creator,
             data=data, validation_data=validation_data,
             batch_size=batch_size, epochs=epochs,
-            metrics=[_str2metric(metric) for metric in self.metrics],
+            metrics=[_str2optimizer_metric(metric) for metric in self.metrics],
             scheduler=None,  # TODO
             num_processes=self.num_processes,
             model_config_keys=model_config_keys,
@@ -607,7 +607,7 @@ class BasePytorchForecaster(Forecaster):
                 metric = None
             else:
                 try:
-                    metric = _str2optimizer_metrc(metric)
+                    metric = _str2optimizer_metric(metric)
                 except Exception:
                     invalidInputError(False,
                                       "Unable to recognize the metric string you passed in.")
@@ -1937,7 +1937,10 @@ class BasePytorchForecaster(Forecaster):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
 
-        metric = _str2metric(metric)
+        try:
+            metric = _str2optimizer_metric(metric)
+        except Exception:
+            invalidInputError(False, "Unable to recognize the metric string you passed in.")
 
         # init acc criterion
         accuracy_criterion = None
@@ -2061,22 +2064,7 @@ class BasePytorchForecaster(Forecaster):
                    **kwargs)
 
 
-def _str2metric(metric):
-    # map metric str to function
-    if isinstance(metric, str):
-        metric_name = metric
-        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
-        metric_func = REGRESSION_MAP[metric_name]
-
-        def metric(y_label, y_predict):
-            y_label = y_label.numpy()
-            y_predict = y_predict.numpy()
-            return metric_func(y_label, y_predict)
-        metric.__name__ = metric_name
-    return metric
-
-
-def _str2optimizer_metrc(metric):
+def _str2optimizer_metric(metric):
     # map metric str to function for InferenceOptimizer
     if isinstance(metric, str):
         metric_name = metric

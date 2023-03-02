@@ -17,17 +17,17 @@ from bigdl.nano.utils.common import invalidInputError
 from ..core.metric import BaseOpenVINOMetric
 import torch
 from torchmetrics import Metric
+import inspect
 
 
 class PytorchOpenVINOMetric(BaseOpenVINOMetric):
     def __init__(self, metric, higher_better=True):
-        # to support openvino quantization of chronos forecasters
-        if hasattr(metric, '__name__'):
-            forecast_metric = metric.__name__ in ['mae', 'mse', 'rmse', 'mape', 'smape', 'r2']
-        else:
-            forecast_metric = False
-        invalidInputError(isinstance(metric, Metric) or forecast_metric,
-                          "Please provide an instance of torchmetrics.Metric.")
+        if not isinstance(metric, Metric):
+            invalidInputError(len(inspect.signature(metric).parameters)==2,
+                              "Please provide an instance of torchmetrics.Metric or"
+                              "a metric function with input (preds, targets).")
+        # invalidInputError(isinstance(metric, Metric),
+        #                   "Please provide an instance of torchmetrics.Metric.")
         super().__init__(metric, higher_better)
 
     def stack(self, output):
