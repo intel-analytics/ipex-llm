@@ -76,7 +76,11 @@ def partition_to_creator(partition):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                return index_data(self.x, i), index_data(self.y, i)
+                index_data_x = index_data(self.x, i)
+                if isinstance(index_data_x, (list, tuple)):
+                    return (*index_data_x, index_data(self.y, i))
+                else:
+                    return (index_data_x, index_data(self.y, i))
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",

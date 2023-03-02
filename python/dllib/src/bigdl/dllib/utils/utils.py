@@ -202,7 +202,7 @@ def _is_scalar_type(dtype, accept_str_col=False):
 
 
 def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=False):
-    def convert_for_cols(row, cols):
+    def convert_for_cols(row, cols, is_label=False):
         import pyspark.sql.types as df_types
         result = []
         for name in cols:
@@ -253,16 +253,16 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
                 invalidInputError(isinstance(row[name], SparseVector),
                                   "unsupported field {}, data {}".format(schema[name], row[name]))
                 result.append(row[name].toArray())
-        if len(result) == 1:
+        if len(result) == 1 and is_label:
             return result[0]
         return result
 
     features = convert_for_cols(row, feature_cols)
     if label_cols:
-        labels = convert_for_cols(row, label_cols)
-        return (features, labels)
+        labels = convert_for_cols(row, label_cols, True)
+        return (*features, labels)
     else:
-        return (features,)
+        return (*features,)
 
 
 def toMultiShape(shape):

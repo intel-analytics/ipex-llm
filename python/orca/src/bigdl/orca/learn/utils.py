@@ -302,7 +302,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list) and not isinstance(data, dict):
+        if not isinstance(data, (list, tuple, dict)):
             arrays = [data]
         else:
             arrays = data
@@ -318,15 +318,16 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
     feature_lists = None
     label_lists = None
     counter = 0
+    feature_tail = -(len(label_cols)) if label_cols else None
 
     for row in iter:
         if feature_lists is None:
-            feature_lists = init_result_lists(row[0], feature_cols)
-        add_row(row[0], feature_lists, counter)
+            feature_lists = init_result_lists(row[:feature_tail], feature_cols)
+        add_row(row[:feature_tail], feature_lists, counter)
         if label_cols is not None:
             if label_lists is None:
-                label_lists = init_result_lists(row[1], label_cols)
-            add_row(row[1], label_lists, counter)
+                label_lists = init_result_lists(get_label_row(row, feature_tail), label_cols)
+            add_row(get_label_row(row, feature_tail), label_lists, counter)
         counter += 1
 
         if shard_size and counter % shard_size == 0:
@@ -355,6 +356,13 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 arrays2dict = partial(arrays2others, generate_func=_generate_output_dict)
 arrays2feature_dict = partial(arrays2others, generate_func=_generate_feature_dict)
 arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
+
+
+def get_label_row(row, anchor):
+    if anchor == -1:
+        return row[-1]
+    else:
+        return row[anchor:]
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
