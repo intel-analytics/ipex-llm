@@ -12,32 +12,32 @@ runs:
     - name: Run Nano TensorFlow Test (Train)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ] && [ ! $OS = "centos" ]; then
+        if [ ! $SYSTEM = "windows" ] && [ ! $SYSTEM = "centos" ]; then
           bash python/nano/test/run-nano-tf-train-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Inference)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-tf-inference-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Horovod)
       shell: bash
@@ -48,59 +48,59 @@ runs:
         # source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Ray)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-tf-ray-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Automl)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-automl-common-tests.sh
           bash python/nano/test/run-nano-automl-tf-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (INC)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-tf-inc-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (OpenVINO)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
@@ -108,47 +108,47 @@ runs:
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (ONNXRuntime)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-tf-onnx-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (NoteBook)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
         fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (Tutorial)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
         fi
@@ -157,20 +157,20 @@ runs:
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
 
     - name: Run Nano TensorFlow Test (How To Guide)
       shell: bash
       run: |
-        if [ $OS = "centos" ]; then
+        if [ $SYSTEM = "centos" ]; then
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $OS = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/tutorial/notebook/training/tensorflow/run-nano-howto-guides-training-tensorflow-tests.sh
         fi
         bash python/nano/tutorial/notebook/inference/tensorflow/run-nano-howto-guides-inference-tensorflow-tests.sh
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-        OS: ${{ inputs.os }}
+        SYSTEM: ${{ inputs.os }}
