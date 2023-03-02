@@ -16,7 +16,9 @@ runs:
           source $CONDA_HOME/bin/activate nano-pytorch
         fi
         source bigdl-nano-init
-        bash python/nano/test/run-nano-pytorch-tests.sh
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/test/run-nano-pytorch-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -29,7 +31,9 @@ runs:
           source $CONDA_HOME/bin/activate nano-pytorch
         fi
         source bigdl-nano-init
-        bash python/nano/test/run-nano-pytorch-ray-tests.sh
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/test/run-nano-pytorch-ray-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -128,7 +128,7 @@ jobs:
   #     with:
   #       os: "windows"
 
-  Nano-PyTorch-UT-Test-Windows:
+  Nano-PyTorch-UT-Test-CentOS:
     runs-on: [ "Gondolin-centos" ]
 
     strategy:
@@ -150,7 +150,7 @@ jobs:
     - name: Remove Nano PyTorch Conda Env
       uses: ./.github/actions/nano/remove-pytorch-env
 
-  Nano-TensorFlow-UT-Test-Windows:
+  Nano-TensorFlow-UT-Test-CentOS:
     runs-on: [ "Gondolin-centos" ]
 
     strategy:
