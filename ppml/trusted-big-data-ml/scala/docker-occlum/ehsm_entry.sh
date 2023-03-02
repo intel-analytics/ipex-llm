@@ -172,7 +172,7 @@ elif [ "$action" = "decrypt" ]; then
                             --class com.intel.analytics.bigdl.ppml.utils.Decrypt \
                             $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                             --inputDataSourcePath $input_path \
-                            --outputDataSinkPath /opt/occlum_spark/data/DecryptSimple/ \
+                            --outputDataSinkPath /opt/occlum_spark/data/decryptSimple/ \
                             --cryptoMode aes/cbc/pkcs5padding \
                             --dataSourceType csv
 	else

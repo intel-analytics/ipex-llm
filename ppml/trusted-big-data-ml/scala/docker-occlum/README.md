@@ -409,6 +409,7 @@ bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 ```
 bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/model
 ```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptEhsm`.
 
 ## BigDL MultiPartySparkQuery e2e Example
 
@@ -456,9 +457,10 @@ bash /opt/run_spark_on_occlum_glibc.sh multi_sql_e2e
 6.You can find encrypted result under folder `/opt/occlum_spark/data/unoin_output` and `/opt/occlum_spark/data/join_output`.
  And decrypt the result by:
 ```
-bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/unoin_output
+bash /opt/ehsm_entry.sh  decrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/union_output
 bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/join_output
 ```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple` and `/opt/occlum_spark/data/decryptEhsm`.
 
 ## PySpark 3.1.3 Pi example
 
