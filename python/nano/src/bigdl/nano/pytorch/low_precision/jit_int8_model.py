@@ -69,6 +69,11 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         # TODO: since onednn cooperates well with other nano methods, it is set to True
         # by default in InferenceOptimizer.quantize(). However, it will lead to strange
         # error in fx quantization during inference. Therefore, we disable it by hand.
+        # Actually, prepare_fx supports the onednn backend, related design is in here:
+        # https://github.com/pytorch/pytorch/pull/69820
+        # To use it, we can use below statement to replace the fbgemm(default) backend
+        # in line 104.
+        # qconfig_mapping = get_default_qconfig_mapping("onednn")
 
         if from_load:
             self.channels_last = channels_last
@@ -117,6 +122,8 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         self.model = prepare_fx(self.model, self.q_config,
                                 example_inputs=(input_sample,))
 
+        # TODO: multiple input data not supported during calibration
+        # the same as ipex_quantization model
         for x in calib_data:
             if isinstance(x, (tuple, list)) and len(x) > 1:
                 x = x[0]

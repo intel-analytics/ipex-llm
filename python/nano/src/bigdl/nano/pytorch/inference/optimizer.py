@@ -243,7 +243,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
                | validation_data is None). Note that there is no need to call `with
-               | torch.no_grad()` etc. in this object.
+               | InferenceOptimizer.get_context()` in this object.
 
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
@@ -714,8 +714,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          preparation function will instantiate observers multiple times for each
                          of the layers.
                          This parameter only works for native ipex and jit quantization with int8
-                         precision. When accelerator='jit', we support and recommend to pass a
-                         QConfigMapping instead of single Qconfig for customized quantization.
+                         precision. When accelerator='jit', we also support and recommend to pass
+                         a QConfigMapping instead of single Qconfig for customized quantization.
                          QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
                          quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping) is a
                          collection of quantization configurations, user can set the qconfig for
