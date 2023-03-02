@@ -23,7 +23,7 @@ import inspect
 class PytorchOpenVINOMetric(BaseOpenVINOMetric):
     def __init__(self, metric, higher_better=True):
         if not isinstance(metric, Metric):
-            invalidInputError(len(inspect.signature(metric).parameters)==2,
+            invalidInputError(len(inspect.signature(metric).parameters) == 2,
                               "Please provide an instance of torchmetrics.Metric or"
                               "a metric function with input (preds, targets).")
         super().__init__(metric, higher_better)
