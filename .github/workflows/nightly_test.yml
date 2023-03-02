@@ -396,7 +396,6 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Pytest-Ray-Py38-Spark3:
-    if: ${{ always() }}
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Ray-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -412,7 +411,7 @@ jobs:
       uses: ./.github/actions/orca/orca-pytest-ray-py38-spark3-action/nightly-test
     - name: Remove Env
       if: ${{ always() }}
-      uses: ./.github/actions/remove-env
+      uses: ./.github/actions/remove-env/remove-env-py38
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
@@ -426,7 +425,6 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Pytest-Py37-Spark3-Tf1:
-    if: ${{ always() }}
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Py37-Spark3-Tf1' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -456,7 +454,6 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Pytest-Py38-Spark3:
-    if: ${{ always() }}
     # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Pytest-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
@@ -472,7 +469,7 @@ jobs:
       uses: ./.github/actions/orca/orca-pytest-py38-spark3-action/nightly-test
     - name: Remove Env
       if: ${{ always() }}
-      uses: ./.github/actions/remove-env
+      uses: ./.github/actions/remove-env/remove-env-py38
     - name: Create Job Badge
       uses: ./.github/actions/create-job-status-badge
       if: ${{ always() }}
