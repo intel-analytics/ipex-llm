@@ -3,9 +3,9 @@ SGX-based Trusted Deep Learning Serving (hereinafter called DL-Serving) allows t
 
 The following sections will introduce three different components that are included in this toolkit, which are `TorchServe`, `Triton Inference Server`, and `TensorFlow Serving`.
 
-Besides, some demos and performance benchmark result will also be included in this document.
+Besides, some demos and performance benchmark results will also be included in this document.
 
-*Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
+*Please pay attention to the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
 
 ## Before Running code
 ### 1. Build Docker Images
