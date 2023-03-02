@@ -416,15 +416,16 @@ class TorchRunner(BaseRunner):
         """
         # unpack features into list to support multiple inputs model
         # and restore batch to what it should be.
-        features, target = batch
-        if torch.is_tensor(features):
-            self.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor or list/tuple, "
-                              "but got {}".format(type(features)))
+        self.batch = batch
+        # features, target = batch
+        # if torch.is_tensor(features):
+        #     self.batch = features, target
+        # elif isinstance(features, (tuple, list)):
+        #     self.batch = *features, target
+        # else:
+        #     invalidInputError(False,
+        #                       "Features should be tensor or list/tuple, "
+        #                       "but got {}".format(type(features)))
         self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
@@ -435,8 +436,8 @@ class TorchRunner(BaseRunner):
         with self.timers.record("bwd"):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
-        loss_item = self.loss.item()
-        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
+        # loss_item = self.loss.item()
+        # self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch/loss from last iteration
@@ -553,15 +554,16 @@ class TorchRunner(BaseRunner):
         """
         # unpack features into list to support multiple inputs model
         # and restore batch to what it should be.
-        features, target = batch
-        if torch.is_tensor(features):
-            self.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor, list/tuple, "
-                              "but got {}".format(type(features)))
+        self.batch = batch
+        # features, target = batch
+        # if torch.is_tensor(features):
+        #     self.batch = features, target
+        # elif isinstance(features, (tuple, list)):
+        #     self.batch = *features, target
+        # else:
+        #     invalidInputError(False,
+        #                       "Features should be tensor, list/tuple, "
+        #                       "but got {}".format(type(features)))
         self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
