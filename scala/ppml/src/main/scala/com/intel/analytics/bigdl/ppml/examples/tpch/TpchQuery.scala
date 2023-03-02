@@ -55,6 +55,7 @@ import org.apache.spark.sql._
 import scala.collection.mutable.ListBuffer
 import java.net.URI
 import org.apache.hadoop.fs.{FileSystem, Path}
+import scala.collection.mutable._
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
@@ -120,11 +121,17 @@ object TpchQuery {
       toNum = queryNum;
     }
 
-    for (queryNo <- fromNum to toNum) {
-      val t0 = System.nanoTime()
+    val queries = Queue[TpchQuery]()
 
+    for (queryNo <- fromNum to toNum){
       val query = Class.forName(f"com.intel.analytics.bigdl.ppml.examples.tpch.Q${queryNo}%02d")
         .newInstance.asInstanceOf[TpchQuery]
+
+      queries.enqueue(query)
+    }
+
+    queries.foreach((query:TpchQuery) => {
+      val t0 = System.nanoTime()
 
       outputDF(query.execute(sc, schemaProvider), outputDir, query.getName(), sc, outputCryptoMode)
 
@@ -132,8 +139,7 @@ object TpchQuery {
 
       val elapsed = (t1 - t0) / 1000000000.0f // second
       results += new Tuple2(query.getName(), elapsed)
-
-    }
+    })
 
     return results
   }
