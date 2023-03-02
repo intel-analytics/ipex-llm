@@ -528,7 +528,36 @@ run_spark_sql_e2e() {
                 --ehsmAPIKEY $API_KEY
 }
 
-
+run_multi_spark_sql_e2e() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL MultiParty Spark SQL e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+                --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+                --conf spark.bigdl.primaryKey.BobPK.kms.ip=$EHSM_KMS_IP \
+                --conf spark.bigdl.primaryKey.BobPK.kms.port=$EHSM_KMS_PORT \
+                --conf spark.bigdl.primaryKey.BobPK.kms.appId=$APP_ID \
+                --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=$API_KEY \
+                --conf spark.bigdl.primaryKey.BobPK.material=/host/data/key/ehsm_encrypted_primary_key \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.appId=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.material=/host/data/key/simple_encrypted_primary_key \
+                --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                /host/data/encryptSimple /host/data/encryptEhsm /host/data/ /host/data/
+}
 
 id=$([ -f "$pid" ] && echo $(wc -l < "$pid") || echo "0")
 
@@ -598,6 +627,10 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    multi_sql_e2e)
+        run_multi_spark_sql_e2e
         cd ../
         ;;
 esac

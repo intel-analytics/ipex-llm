@@ -26,6 +26,14 @@ object MultiPartySparkQueryExample extends Supportive {
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val (amyEncryptedDataFileInputPath,
          bobEncryptedDataFileInputPath) = (args(0), args(1))
+
+    var (amyEncryptedDataFileOutputPath,
+    bobEncryptedDataFileOutputPath) = ("", "")
+    if (args.length == 4) {
+      amyEncryptedDataFileOutputPath = args(2)
+      bobEncryptedDataFileOutputPath = args(3)
+    }
+
     val sc = PPMLContext.initPPMLContext(sparkSession)
 
     timing("processing") {
@@ -77,7 +85,7 @@ object MultiPartySparkQueryExample extends Supportive {
                  primaryKeyName = "AmyPK")
           .mode("overwrite")
           .option("header", true)
-          .csv("./union_output")
+          .csv(amyEncryptedDataFileOutputPath + "./union_output")
       }
 
       val joinDf = timing("7/8 join Amy developers and Bob developers on age") {
@@ -94,7 +102,8 @@ object MultiPartySparkQueryExample extends Supportive {
 
       timing("6/8 encrypt and save join outputs") {
         sc.write(joinDf, AES_CBC_PKCS5PADDING, "BobPK")
-          .mode("overwrite").option("header", true).csv("./join_output")
+          .mode("overwrite").option("header", true)
+          .csv(bobEncryptedDataFileOutputPath + "./join_output")
       }
     }
   }
