@@ -752,7 +752,7 @@ class TestPyTorchEstimator(TestCase):
 
         try:
             estimator = get_estimator(model_fn=lambda config: IdentityNet())
-            path = "/tmp/model"
+            path = "/tmp/optional_model"
             estimator.save(path)
             estimator.shutdown()
 
