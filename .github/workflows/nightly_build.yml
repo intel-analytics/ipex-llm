@@ -269,8 +269,8 @@ jobs:
         job-name: docker-build-bigdl
         runner-hosted-on: 'America'
   
-    
   python-build:
+    # python build can only be published once a day, please do not publish it manually
     if: ${{ github.event.schedule }} 
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
