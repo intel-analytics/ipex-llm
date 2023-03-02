@@ -199,6 +199,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def fit(self,
             data: Union['SparkXShards', 'SparkDataFrame', Callable[[Dict, int], 'DataLoader']],
             epochs: int=1,
+            max_steps: Optional[int]=None,
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
@@ -294,6 +295,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         params = dict(
             epochs=epochs,
+            max_steps=max_steps,
             batch_size=batch_size,
             profile=profile,
             callbacks=callbacks
