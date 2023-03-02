@@ -53,7 +53,10 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec)
+                self._output_shape = try_compute_output_shape(model, input_spec,
+                                                              try_fake=False)
+                if input_spec is None and hasattr(model, "input_shape"):
+                    input_spec = input_spec = tf.TensorSpec(model.input_shape, model.dtype)
                 if not isinstance(input_spec, (tuple, list)):
                     # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )
