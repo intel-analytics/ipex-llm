@@ -62,16 +62,15 @@ permissions:
 jobs:
   changes:
     name: Paths filter
-    runs-on: ubuntu-latest
-    # runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     outputs:
       friesian-pytest: ${{ steps.filter.outputs.friesian-pytest }}
       friesian-example: ${{ steps.filter.outputs.friesian-example }}
       dllib: ${{ steps.filter.outputs.dllib }}
-      # orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
-      # orca-pytest-openvino: ${{ steps.filter.outputs.orca-pytest-openvino }}
+      orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
+      orca-pytest-openvino: ${{ steps.filter.outputs.orca-pytest-openvino }}
       orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
-      # orca-example: ${{ steps.filter.outputs.orca-example }}
+      orca-example: ${{ steps.filter.outputs.orca-example }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
