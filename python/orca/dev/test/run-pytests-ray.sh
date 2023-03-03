@@ -37,16 +37,18 @@ if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
 fi
-
 ray stop -f
 
-echo "Running orca learn pytorch ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/pytorch/
+echo "Running orca learn ray backend tests"
+python -m pytest -v test/bigdl/orca/learn/ray \
+      --ignore=test/bigdl/orca/learn/ray/ctx/ \
+      --ignore=test/bigdl/orca/learn/ray/mxnet/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
     exit $exit_status_2
 fi
+ray stop -f
 
 echo "Running orca data ray related tests"
 python -m pytest -v test/bigdl/orca/data/ray
@@ -55,39 +57,24 @@ if [ $exit_status_3 -ne 0 ];
 then
     exit $exit_status_3
 fi
-
-echo "Running orca learn mmcv ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/experimental/
-exit_status_4=$?
-if [ $exit_status_4 -ne 0 ];then
-    exit $exit_status_4
-fi
+ray stop -f
 
 # TODO: support mxnet test under python 3.8
 python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
     echo "Running orca mxnet tests"
     python -m pytest -v test/bigdl/orca/learn/ray/mxnet/
-    exit_status_5=$?
-    if [ $exit_status_5 -ne 0 ];then
-        exit $exit_status_5
+    exit_status_4=$?
+    if [ $exit_status_4 -ne 0 ];then
+        exit $exit_status_4
     fi
 fi
 ray stop -f
 
 echo "Running orca learn spark backend tests"
 python -m pytest -v test/bigdl/orca/learn/spark/
-exit_status_6=$?
-if [ $exit_status_6 -ne 0 ];
+exit_status_5=$?
+if [ $exit_status_5 -ne 0 ];
 then
-    exit $exit_status_6
-fi
-
-# TODO: the following test might arise random fail
-echo "Running orca learn tf2 ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/
-exit_status_7=$?
-if [ $exit_status_7 -ne 0 ];
-then
-    exit $exit_status_7
+    exit $exit_status_5
 fi
