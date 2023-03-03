@@ -56,7 +56,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
                 self._output_shape = try_compute_output_shape(model, input_spec,
                                                               try_fake_inference=False)
                 if input_spec is None and hasattr(model, "input_shape"):
-                    input_spec = input_spec = tf.TensorSpec(model.input_shape, model.dtype)
+                    input_spec = tf.TensorSpec(model.input_shape, model.dtype)
                 if not isinstance(input_spec, (tuple, list)):
                     # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )
