@@ -25,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import traceback
 import inspect
+import sigfig
 import tensorflow as tf
 import keras
 from typing import Dict, Optional, List, Union, Callable
@@ -298,7 +299,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
                         _accuracy = result_map["original"]["accuracy"]
-                        _accuracy = round(_accuracy, 3)
+                        _accuracy = sigfig.round(_accuracy, sigfigs=5)
                         result_map[method]["accuracy"] = str(_accuracy) + '*'
                     else:
                         if method == "original":
@@ -620,6 +621,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
                 x = tf.data.Dataset.zip((x, y))
+
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
@@ -816,6 +818,16 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    for data_input, target in data:
-        metric.update_state(y_true=target, y_pred=model(data_input))
-    return metric.result().numpy()
+    if isinstance(metric, tf.keras.metrics.Metric):
+        metric.reset_states()
+        for data_input, target in data:
+            metric.update_state(y_true=target, y_pred=model(data_input))
+        return metric.result().numpy()
+    elif isinstance(metric, Callable):
+        results = []
+        for data_input, target in data:
+            result = metric(y_true=target, y_pred=model(data_input))
+            results.append(result)
+        return np.average(results)
+    else:
+        invalidInputError(False, "metric should be a tf.keras.metrics.Metric or a Callable")
