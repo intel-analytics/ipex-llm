@@ -135,17 +135,20 @@ class PytorchPysparkWorker(TorchRunner):
                                           wrap_dataloader=wrap_dataloader,
                                           callbacks=callbacks,
                                           validation_data_creator=validation_data_creator)
-        state_dict = self.get_state_dict()
 
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
         if self.rank == 0:
             if self.model_dir is not None:
+                state_dict = self.get_state_dict()
                 save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
+
+        if self.model_dir is not None:
             return [stats_list]
         else:
             if self.rank == 0:
+                state_dict = self.get_state_dict()
                 return [state_dict, stats_list]
             else:
                 return [stats_list]
