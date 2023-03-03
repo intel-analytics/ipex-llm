@@ -21,7 +21,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         
-        export FTP_URI=${FTP_URI}
+        pip list
         chmod a+x python/orca/dev/test/run-tutorial-xshards.sh
         python/orca/dev/test/run-tutorial-xshards.sh
 

@@ -23,10 +23,8 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
         
         pip list
-        export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
-        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
