@@ -4,7 +4,7 @@ ARG BASE_IMAGE_NAME
 ARG BASE_IMAGE_TAG
 ARG JDK_VERSION=11
 
-#Stage.1 Torchserve Frontend
+# Stage.1 Torchserve Frontend
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 ARG http_proxy
 ARG https_proxy
@@ -12,7 +12,8 @@ ARG JDK_VERSION
 ENV JDK_HOME                /opt/jdk${JDK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 
-RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \
@@ -21,7 +22,7 @@ RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p /ppml/torchserve && \
     mv server/build/libs/server-1.0.jar /ppml/torchserve/frontend.jar
 
-#Stage.2 Tritonserver
+# Stage.2 Tritonserver
 From ubuntu:20.04 as tritonserver
 ARG http_proxy
 ARG https_proxy
@@ -51,6 +52,13 @@ RUN cd / &&\
     ./build.py -v --no-container-build --build-dir=`pwd`/build --backend=python --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-tracing
 
 FROM nvcr.io/nvidia/tritonserver:23.01-py3-min AS min_container
+
+# Stage.3 TF-Serving
+FROM tensorflow/serving:latest-devel as tf-serving
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+RUN bazel build -c opt tensorflow_serving/...
 
 # DL-Serving
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
@@ -84,6 +92,7 @@ ENV TCMALLOC_RELEASE_RATE 200
 RUN mkdir /ppml/examples && \
     mkdir /ppml/torchserve && \
     mkdir /ppml/tritonserver && \
+    mkdir /ppml/tf-serving && \
     mkdir -p /usr/local/cuda/lib64/stubs && \
     mkdir -p /usr/local/cuda/targets/x86_64-linux/lib && \
     mkdir /opt/tritonserver && \
@@ -102,11 +111,12 @@ ADD ./filelock.patch /filelock.patch
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
-# Start Script for Torchserve
+# Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./start-backend-sgx.sh      /ppml/torchserve/start-backend-sgx.sh
 ADD ./start-frontend-sgx.sh     /ppml/torchserve/start-frontend-sgx.sh
 ADD ./start-torchserve-sgx.sh   /ppml/torchserve/start-torchserve-sgx.sh
 ADD ./start-tritonserver-sgx.sh /ppml/tritonserver/start-tritonserver-sgx.sh
+ADD ./start-tf-serving-sgx.sh   /ppml/tf-serving/start-tf-serving-sgx.sh
 
 
 #For Tritonserver python backend
@@ -130,6 +140,9 @@ COPY --from=tritonserver /server/docker/entrypoint.d/ /opt/nvidia/entrypoint.d/
 COPY --from=tritonserver /server/docker/cpu_only/ /opt/nvidia/
 COPY --from=min_container /opt/tritonserver/backends/pytorch /opt/tritonserver/backends
 COPY --from=min_container /opt/tritonserver/backends/tensorflow2 /opt/tritonserver/backends
+
+#TF-Serving
+COPY --from=tf-serving /tensorflow-serving/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server /usr/bin/tensorflow_model_server
 
 # PyTorch Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
