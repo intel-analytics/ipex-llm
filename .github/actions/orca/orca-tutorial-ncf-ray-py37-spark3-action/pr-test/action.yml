@@ -1,5 +1,5 @@
-name: 'Run Orca Tutorial NCF Ray'
-description: 'Run Orca Tutorial NCF Ray'
+name: 'Run Orca Tutorial NCF Ray Py37 Spark3'
+description: 'Run Orca Tutorial NCF Ray Py37 Spark3'
 runs:
   using: "composite"
   steps:
