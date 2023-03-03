@@ -141,7 +141,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.state_dict = None
 
         num_nodes, cores_per_node = get_node_and_core_number()
         self.num_workers = num_nodes * workers_per_node
@@ -183,6 +182,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
+
+        if self.model_creator:
+            self.state_dict = self.driver_runner.get_state_dict()
 
     def create_tcpstore_server(self) -> 'TCPStore':
         import torch.distributed as dist
@@ -277,6 +279,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
+        if self.state_dict["epoch"] == 0:
+            self.state_dict = None
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
