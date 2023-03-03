@@ -18,6 +18,8 @@ runs:
         if [ $OS = "ubuntu" ]; then
           sudo apt-get update && sudo apt-get install -y wget libgl1
         elif [ $OS = "centos" ]; then
+          export http_proxy=$HTTP_PROXY
+          export https_proxy=$HTTPS_PROXY
           yum install -y gcc mesa-libGL
         else
           :
@@ -51,6 +53,11 @@ runs:
         else
           pip install wheel
           bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+        fi
+        if [ $OS = "centos" ]; then
+          source bigdl-nano-init
+          echo "export http_proxy=$HTTP_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
+          echo "https_proxy=$HTTPS_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
         fi
       env:
         OS: ${{ inputs.os }}

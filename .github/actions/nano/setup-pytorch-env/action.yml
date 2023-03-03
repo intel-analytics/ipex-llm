@@ -62,6 +62,11 @@ runs:
             bash python/nano/dev/build_and_install.sh windows default false pytorch,inference
           fi
         fi
+        if [ $OS = "centos" ]; then
+          source bigdl-nano-init
+          echo "export http_proxy=$HTTP_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
+          echo "https_proxy=$HTTPS_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
+        fi
       env:
         OS: ${{ inputs.os }}
         IS_PR: ${{ github.event.pull_request != null }}
