@@ -21,20 +21,12 @@ from pyspark.sql import SparkSession
 
 @pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture():
-    conf = {"spark.python.worker.reuse": "false"}
-    sc = init_orca_context(cores=8, conf=conf)
+    sc = init_orca_context(cores=8)
 
     def to_array_(v):
         return v.toArray().tolist()
 
-    def flatten_(v):
-        result = []
-        for elem in v:
-            result.extend(elem.toArray().tolist())
-        return result
-
     spark = SparkSession(sc)
     spark.udf.register("to_array", to_array_, ArrayType(DoubleType()))
-    spark.udf.register("flatten", flatten_, ArrayType(DoubleType()))
     yield
     stop_orca_context()
