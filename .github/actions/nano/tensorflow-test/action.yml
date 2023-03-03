@@ -133,7 +133,7 @@ runs:
           source $CONDA_HOME/bin/activate nano-tensorflow
         fi
         source bigdl-nano-init
-        if [ ! $SYSTEM = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ] && [ ! $SYSTEM = "centos" ]; then
           bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
         fi
         source bigdl-nano-unset-env
