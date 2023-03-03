@@ -65,7 +65,7 @@ runs:
         if [ $OS = "centos" ]; then
           source bigdl-nano-init
           echo "export http_proxy=$HTTP_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
-          echo "https_proxy=$HTTPS_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
+          echo "export https_proxy=$HTTPS_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
         fi
       env:
         OS: ${{ inputs.os }}
