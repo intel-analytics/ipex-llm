@@ -426,7 +426,7 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-  
+
   Orca-Pytest-Jep-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
@@ -464,7 +464,7 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-  
+
   Orca-Tutorial-Xshards-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
