@@ -776,14 +776,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataloader = remove_batch_dim_fn(calib_dataloader)
             else:
                 if calib_data is None and calib_dataloader is not None:
-                    # will be deprecate in future release
+                    # will be deprecated in future release
                     warnings.warn("`calib_dataloader` will be deprecated in future release, please"
                                   "use `calib_data` instead.",
                                   category=DeprecationWarning)
                     calib_dataloader = calib_dataloader
                 else:
                     calib_dataloader = calib_data
-            # judge whether contains label in calib_datalaoder
+            # judge whether contains label in calib_dataloader
             # if not, will append label at last
             if accelerator is not None:
                 calib_dataloader = automatic_add_label_in_dataloader(model,
