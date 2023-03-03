@@ -350,9 +350,9 @@ class TestOnnx(TestCase):
                                                    input_sample=train_loader, output_tensors=False)
 
         for x, y in train_loader:
-            model.eval()
             forward_res_tensor = onnx_model(x).numpy()
             forward_res_numpy = test_onnx_model(x)
+            assert isinstance(forward_res_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
 
 if __name__ == '__main__':

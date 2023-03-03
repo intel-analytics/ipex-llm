@@ -859,7 +859,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                           "max_trials": max_trials,
                                           "onnxruntime_session_options": onnxruntime_session_options
                                           }
-                if framework != 'pytorch_ipex':
+                if accelerator == "onnxruntime":
+                    q_model = inc_quantize(**inc_quantize_arguments)
+                    q_model.output_tensors = output_tensors
+                    return q_model
+                elif framework != 'pytorch_ipex':
                     return inc_quantize(**inc_quantize_arguments)
                 else:
                     try:
