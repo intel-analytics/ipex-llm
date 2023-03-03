@@ -140,8 +140,8 @@ class PytorchPysparkWorker(TorchRunner):
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
-        if self.model_dir is not None:
-            if self.rank == 0:
+        if self.rank == 0:
+            if self.model_dir is not None:
                 save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
             return [stats_list]
         else:
