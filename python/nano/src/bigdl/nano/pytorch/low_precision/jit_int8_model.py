@@ -127,7 +127,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                                 example_inputs=(input_sample,))
 
         # TODO: multiple input data not supported during calibration
-        # the same as ipex_quantization model
+        # the same problem as ipex_quantization model
         for x in calib_data:
             if isinstance(x, (tuple, list)) and len(x) > 1:
                 x = x[0]
