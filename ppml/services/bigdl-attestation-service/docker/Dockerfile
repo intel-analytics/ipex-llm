@@ -7,6 +7,10 @@ RUN mkdir -p /opt/bigdl-as/data
 ADD ./bigdl-as-entrypoint.sh /ppml/bigdl-as-entrypoint.sh
 RUN chmod 777 /ppml/bigdl-as-entrypoint.sh
 
+# To do attestation with sbx server
+ADD ./libsgx_dcap_quoteverify.so /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
+RUN chmod +x /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
+
 # stage 1. generate SGX secrets and prepare KMS env
 FROM attestation-service-base as temp
 
