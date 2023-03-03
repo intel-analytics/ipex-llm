@@ -2073,8 +2073,10 @@ def _str2optimizer_metric(metric):
         metric_func = REGRESSION_MAP[metric_name]
 
         def metric(pred, target):
-            pred = pred.numpy()
-            target = target.numpy()
+            if isinstance(pred, torch.Tensor):
+                pred = pred.numpy()
+            if isinstance(target, torch.Tensor):
+                target = target.numpy()
             return metric_func(target, pred)
         metric.__name__ = metric_name
     return metric
