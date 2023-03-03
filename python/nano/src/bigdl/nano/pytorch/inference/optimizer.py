@@ -17,6 +17,7 @@
 import torch
 from torch import nn
 import time
+import sigfig
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
@@ -470,7 +471,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             _accuracy = result_map["original"]["accuracy"]
                             if isinstance(_accuracy, torch.Tensor):
                                 _accuracy = _accuracy.item()
-                            _accuracy = round(_accuracy, 3)
+                            _accuracy = sigfig.round(_accuracy, sigfigs=5)
                             result_map[method]["accuracy"] = str(_accuracy) + '*'
                         else:
                             if method == "original":
