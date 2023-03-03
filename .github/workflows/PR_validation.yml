@@ -67,10 +67,10 @@ jobs:
       friesian-pytest: ${{ steps.filter.outputs.friesian-pytest }}
       friesian-example: ${{ steps.filter.outputs.friesian-example }}
       dllib: ${{ steps.filter.outputs.dllib }}
-      orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
-      orca-pytest-openvino: ${{ steps.filter.outputs.orca-pytest-openvino }}
-      orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
-      orca-example: ${{ steps.filter.outputs.orca-example }}
+      # orca-pytest: ${{ steps.filter.outputs.orca-pytest }}
+      # orca-pytest-openvino: ${{ steps.filter.outputs.orca-pytest-openvino }}
+      # orca-tutorial: ${{ steps.filter.outputs.orca-tutorial }}
+      # orca-example: ${{ steps.filter.outputs.orca-example }}
       ppml: ${{ steps.filter.outputs.ppml }}
     steps:
       - uses: actions/checkout@v3
@@ -353,7 +353,7 @@ jobs:
   
   Orca-Pytest-Py38-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    # if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -372,7 +372,7 @@ jobs:
 
   Orca-Pytest-Ray-Py38-Spark3:
     needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    # if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
