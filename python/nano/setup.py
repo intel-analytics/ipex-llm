@@ -170,6 +170,7 @@ def setup_package():
                         "py-cpuinfo",
                         "pyyaml",
                         "packaging",
+                        "sigfig",
                         "setuptools<66"]
 
     package_data = [
