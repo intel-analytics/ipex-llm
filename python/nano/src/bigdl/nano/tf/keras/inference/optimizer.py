@@ -838,4 +838,4 @@ def _accuracy_calculate_helper(model, metric, data):
             results.append(result)
         return np.average(results)
     else:
-        raise ValueError("metric should be a tf.keras.metrics.Metric or a Callable")
+        invalidInputError(False, "metric should be a tf.keras.metrics.Metric or a Callable")
