@@ -17,17 +17,15 @@
 import yaml
 from pathlib import Path
 import copy
-
 import torch
-import pytorch_lightning as pl
 
 
-def save_model(model: pl.LightningModule, path, compression="fp32"):
+def save_model(model: torch.nn.Module, path, compression="fp32"):
     """
     Save the model to local file.
 
     :param model: Any model of torch.nn.Module, including all models accelareted by
-            Trainer.trace/Trainer.quantize.
+            InferenceOptimizer.trace/InferenceOptimizer.quantize.
     :param path: Path to saved model. Path should be a directory.
     :param compression: str. This parameter only effective for jit, ipex or pure
                pytorch model with fp32 or bf16 precision. Defaultly, all models are saved

@@ -116,22 +116,10 @@ init_instance() {
         echo "No MALLOC_ARENA_MAX specified, set to 1."
         export MALLOC_ARENA_MAX=1
     fi
-    
-    # check occlum log level for docker
-    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
-        echo "No ENABLE_SGX_DEBUG specified, set to off."
-        export ENABLE_SGX_DEBUG=false
-    fi
-    export OCCLUM_LOG_LEVEL=off
-    if [[ -z "$SGX_LOG_LEVEL" ]]; then
-        echo "No SGX_LOG_LEVEL specified, set to off."
-    else
-        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
-            export ENABLE_SGX_DEBUG=true
-            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-        fi
-    fi
+
+    # ENABLE_SGX_DEBUG
+    export ENABLE_SGX_DEBUG=true
+
 
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
@@ -163,6 +151,17 @@ attestation_init() {
     # make source mount file exit to avoid occlum mout fail
     cd /opt/occlum_spark
     bash /opt/mount.sh
+
+    # check occlum log level for docker
+    export OCCLUM_LOG_LEVEL=off
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then
+        echo "No SGX_LOG_LEVEL specified, set to off."
+    else
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+        fi
+    fi
 
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
@@ -437,19 +436,12 @@ run_spark_gbt_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
-                --master local[4] \
-                --conf spark.task.cpus=2 \
-                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --class com.intel.analytics.bigdl.ppml.examples.GbtClassifierTrainingExampleOnCriteoClickLogsDataset \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --trainingDataPath /host/data/encrypt/ \
+                --trainingDataPath /host/data/encryptEhsm/ \
                 --modelSavePath /host/data/model/ \
                 --inputEncryptMode AES/CBC/PKCS5Padding \
                 --kmsServerIP $EHSM_KMS_IP \
@@ -473,19 +465,12 @@ run_spark_sql_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
-                --master local[4] \
-                --conf spark.task.cpus=2 \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
                 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --inputPath /host/data/encrypt/ \
+                --inputPath /host/data/encryptEhsm/ \
                 --outputPath /host/data/model/ \
                 --inputEncryptModeValue AES/CBC/PKCS5Padding \
                 --outputEncryptModeValue AES/CBC/PKCS5Padding \
@@ -493,6 +478,36 @@ run_spark_sql_e2e() {
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $APP_ID \
                 --ehsmAPIKEY $API_KEY
+}
+
+run_multi_spark_sql_e2e() {
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL MultiParty Spark SQL e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+                --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+                --conf spark.bigdl.primaryKey.BobPK.kms.ip=$EHSM_KMS_IP \
+                --conf spark.bigdl.primaryKey.BobPK.kms.port=$EHSM_KMS_PORT \
+                --conf spark.bigdl.primaryKey.BobPK.kms.appId=$APP_ID \
+                --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=$API_KEY \
+                --conf spark.bigdl.primaryKey.BobPK.material=/host/data/key/ehsm_encrypted_primary_key \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.appId=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.material=/host/data/key/simple_encrypted_primary_key \
+                --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                /host/data/encryptSimple /host/data/encryptEhsm /host/data/ /host/data/
 }
 
 verify() { #verify ehsm quote
@@ -573,6 +588,10 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    multi_sql_e2e)
+        run_multi_spark_sql_e2e
         cd ../
         ;;
     verify)

@@ -18,7 +18,7 @@
 import os
 import subprocess
 import warnings
-from typing import Union, Dict
+from typing import Union, Dict, Optional
 
 
 def _env_variable_is_set(variable: str,
@@ -62,3 +62,34 @@ def _find_library(library_name: str, priority_dir: Union[str, None] = None) -> U
         warnings.warn(
             "Some errors occurred while trying to find " + library_name)
     return res[0].decode("utf-8") if len(res) > 0 else None
+
+
+class EnvContext(object):
+    """
+    A helper context for changing environment variables temporarily.
+
+    Usage:
+    ```
+    with EnvContext():
+        os.environ["KMP_AFFINITY"] = "x"
+        ...
+    ```
+    or
+    ```
+    with EnvContext({"KMP_AFFINITY": "x"}):
+        ...
+    ```
+    After exiting this context, `os.environ` will be restored to initial state.
+    """
+    def __init__(self, env: Optional[Dict[str, str]] = None) -> None:
+        self.env_backup = os.environ.copy()
+        self.new_env = env
+
+    def __enter__(self):
+        if self.new_env is not None:
+            os.environ.update(self.new_env)
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        # it seems `os.environ = self.env_backup` will cause bug
+        os.environ.clear()
+        os.environ.update(self.env_backup)

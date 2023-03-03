@@ -1,17 +1,99 @@
-# Gramine Bigdata Toolkit
+- [Gramine Bigdata Toolkit Overview](#gramine-bigdata-toolkit-overview)
+  - [Before Running Code](#before-running-code)
+    - [1. Build Docker Images](#1-build-docker-images)
+      - [1.1 Build Bigdata Base Image](#11-build-bigdata-base-image)
+      - [1.2 Build Customer Image](#12-build-customer-image)
+    - [2. Prepare SSL key](#2-prepare-ssl-key)
+      - [2.1 Prepare the Key](#21-prepare-the-key)
+      - [2.2 Prepare the Password](#22-prepare-the-password)
+    - [3. Register MREnclave(optional)](#3-register-mrenclaveoptional)
+      - [3.1 Deploy EHSM KMS\&AS](#31-deploy-ehsm-kmsas)
+      - [3.2 Enroll yourself on EHSM](#32-enroll-yourself-on-ehsm)
+      - [3.3 Attest EHSM Server](#33-attest-ehsm-server)
+        - [3.3.1 Start a BigDL client container](#331-start-a-bigdl-client-container)
+        - [3.3.2 Verify  EHSM Quote](#332-verify--ehsm-quote)
+      - [3.4 Register your MREnclave to EHSM](#34-register-your-mrenclave-to-ehsm)
+- [Spark](#spark)
+  - [SGX](#sgx)
+    - [Spark Submit](#spark-submit)
+      - [1 Prepare k8s service account and kubeconfig](#1-prepare-k8s-service-account-and-kubeconfig)
+      - [2 Start the client container](#2-start-the-client-container)
+      - [3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)](#3-init-the-client-and-run-spark-applications-on-k8s-13-can-be-skipped-if-you-are-using-14-to-submit-jobs)
+        - [3.1 Configure `spark-executor-template.yaml` in the container](#31-configure-spark-executor-templateyaml-in-the-container)
+        - [3.2 Submit spark command](#32-submit-spark-command)
+        - [3.3 Spark-Pi example](#33-spark-pi-example)
+      - [4 Use bigdl-ppml-submit.sh to submit ppml jobs](#4-use-bigdl-ppml-submitsh-to-submit-ppml-jobs)
+        - [4.1 Spark-Pi on local mode](#41-spark-pi-on-local-mode)
+        - [4.2 Spark-Pi on local sgx mode](#42-spark-pi-on-local-sgx-mode)
+        - [4.3 Spark-Pi on client mode](#43-spark-pi-on-client-mode)
+        - [4.4 Spark-Pi on cluster mode](#44-spark-pi-on-cluster-mode)
+        - [4.5 bigdl-ppml-submit.sh explanations](#45-bigdl-ppml-submitsh-explanations)
+    - [Spark Thrift Server](#spark-thrift-server)
+      - [1. Start thrift server](#1-start-thrift-server)
+        - [1.1 Prepare the configuration file](#11-prepare-the-configuration-file)
+        - [1.2 Three ways to start](#12-three-ways-to-start)
+          - [1.2.1 Start with spark official script](#121-start-with-spark-official-script)
+          - [1.2.2 Start with JAVA scripts](#122-start-with-java-scripts)
+          - [1.2.3 Start with bigdl-ppml-submit.sh](#123-start-with-bigdl-ppml-submitsh)
+        - [1.3 Use beeline to connect Thrift Server](#13-use-beeline-to-connect-thrift-server)
+          - [1.3.1 Start beeline](#131-start-beeline)
+          - [1.3.2 Test thrift server](#132-test-thrift-server)
+      - [2. Enable transparent encryption](#2-enable-transparent-encryption)
+        - [2.1 HDFS Transparent Encryption](#21-hdfs-transparent-encryption)
+          - [2.1.1 Start hadoop KMS(Key Management Service)](#211-start-hadoop-kmskey-management-service)
+          - [2.1.2 Use KMS to encrypt and decrypt data](#212-use-kms-to-encrypt-and-decrypt-data)
+        - [2.2 Gramine file system encryption](#22-gramine-file-system-encryption)
+        - [2.3 Bigdl PPML Codec](#23-bigdl-ppml-codec)
+    - [Spark Configuration Explainations](#spark-configuration-explainations)
+      - [1. BigDL PPML SGX related configurations](#1-bigdl-ppml-sgx-related-configurations)
+      - [2. Spark security configurations](#2-spark-security-configurations)
+        - [2.1 Spark RPC](#21-spark-rpc)
+          - [2.1.1 Authentication](#211-authentication)
+          - [2.1.2 Encryption](#212-encryption)
+          - [2.1.3. Local Storage Encryption](#213-local-storage-encryption)
+          - [2.1.4 SSL Configuration](#214-ssl-configuration)
+      - [3 env MALLOC\_ARENA\_MAX explanations](#3-env-malloc_arena_max-explanations)
+  - [TDXVM](#tdxvm)
+    - [1. Deploy PCCS](#1-deploy-pccs)
+    - [2. Deploy BigDL Remote Attestation Service](#2-deploy-bigdl-remote-attestation-service)
+    - [3. Start BigDL bigdata client](#3-start-bigdl-bigdata-client)
+    - [4. Enable Attestation in configuration](#4-enable-attestation-in-configuration)
+    - [5. Submit spark task](#5-submit-spark-task)
+- [Flink](#flink)
+  - [SGX](#sgx-1)
+    - [1. Enter the client contianer](#1-enter-the-client-contianer)
+    - [2. Prepare flink security configuration](#2-prepare-flink-security-configuration)
+      - [2.1 prepare ssl keystore](#21-prepare-ssl-keystore)
+    - [3. Submit flink job on native k8s mode on SGX](#3-submit-flink-job-on-native-k8s-mode-on-sgx)
+    - [4. Flink total process memory](#4-flink-total-process-memory)
+    - [5. Flink security configurations](#5-flink-security-configurations)
+      - [5.1 SSL Configuration](#51-ssl-configuration)
+      - [5.2 Local Storage](#52-local-storage)
 
-This image contains Gramine and some popular Big Data frameworks including Hadoop, Spark and Hive.
+# Gramine Bigdata Toolkit Overview
+
+This image is designed for the big data field in Privacy Preserving Machine Learning (PPML). Users can run end-to-end big data analytics application (Spark, Flink, Hive and Flink) with distributed cluster on Intel Software Guard Extensions (SGX) or Trust Domain Extensions (TDX).
 
 ## Before Running Code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production.
+**Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(16G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
+
+`16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
+
+**attention:** If there is `SNAPSHOT` in a image tag, the image is developing continuosly, which means you need to update the image to use the latest feature.
 
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
-You can use out pulic bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:latest`, which is recommended. Or you can build your own base image, which is expected to be exactly same with our one.
+You can use out pulic bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly same with our one.
 
 Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -64,7 +146,7 @@ mr_signer        : 6f0627955......
   sudo bash BigDL/ppml/scripts/generate-password.sh <used_password_when_generate_keys>
 ```
 
-### 3. Register MREnclave
+### 3. Register MREnclave(optional)
 
 #### 3.1 Deploy EHSM KMS&AS
 
@@ -148,70 +230,29 @@ python register-mrenclave.py --appid <your_appid> \
                              --mr_signer <your_mrensigner_hash_value>
 ```
 
-## Run Spark
+# Spark
 
-Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
+Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [Using Helm to run your Spark job][https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes#25-using-helm-to-run-your-spark-job].
+## SGX
+### Spark Submit
+#### 1 Prepare k8s service account and kubeconfig
+Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
 
-### 1. Start the spark client as Docker container
-#### 1.1 Prepare the keys/password/data/enclave-key.pem
-Please refer to the previous section about [preparing keys and passwords](#2-prepare-spark-ssl-key).
-
-``` bash
-bash BigDL/ppml/scripts/generate-keys.sh
-bash BigDL/ppml/scripts/generate-password.sh YOUR_PASSWORD
-kubectl apply -f keys/keys.yaml
-kubectl apply -f password/password.yaml
-```
-
-#### 1.2 Prepare the k8s configurations
-##### 1.2.1 Create the RBAC
-```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
-
-# bind service account and user
-kubectl config set-credentials spark-user \
---token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
-
-# bind user and context
-kubectl config set-context spark-context --user=spark-user
-
-# bind context and cluster
-kubectl config get-clusters
-kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
-```
-##### 1.2.2 Generate k8s config file
-```bash
-kubectl config use-context spark-context
-kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
-```
-##### 1.2.3 Create k8s secret
-```bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret \
-                      --from-literal=app_id=YOUR_KMS_APP_ID \
-                      --from-literal=api_key=YOUR_KMS_API_KEY \
-                      --from-literal=policy_id=YOUR_POLICY_ID
-kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
-```
-**The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
-
-#### 1.3 Start the client container
+#### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
 export NFS_INPUT_PATH=/YOUR_DIR/data
 export KEYS_PATH=/YOUR_DIR/keys
 export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+export KUBECONFIG_PATH=/YOUR_DIR/config
 export LOCAL_IP=$LOCAL_IP
 export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
     --privileged \
     --net=host \
     --name=gramine-bigdata \
-    --cpuset-cpus="20-24" \
+    --cpuset-cpus=10 \
     --oom-kill-disable \
     --device=/dev/sgx/enclave \
     --device=/dev/sgx/provision \
@@ -229,9 +270,9 @@ sudo docker run -itd \
 ```
 run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-#### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
+#### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
 
-##### 1.4.1 Configure `spark-executor-template.yaml` in the container
+##### 3.1 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
@@ -240,7 +281,7 @@ Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
-##### 1.4.2 Submit spark command
+##### 3.2 Submit spark command
 
 ```bash
 ./init.sh
@@ -306,24 +347,24 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 1. `local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
-##### 1.4.3 Spark-Pi example
+##### 3.3 Spark-Pi example
 
 ```bash
 gramine-sgx bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
-#### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
+#### 4 Use bigdl-ppml-submit.sh to submit ppml jobs
 
 Here, we assume you have started the client container and executed `init.sh`.
 
-##### 1.5.1 Spark-Pi on local mode
+##### 4.1 Spark-Pi on local mode
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
         --master local[2] \
-        --driver-memory 32g \
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
@@ -333,7 +374,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-##### 1.5.2 Spark-Pi on local sgx mode
+##### 4.2 Spark-Pi on local sgx mode
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
 ```
 #!/bin/bash
@@ -341,11 +382,11 @@ bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
@@ -356,7 +397,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 
 ```
-##### 1.5.3 Spark-Pi on client mode
+##### 4.3 Spark-Pi on client mode
 ![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
 
 ```
@@ -367,11 +408,11 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode client \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --num-executors 2 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
@@ -383,7 +424,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
-##### 1.5.4 Spark-Pi on cluster mode
+##### 4.4 Spark-Pi on cluster mode
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 
 ```
@@ -394,11 +435,11 @@ bash bigdl-ppml-submit.sh \
         --deploy-mode cluster \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-jvm-memory 12g\
-        --driver-memory 32g \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --driver-memory 8g \
         --driver-cores 8 \
-        --executor-memory 32g \
+        --executor-memory 8g \
         --executor-cores 8 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --num-executors 2 \
@@ -409,7 +450,7 @@ bash bigdl-ppml-submit.sh \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-##### 1.5.5 bigdl-ppml-submit.sh explanations
+##### 4.5 bigdl-ppml-submit.sh explanations
 
 bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 
@@ -417,13 +458,13 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 ```
 --master $RUNTIME_SPARK_MASTER \
 --deploy-mode cluster \
---driver-memory 32g \
+--driver-memory 8g \
 --driver-cores 8 \
---executor-memory 32g \
+--executor-memory 8g \
 --executor-cores 8 \
 --sgx-enabled true \
---sgx-driver-jvm-memory 12g \
---sgx-executor-jvm-memory 12g \
+--sgx-driver-jvm-memory 6g \
+--sgx-executor-jvm-memory 6g \
 --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 --num-executors 2 \
 --name spark-pi \
@@ -435,10 +476,10 @@ local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 300
 if you are want to enable sgx, don't forget to set the sgx-related arguments
 ```
 --sgx-enabled true \
---sgx-driver-memory 64g \
---sgx-driver-jvm-memory 12g \
---sgx-executor-memory 64g \
---sgx-executor-jvm-memory 12g \
+--sgx-driver-memory 8g \
+--sgx-driver-jvm-memory 6g \
+--sgx-executor-memory 8g \
+--sgx-executor-jvm-memory 6g \
 ```
 you can update the application arguments to anything you want to run
 ```
@@ -464,13 +505,14 @@ export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </
 --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
 --conf spark.kubernetes.executor.deleteOnTermination=false \
 ```
-## Thrift Server
+
+### Spark Thrift Server
 
 Spark SQL Thrift server is a port of Apache Hive’s HiverServer2 which allows the clients of JDBC or ODBC to execute queries of SQL over their respective protocols on Spark.
 
-### 1. Start thrift server
+#### 1. Start thrift server
 
-#### 1.1 Prepare the configuration file
+##### 1.1 Prepare the configuration file
 
 Create the file `spark-defaults.conf` at `$SPARK_HOME/conf` with the following content:
 
@@ -478,9 +520,9 @@ Create the file `spark-defaults.conf` at `$SPARK_HOME/conf` with the following c
 spark.sql.warehouse.dir         hdfs://host:ip/path #location of data
 ```
 
-#### 1.2 Three ways to start
+##### 1.2 Three ways to start
 
-##### 1.2.1 Start with spark official script
+###### 1.2.1 Start with spark official script
 
 ```bash
 cd $SPARK_HOME
@@ -488,7 +530,7 @@ sbin/start-thriftserver.sh
 ```
 **Tip:** The startup of the thrift server will create the metastore_db file at the startup location of the command, which means that every startup command needs to be run at the same location, in the example it is SPARK_HOME.
 
-##### 1.2.2 Start with JAVA scripts
+###### 1.2.2 Start with JAVA scripts
 
 ```bash
 /opt/jdk8/bin/java \
@@ -501,7 +543,7 @@ sbin/start-thriftserver.sh
   local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
 ```
 
-##### 1.2.3 Start with bigdl-ppml-submit.sh
+###### 1.2.3 Start with bigdl-ppml-submit.sh
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
@@ -528,15 +570,15 @@ bash bigdl-ppml-submit.sh \
 ```
 sgx is started in this script, and the thrift server runs in a trusted environment.
 
-#### 1.3 Use beeline to connect Thrift Server
+##### 1.3 Use beeline to connect Thrift Server
 
-##### 1.3.1 Start beeline
+###### 1.3.1 Start beeline
 ```bash
 cd $SPARK_HOME
 ./bin/beeline
 ```
 
-##### 1.3.2 Test thrift server
+###### 1.3.2 Test thrift server
 
 ```bash
 !connect jdbc:hive2://localhost:10000 #connect thrift server
@@ -554,13 +596,13 @@ If you get the following results, then the thrift server is functioning normally
 |      Bob |        1 | Engineer |
 +----------+----------+----------+
 ```
-### 2. Enable transparent encryption
+#### 2. Enable transparent encryption
 To ensure data security, we need to encrypt and store data. For ease of use, we adopt transparent encryption. Here are a few ways to achieve transparent encryption:
-#### 2.1 HDFS Transparent Encryption
+##### 2.1 HDFS Transparent Encryption
 
 If you use hdfs as warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
 ![thrift_server_hdfs_encryption](pictures/thrift_server_hdfs_encryption.png)
-##### 2.1.1 Start hadoop KMS(Key Management Service)
+###### 2.1.1 Start hadoop KMS(Key Management Service)
 1.	Make sure you can correctly start and use hdfs
 ```
 hadoop fs -ls /
@@ -598,7 +640,7 @@ hadoop key list
 ```
 
 
-##### 2.1.2 Use KMS to encrypt and decrypt data
+###### 2.1.2 Use KMS to encrypt and decrypt data
 1. Create a new encryption key for an encryption zone
 ```bash
 hadoop key create your_key
@@ -629,7 +671,7 @@ hdfs crypto -listZones
 spark.sql.warehouse.dir         hdfs://host:ip/path #encryption zone
 ```
 7. Start thrift server as above.
-#### 2.2 Gramine file system encryption
+##### 2.2 Gramine file system encryption
 Gramine also has the ability to encrypt and decrypt data. You can see more information [here][fsdGuide].
 In this case, hdfs is not supported. If it is a stand-alone environment, the data can be directly stored locally. If it is a distributed environment, then the data can be stored on a distributed file system such as nfs. Let's take nfs as an example. The architecture diagram is as follows:
 ![thrift_server_encrypted_fsd](pictures/thrift_server_encrypted_fsd.png)
@@ -669,7 +711,7 @@ volumeMounts:
         subPath: test_keys
 ```
 5. Start Thrift Server as above.
-#### 2.3 Bigdl PPML Codec
+##### 2.3 Bigdl PPML Codec
 The jar package of bigdl ppml contains codec, which can realize transparent encryption. Just need to go through some settings to start. The architecture diagram is as follows:
 ![thrift_server_codec](pictures/thrift_server_codec.png)
 **attention:**This method is under development. The following content can only be used as an experimental demo and cannot be put into production.
@@ -682,9 +724,9 @@ SET hive.exec.compress.output=true;
 SET mapreduce.output.fileoutputformat.compress.codec=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
 ```
 
-## Configuration Explainations
+### Spark Configuration Explainations
 
-### 1. Bigdl ppml SGX related configurations
+#### 1. BigDL PPML SGX related configurations
 
 <img title="" src="../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
 
@@ -716,10 +758,10 @@ When SGX is not used, the configuration is the same as spark native.
     --conf spark.driver.memory=10g
     --conf spark.executor.memory=12g
 ```
-### 2. Spark security configurations
+#### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.
-#### 2.1 Spark RPC
-##### 2.1.1 Authentication
+##### 2.1 Spark RPC
+###### 2.1.1 Authentication
 `spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
 `spark.authenticate.secret`: The secret key used authentication.
 `spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
@@ -732,7 +774,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.authenticate.enableSaslEncryption=true
 ```
 
-##### 2.1.2 Encryption
+###### 2.1.2 Encryption
 `spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.
 `spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.
 `spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.
@@ -741,7 +783,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.network.crypto.keyLength=128
     --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
 ```
-##### 2.1.3. Local Storage Encryption
+###### 2.1.3. Local Storage Encryption
 `spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.
 `spark.io.encryption.keySizeBits`: IO encryption key size in bits.
 `spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.
@@ -750,7 +792,7 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.io.encryption.keySizeBits=128
     --conf spark.io.encryption.keygen.algorithm=HmacSHA1
 ```
-##### 2.1.4 SSL Configuration
+###### 2.1.4 SSL Configuration
 `spark.ssl.enabled`: true -> enable SSL.
 `spark.ssl.port`: the port where the SSL service will listen on.
 `spark.ssl.keyPassword`: the password to the private key in the key store.
@@ -774,10 +816,116 @@ Below is an explanation of these security configurations, Please refer to [Spark
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
 
-## Run Flink
-The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
-![flink cluster in application mode](./flink%20cluster%20in%20application%20mode.png)
+#### 3 env MALLOC_ARENA_MAX explanations
 
+env MALLOC_ARENA_MAX can reduce EPC usage but may cause some error especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+
+You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
+
+## TDXVM
+
+### 1. Deploy PCCS
+You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
+### 2. Deploy BigDL Remote Attestation Service 
+[Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
+### 3. Start BigDL bigdata client 
+docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
+```bash
+export NFS_INPUT_PATH=your_nfs_path
+sudo docker run -itd --net=host \
+    --privileged \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube/config:/root/.kube/config \
+    -v $NFS_INPUT_PATH:/bigdl/nfsdata \
+    -v /dev/tdx-attest:/dev/tdx-attest \
+    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+    -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT  \
+    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+    -e RUNTIME_EXECUTOR_INSTANCES=2 \
+    -e RUNTIME_EXECUTOR_CORES=2 \
+    -e RUNTIME_DRIVER_HOST=172.29.19.131 \
+    -e RUNTIME_EXECUTOR_MEMORY=5g \
+    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+    -e RUNTIME_DRIVER_CORES=4 \
+    -e RUNTIME_DRIVER_MEMORY=5g \
+    --name tdx-attestation-test \
+    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT bash
+```
+### 4. Enable Attestation in configuration
+Upload `appid` and `apikey` to kubernetes as secrets:
+```bash
+kubectl create secret generic kms-secret \
+                  --from-literal=app_id=YOUR_APP_ID \
+                  --from-literal=api_key=YOUR_API_KEY 
+```
+Configure `spark-driver-template-for-tdxvm.yaml` and `spark-executor-template-for-tdxvm.yaml` to enable Attestation as follows:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true 
+      - name: ATTESTATION_URL
+        value: your_attestation_url # 127.0.0.1:9875 for example
+      - name: PCCS_URL
+        value: your_pccs_url # https://127.0.0.1:8081 for example
+      - name: APP_ID
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: app_id
+      - name: API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: kms-secret
+            key: api_key
+      - name: ATTESTATION_TYPE
+        value: BigDLRemoteAttestationService
+      - name: QUOTE_TYPE
+        value: TDX
+```
+### 5. Submit spark task
+```bash
+${SPARK_HOME}/bin/spark-submit \
+     --master k8s://https://172.29.19.131:6443 \
+    --deploy-mode cluster \
+    --name sparkpi-tdx \
+    --conf spark.driver.host=172.29.19.131 \
+    --conf spark.driver.port=54321 \
+    --conf spark.driver.memory=2g \
+    --conf spark.executor.cores=4 \
+    --conf spark.executor.memory=10g \
+    --conf spark.executor.instances=2 \
+    --conf spark.cores.max=32 \
+    --conf spark.kubernetes.memoryOverheadFactor=0.6 \
+    --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --conf spark.kubernetes.executor.deleteOnTermination=false \
+    --conf spark.sql.shuffle.partitions=64 \
+    --conf spark.io.compression.codec=lz4 \
+    --conf spark.sql.autoBroadcastJoinThreshold=-1 \
+    --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.file.upload.path=file:///tmp \
+    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+```
+# Flink
+The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
+![flink cluster in application mode](pictures/flink_cluster_in_application_mode.png)
+## SGX
 ### 1. Enter the client contianer
 First, use the docker command to enter the client container.
 ```bash
@@ -875,14 +1023,16 @@ kubectl get deployment | grep "wordcount-example-flink-cluster"
 kubectl get pods | grep "wordcount"
 ```
 
+Jobmanager and taskmanager will start successively. And the log of the program is in taskmanager
+
 ### 4. Flink total process memory
-[Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
+[!Flink memory configuration](pictures/jobmanager_memory_allocation.jpg) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
 
 The following uses **the total process memory** to introduce how flink allocates memory.
 
 The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
 
-<img src="./jobmanager%20memory%20allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
+<img src="pictures/taskmanager_memory_allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
 
 **<p align="center">jobmanager memory allocation</p>**
 
@@ -890,7 +1040,7 @@ The **total process memory** in jobmanager corresponds to the memory (4G) given 
 
 In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
 
-<img src="./taskmanager%20memory%20allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
+<img src="pictures/taskmanager_memory_allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
 
 **<p align="center">taskmanager memory allocation</p>**
 
@@ -920,106 +1070,7 @@ Set this path to encrypted fs dir to ensure temp file encryption on SGX mode.
 -Dio.tmp.dirs=/ppml/encrypted-fs
 ```
 
-## For Spark Task in TDXVM
 
-1. Deploy PCCS
-You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
-2. Deploy BigDL Remote Attestation Service 
-[Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
-3. Start BigDL bigdata client 
-docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT
-```bash
-export NFS_INPUT_PATH=/disk1/nfsdata/default-nfsvolumeclaim-pvc-decb9dcf-dc7a-4dd0-8bd2-e2c669fd50af
-sudo docker run -itd --net=host \
-    --privileged \
-    -v /etc/kubernetes:/etc/kubernetes \
-    -v /root/.kube/config:/root/.kube/config \
-    -v $NFS_INPUT_PATH:/bigdl/nfsdata \
-    -v /dev/tdx-attest:/dev/tdx-attest \
-    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -e RUNTIME_SPARK_MASTER=k8s://https://172.29.19.131:6443 \
-    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
-    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
-    -e RUNTIME_EXECUTOR_INSTANCES=2 \
-    -e RUNTIME_EXECUTOR_CORES=2 \
-    -e RUNTIME_DRIVER_HOST=172.29.19.131 \
-    -e RUNTIME_EXECUTOR_MEMORY=5g \
-    -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-    -e RUNTIME_DRIVER_CORES=4 \
-    -e RUNTIME_DRIVER_MEMORY=5g \
-    --name tdx-attestation-test \
-    intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT bash
-```
-4. Enable Attestation in configuration
-Upload `appid` and `apikey` to kubernetes as secrets:
-```bash
-kubectl create secret generic kms-secret \
-                  --from-literal=app_id=YOUR_APP_ID \
-                  --from-literal=api_key=YOUR_API_KEY 
-```
-Configure `spark-driver-template-for-tdxvm.yaml` and `spark-executor-template-for-tdxvm.yaml` to enable Attestation as follows:
-```yaml
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: spark-driver
-    securityContext:
-      privileged: true
-    env:
-      - name: ATTESTATION
-        value: true 
-      - name: ATTESTATION_URL
-        value: your_attestation_url # 127.0.0.1:9875 for example
-      - name: PCCS_URL
-        value: your_pccs_url # https://127.0.0.1:8081 for example
-      - name: APP_ID
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_id
-      - name: API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: api_key
-      - name: ATTESTATION_TYPE
-        value: BigDLRemoteAttestationService
-      - name: QUOTE_TYPE
-        value: TDX
-```
-5. Submit spark task
-```bash
-${SPARK_HOME}/bin/spark-submit \
-     --master k8s://https://172.29.19.131:6443 \
-    --deploy-mode cluster \
-    --name sparkpi-tdx \
-    --conf spark.driver.host=172.29.19.131 \
-    --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=2g \
-    --conf spark.executor.cores=4 \
-    --conf spark.executor.memory=10g \
-    --conf spark.executor.instances=2 \
-    --conf spark.cores.max=32 \
-    --conf spark.kubernetes.memoryOverheadFactor=0.6 \
-    --conf spark.kubernetes.executor.podNamePrefix=spark-sparkpi-tdx \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-64g-all:2.3.0-SNAPSHOT  \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template-for-tdxvm.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template-for-tdxvm.yaml \
-    --class org.apache.spark.examples.SparkPi \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.sql.shuffle.partitions=64 \
-    --conf spark.io.compression.codec=lz4 \
-    --conf spark.sql.autoBroadcastJoinThreshold=-1 \
-    --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
-    --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
-    --conf spark.kubernetes.file.upload.path=file:///tmp \
-    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
-```
 
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/python/docker-gramine/kubernetes/README.md
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md

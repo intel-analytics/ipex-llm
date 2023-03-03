@@ -65,7 +65,6 @@ class PPMLContext(JavaValue):
             else:
                 invalidInputError(False, "invalid KMS type.")
 
-        conf["spark.hadoop.io.compression.codecs"] = "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec"
         spark_conf = init_spark_conf(conf)
 
         sc = SparkContext.getOrCreate(spark_conf)

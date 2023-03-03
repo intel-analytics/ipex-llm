@@ -476,7 +476,13 @@ class TestTFRayEstimator(TestCase):
                     label_cols=["label"])
         trainer.evaluate(train_data_shard, batch_size=4, num_steps=25,
                          feature_cols=["user", "item"], label_cols=["label"])
-        trainer.predict(train_data_shard, feature_cols=["user", "item"]).collect()
+        
+        result = trainer.predict(train_data_shard, feature_cols=["user", "item"])
+        predictions = result.collect()[0]
+        import pandas as pd
+        assert isinstance(predictions, pd.DataFrame), "predict should return a pandas dataframe"
+        assert isinstance(predictions["prediction"], pd.Series), \
+               "predict dataframe should have a column named prediction"
 
     def test_dataframe_shard_size(self):
         from bigdl.orca import OrcaContext

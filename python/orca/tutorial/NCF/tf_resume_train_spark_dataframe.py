@@ -19,15 +19,15 @@ import math
 
 import tensorflow as tf
 
-from utils import *
 from process_spark_dataframe import get_feature_cols, get_label_cols
+from utils import *
 
 from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Resume Training with Spark DataFrame")
-init_orca(args.cluster_mode)
+init_orca(args.cluster_mode, extra_python_lib="process_spark_dataframe.py,utils.py")
 spark = OrcaContext.get_spark_session()
 
 
