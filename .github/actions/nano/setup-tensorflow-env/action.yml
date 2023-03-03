@@ -52,7 +52,11 @@ runs:
           pip install --pre --upgrade bigdl-nano[tensorflow,inference]
         else
           pip install wheel
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+          if [ ! $OS = "windows" ]; then
+            bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
+          else
+            bash python/nano/dev/build_and_install.sh windows default false tensorflow,inference
+          fi
         fi
         if [ $OS = "centos" ]; then
           source bigdl-nano-init
