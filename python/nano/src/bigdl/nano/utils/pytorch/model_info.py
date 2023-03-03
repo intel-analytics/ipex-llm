@@ -18,7 +18,6 @@ import inspect
 from typing import Optional, Union
 
 import torch
-from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
 
 class ModelInfo:
@@ -69,6 +68,7 @@ class ModelInfo:
         'annotations' is a dictionary mapping parameter names to annotations.
         """
         from bigdl.nano.pytorch.lightning import LightningModule
+        from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
         forward_fullargspec = inspect.getfullargspec(model.forward)
         if isinstance(model, LightningModule):
