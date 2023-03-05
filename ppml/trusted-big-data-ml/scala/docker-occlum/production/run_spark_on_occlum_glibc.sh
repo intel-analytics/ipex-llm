@@ -375,10 +375,10 @@ run_spark_tpch(){
                 --executor-cores 2 \
                 --total-executor-cores 16 \
                 --executor-memory 8G \
-                --class main.scala.TpchQuery \
+                --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
                 --verbose \
                 /bin/jars/spark-tpc-h-queries_2.12-1.0.jar \
-                /host/data /host/data/output
+                /host/data /host/data/output plain_text plain_text
 }
 
 run_spark_xgboost() {
