@@ -17,6 +17,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.sgx.log.level=off \
     --num-executors 2 \
     --executor-cores 4 \
+    --conf spark.cores.max=8 \
     --executor-memory 4g \
     --driver-memory 1g \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" \
