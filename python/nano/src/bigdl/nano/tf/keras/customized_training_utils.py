@@ -102,8 +102,6 @@ class _Nano_Customized_Training(object):
                 # serialize the dataset
                 if isinstance(arg, tf.data.Dataset):
                     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
-                    from tensorflow.python.ops.numpy_ops import np_config
-                    np_config.enable_numpy_behavior()
 
                     train_ds_def = serialize_dataset_to_graph(arg).numpy()
                     train_elem_spec = arg.element_spec

@@ -50,6 +50,9 @@ def test_tf_nano_bf16_decorator():
 
 
 def test_tf_nano_multiprocessing_customized_loop():
+    from tensorflow.python.framework.ops import enable_eager_execution
+    enable_eager_execution()
+
     from bigdl.nano.tf.keras import nano_multiprocessing, nano
 
     global_batch_size = 32
