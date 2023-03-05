@@ -74,7 +74,7 @@ def test_tf_nano_multiprocessing_customized_loop():
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
         return loss
 
-    @nano(num_processes=4)
+    @nano(num_processes=2)
     def train_whole_data(model, dataset, loss_object, optimizer, train_step):
         for inputs in dataset:
             print(train_step(inputs, model, loss_object, optimizer))
