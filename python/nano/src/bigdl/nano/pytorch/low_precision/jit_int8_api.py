@@ -54,6 +54,7 @@ def PytorchJITINT8Model(model, calib_data, q_config=None,
                                thread_num=thread_num, jit_strict=jit_strict,
                                jit_method=jit_method, enable_onednn=enable_onednn)
 
+
 def load_pytorchjitint8_model(path):
     from .jit_int8_model import PytorchJITINT8Model
     return PytorchJITINT8Model._load(path)

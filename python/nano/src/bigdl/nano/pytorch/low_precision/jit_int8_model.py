@@ -50,7 +50,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                | (recommended) is a collection of quantization configurations, user
                | can set the qconfig for each operator (torch op calls, functional
                | calls, module calls) in the model through qconfig_mapping.
-               
+
         :param input_sample: torch tensor indicate the data sample to be used
                for tracing.
         :param channels_last: if set model and data to be channels-last mode.
@@ -64,8 +64,8 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                fusion. Default to ``False``.
         '''
         super().__init__(model)
-        
-        enable_onednn=False
+
+        enable_onednn = False
         # TODO: since onednn cooperates well with other nano methods, it is set to True
         # by default in InferenceOptimizer.quantize(). However, it will lead to strange
         # error in fx quantization during inference. Therefore, we disable it by hand.
@@ -89,7 +89,7 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                                                                   thread_num=thread_num,
                                                                   enable_onednn=enable_onednn)
             return
-        
+
         self.original_state_dict = model.state_dict()
         self.channels_last = channels_last
         self.jit_strict = jit_strict
@@ -108,10 +108,10 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
             self.q_config = get_default_qconfig_mapping("fbgemm")
         else:
             if isinstance(q_config, QConfig):
-                self.q_config = {'' : q_config}
+                self.q_config = {'': q_config}
             else:
                 self.q_config = q_config
-        
+
         if input_sample is None:
             input_sample = next(iter(calib_data))
             if isinstance(input_sample, (tuple, list)) and len(input_sample) > 1:
