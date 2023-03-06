@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 
+
+from pathlib import Path
 from typing import Sequence, Any
 
-import tensorflow as tf
+import yaml
 from keras import Model
 
 from bigdl.nano.utils.common import invalidInputError
@@ -104,6 +106,11 @@ class KerasOptimizedModel(Model):
     def status(self):
         """Return model's status."""
         return {"ModelType": type(self).__name__}
+
+    def _dump_status(self, path):
+        meta_path = Path(path) / "nano_model_meta.yml"
+        with open(meta_path, 'w') as f:
+            yaml.safe_dump(self.status, f)
 
     def _save(self, path, compression="fp32"):
         invalidInputError(False, "Saving function is not implemented.")

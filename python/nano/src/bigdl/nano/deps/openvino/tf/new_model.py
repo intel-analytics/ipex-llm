@@ -174,14 +174,19 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         :param path: Directory to save the model.
         """
         self.ov_model._model_exists_or_err()
+
         path = Path(path)
         path.mkdir(exist_ok=True)
+        self._dump_status(path)
+
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+
         # save normal attrs
         attrs = {"_output_shape": self._output_shape}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
+
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
