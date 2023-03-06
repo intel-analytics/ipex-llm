@@ -50,7 +50,7 @@ class nano_multiprocessing(object):
         # TODO: to validate if we really could support kwargs
         per_replica_losses = mirrored_strategy.run(self.func, args=args, kwargs=kwargs)
         return mirrored_strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses,
-                                axis=None)
+                                        axis=None)
 
 
 def nano(num_processes):
@@ -101,7 +101,8 @@ class _Nano_Customized_Training(object):
 
                 # serialize the dataset
                 if isinstance(arg, tf.data.Dataset):
-                    from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
+                    from tensorflow.python.distribute.coordinator.values import \
+                        serialize_dataset_to_graph
 
                     train_ds_def = serialize_dataset_to_graph(arg).numpy()
                     train_elem_spec = arg.element_spec
@@ -171,7 +172,8 @@ def _train_func(target_path, *args):
             # data generator is needed to be supported
             # Dataset.from_generator could not be used due to a known limitation
             # https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator
-            from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
+            from tensorflow.python.distribute.coordinator.values import \
+                deserialize_dataset_from_graph
             original_dataset = deserialize_dataset_from_graph(arg[1], arg[2])
             actrual_args[i] = mirrored_strategy.experimental_distribute_dataset(original_dataset)
             continue
@@ -180,9 +182,11 @@ def _train_func(target_path, *args):
             with open(arg[1], 'rb') as f:
                 original_loss_object = cloudpickle.load(f)
                 original_loss_object.reduction = tf.keras.losses.Reduction.NONE
+
             def loss_object(*args, **kwargs):
                 per_example_loss = original_loss_object(*args, **kwargs)
-                return tf.nn.compute_average_loss(per_example_loss, global_batch_size=32)
+                size = per_example_loss.shape[0] * mirrored_strategy.num_replicas_in_sync
+                return tf.nn.compute_average_loss(per_example_loss, global_batch_size=size)
             actrual_args[i] = loss_object
             continue
         # deserialize others
