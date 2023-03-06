@@ -19,7 +19,7 @@ from torch import nn
 import time
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
     latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
