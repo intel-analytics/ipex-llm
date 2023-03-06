@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,20 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-set -ex
-
-cd "`dirname $0`"
-
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-
-ray stop -f
-
-cd ../../
-echo "Running RayOnSpark tests"
-python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py
-
-
-# echo "Running chronos tcmf distributed test"
-# python -m pytest -v ../test/zoo/chronos/forecast/test_tcmf_forecaster.py::TestChronosModelTCMFForecaster::test_forecast_tcmf_distributed

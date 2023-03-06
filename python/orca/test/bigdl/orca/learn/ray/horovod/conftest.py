@@ -13,17 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
+from bigdl.orca import init_orca_context, stop_orca_context
+from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.sql import SparkSession
 
-set -ex
 
-cd "`dirname $0`"
+@pytest.fixture(autouse=True, scope='package')
+def orca_context_fixture():
+    conf = {"spark.python.worker.reuse": "false"}
+    sc = init_orca_context(cores=8, conf=conf)
 
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
+    def to_array_(v):
+        return v.toArray().tolist()
 
-ray stop -f
-
-cd ../../
-echo "Running RayOnSpark tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/ \
-    --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
+    spark = SparkSession(sc)
+    spark.udf.register("to_array", to_array_, ArrayType(DoubleType()))
+    yield
+    stop_orca_context()
