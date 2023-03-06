@@ -2,6 +2,11 @@
 # source code link: https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/ml/LinearRegressionWithElasticNetExample.scala
 cd /ppml
 
+if [ ! -d "data/mllib" ]
+then
+    mkdir -p data/mllib
+fi
+
 input_file="data/mllib/sample_linear_regression_data.txt"
 
 if [ -f "$input_file" ]; then

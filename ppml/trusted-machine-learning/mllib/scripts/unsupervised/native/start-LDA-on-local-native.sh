@@ -2,6 +2,11 @@
 # source code link: https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/ml/LDAExample.scala
 cd /ppml
 
+if [ ! -d "data/mllib" ]
+then
+    mkdir -p data/mllib
+fi
+
 input_file="data/mllib/sample_lda_libsvm_data.txt"
 
 if [ -f "$input_file" ]; then

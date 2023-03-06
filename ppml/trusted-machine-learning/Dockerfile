@@ -10,6 +10,9 @@ ARG SPARK_JAR_REPO_URL
 ARG SCALA_VERSION=2.12
 ARG LGBM_NETWORK_MODE_BUILD
 
+# refer to ppml bigdata image
+FROM $BIGDATA_IMAGE_NAME:$BIGDATA_IMAGE_TAG as bigdata
+
 # stage.1 gramine
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
@@ -22,9 +25,6 @@ ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 ARG LGBM_NETWORK_MODE_BUILD
-ARG BIGDATA_IMAGE_NAME                  ${BIGDATA_IMAGE_NAME}
-ARG BIGDATA_IMAGE_TAG                   ${BIGDATA_IMAGE_TAG}
-ARG bigdata=${BIGDATA_IMAGE_NAME}:${BIGDATA_IMAGE_TAG}
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV LOCAL_IP                            127.0.0.1
@@ -48,7 +48,7 @@ ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./mllib/scripts /ppml/scripts
 ADD ./mllib/spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./mllib/spark-driver-template.yaml /ppml/spark-driver-template.yaml
-ADD ./mllib/entrypoint.sh /opt/entrypoint.sh
+ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./lgbm/make-lgbm.sh /ppml/make-lgbm.sh
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini

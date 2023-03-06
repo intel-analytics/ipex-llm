@@ -3,6 +3,11 @@
 
 cd /ppml
 
+if [ ! -d "data/mllib" ]
+then
+    mkdir -p data/mllib
+fi
+
 input_file="data/mllib/sample_libsvm_data.txt"
 
 if [ -f "$input_file" ]; then
