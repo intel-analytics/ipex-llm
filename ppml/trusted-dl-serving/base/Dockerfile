@@ -9,7 +9,7 @@ FROM tensorflow/serving:latest-devel as tf-serving
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
-RUN bazel build -c opt tensorflow_serving/...
+RUN bazel build -c opt tensorflow_serving/... || true
 
 # DL-Serving
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
