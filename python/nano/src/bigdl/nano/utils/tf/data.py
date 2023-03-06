@@ -27,8 +27,8 @@ DTYPE = Union[tf.DType, np.dtype]
 
 
 def convert_all(inputs: Sequence[Union[tf.Tensor, np.ndarray]],
-                types=Union[List[Optional[str]], Optional[str]],
-                dtypes=Union[List[Optional[DTYPE]], Optional[DTYPE]],
+                types: Union[List[str], str],
+                dtypes: Union[List[Optional[DTYPE]], Optional[DTYPE]] = None,
                 ):
     """
     Convert all input tf.Tensor/np.ndarray to specified format.
@@ -44,7 +44,7 @@ def convert_all(inputs: Sequence[Union[tf.Tensor, np.ndarray]],
     x, y = convert_all((x, y), types=["tf", "numpy"], dtypes=[tf.float32, np.float32])
     ```
 
-    :param input_: The tf.Tensor/np.ndarray to convert.
+    :param input_: A list of tf.Tensor/np.ndarray to convert.
     :param type_: (A list of) target type, "tf" means tf.Tensor, "numpy" means np.ndarray.
     :param dtype_: (A list of) target dtype.
     :return The convert result.
@@ -59,8 +59,8 @@ def convert_all(inputs: Sequence[Union[tf.Tensor, np.ndarray]],
 
 
 def convert(input_: Union[tf.Tensor, np.ndarray],
-            type_: Optional[str],
-            dtype_: Optional[DTYPE]):
+            type_: str,
+            dtype_: Optional[DTYPE] = None):
     """
     Convert tf.Tensor/np.ndarray to specified format.
 
@@ -76,7 +76,7 @@ def convert(input_: Union[tf.Tensor, np.ndarray],
     :param input_: The tf.Tensor/np.ndarray to convert.
     :param type_: The target type, "tf" means tf.Tensor, "numpy" means np.ndarray.
     :param dtype_: The target dtype.
-    :return The convert result.
+    :return The results of conversion.
     """
     # todo: we should also convert `int`, `float`, `bool` to scalar Tensor/numpy
     if type_ == "tf":

@@ -120,7 +120,10 @@ class KerasOpenVINOModel(KerasOptimizedModel):
             thread_num=None):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(x, y, collate_fn=self.tensors_to_numpy)
+        # todo: replace `KerasOpenVINODataLoader` and `tensors_to_numpy`
+        from bigdl.nano.tf.model import AcceleratedKerasModel
+        dataloader = KerasOpenVINODataLoader(x, y,
+                                             collate_fn=AcceleratedKerasModel.tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
