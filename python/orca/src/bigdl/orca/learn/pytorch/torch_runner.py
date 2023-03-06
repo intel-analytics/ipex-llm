@@ -197,7 +197,6 @@ class TorchRunner(BaseRunner):
                      wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
-        self.num_epochs = epochs
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
