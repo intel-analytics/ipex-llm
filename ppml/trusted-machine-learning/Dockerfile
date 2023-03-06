@@ -45,11 +45,11 @@ COPY --from=bigdata  /ppml/examples/src/main/resources /ppml/examples/src/main/r
 COPY --from=bigdata  /usr/local/bin/gosu /usr/local/bin/gosu
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
-ADD ./scripts /ppml/scripts
-ADD ./spark-executor-template.yaml /ppml/spark-executor-template.yaml
-ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
-ADD ./entrypoint.sh /opt/entrypoint.sh
-ADD ./make-lgbm.sh /ppml/make-lgbm.sh
+ADD ./mllib/scripts /ppml/scripts
+ADD ./mllib/spark-executor-template.yaml /ppml/spark-executor-template.yaml
+ADD ./mllib/spark-driver-template.yaml /ppml/spark-driver-template.yaml
+ADD ./mllib/entrypoint.sh /opt/entrypoint.sh
+ADD ./lgbm/make-lgbm.sh /ppml/make-lgbm.sh
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN echo $http_proxy && \
@@ -67,7 +67,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     apt-get install libssl-dev  && \
-    bash /ppml/make-lgbm.sh
+    bash /ppml/make-lgbm.sh && \
+    echo 'alias lightgbm="/ppml/LightGBM/lightgbm"' >> ~/.bashrc
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
