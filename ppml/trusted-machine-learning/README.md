@@ -8,104 +8,27 @@ This image contains Gramine and some popular Machine Learning frameworks includi
 
 The machine learning base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
-Before building your own base image, please modify the paths in `ppml/trusted-machine-learning/build-base-image.sh`. Then build the docker image with the following command.
+Before building your own base image, please modify the paths in `build-base-image.sh`. Then build the docker image with the following command.
 
 ```bash
 ./build-machine-learning-base-image.sh
 ```
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
-First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
+Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-customer-image) to build a custom image with enclave signed by your private key.
 
-It will generate a file `enclave-key.pem` in `./custom-image`  directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+### 2. Prepare SSL key and password
 
-```bash
-cd custom-image
-openssl genrsa -3 -out enclave-key.pem 3072
-```
-
-Then, use the `enclave-key.pem` and the machine learning base image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
-
-```bash
-# under custom-image dir
-# modify custom parameters in build-custom-image.sh
-./build-custom-image.sh
-```
-
-The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to register your MREnclave in the following.
-
-````bash
-......
-[INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
-mr_enclave       : c7a8a42af......
-mr_signer        : 6f0627955......
-````
-
-### 2. Prepare SSL key
-
-#### 2.1 Prepare the Key
-
-  The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
-
-```bash
-  sudo bash BigDL/ppml/scripts/generate-keys.sh
-```
-
-#### 2.2 Prepare the Password
-
-  Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
-
-```bash
-  sudo bash BigDL/ppml/scripts/generate-password.sh          <used_password_when_generate_keys>
-```
+Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#prepare-key-and-password) to prepare SSL key and password for secure container communication.
 
 ## Run machine learning example
 
-### 1. Start the Docker container
-#### 1.1 Prepare the keys/password/data/enclave-key.pem
-Please refer to the previous section about [preparing keys and passwords](#2-prepare-spark-ssl-key).
+### 1. Configure K8S Environment
 
-``` bash
-bash BigDL/ppml/scripts/generate-keys.sh
-bash BigDL/ppml/scripts/generate-password.sh YOUR_PASSWORD
-kubectl apply -f keys/keys.yaml
-kubectl apply -f password/password.yaml
-```
-#### 1.2 Prepare the k8s configurations
-##### 1.2.1 Create the RBAC
-```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
-kubectl get secret|grep service-account-token # you will find a spark service account secret, format like spark-token-12345
+Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment) to create and configure K8S RBAC and secrets.
 
-# bind service account and user
-kubectl config set-credentials spark-user \
---token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+### 2. Start the client container
 
-# bind user and context
-kubectl config set-context spark-context --user=spark-user
-
-# bind context and cluster
-kubectl config get-clusters
-kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
-```
-##### 1.2.2 Generate k8s config file
-```bash
-kubectl config use-context spark-context
-kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
-```
-##### 1.2.3 Create k8s secret
-```bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
-kubectl create secret generic kms-secret \
-                      --from-literal=app_id=YOUR_KMS_APP_ID \
-                      --from-literal=api_key=YOUR_KMS_API_KEY \
-                      --from-literal=policy_id=YOUR_POLICY_ID
-kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
-```
-**The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
-
-#### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
@@ -135,7 +58,7 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-run `docker exec -it machine-learning-graming bash` to entry the container.
+run `docker exec -it machine-learning-graming bash` to enter the container.
 
 #### 1.4 Run Machine Learning applications
 Execute `init.sh` to check the SGX and make some necessary settings.
@@ -165,3 +88,4 @@ You can also modify the jar path and class name, and run your own machine learni
     --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
     local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
+
