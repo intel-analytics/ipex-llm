@@ -1,0 +1,17 @@
+# These are mirrored in python/chronos/src/setup.py, 
+# which is what the users of the bigdl-chronos[all] package will install.
+# bigdl-nano, bigdl-orca related deps are removed from the list
+#
+# In short, if you change it here, PLEASE also change it in setup.py
+# Actrual installation logic will follow setup.py
+
+optuna<=2.10.1
+configspace<=0.5.0
+SQLAlchemy<=1.4.27
+grpcio<=1.51.1
+pmdarima==1.8.5
+prophet==1.1.0
+tsfresh==0.17.0
+pyarrow==6.0.1
+matplotlib
+inotify_simple

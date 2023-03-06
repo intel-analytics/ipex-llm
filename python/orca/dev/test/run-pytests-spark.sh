@@ -37,7 +37,7 @@ if [ $python_version == 3.7.10 ];then
   then
       exit $exit_status_1
   fi
-  python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
+  python -m pytest -v test/bigdl/orca/learn/bigdl --ignore=test/bigdl/orca/learn/bigdl/test_estimator_openvino.py
   exit_status_2=$?
   if [ $exit_status_2 -ne 0 ];
   then

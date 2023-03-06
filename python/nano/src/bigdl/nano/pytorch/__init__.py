@@ -26,6 +26,8 @@ from bigdl.nano.utils.common import register_suggestion
 from bigdl.nano.utils.common import get_affinity_core_num
 
 
+torch.set_num_threads(torch.get_num_threads())
+
 if 'KMP_INIT_AT_FORK' in os.environ:
     del os.environ['KMP_INIT_AT_FORK']
 
@@ -43,6 +45,7 @@ if platform.system() == "Linux":
 
 from .dispatcher import patch_torch, unpatch_torch
 from bigdl.nano.pytorch.inference import InferenceOptimizer
+from bigdl.nano.pytorch.inference import Pipeline
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.torch_nano import TorchNano
 from bigdl.nano.pytorch.torch_nano import nano

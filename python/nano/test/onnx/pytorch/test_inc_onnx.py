@@ -323,7 +323,7 @@ class TestOnnx(TestCase):
 
         data = torch.zeros(1,3,1,1) - 1
         result_true = model(data)
-        # sample with only required parameters (in a tuple)
+        # sample with only required parameters (a Tensor)
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="onnxruntime",
                                                calib_data=torch.rand(2,3,1,1))
@@ -339,13 +339,21 @@ class TestOnnx(TestCase):
         result_m = accmodel(data)
         assert abs(torch.sum(result_m).item()) < 1e-5
 
-        # default bool values
+        # default int values
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
             def forward(self, x, a=3):
                 return x + a
         model = Net()
+
+        # sample with only required parameters (in a tuple with label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((torch.rand(2,3,1,1), 5), torch.zeros(2,3,1,1)))
+        data = torch.zeros(1,3,1,1) - 5
+        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
+        assert abs(torch.sum(result_m).item()) < 1e-5
 
         # sample with only required parameters (in a tuple)
         accmodel = InferenceOptimizer.quantize(model,
@@ -375,6 +383,76 @@ class TestOnnx(TestCase):
         result_m = accmodel(data)
         assert abs(torch.sum(result_m).item()) < 1e-5
 
+        # default more None values
+        class Net(nn.Module):
+            def __init__(self):
+                super().__init__()
+            def forward(self, x1, x2, x3, x4, a=None, b=None, c=None):
+                output = x1 + x2 + x3 + x4
+                if a is not None:
+                    output += a
+                if b is not None:
+                    output += b
+                if c is not None:
+                    output += c
+                return output
+
+        model = Net()
+
+        x1 = torch.zeros(1,3,1,1)
+        x2 = torch.zeros(1,3,1,1)
+        x3 = torch.zeros(1,3,1,1)
+        x4 = torch.zeros(1,3,1,1)
+
+        # sample with only required parameters (in a tuple with a label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((x1,x2,x3,x4), torch.zeros(1,3,1,1)))
+        result_m = accmodel(x1,x2,x3,x4)
+        assert abs(torch.sum(result_m).item()) < 1e-5
+
+        # sample with only required parameters (in a tuple with a label)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=((x1,x2,x3,x4, 1, 1), torch.zeros(1,3,1,1)))
+        result_m = accmodel(x1,x2,x3,x4,np.array([1]),np.array([1]))
+        assert abs(torch.sum(result_m).item()) < 1e-5 + 6
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(x1,x2,x3,x4))
+        result_m = accmodel(x1,x2,x3,x4)
+        assert abs(torch.sum(result_m).item()) < 1e-5
+
+        # sample with only required parameters (in a tuple)
+        accmodel = InferenceOptimizer.quantize(model,
+                                               accelerator="onnxruntime",
+                                               calib_data=(x1,x2,x3,x4, 1))
+        result_m = accmodel(x1,x2,x3,x4, np.array([2]))
+        assert abs(torch.sum(result_m).item()) < 1e-5 + 6
+
+    def test_onnx_quantize_output_tensors(self):
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+
+        onnx_model = InferenceOptimizer.quantize(pl_model, accelerator='onnxruntime',
+                                                 method='qlinear', calib_data=train_loader)
+        test_onnx_model = InferenceOptimizer.quantize(pl_model, accelerator="onnxruntime",
+                                                      method='qlinear', calib_data=train_loader,
+                                                      output_tensors=False)
+        for x, y in train_loader:
+            forward_res_tensor = onnx_model(x).numpy()
+            forward_res_numpy = test_onnx_model(x)
+            assert isinstance(forward_res_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
 
 if __name__ == '__main__':
     pytest.main([__file__])

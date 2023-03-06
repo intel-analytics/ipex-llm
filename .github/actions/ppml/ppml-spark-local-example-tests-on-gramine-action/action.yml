@@ -33,35 +33,38 @@ runs:
         --oom-kill-disable \
         --device=/dev/sgx/enclave \
         --device=/dev/sgx/provision \
-        -v ~/glorysdj/kuberconfig:/root/.kube/config \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $DATA_PATH:/ppml/data \
         -v $KEYS_PATH:/ppml/keys \
-        -e LOCAL_IP=$LOCAL_IP \
-        -e HDFS_ADDRESS=$HDFS_ADDRESS \
-        -e SGX_MEM_SIZE=$SGX_MEM_SIZE \
+        -v $SECURE_PASSWORD_PATH:/ppml/password \
+        -v $KUBECONFIG_PATH:/root/.kube/config \
+        -v $NFS_INPUT_PATH:/ppml/data \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e LOCAL_IP=$LOCAL_IP \
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_EXECUTOR_INSTANCES=1 \
-        -e RUNTIME_EXECUTOR_CORES=4 \
-        -e RUNTIME_EXECUTOR_MEMORY=80g \
-        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
-        -e RUNTIME_DRIVER_CORES=4 \
-        -e RUNTIME_DRIVER_MEMORY=10g \
+        -e RUNTIME_DRIVER_MEMORY=5g \
         $IMAGE bash
     - name: Spark Examples Test
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
+        echo "##### Test on /ppml/scripts/start-python-helloword-on-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-helloword-on-sgx.sh"
+        echo "##### Test on /ppml/scripts/start-python-numpy-on-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-numpy-on-sgx.sh"
+        echo "##### Test on /ppml/scripts/start-spark-pi-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-local-sgx.sh"
+        echo "##### Test on /ppml/scripts/start-pyspark-pi-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-pi-on-local-sgx.sh"
+        echo "##### Test on /ppml/scripts/start-pyspark-simpleexamples-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simpleexamples-on-local-sgx.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
+        echo "##### Test on /ppml/scripts/start-spark-sqlexamples-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-sqlexamples-on-local-sgx.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
+        echo "##### Test on /ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
+        echo "##### Test on /ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"

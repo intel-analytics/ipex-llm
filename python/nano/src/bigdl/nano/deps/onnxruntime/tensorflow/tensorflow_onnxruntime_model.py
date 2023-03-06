@@ -21,7 +21,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.common import get_default_args
-from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10, fake_tensor_from_spec
+from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
+from bigdl.nano.utils.tf import try_compute_output_shape
 from bigdl.nano.tf.model import AcceleratedKerasModel
 from bigdl.nano.utils.common import invalidInputError
 
@@ -52,29 +53,21 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, AcceleratedKerasModel):
         AcceleratedKerasModel.__init__(self, None)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                onnx_path = os.path.join(tmpdir, "tmp.onnx")
-                if input_spec is None:
+                self._output_shape = try_compute_output_shape(model, input_spec,
+                                                              try_fake_inference=False)
+                if input_spec is None and hasattr(model, "input_shape"):
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
-                if hasattr(model, "output_shape"):
-                    self._output_shape = model.output_shape
-                elif isinstance(input_spec, (tuple, list)):
-                    self._output_shape = model.compute_output_shape((i.shape for i in input_spec))
-                else:
-                    self._output_shape = model.compute_output_shape(input_spec.shape)
-                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
-                    self._output_shape = self._output_shape[0]
                 if not isinstance(input_spec, (tuple, list)):
+                    # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )
+                self._nesting_level = 0
+                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
+                    # A workaround, may be changed in the future
+                    self._nesting_level += 1
+                    self._output_shape = self._output_shape[0]
+                onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
-                # save the nesting level of inference output
-                fake_inputs = [fake_tensor_from_spec(spec) for spec in input_spec]
-                fake_outputs = model(*fake_inputs)
-                self._nesting_level = 0
-                while isinstance(fake_outputs, (tuple, list)) and len(fake_outputs) == 1:
-                    self._nesting_level += 1
-                    fake_outputs = fake_outputs[0]
-
                 self._inputs_dtypes = [inp.dtype for inp in input_spec]
                 self._default_kwargs = get_default_args(model.call)
                 if KERAS_VERSION_LESS_2_10:

@@ -20,6 +20,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                             onnxruntime_session_options=None,
                             simplification=True,
                             dynamic_axes=True,
+                            output_tensors=True,
                             **export_kwargs):
     """
         Create a ONNX Runtime model from pytorch.
@@ -47,6 +48,8 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                              | are axis names. If a list, each element is an axis index.
 
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
+        :param output_tensors: boolean, default to True and output of the model will be Tensors.
+                               If output_tensors=False, output of the ONNX model will be ndarray.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return: A PytorchONNXRuntimeModel instance
         """
@@ -55,6 +58,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                                    onnxruntime_session_options=onnxruntime_session_options,
                                    simplification=simplification,
                                    dynamic_axes=dynamic_axes,
+                                   output_tensors=output_tensors,
                                    **export_kwargs)
 
 

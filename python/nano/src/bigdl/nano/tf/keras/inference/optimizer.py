@@ -25,6 +25,7 @@ from pathlib import Path
 import numpy as np
 import traceback
 import inspect
+import sigfig
 import tensorflow as tf
 import keras
 from typing import Dict, Optional, List, Union, Callable
@@ -44,6 +45,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.tf import try_compute_output_shape
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -86,7 +88,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         {  # type: ignore
             "original": TFAccelerationOption(),
             "static_int8": TFAccelerationOption(inc=True),
+            "bf16": TFAccelerationOption(bf16=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
+            "openvino_bf16": TFAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TFAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TFAccelerationOption(onnxruntime=True, inc=True,
@@ -294,7 +299,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
                         _accuracy = result_map["original"]["accuracy"]
-                        _accuracy = round(_accuracy, 3)
+                        _accuracy = sigfig.round(_accuracy, sigfigs=5)
                         result_map[method]["accuracy"] = str(_accuracy) + '*'
                     else:
                         if method == "original":
@@ -616,6 +621,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
                 x = tf.data.Dataset.zip((x, y))
+
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
@@ -624,20 +630,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set or \
-                    not hasattr(model, 'output_shape'):
-                invalidInputError(input_spec is not None,
-                                  "`input_spec` cannot be None when passing unbuilt model.")
-                # model cannot be saved either because the input shape is not available
-                # or because the forward pass of the model is not defined
-                if isinstance(input_spec, (tuple, list)):
-                    input_shape = (i.shape for i in input_spec)
-                else:
-                    input_shape = input_spec.shape
-                _output_shape = model.compute_output_shape(input_shape)
-            else:
-                _output_shape = model.output_shape
+            _output_shape = try_compute_output_shape(model, input_spec,
+                                                     try_fake_inference=not model.built)
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -824,6 +818,16 @@ def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    for data_input, target in data:
-        metric.update_state(y_true=target, y_pred=model(data_input))
-    return metric.result().numpy()
+    if isinstance(metric, tf.keras.metrics.Metric):
+        metric.reset_states()
+        for data_input, target in data:
+            metric.update_state(y_true=target, y_pred=model(data_input))
+        return metric.result().numpy()
+    elif isinstance(metric, Callable):
+        results = []
+        for data_input, target in data:
+            result = metric(y_true=target, y_pred=model(data_input))
+            results.append(result)
+        return np.average(results)
+    else:
+        invalidInputError(False, "metric should be a tf.keras.metrics.Metric or a Callable")

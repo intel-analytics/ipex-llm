@@ -39,7 +39,7 @@ parser.add_argument("--dataset-path", type=str, default="/ppml/dataset",
                     help="Where to load original dataset")
 
 
-# python3 load_save_ex.py --local-only --model-path /ppml/model --dataset-path /ppml/save-datasets/train/
+# python3 load_save_encryption_ex.py --local-only --model-path /ppml/model --dataset-path /ppml/save-datasets/train/
 args = parser.parse_args()
 
 

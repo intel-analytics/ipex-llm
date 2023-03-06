@@ -72,9 +72,18 @@ trait ModelBroadcast[T] extends Serializable {
 }
 
 object ModelBroadcast {
+  val modelBroadcastFactoryWhiteList = Array(
+    "com.intel.analytics.bigdl.dllib.models.utils.DefaultModelBroadcastFactory",
+    "com.intel.analytics.bigdl.dllib.models.utils.ProtoBufferModelBroadcastFactory",
+    "com.intel.analytics.bigdl.orca.tfpark.TFModelBroadcastFactory")
+
+
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ModelBroadcast[T] = {
-    if (System.getProperty("bigdl.ModelBroadcastFactory") != null) {
-      val cls = Class.forName(System.getProperty("bigdl.ModelBroadcastFactory"))
+    val factory = System.getProperty("bigdl.ModelBroadcastFactory")
+    if (factory != null) {
+      Log4Error.unKnowExceptionError(modelBroadcastFactoryWhiteList.contains(factory),
+      "unknown model broadcast factory: " + modelBroadcastFactoryWhiteList)
+      val cls = Class.forName(factory)
       cls.getConstructors()(0).newInstance().asInstanceOf[ModelBroadcastFactory].create()
     } else {
       new DefaultModelBroadcastFactory().create()

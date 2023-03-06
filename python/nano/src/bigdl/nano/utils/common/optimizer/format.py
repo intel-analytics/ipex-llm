@@ -17,6 +17,7 @@
 
 import numbers
 from typing import Dict
+import sigfig
 
 from .acceleration_option import AccelerationOption
 
@@ -61,21 +62,21 @@ def format_optimize_result(optimize_result_dict: dict,
             status = result["status"]
             latency = result.get("latency", "None")
             if latency != "None":
-                latency = round(latency, 3)
+                latency = sigfig.round(latency, sigfigs=5)
             accuracy = result.get("accuracy", "None")
             if accuracy != "None" and isinstance(accuracy, float):
-                accuracy = round(accuracy, 3)
+                accuracy = sigfig.round(accuracy, sigfigs=5)
             elif isinstance(accuracy, numbers.Real):
                 # support more types
                 accuracy = float(accuracy)
-                accuracy = round(accuracy, 3)
+                accuracy = sigfig.round(accuracy, sigfigs=5)
             else:
                 try:
                     import torch
                     # turn Tensor into float
                     if isinstance(accuracy, torch.Tensor):
                         accuracy = accuracy.item()
-                        accuracy = round(accuracy, 3)
+                        accuracy = sigfig.round(accuracy, sigfigs=5)
                 except ImportError:
                     pass
             method_str = f"| {method:^30} | {status:^20} | " \
@@ -93,7 +94,7 @@ def format_optimize_result(optimize_result_dict: dict,
             status = result["status"]
             latency = result.get("latency", "None")
             if latency != "None":
-                latency = round(latency, 3)
+                latency = sigfig.round(latency, sigfigs=5)
             method_str = f"| {method:^30} | {status:^20} | {latency:^12} |\n"
             repr_str += method_str
         repr_str += horizontal_line

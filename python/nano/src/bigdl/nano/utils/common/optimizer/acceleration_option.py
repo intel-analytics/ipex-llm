@@ -23,7 +23,7 @@ from bigdl.nano.utils.common import _inc_checker, _ipex_checker,\
 
 
 _whole_acceleration_options = ["inc", "ipex", "onnxruntime", "openvino", "pot",
-                               "bf16", "jit", "channels_last"]
+                               "bf16", "fp16", "jit", "channels_last"]
 
 
 class AccelerationOption(object):
@@ -42,6 +42,8 @@ class AccelerationOption(object):
             return "int8"
         if self.bf16:
             return "bf16"
+        if self.fp16:
+            return "fp16"
         return "fp32"
 
     def get_accelerator(self):

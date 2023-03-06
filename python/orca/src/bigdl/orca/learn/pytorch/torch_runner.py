@@ -131,6 +131,7 @@ class TorchRunner(BaseRunner):
         self.sync_stats = sync_stats
         self.epoch_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
+        self._pocket = dict()  # Used to store some customized attributes
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -278,9 +279,17 @@ class TorchRunner(BaseRunner):
             data_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
+
+        if not self.optimizers:
+            invalidInputError(False,
+                              "You must provide the optimizer for train.")
 
         self._toggle_profiling(profile=profile)
 
@@ -446,6 +455,10 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
@@ -506,8 +519,8 @@ class TorchRunner(BaseRunner):
         metrics = Metric.convert_metrics_dict(metrics, backend="pytorch")
         losses = []
         total_samples = 0
-        self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
         with torch.no_grad():
+            self.call_hook(callbacks=callbacks, fn_name="before_val_epoch")
             for batch_idx, batch in enumerate(val_iterator):
                 self.batch_idx = batch_idx
                 if num_steps and batch_idx == num_steps:
@@ -581,10 +594,14 @@ class TorchRunner(BaseRunner):
         return output, target, loss
 
     def predict(self, partition, batch_size=32, profile=False, callbacks=None):
-        """Evaluates the model on the validation data set."""
+        """Predict the model."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
         callbacks = callbacks or []
+
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for predict.")
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -748,6 +765,30 @@ class TorchRunner(BaseRunner):
         for hook in callbacks:
             if hasattr(hook, fn_name):
                 getattr(hook, fn_name)(self)
+
+    def put(self, k, v):
+        if k in self._pocket.keys():
+            self.logger.warning(f"Key {k} has already been in runner._pocket,"
+                                "please use runner.update instead.")
+        self._pocket[k] = v
+
+    def update(self, k, v):
+        if k not in self._pocket.keys():
+            self.logger.warning(f"Key {k} is not in runner._pocket,"
+                                "please use runner.put instead.")
+        self._pocket[k] = v
+
+    def get(self, k):
+        invalidInputError(k in self._pocket.keys(),
+                          f"KeyError, key {k} is not in runner._pocket,"
+                          "please check your input.")
+        return self._pocket[k]
+
+    def remove(self, k):
+        invalidInputError(k in self._pocket.keys(),
+                          f"KeyError, key {k} is not in runner.pocket,"
+                          "please check your input.")
+        del self._pocket[k]
 
     @property
     def given_models(self):

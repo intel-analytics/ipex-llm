@@ -8,7 +8,7 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * [Key Management Service (KMS) Setup](#key-management-service-kms-setup)
 * [Attestation Service (AS) Setup](#attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
-* (Optional) [K8s Monitioring](#optional-k8s-monitioring-setup)
+* (Optional) [K8s Monitoring](#optional-k8s-monitioring-setup)
 
 ### Prepare Key and Password
 Download scripts from [here](https://github.com/intel-analytics/BigDL).
@@ -77,7 +77,7 @@ cd BigDL/ppml/
 
     ```bash
     kubectl config use-context spark-context
-    kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+    kubectl config view --flatten --minify > /YOUR_DIR/config
     ```
 3. Create k8s secret
     ```bash
@@ -86,12 +86,12 @@ cd BigDL/ppml/
                           --from-literal=app_id=YOUR_KMS_APP_ID \
                           --from-literal=api_key=YOUR_KMS_API_KEY \
                           --from-literal=policy_id=YOUR_POLICY_ID
-    kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
+    kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/config
     ```
     **The secret created (`YOUR_SECRET`) should be the same as the password you specified in step *Prepare k8s secret***
 
 ### Key Management Service (KMS) and Attestation Service (AS) Setup
-Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker. You can choose to use the KMS and AS which PPML provides or your own one.
+Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications run in SGX are provided and signed by the customer, rather than a fake one provided by an attacker. You can choose to use the KMS and AS which PPML provides or similar services provided by your platform or cloud.
 
 1. EHSM is one type of both KMS and AS, follow the document to deploy EHSM: https://github.com/intel-analytics/BigDL/blob/main/ppml/services/ehsm/kubernetes/README.md
 
@@ -106,5 +106,5 @@ Pull Docker image from Dockerhub
 
 **Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
-### (Optional) K8s Monitioring Setup
+### (Optional) K8s Monitoring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md

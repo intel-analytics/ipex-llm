@@ -63,7 +63,7 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new LogSoftMax[Double]())
 
     File.save(module, absolutePath, true)
-    val testModule: Module[Double] = File.load(absolutePath)
+    val testModule: Module[Double] = File.load[Sequential[Double]](absolutePath)
 
     testModule should be(module)
   }
@@ -77,7 +77,7 @@ class FileSpec extends FlatSpec with Matchers {
     val module = Linear[Float](40000, 8000)
 
     File.save(module, absolutePath, true)
-    val testModule: Module[Double] = File.load(absolutePath)
+    val testModule: Module[Double] = File.load[Linear[Double]](absolutePath)
 
     testModule should be(module)
 
