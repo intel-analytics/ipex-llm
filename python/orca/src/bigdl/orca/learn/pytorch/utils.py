@@ -319,8 +319,9 @@ def mean_reduce_stats(worker_stats, res_stats=None):
             res_stats[stat_key] = stat_value
     return res_stats
 
+
 def index_concatenate(x, axis=0):
-    if len(x)==0:
+    if len(x) == 0:
         return None
 
     if isinstance(x[0], np.ndarray):
@@ -338,4 +339,3 @@ def index_concatenate(x, axis=0):
         invalidInputError(False,
                           "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
                           " or a list of ndarrays, please check your input")
-
