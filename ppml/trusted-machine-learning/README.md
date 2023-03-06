@@ -118,7 +118,7 @@ export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
     --privileged \
     --net=host \
-    --name=machine-learning-graming \
+    --name=machine-learning-gramine \
     --cpuset-cpus="20-24" \
     --oom-kill-disable \
     --device=/dev/sgx/enclave \

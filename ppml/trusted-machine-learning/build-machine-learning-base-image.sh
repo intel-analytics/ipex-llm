@@ -2,9 +2,9 @@ export HTTP_PROXY_HOST=your_http_proxy_host
 export HTTP_PROXY_PORT=your_http_proxy_port
 export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
-export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
-export SPARK_JAR_REPO_URL=http://10.239.45.10:8081/repository/raw/spark
-export LOCAL_IP=172.168.0.205
+export JDK_URL=http://your-http-url-to-download-jdk
+export SPARK_JAR_REPO_URL=http://your_spark_jar_repo_url
+export LOCAL_IP=your_local_ip
 export LGBM_NETWORK_MODE_BUILD=SSL_OR_PLAIN
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
