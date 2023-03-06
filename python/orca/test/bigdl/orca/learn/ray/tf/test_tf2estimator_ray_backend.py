@@ -24,8 +24,7 @@ from unittest import TestCase
 import tensorflow as tf
 import numpy as np
 
-from bigdl.dllib.nncontext import init_nncontext
-import bigdl.orca.data.pandas
+from bigdl.orca.data.pandas import read_csv
 from bigdl.orca.data import SparkXShards, XShards
 from bigdl.orca.data.tf.data import Dataset
 from bigdl.orca.learn.tf2 import Estimator
@@ -50,7 +49,6 @@ def linear_dataset(a=2, size=1000):
 
 
 def create_train_datasets(config, batch_size):
-    import tensorflow as tf
     x_train, y_train = linear_dataset(size=NUM_TRAIN_SAMPLES)
 
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
@@ -61,7 +59,6 @@ def create_train_datasets(config, batch_size):
 
 
 def create_test_dataset(config, batch_size):
-    import tensorflow as tf
     x_test, y_test = linear_dataset(size=NUM_TEST_SAMPLES)
 
     test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
@@ -71,14 +68,12 @@ def create_test_dataset(config, batch_size):
 
 
 def simple_model(config):
-    import tensorflow as tf
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
                                         tf.keras.layers.Dense(1)])
     return model
 
 
 def compile_args(config):
-    import tensorflow as tf
     if "lr" in config:
         lr = config["lr"]
     else:
@@ -107,7 +102,6 @@ def identity_model_creator(config):
 
 
 def create_auto_shard_datasets(config, batch_size):
-    import tensorflow as tf
     data_path = os.path.join(resource_path, "orca/learn/test_auto_shard/*.csv")
     dataset = tf.data.Dataset.list_files(data_path)
     dataset = dataset.interleave(lambda x: tf.data.TextLineDataset(x))
@@ -118,7 +112,6 @@ def create_auto_shard_datasets(config, batch_size):
 
 
 def create_auto_shard_model(config):
-    import tensorflow as tf
     model = tf.keras.models.Sequential([
         tf.keras.layers.Lambda(lambda x: tf.identity(x))
     ])
@@ -127,7 +120,6 @@ def create_auto_shard_model(config):
 
 
 def create_auto_shard_compile_args(config):
-    import tensorflow as tf
 
     def loss_func(y1, y2):
         return tf.abs(y1[0] - y1[1]) + tf.abs(y2[0] - y2[1])
@@ -175,31 +167,6 @@ class SimpleModel(tf.keras.Model):
 
         self.compiled_metrics.update_state(y, y_pred)
         return {m.name: m.result() for m in self.metrics}
-
-
-def compile_args(config):
-    if config is None:
-        lr = 1e-3
-    else:
-        lr = config["lr"]
-    args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
-        "loss": "mean_squared_error",
-        "metrics": ["mean_squared_error"]}
-    return args
-
-
-def simple_model(config):
-    import tensorflow as tf
-    model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
-                                        tf.keras.layers.Dense(1)])
-    return model
-
-
-def model_creator(config):
-    model = simple_model(config)
-    model.compile(**compile_args(config))
-    return model
 
 
 def model_creator_for_orca_dataset(config):
@@ -380,10 +347,9 @@ class TestTF2EstimatorRayBackend(TestCase):
         trainer.predict(train_data_shard, batch_size=4).rdd.collect()
         trainer.shutdown()
 
-        sc = init_nncontext()
-        rdd = sc.range(0, 100).repartition(1)
+        rdd = self.sc.range(0, 100).repartition(1)
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
         trainer = Estimator.from_keras(
             model_creator=model_creator,
@@ -401,10 +367,9 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_dataframe(self):
 
-        sc = init_nncontext()
-        rdd = sc.range(0, 100).repartition(9)
+        rdd = self.sc.range(0, 100).repartition(9)
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -463,7 +428,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         from pyspark.sql import SparkSession
         spark = SparkSession(sc)
         from pyspark.ml.linalg import DenseVector
-        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd_with_empty.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                            int(np.random.randint(0, 1, size=()))))\
             .toDF(["feature", "label"])
 
@@ -485,7 +450,6 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_pandas_dataframe(self):
         def model_creator(config):
-            import tensorflow as tf
             input1 = tf.keras.layers.Input(shape=(1,))
             input2 = tf.keras.layers.Input(shape=(1,))
             concatenation = tf.concat([input1, input2], axis=-1)
@@ -495,7 +459,7 @@ class TestTF2EstimatorRayBackend(TestCase):
             return model
 
         file_path = os.path.join(resource_path, "orca/learn/ncf2.csv")
-        train_data_shard = bigdl.orca.data.pandas.read_csv(file_path)
+        train_data_shard = read_csv(file_path)
 
         config = {
             "lr": 0.8
@@ -522,12 +486,11 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_dataframe_shard_size(self):
         OrcaContext._shard_size = 3
-        sc = init_nncontext()
-        rdd = sc.range(0, 10)
+        rdd = self.sc.range(0, 10)
         from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
+        spark = SparkSession(self.sc)
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -548,13 +511,12 @@ class TestTF2EstimatorRayBackend(TestCase):
         OrcaContext._shard_size = None
 
     def test_partition_num_less_than_workers(self):
-        sc = init_nncontext()
-        rdd = sc.range(200, numSlices=1)
+        rdd = self.sc.range(200, numSlices=1)
         assert rdd.getNumPartitions() == 1
         from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
+        spark = SparkSession(self.sc)
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -576,15 +538,14 @@ class TestTF2EstimatorRayBackend(TestCase):
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_num_part_data_diff_val_data(self):
-        sc = init_nncontext()
-        rdd = sc.range(200, numSlices=10)
-        val_rdd = sc.range(60, numSlices=8)
+        rdd = self.sc.range(200, numSlices=10)
+        val_rdd = self.sc.range(60, numSlices=8)
         from pyspark.sql import SparkSession
-        spark = SparkSession(sc)
+        spark = SparkSession(self.sc)
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float)),
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                         int(np.random.randint(0, 1, size=()))))\
             .toDF(["feature", "label"])
 
@@ -605,8 +566,7 @@ class TestTF2EstimatorRayBackend(TestCase):
                     label_cols=["label"])
 
     def test_dataframe_predict(self):
-        sc = init_nncontext()
-        rdd = sc.parallelize(range(20))
+        rdd = self.sc.parallelize(range(20))
         df = rdd.map(lambda x: ([float(x)] * 5,
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
@@ -679,7 +639,6 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_save_and_load_checkpoint(self):
         def model_creator(config):
-            import tensorflow as tf
             model = tf.keras.Sequential([
                 tf.keras.layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation='relu',
                                        padding='valid'),
@@ -725,7 +684,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -781,7 +740,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -837,7 +796,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -896,7 +855,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -943,7 +902,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -987,8 +946,7 @@ class TestTF2EstimatorRayBackend(TestCase):
     def test_string_input(self):
 
         def model_creator(config):
-            import tensorflow as tf
-            vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
+            vectorize_layer = tf.keras.layers.TextVectorization(
                 max_tokens=10, output_mode='int', output_sequence_length=4)
             model = tf.keras.models.Sequential()
             model.add(tf.keras.Input(shape=(1,), dtype=tf.string))
@@ -1008,10 +966,9 @@ class TestTF2EstimatorRayBackend(TestCase):
     def test_array_string_input(self):
 
         def model_creator(config):
-            import tensorflow as tf
             model = tf.keras.models.Sequential([
                 tf.keras.Input(shape=(None,), dtype=tf.string),
-                tf.keras.layers.experimental.preprocessing.StringLookup(
+                tf.keras.layers.StringLookup(
                     vocabulary=config["vocabulary"]
                 )
             ])
@@ -1040,7 +997,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -1100,7 +1057,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
