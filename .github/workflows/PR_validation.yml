@@ -489,7 +489,7 @@ jobs:
     - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-ray-ctx-py37
     - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-ray-ctx-py37-spark3-action
+      uses: ./.github/actions/orca/orca-pytest-ray-ctx-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env

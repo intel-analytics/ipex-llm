@@ -1,0 +1,48 @@
+name: 'Run Orca Python Ray Ctx Py37 Spark3'
+description: 'Run Orca Python Ray Ctx Py37 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py37
+        export _JAVA_OPTIONS="-XX:MaxPermSize=3G -Xmx10G"
+        export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G -Xmx10G"
+        export http_proxy="http://child-prc.intel.com:913/"
+        export https_proxy="http://child-prc.intel.com:913/"
+        
+        export JAVA_HOME=/opt/work/jdk8
+        export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+        export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH 
+
+        echo "### start ray_ctx tests"
+
+        pip install --upgrade pip
+
+        #sed -i "s/'bigdl-core=='+VERSION/'bigdl-core==2.1.0b20220917'/g" python/dllib/src/setup.py
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+        pip install -r python/requirements/orca/requirements_ray.txt
+        pip install ray==1.11.0
+
+        # This machine does not support GONDOLIN pip mirror
+        pip install tensorflow==2.9.0
+        pip install torch==1.7.1
+        pip install torchvision==0.8.2
+        pip install torchmetrics==0.10.0
+        pip install tqdm
+        pip install pyarrow
+        pip install pandas
+
+        chmod a+x python/orca/dev/test/run-pytests-ray-ctx.sh
+        python/orca/dev/test/run-pytests-ray-ctx.sh
+
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
