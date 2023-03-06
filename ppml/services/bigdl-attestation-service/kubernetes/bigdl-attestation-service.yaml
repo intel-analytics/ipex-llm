@@ -33,16 +33,49 @@ spec:
       labels:
         app: remote-attestation-service
     spec:
+      volumes:
+        - name: dev-enclave
+          hostPath:
+            path: /dev/sgx/enclave
+      - name: dev-provision
+        hostPath:
+          path: /dev/sgx/provision
+      - name: dev-aesmd
+        hostPath:
+          path: /var/run/aesmd
+      - name: bigdl-attestation-service-data
+        hostPath:
+          path: your_service_data_path
+      - name: bigdl-attestation-service-keys
+        hostPath:
+          path: your_service_keys_path
       containers:
       - name: remote-attestation-service
-        image: intelanalytics/bigdl-attestation-service:2.2.0-SNAPSHOT
+        image: intelanalytics/bigdl-attestation-service:2.3.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
-        command: ["./opt/entrypoint.sh"]
+        command: ["./ppml/bigdl-as-entrypoint.sh"]
         env:
         - name: PCCS_URL
           value: your_pccs_url
         - name: ATTESTATION_SERVICE_HOST
           value: 0.0.0.0
         - name: ATTESTATION_SERVICE_PORT
-          value: "9875" 
+          value: "9875"
+        - name: HTTPS_KEY_STORE_TOKEN
+          value: your_https_key_store_token
+        - name: SECRET_KEY
+          value: your_secret_key
+        - name: SGX_ENABLED
+          value: false
+        volumeMounts:
+        - mountPath: /dev/sgx/enclave
+          name: dev-enclave
+        - mountPath: /dev/sgx/provision
+          name: dev-provision
+        - mountPath: /var/run/aesmd
+          name: dev-aesmd
+        - mountPath: /opt/bigdl-as/data
+          name: bigdl-attestation-service-data
+        - mountPath: /ppml/keys
+          name: bigdl-attestation-service-keys
 ---
