@@ -133,7 +133,7 @@ object TorchFile {
     val types = args.map(_._1).toArray
     val values = args.map(_._2).toArray
     val constructor = Class.forName(className).getDeclaredConstructor(types: _*)
-    constructor.setAccessible(true)
+//    constructor.setAccessible(true)
     val obj = constructor.newInstance(values: _*)
     obj
   }
@@ -258,7 +258,7 @@ object TorchFile {
         }
       case TYPE_NUMBER => readNumber(rawData)
       case TYPE_STRING => readString(rawData)
-      case TYPE_BOOLEAN => readBoolean(rawData)
+      case TYPE_BOOLEAN => rawData.getInt() == 1
       case _ =>
         Log4Error.invalidOperationError(false, s"unsupported ${typeId.toString}")
     }

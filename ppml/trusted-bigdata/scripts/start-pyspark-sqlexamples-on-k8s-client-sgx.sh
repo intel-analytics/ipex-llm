@@ -1,44 +1,26 @@
 #!/bin/bash
-status_2_k8s_pyspark_sql_basic=1
-SPARK_LOCAL_IP=$LOCAL_IP
-
-if [ $status_2_k8s_pyspark_sql_basic -ne 0 ]; then
 cd /ppml
-export TF_MKL_ALLOC_MAX_BYTES=10737418240
-export SPARK_LOCAL_IP=$SPARK_LOCAL_IP
-export sgx_command="/opt/jdk8/bin/java \
-    -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
-    -Xmx5g \
-    org.apache.spark.deploy.SparkSubmit \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode client \
-    --name pyspark-sql-basic-sgx \
-    --conf spark.driver.host=$SPARK_LOCAL_IP \
-    --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=5g \
-    --conf spark.kubernetes.authenticate.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    --conf spark.executor.instances=2 \
-    --executor-cores 8 \
-    --total-executor-cores 16 \
-    --executor-memory 5G \
-    --jars /ppml/spark-$SPARK_VERSION/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar \
-    --properties-file /ppml/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
-    --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.mem=5g \
-    --conf spark.kubernetes.sgx.jvm.mem=6g \
-    --verbose \
-    /ppml/spark-$SPARK_VERSION/examples/src/main/python/sql/basic.py"
-gramine-sgx bash 2>&1 | tee k8s-pyspark-sql-basic-sgx.log
-fi
-status_2_k8s_pyspark_sql_basic=$(echo $?)
+export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --sgx-enabled true \
+        --deploy-mode client \
+        --master $RUNTIME_SPARK_MASTER \
+        --sgx-driver-jvm-memory 6g\
+        --sgx-executor-jvm-memory 6g\
+        --num-executors 2 \
+        --driver-memory 4g \
+        --driver-cores 8 \
+        --executor-memory 4g \
+        --executor-cores 8\
+        --conf spark.cores.max=64 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --conf spark.kubernetes.container.image.pullPolicy=Always \
+        --class org.apache.spark.examples.sql.SparkSQLExample \
+        --name pyspark-sqlexample-gramine \
+        --log-file pyspark-spark-sql-example-sgx.log \
+        --verbose \
+        /ppml/spark-$SPARK_VERSION/examples/src/main/python/sql/basic.py
 
-echo "##### example.2 Excepted result(k8s-pyspark-sql-basic): 8"
-echo "---- example.2 Actual result: "
-cat k8s-pyspark-sql-basic-sgx.log | egrep -a 'Justin' | wc -l
+echo "#### Excepted result(pyspark-spark-sql-example-sgx): 10"
+echo "---- Actual result: "
+cat pyspark-spark-sql-example-sgx.log | egrep -a 'Justin' | wc -l

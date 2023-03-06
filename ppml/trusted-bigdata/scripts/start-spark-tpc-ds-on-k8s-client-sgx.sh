@@ -4,7 +4,7 @@ rm /ppml/data/weekly-test/tpc-ds/performance/_SUCCESS
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode cluster \
+        --deploy-mode client \
         --sgx-enabled true \
         --sgx-driver-jvm-memory 6g\
         --sgx-executor-jvm-memory 6g\

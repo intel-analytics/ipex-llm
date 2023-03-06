@@ -29,6 +29,7 @@ bigdl.nano.tf.keras.InferenceOptimizer
     :members:
     :undoc-members:
     :exclude-members: ALL_INFERENCE_ACCELERATION_METHOD
+    :inherited-members:
 
 Patch API
 ---------------------------

@@ -911,3 +911,13 @@ class TestChronosNBeatsForecaster(TestCase):
         q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test, quantize=True)
         np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
 
+    @op_inference
+    def test_nbeats_forecaster_quantization_openvino(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = NBeatsForecaster(past_seq_len=24,
+                                      future_seq_len=5,
+                                      loss='mae',
+                                      lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        forecaster.quantize(train_data, metric='mae', framework='openvino')
+        pred_q = forecaster.predict_with_openvino(test_data[0], quantize=True)

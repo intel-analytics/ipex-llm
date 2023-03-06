@@ -820,58 +820,24 @@ private[bigdl] object InternalOptimizerUtil {
     }.count()
   }
 
-  def getModelCacheFromOptimizer[T: ClassTag](
-        optimizer: Optimizer[T, MiniBatch[T]]): RDD[Cache[T]] = {
-    val field = classOf[DistriOptimizer[T]].getDeclaredField("models")
-    field.setAccessible(true)
-    val models = field.get(optimizer).asInstanceOf[RDD[Cache[T]]]
-    models
-  }
-
   def getStateFromOptiMethod[T](optimMethod: OptimMethod[T]): Table = {
-    val method = classOf[OptimMethod[T]].getDeclaredMethod("state")
-    method.setAccessible(true)
-    val state = method.invoke(optimMethod).asInstanceOf[Table]
-    state
+    optimMethod.state
   }
 
   def getStateFromOptimizer[T: ClassTag](optimizer: Optimizer[T, MiniBatch[T]]): Table = {
-    val method = classOf[Optimizer[T, MiniBatch[T]]].getDeclaredMethod("state")
-    method.setAccessible(true)
-    val state = method.invoke(optimizer).asInstanceOf[Table]
-    state
+    optimizer.getState()
   }
 
   def endEpoch[T: ClassTag](optimizer: DistriOptimizer[T]): Unit = {
-    val method = classOf[DistriOptimizer[T]].getDeclaredMethod("endEpoch")
-    method.setAccessible(true)
-    method.invoke(optimizer)
+    optimizer.endEpoch
   }
 
   def endEpochV2[T: ClassTag](optimizer: DistriOptimizerV2[T]): Unit = {
-    val method = classOf[DistriOptimizerV2[T]].getDeclaredMethod("endEpoch")
-    method.setAccessible(true)
-    method.invoke(optimizer)
+    optimizer.endEpoch
   }
 
   def getParametersFromModel[T: ClassTag](model: Module[T]): (Tensor[T], Tensor[T]) = {
-    val method = classOf[Module[T]].getDeclaredMethod("getParameters")
-    method.setAccessible(true)
-    method.invoke(model).asInstanceOf[(Tensor[T], Tensor[T])]
-  }
-
-  def initThreadModels[T: ClassTag](
-      args: Object*)(
-      implicit ev: TensorNumeric[T]): (RDD[DistriOptimizer.CacheV1[T]], ModelBroadcast[T]) = {
-    KerasUtils.invokeMethodWithEv(DistriOptimizer,
-      "com$intel$analytics$bigdl$dllib$optim$DistriOptimizer$$initThreadModels",
-      args: _*).asInstanceOf[(RDD[DistriOptimizer.CacheV1[T]], ModelBroadcast[T])]
-  }
-
-  def clearState[T: ClassTag](
-        models: RDD[DistriOptimizer.CacheV1[T]]): Unit = {
-    KerasUtils.invokeMethod(DistriOptimizer,
-      "clearState", models, implicitly[reflect.ClassTag[T]])
+    model.getParameters()
   }
 
   def clearStateV2[T: ClassTag](
@@ -1061,7 +1027,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 //      if (torchOptimize) {
 //        InternalOptimizerUtil.setExecutorMklThread(distDataset.originRDD())
 //      }
-      val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
+      val modelsAndBroadcast = DistriOptimizer.initThreadModels[T](
         trainingModel, distDataset, criterion, state,
         Int.box(nodeNumber), Int.box(modelPerExecutor), Boolean.box(checkSingleton),
         allReduceParameter, parameterSplits, validationMethods, optimMethods, parameterProcessors)
@@ -1151,10 +1117,11 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
               newOptimMethod.clearHistory()
               (moduleName, newOptimMethod)
             }
-            val modelsAndBroadcast = InternalOptimizerUtil.initThreadModels[T](
+            val modelsAndBroadcast = DistriOptimizer.initThreadModels[T](
               newModel, distDataset, criterion, state,
               Int.box(nodeNumber), Int.box(modelPerExecutor), Boolean.box(checkSingleton),
-              allReduceParameter, parameterSplits, validationMethods, optimMethods)
+              allReduceParameter, parameterSplits, validationMethods,
+              optimMethods, parameterProcessors)
             cachedModels = modelsAndBroadcast._1
             modelBroadcast = modelsAndBroadcast._2
           } else {
@@ -1171,7 +1138,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 
   override def close(): Unit = {
     if (cachedModels != null) {
-      InternalOptimizerUtil.clearState(cachedModels)
+      this.clearState()
       if (modelBroadcast != null) {
         InternalOptimizerUtil.releaseBroadcast(modelBroadcast.uuid())
         modelBroadcast = null
