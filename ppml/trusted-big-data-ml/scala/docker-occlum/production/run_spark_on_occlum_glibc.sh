@@ -354,6 +354,7 @@ run_spark_tpch(){
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
                 -Xmx5g -Xms5g \
                 org.apache.spark.deploy.SparkSubmit \
+                --conf spark.sql.shuffle.partitions=8 \
                 --master 'local[4]' \
                 --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
                 --verbose \
