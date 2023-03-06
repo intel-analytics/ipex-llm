@@ -325,7 +325,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-py37-spark3-tf1-action/pr-test
     - name: Remove Env
@@ -344,7 +344,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-ray-py37-spark3-action/pr-test
     - name: Remove Env
@@ -439,7 +439,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-automl-py37-spark3-action/pr-test
     - name: Remove Env
@@ -492,7 +492,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-openvino-py37-spark3
     - name: Remove Env
