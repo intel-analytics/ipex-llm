@@ -4,8 +4,8 @@ on:
 #    - cron: '0 3 * * 0' # GMT time, 3:00 GMT == 3:00 China Every Sunday
 #  push:
 #    branches: [ "main" ]
-  pull_request:
-    branchs: [ main ]
+#  pull_request:
+#    branchs: [ main ]
   workflow_dispatch:
 jobs:
   scan-dockerfile:
