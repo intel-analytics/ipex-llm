@@ -309,7 +309,7 @@ class TestTraceAndQuantize(TestCase):
             output = load_model(x)
             assert output.dtype == tf.bfloat16
 
-    def test_convert_custom_layer(self):
+    def test_model_cannot_compute_output_shape(self):
         model = MyModelCannotComputeOutputShape()
         x = np.random.random((100, 4))
         y = np.random.random((100, 4))
