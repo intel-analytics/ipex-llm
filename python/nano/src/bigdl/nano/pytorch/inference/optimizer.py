@@ -787,7 +787,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                      calib_dataloader,
                                                                      input_sample)
 
-            # add sample_size property
+            # Add sample_size property to calib_dataloader to make the for loop in 
+            # `ipex_quantization_model.py` load sample items less than this value
             calib_dataloader.sample_size = sample_size
 
             # transform the dataloader to inc mode
