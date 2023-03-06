@@ -60,32 +60,34 @@ sudo docker run -itd \
 ```
 run `docker exec -it machine-learning-graming bash` to enter the container.
 
-#### 1.4 Run Machine Learning applications
-Execute `init.sh` to check the SGX and make some necessary settings.
-```bash 
+If you want to directyly execute a local application, run `init.sh` to init the SGX and make some necessary settings:
+```bash
 bash init.sh
 ```
 
-The trusted machine learning image porvides some classic examples of machine learning, including but not limited to random forest and linear regression. You can check the scripts in `/ppml/scripts` and execute one of them like this:
+### 3. Run Spark Machine Learning applications
+
+MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/scripts` and execute one of them like this:
 ```bash 
-cd scripts
-bash start-random-forest-classifier-on-local-sgx.sh
+bash scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
 ```
-You can also modify the jar path and class name, and run your own machine learning program like below:
+
+You can also run your own machine learning application with [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli) like below:
 ```bash 
-/opt/jdk8/bin/java \
-    -cp "/ppml/spark-${SPARK_VERSION}/conf/:your_jar_path" -Xmx1g \
-    org.apache.spark.deploy.SparkSubmit \
+export your_applicaiton_jar_path=...
+export your_application_class_path=...
+export your_application_arguments=...
+
+./bigdl-ppml-submit.sh
     --master local[2] \
     --driver-memory 32g \
     --driver-cores 8 \
     --executor-memory 32g \
     --executor-cores 8 \
     --num-executors 2 \
-    --class your_class_path \
-    --name your_program_name \
+    --class ${your_application_class_path} \
     --verbose \
-    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+    ${your_applicaiton_jar_path} \
+    ${your_application_arguments}
 ```
 
