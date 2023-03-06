@@ -31,8 +31,9 @@ sed -i 's@YOUR_PROXY@'"$HTTPS_PROXY_URL"'@' default.json
 sed -i "s/YOUR_USER_TOKEN_HASH/$userTokenHash/g" default.json
 sed -i "s/YOUR_ADMIN_TOKEN_HASH/$adminTokenHash/g" default.json
 sed -i "s/YOUR_API_KEY/$API_KEY/g" default.json
+
 chmod 644 default.json
 cd /opt/intel/pccs/
 
 # Step 3. Start PCCS service and keep listening
-/usr/bin/node -r esm pccs_server.js
+/usr/bin/node  pccs_server.js
