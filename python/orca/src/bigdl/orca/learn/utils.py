@@ -318,7 +318,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
     feature_lists = None
     label_lists = None
     counter = 0
-    feature_tail = -(len(label_cols)) if label_cols else None
+    feature_tail = len(feature_cols) if feature_cols else None
 
     for row in iter:
         if feature_lists is None:
@@ -359,7 +359,7 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def get_label_row(row, anchor):
-    if anchor == -1:
+    if anchor == len(row)-1: # In case label is the last one
         return row[-1]
     else:
         return row[anchor:]
