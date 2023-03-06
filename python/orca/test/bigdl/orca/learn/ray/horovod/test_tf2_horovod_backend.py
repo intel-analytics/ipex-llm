@@ -253,7 +253,7 @@ class TestTFHorovodEstimator(TestCase):
     def test_string_input(self):
 
         def model_creator(config):
-            vectorize_layer = tf.keras.layers.TextVectorization(
+            vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
                 max_tokens=10, output_mode='int', output_sequence_length=4)
             model = tf.keras.models.Sequential()
             model.add(tf.keras.Input(shape=(1,), dtype=tf.string))
