@@ -201,7 +201,8 @@ def _is_scalar_type(dtype, accept_str_col=False):
     return False
 
 
-def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=False, unpack_list=False):
+def convert_row_to_numpy(row, schema, feature_cols, label_cols,
+                         accept_str_col=False, unpack_list=False):
     def convert_for_cols(row, cols, is_label=False):
         import pyspark.sql.types as df_types
         result = []

@@ -359,7 +359,7 @@ arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
 def get_label_row(row, anchor):
-    if anchor == len(row)-1: # In case label is the last one
+    if anchor == len(row)-1:  # In case label is the last one
         return row[-1]
     else:
         return row[anchor:]
