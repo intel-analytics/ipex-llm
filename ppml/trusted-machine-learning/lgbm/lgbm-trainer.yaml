@@ -70,3 +70,4 @@ spec:
     - name: nfs-storage
       persistentVolumeClaim:
         claimName: nfsvolumeclaim
+
