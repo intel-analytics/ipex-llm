@@ -363,7 +363,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-py38-spark3-action/pr-test
     - name: Remove Env
@@ -382,7 +382,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-ray-py38-spark3-action/pr-test
     - name: Remove Env
