@@ -36,7 +36,7 @@ on:
         - Orca-Pytest-AutoML-Py37-Spark3
         - Orca-Tutorial-Xshards-Py37-Spark3
         - Orca-Tutorial-Notebook-Xshards-Py37-Spark3
-        - Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
+        - Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3
         - Orca-Pytest-Ray-Ctx-Py37-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
@@ -598,8 +598,8 @@ jobs:
         job-name: Orca-Tutorial-Notebook-Xshards-Py37-Spark3
         runner-hosted-on: 'Shanghai' 
   
-  Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+  Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3:
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -622,9 +622,9 @@ jobs:
         secret: ${{ secrets.GIST_SECRET}}
         gist-id: ${{env.GIST_ID}}
         is-self-hosted-runner: true
-        file-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3.json
+        file-name: Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3.json
         type: job
-        job-name: Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3
+        job-name: Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3
         runner-hosted-on: 'Shanghai' 
 
   Orca-Pytest-Ray-Ctx-Py37-Spark3:

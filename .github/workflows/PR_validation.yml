@@ -237,7 +237,7 @@ jobs:
         if: ${{ always() }}
         uses: ./.github/actions/remove-env
 
-  Orca-Tutorial-Notebook-Xshards-image-Py37-Spark3:
+  Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
