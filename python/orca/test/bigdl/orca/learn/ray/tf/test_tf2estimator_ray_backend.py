@@ -343,7 +343,8 @@ class TestTF2EstimatorRayBackend(TestCase):
         trainer.predict(train_data_shard, batch_size=4).rdd.collect()
         trainer.shutdown()
 
-        rdd = self.sc.range(0, 100).repartition(1)
+        sc = OrcaContext.get_spark_context()
+        rdd = range(0, 100).repartition(1)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
@@ -486,7 +487,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 10)
         from pyspark.sql import SparkSession
-        spark = SparkSession(self.sc)
+        spark = SparkSession(sc)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
@@ -513,7 +514,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         rdd = sc.range(200, numSlices=1)
         assert rdd.getNumPartitions() == 1
         from pyspark.sql import SparkSession
-        spark = SparkSession(self.sc)
+        spark = SparkSession(sc)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
@@ -541,7 +542,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         rdd = sc.range(200, numSlices=10)
         val_rdd = sc.range(60, numSlices=8)
         from pyspark.sql import SparkSession
-        spark = SparkSession(self.sc)
+        spark = SparkSession(sc)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
