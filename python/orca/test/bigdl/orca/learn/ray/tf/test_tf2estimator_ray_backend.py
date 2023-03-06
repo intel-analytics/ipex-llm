@@ -29,7 +29,7 @@ from bigdl.orca.data import SparkXShards, XShards
 from bigdl.orca.data.tf.data import Dataset
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.ray import OrcaRayContext
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
+from bigdl.orca import OrcaContext
 
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
@@ -184,14 +184,10 @@ def get_estimator(workers_per_node=2, model_fn=model_creator):
 
 
 class TestTF2EstimatorRayBackend(TestCase):
-    def setUp(self):
-        self.sc = init_orca_context(init_ray_on_spark=True)
-
-    def tearDown(self):
-        stop_orca_context()
 
     def test_orca_tf_dataset(self):
-        rdd = self.sc.parallelize(range(5))
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.parallelize(range(5))
         shard = SparkXShards(rdd)
 
         def generate_dataset(df, a, b, size):
@@ -367,7 +363,8 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_dataframe(self):
 
-        rdd = self.sc.range(0, 100).repartition(9)
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100).repartition(9)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1,).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
@@ -486,7 +483,8 @@ class TestTF2EstimatorRayBackend(TestCase):
 
     def test_dataframe_shard_size(self):
         OrcaContext._shard_size = 3
-        rdd = self.sc.range(0, 10)
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 10)
         from pyspark.sql import SparkSession
         spark = SparkSession(self.sc)
         from pyspark.ml.linalg import DenseVector
@@ -511,7 +509,8 @@ class TestTF2EstimatorRayBackend(TestCase):
         OrcaContext._shard_size = None
 
     def test_partition_num_less_than_workers(self):
-        rdd = self.sc.range(200, numSlices=1)
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(200, numSlices=1)
         assert rdd.getNumPartitions() == 1
         from pyspark.sql import SparkSession
         spark = SparkSession(self.sc)
@@ -538,8 +537,9 @@ class TestTF2EstimatorRayBackend(TestCase):
         trainer.predict(df, feature_cols=["feature"]).collect()
 
     def test_num_part_data_diff_val_data(self):
-        rdd = self.sc.range(200, numSlices=10)
-        val_rdd = self.sc.range(60, numSlices=8)
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(200, numSlices=10)
+        val_rdd = sc.range(60, numSlices=8)
         from pyspark.sql import SparkSession
         spark = SparkSession(self.sc)
         from pyspark.ml.linalg import DenseVector
@@ -566,7 +566,8 @@ class TestTF2EstimatorRayBackend(TestCase):
                     label_cols=["label"])
 
     def test_dataframe_predict(self):
-        rdd = self.sc.parallelize(range(20))
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.parallelize(range(20))
         df = rdd.map(lambda x: ([float(x)] * 5,
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
@@ -942,26 +943,6 @@ class TestTF2EstimatorRayBackend(TestCase):
             assert np.array_equal(expect_res, pred_res)
         finally:
             shutil.rmtree(temp_dir)
-
-    def test_string_input(self):
-
-        def model_creator(config):
-            vectorize_layer = tf.keras.layers.TextVectorization(
-                max_tokens=10, output_mode='int', output_sequence_length=4)
-            model = tf.keras.models.Sequential()
-            model.add(tf.keras.Input(shape=(1,), dtype=tf.string))
-            model.add(vectorize_layer)
-            return model
-
-        from pyspark.sql.types import StructType, StructField, StringType
-        spark = OrcaContext.get_spark_session()
-        schema = StructType([StructField("input", StringType(), True)])
-        input_data = [["foo qux bar"], ["qux baz"]]
-        input_df = spark.createDataFrame(input_data, schema)
-        estimator = Estimator.from_keras(model_creator=model_creator)
-        output_df = estimator.predict(input_df, batch_size=1, feature_cols=["input"])
-        output = output_df.collect()
-        print(output)
 
     def test_array_string_input(self):
 

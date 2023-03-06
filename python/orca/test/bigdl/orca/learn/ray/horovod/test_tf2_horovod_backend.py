@@ -22,6 +22,7 @@ import tensorflow as tf
 
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.ray import OrcaRayContext
+from bigdl.orca import OrcaContext
 
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
@@ -143,7 +144,6 @@ class LRChecker(tf.keras.callbacks.Callback):
 
 class TestTFHorovodEstimator(TestCase):
     def test_fit_and_evaluate_tf(self):
-        import tensorflow as tf
         ray_ctx = OrcaRayContext.get()
         batch_size = 32
         global_batch_size = batch_size * ray_ctx.num_ray_nodes
@@ -248,6 +248,27 @@ class TestTFHorovodEstimator(TestCase):
         else:
             # skip tests in horovod lower version
             pass
+    
+    # TODO: modify this ut to be compatible with tensorflow 2.9.0
+    def test_string_input(self):
+
+        def model_creator(config):
+            vectorize_layer = tf.keras.layers.TextVectorization(
+                max_tokens=10, output_mode='int', output_sequence_length=4)
+            model = tf.keras.models.Sequential()
+            model.add(tf.keras.Input(shape=(1,), dtype=tf.string))
+            model.add(vectorize_layer)
+            return model
+
+        from pyspark.sql.types import StructType, StructField, StringType
+        spark = OrcaContext.get_spark_session()
+        schema = StructType([StructField("input", StringType(), True)])
+        input_data = [["foo qux bar"], ["qux baz"]]
+        input_df = spark.createDataFrame(input_data, schema)
+        estimator = Estimator.from_keras(model_creator=model_creator)
+        output_df = estimator.predict(input_df, batch_size=1, feature_cols=["input"])
+        output = output_df.collect()
+        print(output)
 
 if __name__ == "__main__":
     pytest.main([__file__])
