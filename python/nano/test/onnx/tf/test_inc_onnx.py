@@ -28,7 +28,7 @@ class TestONNX(TestCase):
     def test_model_quantize_onnx(self):
         model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
-        input_examples = np.random.random((100, 224, 224, 3))
+        input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         input_features = np.random.randint(0, 10, size=100)
         
         train_dataset = tf.data.Dataset.from_tensor_slices((input_examples,
@@ -55,7 +55,7 @@ class TestONNX(TestCase):
     def test_model_quantize_onnx_without_dataset(self):
         model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
-        input_examples = np.random.random((100, 224, 224, 3))
+        input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         input_features = np.random.randint(0, 10, size=100)
 
         # quantize a Keras model
@@ -74,7 +74,7 @@ class TestONNX(TestCase):
     def test_model_quantize_onnx_with_only_x(self):
         model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
-        input_examples = np.random.random((100, 224, 224, 3))
+        input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         preds = model.predict(input_examples, batch_size=5)
 
         # quantize a Keras model based on numpy array
@@ -115,7 +115,7 @@ class TestONNX(TestCase):
     def test_model_quantize_onnx_save_load(self):
         model = EfficientNetB0(weights=None, input_shape=[224, 224, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
-        input_examples = np.random.random((100, 224, 224, 3))
+        input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         input_features = np.random.randint(0, 10, size=100)
         
         train_dataset = tf.data.Dataset.from_tensor_slices((input_examples,

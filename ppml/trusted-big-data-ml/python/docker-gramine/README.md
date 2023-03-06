@@ -22,7 +22,7 @@ cd base
 ./build-base-image.sh
 cd ..
 ```
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
 First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
@@ -75,7 +75,7 @@ mr_signer        : 6f0627955......
 
 #### 3.1 Deploy EHSM KMS&AS
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
 
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts).
 
@@ -326,7 +326,7 @@ Configure the environment variables in the following script before running it. C
        -e LOCAL_IP=$LOCAL_IP \
        $DOCKER_IMAGE bash
 ```
-run `docker exec -it spark-local-k8s-client bash` to entry the container.
+run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 ### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
