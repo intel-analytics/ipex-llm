@@ -43,10 +43,13 @@ def nano_bf16(func):
 
 class nano_multiprocessing(object):
     """A decorator to realize nano_multiprocessing training on customized training step."""
+
     def __init__(self, func):
+        """Initialize the training step function."""
         self.func = func
 
     def __call__(self, *args, mirrored_strategy=None, **kwargs):
+        """Run distribution strategy for multi-process training."""
         # TODO: to validate if we really could support kwargs
         per_replica_losses = mirrored_strategy.run(self.func, args=args, kwargs=kwargs)
         return mirrored_strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses,
@@ -54,11 +57,11 @@ class nano_multiprocessing(object):
 
 
 def nano(num_processes):
-    '''
-    A decorator to run customized training loop on multiple processes
+    """
+    A decorator to run customized training loop on multiple processes.
 
     :param num_processes: int, number of processes.
-    '''
+    """
     def decorator(func):
         return _Nano_Customized_Training(func, num_processes)
     return decorator
