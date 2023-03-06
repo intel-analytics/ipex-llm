@@ -7,7 +7,6 @@ on:
   pull_request:
     branchs: [ main ]
   workflow_dispatch:
-
 jobs:
   scan-dockerfile:
     runs-on: [self-hosted, SDL-TEST]
@@ -16,5 +15,3 @@ jobs:
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
         docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile
-        #docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile
-        #echo "${{docker run --rm -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile}}"
