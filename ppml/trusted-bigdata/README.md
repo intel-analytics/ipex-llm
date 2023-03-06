@@ -236,7 +236,7 @@ Follow the guide below to run Spark on Kubernetes manually. Alternatively, you c
 ## SGX
 ### Spark Submit
 #### 1 Prepare k8s service account and kubeconfig
-Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
+Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment].
 
 #### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
