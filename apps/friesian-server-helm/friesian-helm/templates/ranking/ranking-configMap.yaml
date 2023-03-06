@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.ranking.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-ranking
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.ranking.labels }}
+    {{ toYaml .Values.ranking.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ranking.annotations }}
+  annotations:
+    {{ toYaml .Values.ranking.annotations | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |
+    {{- if not .Values.ranking.config.modelParallelism }}
+    {{- if .Values.ranking.resources.limits.cpu }}
+    modelParallelism: {{ int .Values.ranking.resources.limits.cpu }}
+    {{- else if .Values.ranking.resources.requests.cpu }}
+    modelParallelism: {{ int .Values.ranking.resources.requests.cpu }}
+    {{- end }}
+    {{- end }}
+    modelPath: /resources/{{ .Values.ranking.resourcePath.modelPath }}
+    {{- with .Values.ranking.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}

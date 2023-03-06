@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "friesian-serving.ranking.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-ranking
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.ranking.labels }}
+    {{ toYaml .Values.ranking.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ranking.annotations }}
+  annotations:
+    {{ toYaml .Values.ranking.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.ranking.service.type }}
+  clusterIP: {{ .Values.ranking.service.clusterIP }}
+  selector:
+    app: {{ template "friesian-serving.name" . }}-ranking
+  ports:
+    - name: service
+      protocol: TCP
+      port: {{ .Values.ranking.config.servicePort }}
+      targetPort: {{ .Values.ranking.config.servicePort }}
+    - name: monitor
+      port: {{ .Values.ranking.config.monitorPort }}
+      targetPort: {{ .Values.ranking.config.monitorPort }}
+      protocol: TCP

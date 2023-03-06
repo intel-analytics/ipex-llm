@@ -1,0 +1,83 @@
+{{- if .Values.init.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.feature-recall.fullname" . }}-init
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.featureRecall.labels }}
+    {{ toYaml .Values.featureRecall.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.featureRecall.annotations }}
+    {{ toYaml .Values.featureRecall.annotations | nindent 4 }}
+    {{- end }}
+data:
+  config_feature_recall.yaml: |
+    {{- if .Values.redis.enabled }}
+      {{- if .Values.redis.sentinel.enabled }}
+    redisType: sentinel
+    redisSentinelMasterURL: {{ printf "%s-headless" (include "friesian-serving.redis.fullname" .) }}:26379
+    redisSentinelMasterName: {{ .Values.redis.sentinel.masterSet }}
+      {{- else }}
+    redisUrl: {{ include "friesian-serving.redis.fullname" . }}:6379
+      {{- end }}
+    {{- end }}
+    {{- with .Values.init.featureRecall.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.init.featureRecall.resourcePath }}
+    {{- if .initialUserDataPath }}
+    initialUserDataPath: /resources/{{ .initialUserDataPath }}
+    {{- end }}
+    {{- if .initialItemDataPath }}
+    initialItemDataPath: /resources/{{ .initialItemDataPath }}
+    {{- end }}
+    {{- end }}
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "friesian-serving.feature-recall.fullname" . }}-init
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.featureRecall.labels }}
+    {{ toYaml .Values.featureRecall.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "10"
+    {{- if .Values.featureRecall.annotations }}
+    {{ toYaml .Values.featureRecall.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: feature-recall-init
+        image: "{{ .Values.init.image.repository }}:{{ .Values.init.image.tag | default "latest" }}"
+        imagePullPolicy: {{ .Values.init.image.pullPolicy }}
+        args: ["feature-init", "-c", "mnt/config_feature_recall.yaml"]
+        volumeMounts:
+        - name: config
+          mountPath: /opt/work/mnt
+        - name: resources
+          mountPath: /resources
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "friesian-serving.feature-recall.fullname" . }}-init
+      - name: resources
+        persistentVolumeClaim:
+          claimName: {{ .Values.resourcePVCName }}
+      restartPolicy: Never
+  backoffLimit: 10
+{{- end }}

@@ -1,0 +1,66 @@
+{{- if .Values.init.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.recall.fullname" . }}-init
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recall.labels }}
+    {{ toYaml .Values.recall.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.recall.annotations }}
+    {{ toYaml .Values.recall.annotations | nindent 4 }}
+    {{- end }}
+data:
+  config_recall.yaml: |
+    initialDataPath: /resources/{{ .Values.init.recall.resourcePath.initialDataPath }}
+    indexPath: /resources/{{ .Values.recall.resourcePath.indexPath }}
+    {{- with .Values.init.recall.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "friesian-serving.recall.fullname" . }}-init
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recall.labels }}
+    {{ toYaml .Values.recall.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.recall.annotations }}
+    {{ toYaml .Values.recall.annotations | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: recall-init
+        image: "{{ .Values.init.image.repository }}:{{ .Values.init.image.tag | default "latest" }}"
+        imagePullPolicy: {{ .Values.init.image.pullPolicy }}
+        args: ["recall-init", "-c", "mnt/config_recall.yaml"]
+        volumeMounts:
+        - name: config
+          mountPath: /opt/work/mnt
+        - name: resources
+          mountPath: /resources
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "friesian-serving.recall.fullname" . }}-init
+      - name: resources
+        persistentVolumeClaim:
+          claimName: {{ .Values.resourcePVCName }}
+      restartPolicy: Never
+  backoffLimit: 10
+{{- end }}

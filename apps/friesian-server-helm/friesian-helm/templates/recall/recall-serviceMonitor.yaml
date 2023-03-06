@@ -1,0 +1,27 @@
+{{- if .Values.recall.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "friesian-serving.recall.fullname" . }}
+  namespace: {{ template "friesian-serving-service-monitor.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recall.labels }}
+    {{ toYaml .Values.recall.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.recall.annotations }}
+  annotations:
+    {{ toYaml .Values.recall.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ printf "%s" (include "friesian-serving.namespace" .) | quote }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-recall
+  endpoints:
+    - port: monitor
+      interval: {{ .Values.recall.serviceMonitor.interval }}
+{{- end }}

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "friesian-serving.feature.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature
+    {{- include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.feature.labels }}
+    {{ toYaml .Values.feature.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.feature.annotations }}
+  annotations:
+    {{ toYaml .Values.feature.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.feature.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-feature
+  template:
+    metadata:
+      labels:
+        app: {{ template "friesian-serving.name" . }}-feature
+        {{- include "friesian-serving.labels" . | nindent 8 }}
+        {{- if .Values.feature.labels }}
+        {{ toYaml .Values.feature.labels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.feature.annotations }}
+      annotations:
+        {{ toYaml .Values.feature.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "friesian-serving.feature.fullname" . }}
+          image: "{{ .Values.feature.image.repository }}:{{ .Values.feature.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.feature.image.pullPolicy }}
+          args: ["feature", "-c", "mnt/config.yaml"]
+          ports:
+            - name: service
+              containerPort: {{ .Values.feature.config.servicePort }}
+              protocol: TCP
+            - name: monitor
+              containerPort: {{ .Values.feature.config.monitorPort }}
+              protocol: TCP
+          volumeMounts:
+          - name: config
+            mountPath: /opt/work/mnt
+          # livenessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.feature.config.servicePort }}
+          # readinessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.feature.config.servicePort }}
+          {{- with .Values.feature.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "friesian-serving.feature.fullname" . }}
+      {{- if .Values.feature.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.feature.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.feature.affinity }}
+      affinity:
+        {{- toYaml .Values.feature.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.feature.tolerations }}
+      tolerations:
+        {{- toYaml .Values.feature.tolerations | nindent 8 }}
+      {{- end }}

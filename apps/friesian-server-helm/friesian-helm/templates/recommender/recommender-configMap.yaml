@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.recommender.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recommender
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recommender.labels }}
+    {{ toYaml .Values.recommender.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.recommender.annotations }}
+  annotations:
+    {{ toYaml .Values.recommender.annotations | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |
+    {{- with .Values.recommender.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    featureServiceURL: {{ include "friesian-serving.feature.fullname" . }}:{{ .Values.feature.config.servicePort }}
+    recallServiceURL: {{ include "friesian-serving.recall.fullname" . }}:{{ .Values.recall.config.servicePort }}
+    rankingServiceURL: {{ include "friesian-serving.ranking.fullname" . }}:{{ .Values.ranking.config.servicePort }}

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "friesian-serving.recommender.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recommender
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recommender.labels }}
+    {{ toYaml .Values.recommender.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.recommender.annotations }}
+  annotations:
+    {{ toYaml .Values.recommender.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.recommender.service.type }}
+  clusterIP: {{ .Values.recommender.service.clusterIP }}
+  selector:
+    app: {{ template "friesian-serving.name" . }}-recommender
+  ports:
+    - name: service
+      protocol: TCP
+      port: {{ .Values.recommender.config.servicePort }}
+      targetPort: {{ .Values.recommender.config.servicePort }}
+    - name: monitor
+      port: {{ .Values.recommender.config.monitorPort }}
+      targetPort: {{ .Values.recommender.config.monitorPort }}
+      protocol: TCP

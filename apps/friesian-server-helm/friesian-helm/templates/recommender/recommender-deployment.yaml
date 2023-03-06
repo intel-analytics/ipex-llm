@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "friesian-serving.recommender.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recommender
+    {{- include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recommender.labels }}
+    {{ toYaml .Values.recommender.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.recommender.annotations }}
+  annotations:
+    {{ toYaml .Values.recommender.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.recommender.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-recommender
+  template:
+    metadata:
+      labels:
+        app: {{ template "friesian-serving.name" . }}-recommender
+        {{- include "friesian-serving.labels" . | nindent 8 }}
+        {{- if .Values.recommender.labels }}
+        {{ toYaml .Values.recommender.labels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.recommender.annotations }}
+      annotations:
+        {{ toYaml .Values.recommender.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "friesian-serving.recommender.fullname" . }}
+          image: "{{ .Values.recommender.image.repository }}:{{ .Values.recommender.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.recommender.image.pullPolicy }}
+          args: ["recommender-http", "-c", "mnt/config.yaml"]
+          ports:
+            - name: service
+              containerPort: {{ .Values.recommender.config.servicePort }}
+              protocol: TCP
+            - name: monitor
+              containerPort: {{ .Values.recommender.config.monitorPort }}
+              protocol: TCP
+          volumeMounts:
+          - name: config
+            mountPath: /opt/work/mnt
+          # livenessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.recommender.config.servicePort }}
+          # readinessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.recommender.config.servicePort }}
+          {{- with .Values.recommender.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "friesian-serving.recommender.fullname" . }}
+      {{- if .Values.recommender.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.recommender.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.recommender.affinity }}
+      affinity:
+        {{- toYaml .Values.recommender.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.recommender.tolerations }}
+      tolerations:
+        {{- toYaml .Values.recommender.tolerations | nindent 8 }}
+      {{- end }}
