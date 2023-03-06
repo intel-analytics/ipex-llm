@@ -344,7 +344,7 @@ class TestTF2EstimatorRayBackend(TestCase):
         trainer.shutdown()
 
         sc = OrcaContext.get_spark_context()
-        rdd = range(0, 100).repartition(1)
+        rdd = sc.range(0, 100).repartition(1)
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
