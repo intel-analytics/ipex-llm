@@ -110,7 +110,7 @@ class BasePytorchForecaster(Forecaster):
             loss_creator=self.loss_creator,
             data=data, validation_data=validation_data,
             batch_size=batch_size, epochs=epochs,
-            metrics=[_str2metric(metric) for metric in self.metrics],
+            metrics=[_str2optimizer_metric(metric) for metric in self.metrics],
             scheduler=None,  # TODO
             num_processes=self.num_processes,
             model_config_keys=model_config_keys,
@@ -607,7 +607,7 @@ class BasePytorchForecaster(Forecaster):
                 metric = None
             else:
                 try:
-                    metric = _str2optimizer_metrc(metric)
+                    metric = _str2optimizer_metric(metric)
                 except Exception:
                     invalidInputError(False,
                                       "Unable to recognize the metric string you passed in.")
@@ -629,6 +629,7 @@ class BasePytorchForecaster(Forecaster):
                      metric=metric,
                      direction="min",
                      thread_num=thread_num,
+                     output_tensors=False,
                      excludes=excludes,
                      input_sample=dummy_input)
         try:
@@ -641,6 +642,7 @@ class BasePytorchForecaster(Forecaster):
         except Exception:
             invalidInputError(False, "Unable to find an optimized model that meets your conditions."
                               "Maybe you can relax your search limit.")
+        self.optimized_model_output_tensor = False
         self.optimized_model_thread_num = thread_num
 
     def get_context(self, thread_num=None, optimize=True):
@@ -1937,7 +1939,10 @@ class BasePytorchForecaster(Forecaster):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
 
-        metric = _str2metric(metric)
+        try:
+            metric = _str2optimizer_metric(metric)
+        except Exception:
+            invalidInputError(False, "Unable to recognize the metric string you passed in.")
 
         # init acc criterion
         accuracy_criterion = None
@@ -1974,14 +1979,13 @@ class BasePytorchForecaster(Forecaster):
                                               timeout=timeout,
                                               max_trials=max_trials,
                                               onnxruntime_session_options=sess_options,
-                                              thread_num=thread_num)
+                                              thread_num=thread_num,
+                                              output_tensors=False)
         if accelerator == 'onnxruntime':
-            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.optimized_model_output_tensor = False
             self.accelerate_method = "onnxruntime_int8"
         if accelerator == 'openvino':
-            q_model.output_tensors = False
             self.accelerated_model = q_model
             self.optimized_model_output_tensor = False
             self.accelerate_method = "openvino_int8"
@@ -2061,22 +2065,7 @@ class BasePytorchForecaster(Forecaster):
                    **kwargs)
 
 
-def _str2metric(metric):
-    # map metric str to function
-    if isinstance(metric, str):
-        metric_name = metric
-        from bigdl.chronos.metric.forecast_metrics import REGRESSION_MAP
-        metric_func = REGRESSION_MAP[metric_name]
-
-        def metric(y_label, y_predict):
-            y_label = y_label.numpy()
-            y_predict = y_predict.numpy()
-            return metric_func(y_label, y_predict)
-        metric.__name__ = metric_name
-    return metric
-
-
-def _str2optimizer_metrc(metric):
+def _str2optimizer_metric(metric):
     # map metric str to function for InferenceOptimizer
     if isinstance(metric, str):
         metric_name = metric
@@ -2084,8 +2073,10 @@ def _str2optimizer_metrc(metric):
         metric_func = REGRESSION_MAP[metric_name]
 
         def metric(pred, target):
-            pred = pred.numpy()
-            target = target.numpy()
+            if isinstance(pred, torch.Tensor):
+                pred = pred.numpy()
+            if isinstance(target, torch.Tensor):
+                target = target.numpy()
             return metric_func(target, pred)
         metric.__name__ = metric_name
     return metric
