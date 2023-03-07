@@ -34,9 +34,6 @@ import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
 
-import org.json4s.jackson.Serialization
-import org.json4s._
-
 import scala.util.Random
 import scala.util.parsing.json._
 
@@ -66,8 +63,6 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
     sslContext.init(null, Array(trustManager), new SecureRandom())
     new SSLConnectionSocketFactory(sslContext, new AllowAllHostnameVerifier())
   }
-
-  implicit val formats = DefaultFormats
 
   // Quote
   val PAYLOAD_QUOTE = "quote"
