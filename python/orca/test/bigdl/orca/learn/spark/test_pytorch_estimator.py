@@ -341,11 +341,11 @@ class TestPyTorchEstimator(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
 
         estimator = get_estimator(workers_per_node=2)
-        train_worker_stats = estimator.fit(df, batch_size=4, max_steps=20,
+        train_worker_stats = estimator.fit(df, batch_size=4, max_steps=40,
                                            feature_cols=["feature"],
                                            label_cols=["label"])
         # Total samples for last epoch
-        assert train_worker_stats[1]["num_samples"] == 56
+        assert train_worker_stats[1]["num_samples"] == 60
 
     
 if __name__ == "__main__":
