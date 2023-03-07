@@ -37,23 +37,23 @@ spec:
         - name: dev-enclave
           hostPath:
             path: /dev/sgx/enclave
-      - name: dev-provision
-        hostPath:
-          path: /dev/sgx/provision
-      - name: dev-aesmd
-        hostPath:
-          path: /var/run/aesmd
-      - name: bigdl-attestation-service-data
-        hostPath:
-          path: your_service_data_path
-      - name: bigdl-attestation-service-keys
-        hostPath:
-          path: your_service_keys_path
+        - name: dev-provision
+          hostPath:
+            path: /dev/sgx/provision
+        - name: dev-aesmd
+          hostPath:
+            path: /var/run/aesmd
+        - name: bigdl-attestation-service-data
+          hostPath:
+            path: your_service_data_path
+        - name: bigdl-attestation-service-keys
+          hostPath:
+            path: your_service_keys_path
       containers:
       - name: remote-attestation-service
         image: intelanalytics/bigdl-attestation-service:2.3.0-SNAPSHOT
         imagePullPolicy: IfNotPresent
-        command: ["./ppml/bigdl-as-entrypoint.sh"]
+        command: ["/ppml/bigdl-as-entrypoint.sh"]
         env:
         - name: PCCS_URL
           value: your_pccs_url
@@ -66,7 +66,7 @@ spec:
         - name: SECRET_KEY
           value: your_secret_key
         - name: SGX_ENABLED
-          value: false
+          value: "false"
         volumeMounts:
         - mountPath: /dev/sgx/enclave
           name: dev-enclave
