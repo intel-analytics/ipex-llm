@@ -33,7 +33,6 @@ from bigdl.orca import OrcaContext
 NUM_TRAIN_SAMPLES = 1000
 NUM_TEST_SAMPLES = 400
 
-np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
 
@@ -83,7 +82,7 @@ def compile_args(config):
     else:
         lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
+        "optimizer": tf.keras.optimizers.Adam(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }

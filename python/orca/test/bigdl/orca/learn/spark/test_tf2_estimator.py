@@ -27,7 +27,6 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca import OrcaContext
 
 
-np.random.seed(1337)  # for reproducibility
 
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
@@ -42,7 +41,7 @@ def compile_args(config):
     else:
         lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
+        "optimizer": tf.keras.optimizers.Adam(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }

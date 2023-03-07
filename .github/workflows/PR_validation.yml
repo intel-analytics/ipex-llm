@@ -315,7 +315,7 @@ jobs:
 
   Orca-Pytest-Py37-Spark3-Tf1:
     needs: changes
-    # if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
