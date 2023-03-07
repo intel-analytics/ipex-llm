@@ -27,6 +27,8 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
+set -ex
+
 echo "Running RayOnSpark tests"
 python -m pytest -v test/bigdl/orca/ray/ \
     --ignore=test/bigdl/orca/ray/integration/ \
@@ -44,6 +46,15 @@ python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/ctx/ \
       --ignore=test/bigdl/orca/learn/ray/tf/ \
       --ignore=test/bigdl/orca/learn/ray/mxnet/
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+    exit $exit_status_2
+fi
+ray stop -f
+
+# TODO: fix extra fixture {"spark.python.worker.reuse": "false"}
+#       for tensorflow estimator ray backend unit tests
 python -m pytest -v test/bigdl/orca/learn/ray/tf/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
