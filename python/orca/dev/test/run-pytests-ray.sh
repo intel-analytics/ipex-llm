@@ -42,7 +42,7 @@ echo "Running orca learn ray backend tests"
 python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/horovod/ \
       --ignore=test/bigdl/orca/learn/ray/ctx/ \
-      --ignore=test/bigdl/orca/learn/ray/tf \
+      --ignore=test/bigdl/orca/learn/ray/tf/ \
       --ignore=test/bigdl/orca/learn/ray/mxnet/
 python -m pytest -v test/bigdl/orca/learn/ray/tf/
 exit_status_2=$?
