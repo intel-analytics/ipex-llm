@@ -67,7 +67,7 @@ def load_onnxruntime_model(path, framework='pytorch'):
         from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
         return PytorchONNXRuntimeModel._load(path)
     elif framework == 'tensorflow':
-        from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
+        from .tensorflow.model import KerasONNXRuntimeModel
         return KerasONNXRuntimeModel._load(path)
     else:
         invalidInputError(False,
@@ -87,7 +87,7 @@ def KerasONNXRuntimeModel(model, input_spec,
                        the shape/dtype of the input
     :param onnxruntime_session_options: will be passed to tf2onnx.convert.from_keras function
     """
-    from .tensorflow.tensorflow_onnxruntime_model import KerasONNXRuntimeModel
+    from .tensorflow.model import KerasONNXRuntimeModel
     return KerasONNXRuntimeModel(model, input_spec,
                                  onnxruntime_session_options=onnxruntime_session_options,
                                  **export_kwargs)
