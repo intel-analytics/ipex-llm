@@ -55,10 +55,6 @@ FROM nvcr.io/nvidia/tritonserver:23.01-py3-min AS min_container
 
 # Stage.3 TF-Serving
 FROM tensorflow/serving:latest-devel as tf-serving
-ARG http_proxy
-ARG https_proxy
-ARG no_proxy
-RUN bazel build -c opt tensorflow_serving/... || true
 
 # DL-Serving
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
