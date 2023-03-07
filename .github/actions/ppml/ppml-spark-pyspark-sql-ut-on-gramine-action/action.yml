@@ -38,6 +38,13 @@ runs:
         -v $NFS_INPUT_PATH:/ppml/data \
         -e http_proxy=$HTTP_PROXY \
         -e https_proxy=$HTTPS_PROXY \
+        -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
+        -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+        -e LOCAL_IP=$LOCAL_IP \
+        -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
+        -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+        -e RUNTIME_DRIVER_PORT=54321 \
+        -e RUNTIME_DRIVER_MEMORY=1g \
         $IMAGE bash
     - name: Spark Examples Test
       shell: bash

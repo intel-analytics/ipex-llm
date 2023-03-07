@@ -44,7 +44,7 @@ runs:
         -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
         -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
         -e RUNTIME_DRIVER_PORT=54321 \
-        -e RUNTIME_DRIVER_MEMORY=5g \
+        -e RUNTIME_DRIVER_MEMORY=1g \
         $IMAGE bash
     - name: Spark Examples Test
       shell: bash
