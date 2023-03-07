@@ -117,10 +117,8 @@ class ModelCheckpoint(Callback):
         Called at the end of training.
         Subclasses should override for any actions to run.
         """
-        stats = {"epoch": runner.epochs}
         last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
-                                                      filename=self.CHECKPOINT_NAME_LAST,
-                                                      stats=stats)
+                                                      filename=self.CHECKPOINT_NAME_LAST)
         previous, self.last_ckpt_path = self.last_ckpt_path, last_ckpt_path
         runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
         if previous and previous != last_ckpt_path:
