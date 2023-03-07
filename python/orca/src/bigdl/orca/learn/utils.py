@@ -152,17 +152,30 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
     return result
 
 
-def convert_predict_xshards_to_dataframe(df, pred_shards):
+def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
     def flatten(data):
-        data = data["prediction"]
-        is_list = isinstance(data, list)
-        is_tuple = isinstance(data, tuple)
+        keys = [key for key in data.keys()]
+        if len(keys) == 1:
+            data = data["prediction"]
+            sub_data = data
+        else:
+            data = [data[key] for key in keys]
+            sub_data = data[0]
+
+        is_list = isinstance(sub_data, list)
+        is_tuple = isinstance(sub_data, tuple)
+
         if is_list or is_tuple:
-            length = data[0].shape[0]
+            length = sub_data[0].shape[0]
             ls_data = data
         else:
-            length = data.shape[0]
-            ls_data = [data]
+            length = sub_data.shape[0]
+            if len(keys) == 1:
+                ls_data = [data]
+            else:
+                ls_data = []
+                for i in range(len(data)):
+                    ls_data.append(data[i].tolist())
 
         for i in range(length):
             row = [elem[i] for elem in ls_data]
@@ -171,14 +184,17 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
             elif is_tuple:
                 yield tuple(row)
             else:
-                yield row[0]
+                if len(keys) == 1:
+                    yield row[0]
+                else:
+                    yield np.array(row)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
-    result = convert_predict_rdd_to_dataframe(df, pred_rdd)
+    result = convert_predict_rdd_to_dataframe(df, pred_rdd, output_cols)
     return result
 
 
-def convert_predict_rdd_to_dataframe(df, prediction_rdd):
+def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     from pyspark.sql import Row
     from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
@@ -203,11 +219,17 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 structType = FloatType()
                 for _ in range(dim):
                     structType = ArrayType(structType)
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
+                row_values = [pair[0][col] for col in pair[0].__fields__]
+                for value in pair[1]:
+                    row_values.append(value.tolist())
+                row = Row(*row_values)
         return row
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    columns = df.columns + ["prediction"]
+    if output_cols is None:
+        columns = df.columns + ["predicition"]
+    else:
+        columns = df.columns + output_cols
     # Converting to DataFrame will trigger the computation
     # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)
