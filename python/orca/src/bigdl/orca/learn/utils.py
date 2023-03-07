@@ -197,7 +197,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
         # np ndarray
         else:
             dim = len(elem.shape)
-            if dim == 1 or dim == 0:
+            if dim in [0, 1]:
                 # np 1-D array
                 return Vectors.dense(elem)
             else:
@@ -205,9 +205,12 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 return elem.tolist()
 
     def combine(pair):
-        print(f"pair is {pair}")
-        return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                     [convert_elem(pair[1])]))
+        # Only one scalar
+        if isinstance(pair[1], np.ndarray) and len(pair[1].shape) == 0:
+            return Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
+        else:
+            return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                        [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
