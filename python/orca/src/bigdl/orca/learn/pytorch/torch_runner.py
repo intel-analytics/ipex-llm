@@ -426,7 +426,7 @@ class TorchRunner(BaseRunner):
         # and restore batch to what it should be.
         features, target = batch
         if torch.is_tensor(features) or \
-            (isinstance(features, np.ndarray) and torch.is_tensor(features[0])):
+                (isinstance(features, np.ndarray) and torch.is_tensor(features[0])):
             self.batch = features, target
         elif isinstance(features, (tuple, list)):
             self.batch = *features, target
