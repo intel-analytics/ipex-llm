@@ -140,7 +140,22 @@ class Estimator(object):
                   mmcv_runner_creator: Callable,
                   backend: str = "ray",
                   workers_per_node: int = 1,
-                  config: Optional[Dict] = None) -> MMCVRayEstimator:
+                  config: Optional[Dict] = None) -> Union['MMCVRayEstimator', None]:
+        """
+        Create an Estimator for MMCV.
+
+        :param mmcv_runner_creator: A runner creator function that takes the parameter "config" and returns a
+               MMCV runner.
+        :param backend: The distributed backend for the Estimator.
+               Default: "ray".
+        :param config: A parameter config dict, CfgNode or any class instance that plays a role of
+               configuration to create runner data.
+               Default: None if no config is needed.
+        :param workers_per_node: The number of MMCV workers on each node.
+               Default: 1.
+
+        :return: A Estimator object for MMCV.
+        """
         if backend == "ray":
             from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
             return MMCVRayEstimator(mmcv_runner_creator=mmcv_runner_creator,
