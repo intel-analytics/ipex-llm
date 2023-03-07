@@ -154,8 +154,7 @@ class PytorchPysparkWorker(TorchRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
-        if self.state_dict:
-            self.load_state_dict(self.state_dict.value)
+        self.load_state_dict(self.state_dict.value)
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile,
                                             wrap_dataloader, callbacks)
         if self.log_to_driver:
@@ -168,8 +167,7 @@ class PytorchPysparkWorker(TorchRunner):
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
-        if self.state_dict:
-            self.load_state_dict(self.state_dict.value)
+        self.load_state_dict(self.state_dict.value)
         result = super().predict(partition=partition, batch_size=batch_size,
                                  profile=profile, callbacks=callbacks)
         if self.log_to_driver:
