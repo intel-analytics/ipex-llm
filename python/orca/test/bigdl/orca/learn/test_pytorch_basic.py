@@ -107,7 +107,7 @@ class ComplicatedOutputNet(nn.Module):
         h2 = self.prelu(a2)
         a3 = self.out(h2)
         y = self.out_act(a3)
-        return y[:0], {"y1": y[:1], "y2": y[:2]}
+        return y[:, 0], {"y1": y[:, 1], "y2": y[:, 2]}
 
 
 class IdentityNet(nn.Module):
