@@ -383,7 +383,8 @@ class SparkTFEstimator():
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
-                feature_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
+                feature_cols: Optional[List[str]]=None,
+                output_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.
@@ -438,7 +439,8 @@ class SparkTFEstimator():
             batch_size=batch_size,
             steps=steps,
             callbacks=callbacks,
-            data_config=data_config
+            data_config=data_config,
+            output_cols=output_cols
         )
 
         def transform_func(iter, init_param, param):

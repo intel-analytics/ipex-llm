@@ -493,7 +493,8 @@ class SparkRunner:
             self._stop_log_monitor()
             return []
 
-    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
+    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config,
+                output_cols):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
@@ -513,7 +514,10 @@ class SparkRunner:
 
         def predict_fn(shard):
             y = self.model.predict(shard["x"], **params)
-            return {"prediction": y}
+            if output_cols is None:
+                return {"prediction": y}
+            else:
+                return dict(zip(output_cols, y))
         for shard in dataset:
             yield predict_fn(shard)
         self._stop_log_monitor()
