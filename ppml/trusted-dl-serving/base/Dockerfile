@@ -51,7 +51,7 @@ RUN cd / &&\
     cd server &&\
     ./build.py -v --no-container-build --build-dir=`pwd`/build --backend=python --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-tracing
 
-FROM nvcr.io/nvidia/tritonserver:23.01-py3-min AS min_container
+FROM nvcr.io/nvidia/tritonserver:23.01-py3 AS min_container
 
 # Stage.3 TF-Serving
 FROM tensorflow/serving:latest-devel as tf-serving
@@ -97,22 +97,15 @@ RUN mkdir /ppml/examples && \
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
-# Small examples for PyTorch
-ADD ./mnist.py                   /ppml/examples/mnist.py
-ADD ./pert.py                    /ppml/examples/pert.py
-ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
-ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
-# Patch for datasets
-ADD ./filelock.patch /filelock.patch
-
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 # Start Script for Torchserve, Tritonserver and TF-Serving
-ADD ./start-backend-sgx.sh      /ppml/torchserve/start-backend-sgx.sh
-ADD ./start-frontend-sgx.sh     /ppml/torchserve/start-frontend-sgx.sh
-ADD ./start-torchserve-sgx.sh   /ppml/torchserve/start-torchserve-sgx.sh
-ADD ./start-tritonserver-sgx.sh /ppml/tritonserver/start-tritonserver-sgx.sh
-ADD ./start-tf-serving-sgx.sh   /ppml/tf-serving/start-tf-serving-sgx.sh
+# Start Script for Torchserve
+ADD ./start-torchserve-backend.sh       /ppml/torchserve/start-torchserve-backend.sh
+ADD ./start-torchserve-frontend.sh      /ppml/torchserve/start-torchserve-frontend.sh
+ADD ./start-torchserve.sh               /ppml/torchserve/start-torchserve.sh
+ADD ./start-tritonserver-sgx.sh         /ppml/tritonserver/start-tritonserver-sgx.sh
+ADD ./start-tf-serving-sgx.sh           /ppml/tf-serving/start-tf-serving-sgx.sh
 
 
 #For Tritonserver python backend
@@ -134,31 +127,22 @@ COPY --from=min_container /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64
 COPY --from=tritonserver /server/build/opt/tritonserver /opt/tritonserver
 COPY --from=tritonserver /server/docker/entrypoint.d/ /opt/nvidia/entrypoint.d/
 COPY --from=tritonserver /server/docker/cpu_only/ /opt/nvidia/
-COPY --from=min_container /opt/tritonserver/backends/pytorch /opt/tritonserver/backends
-COPY --from=min_container /opt/tritonserver/backends/tensorflow2 /opt/tritonserver/backends
+COPY --from=min_container /opt/tritonserver/backends/pytorch /opt/tritonserver/backends/pytorch
+COPY --from=min_container /opt/tritonserver/backends/tensorflow2 /opt/tritonserver/backends/tensorflow
 
 #TF-Serving
-COPY --from=tf-serving /tensorflow-serving/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server /usr/bin/tensorflow_model_server
+COPY --from=tf-serving /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
 
-# PyTorch Dependencies
+# Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev python3-pip libpython3-dev && \
-    rm -rf /var/lib/apt/lists/* &&\
     apt-get install -y libssl-dev && \
-    pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include intel-openmp && \
-    pip install --no-cache-dir torchvision==0.13.1 && \
-    cd /usr/local/lib && \
-    ln -s libmkl_gnu_thread.so.2 libmkl_gnu_thread.so && \
-    ln -s libmkl_intel_lp64.so.2 libmkl_intel_lp64.so && \
-    ln -s libmkl_core.so.2 libmkl_core.so && \
-# huggingface related
-    pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
 # Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference]==2.2.0b20221226 vit_pytorch && \
 # Torchserve
-    pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
+    pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
+    pip3 install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
@@ -169,21 +153,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
     sed -i '/import json/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
     cp /usr/local/lib/python3.8/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/torchserve/start-backend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-frontend-sgx.sh && \
-    chmod +x /ppml/torchserve/start-torchserve-sgx.sh && \
-# PyTorch
-    rm -rf /usr/local/lib/python3.8/dist-packages/torch && \
-    git clone https://github.com/analytics-zoo/pytorch /pytorch && \
-    cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
-    git submodule sync && git submodule update --init --recursive --jobs 0 && \
-    rm -rf ./third_party/gloo && \
-    cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
-    cd gloo && git checkout  devel-pt-v1.13.0-2022-11-16 && \
-    cd /pytorch && \
-    python3 setup.py install && \
-    cd /ppml/ && \
-    rm -rf /pytorch && \
+    chmod +x /ppml/torchserve/start-torchserve-backend.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-frontend.sh && \
+    chmod +x /ppml/torchserve/start-torchserve.sh && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
@@ -191,8 +163,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    patch /usr/local/lib/python3.8/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
-    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 backends/pytorch/libtorch_cuda.so
+    ls /opt/tritonserver/backends/pytorch && \
+    patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
