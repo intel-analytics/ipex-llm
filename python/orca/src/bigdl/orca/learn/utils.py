@@ -185,36 +185,32 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
 
 def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.sql import Row
-    from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
 
-    def combine(pair):
-        print(pair[0])
+    def convert_elem(elem):
         # list of np array
-        if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
+        if isinstance(elem, (list, tuple)):
+            return [convert_elem(i) for i in elem]
         # dict of np array as values
-        elif isinstance(pair[1], dict):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [{k: Vectors.dense(elem) for k, elem in pair[1].items()}]))
+        elif isinstance(elem, dict):
+            return {k: convert_elem(v) for k, v in elem.items()}
         # scalar
-        elif len(pair[1].shape) == 0:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
+        elif len(elem.shape) == 0:
+            return float(elem.item(0))
         # np ndarray
         else:
-            dim = len(pair[1].shape)
+            dim = len(elem.shape)
             if dim == 1:
                 # np 1-D array
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                            [Vectors.dense(pair[1])]))
+                return Vectors.dense(elem)
             else:
                 # multi-dimensional array
-                structType = FloatType()
-                for _ in range(dim):
-                    structType = ArrayType(structType)
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
-        return row
+                return elem.tolist()
+            
+
+    def combine(pair):
+        return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                        [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
