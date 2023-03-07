@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
     from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
     from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
+    from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
 
 class Estimator(object):
@@ -132,6 +133,25 @@ class Estimator(object):
             invalidInputError(False,
                               "Only horovod, ray, bigdl and spark backends are "
                               f"supported for now, got backend: {backend}")
+            return None
+
+    @staticmethod
+    def from_mmcv(*,
+                  mmcv_runner_creator: Callable,
+                  backend: str = "ray",
+                  workers_per_node: int = 1,
+                  config: Optional[Dict] = None) -> MMCVRayEstimator:
+        if backend == "ray":
+            from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
+            return MMCVRayEstimator(mmcv_runner_creator=mmcv_runner_creator,
+                                    backend=backend,
+                                    workers_per_node=workers_per_node,
+                                    config=config)
+        else:
+            from bigdl.dllib.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Only ray backend are supported for now, "
+                              f"got backend: {backend}")
             return None
 
     @staticmethod

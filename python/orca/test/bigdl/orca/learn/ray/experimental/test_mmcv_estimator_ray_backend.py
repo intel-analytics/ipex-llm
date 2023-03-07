@@ -27,7 +27,7 @@ from torch.utils.data import DataLoader
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner import DistEvalHook as BaseDistEvalHook
 from mmcv.utils import get_logger
-from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
+from bigdl.orca.learn.pytorch import Estimator
 
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
@@ -182,7 +182,7 @@ def train_dataloader_creator(config):
 def get_estimator(creator, cfg=None, workers_per_node=1):
     if cfg is None:
         cfg = {}
-    estimator = MMCVRayEstimator(
+    estimator = Estimator.from_mmcv(
         mmcv_runner_creator=creator,
         config=cfg,
         workers_per_node=workers_per_node

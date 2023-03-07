@@ -27,13 +27,13 @@ from torch.optim import Optimizer
 from mmcv.runner import EpochBasedRunner, DistEvalHook
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel import is_module_wrapper
-from mmcv.parallel.distributed import MMDistributedDataParallel
 from mmcv.fileio.file_client import BaseStorageBackend
 from mmcv.utils.misc import is_list_of
 from mmcv.runner.checkpoint import CheckpointLoader
 from bigdl.orca.learn.pytorch.utils import get_batchsize
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.core.base_runner import BaseRunner
+from .distributed import MMDistributedDataParallel
 
 from typing import (TYPE_CHECKING, Union, Any, Dict, List, Optional, Tuple, Callable)
 
