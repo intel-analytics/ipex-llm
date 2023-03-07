@@ -95,7 +95,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
                     self._module_copies[:len(inputs)], inputs, kwargs)
                 output = self.gather(outputs, self.output_device)
         else:
-            # output = self.module.train_step(*inputs, **kwargs)
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             output = self.module.train_step(*inputs[0], **kwargs[0])
 
@@ -152,7 +151,6 @@ class MMDistributedDataParallel(DistributedDataParallel):
                     self._module_copies[:len(inputs)], inputs, kwargs)
                 output = self.gather(outputs, self.output_device)
         else:
-            # output = self.module.val_step(*inputs, **kwargs)
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             output = self.module.val_step(*inputs[0], **kwargs[0])
 
