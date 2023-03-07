@@ -17,7 +17,7 @@
 import numpy as np
 import tensorflow as tf
 
-from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+from bigdl.nano.deps.onnxruntime.tensorflow.model \
     import KerasONNXRuntimeModel
 
 from ..quantization import BaseONNXRuntimeQuantization

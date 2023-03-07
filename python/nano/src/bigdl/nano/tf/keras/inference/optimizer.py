@@ -702,7 +702,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+            from bigdl.nano.deps.onnxruntime.tensorflow.model \
                 import KerasONNXRuntimeModel
             if isinstance(model, KerasONNXRuntimeModel):     # type: ignore
                 onnx_model = model

@@ -20,7 +20,7 @@ import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB0
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
-from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+from bigdl.nano.deps.onnxruntime.tensorflow.model \
     import KerasONNXRuntimeModel
 
 
@@ -30,7 +30,7 @@ class TestONNX(TestCase):
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         input_features = np.random.randint(0, 10, size=100)
-        
+
         train_dataset = tf.data.Dataset.from_tensor_slices((input_examples,
                                                             input_features))
 
@@ -99,7 +99,7 @@ class TestONNX(TestCase):
                                                                                'higher_is_better': True})
         onnx_preds = onnx_quantized_model.predict(input_examples, batch_size=5)
         np.testing.assert_allclose(preds, onnx_preds, rtol=5e-2)
-        
+
         # quantize a Keras model based on tf tensor
         input_tensor = tf.convert_to_tensor(input_examples)
         onnx_quantized_model = InferenceOptimizer.quantize(model,
@@ -117,7 +117,7 @@ class TestONNX(TestCase):
         model = Model(inputs=model.inputs, outputs=model.outputs)
         input_examples = np.random.random((100, 224, 224, 3)).astype(np.float32)
         input_features = np.random.randint(0, 10, size=100)
-        
+
         train_dataset = tf.data.Dataset.from_tensor_slices((input_examples,
                                                             input_features))
 
@@ -139,7 +139,7 @@ class TestONNX(TestCase):
 
         preds2 = new_onnx_model.predict(input_examples, batch_size=5)
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
-        
+
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             new_onnx_model = InferenceOptimizer.load(tmp_dir_name, model)

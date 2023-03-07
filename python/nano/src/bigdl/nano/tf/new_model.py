@@ -112,6 +112,13 @@ class KerasOptimizedModel(Model):
         with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
+    @staticmethod
+    def _load_status(path):
+        meta_path = Path(path) / "nano_model_meta.yml"
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+        return metadata
+
     def _save(self, path, compression="fp32"):
         invalidInputError(False, "Saving function is not implemented.")
 
