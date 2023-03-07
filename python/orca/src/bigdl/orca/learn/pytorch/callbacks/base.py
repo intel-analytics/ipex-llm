@@ -73,3 +73,6 @@ class Callback(object):
 
     def every_n_iter(self, runner, n):
         return (runner.global_step + 1) % n == 0 if n > 0 else False
+
+    def every_n_epoch(self, runner, n):
+        return runner.epochs % n == 0 if n > 0 else False

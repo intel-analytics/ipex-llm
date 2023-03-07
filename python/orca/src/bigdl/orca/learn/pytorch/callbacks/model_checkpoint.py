@@ -28,10 +28,10 @@ class ModelCheckpoint(Callback):
     FILE_EXTENSION = ".ckpt"
 
     def __init__(self,
-                 filepath=None,
-                 save_weights_only=False,
-                 by_epoch=True,
-                 interval=-1,
+                 filepath: str = "",
+                 save_weights_only: bool = False,
+                 by_epoch: bool = True,
+                 interval: int = -1,
                  ):
         """
         ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
@@ -66,13 +66,22 @@ class ModelCheckpoint(Callback):
         """
         if not self.by_epoch:
             return
-        stats = {"epoch": runner.epochs}
-        last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
-                                                      filename=self.filename,
-                                                      stats=stats)
-        runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
+        # if user do not specify the interval, save checkpoint after every epoch
+        if self.interval < 0:
+            self.interval = 1
+        if self.every_n_epoch(runner, self.interval):
+            stats = {"epoch": runner.epochs}
+            last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
+                                                          filename=self.filename,
+                                                          stats=stats)
+            runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
 
     def after_train_iter(self, runner):
+        """
+        Called at the end of an iteration.
+        Subclasses should override for any actions to run. This function should only
+        be called during TRAIN mode.
+        """
         if self.by_epoch:
             return
 
