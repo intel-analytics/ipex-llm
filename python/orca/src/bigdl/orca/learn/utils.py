@@ -210,7 +210,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
             return Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
         else:
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [convert_elem(pair[1])]))
+                         [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
