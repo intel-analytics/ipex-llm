@@ -45,16 +45,16 @@ __all__ = ['loader_to_creator',
 def loader_to_creator(loader):
     # Warning, this data creator will not respect the batch_size changing.
     def data_creator(config, batch_size):
-            return loader
+        return loader
     return data_creator
 
 
 def np_to_creator(data):
     def data_creator(config, batch_size):
-            return DataLoader(TensorDataset(torch.from_numpy(data[0]).float(),
-                                            torch.from_numpy(data[1]).float()),
-                              batch_size=batch_size,
-                              shuffle=True)
+        return DataLoader(TensorDataset(torch.from_numpy(data[0]).float(),
+                                        torch.from_numpy(data[1]).float()),
+                          batch_size=batch_size,
+                          shuffle=True)
     return data_creator
 
 
@@ -166,12 +166,12 @@ def np_to_dataloader(data, batch_size, num_processes):
                       shuffle=True)
 
 def tsdataset_to_dataloader(data, batch_size, lookback, horizon, num_processes):
-    if num_processes: # void the num_processes is none 
+    if num_processes:  # void the num_processes is none
         if batch_size % num_processes != 0:
             warnings.warn("'batch_size' cannot be divided with no remainder by "
-                        "'self.num_processes'. We got 'batch_size' = {} and "
-                        "'self.num_processes' = {}".
-                        format(batch_size, num_processes))
+                          "'self.num_processes'. We got 'batch_size' = {} and "
+                          "'self.num_processes' = {}".
+                          format(batch_size, num_processes))
         batch_size = max(1, batch_size//num_processes)
     _rolled = data.numpy_x is None
     return data.to_torch_data_loader(batch_size=batch_size,
@@ -182,16 +182,18 @@ def tsdataset_to_dataloader(data, batch_size, lookback, horizon, num_processes):
                                      target_col=data.roll_target,
                                      shuffle=True)
 
-def dataloader_batch_resize(data:DataLoader, batch_size, num_processes):
+
+def dataloader_batch_resize(data: DataLoader, batch_size, num_processes):
     if num_processes == 1:
         return data
     if batch_size % num_processes != 0:
         warnings.warn("'batch_size' cannot be divided with no remainder by "
-                    "'self.num_processes'. We got 'batch_size' = {} and "
-                    "'self.num_processes' = {}".
-                    format(batch_size, num_processes))
+                      "'self.num_processes'. We got 'batch_size' = {} and "
+                      "'self.num_processes' = {}".
+                      format(batch_size, num_processes))
     batch_size = max(1, batch_size//num_processes)
     return DataLoader(data.dataset, batch_size=batch_size)
+
 
 def read_csv(filename, loss_name='val/loss'):
     import codecs

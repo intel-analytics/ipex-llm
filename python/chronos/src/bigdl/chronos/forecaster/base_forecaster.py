@@ -307,7 +307,7 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            data = tsdataset_to_dataloader(data, batch_size=batch_size, 
+            data = tsdataset_to_dataloader(data, batch_size=batch_size,
                                            lookback=self.data_config['past_seq_len'],
                                            horizon=self.data_config['future_seq_len'],
                                            num_processes=self.num_processes)
