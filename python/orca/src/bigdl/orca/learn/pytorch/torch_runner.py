@@ -247,6 +247,8 @@ class TorchRunner(BaseRunner):
         if max_steps is not None:
             epochs = math.ceil(max_steps / len(self.train_loader))
 
+        self.num_epochs = epochs
+
         stats_list = list()
         for i in range(epochs):
             del self.epoch_stats
