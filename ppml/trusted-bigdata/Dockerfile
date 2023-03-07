@@ -217,25 +217,23 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 # Python packages
     pip3 install numpy pandas pyarrow&& \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
-    cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/
-
+    cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
 # Azure support
-RUN apt purge -y libsgx-dcap-default-qpl
-RUN echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list
-RUN wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN apt update
-RUN apt install -y az-dcap-client
-
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-RUN apt-get install bsdmainutils
-RUN curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl
-RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    apt purge -y libsgx-dcap-default-qpl && \
+    echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list && \
+    wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    apt update && \
+    apt install -y az-dcap-client && \
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    apt-get install bsdmainutils && \
+    curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl  && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 ADD azure /ppml/azure
 RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/generate-keys-az.sh && \
     chmod a+x /ppml/azure/generate-password-az.sh && \
     chmod a+x /ppml/azure/kubeconfig-secret.sh && \
-    chmod a+x /ppml/azure/submit-spark-sgx-az.sh
-RUN wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
+    chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
+    wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
