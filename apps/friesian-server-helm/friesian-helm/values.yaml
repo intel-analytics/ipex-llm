@@ -17,8 +17,8 @@ init:
 
   ## Image for init steps
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
   feature:
     ## Relative path to Parquet files contain users' & items' features.
@@ -87,8 +87,8 @@ init:
 feature:
   ## Image for feature servers
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
 
   ## Define resource requests and limits for single Pods.
@@ -169,8 +169,8 @@ feature:
 featureRecall:
   ## Image for feature recall servers
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
 
   ## Define resource requests and limits for single Pods.
@@ -252,8 +252,8 @@ featureRecall:
 recall:
   ## Image for recall servers
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
 
   ## Define resource requests and limits for single Pods.
@@ -306,8 +306,8 @@ recall:
 ranking:
   ## Image for ranking servers
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
 
   ## Define resource requests and limits for single Pods.
@@ -361,8 +361,8 @@ ranking:
 recommender:
   ## Image for recommender servers
   image:
-    repository: 10.239.45.10/arda/intelanalytics/friesian-serving
-    tag: PR-20220926
+    repository: intelanalytics/friesian-serving
+    tag: 2.2.0-SNAPSHOT
     pullPolicy: IfNotPresent
 
   ## Define resource requests and limits for single Pods.
