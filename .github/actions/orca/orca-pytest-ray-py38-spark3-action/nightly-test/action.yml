@@ -1,14 +1,16 @@
-name: 'Run Orca Python Ray Py37 Spark3'
-description: 'Run Orca Python Ray Py37 Spark3'
+name: 'Run Orca Python Ray Py38 Spark3'
+description: 'Run Orca Python Ray Py38 Spark3'
 runs:
   using: "composite"
   steps:
     - name: Run Test
       shell: bash
       run: |
-        source activate py37
+        source activate py38
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+        
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
@@ -23,9 +25,12 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-optimize==0.8.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
-
+        
+        pip list
+        
         chmod a+x python/orca/dev/test/run-pytests-ray.sh
         python/orca/dev/test/run-pytests-ray.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

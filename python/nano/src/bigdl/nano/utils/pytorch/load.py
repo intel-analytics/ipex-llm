@@ -49,6 +49,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
                 precision(FP32/FP16/BF16/INT8).
     """
     from bigdl.nano.pytorch.amp.amp_api import load_bf16_model
+    from bigdl.nano.pytorch.low_precision.jit_int8_api import load_pytorchjitint8_model
     from bigdl.nano.pytorch.context_manager import generate_context_manager
     from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
     from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
@@ -82,6 +83,8 @@ def load_model(path, model: nn.Module = None, input_sample=None,
         result = load_ipex_quantization_model(path, model, inplace=inplace)
     if model_type == 'BF16Model':
         return load_bf16_model(path, model)
+    if model_type == 'PytorchJITINT8Model':
+        return load_pytorchjitint8_model(path)
     if result is not None:
         if isinstance(model, torch.nn.Module):
             # patch attributes to accelerated model

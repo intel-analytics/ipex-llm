@@ -25,13 +25,13 @@ from .acceleration_option import AccelerationOption
 def format_acceleration_option(method_name: str,
                                full_methods: Dict[str, AccelerationOption]) -> str:
     '''
-    Get a string represation for current method's acceleration option
+    Get a string representation for current method's acceleration option
     '''
     option = full_methods[method_name]
     repr_str = ""
     for key, value in option.__dict__.items():
         if value is True:
-            if key == "pot":
+            if key == "pot" or key == "fx":
                 repr_str = repr_str + "int8" + " + "
             else:
                 repr_str = repr_str + key + " + "
@@ -49,7 +49,7 @@ def format_acceleration_option(method_name: str,
 def format_optimize_result(optimize_result_dict: dict,
                            calculate_accuracy: bool) -> str:
     '''
-    Get a format string represation for optimization result
+    Get a format string representation for optimization result
     '''
     if calculate_accuracy is True:
         horizontal_line = " {0} {1} {2} {3}\n" \

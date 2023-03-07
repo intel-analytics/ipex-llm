@@ -14,3 +14,4 @@ ray[tune]==1.9.2
 scikit-learn
 setproctitle
 tensorboard
+protobuf==3.19.5
