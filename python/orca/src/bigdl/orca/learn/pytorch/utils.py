@@ -343,8 +343,9 @@ def index_concatenate(x, axis=0):
                 res.append(dict_res)
             else:
                 invalidInputError(False,
-                                "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-                                " or a list of ndarrays, please check your input")
+                                  "data should be an ndarray, a dict of ndarrays,"
+                                  " a tuple of ndarrays"
+                                  " or a list of ndarrays, please check your input")
         return res
 
 
