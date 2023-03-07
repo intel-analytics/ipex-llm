@@ -50,6 +50,7 @@ ADD ./mllib/spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./mllib/spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./lgbm/make-lgbm.sh /ppml/make-lgbm.sh
+ADD ./lgbm/start-lgbm-training.sh /ppml/start-lgbm-training.sh
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN echo $http_proxy && \
