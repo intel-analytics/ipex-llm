@@ -45,6 +45,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./mnist.py                   /ppml/examples/mnist.py
 ADD ./pert.py                    /ppml/examples/pert.py
 ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
+ADD ./pert_nano.py               /ppml/examples/pert_nano.py
 ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
 ADD ./filelock.patch /filelock.patch

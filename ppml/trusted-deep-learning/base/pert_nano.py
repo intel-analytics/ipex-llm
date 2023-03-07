@@ -3,6 +3,7 @@ import argparse
 import os
 import logging
 import time
+from bigdl.nano.pytorch import nano
 from torch import nn
 from contextlib import nullcontext
 from datasets import load_dataset
@@ -10,7 +11,6 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 from transformers import BertTokenizer, BertModel, AdamW
-#from tqdm.auto import tqdm
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
 RANK = int(os.environ.get("RANK", 0))
@@ -136,13 +136,13 @@ class NeuralNetwork(nn.Module):
 
 device = 'cpu'
 
-
-def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
+@nano(precision='bf16')
+def train_loop_nano(model, optimizer, train_loader, args, loss_fn, epoch, total_loss):
     # Set to train mode
     model.train()
     total_dataset = 0
     optimizer.zero_grad(set_to_none=True)
-    enumerator = enumerate(dataloader, start=1)
+    enumerator = enumerate(train_loader, start=1)
     for batch, (X, y) in enumerator:
         my_context = model.no_sync if WORLD_SIZE > 1 and args.mini_batch > 0 and batch % args.mini_batch != 0 else nullcontext
         with my_context():
@@ -159,8 +159,8 @@ def train_loop(args, dataloader, model, loss_fn, optimizer, epoch, total_loss):
         total_dataset += args.batch_size
         if batch % args.log_interval == 0:
             msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
-                epoch, batch, len(dataloader),
-                100. * batch / len(dataloader), loss.item())
+                epoch, batch, len(train_loader),
+                100. * batch / len(train_loader), loss.item())
             logging.info(msg)
 
     return total_loss, total_dataset
@@ -237,9 +237,10 @@ def main():
     loss_fn = nn.CrossEntropyLoss()
     optimizer = AdamW(model.parameters(), lr=args.lr)
 
+
     total_loss = 0.
     best_acc = 0.
-    total_time = 0.
+    total_time = 0. 
     total_throughput = 0.
 
     for t in range(args.epochs):
@@ -248,8 +249,8 @@ def main():
             train_dataloader.sampler.set_epoch(t)
             valid_dataloader.sampler.set_epoch(t)
         start = time.perf_counter()
-        total_loss, total_dataset = train_loop(
-            args, train_dataloader, model, loss_fn, optimizer, t+1, total_loss)
+        total_loss, total_dataset = train_loop_nano(
+            model, optimizer, train_dataloader, args, loss_fn, t+1, total_loss)
         end = time.perf_counter()
         print(f"Epoch {t+1}/{args.epochs + 1} Elapsed time:",
               end - start, flush=True)
@@ -263,10 +264,12 @@ def main():
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
-    msg = "[INFO]Average training time per epoch: {: .4f}".format(total_time / args.epochs)
+    msg = "[INFO]Average training time per epoch: {: .4f}".format(
+        total_time / args.epochs)
     print(msg, flush=True)
 
-    msg = "[INFO]Average throughput per epoch: {: .4f}".format(total_throughput / total_time)
+    msg = "[INFO]Average throughput per epoch: {: .4f}".format(
+        total_throughput / total_time)
     print(msg, flush=True)
 
     if (args.save_model):
