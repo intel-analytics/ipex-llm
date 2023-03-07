@@ -29,7 +29,6 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
 
         pip list
-        export FTP_URI=${FTP_URI}
         chmod a+x python/orca/dev/test/run-tutorial-NCF.sh
         python/orca/dev/test/run-tutorial-NCF.sh ray
         source deactivate
