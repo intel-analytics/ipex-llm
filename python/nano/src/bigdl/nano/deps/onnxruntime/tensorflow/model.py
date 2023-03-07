@@ -91,7 +91,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
         return self.forward_step(*inputs)
 
     def postprocess(self, outputs: Sequence[Any]):
-        if isinstance(outputs, list) and len(outputs):
+        if isinstance(outputs, list) and len(outputs) == 1:
             outputs = outputs[0]
         for _i in range(self._nesting_level):
             outputs = [outputs]
