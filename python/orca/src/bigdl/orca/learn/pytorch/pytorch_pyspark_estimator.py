@@ -363,11 +363,13 @@ class PyTorchPySparkEstimator(BaseEstimator):
             worker_stats = res
         else:
             # state dicts of all runners would be the same
-            state_list = [item for item in res if isinstance(item, dict)]
+            for item in res:
+                if isinstance(item, dict):
+                    self.state_dict = item
+                    break
             # Each runner would return a list of worker stats for different epochs
             worker_stats = [item for item in res if isinstance(item, list)]
 
-        self.state_dict = state_list[0]
         epoch_stats = list(map(list, zip(*worker_stats)))
         if reduce_results:
             for i in range(len(epoch_stats)):
