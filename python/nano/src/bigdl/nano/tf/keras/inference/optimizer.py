@@ -249,8 +249,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, sample):
-                    model(sample)
+                def func_test(model, *args):
+                    model(*args)
                 try:
                     if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
@@ -282,9 +282,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             except Exception:
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if isinstance(input_sample, tf.Tensor):
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, *input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
