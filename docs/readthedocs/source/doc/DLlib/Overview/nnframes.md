@@ -298,7 +298,7 @@ from pyspark.sql.types import *
 
 #Logistic Regression with BigDL layers and NNClassifier
 model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
-criterion = ZooClassNLLCriterion()
+criterion = ClassNLLCriterion()
 estimator = NNClassifier(model, criterion, [2]).setBatchSize(4).setMaxEpoch(10)
 data = sc.parallelize([
     ((0.0, 1.0), [1.0]),
