@@ -48,23 +48,29 @@ export PYSPARK_DRIVER_PYTHON=python
 cd "`dirname $0`"
 cd ../../tutorial/NCF
 
-# backend passed as the first argument, either "ray" or "spark"
-# if no argument is provided, default to be "spark"
+# 1st argument represents the backend, either "ray" or "spark"
+# 2nd argument represents the dataset, either "ml-1m" or "ml-100k"
+# if no argument is provided, default to be "spark", "ml-1m"
 argc=$#
 if [ $argc -eq 0 ]; then
     backend="spark"
+    dataset="ml-1m"
 else
     backend=$1
+    dataset=$2
 fi
-echo "Start Orca NCF tutorial Test - $backend backend"
+echo "Start Orca NCF tutorial Test - $backend backend, $dataset dataset"
 
-echo "Using Dataset: ml-1m"
 # download dataset from ftp
 rm -f ./orca-tutorial-ncf-dataset-compressed.zip
+rm -f ./orca-tutorial-ncf-dataset-compressed-100k.zip
 rm -rf ml-1m
+rm -rf ml-100k
 wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
+wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed-100k.zip
 unzip orca-tutorial-ncf-dataset-compressed.zip
-echo "Successfully got dataset ml-1m from ftp"
+unzip orca-tutorial-ncf-dataset-compressed-100k.zip
+echo "Successfully got dataset ml-1m & ml-100k from ftp"
 
 stop_ray $backend
 
@@ -72,10 +78,9 @@ echo "#1 Running pytorch_train_dataloader"
 #timer
 start=$(date "+%s")
 
-# ml-1m is the default dataset, thus arg --data-dir is unnecessary
-python ./pytorch_train_dataloader.py --backend $backend
+python ./pytorch_train_dataloader.py --backend $backend --dataset $dataset
 # pytorch dataloader does not have predict
-python ./pytorch_resume_train_dataloader.py --backend $backend
+python ./pytorch_resume_train_dataloader.py --backend $backend --dataset $dataset
 
 now=$(date "+%s")
 time1=$((now - start))
@@ -87,9 +92,9 @@ echo "#2 Running pytorch_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-python ./pytorch_train_spark_dataframe.py --backend $backend
-python ./pytorch_predict_spark_dataframe.py --backend $backend
-python ./pytorch_resume_train_spark_dataframe.py --backend $backend
+python ./pytorch_train_spark_dataframe.py --backend $backend --dataset $dataset
+python ./pytorch_predict_spark_dataframe.py --backend $backend --dataset $dataset
+python ./pytorch_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
 
 now=$(date "+%s")
 time2=$((now - start))
@@ -101,9 +106,9 @@ echo "#3 Running pytorch_train_xshards"
 #timer
 start=$(date "+%s")
 
-python ./pytorch_train_xshards.py --backend $backend
-python ./pytorch_predict_xshards.py --backend $backend
-python ./pytorch_resume_train_xshards.py --backend $backend
+python ./pytorch_train_xshards.py --backend $backend --dataset $dataset
+python ./pytorch_predict_xshards.py --backend $backend --dataset $dataset
+python ./pytorch_resume_train_xshards.py --backend $backend --dataset $dataset
 
 now=$(date "+%s")
 time3=$((now - start))
@@ -115,9 +120,9 @@ echo "#4 Running tf_train_spark_dataframe"
 #timer
 start=$(date "+%s")
 
-python ./tf_train_spark_dataframe.py --backend $backend
-python ./tf_predict_spark_dataframe.py --backend $backend
-python ./tf_resume_train_spark_dataframe.py --backend $backend
+python ./tf_train_spark_dataframe.py --backend $backend --dataset $dataset
+python ./tf_predict_spark_dataframe.py --backend $backend --dataset $dataset
+python ./tf_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
 
 now=$(date "+%s")
 time4=$((now - start))
@@ -129,9 +134,9 @@ echo "#5 Running tf_train_xshards"
 #timer
 start=$(date "+%s")
 
-python ./tf_train_xshards.py --backend $backend
-python ./tf_predict_xshards.py --backend $backend
-python ./tf_resume_train_xshards.py --backend $backend
+python ./tf_train_xshards.py --backend $backend --dataset $dataset
+python ./tf_predict_xshards.py --backend $backend --dataset $dataset
+python ./tf_resume_train_xshards.py --backend $backend --dataset $dataset
 
 now=$(date "+%s")
 time5=$((now - start))
@@ -147,4 +152,6 @@ echo "#5 Running tf_train_xshards time used: $time5 seconds"
 
 #clean dataset
 rm -rf ml-1m
+rm -rf ml-100k
 rm -f orca-tutorial-ncf-dataset-compressed.zip
+rm -f orca-tutorial-ncf-dataset-compressed-100k.zip
