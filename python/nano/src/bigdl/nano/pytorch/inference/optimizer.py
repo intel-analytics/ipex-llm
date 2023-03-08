@@ -819,6 +819,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                      calib_dataloader,
                                                                      input_sample)
 
+            # Add sample_size property to calib_dataloader to make the for loop in
+            # `ipex_quantization_model.py`
+            # `jit_int8_model.py`
+            # load sample items less than this value
+            calib_dataloader._nano_calib_sample_size = sample_size
+
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
