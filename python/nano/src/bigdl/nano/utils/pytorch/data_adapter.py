@@ -136,11 +136,13 @@ class DataAdapter:
         # complement the input sample by defaults
         if isinstance(input_sample, Sequence):
             input_sample_complement = input_sample
-            input_sample_complement += self.model_info.forward_defaults[
-                                       -(len(self.model_info.forward_args) - input_sample_length):]
+            input_sample_complement += \
+                self.model_info.forward_defaults[-(len(self.model_info.forward_args)
+                                                   - input_sample_length):]
         else:
             input_sample_complement = [input_sample]
-            input_sample_complement += list(self.model_info.forward_defaults[-(
-                    len(self.model_info.forward_args) - input_sample_length):])
+            input_sample_complement += \
+                list(self.model_info.forward_defaults[
+                     -(len(self.model_info.forward_args) - input_sample_length):])
 
         return tuple(input_sample_complement)
