@@ -188,7 +188,6 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.ml.linalg import Vectors
 
     def convert_elem(elem):
-        print(f"elem is {elem}")
         # list of np array
         if isinstance(elem, (list, tuple)):
             return [convert_elem(i) for i in elem]
