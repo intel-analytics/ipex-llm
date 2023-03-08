@@ -312,14 +312,10 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            _rolled = data.numpy_x is None
-            data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=_rolled,
-                                             lookback=self.data_config['past_seq_len'],
-                                             horizon=self.data_config['future_seq_len'],
-                                             feature_col=data.roll_feature,
-                                             target_col=data.roll_target,
-                                             shuffle=True)
+            data = tsdataset_to_dataloader(data, batch_size=batch_size,
+                                           lookback=self.data_config['past_seq_len'],
+                                           horizon=self.data_config['future_seq_len'],
+                                           num_processes=self.num_processes)
         if isinstance(data, DataLoader) and self.distributed:
             data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
@@ -370,6 +366,10 @@ class BasePytorchForecaster(Forecaster):
             # data transformation
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
+
+            # dataloader change batch_size for multi-process
+            if isinstance(data, DataLoader) and self.num_processes:
+                data = dataloader_batch_resize(data, batch_size, self.num_processes)
 
             # training process
             # forecaster_log_dir is a temp directory for training log

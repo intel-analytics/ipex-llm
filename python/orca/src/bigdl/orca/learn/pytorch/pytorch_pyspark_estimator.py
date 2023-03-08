@@ -279,6 +279,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
+        if self.state_dict["epoch"] == 0:
+            self.state_dict = None
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
@@ -360,7 +362,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            self.state_dict = res[0]  # state dicts of all runners would be the same
+            # Only the state_dict of the rank 0 worker would be returned
+            for item in res:
+                if isinstance(item, dict):
+                    self.state_dict = item
+                    break
             # Each runner would return a list of worker stats for different epochs
             worker_stats = [item for item in res if isinstance(item, list)]
 

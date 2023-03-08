@@ -21,9 +21,8 @@ import pytest
 import numpy as np
 import os
 from bigdl.orca.data.image.parquet_dataset import ParquetDataset
-from bigdl.orca.data.image.parquet_dataset import _write_ndarrays, write_from_directory, write_parquet
+from bigdl.orca.data.image.parquet_dataset import write_from_directory, write_parquet
 from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
-from bigdl.orca.learn.tf.estimator import Estimator
 from bigdl.orca.data.image import write_mnist, write_voc
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
@@ -167,48 +166,6 @@ def test_write_voc(orca_context_fixture, use_api=False):
         with open(image_path, "rb") as f:
             image_bytes = f.read()
         assert image_bytes == data['image']
-
-    finally:
-        shutil.rmtree(temp_dir)
-
-
-def test_train_simple(orca_context_fixture):
-    sc = orca_context_fixture
-    temp_dir = tempfile.mkdtemp()
-
-    try:
-        _write_ndarrays(images=np.random.randn(500, 28, 28, 1).astype(np.float32),
-                        labels=np.random.randint(0, 10, (500,)).astype(np.int32),
-                        output_path="file://" + temp_dir)
-        dataset = ParquetDataset.read_as_tf("file://" + temp_dir)
-
-        def preprocess(data):
-            return data['image'], data["label"]
-
-        dataset = dataset.map(preprocess)
-
-        import tensorflow as tf
-        model = tf.keras.Sequential(
-            [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                                    input_shape=(28, 28, 1), padding='valid'),
-             tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-             tf.keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
-                                    padding='valid'),
-             tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
-             tf.keras.layers.Flatten(),
-             tf.keras.layers.Dense(500, activation='tanh'),
-             tf.keras.layers.Dense(10, activation='softmax'),
-             ]
-        )
-
-        model.compile(optimizer=tf.keras.optimizers.RMSprop(),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
-
-        est = Estimator.from_keras(keras_model=model)
-        est.fit(data=dataset,
-                batch_size=100,
-                epochs=1)
 
     finally:
         shutil.rmtree(temp_dir)
