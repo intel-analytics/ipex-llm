@@ -365,6 +365,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             worker_stats = [item for item in res if isinstance(item, list)]
 
         epoch_stats = list(map(list, zip(*worker_stats)))
+        print("epoch stats is: ", epoch_stats)
         if reduce_results:
             for i in range(len(epoch_stats)):
                 epoch_stats[i] = process_stats(epoch_stats[i])

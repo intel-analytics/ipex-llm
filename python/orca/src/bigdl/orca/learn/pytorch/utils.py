@@ -298,7 +298,7 @@ def process_stats(worker_stats):
             stats.pop("num_samples", np.nan) for stats in worker_stats)
     }
 
-    if "val_num_sample" in worker_stats[0]:
+    if "val_num_samples" in worker_stats[0]:
         stats["val_num_samples"] = sum(
             stats.pop("val_num_samples", np.nan) for stats in worker_stats)
 
