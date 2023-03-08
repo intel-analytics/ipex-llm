@@ -15,7 +15,6 @@
 #
 
 import torch
-from bigdl.nano.utils.pytorch.data_adapter import DataAdapter
 from torch import nn
 import time
 import sigfig
@@ -353,13 +352,45 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         forward_args = get_forward_args(model)
         if input_sample is None:
-            data_adapter = DataAdapter(model)
-            input_sample, input_label = data_adapter.get_data(training_data)
-            training_data = data_adapter.get_dataloader(training_data)
+            if isinstance(training_data, DataLoader):
+                input_sample = get_input_example(model, training_data, forward_args)
+            else:
+                if isinstance(training_data, Sequence):
+                    if len(training_data) <= 2:
+                        input_sample = training_data[0]
+                        if len(training_data) == 2:
+                            input_label = training_data[1]
+                        else:
+                            input_label = torch.Tensor([])
+                    else:
+                        input_sample = tuple(training_data[:len(forward_args)])
+                        input_label = tuple(training_data[len(forward_args):])
+                else:
+                    input_sample = training_data
+                    input_label = torch.Tensor([])
+                # turn training_data into dataset
+                dataset = RepeatDataset(sample=(input_sample, input_label), num=1)
+                training_data = DataLoader(dataset, batch_size=1)
+                training_data = remove_batch_dim_fn(training_data)
 
-            if validation_data:
-                val_sample, val_label = data_adapter.get_data(validation_data)
-                validation_data = data_adapter.get_dataloader(validation_data)
+                if validation_data is not None and not isinstance(validation_data, DataLoader):
+                    # turn validation_data into dataset
+                    if isinstance(validation_data, Sequence):
+                        if len(validation_data) <= 2:
+                            val_sample = validation_data[0]
+                            if len(validation_data) == 2:
+                                val_label = validation_data[1]
+                            else:
+                                val_label = []
+                        else:
+                            val_sample = tuple(validation_data[:len(forward_args)])
+                            val_label = tuple(validation_data[len(forward_args):])
+                    else:
+                        val_sample = training_data
+                        val_label = []
+                    val_dataset = RepeatDataset(sample=(val_sample, val_label), num=1)
+                    validation_data = DataLoader(val_dataset, batch_size=1)
+                    validation_data = remove_batch_dim_fn(validation_data)
 
         st = time.perf_counter()
         try:
