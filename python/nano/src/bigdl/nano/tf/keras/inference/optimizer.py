@@ -388,7 +388,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device == 'CPU' else {}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,

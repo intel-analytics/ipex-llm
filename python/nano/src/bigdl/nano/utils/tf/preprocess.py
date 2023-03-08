@@ -25,7 +25,7 @@ import tensorflow as tf
 def tensor_spec_to_shape(tensor_specs: Union[tf.TensorSpec, Sequence[tf.TensorSpec]]):
     """Convert TensorSpec(s) to shape(s)."""
     if isinstance(tensor_specs, Sequence):
-        return tuple(spec.shape for spec in tensor_specs)
+        return [spec.shape for spec in tensor_specs]
     else:
         return tensor_specs.shape
 
@@ -59,7 +59,11 @@ def try_compute_output_shape(model: tf.keras.Model,
         except Exception as _e:
             if try_fake_inference:
                 inputs = fake_tensor_from_spec(input_spec)
-                _ = model(inputs)
+                # `inputs` may be a single Tensor or a list of Tensors
+                if isinstance(inputs, list):
+                    _ = model(*inputs)
+                else:
+                    _ = model(inputs)
             return None
     else:
         invalidInputError(False,
