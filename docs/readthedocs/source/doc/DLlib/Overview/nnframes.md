@@ -134,14 +134,16 @@ from bigdl.dllib.feature.common import *
 from bigdl.dllib.keras.objectives import CategoricalCrossEntropy
 from bigdl.dllib.keras.optimizers import Adam
 from bigdl.dllib.keras.layers import *
+from bigdl.dllib.nncontext import *
 
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
 
-from bigdl.dllib.nncontext import *
-spark_conf = create_spark_conf().setMaster("local[2]") \
-  .set("spark.driver.cores", 2) \
-  .set("spark.driver.memory", "2g")
+sparkConf = init_spark_conf().setAppName("testNNEstimator").setMaster('local[1]')
+sc = init_nncontext(sparkConf)
+spark = SparkSession\
+    .builder\
+    .getOrCreate()
 
 sc = init_nncontext(spark_conf, "local")
 
