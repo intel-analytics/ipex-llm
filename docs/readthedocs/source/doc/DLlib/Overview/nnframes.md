@@ -138,6 +138,7 @@ from bigdl.dllib.nncontext import *
 
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
+from pyspark.sql import SparkSession
 
 sparkConf = init_spark_conf().setAppName("testNNEstimator").setMaster('local[1]')
 sc = init_nncontext(sparkConf)
