@@ -14,7 +14,6 @@ runs:
         
         # build horovod
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake
-        HOROVOD_WITH_PYTORCH=1
         HOROVOD_WITH_TENSORFLOW=1
         HOROVOD_WITH_GLOO=1
         pip install --no-cache-dir horovod==0.19.2
