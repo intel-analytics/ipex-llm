@@ -10,7 +10,8 @@ sgx() {
     fi
 
     echo "Detecting aesmd..."
-    if [ -e "/var/run/aesmd/aesm.socket" ]; then
+    AESMDSTATUS=$(service aesmd status | grep "Active: active (running)")
+    if [ -n "$AESMDSTATUS" ]; then
         echo "aesmd is installed."
     else
         echo "aesmd isn't installed."
