@@ -177,6 +177,10 @@ subtrees:
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_bf16
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
+                              - file: doc/Nano/Howto/Inference/TensorFlow/quantize_tensorflow_inference_inc
+                              - file: doc/Nano/Howto/Inference/TensorFlow/quantize_tensorflow_inference_acc
+                              - file: doc/Nano/Howto/Inference/TensorFlow/quantize_tensorflow_accuracy_control
+                              - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_optimizer_optimize
                   - file: doc/Nano/Howto/Install/index
                     subtrees:
                       - entries:

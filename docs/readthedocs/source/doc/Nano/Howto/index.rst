@@ -83,6 +83,9 @@ TensorFlow
 * `How to conduct BFloat16 Mixed Precision inference in a TensorFlow Keras application <Inference/TensorFlow/tensorflow_inference_bf16.html>`_
 * `How to save and load optimized ONNXRuntime model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_onnx.html>`_
 * `How to save and load optimized OpenVINO model in TensorFlow <Inference/TensorFlow/tensorflow_save_and_load_openvino.html>`_
+* `How to quantize your Tensorflow model for inference using Intel Neural Compressor <Inference/TensorFlow/quantize_tensorflow_inference_inc.html>`_
+* `How to quantize your Tensorflow model for inference using Accelerator <Inference/TensorFlow/quantize_tensorflow_inference_acc.html>`_
+* `How to quantize your Tensorflow model for inference by specifying accuracy control <Inference/TensorFlow/quantize_tensorflow_accuracy_control.html>`_
 
 Install
 -------------------------
