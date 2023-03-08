@@ -188,14 +188,15 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.ml.linalg import Vectors
 
     def convert_elem(elem):
+        print(f"elem is {elem}")
         # list of np array
         if isinstance(elem, (list, tuple)):
             return [convert_elem(i) for i in elem]
         # dict of np array as values
         elif isinstance(elem, dict):
             return {k: convert_elem(v) for k, v in elem.items()}
-        # scalar
-        elif len(elem.shape) == 0:
+        # scalar in basic type
+        elif not isinstance(elem, np.ndarray) and len(elem.shape) == 0:
             return float(elem.item(0))
         # np ndarray
         else:
@@ -208,12 +209,8 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 return elem.tolist()
 
     def combine(pair):
-        # Only one scalar
-        if not isinstance(pair[1], (list, tuple)) and len(pair[1].shape) == 0:
-            return Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
-        else:
-            return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                         [convert_elem(pair[1])]))
+        return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                     [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
