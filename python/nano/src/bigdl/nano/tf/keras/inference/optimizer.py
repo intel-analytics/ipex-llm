@@ -199,7 +199,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) == 2:
                 input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
@@ -249,8 +251,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, sample):
-                    model(sample)
+                def func_test(model, *args):
+                    model(*args)
                 try:
                     if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
@@ -282,9 +284,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             except Exception:
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if isinstance(input_sample, tf.Tensor):
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, *input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
@@ -388,7 +395,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device == 'CPU' else {}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
