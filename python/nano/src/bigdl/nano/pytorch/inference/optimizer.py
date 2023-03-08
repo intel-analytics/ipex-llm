@@ -202,13 +202,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | Each element in the DataLoader can be one of the following:
                 |    a. a single Tensor or dict of Tensors
                 |    b. a tuple:
-                |         b1: if the lenth is 1, the first element will be treated as input
+                |         b1: if the length is 1, the first element will be treated as input
                 |             to the model
-                |         b2: if the lenth is 2, the first element will be treated as input
+                |         b2: if the length is 2, the first element will be treated as input
                 |             to the model, with the sencond element treated as label.
                 |             if the input to the model is a tuple, it will be unpacked as
                 |             multiple inputs.
-                |         b3: if the lengh is larger than 2, the first n elements as input
+                |         b3: if the length is larger than 2, the first n elements as input
                 |             to the model, with n being the argument lenth to the model.forward
                 |             and the rest will be treated as label
                 |
@@ -220,9 +220,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
                 |
                 | Each element in the DataLoader should be a tuple as least size of two:
-                |     a: if the lenth is 2, the first element will be treated as input
+                |     a: if the length is 2, the first element will be treated as input
                 |        to the model, with the sencond element treated as label
-                |     b: if the lengh is larger than 2, the first n elements as input
+                |     b: if the length is larger than 2, the first n elements as input
                 |        to the model, with n being the argument lenth to the model.forward
                 |        and the rest will be treated as label
                 |
@@ -310,6 +310,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
+        :param latency_calculate_all: if set True, calculate average latency by iterating all the 
+               provided dataloader until reaching the latency_sample_num. Default set to be False. 
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
