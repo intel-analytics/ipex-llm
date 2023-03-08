@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+# Copyright (c) OpenMMLab. All rights reserved.
+
+# This file is adapted from
+# https://github.com/open-mmlab/mmcv/blob/master/mmcv/parallel/distributed.py
+
 from typing import Any, List, Tuple
 
 import torch
@@ -28,11 +33,17 @@ from mmcv.parallel.scatter_gather import ScatterInputs, scatter_kwargs
 class MMDistributedDataParallel(DistributedDataParallel):
     """The DDP module that supports DataContainer.
 
-    MMDDP has two main differences with PyTorch DDP:
+    This MMDDP has some differences with the original MMDDP:
 
-    - It supports a custom type :class:`DataContainer` which allows more
-      flexible control of input data.
-    - It implement two APIs ``train_step()`` and ``val_step()``.
+    - It implements a ``forward()`` method
+    - It update the code in ``train_step()`` ``val_step()`` and ``_run_ddp_forward()``
+    when self.device_ids is None, which means training with CPU
+
+    related issues:
+    - https://github.com/open-mmlab/mmcv/issues/2524
+    - https://github.com/open-mmlab/mmcv/issues/2558
+    When the issues above is solved by mmcv, this file can be deleted, then directly
+    use the MMDDP implemented by mmcv in MMCVRayEpochRunner.
     """
 
     def forward(self, *inputs, **kwargs):
