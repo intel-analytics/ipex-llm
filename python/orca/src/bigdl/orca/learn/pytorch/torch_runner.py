@@ -36,6 +36,7 @@ import logging
 import os
 import copy
 import tempfile
+from holidays import NO
 import torch
 import torch.nn as nn
 import numpy as np
@@ -283,10 +284,6 @@ class TorchRunner(BaseRunner):
             invalidInputError(False,
                               "You must provide a model for train and evaluate.")
 
-        if not self.criterion:
-            invalidInputError(False,
-                              "You must provide a loss for train and evaluate.")
-
         if not self.optimizers:
             invalidInputError(False,
                               "You must provide the optimizer for train.")
@@ -449,9 +446,14 @@ class TorchRunner(BaseRunner):
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch/loss from last iteration
-        del self.batch
-        del self.output
-        del self.loss
+        if hasattr(self, "batch"):
+            del self.batch
+
+        if hasattr(self, "output"):
+            del self.output
+
+        if hasattr(self, "loss"):
+            del self.loss
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
@@ -459,10 +461,6 @@ class TorchRunner(BaseRunner):
         if not self.models:
             invalidInputError(False,
                               "You must provide a model for train and evaluate.")
-
-        if not self.criterion:
-            invalidInputError(False,
-                              "You must provide a loss for train and evaluate.")
 
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
@@ -583,14 +581,20 @@ class TorchRunner(BaseRunner):
 
         self.call_hook(callbacks=callbacks, fn_name="after_val_iter")
 
-        # User should not see batch from last iteration
-        output = self.output
-        target = self.batch[-1]
-        loss = self.loss
+        output, target, loss = None, None, None
 
+        if hasattr(self, "output"):
+            output = self.output
+            del self.output
+
+        # User should not see batch from last iteration
+        # Assume target is always the last one in a batch.
+        target = self.batch[-1]
         del self.batch
-        del self.output
-        del self.loss
+
+        if hasattr(self, "loss"):
+            loss = self.loss
+            del self.loss
 
         return output, target, loss
 
