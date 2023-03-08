@@ -199,7 +199,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) == 2:
                 input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
