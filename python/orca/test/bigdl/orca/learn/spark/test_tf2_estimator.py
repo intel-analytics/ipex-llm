@@ -30,6 +30,7 @@ from bigdl.orca import OrcaContext
 
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
+                                        tf.keras.layers.BatchNormalization(),
                                         tf.keras.layers.Dense(1)])
     return model
 
@@ -41,7 +42,7 @@ def compile_args(config):
     else:
         lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.Adam(lr),
+        "optimizer": tf.keras.optimizers.SGD(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }
