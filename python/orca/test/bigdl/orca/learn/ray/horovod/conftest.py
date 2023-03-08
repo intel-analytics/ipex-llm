@@ -15,19 +15,13 @@
 #
 import pytest
 from bigdl.orca import init_orca_context, stop_orca_context
-from pyspark.sql.types import ArrayType, DoubleType
 from pyspark.sql import SparkSession
 
 
 @pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture():
-    conf = {"spark.python.worker.reuse": "false"}
-    sc = init_orca_context(cores=8, conf=conf)
-
-    def to_array_(v):
-        return v.toArray().tolist()
+    sc = init_orca_context(cores=8)
 
     spark = SparkSession(sc)
-    spark.udf.register("to_array", to_array_, ArrayType(DoubleType()))
     yield
     stop_orca_context()
