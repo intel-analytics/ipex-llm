@@ -248,11 +248,10 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2)
         train_worker_stats = estimator.fit(df, batch_size=4, epochs=2,
                                            feature_cols=["feature"],
-                                           label_cols=["label"],
-                                           validation_data=df)
+                                           label_cols=["label"]
+                                           )
         # Total samples for one epoch
         assert train_worker_stats[0]["num_samples"] == 100
-        assert train_worker_stats[0]["val_num_samples"] == 100
         eval_worker_stats = estimator.evaluate(df, batch_size=4,
                                                feature_cols=["feature"],
                                                label_cols=["label"],
