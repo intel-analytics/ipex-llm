@@ -69,7 +69,6 @@ def create_test_dataset(config, batch_size):
 
 def simple_model(config):
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(10, input_shape=(1,)),
-                                        tf.keras.layers.BatchNormalization(),
                                         tf.keras.layers.Dense(1)])
     return model
 
