@@ -11,11 +11,9 @@ runs:
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
 
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.3.0
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.4.0
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.5.0
         
         # build horovod
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake mxnet
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake
         HOROVOD_WITH_PYTORCH=1
         HOROVOD_WITH_TENSORFLOW=1
         HOROVOD_WITH_GLOO=1
