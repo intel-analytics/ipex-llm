@@ -127,16 +127,32 @@ res = nnModel.transform(df)
 This example trains a model with 3 inputs. And users can use VectorAssembler from Spark MLlib to combine different fields. With the specified sizes for each model input, NNEstiamtor and NNClassifer will split the input features data and send tensors to corresponding inputs.
 
 ```python
-sparkConf = init_spark_conf().setAppName("testNNClassifer").setMaster('local[1]')
-sc = init_nncontext(sparkConf)
-spark = SparkSession\
-    .builder\
-    .getOrCreate()
+
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.nnframes.nn_classifier import *
+from bigdl.dllib.feature.common import *
+from bigdl.dllib.keras.objectives import CategoricalCrossEntropy
+from bigdl.dllib.keras.optimizers import Adam
+from bigdl.dllib.keras.layers import *
+
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler
+
+from bigdl.dllib.nncontext import *
+spark_conf = create_spark_conf().setMaster("local[2]") \
+  .set("spark.driver.cores", 2) \
+  .set("spark.driver.memory", "2g")
+
+sc = init_nncontext(spark_conf, "local")
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.master("local[2]").appName('SparkByExamples.com') \
+                    .getOrCreate()
 
 df = spark.createDataFrame(
-    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 1.0),
-     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 2.0),
-     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 1.0)],
+    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 0.0),
+     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 1.0),
+     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 0.0)],
     ["user", "age", "income", "history", "label"])
 
 assembler = VectorAssembler(
@@ -145,20 +161,20 @@ assembler = VectorAssembler(
 
 df = assembler.transform(df)
 
-x1 = ZLayer.Input(shape=(1,))
-x2 = ZLayer.Input(shape=(2,))
-x3 = ZLayer.Input(shape=(2, 2,))
+x1 = Input(shape=(1,))
+x2 = Input(shape=(2,))
+x3 = Input(shape=(2, 2,))
 
-user_embedding = ZLayer.Embedding(5, 10)(x1)
-flatten = ZLayer.Flatten()(user_embedding)
-dense1 = ZLayer.Dense(2)(x2)
-gru = ZLayer.LSTM(4, input_shape=(2, 2))(x3)
+user_embedding = Embedding(5, 10)(x1)
+flatten = Flatten()(user_embedding)
+dense1 = Dense(2)(x2)
+gru = LSTM(4, input_shape=(2, 2))(x3)
 
-merged = ZLayer.merge([flatten, dense1, gru], mode="concat")
-zy = ZLayer.Dense(2)(merged)
+merged = merge([flatten, dense1, gru], mode="concat")
+zy = Dense(2)(merged)
 
-zmodel = ZModel([x1, x2, x3], zy)
-criterion = ZooClassNLLCriterion()
+zmodel = Model([x1, x2, x3], zy)
+criterion = CategoricalCrossEntropy()
 classifier = NNClassifier(zmodel, criterion, [[1], [2], [2, 2]]) \
     .setOptimMethod(Adam()) \
     .setLearningRate(0.1)\
