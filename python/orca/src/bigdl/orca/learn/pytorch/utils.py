@@ -289,7 +289,7 @@ def get_batchsize(input):
     elif isinstance(input, dict):
         return get_batchsize(list(input.values())[0])
     else:
-        return input.size(0)
+        return input.shape[0]
 
 
 def process_stats(worker_stats):

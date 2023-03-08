@@ -2,7 +2,7 @@
   - [Before Running Code](#before-running-code)
     - [1. Build Docker Images](#1-build-docker-images)
       - [1.1 Build Bigdata Base Image](#11-build-bigdata-base-image)
-      - [1.2 Build Customer Image](#12-build-customer-image)
+      - [1.2 Build Custom Image](#12-build-custom-image)
     - [2. Prepare SSL key](#2-prepare-ssl-key)
       - [2.1 Prepare the Key](#21-prepare-the-key)
       - [2.2 Prepare the Password](#22-prepare-the-password)
@@ -79,11 +79,13 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 
 **Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(16G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(8G EPC and log level is error)
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all:2.3.0-SNAPSHOT
 
 `16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
 
@@ -101,7 +103,7 @@ Before building your own base image, please modify the paths in `ppml/trusted-bi
 ./build-bigdata-base-image.sh
 ```
 
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
 First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
@@ -150,7 +152,7 @@ mr_signer        : 6f0627955......
 
 #### 3.1 Deploy EHSM KMS&AS
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
 
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
 
@@ -236,7 +238,7 @@ Follow the guide below to run Spark on Kubernetes manually. Alternatively, you c
 ## SGX
 ### Spark Submit
 #### 1 Prepare k8s service account and kubeconfig
-Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
+Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment].
 
 #### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
@@ -268,7 +270,7 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-run `docker exec -it spark-local-k8s-client bash` to entry the container.
+run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 #### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
 

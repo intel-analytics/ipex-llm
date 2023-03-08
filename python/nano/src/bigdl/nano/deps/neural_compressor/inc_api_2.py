@@ -43,7 +43,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
         return quantized_model
 
     elif 'tensorflow' in not_none_kwargs['framework']:
-        from .tensorflow.model import KerasQuantizedModel
+        from .tensorflow.new_model import KerasQuantizedModel
         return KerasQuantizedModel(q_model)
 
     elif 'onnx' in not_none_kwargs['framework']:
@@ -56,7 +56,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
             onnxruntime_session_options.intra_op_num_threads = thread_num
             onnxruntime_session_options.inter_op_num_threads = thread_num
         if onnx_option == 'tensorflow':
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model import \
+            from bigdl.nano.deps.onnxruntime.tensorflow.model import \
                 KerasONNXRuntimeModel
             return KerasONNXRuntimeModel(q_model.model,
                                          onnxruntime_session_options=onnxruntime_session_options)

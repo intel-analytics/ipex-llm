@@ -56,10 +56,14 @@ class BaseInferenceOptimizer:
         """
         According to results of `optimize`, obtain the model with method_name.
 
-        The available methods are "original", "fp32_ipex", "bf16", "bf16_ipex","int8",
-        "jit_fp32", "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "openvino_fp32",
-        "openvino_int8", "onnxruntime_fp32", "onnxruntime_int8_qlinear"
-        and "onnxruntime_int8_integer".
+        The available methods are "original", "fp32_channels_last", "fp32_ipex",
+        "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32",
+        "jit_fp32_channels_last", "jit_bf16", "jit_bf16_channels_last",
+        "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
+        "jit_bf16_ipex_channels_last", "jit_int8", "jit_int8_channels_last",
+        "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param method_name: (optional) Obtain specific model according to method_name.
         :return: Model with different acceleration.
@@ -127,7 +131,7 @@ class BaseInferenceOptimizer:
             if precision is not None:
                 if precision == 'bf16' and not option.bf16:
                     continue
-                if precision == 'int8' and not (option.inc or option.pot):
+                if precision == 'int8' and not (option.inc or option.pot or option.fx):
                     continue
                 if precision == 'fp32' and option.get_precision() != 'fp32':
                     continue
