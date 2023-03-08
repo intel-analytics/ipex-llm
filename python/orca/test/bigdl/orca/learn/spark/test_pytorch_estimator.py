@@ -324,6 +324,29 @@ class TestPyTorchEstimator(TestCase):
             shutil.rmtree(temp_dir)
 
         estimator.shutdown()
+
+    def test_train_max_steps(self):
+        from bigdl.orca import OrcaContext
+        OrcaContext._shard_size = 30
+        sc = init_nncontext()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2)
+        train_worker_stats = estimator.fit(df, batch_size=4, max_steps=40,
+                                           feature_cols=["feature"],
+                                           label_cols=["label"])
+        # Total samples for last epoch
+        assert train_worker_stats[1]["num_samples"] == 60
+
     
 if __name__ == "__main__":
     pytest.main([__file__])

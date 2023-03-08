@@ -123,13 +123,14 @@ class PytorchPysparkWorker(TorchRunner):
             if self.model_creator:
                 self.setup_operator(self.models)
 
-    def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
+    def train_epochs(self, data_creator, epochs=1, max_steps=None, batch_size=32, profile=False,
                      wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         if self.state_dict:
             self.load_state_dict(self.state_dict.value)
         stats_list = super().train_epochs(data_creator=data_creator,
                                           epochs=epochs,
+                                          max_steps=max_steps,
                                           batch_size=batch_size,
                                           profile=profile,
                                           wrap_dataloader=wrap_dataloader,

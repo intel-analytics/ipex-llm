@@ -140,6 +140,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                         'RayDataset',
                         Callable[[Dict, int], 'DataLoader']],
             epochs: int=1,
+            max_steps: Optional[int] = None,
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
@@ -159,6 +160,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
+        :param max_steps: The max steps to train the model. Default is None.
+         If max_steps > 0, `epochs` would be ignored.
         :param batch_size: Total batch size for all workers used for training. Each worker's batch
                size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
