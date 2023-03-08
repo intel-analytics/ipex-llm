@@ -650,6 +650,48 @@ class TestPyTorchEstimator(TestCase):
         with pytest.raises(RuntimeError):
             Estimator.latest_checkpoint(temp_dir)
 
+    def test_checkpoint_callback_by_iter(self):
+        from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        epochs = 1
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.cache()
+
+        size = df.count()
+        batch_size = 4
+        interval = 5
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            callbacks = [
+                ModelCheckpoint(filepath=os.path.join(temp_dir, "test-{iter}"),
+                                save_weights_only=True,
+                                by_epoch=False,
+                                interval=interval)
+            ]
+            estimator.fit(df, batch_size=batch_size, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            for i in range(interval, int(size / batch_size) + 1, interval):
+                assert os.path.isfile(os.path.join(temp_dir, f"test-iter={i}.ckpt"))
+
+            estimator.shutdown()
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_manual_ckpt(self):
         sc = OrcaContext.get_spark_context()
         spark = SparkSession.builder.getOrCreate()
