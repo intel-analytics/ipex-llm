@@ -133,7 +133,9 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
 
         # TODO: multiple input data not supported during calibration
         # the same problem as ipex_quantization model
-        for x in calib_data:
+        for idx, x in enumerate(calib_data):
+            if idx >= calib_data._nano_calib_sample_size:
+                break
             if isinstance(x, (tuple, list)) and len(x) > 1:
                 x = x[0]
             if isinstance(x, Sequence):
