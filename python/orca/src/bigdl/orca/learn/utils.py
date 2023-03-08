@@ -196,7 +196,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
             return {k: convert_elem(v) for k, v in elem.items()}
         # scalar
         elif len(elem.shape) == 0:
-            return float(elem.item(0))        
+            return float(elem.item(0))
         # np ndarray
         else:
             dim = len(elem.shape)
