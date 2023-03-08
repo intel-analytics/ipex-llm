@@ -82,7 +82,7 @@ echo "Successfully got dataset ml-1m & ml-100k from ftp"
 
 stop_ray $backend
 
-echo "#1 Running pytorch_train_dataloader"
+echo "#1 Running pytorch dataloader"
 #timer
 start=$(date "+%s")
 
@@ -96,7 +96,7 @@ time1=$((now - start))
 clean
 stop_ray $backend
 
-echo "#2 Running pytorch_train_spark_dataframe"
+echo "#2 Running pytorch spark dataframe"
 #timer
 start=$(date "+%s")
 
@@ -110,7 +110,7 @@ time2=$((now - start))
 clean
 stop_ray $backend
 
-echo "#3 Running pytorch_train_xshards"
+echo "#3 Running pytorch xshards"
 #timer
 start=$(date "+%s")
 
@@ -124,7 +124,7 @@ time3=$((now - start))
 clean
 stop_ray $backend
 
-echo "#4 Running tf_train_spark_dataframe"
+echo "#4 Running tensorflow spark dataframe"
 #timer
 start=$(date "+%s")
 
@@ -138,7 +138,7 @@ time4=$((now - start))
 clean
 stop_ray $backend
 
-echo "#5 Running tf_train_xshards"
+echo "#5 Running tensorflow xshards"
 #timer
 start=$(date "+%s")
 
@@ -152,11 +152,11 @@ time5=$((now - start))
 clean
 stop_ray $backend
 
-echo "#1 Running pytorch_train_dataloader time used: $time1 seconds"
-echo "#2 Running pytorch_train_spark_dataframe time used: $time2 seconds"
-echo "#3 Running pytorch_train_xshards time used: $time3 seconds"
-echo "#4 Running tf_train_spark_dataframe time used: $time4 seconds"
-echo "#5 Running tf_train_xshards time used: $time5 seconds"
+echo "#1 Running pytorch dataloader time used: $time1 seconds"
+echo "#2 Running pytorch spark dataframe time used: $time2 seconds"
+echo "#3 Running pytorch xshards time used: $time3 seconds"
+echo "#4 Running tensorflow spark dataframe time used: $time4 seconds"
+echo "#5 Running tensorflow xshards time used: $time5 seconds"
 
 #clean dataset
 rm -rf ml-1m
