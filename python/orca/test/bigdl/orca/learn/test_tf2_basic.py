@@ -387,7 +387,7 @@ class TestTFEstimatorBasic(TestCase):
         df = df.withColumn("input", reshape_udf(df.input))
 
         def model_creator(config):
-            model = multi_output_model()
+            model = multi_output_model(config)
             model.compile(
                 optimizer=tf.keras.optimizers.RMSprop(config["lr"]),
                 loss=[tf.keras.losses.MeanSquaredError(),
