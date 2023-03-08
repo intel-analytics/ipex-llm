@@ -145,12 +145,6 @@ spark = SparkSession\
     .builder\
     .getOrCreate()
 
-sc = init_nncontext(spark_conf, "local")
-
-from pyspark.sql import SparkSession
-spark = SparkSession.builder.master("local[2]").appName('SparkByExamples.com') \
-                    .getOrCreate()
-
 df = spark.createDataFrame(
     [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 0.0),
      (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 1.0),
