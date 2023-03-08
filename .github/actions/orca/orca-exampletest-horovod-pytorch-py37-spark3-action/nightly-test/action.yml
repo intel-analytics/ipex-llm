@@ -8,7 +8,7 @@ runs:
       run: |
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
-        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3[ray]
 
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.4.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.5.0
