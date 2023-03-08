@@ -362,7 +362,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            # state dicts of all runners would be the same
+            # Only the state_dict of the rank 0 worker would be returned
             for item in res:
                 if isinstance(item, dict):
                     self.state_dict = item
