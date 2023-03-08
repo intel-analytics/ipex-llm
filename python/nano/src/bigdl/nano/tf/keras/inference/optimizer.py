@@ -616,8 +616,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             y = range(len(x))    # type: ignore
         if isinstance(x, tf.data.Dataset):
             batch_data = next(iter(x))
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
             if isinstance(batch_data, tf.Tensor) or \
-                    isinstance(batch_data, tuple) and len(batch_data) == 1:
+                    isinstance(batch_data, tuple) and len(batch_data) != 2:
                 # fake label to make quantization work
                 y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
