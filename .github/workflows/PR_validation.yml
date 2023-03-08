@@ -391,7 +391,7 @@ jobs:
 
   Orca-Pytest-Horovod-Py37-Spark3:
     needs: changes
-    # if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
