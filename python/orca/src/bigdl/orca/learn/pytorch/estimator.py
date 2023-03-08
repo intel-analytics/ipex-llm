@@ -144,8 +144,8 @@ class Estimator(object):
         """
         Create an Estimator for MMCV.
 
-        :param mmcv_runner_creator: A runner creator function that takes the parameter "config" and returns a
-               MMCV runner.
+        :param mmcv_runner_creator: A runner creator function that takes the parameter
+               "config" and returns a MMCV runner.
         :param backend: The distributed backend for the Estimator.
                Default: "ray".
         :param config: A parameter config dict, CfgNode or any class instance that plays a role of
@@ -157,7 +157,8 @@ class Estimator(object):
         :return: A Estimator object for MMCV.
         """
         if backend == "ray":
-            from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
+            from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator \
+                import MMCVRayEstimator
             return MMCVRayEstimator(mmcv_runner_creator=mmcv_runner_creator,
                                     backend=backend,
                                     workers_per_node=workers_per_node,
