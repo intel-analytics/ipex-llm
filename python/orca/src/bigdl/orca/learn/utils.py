@@ -209,7 +209,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
     def combine(pair):
         # Only one scalar
-        if isinstance(pair[1], np.ndarray) and len(pair[1].shape) == 0:
+        if not isinstance(pair[1], (list, tuple)) and len(pair[1].shape) == 0:
             return Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
         else:
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
