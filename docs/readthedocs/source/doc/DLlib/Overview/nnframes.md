@@ -146,9 +146,9 @@ spark = SparkSession\
     .getOrCreate()
 
 df = spark.createDataFrame(
-    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 0.0),
-     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 1.0),
-     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 0.0)],
+    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 1.0),
+     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 2.0),
+     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 1.0)],
     ["user", "age", "income", "history", "label"])
 
 assembler = VectorAssembler(
