@@ -175,7 +175,7 @@ zy = Dense(2)(merged)
 
 zmodel = Model([x1, x2, x3], zy)
 criterion = CategoricalCrossEntropy()
-classifier = NNClassifier(zmodel, criterion, [[1], [2], [2, 2]]) \
+classifier = NNEstimator(zmodel, criterion, [[1], [2], [2, 2]]) \
     .setOptimMethod(Adam()) \
     .setLearningRate(0.1)\
     .setBatchSize(2) \
@@ -290,10 +290,10 @@ dlModel.transform(df).show(false)
 **Python Example:**
 
 ```python
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.util.common import *
-from bigdl.dlframes.dl_classifier import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.nnframes.nn_classifier import *
 from pyspark.sql.types import *
 
 #Logistic Regression with BigDL layers and NNClassifier
@@ -301,17 +301,17 @@ model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
 criterion = ClassNLLCriterion()
 estimator = NNClassifier(model, criterion, [2]).setBatchSize(4).setMaxEpoch(10)
 data = sc.parallelize([
-    ((0.0, 1.0), [1.0]),
-    ((1.0, 0.0), [2.0]),
-    ((0.0, 1.0), [1.0]),
-    ((1.0, 0.0), [2.0])])
+    ((0.0, 1.0), 1.0),
+    ((1.0, 0.0), 2.0),
+    ((0.0, 1.0), 1.0),
+    ((1.0, 0.0), 2.0)])
 
 schema = StructType([
     StructField("features", ArrayType(DoubleType(), False), False),
-    StructField("label", ArrayType(DoubleType(), False), False)])
-df = sqlContext.createDataFrame(data, schema)
+    StructField("label", DoubleType(), False)])
+df = spark.createDataFrame(data, schema)
 dlModel = estimator.fit(df)
-dlModel.transform(df).show(False)
+res = dlModel.transform(df).collect()
 ```
 
 ### 2.4 NNClassifierModel ##
