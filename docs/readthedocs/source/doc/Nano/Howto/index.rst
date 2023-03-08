@@ -86,6 +86,7 @@ TensorFlow
 * `How to quantize your Tensorflow model for inference using Intel Neural Compressor <Inference/TensorFlow/quantize_tensorflow_inference_inc.html>`_
 * `How to quantize your Tensorflow model for inference using Accelerator <Inference/TensorFlow/quantize_tensorflow_inference_acc.html>`_
 * `How to quantize your Tensorflow model for inference by specifying accuracy control <Inference/TensorFlow/quantize_tensorflow_accuracy_control.html>`_
+* `How to find accelerated method with minimal latency for TensorFlow model using InferenceOptimizer <Inference/TensorFlow/tensorflow_inference_optimizer_optimize.html>`_
 
 Install
 -------------------------
