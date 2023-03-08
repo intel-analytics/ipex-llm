@@ -23,7 +23,7 @@ from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
-    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+    latency_calculate_helper, latency_loader_calculate_helper, format_optimize_result, BaseInferenceOptimizer
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
@@ -172,7 +172,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
-                 output_filename: Optional[str] = None) -> None:
+                 output_filename: Optional[str] = None,
+                 latency_calculate_all: bool = False) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -462,9 +463,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if latency_calculate_all:
+                            result_map[method]["latency"], status =\
+                                latency_loader_calculate_helper(latency_sample_num, baseline_time,
+                                                        func_test, acce_model, input_sample, training_data, forward_args)                   
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time, 
+                                                         func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
