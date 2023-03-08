@@ -1,6 +1,34 @@
 #!/bin/bash
 # Acceptable arguments: attestation, bigdl-kms, ehsm, kms-utils, pccs, all
 
+sgx() {
+    echo "Detecting SGX..."
+    if [ -e "/dev/sgx" ] && [ -e "/dev/sgx_enclave" ] && [ -e "/dev/sgx_provision" ]; then
+        echo "SGX driver is installed."
+    else
+        echo "SGX driver isn't installed."
+    fi
+
+    echo "Detecting aesmd..."
+    if [ -e "/var/run/aesmd/aesm.socket" ]; then
+        echo "aesmd is installed."
+    else
+        echo "aesmd isn't installed."
+    fi
+
+    echo "Detecting SGX Device Plugin for Kubernetes..."
+    if [ -z $(command -v kubectl) ]; then
+        echo "kubectl not found."
+    else
+        K8SSGXPLUGIN=$(kubectl describe node | grep sgx.intel.com)
+        if [ -n "$K8SSGXPLUGIN" ]; then
+            echo "SGX Device Plugin for Kubernetes is installed"
+        else
+            echo "SGX Device Plugin for Kubernetes isn't installed"
+        fi
+    fi
+}
+
 attestation () {
     echo "Detecting bigdl-attestation-service..."
     ATTESTATIONSUCCESS=""
@@ -95,9 +123,10 @@ else
     done
 fi
 
-if [ "$#" -gt 5 ]; then
-    echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigdlKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
+if [ "$#" -gt 6 ]; then
+    echo "Acceptable arguments: \"all\", or one or more among \"SGX\",\"attestation\", \"bigdlKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
 elif [ "$all" -eq 1 ]; then 
+    SGX
     attestation
     bigdl-kms
     ehsm
@@ -106,7 +135,9 @@ elif [ "$all" -eq 1 ]; then
 else 
     for arg in "$@"
     do
-        if [ "$arg" == attestation ]; then
+        if [ "$arg" == SGX ]; then
+            sgx
+        elif [ "$arg" == attestation ]; then
             attestation
         elif [ "$arg" == bigdl-kms ]; then
             bigdl-kms
