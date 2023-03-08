@@ -62,12 +62,20 @@ fi
 echo "Start Orca NCF tutorial Test - $backend backend, $dataset dataset"
 
 # download dataset from ftp
-rm -f ./orca-tutorial-ncf-dataset-compressed.zip
-rm -f ./orca-tutorial-ncf-dataset-compressed-100k.zip
 rm -rf ml-1m
 rm -rf ml-100k
-wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
-wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed-100k.zip
+if [ -f ./orca-tutorial-ncf-dataset-compressed.zip ]
+then
+    echo "dataset ml-1m already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed.zip
+fi
+if [ -f ./orca-tutorial-ncf-dataset-compressed-100k.zip ]
+then
+    echo "dataset ml-100k already exists"
+else
+    wget $FTP_URI/analytics-zoo-data/orca-tutorial-ncf-dataset-compressed-100k.zip
+fi
 unzip orca-tutorial-ncf-dataset-compressed.zip
 unzip orca-tutorial-ncf-dataset-compressed-100k.zip
 echo "Successfully got dataset ml-1m & ml-100k from ftp"
@@ -153,5 +161,3 @@ echo "#5 Running tf_train_xshards time used: $time5 seconds"
 #clean dataset
 rm -rf ml-1m
 rm -rf ml-100k
-rm -f orca-tutorial-ncf-dataset-compressed.zip
-rm -f orca-tutorial-ncf-dataset-compressed-100k.zip
