@@ -227,7 +227,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     if output_cols is None:
-        columns = df.columns + ["predicition"]
+        columns = df.columns + ["prediction"]
     else:
         columns = df.columns + output_cols
     # Converting to DataFrame will trigger the computation
