@@ -144,6 +144,7 @@ unset ONEAPI_VAR
 
 # Init exported variables
 export TF_ENABLE_ONEDNN_OPTS=1
+export ONEAPI_VAR=0
 
 OPTIND=1
 
@@ -313,7 +314,7 @@ fi
 if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
     echo "Not in a conda env"
 else
-    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
+    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ] && [[ "${ONEAPI_VAR}" -eq 0 ]];then
         echo "nano_vars.sh already exists"
     elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init ]; then
         echo "It seems that you are using bidl-nano installed by system's pip, "
@@ -328,9 +329,11 @@ else
 
         # bigdl-nano-init
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
-        echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
         if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init -g" >> $ACTIVATED_PATH/nano_vars.sh
             echo "    source ${ONEAPI_HOME}/setvars.sh" >> $ACTIVATED_PATH/nano_vars.sh
+        else
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
         fi
         echo "else" >> $ACTIVATED_PATH/nano_vars.sh
         echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
