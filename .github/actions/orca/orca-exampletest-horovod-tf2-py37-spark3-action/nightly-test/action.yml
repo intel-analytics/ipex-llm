@@ -11,6 +11,7 @@ runs:
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
 
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.3.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pillow
         
         # build horovod
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake
