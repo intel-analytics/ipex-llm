@@ -23,7 +23,8 @@ from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
-    latency_calculate_helper, latency_loader_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+    latency_calculate_helper, torch_loader_latency_calculate_helper,\
+    format_optimize_result, BaseInferenceOptimizer
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
@@ -173,7 +174,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
                  output_filename: Optional[str] = None,
-                 latency_calculate_all: bool = False) -> None:
+                 no_cache: bool = False) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -310,8 +311,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
-        :param latency_calculate_all: if set True, calculate average latency by iterating all the 
-               provided dataloader until reaching the latency_sample_num. Default set to be False. 
+        :param no_cache: if set True, calculate average latency by iterating all the samples from
+               the provided dataloader until reaching the latency_sample_num. Default set to be
+               False, meaning always loading one single sample from cache to test latency.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -465,10 +467,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
-                        if latency_calculate_all:
+                        if no_cache:
                             result_map[method]["latency"], status =\
-                                latency_loader_calculate_helper(latency_sample_num, baseline_time,
-                                                        func_test, acce_model, input_sample, training_data, forward_args)                   
+                                torch_loader_latency_calculate_helper(latency_sample_num,
+                                                                      baseline_time,
+                                                                      func_test,
+                                                                      acce_model,
+                                                                      input_sample,
+                                                                      training_data,
+                                                                      forward_args)              
                         else:
                             result_map[method]["latency"], status =\
                                 latency_calculate_helper(latency_sample_num, baseline_time, 

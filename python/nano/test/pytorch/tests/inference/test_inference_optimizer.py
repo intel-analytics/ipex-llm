@@ -913,7 +913,7 @@ class TestInferencePipeline(TestCase):
             InferenceOptimizer.trace(self.model, accelerator="jit",
                                      use_ipex=True, input_sample=input_sample,
                                      precision="bf16")
-    
+
     def test_multi_samples_single_input(self):
         inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=self.model,
@@ -921,7 +921,7 @@ class TestInferencePipeline(TestCase):
                                 thread_num=1,
                                 latency_sample_num=200,
                                 latency_calculate_all=True)
-        
+
     def test_multi_samples_multi_input(self):
         x1 = torch.randn(32, 10)
         x2 = torch.randn(32, 10)

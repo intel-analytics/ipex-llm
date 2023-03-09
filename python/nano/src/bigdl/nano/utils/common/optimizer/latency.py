@@ -18,7 +18,6 @@
 import time
 import numpy as np
 from typing import Sequence
-from torch.utils.data import DataLoader
 
 
 def latency_calculate_helper(iterrun, baseline_time, func, *args):
@@ -49,29 +48,34 @@ def latency_calculate_helper(iterrun, baseline_time, func, *args):
     return np.mean(time_list) * 1000, True
 
 
-def latency_loader_calculate_helper(iterrun, baseline_time, func, model, warmup_sample, dataloader, forward_args):
+def torch_loader_latency_calculate_helper(iterrun, baseline_time, func, model,
+                                          warmup_sample, dataloader, forward_args):
     '''
-    A simple helper to calculate average latency by using all the samples provided in the dataloader
+    A simple helper to calculate average latency by using all the samples provided
+    by a torch.utils.data.DataLoader
     '''
+    from torch.utils.data import DataLoader
+
     check_flag = True
     if (not isinstance(dataloader, DataLoader)) and check_flag:
-        print("training_data is not a DataLoader, use single sample calculator instead!")
+        print("training_data is not a torch.utils.data.DataLoader,\
+              use single sample calculator instead!")
         check_flag = False
-    if iterrun <= 2 and check_flag:  # TODO: control the numbers
+    if iterrun <= 2 and check_flag:
         print("Not enough iterations to test, use single sample calculator instead!")
         check_flag = False
     if dataloader.batch_size is not None and check_flag:
-        if len(dataloader.dataset) / dataloader.batch_size <= 2:  # TODO: control the numbers
+        if len(dataloader.dataset) / dataloader.batch_size <= min(iterrun, 10):
             print("Not enough batches to test, use single sample calculator instead!")
             check_flag = False
     else:
-        if len(dataloader.dataset) <= 2:  # TODO: control the numbers
+        if len(dataloader.dataset) <= min(iterrun, 10):
             print("Not enough samples to test, use single sample calculator instead!")
             check_flag = False
-    
-    if not check_flag:        
+
+    if not check_flag:
         return latency_calculate_helper(iterrun, baseline_time, func, model, warmup_sample)
-    
+
     # test run two times for more accurate latency
     for _ in range(2):
         func(model, warmup_sample)
@@ -87,7 +91,7 @@ def latency_loader_calculate_helper(iterrun, baseline_time, func, model, warmup_
                     input_sample = input_sample[0]
                 else:
                     input_sample = tuple(input_sample[:len(forward_args)])
-            
+
             st = time.perf_counter()
             func(model, input_sample)
             end = time.perf_counter()
@@ -106,7 +110,7 @@ def latency_loader_calculate_helper(iterrun, baseline_time, func, model, warmup_
                 end_flag = True
                 break
             cur_itr += 1
-    
+
     time_list.sort()
     # remove top and least 10% data
     time_list = time_list[int(0.1 * iterrun): int(0.9 * iterrun)]
