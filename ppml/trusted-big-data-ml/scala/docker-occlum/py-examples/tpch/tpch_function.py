@@ -342,25 +342,28 @@ class TpchFunctionalQueries(TpchBase):
 
         lg_regex = re.compile("LG CASE|LG BOX|LG PACK|LG PKG")
         lg = udf(lambda x: lg_regex.match(x) is not None, BooleanType())
-
+        # It is not supported to use sm,med,lg regex together
         return self.part.join(self.lineitem, col("l_partkey") == col("p_partkey")) \
             .filter(((col("l_shipmode") == "AIR")
                      | (col("l_shipmode") == "AIR REG"))
                     & (col("l_shipinstruct") == "DELIVER IN PERSON")) \
             .filter(((col("p_brand") == "Brand#12")
-                     & (sm(col("p_container")))
+                     & ((col("p_container") == "SM CASE") | (col("p_container") == "SM BOX") |
+                        (col("p_container") == "SM PACK") | (col("p_container") == "SM PKG"))
                      & (col("l_quantity") >= 1)
                      & (col("l_quantity") <= 11)
                      & (col("p_size") >= 1)
                      & (col("p_size") <= 5))
                     | ((col("p_brand") == "Brand#23")
-                       & (med(col("p_container")))
+                       & ((col("p_container") == "MED CASE") | (col("p_container") == "MED BOX") |
+                          (col("p_container") == "MED PACK") | (col("p_container") == "MED PKG"))
                        & (col("l_quantity") >= 10)
                        & (col("l_quantity") <= 20)
                        & (col("p_size") >= 1)
                        & (col("p_size") <= 10))
                     | ((col("p_brand") == "Brand#34")
-                       & (lg(col("p_container")))
+                       & ((col("p_container") == "LG CASE") | (col("p_container") == "LG BOX") |
+                          (col("p_container") == "LG PACK") | (col("p_container") == "LG PKG"))
                        & (col("l_quantity") >= 20)
                        & (col("l_quantity") <= 30)
                        & (col("p_size") >= 1)

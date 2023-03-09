@@ -41,6 +41,8 @@ def main():
     print("Will run " + str(query_list))
     start1 = time.time()
     queries = TpchFunctionalQueries(spark, input_dir)
+    #action
+    queries.part.first()
     for iter in query_list:
         query_number = iter
         print("TPCH Starting query #{0}".format(iter))
