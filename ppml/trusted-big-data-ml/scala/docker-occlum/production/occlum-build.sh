@@ -31,7 +31,7 @@ sudo docker run -i \
         --net=host \
         --name=$container_name \
         --cpuset-cpus 3-5 \
-        -e SGX_MEM_SIZE=30GB \
+        -e SGX_MEM_SIZE=15GB \
         -e SGX_THREAD=2048 \
         -e SGX_HEAP=1GB \
         -e SGX_KERNEL_HEAP=1GB \
