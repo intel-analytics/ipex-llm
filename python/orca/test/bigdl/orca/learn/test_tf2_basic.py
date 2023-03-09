@@ -41,8 +41,8 @@ def multi_output_model(config):
     x1 = tf.keras.layers.GlobalMaxPooling2D()(x1)
     x2 = tf.keras.layers.Conv2D(3, 3)(image_input_2)
     x2 = tf.keras.layers.GlobalMaxPooling2D()(x2)
-
     x = tf.keras.layers.concatenate([x1, x2])
+
     score_output = tf.keras.layers.Dense(5, name="score_output")(x)
     class_output = tf.keras.layers.Dense(5, name="class_output")(x)
 
@@ -374,17 +374,24 @@ class TestTFEstimatorBasic(TestCase):
     def test_multi_output_predict(self):
         from pyspark.sql.types import FloatType, ArrayType
         from pyspark.sql.functions import udf
+
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
         spark = OrcaContext.get_spark_session()
 
-        df = rdd.map(lambda x:[x, np.random.rand(3072).tolist()]).toDF(["index", "input"])
+        df = rdd.map(lambda x:[x,
+                               np.random.rand(3072).tolist(),
+                               np.random.rand(3072).tolist()]).toDF(["index",
+                                                                     "input_1",
+                                                                     "input_2"])
 
         def reshape(x):
             return np.array(x).reshape([32, 32, 3]).tolist()
 
         reshape_udf = udf(reshape, ArrayType(ArrayType(ArrayType(FloatType()))))
-        df = df.withColumn("input", reshape_udf(df.input))
+
+        df = df.withColumn("input_1", reshape_udf(df.input_1))
+        df = df.withColumn("input_2", reshape_udf(df.input_2))
 
         def model_creator(config):
             model = multi_output_model(config)
@@ -404,7 +411,9 @@ class TestTFEstimatorBasic(TestCase):
 
         pred_res = estimator.predict(df,
                                      feature_cols=["input_1", "input_2"],
-                                     output_cols=["score_output", "class_output"]).collect()
+                                     output_cols=["score_output", "class_output"])
+
+        pred_res.collect()
 
 
 if __name__ == "__main__":
