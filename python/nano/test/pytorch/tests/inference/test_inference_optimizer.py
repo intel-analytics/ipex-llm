@@ -917,10 +917,10 @@ class TestInferencePipeline(TestCase):
     def test_multi_samples_single_input(self):
         inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=self.model,
-                                training_data=self.train_loader,
-                                thread_num=1,
-                                latency_sample_num=200,
-                                latency_calculate_all=True)
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               latency_sample_num=200,
+                               no_cache=True)
 
     def test_multi_samples_multi_input(self):
         x1 = torch.randn(32, 10)
@@ -931,7 +931,8 @@ class TestInferencePipeline(TestCase):
 
         inference_opt = InferenceOptimizer()
         inference_opt.optimize(model=model,
-                                training_data=dataloader,
-                                thread_num=1,
-                                latency_sample_num=200,
-                                latency_calculate_all=True)
+                               training_data=dataloader,
+                               excludes=["openvino_int8"],
+                               thread_num=1,
+                               latency_sample_num=200,
+                               no_cache=True)
