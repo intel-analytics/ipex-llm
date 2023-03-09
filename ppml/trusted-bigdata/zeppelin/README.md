@@ -17,29 +17,36 @@ You should first move the `zeppelin-service-account.yaml` file to the master nod
 # In k8s master node
 kubectl apply -f zeppelin-service-account.yaml
 ```
-### Prepare relevant environment variables
-Before execute `deploy.sh`, we need to prepare relevant environment variables.
-First, in your k8s master node:
+
+### Deploy zeppelin
+
 ```bash
-export CLUSTER_NAME="kubernetes"
-APISERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name==\"$CLUSTER_NAME\")].cluster.server}")
-echo $APISERVER 
+# Get token on the host machine
 TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='zeppelin')].data.token}"|base64 -d)
 echo $TOKEN
-```
-Then, in your bigdl-ppml container:
-```bash
-docker exec -it <bigdl-ppml container name> bash #enter your bigdl-ppml container
-export APISERVER=<output of echo $APISERVER in the previous step>
-export TOKEN=<output of echo $TOKEN in the previous step>
-```
-### Deploy and delete zeppelin
-
-```bash
 # Make sure you are inside the container.
+docker exec -it <bigdl-ppml container name> bash #enter your bigdl-ppml container
 cd /ppml/zeppelin
-
+# Set relevant environment variables.
+export TOKEN=<output of echo $TOKEN in the previous step>
 ./deploy.sh  # zeppelin deployment is now completed
+```
+## Access Zeppelin web ui
+Port forward Zeppelin server port,
+```bash
+kubectl port-forward $(kubectl get pods -o name | grep zeppelin-server | head -n 1 | sed 's\pod/\\') 8080:80 --address 0.0.0.0
+```
+and browse localhost:8080. 
 
-./delete.sh  # Delete zeppelin deployment
+## Delete zeppelin 
+```bash
+# Get token on the host machine
+TOKEN=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='zeppelin')].data.token}"|base64 -d)
+echo $TOKEN
+# Make sure you are inside the container.
+docker exec -it <bigdl-ppml container name> bash #enter your bigdl-ppml container
+cd /ppml/zeppelin
+# Set relevant environment variables.
+export TOKEN=<output of echo $TOKEN in the previous step>
+./delete.sh  # zeppelin deployment is now deleted
 ```
