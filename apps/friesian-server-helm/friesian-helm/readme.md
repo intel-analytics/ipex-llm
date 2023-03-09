@@ -5,7 +5,7 @@ on a Kubernetes cluster.
 
 ## Prepare environments
 
-* AVX512 instruction support in nodes deploying the recall server
+* AVX512 instruction support on nodes that deploy the recall server
 * [Preparation steps](../preparation) or a PV contains resource files
 * [Helm](https://helm.sh) 3.2.0+
 * Kubernetes 1.19+
@@ -68,7 +68,7 @@ To install the chart with the release name `my-release` in namespace `friesian`:
 helm upgrade --install --debug -n friesian my-release ./friesian-helm --create-namespace
 ```
 
-After installation, follow Helm output to check if Friesian serving works properly
+After installation, follow Helm output to check whether Friesian serving works properly.
 
 ## Cleanup
 

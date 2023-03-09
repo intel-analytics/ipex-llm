@@ -6,7 +6,7 @@ for [deploying the Friesian online serving pipeline on a Kubernetes cluster](../
 
 ## Data preparation
 
-Before installing the friesian online serving, we need to prepare some resource files.
+Before installing the Friesian online serving, we need to prepare some resource files.
 
 1. Feature Server
 
@@ -41,7 +41,7 @@ Before installing the friesian online serving, we need to prepare some resource 
     ```
 
 2. Claim a [PV](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) to store resource
-   files. Edit `1. create-pvc.yaml` file as follows:
+   files. Edit `create-pvc.yaml` file as follows:
 
     * `spec.resources.requests.storage`: Size of the persistent volume, large enough to contain the
       resource files and the faiss model generated during initialization.
@@ -51,7 +51,7 @@ Before installing the friesian online serving, we need to prepare some resource 
       dashboard/console.
 
     ```bash
-    kubectl apply -f '1. create-pvc.yaml' -n friesian
+    kubectl apply -f 'create-pvc.yaml' -n friesian
 
     ## After kubectl apply, check if pv created
     kubectl get pv -n friesian
@@ -60,7 +60,7 @@ Before installing the friesian online serving, we need to prepare some resource 
 3. Create a pod to attach the claimed PV.
 
     ```bash
-    kubectl apply -f '2. create-volume-pod.yaml' -n friesian
+    kubectl apply -f 'create-volume-pod.yaml' -n friesian
     ```
 
 4. Copy resource files into the attached PV and check files' path.
@@ -78,7 +78,7 @@ Before installing the friesian online serving, we need to prepare some resource 
     # Exit pod bash
     exit
 
-    kubectl delete -f '2. create-volume-pod.yaml' -n friesian
+    kubectl delete -f 'create-volume-pod.yaml' -n friesian
     ```
 
 ## Resource structure example
