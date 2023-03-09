@@ -369,11 +369,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if input_sample is None:
             data_adapter = DataAdapter(model)
             input_sample, input_label = data_adapter.get_data(training_data)
-            training_data = data_adapter.get_dataloader(training_data)
+            if not isinstance(training_data, DataLoader):
+                training_data = data_adapter.get_dataloader(training_data)
 
             if validation_data:
                 val_sample, val_label = data_adapter.get_data(validation_data)
-                validation_data = data_adapter.get_dataloader(validation_data)
+                if not isinstance(validation_data, DataLoader):
+                    validation_data = data_adapter.get_dataloader(validation_data)
 
         st = time.perf_counter()
         try:
