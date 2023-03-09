@@ -72,18 +72,6 @@ then
 fi
 ray stop -f
 
-# TODO: support mxnet test under python 3.8
-python_version=$(python --version | awk '{print$2}')
-if [ $python_version == 3.7.10 ];then
-    echo "Running orca mxnet tests"
-    python -m pytest -v test/bigdl/orca/learn/ray/mxnet/
-    exit_status_5=$?
-    if [ $exit_status_5 -ne 0 ];then
-        exit $exit_status_5
-    fi
-fi
-ray stop -f
-
 echo "Running orca learn spark backend tests"
 python -m pytest -v test/bigdl/orca/learn/spark/
 exit_status_6=$?
