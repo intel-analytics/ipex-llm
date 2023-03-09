@@ -36,7 +36,6 @@ import logging
 import os
 import copy
 import tempfile
-from holidays import NO
 import torch
 import torch.nn as nn
 import numpy as np
