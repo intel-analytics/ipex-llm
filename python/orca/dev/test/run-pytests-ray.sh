@@ -27,38 +27,41 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
+set -ex
+
 echo "Running RayOnSpark tests"
 python -m pytest -v test/bigdl/orca/ray/ \
     --ignore=test/bigdl/orca/ray/integration/ \
-    --ignore=test/bigdl/orca/ray/ray_cluster/ \
-    --ignore=test/bigdl/orca/ray/test_reinit_raycontext.py
+    --ignore=test/bigdl/orca/ray/ray_cluster/
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
 fi
-
 ray stop -f
 
-echo "Running orca learn ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray \
-      --ignore=test/bigdl/orca/learn/ray/pytorch/test_estimator_horovod_backend.py \
-      --ignore=test/bigdl/orca/learn/ray/tf/ \
-      --ignore=test/bigdl/orca/learn/ray/ctx/ \
-      --ignore=test/bigdl/orca/learn/ray/mxnet/
+# TODO: fix extra fixture {"spark.python.worker.reuse": "false"}
+#       for tensorflow estimator ray backend unit tests
+python -m pytest -v test/bigdl/orca/learn/ray/tf/
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then
     exit $exit_status_2
 fi
+ray stop -f
 
-echo "Running orca learn tf2 ray backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
+echo "Running orca learn ray backend tests"
+python -m pytest -v test/bigdl/orca/learn/ray \
+      --ignore=test/bigdl/orca/learn/ray/horovod/ \
+      --ignore=test/bigdl/orca/learn/ray/ctx/ \
+      --ignore=test/bigdl/orca/learn/ray/tf/ \
+      --ignore=test/bigdl/orca/learn/ray/mxnet/
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
     exit $exit_status_3
 fi
+ray stop -f
 
 echo "Running orca data ray related tests"
 python -m pytest -v test/bigdl/orca/data/ray
@@ -67,6 +70,7 @@ if [ $exit_status_4 -ne 0 ];
 then
     exit $exit_status_4
 fi
+ray stop -f
 
 # TODO: support mxnet test under python 3.8
 python_version=$(python --version | awk '{print$2}')
@@ -82,8 +86,8 @@ ray stop -f
 
 echo "Running orca learn spark backend tests"
 python -m pytest -v test/bigdl/orca/learn/spark/
-exit_status_5=$?
-if [ $exit_status_5 -ne 0 ];
+exit_status_6=$?
+if [ $exit_status_6 -ne 0 ];
 then
-    exit $exit_status_5
+    exit $exit_status_6
 fi

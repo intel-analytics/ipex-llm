@@ -30,7 +30,18 @@ from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
 from pytorch_lightning.plugins.environments import KubeflowEnvironment
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+
+
+# we must import torch_ccl to use ccl as backend
+try:
+    if TORCH_VERSION_LESS_1_12:
+        import torch_ccl
+    else:
+        import oneccl_bindings_for_pytorch
+except Exception as _e:
+    pass
 
 
 class DDPK8sStrategy(DDPStrategy):

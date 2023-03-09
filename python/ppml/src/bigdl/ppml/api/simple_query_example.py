@@ -33,24 +33,24 @@ python simple_query_example.py \
 
 """
 
-arg_dict = KmsArgumentParser.get_arg_dict()
+args = KmsArgumentParser().get_arg_dict()
 
-sc = PPMLContext('pyspark-simple-query', arg_dict)
+sc = PPMLContext('pyspark-simple-query', args)
 
 # create a DataFrame
 data = [("Tom", "20", "Developer"), ("Jane", "21", "Developer"), ("Tony", "19", "Developer")]
 df = sc.spark.createDataFrame(data).toDF("name", "age", "job")
 
 # write DataFrame as an encrypted csv file
-sc.write(df, args.input_encrypt_mode) \
+sc.write(df, args["input_encrypt_mode"]) \
     .mode('overwrite') \
     .option("header", True) \
-    .csv(args.input_path)
+    .csv(args["input_path"])
 
 # get a DataFrame from an encrypted csv file
-df = sc.read(args.input_encrypt_mode) \
+df = sc.read(args["input_encrypt_mode"]) \
     .option("header", "true") \
-    .csv(args.input_path)
+    .csv(args["input_path"])
 
 df.select("name").count()
 
@@ -59,7 +59,7 @@ df.select(df["name"], df["age"] + 1).show()
 developers = df.filter((df["job"] == "Developer") & df["age"]
                        .between(20, 40)).toDF("name", "age", "job").repartition(1)
 
-sc.write(developers, args.output_encrypt_mode) \
+sc.write(developers, args["output_encrypt_mode"]) \
     .mode('overwrite') \
     .option("header", True) \
-    .csv(args.output_path)
+    .csv(args["output_path"])

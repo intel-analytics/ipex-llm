@@ -55,6 +55,7 @@ import org.apache.spark.sql._
 import scala.collection.mutable.ListBuffer
 import java.net.URI
 import org.apache.hadoop.fs.{FileSystem, Path}
+import scala.collection.mutable._
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
@@ -115,24 +116,71 @@ object TpchQuery {
 
     var fromNum = 1;
     var toNum = 22;
+    val queries = Queue[TpchQuery]()
+
     if (queryNum != 0) {
-      fromNum = queryNum;
-      toNum = queryNum;
+      var query = queryNum match {
+        case 1 => new Q01()
+        case 2 => new Q02()
+        case 3 => new Q03()
+        case 4 => new Q04()
+        case 5 => new Q05()
+        case 6 => new Q06()
+        case 7 => new Q07()
+        case 8 => new Q08()
+        case 9 => new Q09()
+        case 10 => new Q10()
+        case 11 => new Q11()
+        case 12 => new Q12()
+        case 13 => new Q13()
+        case 14 => new Q14()
+        case 15 => new Q15()
+        case 16 => new Q16()
+        case 17 => new Q17()
+        case 18 => new Q18()
+        case 19 => new Q19()
+        case 20 => new Q20()
+        case 21 => new Q21()
+        case 22 => new Q22()
+      }
+      queries.enqueue(query)
+    } else {
+      queries.enqueue(new Q01())
+      queries.enqueue(new Q02())
+      queries.enqueue(new Q03())
+      queries.enqueue(new Q04())
+      queries.enqueue(new Q05())
+      queries.enqueue(new Q06())
+      queries.enqueue(new Q07())
+      queries.enqueue(new Q08())
+      queries.enqueue(new Q09())
+      queries.enqueue(new Q10())
+      queries.enqueue(new Q11())
+      queries.enqueue(new Q12())
+      queries.enqueue(new Q13())
+      queries.enqueue(new Q14())
+      queries.enqueue(new Q15())
+      queries.enqueue(new Q16())
+      queries.enqueue(new Q17())
+      queries.enqueue(new Q18())
+      queries.enqueue(new Q19())
+      queries.enqueue(new Q20())
+      queries.enqueue(new Q21())
+      queries.enqueue(new Q22())
     }
 
-    for (queryNo <- fromNum to toNum) {
-      val t0 = System.nanoTime()
+    while(queries.nonEmpty) {
+      val query = queries.dequeue
 
-      val query = Class.forName(f"com.intel.analytics.bigdl.ppml.examples.tpch.Q${queryNo}%02d")
-        .newInstance.asInstanceOf[TpchQuery]
+      val t0 = System.nanoTime()
 
       outputDF(query.execute(sc, schemaProvider), outputDir, query.getName(), sc, outputCryptoMode)
 
       val t1 = System.nanoTime()
 
       val elapsed = (t1 - t0) / 1000000000.0f // second
-      results += new Tuple2(query.getName(), elapsed)
 
+      results += new Tuple2(query.getName(), elapsed)
     }
 
     return results

@@ -16,6 +16,12 @@
 
 package com.intel.analytics.bigdl.ppml.attestation.generator
 
+object QUOTE_CONVENTION {
+  val MODE_GRAMINE = "gramine"
+  val MODE_OCCLUM = "occlum"
+  val MODE_TDX = "TDX"
+}
+
 trait QuoteGenerator {
 
   def getQuote(userReport: Array[Byte]): Array[Byte]

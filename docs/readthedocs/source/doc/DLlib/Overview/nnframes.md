@@ -127,16 +127,29 @@ res = nnModel.transform(df)
 This example trains a model with 3 inputs. And users can use VectorAssembler from Spark MLlib to combine different fields. With the specified sizes for each model input, NNEstiamtor and NNClassifer will split the input features data and send tensors to corresponding inputs.
 
 ```python
-sparkConf = init_spark_conf().setAppName("testNNClassifer").setMaster('local[1]')
+
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.nnframes.nn_classifier import *
+from bigdl.dllib.feature.common import *
+from bigdl.dllib.keras.objectives import SparseCategoricalCrossEntropy
+from bigdl.dllib.keras.optimizers import Adam
+from bigdl.dllib.keras.layers import *
+from bigdl.dllib.nncontext import *
+
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import VectorAssembler
+from pyspark.sql import SparkSession
+
+sparkConf = init_spark_conf().setAppName("testNNEstimator").setMaster('local[1]')
 sc = init_nncontext(sparkConf)
 spark = SparkSession\
     .builder\
     .getOrCreate()
 
 df = spark.createDataFrame(
-    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 1.0),
-     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 2.0),
-     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 1.0)],
+    [(1, 35, 109.0, Vectors.dense([2.0, 5.0, 0.5, 0.5]), 0.0),
+     (2, 58, 2998.0, Vectors.dense([4.0, 10.0, 0.5, 0.5]), 1.0),
+     (3, 18, 123.0, Vectors.dense([3.0, 15.0, 0.5, 0.5]), 0.0)],
     ["user", "age", "income", "history", "label"])
 
 assembler = VectorAssembler(
@@ -145,21 +158,21 @@ assembler = VectorAssembler(
 
 df = assembler.transform(df)
 
-x1 = ZLayer.Input(shape=(1,))
-x2 = ZLayer.Input(shape=(2,))
-x3 = ZLayer.Input(shape=(2, 2,))
+x1 = Input(shape=(1,))
+x2 = Input(shape=(2,))
+x3 = Input(shape=(2, 2,))
 
-user_embedding = ZLayer.Embedding(5, 10)(x1)
-flatten = ZLayer.Flatten()(user_embedding)
-dense1 = ZLayer.Dense(2)(x2)
-gru = ZLayer.LSTM(4, input_shape=(2, 2))(x3)
+user_embedding = Embedding(5, 10)(x1)
+flatten = Flatten()(user_embedding)
+dense1 = Dense(2)(x2)
+gru = LSTM(4, input_shape=(2, 2))(x3)
 
-merged = ZLayer.merge([flatten, dense1, gru], mode="concat")
-zy = ZLayer.Dense(2)(merged)
+merged = merge([flatten, dense1, gru], mode="concat")
+zy = Dense(2)(merged)
 
-zmodel = ZModel([x1, x2, x3], zy)
-criterion = ZooClassNLLCriterion()
-classifier = NNClassifier(zmodel, criterion, [[1], [2], [2, 2]]) \
+zmodel = Model([x1, x2, x3], zy)
+criterion = SparseCategoricalCrossEntropy()
+classifier = NNEstimator(zmodel, criterion, [[1], [2], [2, 2]]) \
     .setOptimMethod(Adam()) \
     .setLearningRate(0.1)\
     .setBatchSize(2) \
@@ -274,28 +287,28 @@ dlModel.transform(df).show(false)
 **Python Example:**
 
 ```python
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.util.common import *
-from bigdl.dlframes.dl_classifier import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.nnframes.nn_classifier import *
 from pyspark.sql.types import *
 
 #Logistic Regression with BigDL layers and NNClassifier
 model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
-criterion = ZooClassNLLCriterion()
+criterion = ClassNLLCriterion()
 estimator = NNClassifier(model, criterion, [2]).setBatchSize(4).setMaxEpoch(10)
 data = sc.parallelize([
-    ((0.0, 1.0), [1.0]),
-    ((1.0, 0.0), [2.0]),
-    ((0.0, 1.0), [1.0]),
-    ((1.0, 0.0), [2.0])])
+    ((0.0, 1.0), 1.0),
+    ((1.0, 0.0), 2.0),
+    ((0.0, 1.0), 1.0),
+    ((1.0, 0.0), 2.0)])
 
 schema = StructType([
     StructField("features", ArrayType(DoubleType(), False), False),
-    StructField("label", ArrayType(DoubleType(), False), False)])
-df = sqlContext.createDataFrame(data, schema)
+    StructField("label", DoubleType(), False)])
+df = spark.createDataFrame(data, schema)
 dlModel = estimator.fit(df)
-dlModel.transform(df).show(False)
+res = dlModel.transform(df).collect()
 ```
 
 ### 2.4 NNClassifierModel ##

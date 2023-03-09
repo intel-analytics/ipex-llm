@@ -36,6 +36,7 @@ import logging
 import os
 import copy
 import tempfile
+import math
 import torch
 import torch.nn as nn
 import numpy as np
@@ -192,11 +193,10 @@ class TorchRunner(BaseRunner):
         else:
             self.dist_backend = TorchDistBackend()
 
-    def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
+    def train_epochs(self, data_creator, epochs=1, max_steps=None, batch_size=32, profile=False,
                      wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
-        self.num_epochs = epochs
         if OrcaContext.serialize_data_creator:
             with FileLock(
                     os.path.join(tempfile.gettempdir(), ".orcadata.lock")):
@@ -244,13 +244,18 @@ class TorchRunner(BaseRunner):
         self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
+        if max_steps is not None:
+            epochs = math.ceil(max_steps / len(self.train_loader))
+
+        self.num_epochs = epochs
+
         stats_list = list()
         for i in range(epochs):
             del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(self.train_loader, profile=profile,
                                      callbacks=callbacks, val_loader=val_loader,
-                                     val_steps=val_steps)
+                                     val_steps=val_steps, max_steps=max_steps)
             self.epoch_stats = stats
             self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
 
@@ -272,22 +277,31 @@ class TorchRunner(BaseRunner):
                     profile=False,
                     callbacks=None,
                     val_loader=None,
-                    val_steps=None):
+                    val_steps=None,
+                    max_steps=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(data_loader, "sampler") and hasattr(
                 data_loader.sampler, "set_epoch"):
             data_loader.sampler.set_epoch(self.epochs)
         self.logger.debug("Begin Training Step {}".format(self.epochs + 1))
 
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
+
+        if not self.optimizers:
+            invalidInputError(False,
+                              "You must provide the optimizer for train.")
 
         self._toggle_profiling(profile=profile)
 
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self._train_epoch(data_loader, callbacks)
+            train_stats = self._train_epoch(data_loader, callbacks, max_steps)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -314,7 +328,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def _train_epoch(self, iterator, callbacks=None):
+    def _train_epoch(self, iterator, callbacks=None, max_steps=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -361,17 +375,19 @@ class TorchRunner(BaseRunner):
         from torch.nn.parallel import DistributedDataParallel as DDP
         if isinstance(self.model, DDP):
             with self.model.join():
-                self._train_loop(iterator, metric_meters, callbacks)
+                self._train_loop(iterator, metric_meters, callbacks, max_steps)
         else:
-            self._train_loop(iterator, metric_meters, callbacks)
+            self._train_loop(iterator, metric_meters, callbacks, max_steps)
 
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
         return metric_meters.summary(sync_stats=self.sync_stats,
                                      dist_backend=self.dist_backend)
 
-    def _train_loop(self, iterator, metric_meters, callbacks):
+    def _train_loop(self, iterator, metric_meters, callbacks, max_steps=None):
         for batch_idx, batch in enumerate(iterator):
+            if max_steps is not None and self.global_step >= max_steps:
+                break
             self.batch_idx = batch_idx
 
             self._train_batch(batch, callbacks=callbacks)
@@ -417,7 +433,8 @@ class TorchRunner(BaseRunner):
         # unpack features into list to support multiple inputs model
         # and restore batch to what it should be.
         features, target = batch
-        if torch.is_tensor(features):
+        if torch.is_tensor(features) or \
+                (isinstance(features, np.ndarray) and torch.is_tensor(features[0])):
             self.batch = features, target
         elif isinstance(features, (tuple, list)):
             self.batch = *features, target
@@ -447,6 +464,10 @@ class TorchRunner(BaseRunner):
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for train and evaluate.")
+
         if not self.criterion:
             invalidInputError(False,
                               "You must provide a loss for train and evaluate.")
@@ -582,10 +603,14 @@ class TorchRunner(BaseRunner):
         return output, target, loss
 
     def predict(self, partition, batch_size=32, profile=False, callbacks=None):
-        """Evaluates the model on the validation data set."""
+        """Predict the model."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
         callbacks = callbacks or []
+
+        if not self.models:
+            invalidInputError(False,
+                              "You must provide a model for predict.")
 
         params = {"batch_size": batch_size, "shuffle": False}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",

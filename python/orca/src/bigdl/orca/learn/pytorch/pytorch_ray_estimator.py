@@ -22,7 +22,8 @@ from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, reload_dataloader_creator
+    process_xshards_of_pandas_dataframe, reload_dataloader_creator, \
+    add_predict_to_pd_xshards
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
@@ -103,11 +104,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
-        if not (isinstance(model_creator, types.FunctionType) and
-                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+        if not isinstance(model_creator, types.FunctionType):  # Torch model is also callable.
             invalidInputError(False,
-                              "Must provide a function for both model_creator and"
-                              " optimizer_creator")
+                              "Must provide a function for model_creator.")
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -141,6 +140,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                         'RayDataset',
                         Callable[[Dict, int], 'DataLoader']],
             epochs: int=1,
+            max_steps: Optional[int] = None,
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
@@ -160,6 +160,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
+        :param max_steps: The max steps to train the model. Default is None.
+         If max_steps > 0, `epochs` would be ignored.
         :param batch_size: Total batch size for all workers used for training. Each worker's batch
                size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
@@ -347,7 +349,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
         if self.use_tqdm:
             callbacks.append(TqdmCallback())
 
-        param = dict(
+        params = dict(
             batch_size=batch_size,
             profile=profile,
             callbacks=callbacks
@@ -361,13 +363,17 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                               label_cols=None,
                                               mode="predict",
                                               shard_size=batch_size)
-            pred_shards = self._predict_spark_xshards(xshards, param)
+            pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, param)
-            result = update_predict_xshards(data, pred_shards)
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 

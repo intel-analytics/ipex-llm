@@ -32,7 +32,7 @@ from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, precision='fp32',
                  thread_num=None, device='CPU', dynamic_axes=True,
-                 logging=True, config=None, **kwargs):
+                 logging=True, config=None, output_tensors=True, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -63,6 +63,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param logging: whether to log detailed information of model conversion. default: True.
         :param config: The config to be inputted in core.compile_model.
+        :param output_tensors: boolean, default to True and output of the model will be Tensors. If
+                               output_tensors=False, output of the OpenVINO model will be ndarray.
         :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
         """
         ov_model_path = model
@@ -89,6 +91,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             # patch original model's attr to current new model
             patch_attrs_from_model_to_object(model, self)
+        self.output_tensors = output_tensors
 
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
@@ -99,7 +102,11 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return self.ov_model.forward_step(*inputs)
 
     def on_forward_end(self, outputs):
-        outputs = self.numpy_to_tensors(outputs.values())
+        outputs = list(outputs.values())
+        if self.output_tensors:
+            outputs = self.numpy_to_tensors(outputs)
+        elif len(outputs) == 1:
+            outputs = outputs[0]
         return outputs
 
     @property
@@ -168,7 +175,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                       device=self.ov_model._device,
                       thread_num=thread_num,
                       precision='int8',
-                      config=config)
+                      config=config,
+                      output_tensors=self.output_tensors)
         return self
 
     def _save_model(self, path, compression="fp32"):

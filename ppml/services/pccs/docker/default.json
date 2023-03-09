@@ -1,7 +1,7 @@
 {
     "HTTPS_PORT" : YOUR_HTTPS_PORT,
     "hosts" : "YOUR_HOST_IP",
-    "uri": "https://api.trustedservices.intel.com/sgx/certification/v3/",
+    "uri": "https://api.trustedservices.intel.com/sgx/certification/v4/",
     "ApiKey": "YOUR_API_KEY",
     "proxy" : "YOUR_PROXY",
     "RefreshSchedule": "0 0 1 * * *",
