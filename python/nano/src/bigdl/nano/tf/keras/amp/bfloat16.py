@@ -24,11 +24,14 @@ def BF16Model(model):
     for layer in model.layers:
         original_model_policies.append(layer._dtype_policy)
         layer._dtype_policy = policy_bf16
-    with TemporaryDirectory() as temp_dir:
-        model.save(temp_dir)
-        bf16_model = tf.keras.models.load_model(temp_dir)
-    for idx, layer in enumerate(model.layers):
-        layer._dtype_policy = original_model_policies[idx]
+    try:
+        # save operation may fail
+        with TemporaryDirectory() as temp_dir:
+            model.save(temp_dir)
+            bf16_model = tf.keras.models.load_model(temp_dir)
+    finally:
+        for idx, layer in enumerate(model.layers):
+            layer._dtype_policy = original_model_policies[idx]
     return bf16_model
 
 
