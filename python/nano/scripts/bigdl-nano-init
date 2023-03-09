@@ -39,6 +39,9 @@ function enable-perf-var {
 function enable-dgpu-var {
     echo "Option: Enable OneAPI vars"
     ONEAPI_VAR=1
+    echo "Option: Disable jemalloc and tcmalloc and unset related variables"
+    unset ENABLE_JEMALLOC_VAR
+    unset ENABLE_TCMALLOC_VAR
 }
 
 function set-allocator {
@@ -165,7 +168,6 @@ while getopts "ojhtcpgd-:" opt; do
                     ;;
                 gpu)
                     enable-dgpu-var
-                    disable-allocator
                     ;;
                 help)
                     display-help
@@ -244,6 +246,10 @@ if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
         echo "No OneAPI installation found"
         ONEAPI_VAR=0
     fi
+fi
+
+if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+    source ${ONEAPI_HOME}/setvars.sh
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD
