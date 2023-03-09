@@ -79,7 +79,7 @@ def compile_args(config):
     else:
         lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
+        "optimizer": tf.keras.optimizers.Adam(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }
