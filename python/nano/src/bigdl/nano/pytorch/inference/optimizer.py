@@ -30,7 +30,7 @@ from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
-    PytorchIPEXQuantizationModel
+    PytorchIPEXQuantizationModel, PytorchIPEXPUModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantize
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
@@ -1042,8 +1042,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            words, the process of model conversion won't be restricted by this
                            parameter.
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
-                                  only valid when accelerator='openvino', otherwise will be ignored.
-                                  'CPU', 'GPU' are supported for now.
+                                  vaild choices are 'CPU'/'GPU'. 'GPU' is only valid when
+                                  accelerator="openvino"/None. IPEX will be forcely used if
+                                  accelerator=None.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :param openvino_config: The config to be inputted in core.compile_model. Only valid when
@@ -1118,10 +1119,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         invalidInputError("precision" not in kwargs,
                           "Don't pass precision when call InferenceOptimizer.trace, otherwise you "
                           "should call InferenceOptimizer.quantize(precision=...)")
-        if device != 'CPU' and accelerator != 'openvino':
+        if device != 'CPU' and accelerator not in ('openvino', None):
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
-                              "is openvino.".format(device))
+                              "is openvino or None.".format(device))
         model.eval()  # change model to eval mode
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
@@ -1148,7 +1149,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            dynamic_axes=dynamic_axes,
                                            output_tensors=output_tensors,
                                            **kwargs)
-        if accelerator == 'jit' or use_ipex is True or channels_last is True:
+        if accelerator is None and device == "GPU":
+            return PytorchIPEXPUModel(model, thread_num=thread_num)
+        if (accelerator == 'jit' or use_ipex is True or channels_last is True) and device == "CPU":
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
                                   "torch version should >=1.10 to use ipex")
