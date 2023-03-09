@@ -13,9 +13,8 @@ mv yaml-file-05 ClusterRole.yaml
 mv yaml-file-06 RoleBinding.yaml
 
 # You should set the required environment variable before curl command
-#APISERVER="https://<kubernetes-api-server>"
-#TOKEN="<access-token>"
 
+export APISERVER=$(echo $RUNTIME_SPARK_MASTER | sed 's/k8s:\/\///')
 # Deploy zeppelin-server-conf-map
 curl -k -X POST \
   -H "Content-Type: application/yaml" \
@@ -68,3 +67,4 @@ curl -k -X POST \
 
 # Remove these yaml
 rm ConfigMap1.yaml ConfigMap2.yaml Deployment.yaml Service.yaml ServiceAccount.yaml ClusterRole.yaml RoleBinding.yaml
+
