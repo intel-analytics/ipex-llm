@@ -25,7 +25,7 @@ from bigdl.nano.utils.common import get_default_args
 from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
 from bigdl.nano.utils.tf import try_compute_output_shape
 from bigdl.nano.utils.tf import convert_all
-from bigdl.nano.tf.new_model import KerasOptimizedModel
+from bigdl.nano.tf.model import KerasOptimizedModel
 from bigdl.nano.utils.common import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel

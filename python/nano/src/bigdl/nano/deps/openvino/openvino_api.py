@@ -109,7 +109,7 @@ def KerasOpenVINOModel(model, input_spec=None, precision='fp32',
     :param **kwargs: will be passed to model optimizer function.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
-    from .tf.new_model import KerasOpenVINOModel
+    from .tf.model import KerasOpenVINOModel
     return KerasOpenVINOModel(model=model,
                               input_spec=input_spec,
                               precision=precision,

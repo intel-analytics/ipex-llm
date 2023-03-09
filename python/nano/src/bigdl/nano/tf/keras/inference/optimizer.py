@@ -582,7 +582,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "VPUX device, you must specify mean_value for model optimizer "
                                   "function. For more details about model optimizer, you can "
                                   "see mo --help .")
-            from bigdl.nano.deps.openvino.tf.new_model import KerasOpenVINOModel    # type: ignore
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         input_spec=input_spec,
                                         precision=precision,
@@ -602,8 +602,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
                 if openvino_config is not None:
                     final_openvino_option.update(openvino_config)
-                from bigdl.nano.deps.openvino.tf.new_model \
-                    import KerasOpenVINOModel  # type: ignore
+                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel  # type: ignore
                 result = KerasOpenVINOModel(model,
                                             input_spec=input_spec,
                                             precision=precision,
@@ -670,7 +669,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs)
             result._output_shape = _output_shape
         elif accelerator == 'openvino':
-            from bigdl.nano.deps.openvino.tf.new_model import KerasOpenVINOModel    # type: ignore
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
                 openvino_model = model
             else:
@@ -711,8 +710,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.model \
-                import KerasONNXRuntimeModel
+            from bigdl.nano.deps.onnxruntime.tensorflow.model import KerasONNXRuntimeModel
             if isinstance(model, KerasONNXRuntimeModel):     # type: ignore
                 onnx_model = model
             else:

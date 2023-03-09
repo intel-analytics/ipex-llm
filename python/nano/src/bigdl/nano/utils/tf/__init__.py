@@ -29,3 +29,5 @@ from .preprocess import try_compute_output_shape
 
 from .data import convert
 from .data import convert_all
+from .data import numpy_to_tensors
+from .data import tensors_to_numpy
