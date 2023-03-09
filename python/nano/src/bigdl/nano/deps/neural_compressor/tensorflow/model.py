@@ -54,8 +54,7 @@ class KerasQuantizedModel(KerasOptimizedModel):
     @property
     def status(self):
         status = super().status
-        status.update({"attr_path": "inc_saved_model_attr.pkl",
-                       "compile_path": "inc_saved_model_compile.pkl"})
+        status.update({"compile_path": "inc_saved_model_compile.pkl"})
         return status
 
     def _save(self, path, compression="fp32"):
@@ -64,11 +63,6 @@ class KerasQuantizedModel(KerasOptimizedModel):
 
         self.model.save(path)
         self._dump_status(path)
-
-        # save normal attrs
-        attrs = {"_output_shape": self._output_shape}
-        with open(path / self.status['attr_path'], "wb") as f:
-            pickle.dump(attrs, f)
 
         # save compile attr
         if self._is_compiled:
@@ -109,10 +103,7 @@ class KerasQuantizedModel(KerasOptimizedModel):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         model = KerasQuantizedModel(qmodel)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            attrs = pickle.load(f)
-        for attr_name, attr_value in attrs.items():
-            setattr(model, attr_name, attr_value)
+
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)

@@ -24,7 +24,7 @@ import numpy as np
 import tensorflow as tf
 
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.tf import try_compute_output_shape
+from bigdl.nano.utils.tf import try_fake_inference
 from bigdl.nano.utils.tf import convert_all, tensors_to_numpy
 from bigdl.nano.tf.model import KerasOptimizedModel
 
@@ -63,8 +63,7 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec,
-                                                              try_fake_inference=not model.built)
+                try_fake_inference(model, input_spec)
                 export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging,
@@ -99,7 +98,6 @@ class KerasOpenVINOModel(KerasOptimizedModel):
     def status(self):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml',
-                       "attr_path": "ov_saved_model_attr.pkl",
                        "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
@@ -129,7 +127,6 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         q_model = KerasOpenVINOModel(model, precision='int8',
                                      config=config, thread_num=thread_num,
                                      device=self.ov_model._device)
-        q_model._output_shape = self._output_shape
         return q_model
 
     @staticmethod
@@ -159,10 +156,6 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                                    config=status['config'],
                                    thread_num=thread_num,
                                    device=device)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            attrs = pickle.load(f)
-        for attr_name, attr_value in attrs.items():
-            setattr(model, attr_name, attr_value)
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)
@@ -183,11 +176,6 @@ class KerasOpenVINOModel(KerasOptimizedModel):
 
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
-
-        # save normal attrs
-        attrs = {"_output_shape": self._output_shape}
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
-            pickle.dump(attrs, f)
 
         # save compile attr
         if self._is_compiled:
