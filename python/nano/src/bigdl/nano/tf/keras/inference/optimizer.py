@@ -45,7 +45,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 from bigdl.nano.utils.common import compare_version
-from bigdl.nano.utils.tf import try_compute_output_shape
+from bigdl.nano.utils.tf import try_fake_inference
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -639,8 +639,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            _output_shape = try_compute_output_shape(model, input_spec,
-                                                     try_fake_inference=not model.built)
+            try_fake_inference(model, input_spec)
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -667,7 +666,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   max_trials=max_trials,
                                   inputs=inputs,
                                   outputs=outputs)
-            result._output_shape = _output_shape
         elif accelerator == 'openvino':
             from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
@@ -739,11 +737,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
-            result._nesting_level = onnx_model._nesting_level
             result._inputs_dtypes = onnx_model._inputs_dtypes
             result._default_kwargs = onnx_model._default_kwargs
             result._call_fn_args_backup = onnx_model._call_fn_args_backup
-            result._output_shape = onnx_model._output_shape
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)

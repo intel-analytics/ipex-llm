@@ -46,15 +46,6 @@ class MyModel(tf.keras.Model):
         pass
 
 
-class MyModelReturnList(tf.keras.Model):
-    def __init__(self):
-        super().__init__()
-        self.dense1 = tf.keras.layers.Dense(4, activation=tf.nn.relu)
-
-    def call(self, inputs: tf.Tensor):
-        return [self.dense1(inputs)]
-
-
 class MyModelCannotComputeOutputShape(tf.keras.Model):
     def __init__(self):
         super().__init__()
@@ -240,19 +231,6 @@ class TestTraceAndQuantize(TestCase):
                 InferenceOptimizer.save(m, tmp_dir_name)
                 new_model = InferenceOptimizer.load(tmp_dir_name, model)
                 new_model.evaluate(x=x, y=y)
-
-    def test_inference_output_shape(self):
-        model = MyModelReturnList()
-        x = np.random.random((100, 4))
-        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        outputs = traced_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
-
-        quantized_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime",
-                                                      input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
-        outputs = quantized_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
 
     def test_quantize_bf16(self):
         # for custom model, quantized model still return fp32 output

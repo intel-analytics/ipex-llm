@@ -23,7 +23,6 @@ from tempfile import TemporaryDirectory
 import tensorflow as tf
 from bigdl.nano.utils.common import get_default_args
 from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
-from bigdl.nano.utils.tf import try_compute_output_shape
 from bigdl.nano.utils.tf import convert_all
 from bigdl.nano.tf.model import KerasOptimizedModel
 from bigdl.nano.utils.common import invalidInputError
@@ -55,18 +54,17 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
         KerasOptimizedModel.__init__(self)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec,
-                                                              try_fake_inference=False)
-                if input_spec is None and hasattr(model, "input_shape"):
+                if input_spec is not None:
+                    input_spec = input_spec
+                elif hasattr(model, "input_shape"):
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
+                else:
+                    invalidInputError(False,
+                                      "Subclassed model must specify `input_spec` parameter.")
+
                 if not isinstance(input_spec, (tuple, list)):
                     # ONNX requires that `input_spec` must be a tuple or list
                     input_spec = (input_spec, )
-                self._nesting_level = 0
-                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
-                    # A workaround, may be changed in the future
-                    self._nesting_level += 1
-                    self._output_shape = self._output_shape[0]
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
@@ -92,10 +90,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
 
     def postprocess(self, outputs: Sequence[Any]):
         outputs = convert_all(outputs, types="tf", dtypes=tf.float32)
-        if isinstance(outputs, list) and len(outputs) == 1:
+        if len(outputs) == 1:
             outputs = outputs[0]
-        for _i in range(self._nesting_level):
-            outputs = [outputs]
         return outputs
 
     @property
@@ -150,9 +146,7 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
 
         attrs = {"_default_kwargs": self._default_kwargs,
                  "_call_fn_args_backup": self._call_fn_args_backup,
-                 "_inputs_dtypes": self._inputs_dtypes,
-                 "_nesting_level": self._nesting_level,
-                 "_output_shape": self._output_shape}
+                 "_inputs_dtypes": self._inputs_dtypes}
         with open(path / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
 
