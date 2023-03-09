@@ -18,7 +18,7 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
 &ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files) \
-&ensp;&ensp;[4.3 Create Multi-KMS PPMLContext](#43-create-multi-kms-ppmlcontext)
+&ensp;&ensp;[4.3 Create Multi-Party PPMLContext](#43-create-multi-party-ppmlcontext)
 
 
 
