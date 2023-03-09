@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-import shutil
-import tempfile
-
 from bigdl.orca.learn.pytorch.callbacks import Callback
 from bigdl.dllib.utils.log4Error import invalidInputError
 

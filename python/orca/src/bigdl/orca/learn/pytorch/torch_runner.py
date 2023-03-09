@@ -31,6 +31,7 @@
 # This file is adapted from
 # https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/torch/torch_runner.py
 
+from unittest import runner
 from filelock import FileLock
 import logging
 import os
@@ -133,6 +134,7 @@ class TorchRunner(BaseRunner):
         self.epoch_stats = None  # The state saved in every epoch
         self._mode = 'val'  # By default we don't use ddp model
         self._pocket = dict()  # Used to store some customized attributes
+        self.stop = False  # Indicate that wheather stop early
 
     def _create_loss(self):
         if not self.loss_creator:
@@ -193,7 +195,7 @@ class TorchRunner(BaseRunner):
         else:
             self.dist_backend = TorchDistBackend()
 
-    def train_epochs(self, data_creator, epochs=1, max_steps=None, batch_size=32, profile=False,
+    def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
         config = copy.copy(self.config)
@@ -244,9 +246,6 @@ class TorchRunner(BaseRunner):
         self.val_loader = val_loader
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
-        if max_steps is not None:
-            epochs = math.ceil(max_steps / len(self.train_loader))
-
         self.num_epochs = epochs
 
         stats_list = list()
@@ -255,7 +254,7 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(self.train_loader, profile=profile,
                                      callbacks=callbacks, val_loader=val_loader,
-                                     val_steps=val_steps, max_steps=max_steps)
+                                     val_steps=val_steps)
             self.epoch_stats = stats
             self.call_hook(callbacks=callbacks, fn_name="after_train_epoch")
 
@@ -277,8 +276,7 @@ class TorchRunner(BaseRunner):
                     profile=False,
                     callbacks=None,
                     val_loader=None,
-                    val_steps=None,
-                    max_steps=None):
+                    val_steps=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(data_loader, "sampler") and hasattr(
                 data_loader.sampler, "set_epoch"):
@@ -301,7 +299,7 @@ class TorchRunner(BaseRunner):
 
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
-            train_stats = self._train_epoch(data_loader, callbacks, max_steps)
+            train_stats = self._train_epoch(data_loader, callbacks)
 
         if val_loader:
             with self.timers.record("validation"):
@@ -328,7 +326,7 @@ class TorchRunner(BaseRunner):
 
         return stats
 
-    def _train_epoch(self, iterator, callbacks=None, max_steps=None):
+    def _train_epoch(self, iterator, callbacks=None):
         """Runs one standard training pass over the training dataloader.
 
         By default, this method will iterate over the given iterator and
@@ -375,19 +373,17 @@ class TorchRunner(BaseRunner):
         from torch.nn.parallel import DistributedDataParallel as DDP
         if isinstance(self.model, DDP):
             with self.model.join():
-                self._train_loop(iterator, metric_meters, callbacks, max_steps)
+                self._train_loop(iterator, metric_meters, callbacks)
         else:
-            self._train_loop(iterator, metric_meters, callbacks, max_steps)
+            self._train_loop(iterator, metric_meters, callbacks)
 
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
         return metric_meters.summary(sync_stats=self.sync_stats,
                                      dist_backend=self.dist_backend)
 
-    def _train_loop(self, iterator, metric_meters, callbacks, max_steps=None):
+    def _train_loop(self, iterator, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
-            if max_steps is not None and self.global_step >= max_steps:
-                break
             self.batch_idx = batch_idx
 
             self._train_batch(batch, callbacks=callbacks)
@@ -397,6 +393,8 @@ class TorchRunner(BaseRunner):
 
             del self.batch_idx
             del self.metrics_stats
+            if runner.stop:
+                break
 
     def _train_batch(self, batch, callbacks=None):
         """Computes loss and updates the model over one batch.

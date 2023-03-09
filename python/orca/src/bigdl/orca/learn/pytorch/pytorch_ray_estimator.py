@@ -17,6 +17,7 @@
 import types
 import copy
 import logging
+import math
 
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
@@ -29,6 +30,7 @@ from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
+from bigdl.orca.learn.pytorch.callbacks.maxsteps import MaxstepsCallback
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -196,6 +198,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
         make_only_mainCallback(callbacks)
         if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
+        if max_steps is not None:
+            epochs = math.ceil(max_steps / len(self.train_loader))
+            callbacks.append(MaxstepsCallback(max_step=max_steps))
 
         params = dict(
             epochs=epochs,

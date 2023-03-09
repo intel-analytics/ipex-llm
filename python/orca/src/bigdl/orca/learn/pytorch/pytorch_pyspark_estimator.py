@@ -21,6 +21,7 @@ import os
 import shutil
 import tempfile
 import logging
+import math
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -38,6 +39,7 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
+from bigdl.orca.learn.pytorch.callbacks.maxsteps import MaxstepsCallback
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -296,10 +298,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
         make_only_mainCallback(callbacks)
         if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
+        if max_steps is not None:
+            epochs = math.ceil(max_steps / len(self.train_loader))
+            callbacks.append(MaxstepsCallback(max_step=max_steps))
 
         params = dict(
             epochs=epochs,
-            max_steps=max_steps,
             batch_size=batch_size,
             profile=profile,
             callbacks=callbacks
