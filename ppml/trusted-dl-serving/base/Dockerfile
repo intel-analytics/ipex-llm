@@ -46,12 +46,43 @@ RUN cd / &&\
     tar -zxvf boost_1_78_0.tar.gz &&\
     rm -rf /usr/include/boost &&\
     cp -r boost_1_78_0/boost /usr/include &&\
-
     git clone --branch v2.31.0 https://github.com/triton-inference-server/server.git &&\
     cd server &&\
-    ./build.py -v --no-container-build --build-dir=`pwd`/build --backend=python --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-tracing
+    ./build.py -v --no-container-build --build-dir=`pwd`/build --backend=python --repoagent=checksum --filesystem=gcs --filesystem=s3 --filesystem=azure_storage --endpoint=http --endpoint=grpc --endpoint=sagemaker --endpoint=vertex-ai --enable-logging --enable-stats --enable-tracing && \
+    mkdir -p /dl-serving/opt && \
+    cd /dl-serving/opt && \
+    cp -r /server/build/opt/tritonserver ./tritonserver && \
+    cp -r /server/docker/entrypoint.d ./entrypoint.d && \
+    cp -r /server/docker/cpu_only/ ./nvidia
 
 FROM nvcr.io/nvidia/tritonserver:23.01-py3 AS min_container
+
+RUN mkdir -p /dl-serving/usr/local/cuda/lib64/stubs && \
+    cd /dl-serving/usr/local/cuda/lib64/stubs && \
+    cp /usr/local/cuda/lib64/stubs/libcusparse.so ./libcusparse.so.12 && \
+    cp /usr/local/cuda/lib64/stubs/libcusolver.so ./libcusolver.so.11 && \
+    cp /usr/local/cuda/lib64/stubs/libcurand.so ./libcurand.so.10 && \
+    cp /usr/local/cuda/lib64/stubs/libcufft.so ./libcufft.so.11 && \
+    cp /usr/local/cuda/lib64/stubs/libcublas.so ./libcublas.so.12 && \
+    cp /usr/local/cuda/lib64/stubs/libcublasLt.so ./libcublasLt.so.12 && \
+    cp /usr/local/cuda/lib64/stubs/libcublasLt.so ./libcublasLt.so.11 && \
+    mkdir -p /dl-serving/usr/local/cuda/targets/x86_64-linux/lib && \
+    cd /dl-serving/usr/local/cuda/targets/x86_64-linux/lib && \
+    cp /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcudart.so.12 . && \
+    cp /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 . && \
+    cp /usr/local/cuda-12.0/targets/x86_64-linux/lib/libnvToolsExt.so.1 . && \
+    cp /usr/local/cuda-12.0/targets/x86_64-linux/lib/libnvJitLink.so.12 . && \
+    mkdir -p /dl-serving/usr/lib/x86_64-linux-gnu && \
+    cd /dl-serving/usr/lib/x86_64-linux-gnu && \
+    cp /usr/lib/x86_64-linux-gnu/libcudnn.so.8 ./libcudnn.so.8 && \
+    cp /usr/lib/x86_64-linux-gnu/libnccl.so.2 ./libnccl.so.2 && \
+    mkdir -p /dl-serving/opt/tritonserver/backends && \
+    cd /dl-serving/opt/tritonserver/backends && \
+    mkdir pytorch && \
+    mkdir tensorflow2 && \
+    cp -r /opt/tritonserver/backends/pytorch . && \
+    cp -r /opt/tritonserver/backends/tensorflow2 .
+
 
 # Stage.3 TF-Serving
 FROM tensorflow/serving:latest-devel as tf-serving
@@ -61,16 +92,14 @@ FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
-ARG TINI_VERSION
-ENV TINI_VERSION                        $TINI_VERSION
 ARG JDK_VERSION
-ENV JDK_HOME                            /opt/jdk${JDK_VERSION}
-ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
-# Environment used for build pytorch
-ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
-ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.8/dist-packages/:/usr/local/lib/"
+ARG TINI_VERSION
 ARG TRITON_VERSION=2.31.0dev
 ARG TRITON_CONTAINER_VERSION=23.02dev
+
+ENV TINI_VERSION                        $TINI_VERSION
+ENV JDK_HOME                            /opt/jdk${JDK_VERSION}
+ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 ENV TRITON_SERVER_VERSION ${TRITON_VERSION}
 ENV NVIDIA_TRITON_SERVER_VERSION ${TRITON_CONTAINER_VERSION}
 
@@ -99,36 +128,13 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
+
 # Start Script for Torchserve, Tritonserver and TF-Serving
-# Start Script for Torchserve
-ADD ./start-torchserve-backend.sh       /ppml/torchserve/start-torchserve-backend.sh
-ADD ./start-torchserve-frontend.sh      /ppml/torchserve/start-torchserve-frontend.sh
-ADD ./start-torchserve.sh               /ppml/torchserve/start-torchserve.sh
-ADD ./start-tritonserver-sgx.sh         /ppml/tritonserver/start-tritonserver-sgx.sh
-ADD ./start-tf-serving-sgx.sh           /ppml/tf-serving/start-tf-serving-sgx.sh
-
-
-#For Tritonserver python backend
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusparse.so /usr/local/cuda/lib64/stubs/libcusparse.so.12
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcusolver.so /usr/local/cuda/lib64/stubs/libcusolver.so.11
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcurand.so /usr/local/cuda/lib64/stubs/libcurand.so.10
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcufft.so /usr/local/cuda/lib64/stubs/libcufft.so.11
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcublas.so /usr/local/cuda/lib64/stubs/libcublas.so.12
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcublasLt.so /usr/local/cuda/lib64/stubs/libcublasLt.so.12
-COPY --from=min_container /usr/local/cuda/lib64/stubs/libcublasLt.so /usr/local/cuda/lib64/stubs/libcublasLt.so.11
-COPY --from=min_container /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcudart.so.12 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/local/cuda-12.0/targets/x86_64-linux/lib/libnvToolsExt.so.1 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/local/cuda-12.0/targets/x86_64-linux/lib/libnvJitLink.so.12 /usr/local/cuda/targets/x86_64-linux/lib/.
-COPY --from=min_container /usr/lib/x86_64-linux-gnu/libcudnn.so.8 /usr/lib/x86_64-linux-gnu/libcudnn.so.8
-COPY --from=min_container /usr/lib/x86_64-linux-gnu/libnccl.so.2 /usr/lib/x86_64-linux-gnu/libnccl.so.2
+ADD ./ppml /ppml
 
 #Tritonserver
-COPY --from=tritonserver /server/build/opt/tritonserver /opt/tritonserver
-COPY --from=tritonserver /server/docker/entrypoint.d/ /opt/nvidia/entrypoint.d/
-COPY --from=tritonserver /server/docker/cpu_only/ /opt/nvidia/
-COPY --from=min_container /opt/tritonserver/backends/pytorch /opt/tritonserver/backends/pytorch
-COPY --from=min_container /opt/tritonserver/backends/tensorflow2 /opt/tritonserver/backends/tensorflow
+COPY --from=tritonserver /dl-serving/opt /opt
+COPY --from=min_container /dl-serving /
 
 #TF-Serving
 COPY --from=tf-serving /usr/local/bin/tensorflow_model_server /usr/bin/tensorflow_model_server
