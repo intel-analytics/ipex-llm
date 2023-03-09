@@ -209,18 +209,16 @@ else
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD
-OPENMP=0
+OPENMP=1
 export LD_PRELOAD=""
 export DYLD_INSERT_LIBRARIES=""
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
-    : # do nothing
+    OPENMP=0
 elif [[ "${PERF_VAR}" -eq 1 ]]; then
-    OPENMP=1
+    : # do nothing
 elif [ $OS = "linux" ] && [ -f "${LIB_DIR}/libiomp5.so" ]; then
-    OPENMP=1
     export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
 elif [ $OS = "macos" ] && [ -f "${LIB_DIR}/libiomp5.dylib" ]; then
-    OPENMP=1
     export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libiomp5.dylib"
 else
     echo "No OpenMP library found in ${LIB_DIR}."
