@@ -19,12 +19,12 @@ from pathlib import Path
 from typing import Sequence, Any
 
 import yaml
-from keras import Model
+import tensorflow as tf
 
 from bigdl.nano.utils.common import invalidInputError
 
 
-class KerasOptimizedModel(Model):
+class KerasOptimizedModel(tf.keras.Model):
     """A base class for keras optimized model."""
 
     def __call__(self, *inputs, **kwargs):
@@ -37,6 +37,10 @@ class KerasOptimizedModel(Model):
         outputs = self.forward(inputs)
         outputs = self.postprocess(outputs)
         return outputs
+
+    def call(self, *args, **kwargs):
+        """The same as __call__."""
+        return self(*args, **kwargs)
 
     def preprocess(self, inputs: Sequence[Any]):
         """Preprocess inputs, such as convert inputs to numpy ndarray."""
