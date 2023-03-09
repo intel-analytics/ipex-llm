@@ -107,6 +107,24 @@ function display-help {
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
+# Find bigdl-nano-init dir
+if [ ! -z $BASH_SOURCE ]; then
+    # using bash
+    if [ "$BASH_SOURCE" = "$0" ]; then
+        echo "Error: Incorrect usage: bigdl-nano-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname $BASH_SOURCE)"
+else
+    # using zsh
+    if [ "$zsh_eval_context" = "toplevel" ]; then
+        echo "Error: Incorrect usage: bigdl-nano-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname ${(%):-%N})"
+fi
+echo "Sourcing bigdl-nano-init in: $BIN_DIR"
+
 # Init internal variables
 ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
@@ -183,16 +201,6 @@ while getopts "ojhtcpd-:" opt; do
 done
 
 shift $((OPTIND -1))
-
-# Find bigdl-nano-init dir
-if [ ! -z $BASH_SOURCE ]; then
-    # using bash
-    BIN_DIR="$(dirname $BASH_SOURCE)"
-else
-    # using zsh
-    BIN_DIR="$(dirname ${(%):-%N})"
-fi
-echo "Sourcing bigdl-nano-init in: $BIN_DIR"
 
 LIB_DIR=`dirname ${BIN_DIR}`/lib
 NANO_DIR=$(dirname $(python3 -c "import bigdl; print(bigdl.__file__)"))/nano
