@@ -165,6 +165,7 @@ while getopts "ojhtcpgd-:" opt; do
                     ;;
                 gpu)
                     enable-dgpu-var
+                    disable-allocator
                     ;;
                 help)
                     display-help
