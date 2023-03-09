@@ -187,7 +187,7 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
                 if len(keys) == 1:
                     yield row[0]
                 else:
-                    yield np.array(row)
+                    yield row
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
     result = convert_predict_rdd_to_dataframe(df, pred_rdd, output_cols)
@@ -202,8 +202,14 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     def combine(pair):
         # list of np array
         if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
+            if len(pair[1]) == 1:
+                row = Row(*([pair[0][col] for col in pair[0].__fields__] +
+                            [[Vectors.dense(elem) for elem in pair[1]]]))
+            else:
+                row_values = [pair[0][col] for col in pair[0].__fields__]
+                for elem in pair[1]:
+                    row_values.append([Vectors.dense(elem)])
+                row = Row(*row_values)
         # scalar
         elif len(pair[1].shape) == 0:
             row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
@@ -223,6 +229,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 for value in pair[1]:
                     row_values.append(value.tolist())
                 row = Row(*row_values)
+                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
         return row
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
