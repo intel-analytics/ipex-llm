@@ -156,10 +156,6 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                                    config=status['config'],
                                    thread_num=thread_num,
                                    device=device)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            attrs = pickle.load(f)
-        for attr_name, attr_value in attrs.items():
-            setattr(model, attr_name, attr_value)
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)
