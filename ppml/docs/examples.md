@@ -295,7 +295,7 @@ bash bigdl-ppml-submit.sh \
 
 <details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
 
-    You can specify multi-KMS configurations through `--conf` parameter at **bigdl-ppml-submit** CLI, or `ppmlArgs` at **initPPMLContext** in application codes:
+You can specify multi-KMS configurations through `--conf` parameter at **bigdl-ppml-submit** CLI, or `ppmlArgs` at **initPPMLContext** in application codes:
 
 
 - **bigdl-ppml-submit**:
