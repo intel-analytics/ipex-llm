@@ -43,7 +43,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
         return quantized_model
 
     elif 'tensorflow' in not_none_kwargs['framework']:
-        from .tensorflow.new_model import KerasQuantizedModel
+        from .tensorflow.model import KerasQuantizedModel
         return KerasQuantizedModel(q_model)
 
     elif 'onnx' in not_none_kwargs['framework']:

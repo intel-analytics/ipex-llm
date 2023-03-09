@@ -26,7 +26,7 @@ def load_inc_model(path, model, framework, input_sample=None):
         # only ipex quantization needs example_inputs
         return PytorchQuantizedModel._load(path, model, example_inputs=input_sample)
     elif framework == 'tensorflow':
-        from .tensorflow.new_model import KerasQuantizedModel
+        from .tensorflow.model import KerasQuantizedModel
         return KerasQuantizedModel._load(path, model)
     else:
         invalidInputError(False,

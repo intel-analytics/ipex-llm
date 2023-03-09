@@ -16,7 +16,7 @@
 from bigdl.nano.utils.common import invalidInputError
 from ..core import BaseQuantization
 from .metric import TensorflowINCMetric
-from .new_model import KerasQuantizedModel
+from .model import KerasQuantizedModel
 from .utils import Dataloader
 from bigdl.nano.utils.common import compare_version
 import operator

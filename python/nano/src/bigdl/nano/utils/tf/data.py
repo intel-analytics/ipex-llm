@@ -103,6 +103,41 @@ def convert(input_: Union[tf.Tensor, np.ndarray],
         invalidInputError(False, f"Invalid target type: {type_}")
 
 
+# deprecated
+def tensors_to_numpy(tensors, dtype=None):
+    """Convert tf Tensor(s) to numpy ndarray(s)."""
+    if isinstance(dtype, tf.DType):
+        dtype = dtype.as_numpy_dtype
+    if isinstance(tensors, (list, tuple)):
+        return type(tensors)(tensors_to_numpy(tensor, dtype) for tensor in tensors)
+    elif isinstance(tensors, dict):
+        return {key: tensors_to_numpy(value, dtype)
+                for key, value in tensors.items()}
+    elif isinstance(tensors, tf.Tensor):
+        if dtype is None:
+            return tensors.numpy()
+        else:
+            return tensors.numpy().astype(dtype)
+    elif isinstance(tensors, np.ndarray) and dtype is not None:
+        return tensors.astype(dtype)
+    else:
+        return tensors
+
+
+# deprecated
+def numpy_to_tensors(np_arrays):
+    """Convert numpy ndarray(s) to tf Tensor(s)."""
+    if isinstance(np_arrays, (list, tuple)):
+        return type(np_arrays)(numpy_to_tensors(array) for array in np_arrays)
+    elif isinstance(np_arrays, dict):
+        return {key: numpy_to_tensors(value)
+                for key, value in np_arrays.items()}
+    elif isinstance(np_arrays, np.ndarray):
+        return tf.convert_to_tensor(np_arrays)
+    else:
+        return np_arrays
+
+
 # todo: Add a common keras dataset
 # class KerasDataset():
 #     def __init__(self,
@@ -151,8 +186,8 @@ def convert(input_: Union[tf.Tensor, np.ndarray],
 #     def __iter__(self):
 #         if isinstance(self.x, tf.data.Dataset):
 #             for batch in self.x.batch(1):
-#                 yield AcceleratedKerasModel.tensors_to_numpy(batch, self.dtype)
+#                 yield tensors_to_numpy(batch, self.dtype)
 #         else:
 #             for x, y in zip(self.x, self.y):
-#                 x, y = AcceleratedKerasModel.tensors_to_numpy((x, y), self.dtype)
+#                 x, y = tensors_to_numpy((x, y), self.dtype)
 #                 yield np.expand_dims(x, axis=0), np.expand_dims(y, axis=0)

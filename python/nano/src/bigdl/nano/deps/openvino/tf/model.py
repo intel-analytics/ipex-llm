@@ -13,22 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os
+import pickle
 from pathlib import Path
+from typing import Sequence, Any
 from tempfile import TemporaryDirectory
+
+import numpy as np
+import tensorflow as tf
+
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import try_compute_output_shape
+from bigdl.nano.utils.tf import convert_all, tensors_to_numpy
+from bigdl.nano.tf.model import KerasOptimizedModel
+
 from ..core.model import OpenVINOModel
-from bigdl.nano.tf.model import AcceleratedKerasModel
+from ..core.utils import save
 from .utils import export
 from .dataloader import KerasOpenVINODataLoader
 from .metric import KerasOpenVINOMetric
-import tensorflow as tf
-from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.tf import try_compute_output_shape
-from ..core.utils import save
-import pickle
-import os
 
 
-class KerasOpenVINOModel(AcceleratedKerasModel):
+class KerasOpenVINOModel(KerasOptimizedModel):
     def __init__(self, model, input_spec=None, precision='fp32',
                  thread_num=None, device='CPU', config=None,
                  logging=True, **kwargs):
@@ -51,6 +58,7 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                         default: True.
         :param **kwargs: will be passed to model optimizer function.
         """
+        super().__init__()
         ov_model_path = model
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
@@ -67,18 +75,22 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                                           precision=precision,
                                           thread_num=thread_num,
                                           config=config)
-            super().__init__(None)
 
-    def forward_step(self, *inputs):
-        return self.ov_model.forward_step(*inputs)
-
-    def on_forward_start(self, inputs):
+    def preprocess(self, inputs: Sequence[Any]):
         self.ov_model._model_exists_or_err()
-        inputs = self.tensors_to_numpy(inputs)
+        # todo: We should perform dtype conversion based on the
+        # dtype of the arguments that the model expects
+        inputs = convert_all(inputs, types="numpy", dtypes=np.float32)
         return inputs
 
-    def on_forward_end(self, outputs):
+    def forward(self, inputs: Sequence[Any]):
+        return self.ov_model.forward_step(*inputs)
+
+    def postprocess(self, outputs: Sequence[Any]):
         outputs = tuple(outputs.values())
+        # todo: we should perform dtype conversion based on the
+        # dtype of the outputs of the original keras model
+        outputs = convert_all(outputs, types="tf", dtypes=tf.float32)
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs
@@ -108,7 +120,9 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num=None):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(x, y, collate_fn=self.tensors_to_numpy)
+        # todo: replace `KerasOpenVINODataLoader` and `tensors_to_numpy`
+        dataloader = KerasOpenVINODataLoader(x, y,
+                                             collate_fn=tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
@@ -155,21 +169,26 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path, compression="fp32"):
+    def _save(self, path, compression="fp32"):
         """
         Save KerasOpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
         """
         self.ov_model._model_exists_or_err()
+
         path = Path(path)
         path.mkdir(exist_ok=True)
+        self._dump_status(path)
+
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+
         # save normal attrs
         attrs = {"_output_shape": self._output_shape}
         with open(Path(path) / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
+
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
