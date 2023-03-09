@@ -475,10 +475,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                                       acce_model,
                                                                       input_sample,
                                                                       training_data,
-                                                                      forward_args)              
+                                                                      forward_args)
                         else:
                             result_map[method]["latency"], status =\
-                                latency_calculate_helper(latency_sample_num, baseline_time, 
+                                latency_calculate_helper(latency_sample_num, baseline_time,
                                                          func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
