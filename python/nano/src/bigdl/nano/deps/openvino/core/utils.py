@@ -76,6 +76,10 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
             params_str,
             model_name,
             output_dir)
+        p = subprocess.Popen(mo_cmd.split())
+        p.communicate()
+        invalidInputError(not p.returncode,
+                        "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
     else:
         mo_cmd = "mo --saved_model_dir {0} --silent {1} {2} {3} -n {4} -o {5}".format(
             str(pb_file_path),
@@ -84,11 +88,23 @@ def convert_pb_to_xml(pb_file_path, xml_path, precision,
             params_str,
             model_name,
             output_dir)
-
-    p = subprocess.Popen(mo_cmd.split())
-    p.communicate()
-    invalidInputError(not p.returncode,
-                      "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
+        p = subprocess.Popen(mo_cmd.split())
+        p.communicate()
+        if p.returncode != 0:
+            logging_module.warning("ModelOptimizer fails to convert {}, "
+                                   "try to use new frontend.".format(str(pb_file_path)))
+            mo_cmd = "mo --use_new_frontend --saved_model_dir {0} " \
+                     "--silent {1} {2} {3} -n {4} -o {5}".format(
+                str(pb_file_path),
+                not logging,
+                precision_str,
+                params_str,
+                model_name,
+                output_dir)
+            p = subprocess.Popen(mo_cmd.split())
+            p.communicate()
+            invalidInputError(not p.returncode,
+                "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
 
 
 def save(model, xml_path):
