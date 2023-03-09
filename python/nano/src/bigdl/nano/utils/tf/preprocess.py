@@ -44,27 +44,26 @@ def fake_tensor_from_spec(tensor_specs: Union[tf.TensorSpec, Sequence[tf.TensorS
         return [fake_tensor_from_spec(spec) for spec in tensor_specs]
 
 
-def try_compute_output_shape(model: tf.keras.Model,
-                             input_spec: Optional[Union[tf.TensorSpec, Sequence[tf.TensorSpec]]],
-                             try_fake_inference: bool = True):
-    """Try to compute model's output shape."""
-    if hasattr(model, "input_shape"):
+def try_fake_inference(model: tf.keras.Model,
+                       input_spec: Optional[Union[tf.TensorSpec, Sequence[tf.TensorSpec]]]):
+    """Try to fake inference for subclassed model to make sure it can be traced/quantized."""
+    if hasattr(model, "input_shape") or model.built:
         # Sequential and functional API model has
         # `input_shape` and `output_shape` attributes
-        return model.output_shape
+        return
     elif input_spec is not None:
         try:
             input_shape = tensor_spec_to_shape(input_spec)
-            return model.compute_output_shape(input_shape)
+            model.compute_output_shape(input_shape)
+            return
         except Exception as _e:
-            if try_fake_inference:
-                inputs = fake_tensor_from_spec(input_spec)
-                # `inputs` may be a single Tensor or a list of Tensors
-                if isinstance(inputs, list):
-                    _ = model(*inputs)
-                else:
-                    _ = model(inputs)
-            return None
+            pass
+        inputs = fake_tensor_from_spec(input_spec)
+        # `inputs` may be a single Tensor or a list of Tensors
+        if isinstance(inputs, list):
+            _ = model(*inputs)
+        else:
+            _ = model(inputs)
+        return
     else:
-        invalidInputError(False,
-                          "Subclassed model must specify `input_spec` parameter.")
+        invalidInputError(False, "Subclassed model must specify `input_spec` parameter.")
