@@ -33,6 +33,7 @@ def BF16Model(model):
         # save or load operation may fail
         with TemporaryDirectory() as temp_dir:
             model.save(temp_dir)
+            # todo: fix loading custom object
             bf16_model = tf.keras.models.load_model(temp_dir)
     except Exception as _e:
         # if a functional model failed to save or load, try `from_config`
