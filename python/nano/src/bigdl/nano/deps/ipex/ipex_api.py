@@ -157,6 +157,7 @@ def load_ipex_quantization_model(path, model, inplace=False):
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
     return PytorchIPEXQuantizationModel._load(path, model, inplace=inplace)
 
+
 def load_ipex_xpu_model(path, model, inplace=False):
     from .ipex_inference_xpu_model import PytorchIPEXPUModel
     return PytorchIPEXPUModel._load(path, model, inplace=inplace)
