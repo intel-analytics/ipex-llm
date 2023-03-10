@@ -199,7 +199,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
         if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
         if max_steps is not None:
-            epochs = math.ceil(max_steps / len(self.train_loader))
             callbacks.append(MaxstepsCallback(max_step=max_steps))
 
         params = dict(

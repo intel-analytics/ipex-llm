@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from bigdl.orca.learn.pytorch.callbacks import Callback
+import math
 
 
 class MaxstepsCallback(Callback):
@@ -21,6 +22,9 @@ class MaxstepsCallback(Callback):
     def __init__(self, max_step) -> None:
         super().__init__()
         self.max_step = max_step
+
+    def before_run(self, runner):
+        runner.num_epochs = math.ceil(self.max_steps / len(runner.train_loader))
 
     def after_train_iter(self, runner):
         if runner.global_step >= self.max_step:
