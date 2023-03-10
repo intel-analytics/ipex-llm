@@ -32,6 +32,8 @@ ENV TINI_VERSION                        $TINI_VERSION
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV LGBM_NETWORK_MODE_BUILD             ${LGBM_NETWORK_MODE_BUILD}
+ENV LGBM_HOME                           /ppml/LightGBM
+ENV LOCAL_IP                            127.0.0.1
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -68,8 +70,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     apt-get install libssl-dev  && \
-    bash /ppml/make-lgbm.sh && \
-    echo 'alias lightgbm="/ppml/LightGBM/lightgbm"' >> ~/.bashrc
+    bash /ppml/make-lgbm.sh
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars

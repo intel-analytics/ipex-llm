@@ -68,11 +68,30 @@ bash init.sh
 ### 3. Run Spark Machine Learning applications
 
 MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/scripts` and execute one of them like this:
+
 ```bash 
 bash scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
 ```
 
-You can also run your own machine learning application with [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli) like below:
+Or submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
+
+```bash
+bash bigdl-ppml-submit.sh \
+     --name RandomForestClassifierExample \
+     --sgx-enabled false \
+     --master local[2] \
+     --driver-memory 32g \
+     --driver-cores 8 \
+     --executor-memory 32g \
+     --executor-cores 8 \
+     --num-executors 2 \
+     --class org.apache.spark.examples.ml.RandomForestClassifierExample \
+     --verbose \
+     --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
+     local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+```
+
+You can also run your own ML application with PPML CLI as below:
 ```bash 
 export your_applicaiton_jar_path=...
 export your_application_class_path=...
