@@ -32,7 +32,7 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
                                                               thread_num=thread_num,
                                                               enable_onednn=False)
 
-    def forward(*inputs, **kwargs):
+    def forward(self, *inputs, **kwargs):
         inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
         # TODO: transform kwargs
         return self.model(*inputs, **kwargs)
