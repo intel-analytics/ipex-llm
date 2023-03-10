@@ -202,7 +202,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     def combine(pair):
         # list of np array
         if isinstance(pair[1], list):
-            if len(pair[1]) == 1:
+            if len(pair[1]) == 1 or output_cols is None:
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [[Vectors.dense(elem) for elem in pair[1]]]))
             else:
