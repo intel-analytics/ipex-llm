@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from . key_manager import retrieve_data_key_plaintext
+from key_manager import retrieve_data_key_plaintext
 from cryptography.fernet import Fernet
 import os, csv, io
 
