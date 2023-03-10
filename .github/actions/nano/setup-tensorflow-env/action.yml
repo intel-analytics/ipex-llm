@@ -2,7 +2,7 @@ name: 'Setup Nano TensorFlow Env'
 description: 'setup nano tensorflow env'
 
 inputs:
-  python-version: 
+  python-version:
     description: 'python version'
     required: true
   os:
@@ -27,31 +27,41 @@ runs:
       env:
         OS: ${{ inputs.os }}
 
-    - name: Setup Python
+    - name: Setup Python (Ubuntu and Windows)
+      if: ${{ inputs.os != 'centos' }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
 
+    - name: Setup Python (CentOS)
+      if: ${{ inputs.os == 'centos' }}
+      shell: bash
+      run: |
+        $CONDA_HOME/bin/conda remove -n nano-tensorflow -y --all
+        $CONDA_HOME/bin/conda create -n nano-tensorflow -y python==${PYTHON_VERSION}
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+
     - name: Install Nano[tensorflow,inference]
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         if [ $IS_PR = "false" ]; then
-          if [ ! $OS = "windows" ]; then
-            pip install --pre --upgrade bigdl-nano[tensorflow,inference]
-          else   
-            pip install --pre --upgrade bigdl-nano[tensorflow]
-            pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions==0.4.2
-            pip install openvino-dev==2022.3.0 onnxsim==0.4.8
-          fi
+          pip install --pre --upgrade bigdl-nano[tensorflow,inference]
         else
           pip install wheel
           if [ ! $OS = "windows" ]; then
             bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
-          else   
-            bash python/nano/dev/build_and_install.sh windows default false tensorflow
-            pip install onnx==1.12.0 onnxruntime==1.12.1 onnxruntime-extensions==0.4.2
-            pip install openvino-dev==2022.3.0 onnxsim==0.4.8
+          else
+            bash python/nano/dev/build_and_install.sh windows default false tensorflow,inference
           fi
+        fi
+        if [ $OS = "centos" ]; then
+          source bigdl-nano-init
+          echo "export http_proxy=$HTTP_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
+          echo "https_proxy=$HTTPS_PROXY" >> $CONDA_PREFIX/bin/bigdl-nano-init
         fi
       env:
         OS: ${{ inputs.os }}
@@ -60,6 +70,9 @@ runs:
     - name: Install Python Dependencies
       shell: bash
       run: |
+        if [ $OS = "centos" ]; then
+          source $CONDA_HOME/bin/activate nano-tensorflow
+        fi
         # fail to install horovod
         # # required by Horovod test
         # HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
@@ -73,3 +86,5 @@ runs:
 
         # required by NoteBook and Tutorial test
         pip install tensorflow-datasets jinja2 jupyter nbconvert nbmake
+      env:
+        OS: ${{ inputs.os }}

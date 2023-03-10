@@ -434,6 +434,7 @@ class TestChronosModelTCNForecaster(TestCase):
             pass
 
         forecaster.quantize(calib_data=train_data,
+                            metric="mae",
                             framework="openvino")
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
         openvino_yhat = forecaster.predict_with_openvino(test_data[0])
@@ -466,6 +467,7 @@ class TestChronosModelTCNForecaster(TestCase):
             pass
 
         forecaster.quantize(calib_data=train_data,
+                            metric="mae",
                             framework="openvino")
         q_openvino_yhat = forecaster.predict_with_openvino(test_data[0], quantize=True)
         openvino_yhat = forecaster.predict_with_openvino(test_data[0])
@@ -496,6 +498,7 @@ class TestChronosModelTCNForecaster(TestCase):
             pass
 
         forecaster.quantize(calib_data=train_loader,
+                            metric="mse",
                             framework="openvino")
         q_openvino_yhat = forecaster.predict_with_openvino(test_loader, quantize=True)
         openvino_yhat = forecaster.predict_with_openvino(test_loader)
@@ -520,6 +523,7 @@ class TestChronosModelTCNForecaster(TestCase):
             pass
 
         forecaster.quantize(calib_data=train,
+                            metric="mse",
                             framework="openvino")
         q_openvino_yhat = forecaster.predict_with_openvino(test, quantize=True)
         openvino_yhat = forecaster.predict_with_openvino(test)

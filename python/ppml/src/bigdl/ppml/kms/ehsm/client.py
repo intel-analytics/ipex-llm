@@ -16,8 +16,8 @@
 
 import argparse
 import os
-import bigdl.ppml.kms.file_operator as file_operator
-import bigdl.ppml.kms.key_manager as key_manager
+import file_operator
+import key_manager
 
 def generate_primary_key(ip, port):
     key_manager.generate_primary_key_cipher_text(ip, port)

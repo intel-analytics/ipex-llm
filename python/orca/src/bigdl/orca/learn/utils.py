@@ -199,7 +199,6 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
 
 def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     from pyspark.sql import Row
-    from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
 
     def combine(pair):

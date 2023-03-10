@@ -13,33 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pathlib import Path
-import yaml
-from ..core import version as inc_version
-from bigdl.nano.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.common import invalidInputError
-from neural_compressor.model.model import TensorflowModel
-import pickle
 import os
+import pickle
+import yaml
+from pathlib import Path
+from typing import Sequence, Any
+
+from neural_compressor.model.model import TensorflowModel
+
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import convert_all
+from bigdl.nano.tf.model import KerasOptimizedModel
+
+from ..core import version as inc_version
 
 
-class KerasQuantizedModel(AcceleratedKerasModel):
+class KerasQuantizedModel(KerasOptimizedModel):
 
     def __init__(self, model):
-        super().__init__(model)
+        super().__init__()
+        self.model = model
         self._input = model.input_tensor
         self._output = model.output_tensor
         self._sess = model.sess
 
-    def on_forward_start(self, inputs):
-        return self.tensors_to_numpy(inputs)
+    def preprocess(self, inputs: Sequence[Any]):
+        return convert_all(inputs, "numpy")
 
-    def forward_step(self, *inputs):
+    def forward(self, inputs: Sequence[Any]):
         input_dict = dict(zip(self._input, inputs))
-        out = self._sess.run(self._output, feed_dict=input_dict)
-        return out
+        outputs = self._sess.run(self._output, feed_dict=input_dict)
+        return outputs
 
-    def on_forward_end(self, outputs):
+    def postprocess(self, outputs: Sequence[Any]):
+        outputs = convert_all(outputs, "tf")
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs
@@ -47,16 +54,16 @@ class KerasQuantizedModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"attr_path": "inc_saved_model_attr.pkl",
-                       "compile_path": "inc_saved_model_compile.pkl"})
+        status.update({"compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path, compression="fp32"):
+    def _save(self, path, compression="fp32"):
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+
         self.model.save(path)
-        # save normal attrs
-        attrs = {"_output_shape": self._output_shape}
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
-            pickle.dump(attrs, f)
+        self._dump_status(path)
+
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
@@ -77,7 +84,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                         kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
-            with open(Path(path) / self.status['compile_path'], "wb") as f:
+            with open(path / self.status['compile_path'], "wb") as f:
                 pickle.dump(kwargs, f)
 
     @staticmethod
@@ -96,10 +103,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         model = KerasQuantizedModel(qmodel)
-        with open(Path(path) / status['attr_path'], "rb") as f:
-            attrs = pickle.load(f)
-        for attr_name, attr_value in attrs.items():
-            setattr(model, attr_name, attr_value)
+
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)

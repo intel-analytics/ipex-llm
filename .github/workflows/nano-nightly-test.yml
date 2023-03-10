@@ -94,7 +94,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.8"]
 
     steps:
     - uses: actions/checkout@v3
@@ -127,7 +127,51 @@ jobs:
       uses: ./.github/actions/nano/tensorflow-test
       with:
         os: "windows"
-  
+
+  Nano-PyTorch-UT-Test-CentOS:
+    runs-on: [ "Gondolin-centos" ]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Nano PyTorch Env
+      uses: ./.github/actions/nano/setup-pytorch-env
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: "centos"
+    - name: Run Nano PyTorch Test
+      uses: ./.github/actions/nano/pytorch-test
+      with:
+        os: "centos"
+    - name: Remove Nano PyTorch Conda Env
+      uses: ./.github/actions/nano/remove-pytorch-env
+
+  Nano-TensorFlow-UT-Test-CentOS:
+    runs-on: [ "Gondolin-centos" ]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Nano Tensorflow Env
+      uses: ./.github/actions/nano/setup-tensorflow-env
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: "centos"
+    - name: Run Nano Tensorflow Test
+      uses: ./.github/actions/nano/tensorflow-test
+      with:
+        os: "centos"
+    - name: Remove Nano Tensorflow Conda Env
+      uses: ./.github/actions/nano/remove-tensorflow-env
+
   create-workflow-badge:
     runs-on: ubuntu-latest
     steps:
