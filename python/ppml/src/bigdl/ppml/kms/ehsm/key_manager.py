@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from . caller import request_primary_key_cipher_text,request_data_key_cipher_text, request_data_key_plaintext
+from caller import request_primary_key_cipher_text,request_data_key_cipher_text, request_data_key_plaintext
 
 def read_encrypted_key_file(encrypted_key_path):
     with open(encrypted_key_path, 'r') as file:

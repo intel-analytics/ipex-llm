@@ -2,7 +2,7 @@
 status_5_local_spark_basic_sql=1
 status_6_local_spark_arrow=1
 status_7_local_spark_hive=1
-
+export MALLOC_ARENA_MAX=8
 # entry /ppml dir
 cd /ppml
 export PYSPARK_PYTHON=/usr/bin/python

@@ -381,7 +381,7 @@ class TestOpenVINO(TestCase):
                                                        input_sample=dataloader, output_tensors=False)
 
         for x, y in dataloader:
-            model.eval()
             forward_model_tensor = openvino_model(x).numpy()
             forward_model_numpy = test_openvino_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)

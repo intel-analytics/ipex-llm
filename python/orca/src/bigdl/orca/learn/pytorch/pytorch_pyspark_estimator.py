@@ -199,6 +199,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
     def fit(self,
             data: Union['SparkXShards', 'SparkDataFrame', Callable[[Dict, int], 'DataLoader']],
             epochs: int=1,
+            max_steps: Optional[int]=None,
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
@@ -218,6 +219,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
                takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
+        :param max_steps: The max steps to train the model. Default is None.
+         If max_steps > 0, `epochs` would be ignored.
         :param batch_size: Total batch size for all workers used for training. Each worker's batch
                size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
@@ -279,6 +282,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
+        if self.state_dict["epoch"] == 0:
+            self.state_dict = None
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
@@ -294,6 +299,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         params = dict(
             epochs=epochs,
+            max_steps=max_steps,
             batch_size=batch_size,
             profile=profile,
             callbacks=callbacks
@@ -360,7 +366,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             self.state_dict = PyTorchPySparkEstimator._get_state_dict_from_remote(self.model_dir)
             worker_stats = res
         else:
-            self.state_dict = res[0]  # state dicts of all runners would be the same
+            # Only the state_dict of the rank 0 worker would be returned
+            for item in res:
+                if isinstance(item, dict):
+                    self.state_dict = item
+                    break
             # Each runner would return a list of worker stats for different epochs
             worker_stats = [item for item in res if isinstance(item, list)]
 

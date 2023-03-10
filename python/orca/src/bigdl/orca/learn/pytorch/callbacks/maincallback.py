@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from .base import Callback
+import torch
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 
@@ -91,3 +92,18 @@ class MainCallback(Callback):
         Any behavior inconsistent with the default training behavior should be overridden here.
         """
         self.on_iter_forward(runner)
+
+    def on_pred_forward(self, runner):
+        """
+        Called during prediction.
+        Any behavior inconsistent with the default prediction behavior should be overridden here.
+        """
+        output = runner.model(*runner.batch)
+
+        if len(output.size()) > 1:
+            # In case there is extra trailing dimensions.
+            for i in reversed(range(1, len(output.size()))):
+                output = torch.squeeze(output, i)
+
+        # todo support multi-output model
+        runner.output = output.detach().numpy()

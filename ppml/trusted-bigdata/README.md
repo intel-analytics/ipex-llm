@@ -1,10 +1,8 @@
-# Table of Contents
-- [Table of Contents](#table-of-contents)
 - [Gramine Bigdata Toolkit Overview](#gramine-bigdata-toolkit-overview)
   - [Before Running Code](#before-running-code)
     - [1. Build Docker Images](#1-build-docker-images)
       - [1.1 Build Bigdata Base Image](#11-build-bigdata-base-image)
-      - [1.2 Build Customer Image](#12-build-customer-image)
+      - [1.2 Build Custom Image](#12-build-custom-image)
     - [2. Prepare SSL key](#2-prepare-ssl-key)
       - [2.1 Prepare the Key](#21-prepare-the-key)
       - [2.2 Prepare the Password](#22-prepare-the-password)
@@ -81,12 +79,18 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 
 **Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(16G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(8G EPC and log level is error)
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all:2.3.0-SNAPSHOT
+
 `16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
+
+**attention:** If there is `SNAPSHOT` in a image tag, the image is developing continuosly, which means you need to update the image to use the latest feature.
+
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
@@ -99,7 +103,7 @@ Before building your own base image, please modify the paths in `ppml/trusted-bi
 ./build-bigdata-base-image.sh
 ```
 
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
 First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
@@ -148,7 +152,7 @@ mr_signer        : 6f0627955......
 
 #### 3.1 Deploy EHSM KMS&AS
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
 
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
 
@@ -234,7 +238,7 @@ Follow the guide below to run Spark on Kubernetes manually. Alternatively, you c
 ## SGX
 ### Spark Submit
 #### 1 Prepare k8s service account and kubeconfig
-Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
+Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment].
 
 #### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
@@ -266,7 +270,7 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-run `docker exec -it spark-local-k8s-client bash` to entry the container.
+run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 #### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
 
@@ -922,7 +926,7 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 # Flink
 The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
-![flink cluster in application mode](./flink%20cluster%20in%20application%20mode.png)
+![flink cluster in application mode](pictures/flink_cluster_in_application_mode.png)
 ## SGX
 ### 1. Enter the client contianer
 First, use the docker command to enter the client container.
@@ -1021,14 +1025,16 @@ kubectl get deployment | grep "wordcount-example-flink-cluster"
 kubectl get pods | grep "wordcount"
 ```
 
+Jobmanager and taskmanager will start successively. And the log of the program is in taskmanager
+
 ### 4. Flink total process memory
-[Flink memory configuration](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/memory/mem_setup/) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
+[!Flink memory configuration](pictures/jobmanager_memory_allocation.jpg) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
 
 The following uses **the total process memory** to introduce how flink allocates memory.
 
 The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
 
-<img src="./jobmanager%20memory%20allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
+<img src="pictures/taskmanager_memory_allocation.jpg" alt="jobmanager memory" width="1000" height="560">  
 
 **<p align="center">jobmanager memory allocation</p>**
 
@@ -1036,7 +1042,7 @@ The **total process memory** in jobmanager corresponds to the memory (4G) given 
 
 In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
 
-<img src="./taskmanager%20memory%20allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
+<img src="pictures/taskmanager_memory_allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
 
 **<p align="center">taskmanager memory allocation</p>**
 
