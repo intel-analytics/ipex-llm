@@ -31,7 +31,6 @@
 # This file is adapted from
 # https://github.com/ray-project/ray/blob/master/python/ray/util/sgd/torch/torch_runner.py
 
-from unittest import runner
 from filelock import FileLock
 import logging
 import os
@@ -393,7 +392,7 @@ class TorchRunner(BaseRunner):
 
             del self.batch_idx
             del self.metrics_stats
-            if runner.stop:
+            if self.stop:
                 break
 
     def _train_batch(self, batch, callbacks=None):

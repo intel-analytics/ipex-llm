@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from bigdl.orca.learn.pytorch.callbacks import Callback
-from bigdl.dllib.utils.log4Error import invalidInputError
+
 
 class MaxstepsCallback(Callback):
 
@@ -25,4 +25,3 @@ class MaxstepsCallback(Callback):
     def after_train_iter(self, runner):
         if runner.global_step >= self.max_step:
             runner.stop = True
-
