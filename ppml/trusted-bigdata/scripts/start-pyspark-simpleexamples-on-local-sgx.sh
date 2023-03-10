@@ -1,6 +1,7 @@
 #!/bin/bash
 status_3_local_spark_pi=1
 status_4_local_spark_wordcount=1
+export MALLOC_ARENA_MAX=8
 cd /ppml
 
 if [ $status_3_local_spark_pi -ne 0 ]; then
