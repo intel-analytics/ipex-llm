@@ -18,11 +18,13 @@ from bigdl.nano.pytorch.model import AcceleratedLightningModule
 import torch
 import intel_extension_for_pytorch as ipex
 from bigdl.nano.utils.pytorch import apply_data_to_xpu
+from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 
 class PytorchIPEXPUModel(AcceleratedLightningModule):
 
     def __init__(self, model: torch.nn.Module, thread_num=None):
+        super().__init__(model)
         self.model = model.to('xpu')
         self.thread_num = thread_num
         self._nano_context_manager = generate_context_manager(accelerator=None,
@@ -30,18 +32,11 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
                                                               thread_num=thread_num,
                                                               enable_onednn=False)
 
-    def on_forward_start(self, inputs):
-        return inputs
-
-    def forward_step(self, *inputs):
-        # move the data to xpu
+    def forward(*inputs, **kwargs):
         inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
+        # TODO: transform kwargs
+        return self.model(*inputs, **kwargs)
 
-        return self.model(*inputs)
-
-    def on_forward_end(self, outputs):
-        return outputs
-    
     @property
     def status(self):
         status = super().status

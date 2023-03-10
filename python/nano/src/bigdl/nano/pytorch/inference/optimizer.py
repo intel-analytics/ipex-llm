@@ -1019,6 +1019,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               weights_prepack: Optional[bool] = None,
               enable_onednn: bool = True,
               output_tensors: bool = True,
+              strict_check: bool = True,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -1093,6 +1094,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
+        :param strict_check: some checking in ``trace`` is non-trivial while not critical for the
+                             optimization (e.g., if the model is a nn.Module or its subclass). This
+                             param helps to eliminate the not critical checking, which may enable
+                             more models to be optimized while may bring some strange error
+                             message. Default to True.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -1107,11 +1113,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          For more details about model optimizer, you can see mo --help .
         :return: Model with different acceleration.
         """
-        invalidInputError(
-            isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
-            "Expect a nn.Module instance that is not traced or quantized"
-            "but got type {}".format(type(model))
-        )
+        if strict_check:
+            invalidInputError(
+                isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
+                "Expect a nn.Module instance that is not traced or quantized"
+                "but got type {}".format(type(model))
+            )
         # device name might be: CPU, GPU, GPU.0 ...
         invalidInputError(device == 'CPU' or 'GPU' in device,
                           "Now we only support fp32 for CPU and GPU, not {}".format(device))
@@ -1123,7 +1130,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
                               "is openvino or None.".format(device))
-        model.eval()  # change model to eval mode
+        try:
+            model.eval()  # change model to eval mode
+        except Exception:
+            pass
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:
