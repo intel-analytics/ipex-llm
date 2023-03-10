@@ -225,10 +225,6 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 structType = FloatType()
                 for _ in range(dim):
                     structType = ArrayType(structType)
-                row_values = [pair[0][col] for col in pair[0].__fields__]
-                for value in pair[1]:
-                    row_values.append(value.tolist())
-                row = Row(*row_values)
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
         return row
 
