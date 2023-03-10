@@ -152,26 +152,31 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
     return result
 
 
+def get_length(input):
+    if isinstance(input, (list, tuple)):
+        return get_length(input[0])
+    elif isinstance(input, dict):
+        return get_length(list(input.values())[0])
+    else:
+        return input.shape[0]
+
+
+def filter_elem(input, i):
+    if isinstance(input, (list, tuple)):
+        return [filter_elem(elem, i) for elem in input]
+    elif isinstance(input, dict):
+        return {k: filter_elem(v, i) for k, v in input.items()}
+    else:
+        return input[i]
+
+
 def convert_predict_xshards_to_dataframe(df, pred_shards):
     def flatten(data):
         data = data["prediction"]
-        is_list = isinstance(data, list)
-        is_tuple = isinstance(data, tuple)
-        if is_list or is_tuple:
-            length = data[0].shape[0]
-            ls_data = data
-        else:
-            length = data.shape[0]
-            ls_data = [data]
+        length = get_length(data)
 
         for i in range(length):
-            row = [elem[i] for elem in ls_data]
-            if is_list:
-                yield row
-            elif is_tuple:
-                yield tuple(row)
-            else:
-                yield row[0]
+            yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
     result = convert_predict_rdd_to_dataframe(df, pred_rdd)
@@ -180,31 +185,31 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
 
 def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.sql import Row
-    from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
 
-    def combine(pair):
+    def convert_elem(elem):
         # list of np array
-        if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
-        # scalar
-        elif len(pair[1].shape) == 0:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
+        if isinstance(elem, (list, tuple)):
+            return [convert_elem(i) for i in elem]
+        # dict of np array as values
+        elif isinstance(elem, dict):
+            return {k: convert_elem(v) for k, v in elem.items()}
+        # scalar in basic type
+        elif not isinstance(elem, np.ndarray) and len(elem.shape) == 0:
+            return float(elem.item(0))
         # np ndarray
         else:
-            dim = len(pair[1].shape)
-            if dim == 1:
+            dim = len(elem.shape)
+            if dim in [0, 1]:
                 # np 1-D array
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                            [Vectors.dense(pair[1])]))
+                return Vectors.dense(elem)
             else:
                 # multi-dimensional array
-                structType = FloatType()
-                for _ in range(dim):
-                    structType = ArrayType(structType)
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
-        return row
+                return elem.tolist()
+
+    def combine(pair):
+        return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                     [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
