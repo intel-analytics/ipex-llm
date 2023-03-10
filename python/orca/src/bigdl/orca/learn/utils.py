@@ -156,7 +156,10 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
     def flatten(data):
         keys = [key for key in data.keys()]
         if len(keys) == 1:
-            data = data["prediction"]
+            if output_cols is None:
+                data = data["prediction"]
+            else:
+                data = [data[key] for key in keys]
             sub_data = data
         else:
             data = [data[key] for key in keys]
@@ -202,13 +205,19 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     def combine(pair):
         # list of np array
         if isinstance(pair[1], list):
-            if len(pair[1]) == 1 or output_cols is None:
+            if len(pair[1]) == 1:
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [[Vectors.dense(elem) for elem in pair[1]]]))
             else:
                 row_values = [pair[0][col] for col in pair[0].__fields__]
                 for elem in pair[1]:
-                    row_values.append([Vectors.dense(elem)])
+                    if len(elem.shape) == 1:
+                        row_values.append(Vectors.dense(elem))
+                    else:
+                        structType = FloatType()
+                        for _ in range(len(elem.shape)):
+                            structType = ArrayType(structType)
+                        row_values.append(elem.tolist())
                 row = Row(*row_values)
         # scalar
         elif len(pair[1].shape) == 0:
