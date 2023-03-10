@@ -18,10 +18,10 @@ runs:
         # install tensorflow 2.3.0 will upgrade protobuf, need to downgrade manually
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.19.5
         # mxnet does not support numpy 1.24 'typeDict' deprecations, downgrade manually
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} numpy==1.19.5
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} numpy==1.21.6
         
         # build horovod
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake mxnet
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cmake mxnet==1.6.0
         HOROVOD_WITH_TENSORFLOW=1
         HOROVOD_WITH_GLOO=1
         pip install --no-cache-dir horovod==0.19.2
