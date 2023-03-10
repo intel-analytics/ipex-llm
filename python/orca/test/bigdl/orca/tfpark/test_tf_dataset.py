@@ -325,7 +325,7 @@ class TestTFDataset(ZooTestCase):
         dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(102, 28, 28, 1),
                                                       np.random.randint(0, 10, size=(102,)),
                                                       np.ones(shape=(102, 28, 28, 1),
-                                                              dtype=np.bool)))
+                                                              dtype=bool)))
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_size=16)
 
         feature, labels, mask = dataset.tensors
@@ -401,7 +401,7 @@ class TestTFDataset(ZooTestCase):
     def test_tfdataset_with_dataframe(self):
 
         rdd = self.sc.range(0, 1000)
-        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float32)),
                                 x % 10)).toDF(["feature", "label"])
         train_df, val_df = df.randomSplit([0.7, 0.3])
 
