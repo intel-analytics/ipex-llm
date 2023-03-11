@@ -52,7 +52,7 @@ class TrainingUtils:
         Override tf.keras.Model.fit to add more parameters.
 
         All arguments that already exists in tf.keras.Model.fit has the same sementics with
-        tf.keras.Model.fit.
+        tf.keras.Model.fit(https://www.tensorflow.org/api_docs/python/tf/keras/Model#fit).
 
         Additional parameters:
 
