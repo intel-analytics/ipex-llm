@@ -178,7 +178,7 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
             else:
                 ls_data = []
                 for i in range(len(data)):
-                    ls_data.append(data[i])
+                    ls_data.append(data[i].tolist())
 
         for i in range(length):
             row = [elem[i] for elem in ls_data]
@@ -206,21 +206,21 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
         # list
         if isinstance(pair[1], list):
             # list of np array
-            if len(pair[1]) == 1 and output_cols is None:
+            if len(pair[1]) == 1 or not isinstance(pair[1][0], list):
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [[Vectors.dense(elem) for elem in pair[1]]]))
             else:
                 row_values = [pair[0][col] for col in pair[0].__fields__]
                 for elem in pair[1]:
                     # single-dimensional np array
-                    if len(elem.shape) <= 1:
+                    if not isinstance(elem[0], list):
                         row_values.extend([[Vectors.dense(elem)]])
                     else:
                         # multi-dimension np array
                         structType = FloatType()
-                        for _ in range(len(elem.shape)):
+                        for _ in range(len(elem)):
                             structType = ArrayType(structType)
-                        row_values.extend([elem.tolist()])
+                        row_values.extend([[elem]])
                 row = Row(*row_values)
         # scalar
         elif len(pair[1].shape) == 0:
