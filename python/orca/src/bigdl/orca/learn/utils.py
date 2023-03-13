@@ -211,13 +211,13 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
             else:
                 row_values = [pair[0][col] for col in pair[0].__fields__]
                 for elem in pair[1]:
-                    if len(elem.shape) == 1:
-                        row_values.append(Vectors.dense(elem))
-                    else:
+                    if isinstance(elem[0], list):
                         structType = FloatType()
                         for _ in range(len(elem.shape)):
                             structType = ArrayType(structType)
-                        row_values.append(elem.tolist())
+                        row_values.append(elem)
+                    else:
+                        row_values.append(Vectors.dense(elem))
                 row = Row(*row_values)
         # scalar
         elif len(pair[1].shape) == 0:
