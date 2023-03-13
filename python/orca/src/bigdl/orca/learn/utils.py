@@ -203,20 +203,24 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     from pyspark.ml.linalg import Vectors
 
     def combine(pair):
-        # list of np array
+        # list
         if isinstance(pair[1], list):
+            # list of np array
             if len(pair[1]) == 1:
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [[Vectors.dense(elem) for elem in pair[1]]]))
             else:
+                # list of list
                 row_values = [pair[0][col] for col in pair[0].__fields__]
                 for elem in pair[1]:
+                    # multi-dimention list
                     if isinstance(elem[0], list):
                         structType = FloatType()
                         for _ in range(len(elem.shape)):
                             structType = ArrayType(structType)
                         row_values.append(elem)
                     else:
+                        # single-dimention list
                         row_values.append(Vectors.dense(elem))
                 row = Row(*row_values)
         # scalar
