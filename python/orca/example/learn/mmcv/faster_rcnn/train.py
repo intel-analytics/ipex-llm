@@ -88,15 +88,20 @@ def download_dataset(data_save_dir):
     import urllib.request
     import zipfile
 
-    # download and unzip dataset
-    url = "https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip"
     if not osp.exists(data_save_dir):
         os.mkdir(data_save_dir)
-    data_save_path = osp.join(data_save_dir, "kitti_tiny.zip")
-    urllib.request.urlretrieve(url, data_save_path)
 
-    with zipfile.ZipFile(data_save_path, 'r') as zip_ref:
-        zip_ref.extractall(data_save_dir)
+    dataset_root = os.path.join(data_save_dir, "kitti_tiny")
+    if not osp.exists(dataset_root):
+        data_save_path = osp.join(data_save_dir, "kitti_tiny.zip")
+        if not osp.exists(data_save_path):
+            # download and unzip dataset
+            url = "https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip"
+            print("start downloading dataset from " + url)
+            urllib.request.urlretrieve(url, data_save_path)
+        print("start unzipping dataset...")
+        with zipfile.ZipFile(data_save_path, 'r') as zip_ref:
+            zip_ref.extractall(data_save_dir)
 
 
 def mmcv_runner_creator(cfg):
