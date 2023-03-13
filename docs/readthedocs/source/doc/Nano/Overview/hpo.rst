@@ -25,7 +25,7 @@ Next, install a few dependencies required for Nano HPO using below commands.
 Search Spaces
 =============
 
-Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in ``bigdl.nano.automl.hpo.space``. Refer to `Search Space API doc <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/hpo_api.html#search-space>`_ for more details.
+Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in ``bigdl.nano.automl.hpo.space``. Refer to `Search Space API doc <../../../PythonAPI/Nano/hpo_api.html#search-space>`_ for more details.
 
 
 
