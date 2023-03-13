@@ -64,6 +64,7 @@ class KerasOpenVINOModel(KerasOptimizedModel):
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
                 self._mode = "arg"
+                self._arg_names = []
                 if isinstance(input_spec, dict):
                     self._arg_names = list(input_spec.keys())
                     input_spec = [input_spec[name] for name in self._arg_names]
