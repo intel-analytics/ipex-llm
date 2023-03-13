@@ -129,9 +129,10 @@ class BF16Model(AcceleratedLightningModule):
                 self.channels_last_available = generate_channels_last_available(inputs)
 
             # change the data to suitable mem format
-            inputs = tuple(map(lambda item: apply_proper_channels_last(
-                self.channels_last_available[item[0]], item[1]),
-                enumerate(inputs)))
+            inputs = tuple(map(
+                lambda idx: apply_proper_channels_last(
+                    self.channels_last_available[idx], inputs[idx]),
+                range(min(len(self.channels_last_available), len(inputs)))))
 
         return self.model(*inputs)
 
