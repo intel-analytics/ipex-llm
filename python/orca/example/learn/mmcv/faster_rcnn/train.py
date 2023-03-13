@@ -84,26 +84,6 @@ class KittiTinyDataset(CustomDataset):
         return data_infos
 
 
-def download_dataset(data_save_dir):
-    import urllib.request
-    import zipfile
-
-    if not osp.exists(data_save_dir):
-        os.mkdir(data_save_dir)
-
-    dataset_root = os.path.join(data_save_dir, "kitti_tiny")
-    if not osp.exists(dataset_root):
-        data_save_path = osp.join(data_save_dir, "kitti_tiny.zip")
-        if not osp.exists(data_save_path):
-            # download and unzip dataset
-            url = "https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip"
-            print("start downloading dataset from " + url)
-            urllib.request.urlretrieve(url, data_save_path)
-        print("start unzipping dataset...")
-        with zipfile.ZipFile(data_save_path, 'r') as zip_ref:
-            zip_ref.extractall(data_save_dir)
-
-
 def mmcv_runner_creator(cfg):
     from mmdet.datasets.builder import DATASETS
     from mmdet.models import build_detector
@@ -113,7 +93,6 @@ def mmcv_runner_creator(cfg):
                              Fp16OptimizerHook, OptimizerHook, build_runner)
 
     DATASETS.register_module(KittiTinyDataset)
-    download_dataset(data_save_dir=cfg.data_save_dir)
     model = build_detector(cfg.model)
 
     cfg = compat_cfg(cfg)
@@ -225,9 +204,9 @@ def dataloader_creator(cfg):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Example')
+    parser.add_argument('--dataset', type=str, help='path to dataset')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn-client, yarn-cluster')
-    parser.add_argument('--data_save_dir', type=str, default="/tmp/data", help='The path to save dataset')
     parser.add_argument('--config', type=str, help='The path of config file')
     parser.add_argument("--cores", type=int, default=8,
                         help="The number of cores on each node.")
@@ -253,24 +232,23 @@ def main():
     cfg = Config.fromfile(args.config)
     cfg.distributed = True
     cfg.validate = args.validate
-    cfg.data_save_dir = args.data_save_dir
 
     # Modify dataset type and path
     cfg.dataset_type = 'KittiTinyDataset'
-    cfg.data_root = str(osp.join(cfg.data_save_dir, "kitti_tiny/"))
+    cfg.data_root = args.dataset
 
     cfg.data.test.type = 'KittiTinyDataset'
-    cfg.data.test.data_root = cfg.data_root
+    cfg.data.test.data_root = args.dataset
     cfg.data.test.ann_file = 'train.txt'
     cfg.data.test.img_prefix = 'training/image_2'
 
     cfg.data.train.type = 'KittiTinyDataset'
-    cfg.data.train.data_root = cfg.data_root
+    cfg.data.train.data_root = args.dataset
     cfg.data.train.ann_file = 'train.txt'
     cfg.data.train.img_prefix = 'training/image_2'
 
     cfg.data.val.type = 'KittiTinyDataset'
-    cfg.data.val.data_root = cfg.data_root
+    cfg.data.val.data_root = args.dataset
     cfg.data.val.ann_file = 'val.txt'
     cfg.data.val.img_prefix = 'training/image_2'
 

@@ -2,7 +2,7 @@
 
 ## Prepare the dataset
 
-This training example use the [kitti_tiny](https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip) dataset, you don't need to download the dataset, this example will automatically download the dataset before training. The default data saving path is `/tmp/data/`.
+This training example use the kitti_tiny dataset, you can download it from [here](https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip) and unzip the dataset.
 
 ## Prepare the environment
 
@@ -44,7 +44,7 @@ wget https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50
 - spark local mode
 
 ```bash
-python train.py  --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from $MMDET_PATH/checkpoints/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
+python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from $MMDET_PATH/checkpoints/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 ```
 
 `$MMDET_PATH`: your mmdetection repo local path.
@@ -165,6 +165,6 @@ Stopping orca context
 If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, then execute
 
 ```bash
-python train.py  --cluster_mode yarn-client --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from hdfs://ip:port/your/hdfs/path/to/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
+python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --cluster_mode yarn-client --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from hdfs://ip:port/your/hdfs/path/to/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 ```
 
