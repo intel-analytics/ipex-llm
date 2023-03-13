@@ -150,6 +150,8 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         config = status.get('config', {})
         if "CPU_THREADS_NUM" in config:
             thread_num = int(config["CPU_THREADS_NUM"])
+        elif "INFERENCE_NUM_THREADS" in config:
+            thread_num = int(config["INFERENCE_NUM_THREADS"])
         if device is None:
             device = status.get('device', 'CPU')
         model = KerasOpenVINOModel(xml_path,
