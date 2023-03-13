@@ -322,7 +322,7 @@ def train_loader_creator(config, batch_size):
         data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=None)
 
     def custom_collate(data):  # (2)
-        data2 = data_collator(data)
+        data2 = data_collator(data).data
         target = data2['labels']
         return data2, target
 
@@ -419,7 +419,7 @@ def eval_loader_creator(config, batch_size):
         data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=None)
 
     def custom_collate(data):  # (2)
-        data2 = data_collator(data)
+        data2 = data_collator(data).data
         target = data2['labels']
         return data2, target
 
@@ -801,7 +801,7 @@ def main():
     def custom_collate(data):  # (2)
         data2 = data_collator(data)
         target = data2['labels']
-        data2.pop('labels')
+        # data2.pop('labels')
         return data2, target
 
     train_dataloader = DataLoader(
@@ -898,7 +898,7 @@ def main():
                                             step_frequency=checkpointing_steps,
                                             resume_training=args.resume_from_checkpoint is not None)
             )
-    stats = est.fit(data=eval_loader_creator,
+    stats = est.fit(data=train_loader_creator,
             epochs=args.num_train_epochs,
             batch_size=total_batch_size,
             validation_data=eval_loader_creator,
