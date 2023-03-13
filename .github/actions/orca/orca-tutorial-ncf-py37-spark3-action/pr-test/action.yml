@@ -9,7 +9,7 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
 
-        bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
         unset SPARK_HOME
         
         # install dlib
