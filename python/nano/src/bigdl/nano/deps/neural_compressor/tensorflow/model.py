@@ -17,7 +17,7 @@ import os
 import pickle
 import yaml
 from pathlib import Path
-from typing import Sequence, Any
+from typing import Sequence, Any, Union, Dict
 
 from neural_compressor.model.model import TensorflowModel
 
@@ -37,10 +37,10 @@ class KerasQuantizedModel(KerasOptimizedModel):
         self._output = model.output_tensor
         self._sess = model.sess
 
-    def preprocess(self, inputs: Sequence[Any]):
-        return convert_all(inputs, "numpy")
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
+        return convert_all(args, "numpy")
 
-    def forward(self, inputs: Sequence[Any]):
+    def forward(self, inputs: Union[Sequence[Any], Dict[str, Any]]):
         input_dict = dict(zip(self._input, inputs))
         outputs = self._sess.run(self._output, feed_dict=input_dict)
         return outputs
