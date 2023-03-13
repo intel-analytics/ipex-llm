@@ -71,9 +71,15 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         with TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
+                # cope with dynamic axes for GPU
                 if device != 'CPU':
-                    # workaround for dynamic shape issue on GPU/VPU plugin
-                    dynamic_axes = False
+                    if dynamic_axes is True or (isinstance(dynamic_axes, dict) and  # type: ignore
+                                                len(dynamic_axes) > 0):
+                        invalidInputError("input_shape" in kwargs,
+                                          "For model has dynamic axes, if you want to inference on "
+                                          "non-CPU device, must define input_shape for model "
+                                          "optimizer. For more details about model optimizer, you can "
+                                          "see mo --help .")
                 export(model, input_sample, str(tmpdir / 'tmp.xml'),
                        precision=precision, dynamic_axes=dynamic_axes,
                        logging=logging, **kwargs)
