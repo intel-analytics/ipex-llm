@@ -347,7 +347,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-horovod-pytorch-py37
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-exampletest-horovod-pytorch-py37-spark3-action/nightly-test
     - name: Remove Env
@@ -376,7 +376,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-horovod-pytorch-py38
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-exampletest-horovod-pytorch-py38-spark3-action/nightly-test
     - name: Remove Env
@@ -405,7 +405,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py37
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-exampletest-horovod-tf2-py37-spark3-action/nightly-test
     - name: Remove Env
@@ -434,7 +434,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-horovod-tf2-py38
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-exampletest-horovod-tf2-py38-spark3-action/nightly-test
     - name: Remove Env
