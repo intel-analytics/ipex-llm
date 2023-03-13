@@ -64,6 +64,15 @@ class MyModelCannotComputeOutputShape(tf.keras.Model):
         """
         raise NotImplementedError()
 
+
+def ModelWithConv2DTranspose():
+    inputs = layers.Input(shape=(32, 32, 3))
+    x = layers.Conv2D(64, (3, 3), strides=(2, 2), padding="same")(inputs)
+    outputs = layers.Conv2DTranspose(3, (3, 3), strides=(2, 2), padding="same")(x)
+    model = Model(inputs=inputs, outputs=outputs)
+    return model
+
+
 class TestTraceAndQuantize(TestCase):
     def test_attribute_access_after_trace(self):
         x = 100
@@ -284,6 +293,18 @@ class TestTraceAndQuantize(TestCase):
         if _avx512_checker():
             output = load_model(x)
             assert output.dtype == tf.bfloat16
+
+        # test model with ModelWithConv2DTranspose layer, such model
+        # cannot be saved after modifying dtype policy
+        model = ModelWithConv2DTranspose()
+        bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        inputs = tf.random.normal((1, 32, 32, 3))
+        if _avx512_checker():
+            output1 = model(inputs)
+            output2 = bf16_model(inputs)
+            assert output1.dtype == tf.float32
+            assert output2.dtype == tf.bfloat16
+            np.testing.assert_allclose(output1, tf.cast(output2, tf.float32), atol=1e-2)
 
     def test_model_cannot_compute_output_shape(self):
         model = MyModelCannotComputeOutputShape()
