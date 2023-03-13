@@ -6,6 +6,8 @@ spec:
     securityContext:
       privileged: true
     env:
+      - name: MALLOC_ARENA_MAX
+        value: ${MALLOC_ARENA_MAX}
       - name: ATTESTATION
         value: false
       # - name: ATTESTATION_URL

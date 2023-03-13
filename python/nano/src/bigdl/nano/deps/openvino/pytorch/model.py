@@ -175,7 +175,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                       device=self.ov_model._device,
                       thread_num=thread_num,
                       precision='int8',
-                      config=config)
+                      config=config,
+                      output_tensors=self.output_tensors)
         return self
 
     def _save_model(self, path, compression="fp32"):

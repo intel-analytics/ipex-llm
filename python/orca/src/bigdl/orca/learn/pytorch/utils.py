@@ -289,7 +289,7 @@ def get_batchsize(input):
     elif isinstance(input, dict):
         return get_batchsize(list(input.values())[0])
     else:
-        return input.size(0)
+        return input.shape[0]
 
 
 def process_stats(worker_stats):
@@ -297,6 +297,10 @@ def process_stats(worker_stats):
         "num_samples": sum(
             stats.pop("num_samples", np.nan) for stats in worker_stats)
     }
+
+    if "val_num_samples" in worker_stats[0]:
+        stats["val_num_samples"] = sum(
+            stats.pop("val_num_samples", np.nan) for stats in worker_stats)
 
     stats = mean_reduce_stats(worker_stats, stats)
 

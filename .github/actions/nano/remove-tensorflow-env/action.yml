@@ -7,4 +7,4 @@ runs:
     - name: Remove Conda Env
       shell: bash
       run: |
-        $CONDA/bin/conda remove -n nano-tensorflow -y --all
+        $CONDA_HOME/bin/conda remove -n nano-tensorflow -y --all

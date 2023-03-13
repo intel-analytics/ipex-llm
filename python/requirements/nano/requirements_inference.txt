@@ -5,7 +5,6 @@
 # Actrual installation logic will follow setup.py
 
 
-onnx==1.12.0
 onnxruntime==1.12.1
 onnxruntime-extensions==0.4.2
 openvino-dev==2022.3.0
