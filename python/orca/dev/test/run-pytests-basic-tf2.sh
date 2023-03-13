@@ -28,10 +28,5 @@ export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 
 echo "Running Orca Basic Tf2 Test"
-# TODO: remove the for loop, this is just for a test
-for i in {1..10}; do
-    echo "Testing Round $i:"
-    python -m pytest -v test/bigdl/orca/learn/test_tf2_basic.py
-done
 python -m pytest -v test/bigdl/orca/test_import.py::TestImport::test_tf2_import
-# python -m pytest -v test/bigdl/orca/learn/test_tf2_basic.py
+python -m pytest -v test/bigdl/orca/learn/test_tf2_basic.py
