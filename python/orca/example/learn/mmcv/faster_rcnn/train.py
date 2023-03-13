@@ -15,6 +15,8 @@
 #
 
 import argparse
+import os
+
 import numpy as np
 import os.path as osp
 
@@ -82,15 +84,31 @@ class KittiTinyDataset(CustomDataset):
         return data_infos
 
 
+def download_dataset(data_save_dir):
+    import urllib.request
+    import zipfile
+
+    # download and unzip dataset
+    url = "https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip"
+    if not osp.exists(data_save_dir):
+        os.mkdir(data_save_dir)
+    data_save_path = osp.join(data_save_dir, "kitti_tiny.zip")
+    urllib.request.urlretrieve(url, data_save_path)
+
+    with zipfile.ZipFile(data_save_path, 'r') as zip_ref:
+        zip_ref.extractall(data_save_dir)
+
+
 def mmcv_runner_creator(cfg):
     from mmdet.datasets.builder import DATASETS
     from mmdet.models import build_detector
-    from mmdet.utils import (compat_cfg,find_latest_checkpoint, get_root_logger)
+    from mmdet.utils import (compat_cfg, find_latest_checkpoint, get_root_logger)
     from mmdet.core import DistEvalHook, EvalHook, build_optimizer
     from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner,
                              Fp16OptimizerHook, OptimizerHook, build_runner)
 
     DATASETS.register_module(KittiTinyDataset)
+    download_dataset(data_save_dir=cfg.data_save_dir)
     model = build_detector(cfg.model)
 
     cfg = compat_cfg(cfg)
@@ -204,7 +222,7 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch Example')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn-client, yarn-cluster')
-    parser.add_argument('--data', type=str, help='The path of dataset')
+    parser.add_argument('--data_save_dir', type=str, default="/tmp/data", help='The path to save dataset')
     parser.add_argument('--config', type=str, help='The path of config file')
     parser.add_argument("--cores", type=int, default=8,
                         help="The number of cores on each node.")
@@ -221,36 +239,33 @@ def main():
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.cores, memory="10g")
     elif args.cluster_mode.startswith("yarn"):
-        if args.cluster_mode == "yarn-client":
-            init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g", num_nodes=args.num_nodes,
-                              driver_cores=4, driver_memory="2g")
-        elif args.cluster_mode == "yarn-cluster":
-            init_orca_context(cluster_mode="yarn-cluster", cores=args.cores, memory="4g", num_nodes=args.num_nodes,
-                              driver_cores=4, driver_memory="2g")
+        init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g", num_nodes=args.num_nodes,
+                          driver_cores=4, driver_memory="2g")
     else:
         print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
-              "'yarn-cluster',  but got" + args.cluster_mode)
+              "but got" + args.cluster_mode)
 
     cfg = Config.fromfile(args.config)
     cfg.distributed = True
     cfg.validate = args.validate
+    cfg.data_save_dir = args.data_save_dir
 
     # Modify dataset type and path
     cfg.dataset_type = 'KittiTinyDataset'
-    cfg.data_root = args.data
+    cfg.data_root = str(osp.join(cfg.data_save_dir, "kitti_tiny/"))
 
     cfg.data.test.type = 'KittiTinyDataset'
-    cfg.data.test.data_root = args.data
+    cfg.data.test.data_root = cfg.data_root
     cfg.data.test.ann_file = 'train.txt'
     cfg.data.test.img_prefix = 'training/image_2'
 
     cfg.data.train.type = 'KittiTinyDataset'
-    cfg.data.train.data_root = args.data
+    cfg.data.train.data_root = cfg.data_root
     cfg.data.train.ann_file = 'train.txt'
     cfg.data.train.img_prefix = 'training/image_2'
 
     cfg.data.val.type = 'KittiTinyDataset'
-    cfg.data.val.data_root = args.data
+    cfg.data.val.data_root = cfg.data_root
     cfg.data.val.ann_file = 'val.txt'
     cfg.data.val.img_prefix = 'training/image_2'
 
