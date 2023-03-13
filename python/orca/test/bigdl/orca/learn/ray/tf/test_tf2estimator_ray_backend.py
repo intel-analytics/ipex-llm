@@ -945,6 +945,27 @@ class TestTF2EstimatorRayBackend(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_string_input(self):
+
+        def model_creator(config):
+            vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
+                max_tokens=10, output_mode='int', output_sequence_length=4,
+                vocabulary=["foo", "bar", "baz"])
+            model = tf.keras.models.Sequential()
+            model.add(tf.keras.Input(shape=(1,), dtype=tf.string))
+            model.add(vectorize_layer)
+            return model
+
+        from pyspark.sql.types import StructType, StructField, StringType
+        spark = OrcaContext.get_spark_session()
+        schema = StructType([StructField("input", StringType(), True)])
+        input_data = [["foo qux bar"], ["qux baz"]]
+        input_df = spark.createDataFrame(input_data, schema)
+        estimator = Estimator.from_keras(model_creator=model_creator)
+        output_df = estimator.predict(input_df, batch_size=1, feature_cols=["input"])
+        output = output_df.collect()
+        print(output)
+
     def test_array_string_input(self):
 
         def model_creator(config):
