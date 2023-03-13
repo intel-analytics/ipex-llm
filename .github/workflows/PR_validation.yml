@@ -554,7 +554,7 @@ jobs:
       uses: ./.github/actions/orca/orca-exampletest-ray-py38-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
-      uses: ./.github/actions/remove-env
+      uses: ./.github/actions/remove-env/remove-env-py38
 
   PPML-Python-UT-Spark3:
     needs: changes
