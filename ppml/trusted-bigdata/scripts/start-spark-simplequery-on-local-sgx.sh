@@ -11,7 +11,7 @@ export sgx_command="/opt/jdk8/bin/java \
         --conf spark.network.timeout=10000000 \
         --conf spark.executor.heartbeatInterval=10000000 \
         --verbose \
-        local:///ppml/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \ \
         --inputPath /ppml/data/test_path_do_not_change/simplequery/people.csv \
         --outputPath /ppml/data/test_path_do_not_change/simplequery/output \
         --inputPartitionNum 8 \

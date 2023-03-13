@@ -24,10 +24,10 @@ import os
 import stat
 
 long_description = '''
-BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines 
+BigDL Nano automatically accelerates TensorFlow and PyTorch pipelines
 by applying modern CPU optimizations.
 
-See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html) 
+See [here](https://bigdl.readthedocs.io/en/latest/doc/Nano/Overview/nano.html)
 for more information.
 '''
 
@@ -39,8 +39,8 @@ VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip
 
 
 lib_urls = [
-    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.2.3/libjemalloc.so",
-    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.2.3/libjemalloc.dylib",
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
+    "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.dylib",
     "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
     "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
 ]
@@ -74,43 +74,48 @@ def download_libs(url: str):
 
 def setup_package():
 
-    # all intel-tensorflow is only avaliable for linux now
+    # all intel-tensorflow is only avaliable for linux and windows now
     tensorflow_27_requires = ["intel-tensorflow==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.7.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.7.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-    
+                              platform_system=='Darwin'"]
+
     tensorflow_28_requires = ["intel-tensorflow==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.8.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.8.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-    
+                              platform_system=='Darwin'"]
+
     tensorflow_29_requires = ["intel-tensorflow==2.9.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                               platform_system!='Darwin'",
                               "tensorflow==2.9.0; platform_machine=='x86_64' and \
-                              platform_system=='Darwin'",
-                              "keras==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                              "tensorflow-estimator==2.9.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-    
+                              platform_system=='Darwin'"]
+
     tensorflow_210_requires = ["intel-tensorflow==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                                platform_system!='Darwin'",
                                "tensorflow==2.10.0; platform_machine=='x86_64' and \
-                               platform_system=='Darwin'",
-                               "keras==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')",
-                               "tensorflow-estimator==2.10.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
-    
+                               platform_system=='Darwin'"]
+
+    # options for stock tensorflow
+    stock_tensorflow_27_requires = ["tensorflow==2.7.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+
+    stock_tensorflow_28_requires = ["tensorflow==2.8.4; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+
+    stock_tensorflow_29_requires = ["tensorflow==2.9.3; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+
+    stock_tensorflow_210_requires = ["tensorflow==2.10.1; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
+
     tensorflow_common_requires = ["tf2onnx==1.13.0; (platform_machine=='x86_64' or platform_machine == 'AMD64')"]
 
-    # default pytorch_dep
+    # default tensorflow_dep
     tensorflow_requires = tensorflow_29_requires + tensorflow_common_requires
     tensorflow_210_requires += tensorflow_common_requires
     tensorflow_29_requires += tensorflow_common_requires
     tensorflow_28_requires += tensorflow_common_requires
     tensorflow_27_requires += tensorflow_common_requires
+    stock_tensorflow_27_requires += tensorflow_common_requires
+    stock_tensorflow_28_requires += tensorflow_common_requires
+    stock_tensorflow_29_requires += tensorflow_common_requires
+    stock_tensorflow_210_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
     pytorch_113_requires = ["torch==1.13.1",
@@ -138,7 +143,7 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==3.3.2"]
+                               "cryptography==39.0.1"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
@@ -154,7 +159,7 @@ def setup_package():
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
-                          "neural-compressor==2.0",
+                          "neural-compressor==2.0; platform_system!='Windows'",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'"]
@@ -165,6 +170,7 @@ def setup_package():
                         "py-cpuinfo",
                         "pyyaml",
                         "packaging",
+                        "sigfig",
                         "setuptools<66"]
 
     package_data = [
@@ -196,6 +202,10 @@ def setup_package():
                         "tensorflow_28": tensorflow_28_requires,
                         "tensorflow_29": tensorflow_29_requires,
                         "tensorflow_210": tensorflow_210_requires,
+                        "stock_tensorflow_27": stock_tensorflow_27_requires,
+                        "stock_tensorflow_28": stock_tensorflow_28_requires,
+                        "stock_tensorflow_29": stock_tensorflow_29_requires,
+                        "stock_tensorflow_210": stock_tensorflow_210_requires,
                         "pytorch": pytorch_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,

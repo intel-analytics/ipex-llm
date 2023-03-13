@@ -18,6 +18,7 @@
 from logging import warning
 import torch
 import os
+from contextlib import redirect_stdout
 from bigdl.nano.utils.pytorch import generate_channels_last_available,\
     apply_proper_channels_last
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
@@ -91,7 +92,7 @@ class BF16Model(AcceleratedLightningModule):
         :return:True/False
         """
         dnnl_log_file = "dnnl_log.log"
-        with stdout_redirected(dnnl_log_file):
+        with redirect_stdout(dnnl_log_file):
             os.environ['DNNL_VERBOSE'] = '1'
             self.bf16_model(*args, **kwargs)
         dnnl_log = ""

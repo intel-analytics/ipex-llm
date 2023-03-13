@@ -24,6 +24,8 @@ import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.io.File;
 import java.io.{FileInputStream, FileOutputStream};
 import java.util.Base64
+import java.security.MessageDigest
+import javax.xml.bind.DatatypeConverter
 
 import com.intel.analytics.bigdl.ppml.attestation.generator._
 import com.intel.analytics.bigdl.ppml.attestation.service._
@@ -33,6 +35,18 @@ import com.intel.analytics.bigdl.ppml.attestation.verifier._
  * Simple Attestation Command Line tool for attestation service
  */
 object AttestationCLI {
+    def hex(str: String): Array[Byte] = {
+      str.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
+    }
+
+    def sha256(hex: Array[Byte]): Array[Byte] = {
+      val md = MessageDigest.getInstance("SHA-256")
+      md.update(hex)
+      md.digest()
+      // val bytes = sha256.grouped(4).flatMap(_.reverse).toArray
+      // sha256.map("%02x".format(_))
+    }
+
     def main(args: Array[String]): Unit = {
         var quote = Array[Byte]()
         val logger = LogManager.getLogger(getClass)
@@ -42,9 +56,10 @@ object AttestationCLI {
                              asURL: String = "127.0.0.1:9000",
                              challenge: String = "",
                              policyID: String = "",
-                             quoteType: String = "gramine",
+                             quoteType: String = QUOTE_CONVENTION.MODE_GRAMINE,
                              httpsEnabled: Boolean = false,
-                             userReport: String = "ppml")
+                             apiVersion: String = "2020-10-01",
+                             userReport: String = "010203040506")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
           "PPML Attestation Quote Generation Cmd tool") {
@@ -69,27 +84,33 @@ object AttestationCLI {
             opt[String]('p', "userReport")
               .text("userReportDataPath, default is test")
               .action((x, c) => c.copy(userReport = x))
-            opt[Boolean]('s', "httpsEnabled")
-              .text("httpsEnabled")
-              .action((x, c) => c.copy(httpsEnabled = x))
             opt[String]('O', "quoteType")
               .text("quoteType, default is gramine, occlum can be chose")
               .action((x, c) => c.copy(quoteType = x))
+            opt[String]('v', "APIVersion")
+              .text("APIType, default is 2020-10-01")
+              .action((x, c) => c.copy(apiVersion = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
         // Generate quote
-        val userReportData = params.userReport
+        val userReportData = params.asType match {
+          case ATTESTATION_CONVENTION.MODE_AZURE =>
+            sha256(hex(params.userReport))
+          case _ =>
+            params.userReport.getBytes
+        }
+
         val quoteGenerator = params.quoteType match {
-          case "gramine" =>
+          case QUOTE_CONVENTION.MODE_GRAMINE =>
             new GramineQuoteGeneratorImpl()
-          case "occlum" =>
+          case QUOTE_CONVENTION.MODE_OCCLUM =>
             new OcclumQuoteGeneratorImpl()
-          case "TDX" =>
+          case QUOTE_CONVENTION.MODE_TDX =>
             new TDXQuoteGeneratorImpl()
           case _ => throw new AttestationRuntimeException("Wrong quote type")
         }
-        quote = quoteGenerator.getQuote(userReportData.getBytes)
+        quote = quoteGenerator.getQuote(userReportData)
 
         // Attestation Client
         val as = params.asType match {
@@ -98,9 +119,12 @@ object AttestationCLI {
                     params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_BIGDL =>
                 new BigDLAttestationService(params.asURL.split(":")(0),
-                    params.asURL.split(":")(1), params.httpsEnabled)
+                    params.asURL.split(":")(1), params.appID, params.apiKey)
             case ATTESTATION_CONVENTION.MODE_DUMMY =>
                 new DummyAttestationService()
+            case ATTESTATION_CONVENTION.MODE_AZURE =>
+                new AzureAttestationService(params.asURL, params.apiVersion,
+                 Base64.getUrlEncoder.encodeToString(hex(params.userReport)))
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
 

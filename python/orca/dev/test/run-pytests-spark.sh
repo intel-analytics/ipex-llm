@@ -37,7 +37,7 @@ if [ $python_version == 3.7.10 ];then
   then
       exit $exit_status_1
   fi
-  python -m pytest -v test/bigdl/orca/learn/spark --ignore=test/bigdl/orca/learn/spark/test_estimator_openvino.py
+  python -m pytest -v test/bigdl/orca/learn/bigdl --ignore=test/bigdl/orca/learn/bigdl/test_estimator_openvino.py
   exit_status_2=$?
   if [ $exit_status_2 -ne 0 ];
   then
@@ -48,16 +48,9 @@ fi
 echo "Running orca data tests"
 # test_xshards_partition.py is tested in run-pytests-basic-env.sh
 # ray related tests are tested in run-pytests-ray.sh
-if [ $python_version == 3.7.10 ];then
-  python -m pytest -v test/bigdl/orca/data \
-        --ignore=test/bigdl/orca/data/test_xshards_partition.py \
-        --ignore=test/bigdl/orca/data/ray
-else
-  python -m pytest -v test/bigdl/orca/data \
-        --ignore=test/bigdl/orca/data/test_xshards_partition.py \
-        --ignore=test/bigdl/orca/data/ray \
-        --ignore=test/bigdl/orca/data/test_write_parquet.py
-fi
+python -m pytest -v test/bigdl/orca/data \
+      --ignore=test/bigdl/orca/data/test_xshards_partition.py \
+      --ignore=test/bigdl/orca/data/ray
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then

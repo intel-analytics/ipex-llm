@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.Path
 class PPMLContext {
   protected val keyLoaderManagement = new KeyLoaderManagement
   protected var sparkSession: SparkSession = null
+  protected var defaultKey: String = ""
 
   /**
    * Read data files into RDD[String]
@@ -56,8 +57,14 @@ class PPMLContext {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case _ =>
-        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
-                                                  .retrieveDataKeyPlainText(path)
+        val dataKeyPlainText = primaryKeyName match {
+          case "" =>
+            keyLoaderManagement.retrieveKeyLoader(defaultKey)
+                               .retrieveDataKeyPlainText(path)
+          case _ =>
+            keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                               .retrieveDataKeyPlainText(path)
+        }
         PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
                              cryptoMode, minPartitions)
     }
@@ -70,9 +77,15 @@ class PPMLContext {
    * @return a EncryptedDataFrameReader
    */
   def read(cryptoMode: CryptoMode,
-           primaryKeyName: String = "defaultKey"): EncryptedDataFrameReader = {
-      new EncryptedDataFrameReader(sparkSession, cryptoMode,
-                                   primaryKeyName, keyLoaderManagement)
+           primaryKeyName: String = ""): EncryptedDataFrameReader = {
+      primaryKeyName match {
+        case "" =>
+          new EncryptedDataFrameReader(sparkSession, cryptoMode,
+            defaultKey, keyLoaderManagement)
+        case _ =>
+          new EncryptedDataFrameReader(sparkSession, cryptoMode,
+            primaryKeyName, keyLoaderManagement)
+      }
   }
 
   /**
@@ -84,9 +97,15 @@ class PPMLContext {
    */
   def write(dataFrame: DataFrame,
             cryptoMode: CryptoMode,
-            primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
-      new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode,
-                                   primaryKeyName, keyLoaderManagement)
+            primaryKeyName: String = ""): EncryptedDataFrameWriter = {
+      primaryKeyName match {
+        case "" =>
+          new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode,
+            defaultKey, keyLoaderManagement)
+        case _ =>
+          new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode,
+            primaryKeyName, keyLoaderManagement)
+      }
   }
 
   /**
@@ -262,6 +281,7 @@ object PPMLContext{
          }
       }
     }
+    if (ppmlSc.keyLoaderManagement.count == 1) ppmlSc.defaultKey = primaryKeyNames(0)
     ppmlSc
   }
 

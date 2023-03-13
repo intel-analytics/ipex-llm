@@ -24,13 +24,12 @@ from pytorch_model import NCF
 from utils import *
 
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
 from bigdl.orca.learn.metrics import Accuracy, Precision, Recall
 
 
 # Step 1: Init Orca Context
 args = parse_args("PyTorch NCF Resume Training with DataLoader")
-init_orca(args.cluster_mode, extra_python_lib="pytorch_model.py,pytorch_dataset.py")
+init_orca(args.cluster_mode, extra_python_lib="pytorch_dataset.py,pytorch_model.py,utils.py")
 
 
 # TODO: Save the processed data of the data loader as well?
@@ -80,8 +79,7 @@ loss = nn.BCEWithLogitsLoss()
 
 # Step 4: Distributed training with Orca PyTorch Estimator after loading the model
 config = load_model_config(args.model_dir, "config.json")
-callbacks = [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
-                                 freq=1000)] if args.tensorboard else []
+callbacks = get_pytorch_callbacks(args)
 scheduler_creator = scheduler_creator if args.lr_scheduler else None
 
 est = Estimator.from_torch(model=model_creator,

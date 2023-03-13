@@ -13,76 +13,119 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import numpy as np
+
+
+from pathlib import Path
+from typing import Sequence, Any
+
+import yaml
 import tensorflow as tf
+
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.common import AcceleratedModel
-
-try:
-    import torch
-    is_torch_available = True
-except Exception as _e:
-    # import torch after import tensorflow may cause `OSError` exception on Windows
-    is_torch_available = False
 
 
-class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
-    """A wrapper class for tf.keras.Model with accelerators."""
+class KerasOptimizedModel(tf.keras.Model):
+    """A base class for keras optimized model."""
 
-    def __init__(self, model, precision=tf.float32):
-        super().__init__()
-        self.model = model
-        self.precision = precision
+    def __call__(self, *inputs, **kwargs):
+        """Run inference, automatically perform type and dtype conversion."""
+        # todo: we should parse the `kwargs` and add it into `inputs`
+        for k in kwargs.keys():
+            invalidInputError(k == 'training',
+                              "Now we do not support passing arguments with `key=value` format")
+        inputs = self.preprocess(inputs)
+        outputs = self.forward(inputs)
+        outputs = self.postprocess(outputs)
+        return outputs
 
-    def __call__(self, *args, **kwds):
-        invalidInputError(
-            not kwds.get('training', False),
-            "Model of AcceleratedKerasModel is not trainable. Please set `training=False`."
-        )
-        kwds['training'] = False
-        return super().__call__(*args, **kwds)
+    def call(self, *args, **kwargs):
+        """The same as __call__."""
+        return self(*args, **kwargs)
 
-    def call(self, *inputs):
-        output = tf.py_function(self.forward, inputs, Tout=self.precision)
-        if hasattr(self, "_output_shape") and self._output_shape is not None:
-            output.set_shape(self._output_shape)
-        return output
+    def preprocess(self, inputs: Sequence[Any]):
+        """Preprocess inputs, such as convert inputs to numpy ndarray."""
+        return inputs
 
-    def forward(self, *inputs):
-        inputs = self.on_forward_start(inputs)
-        outputs = self.forward_step(*inputs)
-        return self.on_forward_end(outputs)
+    def forward(self, inputs: Sequence[Any]):
+        """Run inference."""
+        return self.model(*inputs)
+
+    def postprocess(self, outputs: Sequence[Any]):
+        """Postprocess outputs, such as convert outputs to tensorflow Tensor."""
+        return outputs
+
+    def predict(self,
+                x,
+                batch_size=None,
+                verbose='auto',
+                steps=None,
+                callbacks=None,
+                max_queue_size=10,
+                workers=1,
+                use_multiprocessing=False):
+        """Same to keras model's `predict` method, except that it runs in eager mode."""
+        # todo: we should implement our predict method, because tf's predict will convert
+        # numpy to tensor, then convert tensor to numpy when using ov/onnx optimized model
+        self.run_eagerly = True
+        return super().predict(x=x,
+                               batch_size=batch_size,
+                               verbose=verbose,
+                               steps=steps,
+                               callbacks=callbacks,
+                               max_queue_size=max_queue_size,
+                               workers=workers,
+                               use_multiprocessing=use_multiprocessing)
+
+    def evaluate(self,
+                 x=None,
+                 y=None,
+                 batch_size=None,
+                 verbose='auto',
+                 sample_weight=None,
+                 steps=None,
+                 callbacks=None,
+                 max_queue_size=10,
+                 workers=1,
+                 use_multiprocessing=False,
+                 return_dict=False,
+                 **kwargs):
+        """Same to keras model's `evaluate` method, except that it runs in eager mode."""
+        # todo: we should implement our evaluate method, because tf's predict will convert
+        # numpy to tensor, then convert tensor to numpy when using ov/onnx optimized model
+        self.run_eagerly = True
+        return super().evaluate(x=x,
+                                y=y,
+                                batch_size=batch_size,
+                                verbose=verbose,
+                                sample_weight=sample_weight,
+                                steps=steps,
+                                callbacks=callbacks,
+                                max_queue_size=max_queue_size,
+                                workers=workers,
+                                use_multiprocessing=use_multiprocessing,
+                                return_dict=return_dict,
+                                **kwargs)
+
+    @property
+    def status(self):
+        """Return model's status."""
+        return {"ModelType": type(self).__name__}
+
+    def _dump_status(self, path):
+        meta_path = Path(path) / "nano_model_meta.yml"
+        with open(meta_path, 'w') as f:
+            yaml.safe_dump(self.status, f)
 
     @staticmethod
-    def tensors_to_numpy(tensors, dtype=None):
-        if isinstance(dtype, tf.DType):
-            dtype = dtype.as_numpy_dtype
-        if isinstance(tensors, (list, tuple)):
-            return type(tensors)(AcceleratedKerasModel.tensors_to_numpy(tensor, dtype)
-                                 for tensor in tensors)
-        elif isinstance(tensors, dict):
-            return {key: AcceleratedKerasModel.tensors_to_numpy(value, dtype)
-                    for key, value in tensors.items()}
-        elif isinstance(tensors, tf.Tensor) or is_torch_available and isinstance(tensors,
-                                                                                 torch.Tensor):
-            if dtype is None:
-                return tensors.numpy()
-            else:
-                return tensors.numpy().astype(dtype)
-        elif isinstance(tensors, np.ndarray) and dtype is not None:
-            return tensors.astype(dtype)
-        else:
-            return tensors
+    def _load_status(path):
+        meta_path = Path(path) / "nano_model_meta.yml"
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+        return metadata
+
+    def _save(self, path, compression="fp32"):
+        invalidInputError(False, "Saving function is not implemented.")
 
     @staticmethod
-    def numpy_to_tensors(np_arrays):
-        if isinstance(np_arrays, (list, tuple)):
-            return type(np_arrays)(AcceleratedKerasModel.numpy_to_tensors(array)
-                                   for array in np_arrays)
-        elif isinstance(np_arrays, dict):
-            return {key: AcceleratedKerasModel.numpy_to_tensors(value)
-                    for key, value in np_arrays.items()}
-        elif isinstance(np_arrays, np.ndarray):
-            return tf.convert_to_tensor(np_arrays)
-        else:
-            return np_arrays
+    def _load(path, model=None):
+        invalidInputError(False, "Loading function is not implemented.")

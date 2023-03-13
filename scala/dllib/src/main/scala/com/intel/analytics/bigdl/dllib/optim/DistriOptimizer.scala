@@ -551,7 +551,7 @@ object DistriOptimizer extends AbstractOptimizer {
    * @param parameterProcessors a list of ParameterProcessor used to process parameters
    * @return cached models
    */
-  private def initThreadModels[T: ClassTag](
+  private[bigdl] def initThreadModels[T: ClassTag](
     model: Module[T],
     dataset: DistributedDataSet[MiniBatch[T]],
     criterion: Criterion[T],
@@ -797,7 +797,7 @@ class DistriOptimizer[T: ClassTag](
     }
   }
 
-  private def endEpoch(): Unit = {
+  private[bigdl] def endEpoch(): Unit = {
     DistriOptimizer.endEpoch(optimMethods)
   }
 

@@ -65,7 +65,7 @@ case class KeyLoader(val fromKms: Boolean,
         }
         val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
         sparkSession.sparkContext.hadoopConfiguration
-          .set(s"bigdl.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
+          .set(s"bigdl.read.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
         dataKeyPlainText
     }
 
@@ -124,6 +124,8 @@ class KeyLoaderManagement extends Serializable {
                                     s"cannot get a not-existing kms.")
         multiKeyLoaders.get(primaryKeyName).get
     }
+
+    def count(): Int = multiKeyLoaders.size
 
 }
 

@@ -142,10 +142,10 @@ class OpenvinoEstimator(SparkEstimator):
                     elif isinstance(feature_type, df_types.IntegerType):
                         input_dict[input], elem_num = add_elem(np.array(value).astype(np.int32))
                     elif isinstance(feature_type, df_types.StringType):
-                        input_dict[input], elem_num = add_elem(np.array(value).astype(np.str))
+                        input_dict[input], elem_num = add_elem(np.array(value).astype(str))
                     elif isinstance(feature_type, df_types.ArrayType):
                         if isinstance(feature_type.elementType, df_types.StringType):
-                            input_dict[input], elem_num = add_elem(np.array(value).astype(np.str))
+                            input_dict[input], elem_num = add_elem(np.array(value).astype(str))
                         else:
                             input_dict[input], elem_num = add_elem(
                                 np.array(value).astype(np.float32))

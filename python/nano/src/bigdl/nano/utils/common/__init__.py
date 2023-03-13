@@ -48,5 +48,6 @@ from .affinity import get_affinity_core_num
 
 from .env import _env_variable_is_set
 from .env import _find_library
+from .env import EnvContext
 
 from .optimizer import *

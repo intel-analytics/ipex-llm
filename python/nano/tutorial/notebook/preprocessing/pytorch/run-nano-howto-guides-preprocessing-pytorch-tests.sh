@@ -6,11 +6,14 @@ export NANO_HOWTO_GUIDES_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/tutorial/not
 
 set -e
 
+# It seems windows's bash cannot expand * wildcard
+all_ipynb=`find "$NANO_HOWTO_GUIDES_TEST_DIR" -maxdepth 1 -name "*.ipynb"`
+
 # comment out the install commands
-sed -i "s/!pip install/#!pip install/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!pip install/#!pip install/" $all_ipynb
 
 # comment out the environment setting commands
-sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $NANO_HOWTO_GUIDES_TEST_DIR/*.ipynb
+sed -i "s/!source bigdl-nano-init/#!source bigdl-nano-init/" $all_ipynb
 
 echo "Start testing"
 start=$(date "+%s")

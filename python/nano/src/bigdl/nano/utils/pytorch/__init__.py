@@ -24,6 +24,8 @@ from .version import TORCHVISION_VERSION_LESS_1_14
 
 from .attributes import patch_attrs_from_model_to_object
 
+from .check_deps import check_ccl
+
 from .channel_last import ChannelsLastCallback
 from .channel_last import generate_channels_last_available
 from .channel_last import apply_proper_channels_last

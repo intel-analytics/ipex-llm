@@ -13,13 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import pytest
+from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.sql import SparkSession
 
 
 @pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture():
-    from bigdl.orca import init_orca_context
-    sc = init_orca_context(cores=4, spark_log_level="INFO")
-    yield sc
-    sc.stop()
+    from bigdl.orca import init_orca_context, stop_orca_context
+    conf = {"spark.python.worker.reuse": "false"}
+    sc = init_orca_context(cores=8, conf=conf)
+
+    def to_array_(v):
+        return v.toArray().tolist()
+
+    def flatten_(v):
+        result = []
+        for elem in v:
+            result.extend(elem.toArray().tolist())
+        return result
+
+    spark = SparkSession(sc)
+    spark.udf.register("to_array", to_array_, ArrayType(DoubleType()))
+    spark.udf.register("flatten", flatten_, ArrayType(DoubleType()))
+    yield
+    stop_orca_context()
