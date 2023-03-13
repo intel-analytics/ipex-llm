@@ -210,13 +210,14 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 row = Row(*([pair[0][col] for col in pair[0].__fields__] +
                             [[Vectors.dense(elem) for elem in pair[1]]]))
             else:
+                # list of list
                 row_values = [pair[0][col] for col in pair[0].__fields__]
                 for elem in pair[1]:
-                    # single-dimensional np array
+                    # single-dimensional list
                     if not isinstance(elem[0], list):
                         row_values.extend([[Vectors.dense(elem)]])
                     else:
-                        # multi-dimension np array
+                        # multi-dimension list
                         structType = FloatType()
                         for _ in range(len(elem)):
                             structType = ArrayType(structType)
