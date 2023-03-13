@@ -9,15 +9,9 @@ runs:
         source activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
 
-        bash python/dev/release_default_linux_spark313.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
         unset SPARK_HOME
         
-        # install dlib
-        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
-
-        # install orca
-        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
-
         # install requires
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
@@ -32,11 +26,12 @@ runs:
         pip list
 
         # TODO: delete the following two lines after fix saving optimizer states in spark backend
-        sed 's/args.backend = "ray"/args.backend = "spark"/1' ./tf_train_spark_dataframe.py -i
-        sed 's/args.backend = "ray"/args.backend = "spark"/1' ./tf_train_xshards.py -i
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_spark_dataframe.py -i
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_xshards.py -i
 
         chmod a+x python/orca/dev/test/run-orca-tutorial-NCF.sh
         python/orca/dev/test/run-orca-tutorial-NCF.sh spark ml-1m
+        python/orca/dev/test/run-orca-tutorial-NCF.sh spark ml-100k
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
