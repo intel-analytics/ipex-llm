@@ -19,7 +19,7 @@ from bigdl.nano.utils.common import invalidInputError
 def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          thread_num=None, device='CPU',
                          dynamic_axes=True, logging=True,
-                         config=None, **kwargs):
+                         config=None, output_tensors=True, **kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -49,6 +49,8 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          If accelerator != 'openvino'/'onnxruntime', it will be ignored.
     :param logging: whether to log detailed information of model conversion. default: True.
     :param config: The config to be inputted in core.compile_model.
+    :param output_tensors: boolean, default to True and output of the model will be Tensors.
+                           If output_tensors=False, output of the OpenVINO model will be ndarray.
     :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
@@ -61,6 +63,7 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 dynamic_axes=dynamic_axes,
                                 logging=logging,
                                 config=config,
+                                output_tensors=output_tensors,
                                 **kwargs)
 
 

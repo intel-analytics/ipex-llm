@@ -5,10 +5,10 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
 ```eval_rst
 .. raw:: html
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/nano_installation_guide.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/installation_panel.css" />
 
-    <div class="displayed">
-      <table id="table-1">
+    <div class="installation-panel-wrapper">
+      <table class="installation-panel-table">
         <tbody>
           <tr>
             <td colspan="1">FrameWork</td>
@@ -40,7 +40,7 @@ You can select bigdl-nano along with some dependencies specific to PyTorch or Te
       </table>
     </div>
 
-    <script src="../../../_static/js/nano_installation_guide.js"></script>
+    <script src="../../../_static/js/nano_installation_panel.js"></script>
 ```
 
 ```eval_rst

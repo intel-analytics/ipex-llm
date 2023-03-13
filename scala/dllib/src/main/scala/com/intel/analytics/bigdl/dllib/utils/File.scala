@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.utils
 
+import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
@@ -176,7 +177,7 @@ object File {
    *
    * @param fileName file name.
    */
-  def load[T](fileName: String): T = {
+  def load[T: ClassTag](fileName: String): T = {
     var fr: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
@@ -184,7 +185,7 @@ object File {
       fr = FileReader(fileName)
       in = fr.open()
       val bis = new BufferedInputStream(in)
-      val objFile = new ObjectInputStream(bis)
+      objFile = new CheckedObjectInputStream(classTag[T].runtimeClass, bis)
       objFile.readObject().asInstanceOf[T]
     } finally {
       if (null != in) in.close()

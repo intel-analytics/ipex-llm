@@ -15,6 +15,7 @@
 #
 
 import os
+import platform
 import pytest
 from unittest import TestCase
 
@@ -126,7 +127,7 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, train_loader, train_loader)
 
         assert pl_model.model.fc1.weight.data == 0.25, "subprocess plugin works incorrect"
-        return 
+        return
 
     def test_trainer_spawn_correctness(self):
         # same as subprocess test
@@ -147,7 +148,32 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, train_loader, train_loader)
 
         assert pl_model.model.fc1.weight.data == 0.25, "spawn plugin works incorrect"
-        return 
+        return
+
+    @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    def test_trainer_subprocess_with_ccl(self):
+        pl_model = LightningModule(
+            self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess",
+                          process_group_backend='ccl', max_epochs=4)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
+
+    @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    def test_trainer_spawn_with_ccl(self):
+        pl_model = LightningModule(
+            self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
+                     torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="spawn",
+                          process_group_backend='ccl', max_epochs=4)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

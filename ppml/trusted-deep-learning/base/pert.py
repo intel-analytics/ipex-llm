@@ -229,7 +229,7 @@ def main():
 
     model = NeuralNetwork().to(device)
     if (args.load_model):
-        model.load_state_dict('./pert.bin')
+        model.load_state_dict(torch.load('./pert.bin'))
 
     if is_distributed():
         Distributor = nn.parallel.DistributedDataParallel
@@ -239,6 +239,8 @@ def main():
 
     total_loss = 0.
     best_acc = 0.
+    total_time = 0.
+    total_throughput = 0.
 
     for t in range(args.epochs):
         print(f"Epoch {t+1}/{args.epochs + 1}\n-------------------------------")
@@ -255,10 +257,17 @@ def main():
               total_dataset, flush=True)
         msg = "Epoch {}/{} Throughput: {: .4f}".format(
             t+1, args.epochs+1, 1.0 * total_dataset / (end-start))
+        total_time += (end - start)
+        total_throughput += total_dataset
         print(msg, flush=True)
         valid_acc = test_loop(valid_dataloader, model, mode='Valid')
 
     print("[INFO]Finish all test", flush=True)
+    msg = "[INFO]Average training time per epoch: {: .4f}".format(total_time / args.epochs)
+    print(msg, flush=True)
+
+    msg = "[INFO]Average throughput per epoch: {: .4f}".format(total_throughput / total_time)
+    print(msg, flush=True)
 
     if (args.save_model):
         torch.save(model.state_dict(), "pert.bin")

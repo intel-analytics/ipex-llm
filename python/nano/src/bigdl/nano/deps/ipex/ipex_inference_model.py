@@ -180,9 +180,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 self.channels_last_available = generate_channels_last_available(inputs)
 
             # change the data to suitable mem format
-            inputs = tuple(map(lambda item: apply_proper_channels_last(
-                self.channels_last_available[item[0]], item[1]),
-                enumerate(inputs)))
+            inputs = tuple(map(
+                lambda idx: apply_proper_channels_last(
+                    self.channels_last_available[idx], inputs[idx]),
+                range(min(len(self.channels_last_available), len(inputs)))))
 
         return self.model(*inputs)
 
@@ -211,6 +212,12 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         checkpoint_path = path / status['checkpoint']
         if status["use_jit"]:
             if status['compression'] == "bf16":
+                invalidInputError(model is not None,
+                                  "You must pass model when loading this model "
+                                  "which was saved with compression precision.")
+                invalidInputError(input_sample is not None,
+                                  "You must pass input_sample when loading this model "
+                                  "which was saved with compression precision.")
                 state_dict = torch.load(checkpoint_path, map_location='cpu')
                 if status['compression'] == "bf16":
                     state_dict = transform_state_dict_to_dtype(state_dict, dtype="fp32")

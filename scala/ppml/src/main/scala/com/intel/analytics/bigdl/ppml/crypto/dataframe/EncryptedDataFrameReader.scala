@@ -45,8 +45,6 @@ class EncryptedDataFrameReader(
   }
 
   def setCryptoCodecContext(path: String): Unit = {
-    sparkSession.sparkContext.hadoopConfiguration
-      .set("bigdl.crypto.mode", encryptMode.encryptionAlgorithm)
     encryptMode match {
       case PLAIN_TEXT =>
       case AES_CBC_PKCS5PADDING =>

@@ -26,6 +26,11 @@ from bigdl.nano.utils.common import register_suggestion
 from bigdl.nano.utils.common import get_affinity_core_num
 
 
+# fix schedule when using GOMP
+ld_preload = os.environ.get("LD_PRELOAD", "")
+if "libiomp5.so" not in ld_preload:
+    torch.set_num_threads(torch.get_num_threads())
+
 if 'KMP_INIT_AT_FORK' in os.environ:
     del os.environ['KMP_INIT_AT_FORK']
 

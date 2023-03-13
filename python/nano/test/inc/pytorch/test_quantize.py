@@ -26,6 +26,7 @@ from pytorch_lightning import LightningModule
 from torch import nn
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 import torchmetrics
+from torchvision.models import resnet18
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -330,3 +331,40 @@ class TestINC(TestCase):
                                              max_trials=10,
                                              thread_num=8)
         assert qmodel
+
+    def test_quantize_loading_behavior(self):
+        # test nn.Module
+        model = resnet18()
+        input_sample = torch.randn(1, 3, 224, 224)
+        # test pytorch_fx
+        qmodel = InferenceOptimizer.quantize(model,
+                                             calib_data=input_sample)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(qmodel, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        with InferenceOptimizer.get_context(load_model):
+            load_model(input_sample)
+        
+        if compare_version("neural_compressor", operator.ge, "2.0"):
+            # save & load of INC ipex quantized model only works when inc version >= 2.0
+            # test pytorch_ipex with wrong input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                with pytest.raises(
+                    RuntimeError,
+                    match="For INC ipex quantizated model, you need to set input_sample when loading model."
+                    ):
+                    load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+
+            # test pytorch_ipex with right input
+            qmodel = InferenceOptimizer.quantize(model,
+                                                calib_data=input_sample,
+                                                method='ipex')
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(qmodel, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name, model=model, input_sample=input_sample)
+            with InferenceOptimizer.get_context(load_model):
+                load_model(input_sample)

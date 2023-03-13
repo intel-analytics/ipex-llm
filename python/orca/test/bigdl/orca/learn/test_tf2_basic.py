@@ -75,7 +75,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -118,7 +118,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -164,11 +164,11 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -206,11 +206,11 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -244,7 +244,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -304,7 +304,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -336,6 +336,15 @@ class TestTFEstimatorBasic(TestCase):
                               )
             assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
 
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
                                                    save_weights_only=False,
@@ -343,14 +352,16 @@ class TestTFEstimatorBasic(TestCase):
                                                    )
             ]
 
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1
-                              )
+            res = est.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"],
+                          validation_data=df,
+                          validation_steps=1
+                          )
             assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
+
+            est.shutdown()
         finally:
             shutil.rmtree(temp_dir)
 

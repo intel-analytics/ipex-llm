@@ -4,6 +4,8 @@ spec:
   containers:
   - name: spark-driver
     env:
+      - name: MALLOC_ARENA_MAX
+        value: ${MALLOC_ARENA_MAX}
       - name: ATTESTATION
         value: false
       - name: ATTESTATION_URL

@@ -47,14 +47,14 @@ Before running the following command, please modify the paths in `./build-custom
 ./build-custom-image.sh
 ```
 
-The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
+The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to register your MREnclave in the following.
 
-````bash
+```log
 ......
 [INFO] Use the below hash values of mr_enclave and mr_signer to register enclave:
 mr_enclave       : c7a8a42af......
 mr_signer        : 6f0627955......
-````
+```
 
 ### 2. Prepare TLS keys
 

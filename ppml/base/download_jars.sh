@@ -42,3 +42,7 @@ wget https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.
 wget https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.30/slf4j-api-1.7.30.jar
 wget https://repo1.maven.org/maven2/org/json/json/20220320/json-20220320.jar
 wget https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.0/log4j-api-2.17.0.jar
+wget https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.14.1/jackson-databind-2.14.1.jar
+wget https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.14.1/jackson-core-2.14.1.jar
+wget https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-scala_2.12/2.14.1/jackson-module-scala_2.12-2.14.1.jar
+wget https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.14.1/jackson-annotations-2.14.1.jar

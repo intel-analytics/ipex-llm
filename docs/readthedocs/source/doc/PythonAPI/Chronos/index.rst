@@ -11,6 +11,7 @@ Chronos API
     tsdataset.rst
     simulator.rst
     evaluator.rst
+    aiops.rst
 
 .. toctree::
     :maxdepth: 1

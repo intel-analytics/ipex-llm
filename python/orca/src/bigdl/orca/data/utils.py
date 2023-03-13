@@ -370,6 +370,11 @@ def process_spark_xshards(spark_xshards: "SparkXShards", num_workers: int) -> "R
 def index_data(x, i):
     if isinstance(x, np.ndarray):
         return x[i]
+    elif isinstance(x, dict):
+        res = {}
+        for k, v in x.items():
+            res[k] = v[i]
+        return res
     elif isinstance(x, tuple):
         return tuple(item[i] for item in x)
     elif isinstance(x, list):

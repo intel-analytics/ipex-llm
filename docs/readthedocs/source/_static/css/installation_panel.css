@@ -1,0 +1,54 @@
+.installation-panel-wrapper {
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.installation-panel-table {
+    border-bottom-width: 0px;
+    margin: auto;
+    font-size: var(--pst-font-size-base);
+    font-family: Verdana;
+    color: var(--pst-color-text-base);
+    width: 100%;
+    height: 100%;
+    table-layout: fixed; /* make cells have even width */
+}
+
+.installation-panel-table tr, td{
+    padding: 0.5rem;
+    background-color: var(--pst-color-on-surface);
+}
+
+.installation-panel-table td{
+    border: 0.25rem solid var(--pst-color-background);
+}
+
+.installation-panel-table tr td:first-child{
+    font-weight: 600;
+    background-color: var(--pst-color-background);
+    border-left: 0.2rem solid var(--pst-color-on-surface);
+    text-align: left;
+    width: 25%;
+    font-size: 13.5px;
+}
+
+.installation-panel-table button {
+    border-color: transparent;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.installation-panel-table #cmd {
+    text-align: left;
+    padding: 0.5rem 0.25rem;
+}
+
+/* for cells that is a little bit longer to put inside a single line */
+.installation-panel-table .fitting-cell{
+    padding: 0rem;
+    font-size: 14.5px;
+}

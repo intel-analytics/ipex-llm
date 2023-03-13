@@ -24,7 +24,7 @@ import torch
 import warnings
 from collections import OrderedDict
 from torch.optim import Optimizer
-from mmcv.runner import EpochBasedRunner
+from mmcv.runner import EpochBasedRunner, DistEvalHook
 from mmcv.runner.utils import get_host_info
 from mmcv.parallel import is_module_wrapper
 from mmcv.parallel.distributed import MMDistributedDataParallel
@@ -182,6 +182,15 @@ class MMCVRayEpochRunner(BaseRunner, EpochBasedRunner):
                      **kwargs) -> List[Dict]:
         data_loaders = [self.with_sampler(creator(self.config)) for
                         creator in data_loaders_creators]
+        # runner was created in method setup_components, which may contains the
+        # creation of DistEvalHook. At that time, ddp env was not initialized, so
+        # the val_dataloder in DistEvalHook is not correctly built with a sampler.
+        # so add sampler for val_dataloder if there is a DistEvalHook.
+        for hook in self._hooks:
+            if isinstance(hook, DistEvalHook):
+                # don't shuffle the val data
+                hook.dataloader = self.with_sampler(hook.dataloader, shuffle=False)
+
         return self.run(data_loaders, workflow, max_epochs, **kwargs)
 
     def run(self,
