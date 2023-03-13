@@ -32,8 +32,8 @@ runs:
         pip list
 
         # TODO: delete the following two lines after fix saving optimizer states in spark backend
-        sed 's/args.backend = "ray"/args.backend = "spark"/1' ./tf_train_spark_dataframe.py -i
-        sed 's/args.backend = "ray"/args.backend = "spark"/1' ./tf_train_xshards.py -i
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_spark_dataframe.py -i
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_xshards.py -i
 
         chmod a+x python/orca/dev/test/run-tutorial-NCF.sh
         python/orca/dev/test/run-tutorial-NCF.sh spark ml-1m
