@@ -177,6 +177,10 @@ subtrees:
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_inference_bf16
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_onnx
                               - file: doc/Nano/Howto/Inference/TensorFlow/tensorflow_save_and_load_openvino
+                  - file: doc/Nano/Howto/hpo/index
+                    subtrees:
+                      - entries:
+                        - file: doc/Nano/Howto/hpo/use_hpo_tune_hyperparameters_tensorflow
                   - file: doc/Nano/Howto/Install/index
                     subtrees:
                       - entries:
