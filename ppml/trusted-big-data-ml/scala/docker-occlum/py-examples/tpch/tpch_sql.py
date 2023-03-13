@@ -53,7 +53,7 @@ l_linestatus
 order by
 l_returnflag,
 l_linestatus"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q2(self):
         query = """select
@@ -99,7 +99,7 @@ l_linestatus"""
  n_name,
  s_name,
  p_partkey"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q3(self):
         query = """select
@@ -124,7 +124,7 @@ l_linestatus"""
  order by
  revenue desc,
  o_orderdate"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q4(self):
         query = """select
@@ -148,7 +148,7 @@ l_linestatus"""
  o_orderpriority
  order by
  o_orderpriority"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q5(self):
         query = """select
@@ -175,7 +175,7 @@ l_linestatus"""
  n_name
  order by
  revenue desc"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q6(self):
         query = """select
@@ -187,7 +187,7 @@ l_linestatus"""
  and l_shipdate < date '1994-01-01' + interval '1' year
  and l_discount between .06 - 0.01 and .06 + 0.01
  and l_quantity < 24"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q7(self):
         query = """select
@@ -229,7 +229,7 @@ l_linestatus"""
  supp_nation,
  cust_nation,
  l_year"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q8(self):
         query = """select
@@ -270,7 +270,7 @@ l_linestatus"""
  o_year
  order by
  o_year"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q9(self):
         query = """select
@@ -305,7 +305,7 @@ l_linestatus"""
  order by
  nation,
  o_year desc"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q10(self):
         query = """select
@@ -339,7 +339,7 @@ l_linestatus"""
  c_comment
  order by
  revenue desc"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q11(self):
         query = """select
@@ -369,7 +369,7 @@ l_linestatus"""
      )
  order by
  value desc"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q12(self):
         query = """select
@@ -402,7 +402,7 @@ l_linestatus"""
  l_shipmode
  order by
  l_shipmode"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q13(self):
         query = """select
@@ -425,7 +425,7 @@ l_linestatus"""
  order by
  custdist desc,
  c_count desc"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q14(self):
         query = """
@@ -442,7 +442,7 @@ l_linestatus"""
  l_partkey = p_partkey
  and l_shipdate >= date '1995-09-01'
  and l_shipdate < date '1995-09-01' + interval '1' month"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q15(self):
         query = """with revenue0 as
@@ -476,7 +476,7 @@ l_linestatus"""
  )
  order by
  s_suppkey"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q16(self):
         query = """select
@@ -510,7 +510,7 @@ l_linestatus"""
  p_type,
  p_size
  limit 20"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q17(self):
         query = """select
@@ -530,7 +530,7 @@ l_linestatus"""
  where
  l_partkey = p_partkey
  )"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q18(self):
         query = """
@@ -566,7 +566,7 @@ l_linestatus"""
  order by
  o_totalprice desc,
  o_orderdate"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q19(self):
         query = """select
@@ -604,7 +604,7 @@ l_linestatus"""
  and l_shipmode in ('AIR', 'AIR REG')
  and l_shipinstruct = 'DELIVER IN PERSON'
  )"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q20(self):
         query = """
@@ -645,7 +645,7 @@ l_linestatus"""
  and n_name = 'CANADA'
  order by
  s_name"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q21(self):
         query = """select
@@ -687,7 +687,7 @@ l_linestatus"""
  order by
  numwait desc,
  s_name"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)
 
     def q22(self):
         query = """select
@@ -727,4 +727,4 @@ l_linestatus"""
  cntrycode
  order by
  cntrycode"""
-        self.spark.sql(query).show()
+        return self.spark.sql(query)

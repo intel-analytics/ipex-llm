@@ -18,6 +18,7 @@ import sys
 import time
 
 from tpch_function import *
+from tpch_sql import *
 from pyspark.sql import SparkSession
 
 
@@ -30,9 +31,10 @@ def main():
 
     input_dir = sys.argv[1]
     output_dir = sys.argv[2]
+    use_sql = sys.argv[3].lower() == "true"
     query_list = []
-    if (len(sys.argv) > 3):
-        query_number = int(sys.argv[3])
+    if (len(sys.argv) > 4):
+        query_number = str(sys.argv[3])
         query_list.append(query_number)
     else:
         query_list = range(1, 23)
@@ -40,8 +42,13 @@ def main():
     spark = SparkSession.builder.getOrCreate()
     print("Will run " + str(query_list))
     start1 = time.time()
-    queries = TpchFunctionalQueries(spark, input_dir)
-    #action
+    if (use_sql == False):
+        queries = TpchFunctionalQueries(spark, input_dir)
+        print("TPCH using python function")
+    else:
+        queries = TpchSqlQueries(spark, input_dir)
+        print("TPCH using SQL directly")
+#action
     queries.part.first()
     for iter in query_list:
         query_number = iter

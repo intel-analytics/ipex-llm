@@ -252,6 +252,24 @@ run_pyspark_sql_example() {
                 /py-examples/sql_example.py
 }
 
+run_pyspark_tpch_example() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark SQL example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx5g org.apache.spark.deploy.SparkSubmit \
+                --conf spark.sql.shuffle.partitions=8 \
+                /py-examples/tpch/main.py \
+                /host/data/tpch/ /host/data/output/ false
+}
+
 run_pyspark_sklearn_example() {
     init_instance spark
     build_spark
@@ -554,6 +572,10 @@ case "$arg" in
         ;;
     pysklearn)
         run_pyspark_sklearn_example
+        cd ../
+        ;;
+    pytpch)
+        run_pyspark_tpch_example
         cd ../
         ;;
     pi)
