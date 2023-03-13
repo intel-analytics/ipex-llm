@@ -17,7 +17,7 @@
 import os
 import pickle
 from pathlib import Path
-from typing import Sequence, Any
+from typing import Sequence, Any, Union, Dict
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -75,14 +75,14 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                                           thread_num=thread_num,
                                           config=config)
 
-    def preprocess(self, inputs: Sequence[Any]):
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         self.ov_model._model_exists_or_err()
         # todo: We should perform dtype conversion based on the
         # dtype of the arguments that the model expects
-        inputs = convert_all(inputs, types="numpy", dtypes=np.float32)
+        inputs = convert_all(args, types="numpy", dtypes=np.float32)
         return inputs
 
-    def forward(self, inputs: Sequence[Any]):
+    def forward(self, inputs: Union[Sequence[Any], Dict[str, Any]]):
         return self.ov_model.forward_step(*inputs)
 
     def postprocess(self, outputs: Sequence[Any]):
