@@ -336,6 +336,15 @@ class TestTFEstimatorBasic(TestCase):
                               )
             assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
 
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
                                                    save_weights_only=False,
@@ -343,14 +352,16 @@ class TestTFEstimatorBasic(TestCase):
                                                    )
             ]
 
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1
-                              )
+            res = est.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"],
+                          validation_data=df,
+                          validation_steps=1
+                          )
             assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
+
+            est.shutdown()
         finally:
             shutil.rmtree(temp_dir)
 
