@@ -29,9 +29,9 @@ runs:
         sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_spark_dataframe.py -i
         sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_xshards.py -i
 
-        chmod a+x python/orca/dev/test/run-orca-tutorial-NCF.sh
-        python/orca/dev/test/run-orca-tutorial-NCF.sh spark ml-1m
-        python/orca/dev/test/run-orca-tutorial-NCF.sh spark ml-100k
+        chmod a+x python/orca/dev/test/run-tutorial-NCF.sh
+        python/orca/dev/test/run-tutorial-NCF.sh spark ml-1m
+        python/orca/dev/test/run-tutorial-NCF.sh spark ml-100k
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
