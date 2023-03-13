@@ -738,6 +738,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
             result._inputs_dtypes = onnx_model._inputs_dtypes
+            result._mode = "arg"    # todo
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)
