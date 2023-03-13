@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.ppml.crypto.CryptoCodec.CryptoDecompressStream
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.io.compress._
 import org.apache.hadoop.io.compress.zlib.ZlibFactory
+import java.util.Arrays
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.Cipher
 
 import java.io.IOException
 import java.io.InputStream
@@ -107,7 +110,13 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val bigdlEncrypt = new BigDLEncrypt()
+    val hasHeader = conf.get("bigdl.dataFile.hasHeader", "true") match {
+      case "true" => true
+      case "false" => false
+      case _ =>
+        throw new EncryptRuntimeException("Property of bigdl.read.dataKey.plainText is wrong!")
+    }
+    val bigdlEncrypt = new BigDLEncrypt(hasHeader)
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -115,14 +124,27 @@ object CryptoCodec {
         // return success, as if we had never called getCompressedData()
         eof = true
         return -1
-      }
+      }val hasHeader = con.get("bigdl.dataFile.hasHeader", "true") match {
+      case "true" => true
+      case "false" => false
+      case _ =>
+        throw new EncryptRuntimeException("Property of bigdl.read.dataKey.plainText is wrong!")
+    }
 
-      if (!headerVerified) {
-        val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
-        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
+      if (hasHeader) {
+        // data file is encrypted by PPML cipher
+        if (!headerVerified) {
+          val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
+          val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
+          bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
+          bigdlEncrypt.verifyHeader(initializationVector)
+          headerVerified = true
+        }
+      } else {
+        // data file is encrypted by native AES cihper
+        // no Mac integrity check defaultly
+        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.plainText")
         bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
-        bigdlEncrypt.verifyHeader(initializationVector)
-        headerVerified = true
       }
 
       val decompressed = bigdlEncrypt.decryptPart(in, buffer)

@@ -35,13 +35,13 @@ import scala.util.Random
 /**
  * BigDL general crypto for encrypt and decrypt data.
  */
-class BigDLEncrypt extends Crypto {
-  protected var cipher: Cipher = null
+class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
+  var cipher: Cipher = null
   protected var mac: Mac = null
-  protected var ivParameterSpec: IvParameterSpec = null
-  protected var encryptionKeySpec: SecretKeySpec = null
+  var ivParameterSpec: IvParameterSpec = null
+  var encryptionKeySpec: SecretKeySpec = null
   protected var opMode: OperationMode = null
-  protected var initializationVector: Array[Byte] = null
+  var initializationVector: Array[Byte] = null
   protected var encryptedDataKey: String = ""
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
@@ -56,19 +56,29 @@ class BigDLEncrypt extends Crypto {
   override def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
     opMode = mode
     val secret = dataKeyPlaintext.getBytes()
-    // key encrypt
-    val signingKey = Arrays.copyOfRange(secret, 0, 16)
-    val encryptKey = Arrays.copyOfRange(secret, 16, 32)
-    //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
-    val r = new SecureRandom()
-    initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
-    ivParameterSpec = new IvParameterSpec(initializationVector)
-    encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
-    cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
-    cipher.init(mode.opmode, encryptionKeySpec, ivParameterSpec)
-    mac = Mac.getInstance(cryptoMode.signingAlgorithm)
-    val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
-    mac.init(signingKeySpec)
+    if (!hasHeader) {
+      // native AES with mac
+      initializationVector = Arrays.copyOfRange(secret, 0, 16)
+      ivParameterSpec = new IvParameterSpec(initializationVector)
+      encryptionKeySpec = new SecretKeySpec(secret,
+        AES_CBC_PKCS5PADDING.secretKeyAlgorithm)
+      cipher = Cipher.getInstance(AES_CBC_PKCS5PADDING.encryptionAlgorithm)
+      cipher.init(DECRYPT, encryptionKeySpec, ivParameterSpec)
+    } else {
+      // key encrypt
+      val signingKey = Arrays.copyOfRange(secret, 0, 16)
+      val encryptKey = Arrays.copyOfRange(secret, 16, 32)
+      //    initializationVector = Arrays.copyOfRange(secret, 0, 16)
+      val r = new SecureRandom()
+      initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
+      ivParameterSpec = new IvParameterSpec(initializationVector)
+      encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
+      cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
+      cipher.init(mode.opmode, encryptionKeySpec, ivParameterSpec)
+      mac = Mac.getInstance(cryptoMode.signingAlgorithm)
+      val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
+      mac.init(signingKeySpec)
+    }
   }
 
   protected var signingDataStream: DataOutputStream = null
@@ -126,7 +136,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def update(content: Array[Byte]): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content)
-    mac.update(cipherText)
+    if(hasHeader) mac.update(cipherText)
     cipherText
   }
 
@@ -140,7 +150,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content, offset, len)
-    mac.update(cipherText)
+    if(hasHeader) mac.update(cipherText)
     cipherText
   }
 
@@ -153,7 +163,9 @@ class BigDLEncrypt extends Crypto {
    */
   override def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content)
-    val hmac: Array[Byte] = mac.doFinal(cipherText)
+    val hmac: Array[Byte] = if(hasHeader) {
+      mac.doFinal(cipherText)
+    } else null
     (cipherText, hmac)
   }
 
@@ -168,7 +180,9 @@ class BigDLEncrypt extends Crypto {
    */
   override def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content, offset, len)
-    val hmac: Array[Byte] = mac.doFinal(cipherText)
+    val hmac: Array[Byte] = if(hasHeader) {
+      mac.doFinal(cipherText)
+    } else null
     (cipherText, hmac)
   }
 
@@ -214,11 +228,11 @@ class BigDLEncrypt extends Crypto {
     val last = inputStream.read(byteBuffer)
     val (lastSlice, hmac) = doFinal(byteBuffer, 0, last)
     outputStream.write(lastSlice)
-    outputStream.write(hmac)
+    if(hmac != null) outputStream.write(hmac)
     outputStream.flush()
   }
 
-  val hmacSize = 32
+  val hmacSize = if (hasHeader) 32 else 0
   def decryptPart(in: InputStream, buffer: Array[Byte]): Array[Byte] = {
     if (in.available() == 0) {
       return new Array[Byte](0)

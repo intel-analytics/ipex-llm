@@ -22,14 +22,15 @@ import org.apache.hadoop.io.compress.Compressor
 
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
-  dataKeyCipherText: String = "") extends Compressor {
-  val bigdlEncrypt = new BigDLEncrypt()
+  dataKeyCipherText: String = "",
+  hasHeader: Boolean = true) extends Compressor {
+  val bigdlEncrypt = new BigDLEncrypt(hasHeader)
+  var setHeader = false
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0
   var len = 0
-  var hasHeader = false
   var tryFinished = false
   private var bytesRead = 0L
   private var bytesWritten = 0L
@@ -74,6 +75,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
 
   override def compress(b: Array[Byte], off: Int, len: Int): Int = {
     // lazy encrypt, in order to doFinal in the right time.
+    if (!hasHeader) setHeader = true
     if (tryFinished) {
       val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
       bytesRead += this.lv2Len
@@ -83,7 +85,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
       o._2.copyToArray(b, o._1.length)
       o._1.length + o._2.length
     } else {
-      val o = if (hasHeader) {
+      val o = if (setHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
         bytesRead += this.lv2Len
         // create a buffer to cache undecrypted data, size of this.b is changing.
@@ -97,7 +99,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         this.len = 0
         o
       } else {
-        hasHeader = true
+        setHeader = true
         lv2Buffer = this.b.clone()
         lv2Off = this.off
         lv2Len = this.len
@@ -143,8 +145,14 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText")
     )
+    val hasHeader = conf.get("bigdl.dataFile.hasHeader", "true") match {
+      case "true" => true
+      case "false" => false
+      case _ =>
+        throw new EncryptRuntimeException("Property of bigdl.read.dataKey.plainText is wrong!")
+    }
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
-      dataKeyPlainText, dataKeyCipherText)
+      dataKeyPlainText, dataKeyCipherText, hasHeader)
   }
 }
 
