@@ -38,7 +38,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} numpy==1.21.6
 
         # multi agent example needs to specify tensorflow version
-        sed '-s/trainers.py/trainers.py --framework tf2/1' python/orca/dev/example/run-example-test-ray.sh -i
+        sed 's/trainers.py/trainers.py --framework tf2/1' python/orca/dev/example/run-example-test-ray.sh -i
 
         chmod a+x python/orca/dev/example/run-example-test-ray.sh
         python/orca/dev/example/run-example-test-ray.sh
