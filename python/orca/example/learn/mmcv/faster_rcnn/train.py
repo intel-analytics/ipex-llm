@@ -223,8 +223,8 @@ def main():
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.cores, memory="10g")
     elif args.cluster_mode.startswith("yarn"):
-        init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g", num_nodes=args.num_nodes,
-                          driver_cores=4, driver_memory="2g")
+        init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g",
+                          num_nodes=args.num_nodes, driver_cores=4, driver_memory="2g")
     else:
         print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
               "but got" + args.cluster_mode)
@@ -298,4 +298,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
