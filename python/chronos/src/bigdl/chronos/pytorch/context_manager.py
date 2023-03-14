@@ -37,10 +37,11 @@ class ForecasterContextManager(object):
     """
     This context manager is used for Pytorch Model Inference.
 
-    Provide thread control and autocast context which is for bf16 model.
+    Provide no grad, thread control and autocast context which is for bf16 model.
     """
     def __init__(self, forecaster, thread_num, optimize):
         self.forecaster = forecaster
+        self.infer_mode = torch.inference_mode(mode=True)
         if thread_num:
             self.thread_num = thread_num
         elif optimize and self.forecaster.optimized_model_thread_num:
@@ -57,10 +58,12 @@ class ForecasterContextManager(object):
         self.forecaster.thread_num = set_pytorch_thread(self.thread_num,
                                                         self.forecaster.thread_num)
         self.forecaster.context_enabled = True
+        self.infer_mode.__enter__()
         if self.bf16_enable:
             self.autocast.__enter__()
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        self.forecaster.context_enabled = False
+        self.infer_mode.__exit__(exc_type, exc_value, exc_tb)
         if self.bf16_enable:
             self.autocast.__exit__(exc_type, exc_value, exc_tb)
+        self.forecaster.context_enabled = False

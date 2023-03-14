@@ -17,7 +17,6 @@ on:
         options:
         - all
         - scala-build
-        - python-build
         - python-sourceforge-build
         - docker-bigdl-build
       tag:
@@ -270,9 +269,9 @@ jobs:
         job-name: docker-build-bigdl
         runner-hosted-on: 'America'
   
-    
   python-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-build' || github.event.inputs.artifact == 'all' }} 
+    # python build can only be published once a day, please do not publish it manually
+    if: ${{ github.event.schedule }} 
     runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
 
     steps:

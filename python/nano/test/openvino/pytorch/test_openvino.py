@@ -284,14 +284,35 @@ class TestOpenVINO(TestCase):
         core = Core()
         devices = core.available_devices
         gpu_avaliable = any('GPU' in x for x in devices)
-        
-        if gpu_avaliable is False:
-            return
-
         model = mobilenet_v3_small(num_classes=10)
-
         x = torch.rand((1, 3, 256, 256))
         x2 = torch.rand((10, 3, 256, 256))
+
+        # test dynamic_shape
+        with pytest.raises(RuntimeError,
+                           match="For model has dynamic axes, if you want to inference on non-CPU device, must define "
+                                 "input_shape for model optimizer. For more details about model optimizer, you can see mo --help ."):
+            openvino_model = InferenceOptimizer.trace(model,
+                                                      input_sample=x,
+                                                      accelerator='openvino',
+                                                      device='GPU')
+        with pytest.raises(RuntimeError,
+                           match="For model has dynamic axes, if you want to inference on non-CPU device, must define "
+                                 "input_shape for model optimizer. For more details about model optimizer, you can see mo --help ."):
+            openvino_model = InferenceOptimizer.trace(model,
+                                                      input_sample=x,
+                                                      accelerator='openvino',
+                                                      dynamic_axes={'x': [0]},
+                                                      device='GPU')
+
+        if gpu_avaliable is False:
+            with pytest.raises(RuntimeError):
+                openvino_model = InferenceOptimizer.trace(model,
+                                                          input_sample=x,
+                                                          accelerator='openvino',
+                                                          device='GPU',
+                                                          input_shape='[1,3,256,256]')
+            return
 
         # test GPU fp32
         openvino_model = InferenceOptimizer.trace(model,
@@ -364,3 +385,24 @@ class TestOpenVINO(TestCase):
             new_model = InferenceOptimizer.load(tmp_dir_name)
         new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+    def test_openvino_trace_output_tensors(self):
+        model = mobilenet_v3_small(pretrained=True)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.Adam(model.parameters(), lr=0.01))
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=dataloader)
+        test_openvino_model = InferenceOptimizer.trace(model, accelerator='openvino',
+                                                       input_sample=dataloader, output_tensors=False)
+
+        for x, y in dataloader:
+            forward_model_tensor = openvino_model(x).numpy()
+            forward_model_numpy = test_openvino_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)

@@ -38,94 +38,85 @@ class KerasLayerRef[T: ClassTag](instance: KerasLayer[_, _, T]) {
 
   def excludeInvalidLayers[T: ClassTag]
   (modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    KerasUtils.invokeMethod(instance, "excludeInvalidLayers", modules, ClassTag(this.getClass))
+    instance.excludeInvalidLayers(modules)
   }
 
   def setInputShape(value: Shape): Unit = {
-    KerasUtils.invokeMethod(instance, "_inputShapeValue_$eq", value)
+    instance._inputShapeValue = value
   }
 
   def setOutShape(value: Shape): Unit = {
-    KerasUtils.invokeMethod(instance, "_outputShapeValue_$eq", value)
+    instance._outputShapeValue = value
   }
 
   def checkWithCurrentInputShape(calcInputShape: Shape): Unit = {
-    KerasUtils.invokeMethod(instance, "checkWithCurrentInputShape", calcInputShape)
+    instance.checkWithCurrentInputShape(calcInputShape)
   }
 
   def validateInput[T: ClassTag](modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    KerasUtils.invokeMethod(instance, "validateInput", modules, ClassTag(this.getClass))
+    instance.validateInput(modules)
   }
 
   def checkDuplicate(
       record: mutable.HashSet[Int] = mutable.HashSet()
   ): Unit = {
-    KerasUtils.invokeMethod(instance, "checkDuplicate", record)
+    instance.checkDuplicate(record)
   }
 }
 
 class AbstractModuleRef[T: ClassTag](instance: AbstractModule[Activity, Activity, T]) {
 
   def build(inputShape: Shape): Shape = {
-    KerasUtils.invokeMethod(instance, "build", inputShape).asInstanceOf[Shape]
+    instance.build(inputShape)
   }
 }
 
 class GraphRef[T: ClassTag](instance: Graph[T]) {
   def getOutputs(): Seq[ModuleNode[T]] = {
-    KerasUtils.invokeMethod(instance, "outputs").asInstanceOf[Seq[ModuleNode[T]]]  // !!!!
+    instance.outputs
   }
 }
 
 object EngineRef {
   def getCoreNumber(): Int = {
-    KerasUtils.invokeMethod(Engine, "coreNumber").asInstanceOf[Int]
+    Engine.coreNumber()
   }
 
   def getNodeNumber(): Int = {
-    KerasUtils.invokeMethod(Engine, "nodeNumber").asInstanceOf[Int]
+    Engine.nodeNumber()
   }
 
   def getDefaultThreadPool(): ThreadPool = {
-    KerasUtils.invokeMethod(Engine, "default").asInstanceOf[ThreadPool]
+    Engine.default
   }
 
   def getEngineType(): EngineType = {
-    KerasUtils.invokeMethod(Engine, "getEngineType").asInstanceOf[EngineType]
+    Engine.getEngineType()
   }
 
   def getOptimizerVersion(): OptimizerVersion = {
-    KerasUtils.invokeMethod(Engine, "getOptimizerVersion").asInstanceOf[OptimizerVersion]
+    Engine.getOptimizerVersion()
   }
 
   def setOptimizerVersion(optimizerVersion : OptimizerVersion): Unit = {
-    KerasUtils.invokeMethod(Engine, "setOptimizerVersion",
-      optimizerVersion).asInstanceOf[OptimizerVersion]
+    Engine.setOptimizerVersion(optimizerVersion)
   }
 
   def setCoreNumber(num: Int): Unit = {
-    val field = Engine.getClass.getDeclaredField("physicalCoreNumber")
-    field.setAccessible(true)
-    field.setInt(Engine, num)
+    Engine.setCoreNumber(num)
   }
 }
 
 object SGDRef {
   def getstate[T: ClassTag](instance: Adam[T]): Table = {
-    KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
+    instance.state
   }
 
   def getstate[T: ClassTag](instance: AdamWeightDecay[T]): Table = {
-    KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
+    instance.state
   }
 
   def getstate[T](instance: SGD[T]): Table = {
-    KerasUtils.invokeMethod(instance, "state").asInstanceOf[Table]
-  }
-}
-
-object MklInt8ConvertibleRef {
-  def getWeightScalesBuffer(instance: MklInt8Convertible): ArrayBuffer[Array[Float]] = {
-    KerasUtils.invokeMethod(instance, "weightScalesBuffer").asInstanceOf[ArrayBuffer[Array[Float]]]
+    instance.state
   }
 }

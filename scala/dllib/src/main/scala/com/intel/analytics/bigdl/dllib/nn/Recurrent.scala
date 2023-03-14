@@ -140,7 +140,7 @@ class Recurrent[T : ClassTag](
   }
 
   // list of cell modules cloned from added modules
-  protected val cells: ArrayBuffer[Cell[T]]
+  protected[nn] val cells: ArrayBuffer[Cell[T]]
   = ArrayBuffer[Cell[T]]()
 
   /**

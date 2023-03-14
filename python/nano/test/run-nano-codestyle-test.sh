@@ -8,6 +8,6 @@ export NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test
 
 pycodestyle ${NANO_HOME} --config=${NANO_TEST_DIR}/tox.ini
 pydocstyle --ignore D104,D100,D212,D203,D401,D402,D105 \
-           --match-dir '(?!common|deps|utils|runtime_binding|transforms|amp|inference|patching).*' \
+           --match-dir '(?!common|deps|utils|runtime_binding|transforms|amp|inference|patching|low_precision).*' \
            --match '(?!context_manager|model|_).*\.py' \
            ${NANO_HOME}/bigdl/nano/

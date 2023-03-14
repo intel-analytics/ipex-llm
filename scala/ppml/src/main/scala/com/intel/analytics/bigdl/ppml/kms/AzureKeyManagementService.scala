@@ -90,8 +90,6 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
                                encryptedDataKeyString: String = ""): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
-    Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
-      "dataKeyPath should be specified")
     val primaryKeyId: String = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
     val cryptoClient = getCryptoClient(primaryKeyId)
     val dataKeyCiphertext = if (dataKeyPath != "") {

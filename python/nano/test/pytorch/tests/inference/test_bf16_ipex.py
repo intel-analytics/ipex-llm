@@ -354,18 +354,20 @@ class Pytorch1_11:
         model = DummyModelWith3d()
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
-        # TODO: quantize will fail here, will fix it in next PR
-        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
-                                                                use_ipex=True, precision='bf16',
-                                                                input_sample=(x1, x2),
-                                                                enable_onednn=True,
-                                                                channels_last=True)
+        ipex_jit_channels_last_model = InferenceOptimizer.quantize(model,
+                                                                   accelerator="jit", 
+                                                                   use_ipex=True,
+                                                                   precision='bf16',
+                                                                   input_sample=(x1, x2),
+                                                                   enable_onednn=True,
+                                                                   channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ipex_jit_channels_last_model, tmp_dir_name)
-            load_model = InferenceOptimizer.load(tmp_dir_name, model)
-            load_model(x1, x2)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+            with InferenceOptimizer.get_context(load_model):
+                load_model(x1, x2)
 
 
 TORCH_VERSION_CLS = Pytorch1_11

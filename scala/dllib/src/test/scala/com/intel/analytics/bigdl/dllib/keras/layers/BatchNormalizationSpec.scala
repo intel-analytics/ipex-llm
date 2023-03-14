@@ -50,7 +50,7 @@ class BatchNormalizationSpec extends KerasBaseSpec {
   }
 
   "BatchNormalization" should "not work properly for 3D inputMeanSquaredLogarithmicErrorSpec:" in {
-    val thrown = intercept[InvocationTargetException] {
+    val thrown = intercept[IllegalArgumentException] {
       val seq = Sequential[Float]()
       val layer = BatchNormalization[Float](betaInit = "glorot_uniform",
         gammaInit = "normal", inputShape = Shape(3, 12))
@@ -60,7 +60,7 @@ class BatchNormalizationSpec extends KerasBaseSpec {
       val output = seq.forward(input)
       val gradInput = seq.backward(input, output)
     }
-    TestUtils.conditionFailTest(thrown.getTargetException.getMessage()
+    TestUtils.conditionFailTest(thrown.getMessage
       .contains("BatchNormalization requires 4D or 2D input"))
   }
 

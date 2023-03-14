@@ -28,24 +28,26 @@ object Encrypt extends Supportive {
         case Some(arguments) => arguments
         case None => argumentsParser.failure("miss args, please see the usage info"); null
     }
-    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType) = (
+    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action) = (
         arguments.inputDataSourcePath,
         arguments.outputDataSinkPath,
         CryptoMode.parse(arguments.cryptoMode),
-        arguments.dataSourceType
+        arguments.dataSourceType,
+        arguments.action
     )
 
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val sc: PPMLContext = PPMLContext.initPPMLContext(sparkSession)
-    dataSourceType match {
+    if (action.equals("encrypt")) {
+      dataSourceType match {
         case "csv" =>
           val df = sc.read(PLAIN_TEXT).csv(inputDataSourcePath)
           sc.write(df, cryptoMode).csv(outputDataSinkPath)
         case "json" =>
-          val df = sc.read(cryptoMode).json(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
           sc.write(df, cryptoMode).json(outputDataSinkPath)
         case "parquet" =>
-          val df = sc.read(cryptoMode).parquet(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).parquet(inputDataSourcePath)
           sc.write(df, cryptoMode).parquet(outputDataSinkPath)
         case "textFile" =>
           import sparkSession.implicits._
@@ -53,30 +55,55 @@ object Encrypt extends Supportive {
           sc.write(df, cryptoMode).text(outputDataSinkPath)
         case _ =>
           argumentsParser.failure("wrong dataSourceType, please see the usage info")
+      }
+    } else if (action.equals("decrypt")) {
+      dataSourceType match {
+        case "csv" =>
+          val df = sc.read(cryptoMode).csv(inputDataSourcePath)
+          sc.write(df, PLAIN_TEXT).csv(outputDataSinkPath)
+        case "json" =>
+          val df = sc.read(cryptoMode).json(inputDataSourcePath)
+          sc.write(df, PLAIN_TEXT).json(outputDataSinkPath)
+        case "parquet" =>
+          val df = sc.read(cryptoMode).parquet(inputDataSourcePath)
+          sc.write(df, PLAIN_TEXT).parquet(outputDataSinkPath)
+        case "textFile" =>
+          import sparkSession.implicits._
+          val df = sc.textFile(inputDataSourcePath, cryptoMode = cryptoMode).toDF
+          sc.write(df, PLAIN_TEXT).text(outputDataSinkPath)
+        case _ =>
+          argumentsParser.failure("wrong dataSourceType, please see the usage info")
+      }
+    } else {
+      argumentsParser.failure("wrong action, please see the usage info")
     }
   }
 
   val argumentsParser =
     new scopt.OptionParser[EncryptArguments]("PPML Encrypt Arguments") {
-    opt[String]('i', "inputDataSourcePath")
-      .action((x, c) => c.copy(inputDataSourcePath = x))
-      .text("path of input data to encrypt e.g. file://... or hdfs://...")
-    opt[String]('o', "outputDataSinkPath")
-      .action((x, c) => c.copy(outputDataSinkPath = x))
-      .text("output path to save encrypted data e.g. file://... or hdfs://...")
-    opt[String]('m', "cryptoMode")
-      .action((x, c) => c.copy(cryptoMode = x))
-      .text("encryption mode, aes/cbc/pkcs5padding for csv, json and textFile,"
-        + " and aes_gcm_v1 or aes_gcm_ctr_v1 for parquet")
-    opt[String]('t', "dataSourceType")
-      .action((x, c) => c.copy(dataSourceType = x))
-      .text("file type of input data source, csv, json, parquet or textFile")
-  }
+      opt[String]('i', "inputDataSourcePath")
+        .action((x, c) => c.copy(inputDataSourcePath = x))
+        .text("path of input data to encrypt e.g. file://... or hdfs://...")
+      opt[String]('o', "outputDataSinkPath")
+        .action((x, c) => c.copy(outputDataSinkPath = x))
+        .text("output path to save encrypted data e.g. file://... or hdfs://...")
+      opt[String]('m', "cryptoMode")
+        .action((x, c) => c.copy(cryptoMode = x))
+        .text("encryption mode, aes/cbc/pkcs5padding for csv, json and textFile,"
+          + " and aes_gcm_v1 or aes_gcm_ctr_v1 for parquet")
+      opt[String]('t', "dataSourceType")
+        .action((x, c) => c.copy(dataSourceType = x))
+        .text("file type of input data source, csv, json, parquet or textFile")
+      opt[String]('a', "action")
+        .action((x, c) => c.copy(action = x))
+        .text("action type of encrypt or decrypt file, default is encrypt")
+    }
 }
 
 case class EncryptArguments(inputDataSourcePath: String = "input_data_path",
                             outputDataSinkPath: String = "output_save_path",
                             cryptoMode: String = "aes/cbc/pkcs5padding",
-                            dataSourceType: String = "csv")
+                            dataSourceType: String = "csv",
+                            action: String = "encrypt")
 
 

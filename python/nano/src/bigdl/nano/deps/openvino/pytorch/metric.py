@@ -17,12 +17,15 @@ from bigdl.nano.utils.common import invalidInputError
 from ..core.metric import BaseOpenVINOMetric
 import torch
 from torchmetrics import Metric
+import inspect
 
 
 class PytorchOpenVINOMetric(BaseOpenVINOMetric):
     def __init__(self, metric, higher_better=True):
-        invalidInputError(isinstance(metric, Metric),
-                          "Please provide an instance of torchmetrics.Metric.")
+        if not isinstance(metric, Metric):
+            invalidInputError(len(inspect.signature(metric).parameters) == 2,
+                              "Please provide an instance of torchmetrics.Metric or"
+                              "a metric function with input (preds, targets).")
         super().__init__(metric, higher_better)
 
     def stack(self, output):

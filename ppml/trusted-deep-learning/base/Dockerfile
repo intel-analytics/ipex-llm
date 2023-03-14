@@ -12,7 +12,8 @@ ARG JDK_VERSION
 ENV JDK_HOME                /opt/jdk${JDK_VERSION}
 ENV JAVA_HOME                           /opt/jdk${JDK_VERSION}
 
-RUN apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \

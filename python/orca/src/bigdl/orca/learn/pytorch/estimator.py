@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
     from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
     from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
+    from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
 
 class Estimator(object):
@@ -132,6 +133,41 @@ class Estimator(object):
             invalidInputError(False,
                               "Only horovod, ray, bigdl and spark backends are "
                               f"supported for now, got backend: {backend}")
+            return None
+
+    @staticmethod
+    def from_mmcv(*,
+                  mmcv_runner_creator: Callable,
+                  backend: str = "ray",
+                  workers_per_node: int = 1,
+                  config: Optional[Dict] = None) -> Union['MMCVRayEstimator', None]:
+        """
+        Create an Estimator for MMCV.
+
+        :param mmcv_runner_creator: A runner creator function that takes the parameter
+               "config" and returns a MMCV runner.
+        :param backend: The distributed backend for the Estimator.
+               Default: "ray".
+        :param config: A parameter config dict, CfgNode or any class instance that plays a role of
+               configuration to create runner data.
+               Default: None if no config is needed.
+        :param workers_per_node: The number of MMCV workers on each node.
+               Default: 1.
+
+        :return: A Estimator object for MMCV.
+        """
+        if backend == "ray":
+            from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator \
+                import MMCVRayEstimator
+            return MMCVRayEstimator(mmcv_runner_creator=mmcv_runner_creator,
+                                    backend=backend,
+                                    workers_per_node=workers_per_node,
+                                    config=config)
+        else:
+            from bigdl.dllib.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Only ray backend are supported for now, "
+                              f"got backend: {backend}")
             return None
 
     @staticmethod

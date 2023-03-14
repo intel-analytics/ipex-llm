@@ -23,7 +23,7 @@ torch = LazyImport('torch')
 Seq2SeqForecaster = LazyImport('bigdl.chronos.forecaster.seq2seq_forecaster.Seq2SeqForecaster')
 from unittest import TestCase
 import pytest
-from .. import op_torch, op_distributed, op_inference, op_automl, op_diff_set_all
+from .. import op_torch, op_distributed, op_inference, op_automl
 
 
 def create_data(loader=False):
@@ -120,7 +120,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data, acceleration=False)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
-    @op_diff_set_all
     @op_inference
     def test_s2s_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -167,7 +166,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
-    @op_diff_set_all
+    @op_inference
     def test_s2s_forecaster_openvino_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -190,7 +189,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             ckpt_name_q = os.path.join(tmp_dir_name, "int_openvino")
             forecaster.export_openvino_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
 
-    @op_diff_set_all
+    @op_inference
     def test_s2s_forecaster_jit_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -212,7 +211,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             ckpt_name = os.path.join(tmp_dir_name, "fp32_jit")
             forecaster.export_torchscript_file(dirname=ckpt_name)
 
-    @op_diff_set_all
+    @op_inference
     def test_s2s_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -300,7 +299,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         stop_orca_context()
 
     @op_distributed
-    @op_diff_set_all
     @op_inference
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
@@ -443,7 +441,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_forecaster_from_tsdataset_data_loader_onnx(self):
         train, test = create_tsdataset(roll=False)
@@ -557,7 +554,6 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape
 
-    @op_diff_set_all
     @op_inference
     def test_s2s_optimize_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
@@ -746,3 +742,72 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             assert current_thread == num
             for x, y in test_loader:
                 yhat = forecaster.predict(x.numpy())
+
+    @op_inference
+    def test_s2s_forecaster_numpy_inference(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=1)
+        # onnx model
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_data[0])
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_data[0])
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_data[0])
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_data[0])
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
+
+    @op_inference
+    def test_s2s_forecaster_numpy_inference_loader(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train_loader, epochs=1)
+        # onnx model
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test_loader)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test_loader)
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test_loader)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test_loader)
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)
+
+    @op_inference
+    def test_s2s_forecaster_numpy_inference_tsdataset(self):
+        train, test = create_tsdataset(roll=True)
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=2,
+                                       output_feature_num=2,
+                                       loss="mse",
+                                       lr=0.01)
+        forecaster.fit(train, epochs=1)
+        # onnx model
+        q_onnx_numpy_yhat = forecaster.predict_with_onnx(data=test)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_onnx_tensor_yhat = forecaster.predict_with_onnx(data=test)
+        np.testing.assert_almost_equal(q_onnx_numpy_yhat, q_onnx_tensor_yhat, decimal=5)
+        # openvino model
+        q_openvino_numpy_yhat = forecaster.predict_with_openvino(data=test)
+        forecaster.accelerated_model.output_tensors = True
+        forecaster.optimized_model_output_tensor = True
+        q_openvino_tensor_yhat = forecaster.predict_with_openvino(data=test)
+        np.testing.assert_almost_equal(q_openvino_numpy_yhat, q_openvino_tensor_yhat, decimal=5)

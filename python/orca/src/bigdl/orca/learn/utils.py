@@ -92,12 +92,11 @@ def convert_predict_rdd_to_xshard(data, prediction_rdd):
                 yield size
 
     def transform_predict(predictions):
-        # list of np array
+        # case 1: each prediction is a list of np array
         if isinstance(predictions[0], list):
-            predictions = np.array(predictions).T.tolist()
-            result = [np.array(predict) for predict in predictions]
-            return result
-        # np array
+            return [np.array([prediction[i] for prediction in predictions])
+                    for i in range(len(predictions[0]))]
+        # case 2: each prediction is a single np array
         else:
             return np.array(predictions)
 
@@ -153,26 +152,31 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
     return result
 
 
+def get_length(input):
+    if isinstance(input, (list, tuple)):
+        return get_length(input[0])
+    elif isinstance(input, dict):
+        return get_length(list(input.values())[0])
+    else:
+        return input.shape[0]
+
+
+def filter_elem(input, i):
+    if isinstance(input, (list, tuple)):
+        return [filter_elem(elem, i) for elem in input]
+    elif isinstance(input, dict):
+        return {k: filter_elem(v, i) for k, v in input.items()}
+    else:
+        return input[i]
+
+
 def convert_predict_xshards_to_dataframe(df, pred_shards):
     def flatten(data):
         data = data["prediction"]
-        is_list = isinstance(data, list)
-        is_tuple = isinstance(data, tuple)
-        if is_list or is_tuple:
-            length = data[0].shape[0]
-            ls_data = data
-        else:
-            length = data.shape[0]
-            ls_data = [data]
+        length = get_length(data)
 
         for i in range(length):
-            row = [elem[i] for elem in ls_data]
-            if is_list:
-                yield row
-            elif is_tuple:
-                yield tuple(row)
-            else:
-                yield row[0]
+            yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
     result = convert_predict_rdd_to_dataframe(df, pred_rdd)
@@ -181,31 +185,31 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
 
 def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.sql import Row
-    from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
 
-    def combine(pair):
+    def convert_elem(elem):
         # list of np array
-        if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
-        # scalar
-        elif len(pair[1].shape) == 0:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
+        if isinstance(elem, (list, tuple)):
+            return [convert_elem(i) for i in elem]
+        # dict of np array as values
+        elif isinstance(elem, dict):
+            return {k: convert_elem(v) for k, v in elem.items()}
+        # scalar in basic type
+        elif not isinstance(elem, np.ndarray) and len(elem.shape) == 0:
+            return float(elem.item(0))
         # np ndarray
         else:
-            dim = len(pair[1].shape)
-            if dim == 1:
+            dim = len(elem.shape)
+            if dim in [0, 1]:
                 # np 1-D array
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                            [Vectors.dense(pair[1])]))
+                return Vectors.dense(elem)
             else:
                 # multi-dimensional array
-                structType = FloatType()
-                for _ in range(dim):
-                    structType = ArrayType(structType)
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
-        return row
+                return elem.tolist()
+
+    def combine(pair):
+        return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                     [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     columns = df.columns + ["prediction"]
@@ -225,6 +229,9 @@ def _stack_arrs(arrs):
 
 
 def _merge_rows(results):
+    if isinstance(results, dict):
+        return results
+
     try:
         result_arrs = [_stack_arrs(l) for l in results]
     except ValueError:
@@ -289,18 +296,24 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             # pre allocate numpy array when shard_size is provided
             if isinstance(first_row, np.ndarray):
                 return [np.empty((shard_size,) + first_row.shape, first_row.dtype)]
+            if isinstance(first_row, dict):
+                res = dict()
+                for k, _ in first_row.items():
+                    res[k] = np.empty((shard_size,) + first_row[k].shape, first_row[k].dtype)
+                return res
             else:
                 return [np.empty((shard_size,) + r.shape, r.dtype) for r in first_row]
         else:
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list):
+        if not isinstance(data, list) and not isinstance(data, dict):
             arrays = [data]
         else:
             arrays = data
 
-        for i, arr in enumerate(arrays):
+        iter = arrays.items() if isinstance(arrays, dict) else enumerate(arrays)
+        for i, arr in iter:
             if shard_size:
                 current = current % shard_size
                 results[i][current] = arr
@@ -331,9 +344,15 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
         if shard_size:
             # remove empty part of the ndarray in the last shard
             rest_size = counter % shard_size
-            feature_lists = [feature[0:rest_size] for feature in feature_lists]
+            if isinstance(feature_lists, dict):
+                feature_lists = {k: v[0:rest_size] for k, v in feature_lists.items()}
+            else:
+                feature_lists = [feature[0:rest_size] for feature in feature_lists]
             if label_cols is not None:
-                label_lists = [label[0:rest_size] for label in label_lists]
+                if isinstance(label_lists, dict):
+                    label_lists = {k: v[0:rest_size] for k, v in label_lists.items()}
+                else:
+                    label_lists = [label[0:rest_size] for label in label_lists]
         # output last shard
         yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
 

@@ -160,6 +160,7 @@ class LSTMForecaster(BasePytorchForecaster):
         self.quantize_available = True
         self.checkpoint_callback = True
         self.use_hpo = True
+        self.optimized_model_output_tensor = True
 
         super().__init__()
 

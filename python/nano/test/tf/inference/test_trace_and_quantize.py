@@ -46,13 +46,31 @@ class MyModel(tf.keras.Model):
         pass
 
 
-class MyModelReturnList(tf.keras.Model):
+class MyModelCannotComputeOutputShape(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        self.dense1 = tf.keras.layers.Dense(4, activation=tf.nn.relu)
+        self.dense = tf.keras.layers.Dense(4, activation=tf.nn.relu)
 
-    def call(self, inputs: tf.Tensor):
-        return [self.dense1(inputs)]
+    def call(self, inputs):
+        return self.dense(inputs)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Older versions of TensorFlow required custom layers to implement the
+        `compute_output_shape` method. If it was not implemented, calling its
+        `compute_output_shape` would throw a `NotImplementedError` exception.
+        We cannot reproduce this behavior in newer versions of TensorFlow,
+        so we manually throw this exception to simulate this behavior.
+        """
+        raise NotImplementedError()
+
+
+def ModelWithConv2DTranspose():
+    inputs = layers.Input(shape=(32, 32, 3))
+    x = layers.Conv2D(64, (3, 3), strides=(2, 2), padding="same")(inputs)
+    outputs = layers.Conv2DTranspose(3, (3, 3), strides=(2, 2), padding="same")(x)
+    model = Model(inputs=inputs, outputs=outputs)
+    return model
 
 
 class TestTraceAndQuantize(TestCase):
@@ -66,7 +84,6 @@ class TestTraceAndQuantize(TestCase):
         traced_model.do_nothing()
         assert traced_model.get_x() == traced_model.x == x
         traced_model(np.random.random((1, 4)).astype(np.float32))
-        traced_model(inputs=np.random.random((1, 4)).astype(np.float32))
 
         # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -122,8 +139,7 @@ class TestTraceAndQuantize(TestCase):
         quantized_model.do_nothing()
         assert quantized_model.get_x() == quantized_model.x == x
         quantized_model(np.random.random((1, 4)).astype(np.float32))
-        quantized_model(inputs=np.random.random((1, 4)).astype(np.float32))
-        
+
         # test save/load with original model
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(quantized_model, tmp_dir_name)
@@ -167,7 +183,7 @@ class TestTraceAndQuantize(TestCase):
             new_model.do_nothing()
         with pytest.raises(AttributeError):
             assert new_model.get_x()
-        
+
         # for inc
         from bigdl.nano.utils.common import compare_version
         INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
@@ -225,23 +241,10 @@ class TestTraceAndQuantize(TestCase):
                 new_model = InferenceOptimizer.load(tmp_dir_name, model)
                 new_model.evaluate(x=x, y=y)
 
-    def test_inference_output_shape(self):
-        model = MyModelReturnList()
-        x = np.random.random((100, 4))
-        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        outputs = traced_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
-
-        quantized_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime", 
-                                                      input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
-        outputs = quantized_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
-
     def test_quantize_bf16(self):
         # for custom model, quantized model still return fp32 output
-        # test at the same time that the quantization does not 
-        # change the original's model dtype policy 
+        # test at the same time that the quantization does not
+        # change the original's model dtype policy
         model = MyModel(100)
         model.compile(loss='mse', metrics=MeanSquaredError())
         ori_model_policies = []
@@ -268,8 +271,8 @@ class TestTraceAndQuantize(TestCase):
             assert output.dtype == tf.float32
 
         # test standard model, quantized model return bf16 output
-        # test at the same time that the quantization does not 
-        # change the original's model dtype policy 
+        # test at the same time that the quantization does not
+        # change the original's model dtype policy
         model = MobileNetV2(weights="imagenet")
         ori_model_config = model.get_config()
         x = np.random.rand(32, 224, 224, 3)
@@ -290,3 +293,29 @@ class TestTraceAndQuantize(TestCase):
         if _avx512_checker():
             output = load_model(x)
             assert output.dtype == tf.bfloat16
+
+        # test model with ModelWithConv2DTranspose layer, such model
+        # cannot be saved after modifying dtype policy
+        model = ModelWithConv2DTranspose()
+        bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        inputs = tf.random.normal((1, 32, 32, 3))
+        if _avx512_checker():
+            output1 = model(inputs)
+            output2 = bf16_model(inputs)
+            assert output1.dtype == tf.float32
+            assert output2.dtype == tf.bfloat16
+            np.testing.assert_allclose(output1, tf.cast(output2, tf.float32), atol=1e-2)
+
+    def test_model_cannot_compute_output_shape(self):
+        model = MyModelCannotComputeOutputShape()
+        x = np.random.random((100, 4))
+        y = np.random.random((100, 4))
+
+        ov_t_model = InferenceOptimizer.trace(model, accelerator="openvino",
+                                              input_spec=tf.TensorSpec(shape=(None, 4)))
+
+        ort_t_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
+                                               input_spec=tf.TensorSpec(shape=(None, 4)))
+
+        inc_q_model = InferenceOptimizer.quantize(model, x=x, y=y,
+                                                  input_spec=tf.TensorSpec(shape=(None, 4)))

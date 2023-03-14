@@ -55,10 +55,27 @@ jobs:
           python -m pip install --upgrade wheel
           sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 
-      - name: Run TensorFlow unit tests
+      - name: Run TensorFlow unit tests (train)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10
+          source $CONDA/bin/activate nano-tensorflow
+          $CONDA/bin/conda info
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+          fi
+          pip install pytest
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-train-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n nano-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run TensorFlow unit tests (inference)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -66,7 +83,7 @@ jobs:
           fi
           pip install pytest
           source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-tests.sh
+          bash python/nano/test/run-nano-tf-inference-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n nano-tensorflow --all
         env:

@@ -24,7 +24,7 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Prediction with Orca XShards", mode="predict")
-init_orca(args.cluster_mode)
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,utils.py")
 
 
 # Step 2: Load the processed data

@@ -35,7 +35,6 @@ loader.env.SPARK_USER = "{{ spark_user }}"
 loader.env.SPARK_SCALA_VERSION = "2.12"
 loader.env.SPARK_HOME = "{{ spark_home }}"
 loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
-loader.env.MALLOC_ARENA_MAX = "1"
 
 sgx.ioctl_structs.ifconf  =  [ {name = "ifc_len",size = 4, align = 4, type= "inout" }, {size = 4, type= "inout"}, { ptr=[ {name="ifcu_req", size= "ifc_len", type="in"} ] } ]
 sgx.allowed_ioctls.io1.request = 0x8912
