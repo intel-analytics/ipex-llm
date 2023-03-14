@@ -30,7 +30,7 @@ parser.add_argument('--precision', default='fp32', type=str)
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    model_ft = resnet50(pretrained=True)
+    model_ft = resnet50(pretrained=False)
 
     if args.precision == 'fp32' and args.accelerator is None:
         x = torch.rand(2, 3, 224, 224)
@@ -64,5 +64,5 @@ if __name__ == "__main__":
             "config": args.name,
             "inference_time": end_time - start_time,
         })
-    
+
     print(f'>>>{output}<<<')
