@@ -16,7 +16,7 @@
 
 
 from pathlib import Path
-from typing import Sequence, Any
+from typing import Sequence, Any, Union, Dict
 
 import yaml
 import tensorflow as tf
@@ -27,13 +27,10 @@ from bigdl.nano.utils.common import invalidInputError
 class KerasOptimizedModel(tf.keras.Model):
     """A base class for keras optimized model."""
 
-    def __call__(self, *inputs, **kwargs):
+    def __call__(self, *args, **kwargs):
         """Run inference, automatically perform type and dtype conversion."""
-        # todo: we should parse the `kwargs` and add it into `inputs`
-        for k in kwargs.keys():
-            invalidInputError(k == 'training',
-                              "Now we do not support passing arguments with `key=value` format")
-        inputs = self.preprocess(inputs)
+        kwargs.pop("training", None)
+        inputs = self.preprocess(args, kwargs)
         outputs = self.forward(inputs)
         outputs = self.postprocess(outputs)
         return outputs
@@ -42,13 +39,13 @@ class KerasOptimizedModel(tf.keras.Model):
         """The same as __call__."""
         return self(*args, **kwargs)
 
-    def preprocess(self, inputs: Sequence[Any]):
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         """Preprocess inputs, such as convert inputs to numpy ndarray."""
-        return inputs
+        invalidInputError(False, "preprocess function is not implemented.")
 
-    def forward(self, inputs: Sequence[Any]):
+    def forward(self, inputs: Union[Sequence[Any], Dict[str, Any]]):
         """Run inference."""
-        return self.model(*inputs)
+        invalidInputError(False, "forward function is not implemented.")
 
     def postprocess(self, outputs: Sequence[Any]):
         """Postprocess outputs, such as convert outputs to tensorflow Tensor."""

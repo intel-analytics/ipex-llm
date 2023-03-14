@@ -19,9 +19,9 @@ from typing import List, Union  # for typehint
 from openvino.runtime import Core
 from bigdl.nano.utils.common import invalidInputError
 from openvino.runtime import Model
-from .utils import save
 from openvino.runtime import AsyncInferQueue
 import numpy as np
+from .utils import save, OpenVINO_LESS_2022_3
 
 
 class OpenVINOModel:
@@ -81,7 +81,10 @@ class OpenVINOModel:
         else:
             self._ie_network = model
         if self.thread_num is not None and self._device == 'CPU':
-            config = {"CPU_THREADS_NUM": str(self.thread_num)}
+            if OpenVINO_LESS_2022_3:
+                config = {"CPU_THREADS_NUM": str(self.thread_num)}
+            else:
+                config = {"INFERENCE_NUM_THREADS": str(self.thread_num)}
         else:
             config = {}
         if self.additional_config is not None and self._device == 'CPU':
