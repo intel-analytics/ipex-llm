@@ -27,4 +27,4 @@ if os.getenv("LD_PRELOAD", "null") != "null":
 from bigdl.chronos.utils import LazyImport
 AutoTSEstimator = LazyImport('bigdl.chronos.autots.autotsestimator.AutoTSEstimator')
 
-from .tspipeline import TSPipeline
+TSPipeline = LazyImport('bigdl.chronos.autots.tspipeline.TSPipeline')
