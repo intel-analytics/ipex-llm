@@ -353,6 +353,24 @@ def index_concatenate(x, axis=0):
         return res
 
 
+def split_predict_cols(y):    
+    if not isinstance(y, (list, tuple)):
+        return {"prediction": y}
+    # TODO: Support automatically append output_cols like output_0, output_1, ...
+    
+    output_cols = [f"output_{i}" for i in range(len(y))]
+    if isinstance(y, np.ndarray):
+        # Single output
+        y = [y]
+
+    # Multi-output in a list format
+    invalidInputError(len(output_cols) == len(y),
+                      f"The length of output_cols ({len(output_cols)}) "
+                      f"does not match the length of model output ({len(y)}).")
+
+    return dict(zip(output_cols, y))
+
+
 def is_array_of_what(obj_list, obj_type):
     is_array = True
     for item in obj_list:
