@@ -22,5 +22,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driverEnv.USING_TMP_HOSTFS=true \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="10G" \
+    --py-files /py-examples/tpch/tpch.zip \
     local:/py-examples/tpch/main.py \
     /host/data/tpch_data/ /host/data/tpch_output/ true
