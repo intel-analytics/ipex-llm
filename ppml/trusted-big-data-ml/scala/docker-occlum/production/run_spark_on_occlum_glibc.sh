@@ -256,6 +256,7 @@ run_pyspark_tpch_example() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx5g org.apache.spark.deploy.SparkSubmit \
                 --conf spark.sql.shuffle.partitions=8 \
+                --py-files /py-examples/tpch/tpch.zip \
                 /py-examples/tpch/main.py \
                 /host/data/ /host/data/output/ true
 }

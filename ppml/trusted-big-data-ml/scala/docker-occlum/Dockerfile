@@ -156,7 +156,10 @@ RUN cd /opt && \
     cd zoo-tutorials/tpch-spark && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
-    sbt package
+    sbt package && \
+    cd zoo-tutorials/tpch-pyspark && \
+    zip -r tpch.zip ./tpch
+
 
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
@@ -228,6 +231,11 @@ RUN cd /opt && \
 
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
+
+# Prepare pyspark TPC-H
+RUN mkdir -p /opt/py-examples/tpch
+COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/tpch.zip /opt/py-examples/tpch/
+COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/main.py /opt/py-examples/tpch/
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
