@@ -41,7 +41,7 @@ parser.add_argument('--nproc', default=1, type=int)
 class Classifier(ImageClassifier):
 
     def __init__(self):
-        backbone = resnet50(pretrained=True, include_top=False, freeze=False)
+        backbone = resnet50(pretrained=False, include_top=False, freeze=False)
         super().__init__(backbone=backbone, num_classes=2)
 
     def configure_optimizers(self):
@@ -91,13 +91,13 @@ def _main_process(args, train_loader, val_loader, train_size):
     trainer.fit(classifier, train_loader)
     train_end = time.time()
     trainer.test(classifier, val_loader)
-    
+
     output = json.dumps({
         "config": args.name,
         "train_time": train_end - train_start,
         "train_throughput": train_size * args.epochs / (train_end - train_start)
     })
-    
+
     print(f'>>>{output}<<<')
 
     return
