@@ -382,7 +382,7 @@ class TestEstimatorForKeras(TestCase):
         resultDF = convert_predict_rdd_to_dataframe(df, predict_rdd)
         resultDF.printSchema()
         print(resultDF.collect()[0])
-        predict_rdd = df.rdd.map(lambda row: [np.array(1)]) #  here must be a list of sth. after #7796.
+        predict_rdd = df.rdd.map(lambda row: np.array(1))
         resultDF = convert_predict_rdd_to_dataframe(df, predict_rdd)
         resultDF.printSchema()
         print(resultDF.collect()[0])
