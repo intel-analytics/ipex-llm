@@ -319,6 +319,41 @@ And upload source file by hdfs in the last line to replace local file.For exampl
       value: "1GB"
 ```
 
+### PySpark TPC-H example
+Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#generate-data), and you can use hdfs to replace the mount way, and you can just execute one query by adding [query_number] from 1 to 22 behind output_dir.For example:
+"hdfs:///input/dbgen/ hdfs:///output/dbgen/ true 13" means using SQL directly execute query 13.
+```bash
+./run_pyspark_tpch.sh
+```
+
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "512m"
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "15GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "1GB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+```
+
 ### [Deprecated] Spark XGBoost example
 
 > Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (which contains gradient, split, and env) is not protected.

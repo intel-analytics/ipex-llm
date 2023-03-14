@@ -14,10 +14,13 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.sgx.log.level=off \
     --executor-memory 1g \
     --driver-memory 1g \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --conf spark.cores.max=8 \
     --conf spark.sql.shuffle.partitions=16 \
     --conf spark.executorEnv.USING_TMP_HOSTFS=true \
     --conf spark.kubernetes.driverEnv.USING_TMP_HOSTFS=true \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" \
-    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="5G" \
+    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="10G" \
     local:/py-examples/tpch/main.py \
     /host/data/tpch_data/ /host/data/tpch_output/ true

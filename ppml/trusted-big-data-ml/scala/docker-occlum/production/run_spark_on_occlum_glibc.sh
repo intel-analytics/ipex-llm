@@ -257,7 +257,7 @@ run_pyspark_tpch_example() {
                 -Xmx5g org.apache.spark.deploy.SparkSubmit \
                 --conf spark.sql.shuffle.partitions=8 \
                 /py-examples/tpch/main.py \
-                /host/data/tpch/ /host/data/output/ true
+                /host/data/ /host/data/output/ true
 }
 
 run_spark_pi() {
