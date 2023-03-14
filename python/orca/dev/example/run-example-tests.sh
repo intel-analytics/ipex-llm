@@ -161,7 +161,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time5=$((now - start))
+time4=$((now - start))
 
 echo "#5 start test for orca tf transfer_learning"
 #timer
@@ -173,7 +173,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time6=$((now - start))
+time5=$((now - start))
 
 echo "#6 start test for orca tf basic_text_classification"
 #timer
@@ -188,7 +188,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time7=$((now - start))
+time6=$((now - start))
 
 echo "#7 start test for orca bigdl attention"
 #timer
@@ -204,7 +204,7 @@ if [ $exit_status -ne 0 ]; then
 fi
 now=$(date "+%s")
 
-time8=$((now - start))
+time7=$((now - start))
 
 echo "#8 start test for orca bigdl imageInference"
 #timer
@@ -225,13 +225,13 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time9=$((now - start))
+time8=$((now - start))
 
 echo "#1 openvino time used: $time1 seconds"
 echo "#2 vnni/openvino time used: $time2 seconds"
 echo "#3 tensorflow time used: $time3 seconds"
-echo "#4 orca tf imagesegmentation time used:$time5 seconds"
-echo "#5 orca tf transfer_learning time used:$time6 seconds"
-echo "#6 orca tf basic_text_classification time used:$time7 seconds"
-echo "#7 orca bigdl attention time used:$time8 seconds"
-echo "#8 orca bigdl imageInference time used:$time9 seconds"
+echo "#4 orca tf imagesegmentation time used:$time4 seconds"
+echo "#5 orca tf transfer_learning time used:$time5 seconds"
+echo "#6 orca tf basic_text_classification time used:$time6 seconds"
+echo "#7 orca bigdl attention time used:$time7 seconds"
+echo "#8 orca bigdl imageInference time used:$time8 seconds"
