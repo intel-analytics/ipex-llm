@@ -203,17 +203,29 @@ def read_images_spark(file_path: str,
 # https://github.com/intel-analytics/BigDL/blob/main/python/orca/src/bigdl/orca/data/image/voc_dataset.py
 def read_voc(file_path: str="VOCdevkit",
              split_names: List[Tuple[int, str]] = [(2009, "trainval")],
-             diff=False,
-             max_samples: int = 25
-             ):
+             classes: Optional[List[str]] = None,
+             diff: bool = False,
+             max_samples: int = None
+             ) -> "SparkXShards":
+    """
+    Read VOC images into a SparkXShards.
 
+    :param file_path: str. A HDFS path or local path of images.
+    :param split_names: splits_names: tuple, ((year, trainval)).
+    :param classes: str. A HDFS path or local path of target images.
+    :param diff: boolean, False ignore voc xml difficult value.
+
+    :param max_samples: int. max samples returned.
+    :return: A new SparkXShards of tuple of image, target. target is a ndarray of [[x1, y1, x2, y2, cls, difficult]]
+    """
     spark = OrcaContext.get_spark_session()
     anno_path = osp.join('{}', 'Annotations', '{}.xml')
     image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
 
-    CLASSES = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
-                'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
-                'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+    CLASSES = classes if classes else ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
+                                       'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
+                                       'motorbike', 'person', 'pottedplant', 'sheep', 'sofa',
+                                       'train', 'tvmonitor']
     cat2label = {cat: i for i, cat in enumerate(CLASSES)}
 
     def get_imgids(splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
