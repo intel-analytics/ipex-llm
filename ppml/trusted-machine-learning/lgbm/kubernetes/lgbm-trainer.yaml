@@ -34,6 +34,8 @@ spec:
         env:
         - name: TOTAL_TRAINER_COUNT
           value: "$totalTrainerCount"
+        - name: TRAINER_PORT
+          value: "$trainerPort"
         - name: TRAINER_POD_NAME
           valueFrom:
             fieldRef:
