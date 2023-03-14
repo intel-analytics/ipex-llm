@@ -52,6 +52,9 @@ python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multi_agent_two_trai
 now=$(date "+%s")
 time5=$((now-start))
 
+python_version=$(python --version | awk '{print$2}')
+if [ $python_version == 3.7.10 ];then
+# parameter server test requires tensorflow 1
 echo "#5 Start async_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
@@ -63,6 +66,7 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
 time7=$((now-start))
+fi
 
 echo "#7 Start mxnet lenet example"
 start=$(date "+%s")
