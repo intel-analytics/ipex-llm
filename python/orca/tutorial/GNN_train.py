@@ -40,7 +40,7 @@ config = dict(
     dim_node_features=4,
     num_classes=5,
     factor_num=16,
-    lr=0.01,
+    lr=0.001,
 )
 
 
