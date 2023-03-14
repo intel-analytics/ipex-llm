@@ -40,7 +40,7 @@ config = dict(
     dim_node_features=4,
     num_classes=5,
     factor_num=16,
-    lr=0.001,
+    lr=0.01,
 )
 
 
@@ -57,6 +57,7 @@ class MyOwnDataset(InMemoryDataset):
 
 
 def load_dataset():
+    torch.manual_seed(1)
     edge_index = torch.randint(config["num_nodes"], size=(config["num_edges"], 2),
                                dtype=torch.long)
     x = torch.randn(size=(config["num_nodes"], config["dim_node_features"]),
@@ -73,7 +74,7 @@ def load_dataset():
 def train_loader_func(config, batch_size):
     train_dataset, _ = load_dataset()
     train_loader = DataLoader(train_dataset, batch_size=batch_size,
-                              shuffle=False, num_workers=0)
+                              shuffle=True, num_workers=0)
     return train_loader
 
 
