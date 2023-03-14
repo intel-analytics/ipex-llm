@@ -409,10 +409,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         st = time.perf_counter()
         try:
             with torch.no_grad():
-                if isinstance(input_sample, (Dict, torch.Tensor)):
-                    model(input_sample)
-                else:
+                if isinstance(input_sample, (list, tuple)):
                     model(*input_sample)
+                else:
+                    model(input_sample)
         except Exception:
             invalidInputError(False,
                               f"training_data is incompatible with your model input.")
@@ -455,10 +455,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    if isinstance(input_sample, (Dict, torch.Tensor)):
-                        model(input_sample)
-                    else:
+                    if isinstance(input_sample, (list, tuple)):
                         model(*input_sample)
+                    else:
+                        model(input_sample)
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
