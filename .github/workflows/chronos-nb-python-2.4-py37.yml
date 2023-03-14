@@ -8,6 +8,7 @@ on:
     branches: [ main ]
     paths:
       - '.github/workflows/chronos-nb-python-2.4-py37.yml'
+      - 'python/chronos/dev/test/run-installation-options.sh'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 

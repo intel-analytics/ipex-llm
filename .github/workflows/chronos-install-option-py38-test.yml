@@ -12,6 +12,7 @@ on:
     branches: [ main ]
     paths:
       - '.github/workflows/chronos-install-option-py38-test.yml'
+      - 'python/chronos/dev/test/run-installation-options.sh'
   # Allows you to run this workflow manually from the Actions tab
   schedule:
     - cron: '0 18 * * *' # GMT time, 18:00 GMT == 02:00 China
