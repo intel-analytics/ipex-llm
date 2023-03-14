@@ -62,7 +62,7 @@ def optimize():
     data_dir = "data"
     save_dir = "models"
 
-    model = ResNet18(10)
+    model = ResNet18(10, pretrained=False)
     # loader = create_data_loader(data_dir)
     loader = DataLoader(TensorDataset(torch.rand(100, 3, 128, 128), torch.randint(0, 10, size=(100, 1))))
     opt = InferenceOptimizer()
