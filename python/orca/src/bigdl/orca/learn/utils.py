@@ -217,11 +217,11 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                     if not isinstance(elem[0], list):
                         row_values.extend([[Vectors.dense(elem)]])
                     else:
-                        # multi-dimension list
+                        # multi-dimensional list
                         structType = FloatType()
                         for _ in range(len(elem)):
                             structType = ArrayType(structType)
-                        row_values.extend([[elem]])
+                        row_values.extend([elem])
                 row = Row(*row_values)
         # scalar
         elif len(pair[1].shape) == 0:
