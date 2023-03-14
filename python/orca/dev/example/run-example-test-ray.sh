@@ -9,6 +9,8 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
+python_version=$(python --version | awk '{print$2}')
+
 echo "#start orca ray example tests"
 echo "#1 Start autoestimator example"
 start=$(date "+%s")
@@ -52,9 +54,9 @@ python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multi_agent_two_trai
 now=$(date "+%s")
 time5=$((now-start))
 
-python_version=$(python --version | awk '{print$2}')
 if [ $python_version == 3.7.10 ];then
 # parameter server test requires tensorflow 1
+# mxnet test does not support numpy 1.24
 echo "#5 Start async_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
@@ -66,7 +68,6 @@ start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
 time7=$((now-start))
-fi
 
 echo "#7 Start mxnet lenet example"
 start=$(date "+%s")
@@ -84,6 +85,7 @@ unzip -q data/mnist.zip -d data
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
 time8=$((now-start))
+fi
 
 echo "#8 Start fashion_mnist example with Tensorboard visualization"
 start=$(date "+%s")
