@@ -422,7 +422,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                                                               feature_cols,
                                                               label_cols,
                                                               accept_str_col,
-                                                              True))
+                                                              unpack_list=True))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                               feature_cols,
                                                               label_cols,
@@ -452,7 +452,7 @@ def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
                                                               feature_cols,
                                                               label_cols,
                                                               accept_str_col,
-                                                              True))
+                                                              unpack_list=True))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2feature_dict(x,
                                                                       feature_cols,
                                                                       label_cols,
@@ -480,7 +480,7 @@ def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accep
                                                               feature_cols,
                                                               label_cols,
                                                               accept_str_col,
-                                                              True))
+                                                              unpack_list=True))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2pandas(x,
                                                                 feature_cols,
                                                                 label_cols,

@@ -260,6 +260,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols,
 
     features = convert_for_cols(row, feature_cols)
     # For pytorch we format multi-input as `f1, f2, label` instead of `[f1, f2], label`
+    # to align with PyTorch DataLoader.
     if label_cols:
         labels = convert_for_cols(row, label_cols, True)
         if unpack_list:
