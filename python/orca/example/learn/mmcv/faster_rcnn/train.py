@@ -28,71 +28,70 @@ import mmcv
 from mmcv import Config
 
 from mmdet.apis import set_random_seed
-from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
-
-
-class KittiTinyDataset(CustomDataset):
-    CLASSES = ('Car', 'Pedestrian', 'Cyclist')
-
-    def load_annotations(self, ann_file):
-        cat2label = {k: i for i, k in enumerate(self.CLASSES)}
-        # load image list from file
-        image_list = mmcv.list_from_file(self.ann_file)
-
-        data_infos = []
-        # convert annotations to middle format
-        for image_id in image_list:
-            filename = f'{self.img_prefix}/{image_id}.jpeg'
-            image = mmcv.imread(filename)
-            height, width = image.shape[:2]
-
-            data_info = dict(filename=f'{image_id}.jpeg', width=width, height=height)
-
-            # load annotations
-            label_prefix = self.img_prefix.replace('image_2', 'label_2')
-            lines = mmcv.list_from_file(osp.join(label_prefix, f'{image_id}.txt'))
-
-            content = [line.strip().split(' ') for line in lines]
-            bbox_names = [x[0] for x in content]
-            bboxes = [[float(info) for info in x[4:8]] for x in content]
-
-            gt_bboxes = []
-            gt_labels = []
-            gt_bboxes_ignore = []
-            gt_labels_ignore = []
-
-            # filter 'DontCare'
-            for bbox_name, bbox in zip(bbox_names, bboxes):
-                if bbox_name in cat2label:
-                    gt_labels.append(cat2label[bbox_name])
-                    gt_bboxes.append(bbox)
-                else:
-                    gt_labels_ignore.append(-1)
-                    gt_bboxes_ignore.append(bbox)
-
-            data_anno = dict(
-                bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
-                labels=np.array(gt_labels, dtype=np.long),
-                bboxes_ignore=np.array(gt_bboxes_ignore,
-                                       dtype=np.float32).reshape(-1, 4),
-                labels_ignore=np.array(gt_labels_ignore, dtype=np.long))
-
-            data_info.update(ann=data_anno)
-            data_infos.append(data_info)
-
-        return data_infos
 
 
 def mmcv_runner_creator(cfg):
     from mmdet.datasets.builder import DATASETS
+    from mmdet.datasets.custom import CustomDataset
     from mmdet.models import build_detector
     from mmdet.utils import (compat_cfg, find_latest_checkpoint, get_root_logger)
     from mmdet.core import DistEvalHook, EvalHook, build_optimizer
     from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner,
                              Fp16OptimizerHook, OptimizerHook, build_runner)
 
-    DATASETS.register_module(KittiTinyDataset)
+    @DATASETS.register_module()
+    class KittiTinyDataset(CustomDataset):
+        CLASSES = ('Car', 'Pedestrian', 'Cyclist')
+
+        def load_annotations(self, ann_file):
+            cat2label = {k: i for i, k in enumerate(self.CLASSES)}
+            # load image list from file
+            image_list = mmcv.list_from_file(self.ann_file)
+
+            data_infos = []
+            # convert annotations to middle format
+            for image_id in image_list:
+                filename = f'{self.img_prefix}/{image_id}.jpeg'
+                image = mmcv.imread(filename)
+                height, width = image.shape[:2]
+
+                data_info = dict(filename=f'{image_id}.jpeg', width=width, height=height)
+
+                # load annotations
+                label_prefix = self.img_prefix.replace('image_2', 'label_2')
+                lines = mmcv.list_from_file(osp.join(label_prefix, f'{image_id}.txt'))
+
+                content = [line.strip().split(' ') for line in lines]
+                bbox_names = [x[0] for x in content]
+                bboxes = [[float(info) for info in x[4:8]] for x in content]
+
+                gt_bboxes = []
+                gt_labels = []
+                gt_bboxes_ignore = []
+                gt_labels_ignore = []
+
+                # filter 'DontCare'
+                for bbox_name, bbox in zip(bbox_names, bboxes):
+                    if bbox_name in cat2label:
+                        gt_labels.append(cat2label[bbox_name])
+                        gt_bboxes.append(bbox)
+                    else:
+                        gt_labels_ignore.append(-1)
+                        gt_bboxes_ignore.append(bbox)
+
+                data_anno = dict(
+                    bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
+                    labels=np.array(gt_labels, dtype=np.long),
+                    bboxes_ignore=np.array(gt_bboxes_ignore,
+                                           dtype=np.float32).reshape(-1, 4),
+                    labels_ignore=np.array(gt_labels_ignore, dtype=np.long))
+
+                data_info.update(ann=data_anno)
+                data_infos.append(data_info)
+
+            return data_infos
+
     model = build_detector(cfg.model)
 
     cfg = compat_cfg(cfg)
