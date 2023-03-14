@@ -476,7 +476,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols=output_cols)
+            result = convert_predict_xshards_to_dataframe(data,
+                                                          pred_shards,
+                                                          output_cols=output_cols)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

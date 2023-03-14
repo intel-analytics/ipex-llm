@@ -353,11 +353,9 @@ def index_concatenate(x, axis=0):
         return res
 
 
-def split_predict_cols(y):    
+def split_predict_cols(y):
     if not isinstance(y, (list, tuple)):
         return {"prediction": y}
-    # TODO: Support automatically append output_cols like output_0, output_1, ...
-    
     output_cols = [f"output_{i}" for i in range(len(y))]
     if isinstance(y, np.ndarray):
         # Single output

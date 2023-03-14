@@ -167,7 +167,7 @@ def filter_elem(input, i):
     elif isinstance(input, dict):
         return {k: filter_elem(v, i) for k, v in input.items()}
     else:
-        return input[i].tolist()
+        return input[i]
 
 
 def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
@@ -177,7 +177,6 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
         data = list(data.values())
 
         for i in range(length):
-            print(f"filter_elem(data, i): {filter_elem(data, i)}")
             # Always yield a list here
             yield filter_elem(data, i)
 
@@ -193,7 +192,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     def convert_elem(elem):
         # list of np array
         if isinstance(elem, (list, tuple)):
-            return [convert_elem(i) for i in elem]
+            return [Vectors.dense(i) for i in elem]
         # dict of np array as values
         elif isinstance(elem, dict):
             return {k: convert_elem(v) for k, v in elem.items()}
