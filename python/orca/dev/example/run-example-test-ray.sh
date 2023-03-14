@@ -195,6 +195,21 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/inference.py ${B
 now=$(date "+%s")
 time15=$((now-start))
 
+echo "#15 start example test for orca data"
+if [ -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
+  echo "tmp/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
+    -P tmp/data/NAB/nyc_taxi/
+fi
+#timer
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
+  -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv
+
+now=$(date "+%s")
+time16=$((now - start))
+
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
@@ -211,3 +226,4 @@ echo "#11 auto-xgboost-regressor-spark-df example time used:$time12 seconds"
 echo "#12 ray-dataset-xgboost example time used:$time13 seconds"
 echo "#13 orca brainMRI example time used:$time14 seconds"
 echo "#14 orca resnet50 inference example time used:$time15 seconds"
+echo "#15 orca data time used:$time16 seconds"

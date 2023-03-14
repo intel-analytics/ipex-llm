@@ -137,20 +137,7 @@ python ${BIGDL_ROOT}/python/orca/example/freeze_saved_model/freeze.py \
 now=$(date "+%s")
 time3=$((now - start))
 
-echo "#4 start example test for orca data"
-if [ -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
-  echo "tmp/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
-    -P tmp/data/NAB/nyc_taxi/
-fi
-#timer
-start=$(date "+%s")
-python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
-  -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv
-
-now=$(date "+%s")
-time4=$((now - start))
+# #4 orca data test is tested in ray example test
 
 echo "#5 start test for orca tf imagesegmentation"
 #timer
@@ -245,7 +232,6 @@ time9=$((now - start))
 echo "#1 openvino time used: $time1 seconds"
 echo "#2 vnni/openvino time used: $time2 seconds"
 echo "#3 tensorflow time used: $time3 seconds"
-echo "#4 orca data time used:$time4 seconds"
 echo "#5 orca tf imagesegmentation time used:$time5 seconds"
 echo "#6 orca tf transfer_learning time used:$time6 seconds"
 echo "#7 orca tf basic_text_classification time used:$time7 seconds"
