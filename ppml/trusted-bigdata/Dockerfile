@@ -218,6 +218,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install numpy pandas pyarrow&& \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+# zeppelin
+    chmod +x /ppml/zeppelin/deploy.sh && \
+    chmod +x /ppml/zeppelin/delete.sh && \
 # Azure support
     apt purge -y libsgx-dcap-default-qpl && \
     echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list && \
@@ -235,5 +238,6 @@ RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
     wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
+
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

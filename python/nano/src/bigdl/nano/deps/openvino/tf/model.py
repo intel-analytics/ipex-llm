@@ -17,7 +17,7 @@
 import os
 import pickle
 from pathlib import Path
-from typing import Sequence, Any
+from typing import Sequence, Any, Union, Dict
 from tempfile import TemporaryDirectory
 
 import numpy as np
@@ -63,6 +63,13 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
+                self._mode = "arg"
+                self._arg_names = []
+                if isinstance(input_spec, dict):
+                    self._arg_names = list(input_spec.keys())
+                    input_spec = [input_spec[name] for name in self._arg_names]
+                    self._mode = "kwarg"
+                    kwargs["input"] = ','.join(self._arg_names)
                 try_fake_inference(model, input_spec)
                 export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
@@ -75,14 +82,15 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                                           thread_num=thread_num,
                                           config=config)
 
-    def preprocess(self, inputs: Sequence[Any]):
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         self.ov_model._model_exists_or_err()
         # todo: We should perform dtype conversion based on the
         # dtype of the arguments that the model expects
+        inputs = args if self._mode == "arg" else [kwargs[name] for name in self._arg_names]
         inputs = convert_all(inputs, types="numpy", dtypes=np.float32)
         return inputs
 
-    def forward(self, inputs: Sequence[Any]):
+    def forward(self, inputs: Sequence[Any]):   # type: ignore[overrite]
         return self.ov_model.forward_step(*inputs)
 
     def postprocess(self, outputs: Sequence[Any]):
@@ -97,7 +105,8 @@ class KerasOpenVINOModel(KerasOptimizedModel):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml',
+        status.update({"attr_path": "ov_saved_model_attr.pkl",
+                       "xml_path": 'ov_saved_model.xml',
                        "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
@@ -127,6 +136,8 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         q_model = KerasOpenVINOModel(model, precision='int8',
                                      config=config, thread_num=thread_num,
                                      device=self.ov_model._device)
+        q_model._mode = self._mode
+        q_model._arg_names = self._arg_names
         return q_model
 
     @staticmethod
@@ -150,12 +161,18 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         config = status.get('config', {})
         if "CPU_THREADS_NUM" in config:
             thread_num = int(config["CPU_THREADS_NUM"])
+        elif "INFERENCE_NUM_THREADS" in config:
+            thread_num = int(config["INFERENCE_NUM_THREADS"])
         if device is None:
             device = status.get('device', 'CPU')
         model = KerasOpenVINOModel(xml_path,
                                    config=status['config'],
                                    thread_num=thread_num,
                                    device=device)
+        with open(Path(path) / status['attr_path'], "rb") as f:
+            attrs = pickle.load(f)
+        for attr_name, attr_value in attrs.items():
+            setattr(model, attr_name, attr_value)
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)
@@ -176,6 +193,11 @@ class KerasOpenVINOModel(KerasOptimizedModel):
 
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+
+        attrs = {"_mode": self._mode,
+                 "_arg_names": self._arg_names}
+        with open(path / self.status["attr_path"], "wb") as f:
+            pickle.dump(attrs, f)
 
         # save compile attr
         if self._is_compiled:

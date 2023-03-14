@@ -180,9 +180,11 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 self.channels_last_available = generate_channels_last_available(inputs)
 
             # change the data to suitable mem format
-            inputs = tuple(map(lambda item: apply_proper_channels_last(
-                self.channels_last_available[item[0]], item[1]),
-                enumerate(inputs)))
+            converted_input_length = min(len(self.channels_last_available), len(inputs))
+            inputs = tuple(map(
+                lambda idx: apply_proper_channels_last(
+                    self.channels_last_available[idx], inputs[idx]),
+                range(converted_input_length))) + inputs[converted_input_length:]
 
         return self.model(*inputs)
 
