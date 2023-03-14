@@ -210,12 +210,12 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 return elem.tolist()
 
     def combine(pair):
-        if not isinstance(pair[1], (list, tuple)):
+        if not isinstance(pair[1], (list, tuple)) or not output_cols:
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [convert_elem(pair[1])]))
+                         [convert_elem(pair[1])]))
         else:
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [convert_elem(item) for item in pair[1]]))
+                         [convert_elem(item) for item in pair[1]]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     if output_cols is None:
