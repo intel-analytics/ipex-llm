@@ -437,7 +437,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  batch: Optional[int] = None,
                  thread_num: Optional[int] = None,
                  device: Optional[str] = 'CPU',
-                 custom_objects = None,
+                 custom_objects=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
