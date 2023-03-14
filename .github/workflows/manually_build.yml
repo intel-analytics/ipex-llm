@@ -840,7 +840,7 @@ jobs:
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          --build-arg no_proxy=${LOCAL_IP} \
+          --build-arg no_proxy=${NO_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${bigdata_base_image}:${TAG} -f ./Dockerfile .
@@ -857,6 +857,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -871,6 +872,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=8G \
           --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -889,6 +891,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=4G \
           --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -903,6 +906,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -917,6 +921,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=8G \
           --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -931,6 +936,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=4G \
           --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
