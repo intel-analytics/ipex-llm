@@ -18,7 +18,7 @@ import tensorflow as tf
 from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from keras.engine.training import Model as V2Model
 from keras.engine.training_v1 import Model as V1Model
 
@@ -110,8 +110,7 @@ class TrainingUtils:
             else:
 
                 if backend == "multiprocessing":
-                    from bigdl.nano.common.multiprocessing.multiprocs_backend \
-                        import MultiprocessingBackend
+                    from bigdl.nano.utils.tf import MultiprocessingBackend
                     _backend = MultiprocessingBackend()
                 elif backend == "ray":
                     _backend = create_ray_multiprocessing_backend()

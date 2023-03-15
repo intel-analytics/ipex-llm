@@ -17,7 +17,7 @@
 from bigdl.chronos.data import get_public_dataset
 from bigdl.chronos.forecaster import TCNForecaster
 from sklearn.preprocessing import StandardScaler
-from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.metric import Evaluator
 import time
 import numpy as np
 

@@ -88,6 +88,22 @@ time8=$?
 execute_ray_test tcmf_elctricity "${BIGDL_ROOT}/python/chronos/example/tcmf/run_electricity.py --use_dummy_data --smoke"
 time9=$?
 
+if [ ! -f  ~/.chronos/dataset/electricity.csv ]; then
+  wget -nv $FTP_URI/analytics-zoo-data/apps/network-traffic/electricity.csv -P ~/.chronos/dataset/
+fi
+
+chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
+${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial
+sed -i 's/path="."//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+sed -i 's/import optuna//' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+sed -i 's/optuna/# optuna/' "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+execute_ray_test muti_objective_hpo_with_builtin_latency_tutorial "${BIGDL_ROOT}/python/chronos/example/hpo/muti_objective_hpo_with_builtin_latency_tutorial.py"
+time10=$?
+
+sed -i "s/accelerator='gpu', /# accelerator='gpu', /" "${BIGDL_ROOT}/python/chronos/example/inference-acceleration/cpu_inference_acceleration.py"
+execute_ray_test cpu_inference_acceleration "${BIGDL_ROOT}/python/chronos/example/inference-acceleration/cpu_inference_acceleration.py"
+time11=$?
+
 echo "#1 autolstm_nyc_taxi time used:$time1 seconds"
 echo "#2 autoprophet_nyc_taxi time used:$time2 seconds"
 echo "#3 dpgansimulator_wwt time used:$time3 seconds"
@@ -97,5 +113,7 @@ echo "#6 onnx_forecaster_network_traffic used:$time6 seconds"
 echo "#7 quantization_tcnforecaster_nyc_taxi used:$time7 seconds"
 echo "#8 sparkdf_training_nyc_taxi used:$time8 seconds"
 echo "#9 chronos tcmf example time used:$time9 seconds"
+echo "#10 chronos muti_objective_hpo_with_builtin_latency_tutorial example time used:$time10 seconds"
+echo "#11 chronos cpu_inference_acceleration example time used:$time11 seconds"
 
 clear_up

@@ -87,7 +87,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         self._check_input(input_df, mode="train")
         # print(input_df.shape)
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         feature_data = self._get_features(input_df, self.config)
         self.scaler.fit(feature_data)
         data_n = self._scale(feature_data)
@@ -185,7 +185,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
             if future sequence length > 1, or 1-d numpy array in format (no. of samples, )
             if future sequence length = 1
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.config is None or self.past_seq_len is None:
             invalidInputError(False,
                               "Needs to call fit_transform or restore"
@@ -262,7 +262,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
          In test mode (is_train=False) return unscaled data frame(s) in the format of
           {datetime_col} | {target_col(s)}.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         y_pred_unscale = self._unscale(y_pred)
         if is_train:
             # return unscaled y_pred (ndarray) and y (ndarray).
@@ -385,7 +385,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         # check NaT in datetime
         input_df = input_df.reset_index()
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         dt = input_df[self.dt_col]
         if not np.issubdtype(dt, np.datetime64):
             invalidInputError(False,

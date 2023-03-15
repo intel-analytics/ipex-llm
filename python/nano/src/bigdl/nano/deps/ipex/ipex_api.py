@@ -16,7 +16,7 @@
 
 
 from typing import Any
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
@@ -132,14 +132,16 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
                                         jit_strict=jit_strict)
 
 
-def load_ipexjit_model(path, model, inplace=False):
+def load_ipexjit_model(path, model, inplace=False, input_sample=None):
     from .ipex_inference_model import PytorchIPEXJITModel
-    return PytorchIPEXJITModel._load(path, model, inplace=inplace)
+    return PytorchIPEXJITModel._load(path, model, inplace=inplace,
+                                     input_sample=input_sample)
 
 
-def load_ipexjitbf16_model(path, model, inplace=False):
+def load_ipexjitbf16_model(path, model, inplace=False, input_sample=None):
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
-    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace)
+    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace,
+                                         input_sample=input_sample)
 
 
 def load_ipex_quantization_model(path, model, inplace=False):

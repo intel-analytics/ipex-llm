@@ -37,7 +37,7 @@ class KeyReaderWriter {
 
   def readKeyFromFile(encryptedKeyPath: String, config: Configuration = null): String = {
     val hadoopConfig = if (config != null) config else new Configuration()
-    val fs = FileSystem.get(new URI(encryptedKeyPath), hadoopConfig)
+    val fs = FileSystem.get(new URI(new Path(encryptedKeyPath).toString), hadoopConfig)
     val inStream = fs.open(new Path(encryptedKeyPath))
     val content = scala.io.Source.fromInputStream(inStream).getLines().next()
     content

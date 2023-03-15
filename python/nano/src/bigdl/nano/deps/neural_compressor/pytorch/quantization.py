@@ -15,14 +15,14 @@
 #
 from typing import Callable
 from collections import Iterable
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from ..core import BaseQuantization
 from .utils import _check_loader
 from .metric import PytorchINCMetric
 from .quantized_model import PytorchQuantizedModel
 from torchmetrics import Metric
 import torch
-from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 
 
 class PytorchQuantization(BaseQuantization):

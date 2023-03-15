@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import operator
 from contextlib import contextmanager
 from functools import partial
 from logging import warning
@@ -28,7 +29,8 @@ from pytorch_lightning.strategies import SingleDeviceStrategy
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.precision import PrecisionPlugin
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
 
@@ -86,7 +88,12 @@ class IPEXBF16Precision(PrecisionPlugin):
                        closure: Callable[[], Any],
                        **kwargs: Any) -> Any:
         """Bf16 optimizer step."""
-        from intel_extension_for_pytorch.optim._optimizer_utils import IPEX_FUSED_OPTIMIZER_LIST
+        if compare_version("intel_extension_for_pytorch", operator.lt, "1.13.100"):
+            from intel_extension_for_pytorch.optim._optimizer_utils import \
+                IPEX_FUSED_OPTIMIZER_LIST
+        else:
+            from intel_extension_for_pytorch.optim._optimizer_utils import \
+                IPEX_FUSED_OPTIMIZER_LIST_CPU as IPEX_FUSED_OPTIMIZER_LIST
         """Hook to run the optimizer step."""
         if type(optimizer) in IPEX_FUSED_OPTIMIZER_LIST:
             return super().optimizer_step(model, optimizer, optimizer_idx, closure, **kwargs)

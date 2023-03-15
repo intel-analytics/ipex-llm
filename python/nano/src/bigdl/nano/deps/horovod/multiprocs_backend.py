@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.common.multiprocessing.backend import Backend
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import Backend
+from bigdl.nano.utils.common import invalidInputError
 import os
 from tempfile import TemporaryDirectory
 from typing import Any

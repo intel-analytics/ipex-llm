@@ -55,10 +55,20 @@ from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_s
 from pytorch_lightning.core.optimizer import LightningOptimizer
 
 from .ray_envbase import RayEnvironment
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
+
+
+# we must import torch_ccl to use ccl as backend
+try:
+    if TORCH_VERSION_LESS_1_12:
+        import torch_ccl
+    else:
+        import oneccl_bindings_for_pytorch
+except Exception as _e:
+    pass
 
 
 @ray.remote     # type: ignore
@@ -104,23 +114,12 @@ class _RayLauncher(_SpawnLauncher):
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
         strategy = self._strategy
-
-        # fix bug, see ddp_spawn strategy for details
-        if strategy.use_ipex and TORCH_VERSION_LESS_1_10 and trainer is not None:
-            if isinstance(args[1], LightningDataModule):
-                args[1].trainer = None
-            elif isinstance(args[3], LightningDataModule):
-                args[3].trainer = None
-            elif isinstance(args[4], LightningDataModule):
-                args[4].trainer = None
-
         strategy._setup_env_vars()
         strategy.global_to_local = strategy.get_local_ranks()   # type: ignore
 
         torch_backend = os.getenv("PL_TORCH_DISTRIBUTED_BACKEND")
-        if torch_backend is None:
-            torch_backend = "nccl" if strategy.use_gpu else "gloo"
-        strategy._process_group_backend = torch_backend
+        if torch_backend is not None:
+            strategy._process_group_backend = torch_backend
 
         patch_status = _get_patch_status()
 
@@ -225,7 +224,7 @@ class RayStrategy(DDPSpawnStrategy):
 
     def _create_worker(self):
         """Creates Ray actor."""
-        from bigdl.nano.common.cpu_schedule import schedule_processors
+        from bigdl.nano.utils.common import schedule_processors
 
         envs = schedule_processors(self.num_workers)
 

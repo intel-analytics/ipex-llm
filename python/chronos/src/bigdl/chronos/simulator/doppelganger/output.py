@@ -70,6 +70,6 @@ class Output(object):
         self.is_gen_flag = is_gen_flag
 
         if type_ == OutputType.CONTINUOUS and normalization is None:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "normalization must be set for continuous output")

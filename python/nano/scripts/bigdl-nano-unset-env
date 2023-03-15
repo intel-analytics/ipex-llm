@@ -2,6 +2,7 @@
 
 echo "Unset Nano envs"
 unset LD_PRELOAD
+unset DYLD_INSERT_LIBRARIES
 unset MALLOC_CONF
 unset OMP_NUM_THREADS
 unset KMP_AFFINITY

@@ -27,27 +27,27 @@ from bigdl.orca.learn.tf2 import Estimator
 
 
 # Step 1: Init Orca Context
-args = parse_args("TensorFlow NCF Training with Orca Xshards")
+args = parse_args("TensorFlow NCF Training with Orca XShards")
 args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
-init_orca(args, extra_python_lib="tf_model.py,process_xshards.py")
+init_orca(args.cluster_mode, extra_python_lib="process_xshards.py,tf_model.py,utils.py")
 
 
-# Step 2: Read and process data using Orca Xshards
+# Step 2: Read and process data using Orca XShards
 train_data, test_data, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, num_ng=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, num_ng=4)
 
 
 # Step 3: Define the NCF model
 config = dict(
-    factor_num=16,
-    lr=1e-2,
-    item_num=item_num,
     user_num=user_num,
+    item_num=item_num,
+    factor_num=16,
+    num_layers=3,
     dropout=0.5,
+    lr=0.01,
     sparse_feats_input_dims=sparse_feats_input_dims,
-    num_dense_feats=num_dense_feats,
     sparse_feats_embed_dims=8,
-    num_layers=3
+    num_dense_feats=num_dense_feats
 )
 
 
@@ -76,8 +76,8 @@ val_steps = math.ceil(len(test_data) / batch_size)
 callbacks = [tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.model_dir, "logs"))] \
     if args.tensorboard else []
 
-if args.scheduler:
-    lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)
+if args.lr_scheduler:
+    lr_callback = tf.keras.callbacks.LearningRateScheduler(schedule_func, verbose=1)
     callbacks.append(lr_callback)
 
 train_stats = est.fit(train_data,
@@ -106,10 +106,12 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-est.save(os.path.join(args.model_dir, "NCF_model"))
+est.save(os.path.join(args.model_dir, "NCF_model.h5"))
+save_model_config(config, args.model_dir, "config.json")
 train_data.save_pickle(os.path.join(args.data_dir, "train_processed_xshards"))
 test_data.save_pickle(os.path.join(args.data_dir, "test_processed_xshards"))
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

@@ -31,7 +31,7 @@ class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
         Turns the tf.keras model returned from _build into a tfpark.KerasModel
         """
         self.model = self._build()
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError((isinstance(self.model, tf.keras.Model),
                            "expect model is tf.keras.Model"))
         super().__init__(self.model)

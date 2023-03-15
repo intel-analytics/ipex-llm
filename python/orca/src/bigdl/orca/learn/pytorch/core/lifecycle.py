@@ -76,7 +76,7 @@ class LifeCycle(metaclass=ABCMeta):
             world_size=world_size)
         self.backend = "torch-distributed"
 
-    def with_sampler(self, loader):
+    def with_sampler(self, loader, shuffle=True):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
         data_loader_args = {
             "dataset": loader.dataset,
@@ -90,7 +90,8 @@ class LifeCycle(metaclass=ABCMeta):
             "worker_init_fn": loader.worker_init_fn,
             "sampler": DistributedSampler(loader.dataset,
                                           num_replicas=self.size,
-                                          rank=self.rank)
+                                          rank=self.rank,
+                                          shuffle=shuffle)
         }
         return DataLoader(**data_loader_args)
 

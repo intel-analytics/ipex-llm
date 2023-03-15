@@ -15,6 +15,9 @@
 #
 
 import os
+import subprocess
+import tempfile
+import cloudpickle
 import copy
 import time
 import operator
@@ -22,15 +25,15 @@ from pathlib import Path
 import numpy as np
 import traceback
 import inspect
+import sigfig
 import tensorflow as tf
-from typing import Dict, Optional, List, Union
-from bigdl.nano.utils.inference.common.base_optimizer import BaseInferenceOptimizer
-from bigdl.nano.utils.inference.common.checker import available_acceleration_combination
-from bigdl.nano.utils.inference.common.utils import AccelerationOption,\
-    throughput_calculate_helper, format_optimize_result
-from bigdl.nano.tf.utils import patch_compiled_and_attrs, patch_attrs
-from bigdl.nano.tf.utils import _ModuleWrapper
-from bigdl.nano.utils.log4Error import invalidInputError
+import keras
+from typing import Dict, Optional, List, Union, Callable
+from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
+    AccelerationOption, latency_calculate_helper, format_optimize_result
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import _ModuleWrapper
+from bigdl.nano.utils.tf import patch_compiled_and_attrs, patch_attrs
 from tensorflow.keras import Model as Model
 from tensorflow.data import Dataset
 from tensorflow.keras.metrics import Metric
@@ -41,7 +44,8 @@ from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.tf import try_fake_inference
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -83,8 +87,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
     ALL_INFERENCE_ACCELERATION_METHOD: Dict = \
         {  # type: ignore
             "original": TFAccelerationOption(),
-            "int8": TFAccelerationOption(inc=True),
+            "static_int8": TFAccelerationOption(inc=True),
+            "bf16": TFAccelerationOption(bf16=True),
             "openvino_fp32": TFAccelerationOption(openvino=True),
+            "openvino_bf16": TFAccelerationOption(openvino=True, bf16=True),
+            "openvino_fp16": TFAccelerationOption(openvino=True, fp16=True),
             "openvino_int8": TFAccelerationOption(openvino=True, pot=True),
             "onnxruntime_fp32": TFAccelerationOption(onnxruntime=True),
             "onnxruntime_int8_qlinear": TFAccelerationOption(onnxruntime=True, inc=True,
@@ -116,6 +123,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: A keras.Model to be optimized
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -132,16 +140,21 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param validation_data: (optional) An unbatched tf.data.Dataset object for accuracy
                evaluation. This is only needed when users care about the possible accuracy drop.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input when using 'onnxruntime' accelerator.
-                           It will be ignored if accelerator is 'openvino'.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param metric: (optional) A tensorflow.keras.metrics.Metric object which is used for
                calculating accuracy.
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
                higher the better. Default value is "max".
-        :param thread_num: (optional) a int represents how many threads(cores) is needed for
-               inference.
+        :param thread_num: (optional) An int represents how many threads(cores) is needed for
+               inference. This parameter only controls the usage of thread number in the process
+               of latency calculation as well as later inference process of your obtained
+               accelerated model. In other words, the process of model conversion and optional
+               accuracy calculation won't be restricted by this parameter. Defaults to None,
+               represents that all cores will be used.
         :param logging: whether to log detailed information of model conversion.
                Default: False.
         :param latency_sample_num: (optional) a int represents the number of repetitions
@@ -178,7 +191,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if os.getenv('OMP_NUM_THREADS') is not None:
             default_threads: int = int(os.getenv('OMP_NUM_THREADS'))  # type: ignore
         else:
-            # TODO: how to get and control thread num in tf?
             default_threads = None  # type: ignore
         thread_num = default_threads if thread_num is None else int(thread_num)  # type: ignore
 
@@ -187,7 +199,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) == 2:
                 input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
@@ -237,15 +251,50 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, sample):
-                    model(sample)
+                def func_test(model, *args):
+                    model(*args)
                 try:
-                    result_map[method]["latency"], status =\
-                        throughput_calculate_helper(latency_sample_num, baseline_time,
-                                                    func_test, acce_model, input_sample)
-                    if status is False and method != "original":
-                        result_map[method]["status"] = "early stopped"
-                        continue
+                    if method in ("original", "static_int8") and thread_num is not None:
+                        _flag = True  # represent whether subprocess works
+                        # for original keras model, as tf.config.threading can't set thread
+                        # during running, so here we use subprocess to calculate throughput
+                        params = {"iterrun": latency_sample_num,
+                                  "func": func_test,
+                                  "model": model,  # save original model
+                                  "input_sample": input_sample,
+                                  "method": method}
+                        with tempfile.TemporaryDirectory() as temp_dir:
+                            if method != "original":
+                                # save accelerated model
+                                InferenceOptimizer.save(acce_model, temp_dir)
+                            _filename = os.path.join(temp_dir, "params")
+                            cloudpickle.dump(params, open(_filename, "wb"))
+                            my_env = os.environ.copy()
+                            my_env["OMP_NUM_THREADS"] = str(thread_num)
+                            worker_file = os.path.join(
+                                os.path.split(os.path.realpath(__file__))[0], "_worker.py")
+                            try:
+                                result = subprocess.run(["python", worker_file,
+                                                         _filename, str(thread_num)],
+                                                        capture_output=True,
+                                                        universal_newlines=True,
+                                                        env=my_env)
+                                latency = float(result.stdout.strip())
+                                result_map[method]["latency"] = latency
+                            except Exception:
+                                _flag = False
+                    if method != "original" or thread_num is None or _flag is False:
+                        if isinstance(input_sample, tf.Tensor):
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, *input_sample)
+                        if status is False and method != "original":
+                            result_map[method]["status"] = "early stopped"
+                            continue
                 except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to forward"
@@ -257,7 +306,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     # so we jump it to reduce time cost of optimize
                     if precision == "fp32" and method != "original":
                         _accuracy = result_map["original"]["accuracy"]
-                        _accuracy = round(_accuracy, 3)
+                        _accuracy = sigfig.round(_accuracy, sigfigs=5)
                         result_map[method]["accuracy"] = str(_accuracy) + '*'
                     else:
                         if method == "original":
@@ -315,8 +364,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param model: The Keras model to trace.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec: (optional) A (tuple or list of) ``tf.TensorSpec``
+                           defining the shape/dtype of the input. This is only required when
+                           you have a custom Keras model (no input/output layer is explicitly
+                           defined).
         :param thread_num: (optional) a int represents how many threads(cores) is needed for
                            inference, only valid for accelerator='onnxruntime'
                            or accelerator='openvino'.
@@ -344,7 +395,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device == 'CPU' else {}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
@@ -374,6 +425,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: str = 'int8',
                  accelerator: Optional[str] = None,
                  input_spec=None,
+                 eval_func: Optional[Callable] = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: Optional[dict] = None,
                  approach: str = 'static',
@@ -397,6 +449,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param model: The Keras model to quantize.
         :param x: Input data which is used for training. It could be:
+
                   | 1. a Numpy array (or array-like), or a list of arrays (in case the model
                   | has multiple inputs).
                   |
@@ -413,16 +466,31 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                   If x is a dataset, y will be ignored (since targets will be obtained from x).
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+                                Note that, mixed bf16 precision only works for ``keras.Model`` with
+                                explict input and output definition(e.g.,
+                                model = keras.Model(inputs=inputs, outputs=outputs)).
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in tensorflow.
-        :param input_spec: A (tuple or list of) tf.TensorSpec or numpy array defining the
-                           shape/dtype of the input.
+        :param input_spec:      (optional) A (tuple or list of) ``tf.TensorSpec``
+                                defining the shape/dtype of the input. This is only required when
+                                you have a custom Keras model (no input/output layer is explicitly
+                                defined).
+        :param eval_func:       A evaluation function which only accepts model as input and return
+                                evaluation value. This parameter provides a higher degree of
+                                freedom than using eval_loader and metric. Default to None meaning
+                                no performance tuning, but it would be better give an evaluation
+                                function to get better quantization performance.
         :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
-        :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
+        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
+                                    accuracy control.
+                                    accuracy_criterion = {'absolute':0.99, 'higher_is_better':False}
+                                    means accuracy loss must be smaller than 0.99. For example, if
+                                    higher_is_better is True, then this requires original metric
+                                    value subtract current metric value be smaller than 0.99.
+                                    For inc 1.x, this value must be set to [0, 1), for inc 2.x,
+                                    there is no limit.
+                                    accuracy_criterion = {'relative':0.1, 'higher_is_better':True}
+                                    allows relative accuracy loss: 10%.
         :param approach:        'static' or 'dynamic'.
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
@@ -505,8 +573,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             original_model = model
 
         if precision == 'fp16':
-            invalidInputError('GPU' in device or device == 'VPUX',
-                              "fp16 is not supported on {} device.".format(device))
             invalidInputError(accelerator == 'openvino',
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':
@@ -536,7 +602,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
                 if openvino_config is not None:
                     final_openvino_option.update(openvino_config)
-                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
+                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel  # type: ignore
                 result = KerasOpenVINOModel(model,
                                             input_spec=input_spec,
                                             precision=precision,
@@ -546,7 +612,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             logging=logging,
                                             **kwargs)
             elif accelerator is None:
-                result = BF16Model(model)
+                return BF16Model(model)
             return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -556,12 +622,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             y = range(len(x))    # type: ignore
         if isinstance(x, tf.data.Dataset):
             batch_data = next(iter(x))
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
             if isinstance(batch_data, tf.Tensor) or \
-                    isinstance(batch_data, tuple) and len(batch_data) == 1:
+                    isinstance(batch_data, tuple) and len(batch_data) != 2:
                 # fake label to make quantization work
                 y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
                 x = tf.data.Dataset.zip((x, y))
+
         if accelerator is None:
             if isinstance(x, tf.data.Dataset):
                 calib_dataset = x
@@ -570,16 +639,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            saved_model_input_spec_set = model._saved_model_inputs_spec is not None
-            if not model.built and not saved_model_input_spec_set:
-                # model cannot be saved either because the input shape is not available
-                # or because the forward pass of the model is not defined
-                if input_spec is not None:
-                    if isinstance(input_spec, (tuple, list)):
-                        input_shape = (i.shape for i in input_spec)
-                    else:
-                        input_shape = input_spec.shape
-                    model.compute_output_shape(input_shape)
+            try_fake_inference(model, input_spec)
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -595,6 +655,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         outputs = "outputs"    # type: ignore
 
             result = inc_quantzie(model, dataloader=calib_dataset,
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework='tensorflow',
                                   conf=conf,
@@ -647,8 +708,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
-                import KerasONNXRuntimeModel
+            from bigdl.nano.deps.onnxruntime.tensorflow.model import KerasONNXRuntimeModel
             if isinstance(model, KerasONNXRuntimeModel):     # type: ignore
                 onnx_model = model
             else:
@@ -663,6 +723,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             }
             framework = method_map.get(method, None)
             result = inc_quantzie(onnx_model, dataloader=(x, y),
+                                  eval_func=eval_func,
                                   metric=metric,
                                   framework=framework,
                                   thread_num=thread_num,
@@ -676,10 +737,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
-            result._nesting_level = onnx_model._nesting_level
             result._inputs_dtypes = onnx_model._inputs_dtypes
-            result._default_kwargs = onnx_model._default_kwargs
-            result._call_fn_args_backup = onnx_model._call_fn_args_backup
+            result._mode = "arg"    # todo
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)
@@ -708,15 +767,23 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 }
                 yaml.safe_dump(metadata, f)
             checkpoint_path = path / metadata['checkpoint']
-            model.save_weights(checkpoint_path)
+            model.save(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Model, device=None):
+    def load(path, model: Optional[Model] = None, device=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
-        :param model: Required FP32 model to load tensorflow model.
+        :param model: Required FP32 model to load pytorch model, it is needed if:
+               1. you accelerate the model with accelerator=None by
+               InferenceOptimizer.trace()/InferenceOptimizer.quantize().
+               2. you accelerate the model with InferenceOptimizer.optimize() and
+               get_model()/get_best_model(), and the best method or the method you
+               specify don't contain accelerator 'onnxruntime'/'openvino'/'jit'.
+               If you are not sure what optimization method is used, we recommend that
+               you always pass in the original model for this case.
+               3. you want to the loaded model contains the attributes of original model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
@@ -743,26 +810,27 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'BF16Model':
             result = load_bf16_model(path)
             return patch_attrs(result, model)
-        if isinstance(model, Model):
-            # typically for keras Model
-            model = copy.deepcopy(model)
-            checkpoint_path = metadata.get('checkpoint', None)
-            if checkpoint_path:
-                checkpoint_path = path / metadata['checkpoint']
-                model.load_weights(checkpoint_path)
-                return model
-            else:
-                invalidInputError(False, "Key 'checkpoint' must be specified.")
-        else:
-            invalidInputError(False,
-                              "ModelType {} or argument 'model={}' is not acceptable for tensorflow"
-                              " loading.".format(model_type, type(model)))
+        checkpoint_path = metadata.get('checkpoint', None)
+        invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
+        checkpoint_path = path / metadata['checkpoint']
+        model = keras.models.load_model(checkpoint_path)
+        return model
 
 
 def _accuracy_calculate_helper(model, metric, data):
     '''
     A quick helper to calculate accuracy
     '''
-    for data_input, target in data:
-        metric.update_state(y_true=target, y_pred=model(data_input))
-    return metric.result().numpy()
+    if isinstance(metric, tf.keras.metrics.Metric):
+        metric.reset_states()
+        for data_input, target in data:
+            metric.update_state(y_true=target, y_pred=model(data_input))
+        return metric.result().numpy()
+    elif isinstance(metric, Callable):
+        results = []
+        for data_input, target in data:
+            result = metric(y_true=target, y_pred=model(data_input))
+            results.append(result)
+        return np.average(results)
+    else:
+        invalidInputError(False, "metric should be a tf.keras.metrics.Metric or a Callable")

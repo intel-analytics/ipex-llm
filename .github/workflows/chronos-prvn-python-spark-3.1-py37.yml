@@ -7,15 +7,19 @@ concurrency:
 
 # Controls when the action will run. 
 on:
+  # Triggers the workflow on merge events for nano/orca change
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/nano/src/**'
+      - 'python/orca/src/bigdl/orca/automl/**'
+      - 'python/orca/src/bigdl/orca/data/**'
   # Triggers the workflow on pull request events but only for the main branch
   pull_request:
     branches: [ main ]
     paths:
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
-      - 'python/nano/src/**'
-      - 'python/orca/src/bigdl/orca/automl/**'
-      - 'python/orca/src/bigdl/orca/data/**'
       - '.github/workflows/chronos-prvn-python-spark-3.1-py37.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -53,7 +57,7 @@ jobs:
           sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark313.sh default false false
+          bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -100,7 +104,7 @@ jobs:
           sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark313.sh default false false
+          bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -147,7 +151,7 @@ jobs:
           sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark313.sh default false false
+          bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]
@@ -194,7 +198,7 @@ jobs:
           sed -i "s/pyspark==2.4.6/pyspark==3.1.3/g" python/dllib/src/setup.py
           wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-chronos-python-ut.txt -O ${{ github.workspace }}/requirements-chronos-python-ut.txt
           pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-chronos-python-ut.txt
-          bash python/dev/release_default_linux_spark313.sh default false false
+          bash python/dev/release_default_linux_spark3.sh default false false
           bash python/nano/dev/build_and_install.sh linux default false pytorch --force-reinstall --no-deps -U
           whl_name=`ls python/nano/dist/`
           pip install -i https://pypi.python.org/simple python/nano/dist/${whl_name}[tensorflow_27,pytorch,inference]

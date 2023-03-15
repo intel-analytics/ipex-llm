@@ -55,7 +55,6 @@ class PytorchRayWorker(TorchRunner):
                  metrics=None,
                  scheduler_creator=None,
                  config=None,
-                 use_tqdm=False,
                  sync_stats=True,
                  log_level=logging.INFO):
         super().__init__(model_creator=model_creator,
@@ -64,7 +63,6 @@ class PytorchRayWorker(TorchRunner):
                          metrics=metrics,
                          scheduler_creator=scheduler_creator,
                          config=config,
-                         use_tqdm=use_tqdm,
                          sync_stats=sync_stats,
                          log_level=log_level)
 
@@ -122,7 +120,7 @@ class PytorchRayWorker(TorchRunner):
         self._create_schedulers_if_available()
         self._create_loss()
 
-    def predict(self, data_creator, batch_size=32, profile=False):
+    def predict(self, data_creator, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
@@ -130,7 +128,7 @@ class PytorchRayWorker(TorchRunner):
         shards_ref = data_creator(config, batch_size)
         if isinstance(shards_ref, IterableDataset):
             pred_stats = super().predict(partition=shards_ref, batch_size=batch_size,
-                                         profile=profile)
+                                         profile=profile, callbacks=callbacks)
             for pred_stat in pred_stats:
                 pred_stat.update(pred_stat)
             worker_stats = pred_stat["prediction"]
@@ -140,5 +138,5 @@ class PytorchRayWorker(TorchRunner):
                                   "Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
             worker_stats = super().predict(partition=partition, batch_size=batch_size,
-                                           profile=profile)
+                                           profile=profile, callbacks=callbacks)
         return worker_stats

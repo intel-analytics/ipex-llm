@@ -27,13 +27,14 @@ jobs:
         with:
           ref: ${{ format('refs/pull/{0}/merge', github.event.issue.number) }}
 
-      - name: Set up Python 
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.7'
 
       - name: Install dependencies
         run: |
+          apt-get update && sudo apt-get install -y wget libgl1
           python -m pip install --upgrade pip
           pip install build
           pip install wheel
@@ -49,6 +50,8 @@ jobs:
           python python/benchmark/run.py nano torch_inference_optimizer
           python python/benchmark/run.py nano resnet_inference
           python python/benchmark/run.py nano resnet50
+          python python/benchmark/run.py nano keras_inference_optimizer
+
         env:
           USER: ${{ github.actor }}
           PR_URL: ${{ github.event.comment.issue_url }}/comments

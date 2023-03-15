@@ -55,6 +55,8 @@ trait Crypto extends Supportive with Serializable {
    */
   def verifyHeader(header: Array[Byte]): Unit
 
+  def getHeader(in: InputStream): (String, Array[Byte])
+
   /**
    * Verify the header bytes when decrypt.
    * @param header header bytes

@@ -28,7 +28,7 @@ from bigdl.nano.automl.hpo.search import (
     _prepare_args,
 )
 from bigdl.nano.automl.hpo.space import AutoObject
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.automl.utils.parallel import run_parallel
 import math
 

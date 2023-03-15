@@ -27,7 +27,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 if cluster_mode == "local":  # For local machine
     init_orca_context(cluster_mode="local", cores=4, memory="4g")
 elif cluster_mode == "k8s":  # For K8s cluster
-    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g")
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g", master=..., container_image=...)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g")
 ```
@@ -38,7 +38,7 @@ Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md
 
 ### Step 2: Define the Model
 
-You can then define the Keras model in the _Creator Function_ using the standard TensorFlow 2 Keras APIs.
+You can then define and compile the Keras model in the _Creator Function_ using the standard TensorFlow 2 Keras APIs.
 
 ```python
 import tensorflow as tf
@@ -74,7 +74,6 @@ def preprocess(x, y):
 
 def train_data_creator(config, batch_size):
     (train_feature, train_label), _ = tf.keras.datasets.mnist.load_data()
-
     dataset = tf.data.Dataset.from_tensor_slices((train_feature, train_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)
@@ -84,7 +83,6 @@ def train_data_creator(config, batch_size):
 
 def val_data_creator(config, batch_size):
     _, (val_feature, val_label) = tf.keras.datasets.mnist.load_data()
-
     dataset = tf.data.Dataset.from_tensor_slices((val_feature, val_label))
     dataset = dataset.repeat()
     dataset = dataset.map(preprocess)
@@ -105,17 +103,15 @@ est = Estimator.from_keras(model_creator=model_creator, workers_per_node=2)
 Next, fit and evaluate using the Estimator. 
 ```python
 batch_size = 320
-stats = est.fit(train_data_creator,
-                epochs=5,
-                batch_size=batch_size,
-                steps_per_epoch=60000 // batch_size,
-                validation_data=val_data_creator,
-                validation_steps=10000 // batch_size)
+train_stats = est.fit(train_data_creator,
+                      epochs=5,
+                      batch_size=batch_size,
+                      steps_per_epoch=60000 // batch_size,
+                      validation_data=val_data_creator,
+                      validation_steps=10000 // batch_size)
 
-stats = est.evaluate(val_data_creator, num_steps=10000 // batch_size)
-print(stats)
-
-est.shutdown()
+eval_stats = est.evaluate(val_data_creator, num_steps=10000 // batch_size)
+print(eval_stats)
 ```
 
 ### Step 5: Save and Load the Model
@@ -146,6 +142,6 @@ est.save("lenet_model.h5", save_format='h5')
 est.load("lenet_model.h5")
 ```
 
-That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
-
 **Note:** You should call `stop_orca_context()` when your program finishes.
+
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.

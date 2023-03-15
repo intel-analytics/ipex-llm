@@ -377,6 +377,6 @@ object T {
   }
 
   def load(path : String) : Table = {
-    File.load(path)
+    File.load[Table](path)
   }
 }

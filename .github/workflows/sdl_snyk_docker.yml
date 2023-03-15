@@ -1,0 +1,49 @@
+name: Scanner-snyk-docker
+on:
+#  pull_request:
+#    branchs: [ main ]
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
+  workflow_dispatch:
+    inputs:
+      snyk_apitoken:
+        description: 'Snyk token'
+        required: false
+        type: string
+        default: 'monitor'
+      snyk_org:
+        description: 'Enter synk org: (eg- iags_mlp)'
+        required: true
+        type: string
+        default: 'iags_mlp'
+      snyk_image:
+        description: 'snyk image'
+        required: true
+        type: string
+        default: 'intelanalytics/bigdl-k8s:latest'
+      snyk_tag:
+        description: 'snyk image tag'
+        required: true
+        type: string
+        default: 'latest'
+
+jobs:
+  snyk-docker:
+    runs-on: [self-hosted, SDL]
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      run: |
+        echo "SNYK_APITOKEN=${{inputs.snyk_apitoken}}"
+        echo "IMAGE=${{inputs.snyk_image}}"
+        echo "SNYK_ORG=${{inputs.snyk_org}}"
+    - name: "Pull docker image"
+      run: |
+#         docker pull ${{inputs.snyk_image}}
+#    - name: "Auth Synk"
+#      run: |
+#        snyk auth -d ${{inputs.snyk_apitoken}}
+    - name: "snyk docker"
+      run: |
+        export IMAGE=intelanalytics/bigdl-k8s:latest
+        snyk monitor --docker $IMAGE --api=${{inputs.snyk_apitoken}} --org=${{inputs.snyk_org}}

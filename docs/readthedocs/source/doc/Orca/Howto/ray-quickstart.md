@@ -10,27 +10,28 @@
 
 ### Step 0: Prepare Environment
 
-We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
+We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../Overview/install.md) for more details.
 
 ```bash
-conda create -n bigdl python=3.7 # "bigdl" is conda environment name, you can use any name you like.
-conda activate bigdl
+conda create -n py37 python=3.7  # "py37" is conda environment name, you can use any name you like.
+conda activate py37
+
 pip install bigdl-orca[ray]
 ```
 
 ### Step 1: Init Orca Context
 
-We recommend using `init_orca_context` to initiate and run BigDL on the underlying cluster. The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True`.
+The Ray cluster would be launched automatically by specifying `init_ray_on_spark=True` in `init_orca_context`.
 
 ```python
-from bigdl.orca import init_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 if cluster_mode == "local":  # For local machine
-    sc = init_orca_context(cluster_mode="local", cores=4, memory="10g", init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="local", cores=4, memory="4g", init_ray_on_spark=True)
 elif cluster_mode == "k8s":  # For K8s cluster
-    sc = init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1, init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, memory="4g", init_ray_on_spark=True, master=..., container_image=...)
 elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
-    sc = init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="10g", driver_memory="10g", driver_cores=1, init_ray_on_spark=True)
+    sc = init_orca_context(cluster_mode="yarn", num_nodes=2, cores=2, memory="4g", init_ray_on_spark=True)
 ```
 
 This is the only place where you need to specify local or distributed mode. See [here](../Overview/ray.md#initialize) for more RayOnSpark related arguments when you `init_orca_context`.
@@ -43,10 +44,6 @@ from bigdl.orca import OrcaContext
 OrcaContext.barrier_mode = False
 ```
 
-View [Orca Context](../Overview/orca-context.md) for more details.
-
-**Note:** You should `export HADOOP_CONF_DIR=/path/to/hadoop/conf/dir` when running on Hadoop YARN cluster. View [Hadoop User Guide](../../UserGuide/hadoop.md) for more details.
-
 You can retrieve the information of the Ray cluster via `OrcaContext`:
 
 ```python
@@ -57,11 +54,16 @@ address_info = ray_ctx.address_info  # The dictionary information of the ray clu
 redis_address = ray_ctx.redis_address  # The redis address of the ray cluster.
 ```
 
+View [Orca Context](../Overview/orca-context.md) for more details.
+
+Please check the tutorials if you want to run on [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.
+
+
 ### Step 2: Run Ray Applications
 
 After the initialization, you can directly write Ray code inline with your Spark code, and run Ray programs on the underlying existing Big Data clusters. Ray [tasks](https://docs.ray.io/en/master/walkthrough.html#remote-functions-tasks) and [actors](https://docs.ray.io/en/master/actors.html) would be launched across the cluster.
 
-The following example uses actor handles to implement a parameter server example for distributed asynchronous stochastic gradient descent. This is a simple Ray example for demonstration purpose. Similarly, you can write other Ray applications as you wish.
+The following example uses actor handles to implement a parameter server example for distributed asynchronous stochastic gradient descent. This is a simple Ray example for demonstration purpose. You can write other Ray applications as you wish in a similar way.
 
 A parameter server is simply an object that stores the parameters (or "weights") of a machine learning model (this could be a neural network, a linear model, or something else). It exposes two methods: one for getting the parameters and one for updating the parameters.
 
@@ -109,7 +111,7 @@ def worker(ps, dim, num_iters):
         # Sleep a little to simulate a real workload.
         time.sleep(0.5)
 
-# Test that worker is implemented correctly. You do not need to change this line.
+# Test that worker is implemented correctly.
 ray.get(worker.remote(ps, dim, 1))
 
 # Start two workers.
@@ -122,10 +124,6 @@ As the worker tasks are executing, you can query the parameter server from the d
 print(ray.get(ps.get_parameters.remote()))
 ```
 
-**Note:** You should call `stop_orca_context()` when your program finishes:
+**Note:** You should call `stop_orca_context()` when your program finishes.
 
-```python
-from bigdl.orca import stop_orca_context
-
-stop_orca_context()
-```
+That's it, the same code can run seamlessly on your local laptop and scale to [Kubernetes](../Tutorial/k8s.md) or [Hadoop/YARN](../Tutorial/yarn.md) clusters.

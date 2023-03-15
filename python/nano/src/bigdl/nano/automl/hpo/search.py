@@ -23,7 +23,7 @@
 
 
 import optuna
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def _filter_tuner_args(kwargs, tuner_keys):
@@ -156,7 +156,6 @@ def _check_optimize_direction(direction, directions, metric):
     # TODO check common metrics and corresponding directions
     if (isinstance(metric, list) or isinstance(metric, tuple)) and len(metric) > 1:
         # multi-objective search
-        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(directions is not None and len(directions) == len(metric),
                           "In multi-objective optimization, you must explicitly specify "
                           "the direction for each metric")

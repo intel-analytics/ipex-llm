@@ -79,7 +79,7 @@ if __name__ == '__main__':
     forecaster.internal.eval()
     time_list = []
     torch.set_num_threads(8)
-    with torch.no_grad():
+    with torch.inference_mode():
         for i, batch in enumerate(pred_loader):
             st = time.time()
             forecaster.internal.predict_step(batch, i)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     forecaster.internal.eval()
     time_list = []
     torch.set_num_threads(1)
-    with torch.no_grad():
+    with torch.inference_mode():
         for i, batch in enumerate(pred_loader):
             st = time.time()
             forecaster.internal.predict_step(batch, i)

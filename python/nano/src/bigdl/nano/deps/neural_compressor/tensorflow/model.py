@@ -13,33 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pathlib import Path
-import yaml
-from ..core import version as inc_version
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
-from bigdl.nano.utils.log4Error import invalidInputError
-from neural_compressor.model.model import TensorflowModel
-import pickle
 import os
+import pickle
+import yaml
+from pathlib import Path
+from typing import Sequence, Any, Union, Dict
+
+from neural_compressor.model.model import TensorflowModel
+
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import convert_all
+from bigdl.nano.tf.model import KerasOptimizedModel
+
+from ..core import version as inc_version
 
 
-class KerasQuantizedModel(AcceleratedKerasModel):
+class KerasQuantizedModel(KerasOptimizedModel):
 
     def __init__(self, model):
-        super().__init__(model)
+        super().__init__()
+        self.model = model
         self._input = model.input_tensor
         self._output = model.output_tensor
         self._sess = model.sess
 
-    def on_forward_start(self, inputs):
-        return self.tensors_to_numpy(inputs)
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
+        return convert_all(args, "numpy")
 
-    def forward_step(self, *inputs):
+    def forward(self, inputs: Union[Sequence[Any], Dict[str, Any]]):
         input_dict = dict(zip(self._input, inputs))
-        out = self._sess.run(self._output, feed_dict=input_dict)
-        return out
+        outputs = self._sess.run(self._output, feed_dict=input_dict)
+        return outputs
 
-    def on_forward_end(self, outputs):
+    def postprocess(self, outputs: Sequence[Any]):
+        outputs = convert_all(outputs, "tf")
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs
@@ -50,8 +57,13 @@ class KerasQuantizedModel(AcceleratedKerasModel):
         status.update({"compile_path": "inc_saved_model_compile.pkl"})
         return status
 
-    def _save_model(self, path):
+    def _save(self, path, compression="fp32"):
+        path = Path(path)
+        path.mkdir(exist_ok=True)
+
         self.model.save(path)
+        self._dump_status(path)
+
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,
@@ -61,17 +73,18 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 kwargs["loss_weights"] = self.compiled_loss._user_loss_weights
             if self.compiled_metrics is not None:
                 user_metric = self.compiled_metrics._user_metrics
-                if isinstance(user_metric, (list, tuple)):
-                    kwargs["metrics"] = [m._name for m in user_metric]
-                else:
-                    kwargs["metrics"] = user_metric._name
+                if user_metric is not None:
+                    if isinstance(user_metric, (list, tuple)):
+                        kwargs["metrics"] = [m._name for m in user_metric]
+                    else:
+                        kwargs["metrics"] = user_metric._name
                 weighted_metrics = self.compiled_metrics._user_weighted_metrics
                 if weighted_metrics is not None:
                     if isinstance(weighted_metrics, (list, str)):
                         kwargs["weighted_metrics"] = [m._name for m in weighted_metrics]
                     else:
                         kwargs["weighted_metrics"] = weighted_metrics._name
-            with open(Path(path) / self.status['compile_path'], "wb") as f:
+            with open(path / self.status['compile_path'], "wb") as f:
                 pickle.dump(kwargs, f)
 
     @staticmethod
@@ -90,6 +103,7 @@ class KerasQuantizedModel(AcceleratedKerasModel):
                 tune_cfg = yaml.safe_load(f)
                 qmodel.tune_cfg = tune_cfg
         model = KerasQuantizedModel(qmodel)
+
         if os.path.exists(Path(path) / status['compile_path']):
             with open(Path(path) / status['compile_path'], "rb") as f:
                 kwargs = pickle.load(f)

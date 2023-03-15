@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -269,8 +269,7 @@ def setup(app):
         'auto_toc_tree_section': 'Contents',
         'enable_math': False,
         'enable_inline_math': False,
-        'enable_eval_rst': True,
-        'enable_auto_doc_ref': True,
+        'enable_eval_rst': True
     }, True)
     app.add_transform(AutoStructify)
 

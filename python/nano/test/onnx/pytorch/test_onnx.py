@@ -206,8 +206,35 @@ class TestOnnx(TestCase):
 
         assert onnx_model.channels == 3
         onnx_model.hello()
-        with pytest.raises(AttributeError):
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
             onnx_model.width
+
+        # save & load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'channels'"
+        ):
+            load_model.channels
+        with pytest.raises(AttributeError):
+            load_model.hello()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
+            load_model.width
 
     def test_onnx_default_values(self):
         # default bool values
@@ -306,6 +333,27 @@ class TestOnnx(TestCase):
         accmodel(x2)
         accmodel(x3)
 
+    def test_onnx_trace_output_tensors(self):
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+
+        onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
+                                              input_sample=train_loader)
+        test_onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
+                                                   input_sample=train_loader, output_tensors=False)
+
+        for x, y in train_loader:
+            forward_res_tensor = onnx_model(x).numpy()
+            forward_res_numpy = test_onnx_model(x)
+            assert isinstance(forward_res_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
 
 if __name__ == '__main__':
     pytest.main([__file__])

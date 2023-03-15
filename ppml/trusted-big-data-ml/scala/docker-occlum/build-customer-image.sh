@@ -4,7 +4,7 @@ export HTTPS_PROXY_HOST=your_https_proxy_host
 export HTTPS_PROXY_PORT=your_https_proxy_port
 
 export image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production
-export TAG=2.2.0-build
+export TAG=2.3.0-build
 export image_customer=${image}-customer
 pwd
 docker build \

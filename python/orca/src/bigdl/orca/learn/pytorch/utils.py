@@ -289,7 +289,7 @@ def get_batchsize(input):
     elif isinstance(input, dict):
         return get_batchsize(list(input.values())[0])
     else:
-        return input.size(0)
+        return input.shape[0]
 
 
 def process_stats(worker_stats):
@@ -297,6 +297,10 @@ def process_stats(worker_stats):
         "num_samples": sum(
             stats.pop("num_samples", np.nan) for stats in worker_stats)
     }
+
+    if "val_num_samples" in worker_stats[0]:
+        stats["val_num_samples"] = sum(
+            stats.pop("val_num_samples", np.nan) for stats in worker_stats)
 
     stats = mean_reduce_stats(worker_stats, stats)
 
@@ -318,3 +322,41 @@ def mean_reduce_stats(worker_stats, res_stats=None):
         else:
             res_stats[stat_key] = stat_value
     return res_stats
+
+
+def index_concatenate(x, axis=0):
+    if len(x) == 0:
+        return None
+
+    if is_array_of_what(x, np.ndarray):
+        return np.concatenate(x, axis)
+    elif is_array_of_what(x, dict):
+        dict_res = {}
+        for k in x[0].keys():
+            dict_res[k] = index_concatenate([item[k] for item in x])
+        return [dict_res]
+    else:
+        res = []
+        for i, sample in enumerate(x[0]):
+            if isinstance(sample, (list, tuple, np.ndarray)):
+                res.append(index_concatenate([item[i] for item in x]))
+            elif isinstance(sample, dict):
+                dict_res = {}
+                for k in sample.keys():
+                    dict_res[k] = index_concatenate([item[i][k] for item in x])
+                res.append(dict_res)
+            else:
+                invalidInputError(False,
+                                  "data should be an ndarray, a dict of ndarrays,"
+                                  " a tuple of ndarrays"
+                                  " or a list of ndarrays, please check your input")
+        return res
+
+
+def is_array_of_what(obj_list, obj_type):
+    is_array = True
+    for item in obj_list:
+        if not isinstance(item, obj_type):
+            is_array = False
+            break
+    return is_array

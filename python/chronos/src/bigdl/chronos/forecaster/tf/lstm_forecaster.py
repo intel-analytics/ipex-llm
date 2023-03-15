@@ -137,7 +137,7 @@ class LSTMForecaster(BaseTF2Forecaster):
 
         :return: A LSTMForecaster Model
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
 
         def check_time_steps(tsdataset, past_seq_len):
             if tsdataset.lookback and past_seq_len:

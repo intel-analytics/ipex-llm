@@ -32,6 +32,8 @@ __all__ = ['loader_to_creator',
            'set_pytorch_seed',
            'check_data',
            'np_to_dataloader',
+           'tsdataset_to_dataloader',
+           'dataloader_batch_resize',
            'read_csv',
            'delete_folder',
            'is_main_process',
@@ -43,16 +45,16 @@ __all__ = ['loader_to_creator',
 def loader_to_creator(loader):
     # Warning, this data creator will not respect the batch_size changing.
     def data_creator(config, batch_size):
-            return loader
+        return loader
     return data_creator
 
 
 def np_to_creator(data):
     def data_creator(config, batch_size):
-            return DataLoader(TensorDataset(torch.from_numpy(data[0]).float(),
-                                            torch.from_numpy(data[1]).float()),
-                              batch_size=batch_size,
-                              shuffle=True)
+        return DataLoader(TensorDataset(torch.from_numpy(data[0]).float(),
+                                        torch.from_numpy(data[1]).float()),
+                          batch_size=batch_size,
+                          shuffle=True)
     return data_creator
 
 
@@ -102,7 +104,7 @@ def np_to_xshard(x, workers_num, prefix="x"):
 
 
 def check_data(x, y, data_config):
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(data_config["past_seq_len"] == x.shape[-2],
                       "The x shape should be (batch_size, past_seq_len, input_feature_num), "
                       "Got past_seq_len of {} in config while x input shape of {}."
@@ -122,7 +124,7 @@ def check_data(x, y, data_config):
 
 
 def check_transformer_data(x, y, x_enc, y_enc, data_config):
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(data_config["past_seq_len"] == x.shape[-2],
                       "The x shape should be (batch_size, past_seq_len, input_feature_num), "
                       "Got past_seq_len of {} in config while x input shape of {}."
@@ -164,6 +166,36 @@ def np_to_dataloader(data, batch_size, num_processes):
                       shuffle=True)
 
 
+def tsdataset_to_dataloader(data, batch_size, lookback, horizon, num_processes):
+    if num_processes:  # void the num_processes is none
+        if batch_size % num_processes != 0:
+            warnings.warn("'batch_size' cannot be divided with no remainder by "
+                          "'self.num_processes'. We got 'batch_size' = {} and "
+                          "'self.num_processes' = {}".
+                          format(batch_size, num_processes))
+        batch_size = max(1, batch_size//num_processes)
+    _rolled = data.numpy_x is None
+    return data.to_torch_data_loader(batch_size=batch_size,
+                                     roll=_rolled,
+                                     lookback=lookback,
+                                     horizon=horizon,
+                                     feature_col=data.roll_feature,
+                                     target_col=data.roll_target,
+                                     shuffle=True)
+
+
+def dataloader_batch_resize(data: DataLoader, batch_size, num_processes):
+    if num_processes == 1:
+        return data
+    if batch_size % num_processes != 0:
+        warnings.warn("'batch_size' cannot be divided with no remainder by "
+                      "'self.num_processes'. We got 'batch_size' = {} and "
+                      "'self.num_processes' = {}".
+                      format(batch_size, num_processes))
+    batch_size = max(1, batch_size//num_processes)
+    return DataLoader(data.dataset, batch_size=batch_size)
+
+
 def read_csv(filename, loss_name='val/loss'):
     import codecs
     import csv
@@ -199,11 +231,11 @@ class ExportForecastingPipeline(nn.Module):
         return postprocess_output
 
 
-def get_exported_module(tsdata, forecaster_path, drop_dtcol):
+def get_exported_module(tsdata, forecaster_path, drop_dt_col):
     from bigdl.chronos.data.utils.export_torchscript \
         import get_processing_module_instance, get_index
 
-    if drop_dtcol:
+    if drop_dt_col:
         tsdata.df.drop(columns=tsdata.dt_col, inplace=True)
 
     id_index, target_feature_index = get_index(tsdata.df, tsdata.id_col,

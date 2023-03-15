@@ -20,10 +20,10 @@ sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-helloworld-s
 The result should look something like this:
 
 > Hello World
-</details>
+> </details>
 
 ### Run Trusted Python Numpy
-<details><summary>This example shows how to run trusted native python numpy.</summary>
+<details><summary>This example shows how to run trusted native Python NumPy.</summary>
 
 
 Run the script to run trusted Python Numpy:
@@ -41,7 +41,7 @@ sudo docker exec -it spark-local cat /ppml/trusted-big-data-ml/test-numpy-sgx.lo
 The result should look something like this:
 
 >  numpy.dot: 0.034211914986371994 sec
-</details>
+>  </details>
 
 ## Spark Examples
 ### Run Trusted Spark Pi
@@ -88,15 +88,15 @@ The result should look something like this:
 > print("Hello: 1
 >
 > print(sys.path);: 1
-#### spark local & k8s
+#### Spark local & k8s
 </details>
 
 ## Trusted Data Analysis
 ### Run Trusted Spark SQL
 <details><summary>This example shows how to run trusted Spark SQL.</summary>
 
-  
-First, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
+
+First, make sure that the paths in `/ppml/trusted-big-data-ml/work/spark-2.4.6/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
 
 Run the script to run trusted Spark SQL:
 
@@ -127,7 +127,7 @@ The result should look something like this:
 >Name: Justin
 >
 >| Justin|
-</details>
+></details>
 
 ### Run Trusted Spark SQL (TPC-H)
 <details><summary>TPC-H with Trusted SparkSQL on Kubernetes</summary>
@@ -144,7 +144,7 @@ https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/tpc-ds_with_sparksql_
 ### Run Trusted SimpleQuery
 <details><summary>Trusted SimpleQuery With Single Data source/KMS</summary>
 
-spark native mode
+Spark native mode
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
 </p>
@@ -178,7 +178,7 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPIKEY apikey
 ```
 
-spark native mode, sgx enabled
+Spark native mode, SGX enabled
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png" alt="data lifecycle" width='250px' />
 </p>
@@ -214,7 +214,7 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPIKEY apikey
 ```
 
-k8s client mode, sgx enabled
+k8s client mode, SGX enabled
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png" alt="data lifecycle" width='500px' />
 </p>
@@ -252,8 +252,8 @@ bash bigdl-ppml-submit.sh \
         --ehsmAPPID appid \
         --ehsmAPIKEY apikey
 ```
-  
-k8s cluster mode, sgx enabled
+
+k8s cluster mode, SGX enabled
 <p align="left">
   <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" alt="data lifecycle" width='500px' />
 </p>
@@ -295,63 +295,127 @@ bash bigdl-ppml-submit.sh \
 
 <details><summary>Trusted SimpleQuery With Multiple Data source/KMS</summary>
 
-If you have multiple data sources that use different keys, you can also use the `initPPMLContextMultiKMS` method to initialize PPML Context with support for multiple Key Management Systems and data sources.   
-
-You just need to submit the configurations for the KMS and data sources in a manner similar to the following example.
-
-For ***KMS***, you should first submit the number of kms `spark.bigdl.kms.multikms.instance`, then submit parameters for every KMS.
- - Firstly, submit `spark.bigdl.kms.multikms.instance` \
- **spark.bigdl.kms.multikms.instance**  num of your kms
-
- - Then, submit configurations for each individual kms, `type` and `name` should be specified for every kms. \
- **{i}** means it is a configuration for ith KMS \
- **spark.bigdl.kms.multikms.type{i}:**  KMS type of this KMS \
- **spark.bigdl.kms.multikms.name{i}:**  name of this KMS
-
-There are also their own unique parameters to be specified for different kinds of KMS. 
-
- - For a simple KMS \
- **spark.bigdl.kms.multikms.simple.id{i}:**  simple KMS APPIP  \
- **spark.bigdl.kms.multikms.simple.key{i}:**  simple KMS APIKEY
-
- - for an EHSM KMS \
- **spark.bigdl.kms.multikms.ehs.ip{i}:**  ehsm ip \
- **spark.bigdl.kms.multikms.ehs.port{i}:**  ehsm port \
- **spark.bigdl.kms.multikms.ehs.id{i}:**  ehsm APPID \
- **spark.bigdl.kms.multikms.ehs.key{i}:**  ehsm APIKEY 
-
- - for an Azure KMS \
- **spark.bigdl.kms.multikms.azure.vault{i}:** azure KMS KeyVault \
- **spark.bigdl.kms.multikms.azure.clientId{i}:** azure KMS clientId
+You can specify multi-KMS configurations through `--conf` parameter at **bigdl-ppml-submit** CLI, or `ppmlArgs` at **initPPMLContext** in application codes:
 
 
-For ***data sources***, you should first submit the number of data sources `spark.bigdl.kms.datasource.instance`
+- **bigdl-ppml-submit**:
 
- - Firstly, submit the number of data sources \
- **spark.bigdl.kms.datasource.instance** = num of your data sources
+  ```bash
+  bash bigdl-ppml-submit.sh \
+  ...
+  --conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
+  --conf spark.bigdl.primaryKey.AmyPK.kms.appId=${SimpleAPPID} \
+  --conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=${SimpleAPIKEY} \
+  --conf spark.bigdl.primaryKey.AmyPK.material=${AmyEncryptedPrimaryKeyPath}, \
+  --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+  --conf spark.bigdl.primaryKey.BobPK.kms.ip=${EHSMIP} \
+  --conf spark.bigdl.primaryKey.BobPK.kms.port=${EHSMPORT} \
+  --conf spark.bigdl.primaryKey.BobPK.kms.appId=${EHSMAPPID} \
+  --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=${EHSMAPIKEY} \
+  --conf spark.bigdl.primaryKey.BobPK.material=${BobEncryptedPrimaryKeyPath}
+  ...
+  ```
 
- - Then submit the configurations for each data source in turn.\
- **{i}** means it is a configuration for ith data source \
- **spark.bigdl.kms.datasource{i}.name:** name of this data source \
- **spark.bigdl.kms.datasource{i}.kms:**  KMS to be used. Should match a KMS name registered previously  \
- **spark.bigdl.kms.datasource{i}.inputpath:** input path of this data source \
- **spark.bigdl.kms.datasource{i}.outputpath:** output path of this data source \
- **spark.bigdl.kms.datasource{i}.primary:** primary key path of this data source \
- **spark.bigdl.kms.datasource{i}.data:** data key path of this data source 
+- **initPPMLContext**:
+
+  ```scala
+  import com.intel.analytics.bigdl.ppml.PPMLContext
+     
+  val ppmlArgs: Map[String, String] = Map(
+    "spark.bigdl.primaryKey.AmyPK.kms.type" -> "SimpleKeyManagementService",
+    "spark.bigdl.primaryKey.AmyPK.kms.appId" -> simpleAPPID,
+    "spark.bigdl.primaryKey.AmyPK.kms.apiKey" -> simpleAPIKEY,
+    "spark.bigdl.primaryKey.AmyPK.material" -> AmyEncryptedPrimaryKeyPath,
+    "spark.bigdl.primaryKey.BobPK.kms.type" -> "EHSMKeyManagementService",
+    "spark.bigdl.primaryKey.BobPK.kms.ip" -> ehsmIP,
+    "spark.bigdl.primaryKey.BobPK.kms.port" -> ehsmPort,
+    "spark.bigdl.primaryKey.BobPK.kms.appId" -> ehsmAPPID,
+    "spark.bigdl.primaryKey.BobPK.kms.apiKey" -> ehsmAPIKEY,
+    "spark.bigdl.primaryKey.BobPK.material" -> BobEncryptedPrimaryKeyPath
+  )
+     
+  val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
+  ```
 
 
-local mode
+
+3. PPMLContext provides ***spark-style dataframe-read/write APIs***, and users can use write to save data frames in ciphertext and load plaintext ones into memory by read API. This can be operated with parameters below:
+
+ - **primaryKey:** name of the primary key applied to crypto codec on a dataframe. Names are specified in section 2 above.
+ - **encryptMode:** the status of input file for read API or output mode for write API. `plain_text` for plaintext input files or save without encryption, `AES/CBC/PKCS5Padding` for csv, json and textFile, and `AES_GCM_CTR_V1` or `AES_GCM_V1`for parquet.
+ - **path:** the file system path of the dataframe read from or write to.
+
+ <details open>
+    <summary>scala</summary>
+
+```scala
+import com.intel.analytics.bigdl.ppml.crypto.AES_CBC_PKCS5PADDING
+
+// save df in ciphertext
+sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING, primaryKeyName = "AmyPK")
+  .csv(path = "./encrypted_amy_data_file")
+
+// load and decrypt encrypted file
+val decryptedDF = sc.read(cryptoMode = AES_CBC_PKCS5PADDING, primaryKeyName = "AmyPK")
+                    .csv(path = "./encrypted_amy_data_file")
+
+```
+  </details>
+
+  <details>
+    <summary>python</summary>
+
+```python
+from bigdl.ppml.ppml_context import *
+
+ppml_args =  {
+    "spark.bigdl.primaryKey.AmyPK.kms.type": "SimpleKeyManagementService",
+    "spark.bigdl.primaryKey.AmyPK.kms.appId": simple_app_id,
+    "spark.bigdl.primaryKey.AmyPK.kms.apiKey": simple_api_key,
+    "spark.bigdl.primaryKey.AmyPK.material": amy_encrypted_primary_key_path,
+    "spark.bigdl.primaryKey.BobPK.kms.type": "EHSMKeyManagementService",
+    "spark.bigdl.primaryKey.BobPK.kms.ip": ehsm_ip,
+    "spark.bigdl.primaryKey.BobPK.kms.port": ehsm_port,
+    "spark.bigdl.primaryKey.BobPK.kms.appId": ehsm_app_id,
+    "spark.bigdl.primaryKey.BobPK.kms.apiKey": ehsm_api_key,
+    "spark.bigdl.primaryKey.BobPK.material": bob_encrypted_primary_key_path
+}
+
+sc = PPMLContext("MyApp", None, ppml_args)
+```
+
+```python
+# save df in ciphertext
+sc.write(dataframe = df, crypto_mode = AES_CBC_PKCS5PADDING,
+         primary_key_name = "AmyPK")
+  .csv(path = "./encrypted_amy_data_file")
+
+# load and decrypt encrypted file
+decrypted_df = sc.read(crypto_mode = AES_CBC_PKCS5PADDING, primary_key_name = "AmyPK")
+                 .csv(path = "./encrypted_amy_data_file")
+```
+  </details>
+
+4. ***Run end-to-end multi-party example***
+
+   First, following [here](https://github.com/intel-analytics/BigDL/tree/main/ppml#step-2-encrypt-and-upload-data) to encrypt input data of each party in their own safe client container and upload to k8s. ***Note*** that `AmyPK` should be a plaintext primary key and `BobPK` should be one from EHSM KMS. If you do not have a k8s cluster, you are allowed to run in Spark local mode.
+
 
 ![MultiKMS1](https://user-images.githubusercontent.com/108786898/210043386-34ec9aba-ed13-4c2e-95e8-3f91ea076647.png)
 
+- Local mode:
+
 
 ```bash 
-export SimpleAPPID=YOUR_SIMPLE_APPID
-export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
-export EHSMIP=YOUR_EHSM_IP
-export EHSMPORT=YOUR_EHSM_PORT
-export EHSMAPPID=YOUR_EHSM_APPID
-export EHSMAPIKEY=YOUR_EHSM_APIKEY
+export amyPKPlaintext=amyPK_plaintext_base64_string
+export bobEncryptedPrimaryKeyPath=path_to_bob_encrypted_primary_key_file
+export bobEhsmIP=bob_ehsm_ip
+export bobEhsmPort=bob_ehsm_port
+export bobEhsmAppId=bob_ehsm_appid
+export bobEhsmApiKey=bob_ehsm_apikey
+export amyEncryptedDataFilePath=encrypted_amy_input_data_file_like_file://xxx_or_hdfs://xxx
+export bobEncryptedDataFilePath=encrypted_bob_input_data_file_like_file://xxx_or_hdfs://xxx
+export bobEncryptedPrimaryKeyPath=bob_encrypted_primary_key_path_which_is_got_from_ehsm
 
 bash bigdl-ppml-submit.sh \
     --master local[2] \
@@ -362,100 +426,62 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 4 \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
     --verbose \
-    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.bigdl.kms.multikms.instance=2 \
-    --conf spark.bigdl.kms.multikms.type1=SimpleKeyManagementService \
-    --conf spark.bigdl.kms.multikms.name1=simpleKMS \
-    --conf spark.bigdl.kms.multikms.simple.id1=${SimpleAPPID} \
-    --conf spark.bigdl.kms.multikms.simple.key1=${SimpleAPIKEY} \
-    --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
-    --conf spark.bigdl.kms.multikms.name2=EHSM \
-    --conf spark.bigdl.kms.multikms.ehs.ip2=${EHSMIP} \
-    --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
-    --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
-    --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.datasource.instance=2 \
-    --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
-    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
-    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/output/simple_people_output.crc \
-    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/primaryKey \
-    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/dataKey \
-    --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.kms=EHSM \
-    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/input/people.csv \
-    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/output/ehsm_people_output.crc \
-    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_data_key \
-    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
-    --verbose \
-    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar \
-    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar 
+    --conf spark.bigdl.primaryKey.AmyPK.plainText=${amyPKPlaintext} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.primaryKey.BobPK.kms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.port=${bobEhsmPort} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.primaryKey.BobPK.material=${bobEncryptedPrimaryKeyPath} \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    ${amyEncryptedDataFilePath} ${bobEncryptedDataFilePath}  
 ```
 
-k8s cluster mode
+- K8S cluster mode:
 
 ```bash
-export SimpleAPPID=YOUR_SIMPLE_APPID
-export SimpleAPIKEY=YOUR_SIMPLE_APIKEY
-export EHSMIP=YOUR_EHSM_IP
-export EHSMPORT=YOUR_EHSM_PORT
-export EHSMAPPID=YOUR_EHSM_APPID
-export EHSMAPIKEY=YOUR_EHSM_APIKEY
-export UPLOADPATH=YOUR_UPLOAD_PATH
-  
+export amyPKPlaintext=amyPK_plaintext_base64_string
+export bobEncryptedPrimaryKeyPath=path_to_bob_encrypted_primary_key_file
+export bobEhsmIP=bob_ehsm_ip
+export bobEhsmPort=bob_ehsm_port
+export bobEhsmAppId=bob_ehsm_appid
+export bobEhsmApiKey=bob_ehsm_apikey
+export amyEncryptedDataFilePath=encrypted_amy_input_data_file_like_file://xxx_or_hdfs://xxx
+export bobEncryptedDataFilePath=encrypted_bob_input_data_file_like_file://xxx_or_hdfs://xxx
+export bobEncryptedPrimaryKeyPath=bob_encrypted_primary_key_path_which_is_got_from_ehsm
+
 bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode cluster \
-    --driver-memory 32g \
+    --sgx-enabled true \
+    --sgx-driver-jvm-memory 20g \
+    --driver-memory 10g \
     --driver-cores 4 \
-    --executor-memory 32g \
+    --sgx-executor-jvm-memory 15g \
+    --executor-memory 10g \
     --executor-cores 4 \
-    --conf spark.kubernetes.container.image=${RUNTIME_SPARK_K8S_IMAGE} \
-    --sgx-enabled false \
     --num-executors 2 \
     --conf spark.cores.max=8 \
-    --name simplequeryWithMultiKMS \
-    --verbose \
-    --conf spark.kubernetes.file.upload.path=${UPLOADPATH} \
-    --class com.intel.analytics.bigdl.ppml.examples.MultiKMSExample \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.bigdl.kms.multikms.instance=2 \
-    --conf spark.bigdl.kms.multikms.type1=SimpleKeyManagementService \
-    --conf spark.bigdl.kms.multikms.name1=simpleKMS \
-    --conf spark.bigdl.kms.multikms.simple.id1=${SimpleAPPID} \
-    --conf spark.bigdl.kms.multikms.simple.key1=${SimpleAPIKEY} \
-    --conf spark.bigdl.kms.multikms.type2=EHSMKeyManagementService \
-    --conf spark.bigdl.kms.multikms.name2=EHSM \
-    --conf spark.bigdl.kms.multikms.ehs.ip2=${EHSMIP} \
-    --conf spark.bigdl.kms.multikms.ehs.port2=${EHSMPORT} \
-    --conf spark.bigdl.kms.multikms.ehs.id2=${EHSMAPPID} \
-    --conf spark.bigdl.kms.multikms.ehs.key2=${EHSMAPIKEY} \
-    --conf spark.bigdl.kms.datasource.instance=2 \
-    --conf spark.bigdl.kms.datasource1.kms=simpleKMS \
-    --conf spark.bigdl.kms.datasource1.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/input/people.csv \
-    --conf spark.bigdl.kms.datasource1.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/output/simple_people_output.crc \
-    --conf spark.bigdl.kms.datasource1.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/primaryKey \
-    --conf spark.bigdl.kms.datasource1.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data1/keys/dataKey \
-    --conf spark.bigdl.kms.datasource1.inputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource1.outputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.kms=EHSM \
-    --conf spark.bigdl.kms.datasource2.inputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/input/people.csv \
-    --conf spark.bigdl.kms.datasource2.outputpath=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/output/ehsm_people_output.crc \
-    --conf spark.bigdl.kms.datasource2.primary=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_primary_key \
-    --conf spark.bigdl.kms.datasource2.data=/ppml/trusted-big-data-ml/work/data/multiKMSTest/data2/keys/ehsm/encrypted_data_key \
-    --conf spark.bigdl.kms.datasource2.inputEncryptMode=AES/CBC/PKCS5Padding \
-    --conf spark.bigdl.kms.datasource2.outputEncryptMode=AES/CBC/PKCS5Padding \
+    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+    --conf spark.kubernetes.node.selector.icx-1=true \
+    --conf spark.bigdl.primaryKey.AmyPK.plainText=${amyPKPlaintext} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+    --conf spark.bigdl.primaryKey.BobPK.kms.ip=${bobEhsmIP} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.port=${bobEhsmPort} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.appId=${bobEhsmAppId} \
+    --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=${bobEhsmApiKey} \
+    --conf spark.bigdl.primaryKey.BobPK.material=${bobEncryptedPrimaryKeyPath} \
     --verbose \
-    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar \
-    /ppml/trusted-big-data-ml/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-jar-with-dependencies.jar \
-    com.intel.analytics.bigdl.ppml.examples.MultiKMSExample
+    --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
+    --jars  /ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,local:///ppml/trusted-big-data-ml/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    ${amyEncryptedDataFilePath} ${bobEncryptedDataFilePath}
 ```
 </details>
 
@@ -463,15 +489,15 @@ bash bigdl-ppml-submit.sh \
 
 ## Trusted ML 
 
-Please be noted that the xgboost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
+Please be noted that the XGBoost examples listed here are **deprecated** due to the fact that Rabit's network (contains gradient, split and env) is not protected.
 
 ### (Deprecated) Run Trusted Spark XGBoost Regressor
-<details><summary>This example shows how to run trusted Spark XGBoost Regressor.</summary>
+<details><summary>This example shows how to run the trusted Spark XGBoost Regressor.</summary>
 
 
 First, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-regressor-sgx.sh`.
 
-Run the script to run trusted Spark XGBoost Regressor and it would take some time to show the final results:
+Run the script to run the trusted Spark XGBoost Regressor and it would take some time to show the final results:
 
 ```bash
 bash work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh
@@ -524,15 +550,15 @@ The result should look something like this:
 > |[11.0874,0.0,18.1...| 16.7|16.174896240234375|
 >
 > |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
-</details>
-  
+> </details>
+
 ### (Deprecated) Run Trusted Spark XGBoost Classifier
-<details><summary>This example shows how to run trusted Spark XGBoost Classifier.</summary>
+<details><summary>This example shows how to run the trusted Spark XGBoost Classifier.</summary>
 
 
 Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset. After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the `start-spark-local-xgboost-classifier-sgx.sh`. Replace `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
-Run the script to run trusted Spark XGBoost Classifier and it would take some time to show the final results:
+Run the script to run the trusted Spark XGBoost Classifier and it would take some time to show the final results:
 
 ```bash
 bash start-spark-local-xgboost-classifier-sgx.sh
@@ -561,7 +587,7 @@ The result should look something like this:
 > | 9.0|112.0|82.0|24.0| 0.0|28.2|1.282|50.0| 1.0|[-0.7087597250938...|[0.29124027490615...|    1.0|
 >
 > | 0.0|119.0| 0.0| 0.0| 0.0|32.4|0.141|24.0| 1.0|[-0.4473398327827...|[0.55266016721725...|    0.0|
-</details>
+> </details>
 
 ## Trusted DL
 ### Run Trusted Spark BigDL
@@ -587,7 +613,7 @@ The result should look something like this:
 > 2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
 >
 > 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
-</details>
+> </details>
 
 ### Run Trusted Spark Orca Data
 <details><summary>This example shows how to run trusted Spark Orca Data.</summary>
@@ -658,13 +684,13 @@ The result should contain the content look like this:
 >\--
 >
 >Stopping orca context
-</details>
+></details>
 
-### Run Trusted Spark Orca Learn Tensorflow Basic Text Classification
-<details><summary>This example shows how to run Trusted Spark Orca learn Tensorflow basic text classification.</summary>
+### Run Trusted Spark Orca Learn TensorFlow Basic Text Classification
+<details><summary>This example shows how to run Trusted Spark Orca learn TensorFlow basic text classification.</summary>
 
 
-Run the script to run Trusted Spark Orca learn Tensorflow basic text classification and it would take some time to show the final results. To run this example in standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
+Run the script to run Trusted Spark Orca learn TensorFlow basic text classification and it would take some time to show the final results. To run this example in standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
 
 ```bash
 bash start-spark-local-orca-tf-text.sh
@@ -679,10 +705,12 @@ sudo docker exec -it spark-local cat test-orca-tf-text.log | egrep "results"
 The result should be similar to:
 
 >INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
-</details>
+></details>
 
 ## Trusted FL
 ### Trusted FL example
 <details><summary>expand/fold</summary>
 content
 </details>
+
+

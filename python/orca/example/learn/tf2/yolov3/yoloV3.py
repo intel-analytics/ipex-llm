@@ -88,8 +88,8 @@ def transform_targets_for_output(y_true, grid_size, anchor_idxs):
                 # idx += 1
                 return (True, indexes, updates)
 
-            (mask, indexes, updates) = tf.cond(tf.reduce_any(anchor_eq) and
-                                               not tf.equal(y_true[i][j][2], 0),
+            (mask, indexes, updates) = tf.cond(tf.math.logical_and(tf.reduce_any(anchor_eq),
+                                               tf.math.logical_not(tf.equal(y_true[i][j][2], 0))),
                                                lambda: reduce(y_true, anchor_eq, grid_size),
                                                lambda: (False, tf.zeros(4, tf.int32),
                                                         tf.zeros(6, tf.float32)))

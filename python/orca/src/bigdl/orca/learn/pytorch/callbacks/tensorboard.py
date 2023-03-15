@@ -77,7 +77,7 @@ class TensorBoardCallback(Callback):
         """
         if self.freq == "epoch" and self._is_rank_zero(runner):
             writer = SummaryWriter(log_dir=self.tmp_dir, **self.kwargs)
-            for name, value in runner.epochs_stats.items():
+            for name, value in runner.epoch_stats.items():
                 if name not in self.unlog_items:
                     writer.add_scalar(name, value, runner.epochs)
             writer.close()

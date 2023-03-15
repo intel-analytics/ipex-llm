@@ -2,6 +2,9 @@
 SGX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and Intel BigDL model training with spark local and distributed cluster on Gramine-SGX.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
+
+> **Warning**: This page has been deprecated, please refer to `ppml/trusted-bigdata` page instead.
+
 ## Before Running code
 ### 1. Build Docker Images
 
@@ -19,7 +22,7 @@ cd base
 ./build-base-image.sh
 cd ..
 ```
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
 First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
@@ -72,7 +75,7 @@ mr_signer        : 6f0627955......
 
 #### 3.1 Deploy EHSM KMS&AS
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
 
 Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts).
 
@@ -280,7 +283,7 @@ kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-u
 #### 1.2.2 Generate k8s config file
 ```bash
 kubectl config use-context spark-context
-kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+kubectl config view --flatten --minify > /YOUR_DIR/config
 ```
 #### 1.2.3 Create k8s secret
 ```bash
@@ -289,7 +292,7 @@ kubectl create secret generic kms-secret \
                       --from-literal=app_id=YOUR_KMS_APP_ID \
                       --from-literal=api_key=YOUR_KMS_API_KEY \
                       --from-literal=policy_id=YOUR_POLICY_ID
-kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/kubeconfig
+kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/config
 ```
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
@@ -301,7 +304,7 @@ Configure the environment variables in the following script before running it. C
    export DATA_PATH=/YOUR_DIR/data
    export KEYS_PATH=/YOUR_DIR/keys
    export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-   export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+   export KUBECONFIG_PATH=/YOUR_DIR/config
    export LOCAL_IP=$LOCAL_IP
    export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
     
@@ -323,7 +326,7 @@ Configure the environment variables in the following script before running it. C
        -e LOCAL_IP=$LOCAL_IP \
        $DOCKER_IMAGE bash
 ```
-run `docker exec -it spark-local-k8s-client bash` to entry the container.
+run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 ### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 

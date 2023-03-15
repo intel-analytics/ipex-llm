@@ -17,7 +17,8 @@ Protecting privacy and confidentiality is critical for large-scale data analysis
 &ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
 [4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
 &ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
-&ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files)
+&ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files) \
+&ensp;&ensp;[4.3 Create Multi-Party PPMLContext](#43-create-multi-party-ppmlcontext)
 
 
 
@@ -185,7 +186,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     ./build-base-image.sh
     cd ..
     ```
-    
+
 2. Build Custom Image
 
     When the base image is ready, you need to generate your enclave key which will be used when building custom image, keep the enclave key safely for future remote attestations.
@@ -216,7 +217,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     ````
 
     Note: you can also customize the image according to your own needs, e.g. install extra python library, add code, jars.
-    
+
     Then, start a client container:
 
     ```
@@ -225,7 +226,7 @@ To build a secure PPML image which can be used in production environment, BigDL 
     export DATA_PATH=/YOUR_DIR/data
     export KEYS_PATH=/YOUR_DIR/keys
     export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-    export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
+    export KUBECONFIG_PATH=/YOUR_DIR/config
     export LOCAL_IP=$LOCAL_IP
     export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT # or the custom image built by yourself
 
@@ -247,18 +248,61 @@ To build a secure PPML image which can be used in production environment, BigDL 
         -e LOCAL_IP=$LOCAL_IP \
         $DOCKER_IMAGE bash
     ```
-    
+
 
 #### Step 2. Encrypt and Upload Data
-Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server. More details in [Encrypt Your Data](./services/kms-utils/docker/README.md#3-enroll-generate-key-encrypt-and-decrypt).
+Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server (or any file system such as HDFS that can be accessed by the cluster).
 
 1. Generate the input data `people.csv` for SimpleQuery application
-you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`.
+  you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/blob/main/ppml/scripts/generate_people_csv.py). The usage command of the script is `python generate_people.py </save/path/of/people.csv> <num_lines>`. The save path should be reachable by `people.csv`, like a shared docker-mount-path.
 
-2. Encrypt `people.csv`
-    ```
-    docker exec -i $KMSUTIL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $input_file_path"
-    ```
+2. Generate primary key.
+```
+docker exec -i bigdl-ppml-client-k8s bash
+cd /ppml/bigdl-ppml/src/bigdl/ppml/kms/ehsm/
+export APIKEY=your_apikey
+export APPID=your_appid
+python client.py -api generate_primary_key -ip ehsm_ip -port ehsm_port
+```
+
+3. Encrypt `people.csv`
+```bash
+    docker exec -i bigdl-ppml-client-k8s bash
+
+    export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
+    bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --driver-memory 5g \
+        --sgx-driver-jvm-memory 10g \
+        --driver-cores 4 \
+        --executor-memory 5g \
+        --sgx-executor-jvm-memory 10g \
+        --executor-cores 4 \
+        --num-executors 2 \
+        --conf spark.cores.max=8 \
+        --conf spark.network.timeout=10000000 \
+        --conf spark.executor.heartbeatInterval=10000000 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+        --conf spark.bigdl.primaryKey.amy.kms.type=EHSMKeyManagementService \
+        --conf spark.bigdl.primaryKey.amy.material=path_to/your_primary_key \
+        --conf spark.bigdl.primaryKey.amy.kms.ip=your_kms_ip \
+        --conf spark.bigdl.primaryKey.amy.kms.port=your_kms_port \
+        --conf spark.bigdl.primaryKey.amy.kms.appId=your_kms_appId \
+        --conf spark.bigdl.primaryKey.amy.kms.apiKey=your_kms_apiKey\
+        --verbose \
+        --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+        --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+        --conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
+        --name amy-encrypt \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+        --inputDataSourcePath file://</save/path/of/people.csv> \
+        --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
+        --cryptoMode aes/cbc/pkcs5padding \
+        --dataSourceType csv
+```
 #### Step 3. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.
 
@@ -268,7 +312,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
    ```
    sudo docker exec -it bigdl-ppml-client-k8s bash
    ```
-   
+
 1. Disable attestation
 
     If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
@@ -287,7 +331,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
 
     The bi-attestation gurantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
     ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
-    
+
     To enable attestation, first you should have a running Attestation Service in your environment. 
 
     **2.1. Deploy EHSM KMS & AS**
@@ -323,7 +367,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     sudo docker run -itd \
         --privileged \
         --net=host \
-        --cpuset-cpus="0-5" \
+        --cpus=5 \
         --oom-kill-disable \
         -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
@@ -374,14 +418,14 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
     **2.5. Enable Attestation in configuration**
 
     First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
-    
+
     ```bash
     kubectl create secret generic kms-secret \
                       --from-literal=app_id=YOUR_KMS_APP_ID \
                       --from-literal=api_key=YOUR_KMS_API_KEY \
                       --from-literal=policy_id=YOUR_POLICY_ID
     ```
-    
+
     Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
     ``` yaml
     apiVersion: v1
@@ -395,9 +439,9 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
           - name: ATTESTATION
             value: true
           - name: PCCS_URL
-            value: your_pccs_url  -----> <set_the_value_to_your_pccs_url>
+            value: https://your_pccs_ip:your_pccs_port
           - name: ATTESTATION_URL
-            value: your_attestation_url
+            value: your_ehsm_ip:your_ehsm_port
           - name: APP_ID
             valueFrom:
               secretKeyRef:
@@ -415,7 +459,7 @@ To build your own Big Data & AI applications, refer to [develop your own Big Dat
                 key: policy_id
     ...
     ```
-    You should get `Attestation Success!` in logs after you [submit a PPML job](#step-4-submit-job) if the quote generated with user report is verified successfully by Attestation Service, or you will get `Attestation Fail! Application killed!` and the job will be stopped.
+    You should get `Attestation Success!` in logs after you submit a PPML job if the quote generated with `user_report` is verified successfully by Attestation Service. Or you will get `Attestation Fail! Application killed!` or `JASONObject["result"] is not a JASONObject`and the job will be stopped.
 
 #### Step 5. Submit Job
 When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit job first.
@@ -505,31 +549,32 @@ Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other
       ```
       sudo kubectl logs $( sudo kubectl get pod | grep "simplequery-.*-exec" -m 1 | cut -d " " -f1 )
       ```
-  
+
   4. If you setup [PPML Monitoring](docs/prepare_environment.md#optional-k8s-monitioring-setup), you can check PPML Dashboard to monitor the status in http://kubernetes_master_url:3000
 
     ![image](https://user-images.githubusercontent.com/61072813/179948818-a2f6844f-0009-49d1-aeac-2e8c5a7ef677.png)
+
   </details>
-<br />
+  <br />
 
 
 #### Step 6. Monitor Job by History Server
 You can monitor spark events using history server. The history server provides an interface to watch and log spark performance and metrics.
-     
+​     
 First, create a shared directory that can be accessed by both the client and the other worker containers in your cluster. For example, you can create an empty directory under the mounted nfs path or hdfs. The spark drivers and executors will write their event logs to this destination, and the history server will read logs here as well.
-     
+​     
 Second, enter your client container and edit `$SPARK_HOME/conf/spark-defaults.conf`, where the histroy server reads the configurations:
 ```
 spark.eventLog.enabled           true
 spark.eventLog.dir               <your_shared_dir_path> ---> e.g. file://<your_nfs_dir_path> or hdfs://<your_hdfs_dir_path>
 spark.history.fs.logDirectory    <your_shared_dir_path> ---> similiar to spark.eventLog.dir
 ```
-     
+
 Third, run the below command and the history server will start to watch automatically:
 ```
 $SPARK_HOME/sbin/start-history-server.sh
 ```
-     
+
 Next, when you run spark jobs, enable writing driver and executor event logs in java/spark-submit commands by setting spark conf like below:
 ```
 ...
@@ -537,7 +582,7 @@ Next, when you run spark jobs, enable writing driver and executor event logs in 
 --conf spark.eventLog.dir=<your_shared_dir_path> \
 ...
 ```
-     
+
 Starting spark jobs, you can find event log files at `<your_shared_dir_path>` like:
 ```
 $ ls
@@ -548,7 +593,7 @@ $ cat spark-application-1666144573580
 {"Event":"SparkListenerJobEnd","Job ID":0,"Completion Time":1666144848006,"Job Result":{"Result":"JobSucceeded"}}
 {"Event":"SparkListenerApplicationEnd","Timestamp":1666144848021}
 ```
-     
+
 You can use these logs to analyze spark jobs. Moreover, you are also allowed to surf from a web UI provided by the history server by accessing `http://localhost:18080`:
 ![history server UI](https://user-images.githubusercontent.com/60865256/196840282-6584f36e-5e72-4144-921e-4536d3391f05.png)    
 
@@ -571,7 +616,7 @@ In addition to the above Spark Pi and Python HelloWorld programs running locally
 
 First you need to create a `PPMLContext`, which wraps `SparkSession` and provides methods to read encrypted data file into plain-text RDD/DataFrame and write DataFrame to encrypted data file. Then you can read & write data through `PPMLContext`.
 
-If you are familiar with Spark, you may find that the usage of `PPMLConext` is very similar to Spark.
+If you are familiar with Spark, you may find that the usage of `PPMLConext` is very similar to Spark. **The explanations of PPMLContext configurations in the following can be found [here](#configurations-of-key-and-kms-in-ppmlcontext)**.
 
 ### 4.1 Create PPMLContext
 
@@ -584,7 +629,7 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
    ```scala
    import com.intel.analytics.bigdl.ppml.PPMLContext
-   
+
    val sc = PPMLContext.initPPMLContext("MyApp")
    ```
 
@@ -613,37 +658,35 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
       <details open>
        <summary>scala</summary>
-  
+
       ```scala
       import com.intel.analytics.bigdl.ppml.PPMLContext
-      
+
       val ppmlArgs: Map[String, String] = Map(
-             "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-             "spark.bigdl.kms.simple.id" -> "your_app_id",
-             "spark.bigdl.kms.simple.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.primaryKey.PK.kms.type" -> "SimpleKeyManagementService",
+             "spark.bigdl.primaryKey.PK.kms.appId" -> "your_app_id",
+             "spark.bigdl.primaryKey.PK.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.primaryKey.PK.material" -> "/your/primary/key/path/primaryKey"
          )
-    
+          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
       ```
 
       </details>
-  
-  
+
+
       <details>
        <summary>python</summary>
-  
+      
       ```python
       from bigdl.ppml.ppml_context import *
-
+    
       ppml_args = {"kms_type": "SimpleKeyManagementService",
-                   "simple_app_id": "your_app_id",
-                   "simple_api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
+                   "primary_key_material": "/your/primary/key/path/primaryKey"
                   }
-
+    
       sc = PPMLContext("MyApp", ppml_args)
       ```
       
@@ -653,48 +696,46 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
 
       <details open>
        <summary>scala</summary>
-      
+
       ```scala
       import com.intel.analytics.bigdl.ppml.PPMLContext
          
       val ppmlArgs: Map[String, String] = Map(
-             "spark.bigdl.kms.type" -> "EHSMKeyManagementService",
-             "spark.bigdl.kms.ehs.ip" -> "your_server_ip",
-             "spark.bigdl.kms.ehs.port" -> "your_server_port",
-             "spark.bigdl.kms.ehs.id" -> "your_app_id",
-             "spark.bigdl.kms.ehs.key" -> "your_api_key",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.primaryKey.PK.kms.type" -> "EHSMKeyManagementService",
+             "spark.bigdl.primaryKey.PK.kms.ip" -> "your_server_ip",
+             "spark.bigdl.primaryKey.PK.kms.port" -> "your_server_port",
+             "spark.bigdl.primaryKey.PK.kms.appId" -> "your_app_id",
+             "spark.bigdl.primaryKey.PK.kms.apiKey" -> "your_api_key",
+             "spark.bigdl.primaryKey.PK.kms.material" -> "/your/primary/key/path/primaryKey"
       )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
       ```
-   
+
      </details>
-   
+
      <details>
        <summary>python</summary>
-   
+       
       ```python
       from bigdl.ppml.ppml_context import *
-   
+       
       ppml_args = {"kms_type": "EHSMKeyManagementService",
                    "kms_server_ip": "your_server_ip",
                    "kms_server_port": "your_server_port"
-                   "ehsm_app_id": "your_app_id",
-                   "ehsm_api_key": "your_api_key",
-                   "primary_key_path": "/your/primary/key/path/primaryKey",
-                   "data_key_path": "/your/data/key/path/dataKey"
+                   "app_id": "your_app_id",
+                   "api_key": "your_api_key",
+                   "primary_key_material": "/your/primary/key/path/primaryKey"
                   }
-   
+       
       sc = PPMLContext("MyApp", ppml_args)
       ```
-   
+       
       </details>
 
    - For `AzureKeyManagementService`
 
-   
+
      the parameter `clientId` is not necessary, you don't have to provide this parameter.
 
       <details open>
@@ -704,78 +745,75 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
       import com.intel.analytics.bigdl.ppml.PPMLContext
          
       val ppmlArgs: Map[String, String] = Map(
-             "spark.bigdl.kms.type" -> "AzureKeyManagementService",
-             "spark.bigdl.kms.azure.vault" -> "key_vault_name",
-             "spark.bigdl.kms.azure.clientId" -> "client_id",
-             "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-             "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+             "spark.bigdl.primaryKey.PK.kms.type" -> "AzureKeyManagementService",
+             "spark.bigdl.primaryKey.PK.kms.vault" -> "key_vault_name",
+             "spark.bigdl.primaryKey.PK.kms.clientId" -> "client_id",
+             "spark.bigdl.primaryKey.PK.material" -> "/your/primary/key/path/primaryKey"
          )
          
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
       ```
-   
+       
      </details>
-
+    
      <details>
        <summary>python</summary>
-   
+       
        ```python
        from bigdl.ppml.ppml_context import *
-   
+       
        ppml_args = {"kms_type": "AzureKeyManagementService",
-                    "azure_vault": "your_azure_vault",
-                    "azure_client_id": "your_azure_client_id",
-                    "primary_key_path": "/your/primary/key/path/primaryKey",
-                    "data_key_path": "/your/data/key/path/dataKey"
+                    "vault": "your_azure_vault",
+                    "client_id": "your_azure_client_id",
+                    "primary_key_material": "/your/primary/key/path/primaryKey",
                    }
-   
+       
        sc = PPMLContext("MyApp", ppml_args)
        ```
-   
+       
      </details>
 
+
    - For `BigDLKeyManagementService`
-     
+
 
       <details open>
        <summary>scala</summary>
-
+    
       ```scala
       import com.intel.analytics.bigdl.ppml.PPMLContext
-   
+         
       val ppmlArgs: Map[String, String] = Map(
-             "spark.bigdl.kms.type" -> "BigDLKeyManagementService",
-             "spark.bigdl.kms.bigdl.ip" -> "your_server_ip",
-             "spark.bigdl.kms.bigdl.port" -> "your_server_port",
-             "spark.bigdl.kms.bigdl.user" -> "your_user_name",
-             "spark.bigdl.kms.bigdl.token" -> "your_user_token",
-             "spark.bigdl.kms.key.primary" -> "your_precreated_primary_key_name",
-             "spark.bigdl.kms.key.data" -> "your_precreated_data_key_name"
+             "spark.bigdl.primaryKey.PK.kms.type" -> "BigDLKeyManagementService",
+             "spark.bigdl.primaryKey.PK.kms.ip" -> "your_server_ip",
+             "spark.bigdl.primaryKey.PK.kms.port" -> "your_server_port",
+             "spark.bigdl.primaryKey.PK.kms.user" -> "your_user_name",
+             "spark.bigdl.primaryKey.PK.kms.token" -> "your_user_token",
+             "spark.bigdl.primaryKey.PK.material" -> "your_precreated_primary_key_name",
       )
-   
+         
       val sc = PPMLContext.initPPMLContext("MyApp", ppmlArgs)
       ```
-
+    
      </details>
-
+    
      <details>
        <summary>python</summary>
-
+    
        ```python
        from bigdl.ppml.ppml_context import *
-
+    
        ppml_args = {"kms_type": "BigDLKeyManagementService",
                     "kms_server_ip": "your_server_ip",
                     "kms_server_port": "your_server_port",
                     "kms_user_name": "your_user_name",
                     "kms_user_token": "your_user_token",
-                    "primary_key_name": "your_precreated_primary_key_name",
-                    "data_key_name": "your_precreated_data_key_name"
+                    "primary_key_material": "your_precreated_primary_key_name",
                    }
-
+    
        sc = PPMLContext("MyApp", ppml_args)
        ```
-
+    
      </details>
 
 
@@ -789,17 +827,16 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    ```scala
    import com.intel.analytics.bigdl.ppml.PPMLContext
    import org.apache.spark.SparkConf
-   
+
    val ppmlArgs: Map[String, String] = Map(
-       "spark.bigdl.kms.type" -> "SimpleKeyManagementService",
-       "spark.bigdl.kms.simple.id" -> "your_app_id",
-       "spark.bigdl.kms.simple.key" -> "your_api_key",
-       "spark.bigdl.kms.key.primary" -> "/your/primary/key/path/primaryKey",
-       "spark.bigdl.kms.key.data" -> "/your/data/key/path/dataKey"
+       "spark.bigdl.primaryKey.PK.kms.type" -> "SimpleKeyManagementService",
+       "spark.bigdl.primaryKey.PK.kms.appId" -> "your_app_id",
+       "spark.bigdl.primaryKey.PK.kms.apiKey" -> "your_api_key",
+       "spark.bigdl.primaryKey.PK.material" -> "/your/primary/key/path/primaryKey",
    )
-   
+
    val conf: SparkConf = new SparkConf().setMaster("local[4]")
-   
+
    val sc = PPMLContext.initPPMLContext(conf, "MyApp", ppmlArgs)
    ```
 
@@ -813,10 +850,9 @@ If you are familiar with Spark, you may find that the usage of `PPMLConext` is v
    from pyspark import SparkConf
    
    ppml_args = {"kms_type": "SimpleKeyManagementService",
-                "simple_app_id": "your_app_id",
-                "simple_api_key": "your_api_key",
-                "primary_key_path": "/your/primary/key/path/primaryKey",
-                "data_key_path": "/your/data/key/path/dataKey"
+                "app_id": "your_app_id",
+                "api_key": "your_api_key",
+                "primary_key_material": "/your/primary/key/path/primaryKey"
                }
    
    conf = SparkConf()
@@ -848,16 +884,13 @@ To write data, you should set the `write` mode:
   <summary>scala</summary>
 
 ```scala
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.AES_CBC_PKCS5PADDING
 
-// read data
-val df = sc.read(cryptoMode = PLAIN_TEXT)
-         ...
+// save df in ciphertext
+sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING).csv(path = ...)
 
-// write data
-sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING)
-.mode("overwrite")
-...
+// load and decrypt encrypted file
+val decryptedDF = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(path = ...)
 ```
 
 </details>
@@ -868,14 +901,11 @@ sc.write(dataFrame = df, cryptoMode = AES_CBC_PKCS5PADDING)
 ```python
 from bigdl.ppml.ppml_context import *
 
-# read data
-df = sc.read(crypto_mode = CryptoMode.PLAIN_TEXT)
-  ...
+# save df in ciphertext
+sc.write(dataframe = df, crypto_mode = AES_CBC_PKCS5PADDING).csv(path = ...)
 
-# write data
-sc.write(dataframe = df, crypto_mode = CryptoMode.AES_CBC_PKCS5PADDING)
-.mode("overwrite")
-...
+# load and decrypt encrypted file
+decrypted_df = sc.read(crypto_mode = AES_CBC_PKCS5PADDING).csv(path = ...)
 ```
 
 </details>
@@ -1116,3 +1146,64 @@ rdd2 = sc.textfile(path=encrypted_csv_path, crypto_mode=CryptoMode.AES_CBC_PKCS5
 </details>
 
 More usage with `PPMLContext` Python API, please refer to [PPMLContext Python API](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/src/bigdl/ppml/README.md).
+
+
+### 4.3 Create Multi-Party PPMLContext
+
+As for multi-party computation scenario where multiple data sources, KMSs and keys exist, you can also use the `initPPMLContext` method to automatically initialize PPML Context with support for multiple key management services and data sources.   
+
+You just need to specify the configurations of one or more primary keys as below:
+
+#### **Configurations of key and KMS in PPMLContext**
+
+1. ***Primary key*** is applied to encrypt and decrypt data key, and one primary key can be bound to multiple data keys. In PPMLContext, a primary key can be provided in two ways, a plaintext base64 string or key generated by KMS:
+
+- **spark.bigdl.primaryKey.*[PrimaryKeyName]*.plainText:**  a plaintext base64 key string, which PPMLContext will use to encrypt the data key directly, and this is only for demo purposes and not recommended in production in consideration of security.
+
+- **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.type:**  type of an existing KMS instance, e.g. `SimpleKeyManagementService`, `EHSMKeyManagementService`, `AzureKeyManagementService` or `BigDLKeyManagementService`. PPMLContext will retrieve a pre-generated primary key that is managed by the KMS.
+
+  The `[PrimaryKeyName]` field above can be any string, and in a multi-party computation scenario, you can configure multiple primary keys with different names for different parties. (**Note:** since [Trusted SimpleQuery With Multiple Data source/KMS](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery) is an implementation example of business logic, primary-key names in it cannot be specified freely and must be `AmyPK` and `BobPK`.)
+
+2. Type-specific parameters for each ***KMS*** instance:
+
+- For `SimpleKeyManagementService`:
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.material:**  the encrypted primary key path of SimpleKMS.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.appId:**  APPID of SimpleKMS.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.apiKey:**  APIKEY of SimpleKMS.
+
+- For `EHSMKeyManagementService`:
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.material:**  the encrypted primary key path of EHSM.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.ip:**  EHSM service IP.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.port:**  EHSM port number.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.appId:**  EHSM APPID.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.apiKey:**  EHSM APIKEY.
+
+- For `AzureKeyManagementService`:
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.material:**  the encrypted primary key path of Azure KMS.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.vault:** Azure KMS KeyVault.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.clientId:** Azure KMS clientId.
+
+- For `BigDLKeyManagementService`:
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.material:**  primary key name of BigDL KMS.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.ip:**  BigDL KMS service IP.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.port:**  BigDL KMS port number.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.user:**  BigDL KMS user name.
+
+  **spark.bigdl.primaryKey.*[PrimaryKeyName]*.kms.token:**  BigDL KMS user token.
+
+An implementation can be seen in [Trusted SimpleQuery With Multiple Data source/KMS](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/examples.md#run-trusted-simplequery). You can follow the example to develop your multi-party computation application.

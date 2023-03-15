@@ -41,35 +41,37 @@ case class EncryptIOArguments(
                                keyVaultName: String = "keyVaultName",
                                managedIdentityClientId: String = "",
                                userName: String = "bigdlKMSUserName",
-                               userToken: String = "bigdlKMSUserToken") {
+                               userToken: String = "bigdlKMSUserToken",
+                               primaryKeyPlainText: String = "") {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
-    kmsArgs("spark.bigdl.kms.type") = kmsType
+    kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.type") = kmsType
     kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
-        kmsArgs("spark.bigdl.kms.ehs.ip") = kmsServerIP
-        kmsArgs("spark.bigdl.kms.ehs.port") = kmsServerPort
-        kmsArgs("spark.bigdl.kms.ehs.id") = ehsmAPPID
-        kmsArgs("spark.bigdl.kms.ehs.key") = ehsmAPIKEY
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.ip") = kmsServerIP
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.port") = kmsServerPort
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.appId") = ehsmAPPID
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.apiKey") = ehsmAPIKEY
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
-        kmsArgs("spark.bigdl.kms.simple.key") = simpleAPIKEY
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.appId") = simpleAPPID
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.apiKey") = simpleAPIKEY
       case KMS_CONVENTION.MODE_AZURE_KMS =>
-        kmsArgs("spark.bigdl.kms.azure.vault") = keyVaultName
-        kmsArgs("spark.bigdl.kms.azure.clientId") = managedIdentityClientId
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.vault") = keyVaultName
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.clientId") = managedIdentityClientId
       case KMS_CONVENTION.MODE_BIGDL_KMS =>
-        kmsArgs("spark.bigdl.kms.bigdl.ip") = kmsServerIP
-        kmsArgs("spark.bigdl.kms.bigdl.port") = kmsServerPort
-        kmsArgs("spark.bigdl.kms.bigdl.user") = userName
-        kmsArgs("spark.bigdl.kms.bigdl.token") = userToken
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.ip") = kmsServerIP
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.port") = kmsServerPort
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.user") = userName
+        kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.token") = userToken
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
-    if (new File(primaryKeyPath).exists()) {
-      kmsArgs("spark.bigdl.kms.key.primary") = primaryKeyPath
+    if (new File(primaryKeyPath).exists() ||
+        (inputEncryptMode == PLAIN_TEXT && outputEncryptMode == PLAIN_TEXT)) {
+      kmsArgs("spark.bigdl.primaryKey.defaultKey.material") = primaryKeyPath
     }
-    if (new File(dataKeyPath).exists()) {
-      kmsArgs("spark.bigdl.kms.key.data") = dataKeyPath
+    if (primaryKeyPlainText != "") {
+      kmsArgs("spark.bigdl.primaryKey.defaultKey.plainText") = primaryKeyPlainText
     }
     kmsArgs.toMap
   }
@@ -102,9 +104,6 @@ object EncryptIOArguments {
     opt[String]('p', "primaryKeyPath")
       .action((x, c) => c.copy(primaryKeyPath = x))
       .text("primaryKeyPath")
-    opt[String]('d', "dataKeyPath")
-      .action((x, c) => c.copy(dataKeyPath = x))
-      .text("dataKeyPath")
     opt[String]('k', "kmsType")
       .action((x, c) => c.copy(kmsType = x))
       .text("kmsType")
@@ -138,5 +137,11 @@ object EncryptIOArguments {
     opt[String]('y', "userToken")
       .action((x, c) => c.copy(userToken = x))
       .text("bigdlKMSUserToken")
+    opt[String]('z', "primaryKeyPlainText")
+      .action((x, c) => c.copy(primaryKeyPlainText = x))
+      .text("primaryKeyPlainText")
+    opt[String]('d', "dataKeyPath")
+      .action((x, c) => c.copy(dataKeyPath = x))
+      .text("dataKeyPath")
   }
 }

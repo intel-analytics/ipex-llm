@@ -17,8 +17,9 @@
 from collections.abc import Sequence
 import intel_extension_for_pytorch as ipex
 from intel_extension_for_pytorch.quantization import prepare, convert
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 import torch
 
 
@@ -109,6 +110,8 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
             self.model = torch.jit.trace(self.model, input_sample,
                                          strict=jit_strict)
             self.model = torch.jit.freeze(self.model)
+        # patch attributes from original model
+        patch_attrs_from_model_to_object(self.original_model, self)
 
     @property
     def forward_args(self):
@@ -125,17 +128,6 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
 
     def on_forward_end(self, outputs):
         return outputs
-
-    def __getattr__(self, name: str):
-        # the search order is:
-        # 1. current instance, like channels_last will be found at this place
-        # 2. super class, like model will be found at this place
-        # 3. original model, like additional attributes of original model
-        #    will be found at this place
-        try:
-            return super().__getattr__(name)
-        except AttributeError:
-            return getattr(self.original_model, name)
 
     @property
     def status(self):
@@ -165,5 +157,5 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
                                             inplace=inplace,
                                             jit_strict=status["jit_strict"])
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.model.save(path / "ckpt.pth")

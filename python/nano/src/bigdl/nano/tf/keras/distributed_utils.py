@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.cpu_schedule import schedule_processors
 import os
 import json
 import shutil
@@ -22,7 +21,8 @@ from tempfile import TemporaryDirectory
 from contextlib import closing
 import socket
 import tensorflow as tf
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.common import invalidInputError
 
 
 def _find_free_port():

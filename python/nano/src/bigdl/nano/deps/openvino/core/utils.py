@@ -16,8 +16,8 @@
 import subprocess
 import operator
 from pathlib import Path
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import compare_version
 from openvino.runtime.passes import Manager
 
 OpenVINO_LESS_2022_3 = compare_version("openvino", operator.lt, "2022.3")

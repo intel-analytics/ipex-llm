@@ -19,11 +19,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import export_to_onnx
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
-from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -36,7 +36,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 simplification=True, dynamic_axes=True, **export_kwargs):
+                 simplification=True, dynamic_axes=True, output_tensors=True, **export_kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -63,6 +63,8 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                              | are axis names. If a list, each element is an axis index.
 
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
+        :param output_tensors: boolean, default to True and output of the model will be Tensors.
+                               If output_tensors=False, output of the ONNX model will be ndarray.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         # Typically, when model is int8, we use this path
@@ -94,6 +96,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             # patch original model's attr to current new model
             patch_attrs_from_model_to_object(model, self)
+        self.output_tensors = output_tensors
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
@@ -103,7 +106,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         return inputs
 
     def on_forward_end(self, outputs):
-        outputs = self.numpy_to_tensors(outputs)
+        if self.output_tensors:
+            outputs = self.numpy_to_tensors(outputs)
+        elif len(outputs) == 1:
+            outputs = outputs[0]
         return outputs
 
     @property
@@ -141,6 +147,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         return PytorchONNXRuntimeModel(str(onnx_path),
                                        onnxruntime_session_options=onnxruntime_session_options)
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)

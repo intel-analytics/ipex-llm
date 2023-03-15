@@ -17,7 +17,7 @@
 
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 from ..core.metric import BaseOpenVINOMetric
 

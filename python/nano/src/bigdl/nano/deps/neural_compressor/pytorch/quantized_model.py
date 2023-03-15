@@ -15,15 +15,16 @@
 #
 from pathlib import Path
 import yaml
+import os
 import operator
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.pytorch.lightning import LightningModule
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
@@ -52,12 +53,20 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             model is not None,
             errMsg="FP32 model is required to create a quantized model."
         )
+        ipex_quantization = False
+        # only ipex quantization saves this file
+        if os.path.exists(os.path.join(path, "best_configure.json")):
+            ipex_quantization = True
+        if ipex_quantization:
+            invalidInputError(example_inputs is not None,
+                              "For INC ipex quantizated model, you need to set input_sample "
+                              "when loading model.")
         # INC 1.14 and 2.0 doesn't supprot quantizing pytorch-lightning module,
         # so we only quantize the internal nn.Module to fix this issue,
         # so we should load weight using internal nn.Module also
         if isinstance(model, LightningModule) and compare_version("neural_compressor",
                                                                   operator.ge, "2.0"):
-            qmodel = PyTorchModel(load(path, model.model))
+            qmodel = PyTorchModel(load(path, model.model, example_inputs=example_inputs))
         else:
             qmodel = PyTorchModel(load(path, model, example_inputs=example_inputs))
         from packaging import version
@@ -74,5 +83,5 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
             thread_num = int(status['thread_num'])
         return PytorchQuantizedModel(qmodel, thread_num=thread_num)
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         self.quantized.save(path)

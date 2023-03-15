@@ -209,7 +209,7 @@ class DoppelGANgerGenerator(nn.Module):
                     self.attribute_outputs[i].dim
 
         # real attribute should come first
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         for i in range(len(self.real_attribute_mask) - 1):
             if (self.real_attribute_mask[i] is False and
                     self.real_attribute_mask[i + 1] is True):
@@ -308,7 +308,7 @@ class DoppelGANgerGenerator(nn.Module):
         current_idx = 0
         part_attribute = []
         part_discrete_attribute = []
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         for i in range(len(sub_all_attribute_outputs)):
             output = sub_all_attribute_outputs[i]
             if output.type_ == OutputType.DISCRETE:
@@ -373,7 +373,7 @@ class DoppelGANgerGenerator(nn.Module):
         # post-processed additional_attribute_output(discrete)
         # real_attribute_out_dim = sum of all real attribute dim
         # addi_attribute_out_dim = sum of all additional attribute dim
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.mlp_1 is not None and self.mlp_2 is not None:
             # there are real attr and fake attr
             invalidInputError(len(all_attribute_outputs) == 2,

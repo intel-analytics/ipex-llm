@@ -15,7 +15,7 @@
 #
 
 
-from typing import Any, Union, List, Optional
+from typing import Any, Union, List, Optional, Mapping
 from logging import warning
 from functools import partial, wraps
 from abc import abstractmethod
@@ -30,10 +30,10 @@ from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
 from pytorch_lightning.utilities.apply_func import apply_to_collection
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.strategies import DeepSpeedStrategy
-
-from bigdl.nano.common import check_avx512
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_11
+from bigdl.nano.utils.common import _avx512_checker
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, \
+    TORCH_VERSION_LESS_1_13, check_ccl
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
@@ -50,9 +50,13 @@ class _TorchNanoModule(_LiteModule):
         else:
             return self.module.state_dict(*args, **kwargs)
 
-    def load_state_dict(self, *args, **kwargs):
-        invalidInputError(False, "TorchNano doesn't support loading state dict, "
-                          "please load it using original pytorch model")
+    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True):
+        invalidInputError(TORCH_VERSION_LESS_1_13, "TorchNano doesn't support loading state dict"
+                          " with PyTorch<1.13, please load it using original pytorch model")
+        if isinstance(self.module, DistributedDataParallel):
+            return self.module.module.load_state_dict(state_dict=state_dict, strict=strict)
+        else:
+            return self.module.load_state_dict(state_dict=state_dict, strict=strict)
 
     def __getattr__(self, name: str):
         # automatically unwrap attributes access of _LiteModule,
@@ -144,6 +148,7 @@ class TorchNano(LightningLite):
     def __init__(self, num_processes: Optional[int] = None,
                  use_ipex: bool = False,
                  distributed_backend: str = "subprocess",
+                 process_group_backend: Optional[str] = None,
                  precision: Union[str, int] = 32,
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  channels_last: bool = False,
@@ -156,6 +161,9 @@ class TorchNano(LightningLite):
         :param use_ipex: whether use ipex acceleration, defaults to ``False``
         :param distributed_backend: use which backend in distributed mode, defaults to
             ``'subprocess'``, now avaiable backends are ``'spawn'``, ``'subprocess'`` and ``'ray'``
+        :param process_group_backend: use which process group backend in distributed mode, defaults
+            to ``None``, means using ``'gloo'`` with CPU, while using ``'nccl'`` with GPU, now
+            avaiable backends are ``None`` and ``'ccl'``.
         :param precision: Double precision (``64``), full precision (``32``),
             half precision (``16``) or bfloat16 precision (``'bf16'``), defaults to ``32``.
             Enable ipex bfloat16 weight prepack when ``use_ipex=True`` and ``precision='bf16'``
@@ -181,7 +189,7 @@ class TorchNano(LightningLite):
             precision = 32
 
         # Confirm if cpu supports AVX512
-        if self.use_ipex and not check_avx512():
+        if self.use_ipex and not _avx512_checker():
             if TORCH_VERSION_LESS_1_11:
                 warning("Enable ipex<=1.10 in a cpu instruction set"
                         " without avx512 will crash."
@@ -204,11 +212,13 @@ class TorchNano(LightningLite):
             else:
                 strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
+            check_ccl(process_group_backend)
             cls = backends_class_map[distributed_backend]
             strategy = cls(num_processes=self.num_processes,   # type: ignore
                            cpu_for_each_process=self.cpu_for_each_process,
                            use_ipex=self.use_ipex,
-                           dtype=self.dtype)
+                           dtype=self.dtype,
+                           process_group_backend=process_group_backend)
         else:
             warning(f"BigDL-Nano doesn't support '{distributed_backend}' backend now, "
                     f"'{distributed_backend}' strategy of pytorch_lightning will be used. "

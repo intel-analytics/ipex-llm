@@ -16,7 +16,6 @@
 
 import os
 import types
-import itertools
 import pickle
 import shutil
 import tempfile
@@ -25,7 +24,6 @@ import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -33,17 +31,17 @@ from bigdl.orca.learn.tf2.tf_runner import TFRunner
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, make_data_creator
+    process_xshards_of_pandas_dataframe, make_data_creator, \
+    add_predict_to_pd_xshards
 from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
     is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.ray import OrcaRayContext
 
-from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
+from typing import TYPE_CHECKING, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     import numpy as np
-    import tensorflow as tf
     from tensorflow import Tensor
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
@@ -158,6 +156,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                             "ray.data.Dataset",
                                             Callable]]=None,
             class_weight: Optional[Dict[int, float]]=None,
+            initial_epoch: int=0,
             steps_per_epoch: Optional[int]=None,
             validation_steps: Optional[int]=None,
             validation_freq: int=1,
@@ -228,6 +227,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             verbose=verbose,
             callbacks=callbacks,
             class_weight=class_weight,
+            initial_epoch=initial_epoch,
             steps_per_epoch=steps_per_epoch,
             validation_steps=validation_steps,
             validation_freq=validation_freq,
@@ -558,10 +558,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, params)
-            result = update_predict_xshards(data, pred_shards)
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, Dataset):
             data = data.get_xshards()
             if min_partition_num:

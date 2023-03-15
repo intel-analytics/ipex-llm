@@ -24,8 +24,6 @@ from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.common import check_avx512
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader

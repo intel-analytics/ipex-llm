@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -40,28 +41,25 @@ class PPMLContextPython[T]() {
     PPMLContext.initPPMLContext(sparkSession)
   }
 
-  def read(sc: PPMLContext, cryptoModeStr: String): EncryptedDataFrameReader = {
+  def read(sc: PPMLContext, cryptoModeStr: String,
+    primaryKeyName: String = "defaultKey"): EncryptedDataFrameReader = {
     logger.debug("read file with crypto mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.read(cryptoMode)
+    sc.read(cryptoMode, primaryKeyName)
   }
 
-  def write(sc: PPMLContext, dataFrame: DataFrame,
-            cryptoModeStr: String): EncryptedDataFrameWriter = {
+  def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String,
+    primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
     logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.write(dataFrame, cryptoMode)
-  }
-
-  def loadKeys(sc: PPMLContext,
-               primaryKeyPath: String, dataKeyPath: String): PPMLContext = {
-    sc.loadKeys(primaryKeyPath, dataKeyPath)
+    sc.write(dataFrame, cryptoMode, primaryKeyName)
   }
 
   def textFile(sc: PPMLContext, path: String,
-               minPartitions: Int, cryptoModeStr: String): RDD[String] = {
+    minPartitions: Int, cryptoModeStr: String,
+    primaryKeyName: String = "defaultKey"): RDD[String] = {
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
-    sc.textFile(path, minPartitions, cryptoMode)
+    sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
 
   /**
@@ -123,11 +121,10 @@ class PPMLContextPython[T]() {
    * support for test
    */
 
-  def initKeys(appId: String, apiKey: String, primaryKeyPath: String,
-               dataKeyPath: String): SimpleKeyManagementService = {
+  def initKeys(appId: String, apiKey: String,
+               primaryKeyPath: String): SimpleKeyManagementService = {
     val kms = SimpleKeyManagementService.apply(appId, apiKey)
     kms.retrievePrimaryKey(primaryKeyPath)
-    kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
     kms
   }
 
