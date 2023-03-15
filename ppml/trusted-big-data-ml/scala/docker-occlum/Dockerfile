@@ -23,7 +23,7 @@ ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential wget git unzip && \
+        openjdk-8-jdk build-essential wget git unzip zip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -156,7 +156,10 @@ RUN cd /opt && \
     cd zoo-tutorials/tpch-spark && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
-    sbt package
+    sbt package && \
+    cd /opt/zoo-tutorials/tpch-pyspark && \
+    zip -r tpch.zip ./tpch
+
 
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
@@ -228,6 +231,11 @@ RUN cd /opt && \
 
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
+
+# Prepare pyspark TPC-H
+RUN mkdir -p /opt/py-examples/tpch
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/tpch.zip /opt/py-examples/tpch/
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/main.py /opt/py-examples/tpch/
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
