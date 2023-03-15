@@ -2,7 +2,7 @@ name: Nightly Test
 
 on:
 
-  pull_request:
+  #pull_request:
     #branchs: [ main ]
 
   schedule:
@@ -252,7 +252,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-ExampleTest-Tf1-Py37-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Tf1-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Tf1-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -281,7 +281,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-ExampleTest-Ray-Py37-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
