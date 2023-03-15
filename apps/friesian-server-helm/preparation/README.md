@@ -102,7 +102,7 @@ Before installing the Friesian online serving, we need to prepare some resource 
   |-user_ebd_dir
     |-user_ebd.parquet (Users' embedding parquet file) 
       |                (Fill user_ebd_dir/user_ebd.parquet in `init.featureRecall.resourcePath.initialUserDataPath`)
-      |                (user_ebd_dir is just an example directory to demonstrate how the data path is populated when there are data files in the directory)
+      |                (user_ebd_dir is just an example directory to demonstrate how to fill in the data path when there are data files in the directory)
       |-part-xxxxxxxxx-xxxx.parquet
       |-part-xxxxxxxxx-xxxx.parquet
       |-...
