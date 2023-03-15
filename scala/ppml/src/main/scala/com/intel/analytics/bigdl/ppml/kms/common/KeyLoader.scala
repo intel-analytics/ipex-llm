@@ -121,7 +121,7 @@ class KeyLoaderManagement extends Serializable {
     }
     def retrieveKeyLoader(primaryKeyName: String): KeyLoader = {
         Log4Error.invalidInputError(multiKeyLoaders.contains(primaryKeyName),
-                                    s"cannot get a not existing keyLoader."
+                                    s"cannot get a not existing keyLoader.")
         multiKeyLoaders.get(primaryKeyName).get
     }
 

@@ -25,7 +25,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyCipherText: String = "",
   enableNativeAESCBC: Boolean = true) extends Compressor {
   val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
-  var setHeader = false
+  var hasHeader = false
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   var isFinished = false
   var b: Array[Byte] = null
@@ -84,7 +84,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
       o._2.copyToArray(b, o._1.length)
       o._1.length + o._2.length
     } else {
-      val o = if (setHeader) {
+      val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
         bytesRead += this.lv2Len
         // create a buffer to cache undecrypted data, size of this.b is changing.
@@ -98,7 +98,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         this.len = 0
         o
       } else {
-        setHeader = true
+        hasHeader = true
         lv2Buffer = this.b.clone()
         lv2Off = this.off
         lv2Len = this.len
@@ -119,8 +119,8 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
     b = null
     off = 0
     len = 0
-    enableNativeAESCBC = false
     tryFinished = false
+    hasHeader = false
     bytesRead = 0L
     bytesWritten = 0L
   }
@@ -146,7 +146,7 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText")
     )
-    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "true") match {
+    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "false") match {
       case "true" => true
       case "false" => false
       case _ =>

@@ -35,7 +35,7 @@ import scala.util.Random
 /**
  * BigDL general crypto for encrypt and decrypt data.
  */
-class BigDLEncrypt(enableNativeAESCBC: Boolean) extends Crypto {
+class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
   var cipher: Cipher = null
   protected var mac: Mac = null
   var ivParameterSpec: IvParameterSpec = null
@@ -78,15 +78,12 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean) extends Crypto {
   }
 
   def initAES(dataKeyPlaintext: String): Unit = {
-    initializationVector = opMode match {
-      case DECRYPT =>
-        if (iv == null){
-          throw new EncryptRuntimeException("initializationVector got from file is empty!")
-        }
-        iv
-      case ENCRYPT => 
-        val r = new SecureRandom()
-        Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
+    if (opMode == DECRYPT && initializationVector == null){
+        throw new EncryptRuntimeException("initializationVector got from file is empty!")
+    }
+    if (opMode == ENCRYPT ) {
+      val r = new SecureRandom()
+      initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     }
     ivParameterSpec = new IvParameterSpec(initializationVector)
     encryptionKeySpec = new SecretKeySpec(dataKeyPlaintext.getBytes(),

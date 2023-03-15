@@ -110,7 +110,7 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "true") match {
+    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "false") match {
       case "true" => true
       case "false" => false
       case _ =>
