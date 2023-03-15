@@ -225,7 +225,7 @@ def read_coco(file_path: str,
              collect_list(col("iscrowd")).alias("iscrowd"),
              collect_list(col("segmentation")).alias("segmentation"))
 
-    ann_rdd =ann_df.rdd.map(
+    ann_rdd = ann_df.rdd.map(
         lambda x: (x['image_id'],
                    (x['bbox'], x['category_id'], x["area"], x["iscrowd"], x["segmentation"])))
 
