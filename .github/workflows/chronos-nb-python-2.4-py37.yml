@@ -50,7 +50,7 @@ jobs:
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[pytorch]
           source bigdl-nano-init
           # bash python/chronos/dev/test/run-installation-options.sh "torch and not inference and not automl and not distributed and not diff_set_all"
-          pytest -v test/bigdl/chronos/data/test_tsdataset.py::TestTSDataset::test_from_prometheus
+          bash python/chronos/dev/test/run-installation-options.sh
           source deactivate
           conda remove -n chronos-nb-env-py37 -y --all
 
