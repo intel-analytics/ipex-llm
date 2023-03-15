@@ -210,7 +210,14 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 return elem.tolist()
 
     def combine(pair):
-        if not isinstance(pair[1], (list, tuple)) or not output_cols:
+        if not output_cols:
+            if isinstance(pair[1], (list, tuple)) and len(pair[1]) == 1:
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             convert_elem(pair[1])))
+            else:
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             [convert_elem(pair[1])]))
+        elif not isinstance(pair[1], (list, tuple)):
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
                          [convert_elem(pair[1])]))
         else:
