@@ -192,11 +192,11 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     def convert_elem(elem):
         # list of np array
         if isinstance(elem, (list, tuple)):
-            return [Vectors.dense(i) for i in elem]
+            return [convert_elem(i) for i in elem]
         # dict of np array as values
         elif isinstance(elem, dict):
             return {k: convert_elem(v) for k, v in elem.items()}
-        # scalar in basic type, coordinate with ndarray.tolist()
+        # scalar in basic type
         elif isinstance(elem, np.ScalarType):
             return float(elem)
         # np ndarray
