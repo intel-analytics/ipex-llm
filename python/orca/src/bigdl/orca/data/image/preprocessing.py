@@ -200,11 +200,11 @@ def read_images_spark(file_path: str,
     return SparkXShards(image_rdd)
 
 
-def read_voc(file_path: str = "VOCdevkit",
-             split_names: Optional[List[Tuple[int, str]]] = None,
-             classes: Optional[List[str]] = None,
-             diff: bool = False,
-             max_samples: int = None
+def read_voc(file_path: str="VOCdevkit",
+             split_names: Optional[List[Tuple[int, str]]]=None,
+             classes: Optional[List[str]]=None,
+             diff: bool=False,
+             max_samples: int=None
              ) -> "SparkXShards":
     """
     Read VOC images into a SparkXShards. code is ported from
