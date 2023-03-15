@@ -201,7 +201,7 @@ def read_images_spark(file_path: str,
 
 
 def read_voc(file_path: str = "VOCdevkit",
-             split_names: List[Tuple[int, str]] = [(2009, "trainval")],
+             split_names: Optional[List[Tuple[int, str]]] = None,
              classes: Optional[List[str]] = None,
              diff: bool = False,
              max_samples: int = None
@@ -225,6 +225,7 @@ def read_voc(file_path: str = "VOCdevkit",
     anno_path = osp.join('{}', 'Annotations', '{}.xml')
     image_path = osp.join('{}', 'JPEGImages', '{}.jpg')
 
+    split_names = split_names if split_names else [(2009, "trainval")]
     CLASSES = classes if classes else ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
                                        'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
                                        'motorbike', 'person', 'pottedplant', 'sheep', 'sofa',
