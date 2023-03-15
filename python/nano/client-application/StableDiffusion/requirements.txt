@@ -1,0 +1,9 @@
+transformers
+scipy
+ftfy
+openvino-dev
+gradio
+diffusers==0.11.1
+psutil
+click
+bigdl-nano[pytorch]>=2.3.0b20230220

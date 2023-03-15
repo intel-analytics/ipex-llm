@@ -26,14 +26,20 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 
 def parse_args(description, mode="train"):
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--data_dir", type=str, default="./ml-1m",
+    parser.add_argument("--data_dir", type=str, default="./",
                         help="The path to load data from local or remote resources.")
+    parser.add_argument("--dataset", type=str, default="ml-1m",
+                        choices=("ml-1m", "ml-100k"),
+                        help="The name of dataset. ml-1m or ml-100k")
     parser.add_argument("--model_dir", type=str, default="./",
                         help="The path to save model and logs.")
     parser.add_argument("--cluster_mode", type=str, default="local",
+                        choices=("local", "yarn-client", "yarn-cluster", "k8s-client",
+                                 "k8s-cluster", "spark-submit", "bigdl-submit"),
                         help="The cluster mode, such as local, yarn-client, yarn-cluster, "
                              "k8s-client, k8s-cluster, spark-submit or bigdl-submit.")
     parser.add_argument("--backend", type=str, default="spark",
+                        choices=("spark", "ray"),
                         help="The backend of Orca Estimator, either ray or spark.")
     parser.add_argument("--workers_per_node", type=int, default=1,
                         help="The number of workers on each node.")
@@ -109,6 +115,15 @@ def schedule_func(epoch, lr):
         return lr
     else:
         return lr * 0.5
+
+
+def get_pytorch_callbacks(args):
+    if args.tensorboard:
+        from bigdl.orca.learn.pytorch.callbacks.tensorboard import TensorBoardCallback
+        return [TensorBoardCallback(log_dir=os.path.join(args.model_dir, "logs"),
+                                    freq=1000)]
+    else:
+        return []
 
 
 def save_model_config(config, model_dir, file_name="config.json"):

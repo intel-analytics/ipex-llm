@@ -20,7 +20,7 @@ import torch
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import TorchNano
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 from torchvision.models.resnet import ResNet, BasicBlock
 from torchmetrics.functional import accuracy
 import pytorch_lightning as pl

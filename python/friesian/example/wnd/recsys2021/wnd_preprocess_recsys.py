@@ -207,7 +207,7 @@ if __name__ == '__main__':
                           ", but got " + args.cluster_mode)
 
     start = time()
-    train_paths = [os.path.join(args.input_train_folder, 'part-%05d.parquet' % i)
+    train_paths = [os.path.join(args.input_train_folder, 'part-%05d*.parquet' % i)
                    for i in args.train_files]
     train_tbl = FeatureTable.read_parquet(train_paths)
     train_tbl.df.printSchema()

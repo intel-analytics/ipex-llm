@@ -149,7 +149,7 @@ class TCMFForecaster(Forecaster):
         :param num_workers: the number of workers you want to use for fit. If None, it defaults to
             num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.internal is None:
             if isinstance(x, SparkXShards):
                 self.internal = TCMFXshardsModelWrapper(self.config)
@@ -177,7 +177,7 @@ class TCMFForecaster(Forecaster):
                                   )
             except Exception as inst:
                 self.internal = None
-                from bigdl.nano.utils.log4Error import invalidOperationError
+                from bigdl.nano.utils.common import invalidOperationError
                 invalidOperationError(False, str(inst), cause=inst)
         else:
             invalidInputError(False,
@@ -267,7 +267,7 @@ class TCMFForecaster(Forecaster):
         :return: A numpy ndarray with shape of (nd, horizon), where nd is the same number
             of time series as input x in fit_eval.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.internal is None:
             invalidInputError(False,
                               "You should run fit before calling predict()")
@@ -283,7 +283,7 @@ class TCMFForecaster(Forecaster):
 
         :param path: Path to target saved file.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.internal is None:
             invalidInputError(False,
                               "You should run fit before calling save()")
@@ -296,7 +296,7 @@ class TCMFForecaster(Forecaster):
 
         :return: True if the model is distributed by input xshards
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.internal is None:
             invalidInputError(False,
                               "You should run fit before calling is_xshards_distributed()")

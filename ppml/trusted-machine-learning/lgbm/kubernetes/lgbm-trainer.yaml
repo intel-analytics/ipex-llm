@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lgbm-trainer
+spec:
+  selector:
+    matchLabels:
+      app: lgbm-trainer
+  serviceName: "lgbm-trainer"
+  replicas: $totalTrainerCount
+  template:
+    metadata:
+      labels:
+        app: lgbm-trainer
+    spec:
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfsvolumeclaim
+      - name: secure-keys
+        secret:
+          secretName: ssl-keys
+      hostNetwork: true
+      containers:
+      - name: lgbm-trainer
+        image: "$imageName"
+        command: ['sh' , '-c', 'bash /ppml/start-lgbm-training.sh']
+        env:
+        - name: TOTAL_TRAINER_COUNT
+          value: "$totalTrainerCount"
+        - name: TRAINER_PORT
+          value: "$trainerPort"
+        - name: TRAINER_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # - name: ATTESTATION
+        #   value: false
+        # - name: ATTESTATION_URL
+        #   value: your_attestation_url
+        #- name: PCCS_URL
+        #  value: your_pccs_url
+        #- name: APP_ID
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: kms-secret
+        #      key: app_id
+        #- name: API_KEY
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: kms-secret
+        #      key: api_key
+        #- name: ATTESTATION_POLICYID
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: kms-secret
+        #      key: policy_id
+        volumeMounts:
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: aesm-socket
+          mountPath: /var/run/aesmd/aesm.socket
+        - name: nfs-storage
+          mountPath: /ppml/data
+        - name: secure-keys
+          mountPath: /ppml/keys
+        resources:
+          requests:
+            cpu: 8
+            memory: 32Gi
+            sgx.intel.com/epc: 34359738368
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+          limits:
+            cpu: 10
+            memory: 40Gi
+            sgx.intel.com/epc: 34359738368
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+

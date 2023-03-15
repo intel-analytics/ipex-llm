@@ -1,0 +1,25 @@
+name: 'Run Orca Basic Pytorch Py38 Spark3'
+description: 'Run Orca Basic Pytorch Py38 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py38
+        export SPARK_LOCAL_HOSTNAME=localhost
+        
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+     
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip list
+        chmod a+x python/orca/dev/test/run-pytests-basic-pytorch.sh
+        python/orca/dev/test/run-pytests-basic-pytorch.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

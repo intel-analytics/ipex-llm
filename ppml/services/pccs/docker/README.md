@@ -1,3 +1,8 @@
+## Prerequests
+
+- Please make sure you have Docker installed.
+- Please make sure this PCCS container has Internet access. If you are using a proxy, make sure https proxy is correctly set. Otherwise set `HTTPS_PROXY_URL `in `run-docker-container.sh` to `""`.
+- Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 ## 1. Pull/Build container image
 Download image as below:
 
@@ -37,7 +42,7 @@ Output:
 
 Execute command:
 ```
-curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/rootcacrl"
+curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v4/rootcacrl"
 ```
 to check if pccs service is available.
 

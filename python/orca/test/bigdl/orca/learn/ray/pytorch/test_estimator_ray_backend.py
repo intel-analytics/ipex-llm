@@ -259,7 +259,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -270,7 +270,7 @@ class TestPyTorchEstimator(TestCase):
         df = spark.createDataFrame(data=data, schema=schema)
 
         val_rdd = sc.range(0, 40)
-        val_data = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        val_data = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                           [float(np.random.randint(0, 2, size=()))])
                                )
         val_df = spark.createDataFrame(data=val_data, schema=schema)
@@ -306,7 +306,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -328,7 +328,7 @@ class TestPyTorchEstimator(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -396,7 +396,11 @@ class TestPyTorchEstimator(TestCase):
         estimator.evaluate(data_shard, batch_size=2, feature_cols=["user", "item"],
                            label_cols=["label"])
         result = estimator.predict(data_shard, batch_size=2, feature_cols=["user", "item"])
-        result.collect()
+        predictions = result.collect()[0]
+        import pandas as pd
+        assert isinstance(predictions, pd.DataFrame), "predict should return a pandas dataframe"
+        assert isinstance(predictions["prediction"], pd.Series), \
+               "predict dataframe should have a column named prediction"
 
     def test_multiple_inputs_model(self):
 
@@ -428,7 +432,7 @@ class TestPyTorchEstimator(TestCase):
                                    feature_cols=["f1", "f2"])
         result.collect()
 
-    def test_unenven_data(self):
+    def test_uneven_data(self):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100).repartition(3)
@@ -576,7 +580,7 @@ class TestPyTorchEstimator(TestCase):
 
     #     sc = init_nncontext()
     #     rdd = sc.range(0, 100)
-    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+    #     df = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
     #                             [int(np.random.randint(0, 2, size=()))])
     #                  ).toDF(["feature", "label"])
 
@@ -601,7 +605,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -646,12 +650,54 @@ class TestPyTorchEstimator(TestCase):
         with pytest.raises(RuntimeError):
             Estimator.latest_checkpoint(temp_dir)
 
+    def test_checkpoint_callback_by_iter(self):
+        from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+        sc = OrcaContext.get_spark_context()
+        spark = SparkSession.builder.getOrCreate()
+        rdd = sc.range(0, 100)
+        epochs = 1
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
+                                  [float(np.random.randint(0, 2, size=()))])
+                       )
+        schema = StructType([
+            StructField("feature", ArrayType(FloatType()), True),
+            StructField("label", ArrayType(FloatType()), True)
+        ])
+        df = spark.createDataFrame(data=data, schema=schema)
+        df = df.cache()
+
+        size = df.count()
+        batch_size = 4
+        interval = 5
+
+        estimator = get_estimator(workers_per_node=2, log_level=logging.DEBUG)
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+            callbacks = [
+                ModelCheckpoint(filepath=os.path.join(temp_dir, "test-{iter}"),
+                                save_weights_only=True,
+                                by_epoch=False,
+                                interval=interval)
+            ]
+            estimator.fit(df, batch_size=batch_size, epochs=epochs,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"])
+
+            for i in range(interval, int(size / batch_size) + 1, interval):
+                assert os.path.isfile(os.path.join(temp_dir, f"test-iter={i}.ckpt"))
+
+            estimator.shutdown()
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_manual_ckpt(self):
         sc = OrcaContext.get_spark_context()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -702,7 +748,7 @@ class TestPyTorchEstimator(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -743,6 +789,31 @@ class TestPyTorchEstimator(TestCase):
             shutil.rmtree(temp_dir)
 
         estimator.shutdown()
+
+    def test_optional_optimizer(self):
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = SparkXShards(shards)
+
+        try:
+            estimator = get_estimator(model_fn=lambda config: IdentityNet())
+            path = "/tmp/optimizer_model"
+            estimator.save(path)
+            estimator.shutdown()
+
+            estimator = Estimator.from_torch(model=lambda config: IdentityNet(),
+                                             workers_per_node=2,
+                                             backend="ray")
+            estimator.load(path)
+
+            result = estimator.predict(shards, batch_size=4)
+            predicted_result = np.concatenate([shard["prediction"] for shard in result.collect()])
+            expected_result = np.concatenate([shard["x"] for shard in result.collect()])
+        finally:
+            os.remove(path)
+
+        assert np.array_equal(predicted_result, expected_result)
 
 if __name__ == "__main__":
     pytest.main([__file__])

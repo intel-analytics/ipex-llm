@@ -246,7 +246,7 @@ class XShardsTSDataset:
 
         :return: the xshardtsdataset instance.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if id_sensitive:
             invalidInputError(False,
                               "id_sensitive option has not been implemented.")
@@ -305,7 +305,7 @@ class XShardsTSDataset:
             Note: this function will not fit the scaler.
             '''
             from sklearn.utils.validation import check_is_fitted
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
 
             scaler_for_this_id = scaler[df[id_col].iloc[0]]
             invalidInputError(not check_is_fitted(scaler_for_this_id),
@@ -339,7 +339,7 @@ class XShardsTSDataset:
         '''
         def _inverse_transform(df, id_col, scaler, feature_col, target_col):
             from sklearn.utils.validation import check_is_fitted
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
 
             scaler_for_this_id = scaler[df[id_col].iloc[0]]
             invalidInputError(not check_is_fitted(scaler_for_this_id),
@@ -399,11 +399,11 @@ class XShardsTSDataset:
 
         :return: the unscaled xshardtsdataset instance.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
 
         def _inverse_transform(data, scaler, scaler_index, key):
             from sklearn.utils.validation import check_is_fitted
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
 
             id = data['id'][0, 0]
             scaler_for_this_id = scaler[id]
@@ -461,7 +461,7 @@ class XShardsTSDataset:
                  is casted to float32. Default to None which will partition according
                  to id.
         '''
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if self.numpy_shards is None:
             invalidInputError(False,
                               "Please call 'roll' method "

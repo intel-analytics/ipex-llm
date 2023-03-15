@@ -160,6 +160,7 @@ class LSTMForecaster(BasePytorchForecaster):
         self.quantize_available = True
         self.checkpoint_callback = True
         self.use_hpo = True
+        self.optimized_model_output_tensor = True
 
         super().__init__()
 
@@ -179,7 +180,7 @@ class LSTMForecaster(BasePytorchForecaster):
         :return: A LSTM Forecaster Model.
         '''
         from bigdl.chronos.data.tsdataset import TSDataset
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
 
         invalidInputError(isinstance(tsdataset, TSDataset),
                           f"We only supports input a TSDataset, but get{type(tsdataset)}.")

@@ -29,12 +29,12 @@ from bigdl.orca.learn.tf2 import Estimator
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Spark DataFrame")
 args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
-init_orca(args.cluster_mode, extra_python_lib="tf_model.py")
+init_orca(args.cluster_mode, extra_python_lib="process_spark_dataframe.py,tf_model.py,utils.py")
 
 
 # Step 2: Read and process data using Spark DataFrame
 train_df, test_df, user_num, item_num, sparse_feats_input_dims, num_dense_feats, \
-    feature_cols, label_cols = prepare_data(args.data_dir, neg_scale=4)
+    feature_cols, label_cols = prepare_data(args.data_dir, args.dataset, neg_scale=4)
 
 
 # Step 3: Define the NCF model
@@ -106,8 +106,7 @@ for k, v in eval_stats.items():
 
 
 # Step 6: Save the trained TensorFlow model and processed data for resuming training or prediction
-# TODO: fix save model to HDFS
-est.save(os.path.join(args.model_dir, "NCF_model"))
+est.save(os.path.join(args.model_dir, "NCF_model.h5"))
 save_model_config(config, args.model_dir, "config.json")
 train_df.write.parquet(os.path.join(args.data_dir,
                                     "train_processed_dataframe.parquet"), mode="overwrite")

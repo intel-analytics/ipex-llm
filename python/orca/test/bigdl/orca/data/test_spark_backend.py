@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import tempfile
 import os.path
 import pytest
 from unittest import TestCase
@@ -22,10 +21,7 @@ import shutil
 
 import bigdl.orca.data
 import bigdl.orca.data.pandas
-from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import *
-from bigdl.orca.data.image import write_tfrecord, read_tfrecord
-from bigdl.orca.data.utils import *
 from bigdl.orca.data.transformer import *
 
 

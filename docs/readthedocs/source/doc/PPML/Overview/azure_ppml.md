@@ -266,7 +266,49 @@ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount
 ```bash
 kubectl patch serviceaccount spark -p '{"imagePullSecrets": [{"name": "regcred"}]}'
 ```
-### 3.7 Run PPML spark job
+
+### 3.7 (Optional) Enable Microsoft Azure Attestation
+First, upload `appid` and `apikey` as place-holder. The `appid` and `apikey` will not actually effect but they should be non-empty otherwise the attestation workflow would throw a value-missing error.
+```bash
+kubectl create secret generic kms-secret \
+                  --from-literal=app_id=YOUR_APP_ID \
+                  --from-literal=api_key=YOUR_API_KEY 
+```
+Then configure attestation related environment variable in the driver-template and executor-template. 
+Here is an example for `spark-driver-template-az.yaml`:
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: spark-driver
+    securityContext:
+      privileged: true
+    env:
+      - name: ATTESTATION
+        value: true
+      - name: ATTESTATION_URL
+       value: your_attestation_url # e.g. https://sharedcus.cus.attest.azure.net
+      - name: APP_ID
+       valueFrom:
+         secretKeyRef:
+           name: kms-secret # consistent with the above
+           key: app_id
+      - name: API_KEY
+       valueFrom:
+         secretKeyRef:
+           name: kms-secret
+           key: api_key
+      - name: ATTESTATION_TYPE
+       value: AzureAttestationService
+      - name: QUOTE_TYPE
+       value: gramine
+...
+```
+
+And similar configures should be applied to `spark-executor-template-az.yaml` too.
+
+### 3.8 Run PPML spark job
 The example script to run PPML spark job on AKS is as below. You can also refer to `/ppml/trusted-big-data-ml/azure/submit-spark-sgx-az.sh`
 ```bash
 export RUNTIME_DRIVER_MEMORY=8g
@@ -316,7 +358,7 @@ bash bigdl-ppml-submit.sh \
     $SPARK_EXTRA_JAR_PATH \
     $ARGS
 ```
-### 3.8 Run simple query python example
+### 3.9 Run simple query python example
 This is an example script to run simple query python example job on AKS with data stored in Azure data lake store.
 ```bash
 export RUNTIME_DRIVER_MEMORY=6g

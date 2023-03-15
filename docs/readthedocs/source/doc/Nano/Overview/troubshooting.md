@@ -7,6 +7,10 @@ Refer to this section for common issues faced while using BigDL-Nano.
 
 Please check your system first as openvino-dev 2022.2 does not support centos. Refer [this](https://pypi.org/project/openvino-dev/) for more details. You can install bigdl-nano[inference] >= 2.2 instead, as bigdl-nano[inference] >= 2.2 use openvino-dev >= 2022.3 which supports centos again.
 
+### How to solve SYNK issue caused by onnx when ``pip install bigdl-nano[inference]``?
+
+We are trying to solve this issue by upgrading onnx to 1.13. But there exists conflict between onnx 1.13 and other dependencies (such as intel-tensorflow and pytorch-lightning), mainly because of protobuf version. If you are concerned about security of onnx, we recommend to ``pip install onnx==1.13`` after ``pip install bigdl-nano[inference]``.
+
 ## Inference
 
 ### ``could not create a primitive descriptor iterator`` when using bf16 related methods

@@ -124,7 +124,7 @@ class DoppelGANger_pl(LightningModule):
                                     [False] * (len(data_attribute_outputs)-num_real_attribute))
         self.gen_flag_dims = []
         dim = 0
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         for output in self.data_feature_outputs:
             if output.is_gen_flag:
                 if output.dim != 2:

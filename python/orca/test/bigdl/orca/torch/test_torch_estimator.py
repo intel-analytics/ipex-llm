@@ -16,7 +16,6 @@
 
 import torch
 from torch import nn
-import torchvision
 import pytest
 
 from unittest import TestCase

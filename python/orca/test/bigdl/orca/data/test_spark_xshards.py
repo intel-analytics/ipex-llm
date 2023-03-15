@@ -15,20 +15,16 @@
 #
 
 import os.path
-import shutil
 
-import numpy as np
 import pytest
 from unittest import TestCase
 
 import bigdl.orca.data
 import bigdl.orca.data.pandas
-from bigdl.orca import OrcaContext
 from bigdl.orca.data import SharedValue
 from bigdl.dllib.nncontext import *
-from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.transformer import *
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context
 
 class TestSparkXShards(TestCase):
     def setup_method(self, method):

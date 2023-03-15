@@ -4,6 +4,8 @@ spec:
   containers:
   - name: spark-driver
     env:
+      - name: MALLOC_ARENA_MAX
+        value: ${MALLOC_ARENA_MAX}
       - name: ATTESTATION
         value: false
       - name: ATTESTATION_URL
@@ -25,7 +27,7 @@ spec:
       #  valueFrom:
       #    secretKeyRef:
       #      name: kms-secret
-      #      key: app_key
+      #      key: api_key
       #- name: ATTESTATION_POLICYID
       #  valueFrom:
       #    secretKeyRef:

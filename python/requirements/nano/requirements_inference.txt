@@ -1,0 +1,12 @@
+# These are mirrored in python/nano/setup.py, 
+# which is what the users of the bigdl-nano[inference] package will install.
+#
+# In short, if you change it here, PLEASE also change it in setup.py
+# Actrual installation logic will follow setup.py
+
+
+onnxruntime==1.12.1
+onnxruntime-extensions==0.4.2
+openvino-dev==2022.3.0
+neural-compressor==2.0
+onnxsim==0.4.8

@@ -2,23 +2,66 @@
 
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. InferenceOptimizer (`bigdl.nano.pytorch.InferenceOptimizer`) provides the APIs for all optimizations that you need for inference.
 
-For runtime acceleration, BigDL-Nano has enabled three kinds of graph mode format and corresponding runtime in `InferenceOptimizer.trace()`: ONNXRuntime, OpenVINO and TorchScript.
 
-```eval_rst
-.. warning::
-    ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+## Automatically Choose the Best Optimization
 
-    Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
+If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
+
+Let's take mobilenetv3 as an example model, you can use it as following:
+
+```python
+from torchvision.models.mobilenetv3 import mobilenet_v3_small
+import torch
+from torch.utils.data.dataset import TensorDataset
+from torch.utils.data.dataloader import DataLoader
+from bigdl.nano.pytorch import InferenceOptimizer, Trainer
+
+# step 1: create your model
+model = mobilenet_v3_small(num_classes=10)
+
+# step 2: prepare your data and dataloader
+x = torch.rand((10, 3, 256, 256))
+y = torch.ones((10, ), dtype=torch.long)
+ds = TensorDataset(x, y)
+dataloader = DataLoader(ds, batch_size=2)
+
+# (Optional) step 3: Something else, like training ...
+
+# try all supproted optimizations
+opt = InferenceOptimizer()
+opt.optimize(model, training_data=dataloader, thread_num=4)
+
+# get the best optimization
+best_model, option = opt.get_best_model()
+
+# use the quantized model as before
+with InferenceOptimizer.get_context(best_model):
+    y_hat = best_model(x)
 ```
 
-For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now.
-
-```eval_rst
-.. warning::
-    ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
-
-    Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
+`InferenceOptimizer.optimize()` will try all supported optimizations and choose the best one by `get_best_model()`.
+The output table of `optimize()` looks like:
+```bash
+ -------------------------------- ---------------------- --------------
+|             method             |        status        | latency(ms)  |
+ -------------------------------- ---------------------- --------------
+|            original            |      successful      |    9.337     |
+|              bf16              |      successful      |    8.974     |
+|          static_int8           |      successful      |    8.934     |
+|         jit_fp32_ipex          |      successful      |    10.013    |
+|  jit_fp32_ipex_channels_last   |      successful      |    4.955     |
+|         jit_bf16_ipex          |      successful      |    2.563     |
+|  jit_bf16_ipex_channels_last   |      successful      |    3.135     |
+|         openvino_fp32          |      successful      |    1.727     |
+|         openvino_int8          |      successful      |    1.635     |
+|        onnxruntime_fp32        |      successful      |    3.801     |
+|    onnxruntime_int8_qlinear    |      successful      |    4.727     |
+ -------------------------------- ---------------------- --------------
+Optimization cost 58.3s in total.
 ```
+
+For more details, you can refer [How-to guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize.html) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch-inferenceoptimizer). 
+
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for PyTorch. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
@@ -47,26 +90,20 @@ Before you go ahead with these APIs, you have to make sure BigDL-Nano is correct
     - `ONNXRuntime <https://onnxruntime.ai/>`_: ``pip install onnx onnxruntime onnxruntime-extensions onnxsim neural-compressor``
 ```
 
-## Graph Mode Acceleration
-All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. Let's take mobilenetv3 as an example model and here is a short script that you might have before applying any BigDL-Nano's optimizations:
-```python
-from torchvision.models.mobilenetv3 import mobilenet_v3_small
-import torch
-from torch.utils.data.dataset import TensorDataset
-from torch.utils.data.dataloader import DataLoader
-from bigdl.nano.pytorch import InferenceOptimizer, Trainer
 
-# step 1: create your model
-model = mobilenet_v3_small(num_classes=10)
+## Runtime Acceleration
 
-# step 2: prepare your data and dataloader
-x = torch.rand((10, 3, 256, 256))
-y = torch.ones((10, ), dtype=torch.long)
-ds = TensorDataset(x, y)
-dataloader = DataLoader(ds, batch_size=2)
+For runtime acceleration, BigDL-Nano has enabled three kinds of graph mode format and corresponding runtime in `InferenceOptimizer.trace()`: ONNXRuntime, OpenVINO and TorchScript.
 
-# (Optional) step 3: Something else, like training ...
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.trace`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.trace`` instead.
 ```
+
+All available runtime accelerations are integrated in `InferenceOptimizer.trace(accelerator='onnxruntime'/'openvino'/'jit')` with different accelerator values. 
+
 ### ONNXRuntime Acceleration
 You can simply append the following part to enable your [ONNXRuntime](https://onnxruntime.ai/) acceleration.
 ```python
@@ -121,7 +158,16 @@ with InferenceOptimizer.get_context(jit_model):
 ```
 
 ## Quantization
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. For quantization precision, BigDL-Nano supports two common choices: `int8` and `bfloat16`. The usage of the two kinds of precision is quite different.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. 
+
+For quantization, BigDL-Nano provides only post-training quantization in `InferenceOptimizer.quantize()` for users to infer with models of 8-bit precision or 16-bit precision. Quantization-aware training is not available for now.
+
+```eval_rst
+.. warning::
+    ``bigdl.nano.pytorch.Trainer.quantize`` will be deprecated in future release.
+
+    Please use ``bigdl.nano.pytorch.InferenceOptimizer.quantize`` instead.
+```
 
 ### Int8 Quantization
 BigDL-Nano provides `InferenceOptimizer.quantize()` API for users to quickly obtain a int8 quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options.
@@ -267,47 +313,6 @@ bf16_model = InferenceOptimizer.quantize(model,
 with InferenceOptimizer.get_context(bf16_model):
     y_hat = bf16_model(x)
 ```
-
-## Automatically Choose the Best Optimization
-
-If you have no idea about which one optimization to choose or you just want to compare them and choose the best one, you can use `InferenceOptimizer.optimize`.
-
-Still taking the example in [Runtime Acceleration](#runtime-acceleration), you can use it as following:
-```python
-# try all supproted optimizations
-opt = InferenceOptimizer()
-opt.optimize(model, training_data=dataloader, thread_num=4)
-
-# get the best optimization
-best_model, option = opt.get_best_model()
-
-# use the quantized model as before
-with InferenceOptimizer.get_context(best_model):
-    y_hat = best_model(x)
-```
-
-`InferenceOptimizer.optimize()` will try all supported optimizations and choose the best one by `get_best_model()`.
-The output table of `optimize()` looks like:
-```bash
- -------------------------------- ---------------------- --------------
-|             method             |        status        | latency(ms)  |
- -------------------------------- ---------------------- --------------
-|            original            |      successful      |    9.337     |
-|              bf16              |      successful      |    8.974     |
-|          static_int8           |      successful      |    8.934     |
-|         jit_fp32_ipex          |      successful      |    10.013    |
-|  jit_fp32_ipex_channels_last   |      successful      |    4.955     |
-|         jit_bf16_ipex          |      successful      |    2.563     |
-|  jit_bf16_ipex_channels_last   |      successful      |    3.135     |
-|         openvino_fp32          |      successful      |    1.727     |
-|         openvino_int8          |      successful      |    1.635     |
-|        onnxruntime_fp32        |      successful      |    3.801     |
-|    onnxruntime_int8_qlinear    |      successful      |    4.727     |
- -------------------------------- ---------------------- --------------
-Optimization cost 58.3s in total.
-```
-
-For more details, you can refer [How-to guide](https://bigdl.readthedocs.io/en/latest/doc/Nano/Howto/Inference/PyTorch/inference_optimizer_optimize.html) and [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch-inferenceoptimizer). 
 
 ## Multi-instance Acceleration
 

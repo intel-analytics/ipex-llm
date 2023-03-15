@@ -2,7 +2,7 @@
 status_5_local_spark_basic_sql=1
 status_6_local_spark_arrow=1
 status_7_local_spark_hive=1
-
+export MALLOC_ARENA_MAX=8
 # entry /ppml dir
 cd /ppml
 export PYSPARK_PYTHON=/usr/bin/python
@@ -38,6 +38,7 @@ fi
 
 if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "example.7 local spark, Hive"
+export MALLOC_ARENA_MAX=16
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
   -Xmx2g org.apache.spark.deploy.SparkSubmit \

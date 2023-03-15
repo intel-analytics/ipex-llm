@@ -20,9 +20,11 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.compress.Compressor
 
-class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) extends Compressor {
+class BigDLEncryptCompressor(cryptoMode: CryptoMode,
+  dataKeyPlainText: String,
+  dataKeyCipherText: String = "") extends Compressor {
   val bigdlEncrypt = new BigDLEncrypt()
-  bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
+  bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0
@@ -100,7 +102,8 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        bigdlEncrypt.genHeader()
+        bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
+        bigdlEncrypt.genHeader
       }
       o.copyToArray(b, 0)
       bytesWritten += o.length
@@ -136,8 +139,12 @@ object BigDLEncryptCompressor {
   }
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
-    // TODO read parameter
-    val dataKey = conf.get("bigdl.kms.dataKey.plaintext")
-    new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING, dataKey)
+    val (dataKeyPlainText, dataKeyCipherText) = (
+      conf.get("bigdl.write.dataKey.plainText"),
+      conf.get("bigdl.write.dataKey.cipherText")
+    )
+    new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
+      dataKeyPlainText, dataKeyCipherText)
   }
 }
+

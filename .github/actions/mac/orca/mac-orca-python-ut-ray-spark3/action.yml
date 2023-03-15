@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         source ~/.bash_profile
-        source activate py37
+        source activate py37-tf2ray
         pip uninstall -y bigdl-dllib bigdl-orca bigdl-chronos bigdl-orca-spark3 bigdl-dllib-spark3 bigdl-chronos-spark3  pyspark
         export KERAS_BACKEND=tensorflow
         export SPARK_HOME=/opt/work/spark-3.1.3
@@ -30,8 +30,8 @@ runs:
         # install orca
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-macosx_10_11_x86_64.whl		
         
-        chmod a+x python/orca/dev/test/run-pytests-ray
-        python/orca/dev/test/run-pytests-ray
+        chmod a+x python/orca/dev/test/run-pytests-ray.sh
+        python/orca/dev/test/run-pytests-ray.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}

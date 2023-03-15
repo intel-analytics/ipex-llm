@@ -22,9 +22,9 @@ bash check-service.sh all
 ```
 if all is well, the following results should be displayed:
 ```
-bigdl-attestation-service initialization successful.
-bigdl-kms initialization successful.
-ehsm initialization successful.
-kms-utils initialization successful.
-pccs initalization successful.
+bigdl-attestation-service initialization is successful.
+bigdl-kms initialization is successful.
+ehsm initialization is successful.
+kms-utils initialization is successful.
+pccs initialization is successful.
 ```

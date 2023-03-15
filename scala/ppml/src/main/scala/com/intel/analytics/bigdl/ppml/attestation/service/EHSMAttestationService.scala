@@ -155,7 +155,7 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     val sign = postResult.getString(RES_SIGN)
     val result = postResult.getInt(RES_RESULT)
     var verifyQuoteResult = false;
-    if (result == 0xa000) {
+    if (result == 0x0000 || result == 0xa000) {
       verifyQuoteResult = true;
     } else if (result == 0xa001 || result == 0xa002 || result == 0xa003
       || result == 0xa007 || result == 0xa008) {

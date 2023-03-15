@@ -15,4 +15,19 @@
 #
 
 
+from .version import KERAS_VERSION_LESS_2_9
+from .version import KERAS_VERSION_LESS_2_10
+
+from .attributes import _ModuleWrapper
+from .attributes import patch_attrs
+from .attributes import patch_compiled
+from .attributes import patch_compiled_and_attrs
+
 from .backend import MultiprocessingBackend
+
+from .preprocess import try_fake_inference
+
+from .data import convert
+from .data import convert_all
+from .data import numpy_to_tensors
+from .data import tensors_to_numpy

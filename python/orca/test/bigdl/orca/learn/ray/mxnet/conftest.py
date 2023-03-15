@@ -17,7 +17,7 @@ import ray
 import pytest
 
 
-@pytest.fixture(autouse=True, scope='function')
+@pytest.fixture(autouse=True, scope='package')
 def orca_context_fixture():
     from bigdl.orca import init_orca_context, stop_orca_context
     init_orca_context(cores=8, init_ray_on_spark=True,

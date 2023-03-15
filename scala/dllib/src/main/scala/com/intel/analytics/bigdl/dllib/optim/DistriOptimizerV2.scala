@@ -653,7 +653,7 @@ class DistriOptimizerV2[T: ClassTag](
     }
   }
 
-  private def endEpoch(): Unit = {
+  private[bigdl] def endEpoch(): Unit = {
     DistriOptimizer.endEpoch(optimMethods)
   }
 

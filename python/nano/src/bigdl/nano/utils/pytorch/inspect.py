@@ -17,7 +17,6 @@
 
 import inspect
 import torch
-from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
 
 def get_forward_args(model):
@@ -30,6 +29,7 @@ def get_forward_args(model):
     it will return ['a', 'b', 'c']
     '''
     from bigdl.nano.pytorch.lightning import LightningModule
+    from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
     forward_args = inspect.getfullargspec(model.forward).args[1:]
     if isinstance(model, LightningModule):
@@ -49,6 +49,7 @@ def get_forward_defaults(model):
     it will return (1, 3)
     '''
     from bigdl.nano.pytorch.lightning import LightningModule
+    from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
     forward_defaults = inspect.getfullargspec(model.forward).defaults
     if isinstance(model, LightningModule):
@@ -68,6 +69,7 @@ def get_forward_annotations(model):
     it will return {'c': <class 'int'>}
     '''
     from bigdl.nano.pytorch.lightning import LightningModule
+    from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
     forward_annotations = inspect.getfullargspec(model.forward).annotations
     if isinstance(model, LightningModule):
@@ -77,7 +79,9 @@ def get_forward_annotations(model):
     return forward_annotations
 
 
-def get_conditional_args(model, include=(torch.Tensor,), exclude=()):
+def get_conditional_args(model,
+                         include=(torch.Tensor, torch.FloatTensor, torch.LongTensor),
+                         exclude=()):
     '''
     This function will return all the parameters that (might) in `condition`
     It will return a list or tensor args name

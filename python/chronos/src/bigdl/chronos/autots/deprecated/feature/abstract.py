@@ -87,7 +87,7 @@ class BaseFeatureTransformer(ABC):
         :return:
         """
         config_parameters = set(config.keys())
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if not config_parameters.issuperset(self._get_required_parameters()):
             invalidInputError(False,
                               "Missing required parameters in configuration. " +

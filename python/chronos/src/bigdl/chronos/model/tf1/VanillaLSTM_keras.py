@@ -60,7 +60,7 @@ class VanillaLSTM(KerasBaseModel):
 
     def _check_config(self, **config):
         super()._check_config(**config)
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(isinstance(config["input_dim"], int), "'input_dim' should be int")
         invalidInputError(isinstance(config["output_dim"], int), "'output_dim' should be int")
         lstm_name = "lstm_units"
@@ -71,7 +71,7 @@ class VanillaLSTM(KerasBaseModel):
                                   f"{lstm_name} should be int or an list/tuple of ints. "
                                   f"Got {config[lstm_name]}")
         if dropout_name in config:
-            if not check_iter_type(config[dropout_name], (float, np.float)):
+            if not check_iter_type(config[dropout_name], (float, np.float32)):
                 invalidInputError(False,
                                   f"{dropout_name} should be float or a list/tuple of floats. "
                                   f"Got {config[dropout_name]}")

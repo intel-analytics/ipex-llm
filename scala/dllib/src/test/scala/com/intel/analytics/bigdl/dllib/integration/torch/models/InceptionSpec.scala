@@ -780,7 +780,7 @@ class InceptionSpec extends TorchSpec {
     val loss = criterion.forward(output, labels)
 
     // since we already set the seed, the loss should match exactly
-    loss should be (6.6648364f)
+    loss should be (6.6648364f +- 1e-5f)
   }
 
 

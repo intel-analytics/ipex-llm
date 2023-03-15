@@ -134,7 +134,7 @@ class DoppelGANger(nn.Module):
         self.data_attribute = data_attribute
 
         if self.data_feature[0].shape[1] % self.sample_len != 0:
-            from bigdl.nano.utils.log4Error import invalidInputError
+            from bigdl.nano.utils.common import invalidInputError
             invalidInputError(False,
                               "length must be a multiple of sample_len")
         self.sample_time = int(self.data_feature[0].shape[1] / self.sample_len)
@@ -200,7 +200,7 @@ class DoppelGANger(nn.Module):
         gen_flags = []
         lengths = []
         round_ = int(math.ceil(float(feature_input_noise.shape[0]) / batch_size))
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(self.training is False, "please call .eval() on the model")
         self.generator.eval()
         for i in range(round_):
