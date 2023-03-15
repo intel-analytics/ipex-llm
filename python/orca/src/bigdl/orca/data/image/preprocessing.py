@@ -200,7 +200,7 @@ def read_images_spark(file_path: str,
     return SparkXShards(image_rdd)
 
 
-def read_voc(file_path: str="VOCdevkit",
+def read_voc(file_path: str = "VOCdevkit",
              split_names: List[Tuple[int, str]] = [(2009, "trainval")],
              classes: Optional[List[str]] = None,
              diff: bool = False,
