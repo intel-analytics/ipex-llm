@@ -35,39 +35,44 @@ sc = init_orca_context(cluster_mode="local")
 
 # Step 2: Define train and test datasets as PyTorch DataLoader
 config = dict(
+    num_graphs=100,
     num_nodes=10,
     num_edges=50,
     dim_node_features=4,
     num_classes=5,
-    factor_num=16,
-    lr=0.001,
+    num_factor=16,
+    lr=0.1,
 )
 
 
 class MyOwnDataset(InMemoryDataset):
-    def __init__(self, data):
-        self.data = data
-        self._num_nodes = data.num_nodes
+    def __init__(self, data_list):
+        self.data_list = data_list
 
     def __len__(self):
-        return self._num_nodes
+        return len(self.data_list)
 
     def __getitem__(self, idx):
-        return idx, self.data.x, self.data.edge_index, self.data.y[idx]
+        data = self.data_list[idx]
+        return data.x, data.edge_index, data.y
 
 
 def load_dataset():
     torch.manual_seed(1)
-    edge_index = torch.randint(config["num_nodes"], size=(config["num_edges"], 2),
-                               dtype=torch.long)
-    x = torch.randn(size=(config["num_nodes"], config["dim_node_features"]),
-                    dtype=torch.float)
-    y = torch.randint(config["num_classes"], size=(config["num_nodes"],),
-                      dtype=torch.long)
-    data1 = Data(x=x, edge_index=edge_index.t().contiguous(), y=y)
 
-    train_dataset = MyOwnDataset(data1)
-    test_dataset = MyOwnDataset(data1)
+    data_list = []
+    for graph in range(config["num_graphs"]):
+        edge_index = torch.randint(config["num_nodes"], size=(config["num_edges"], 2),
+                                   dtype=torch.long)
+        x = torch.randn(size=(config["num_nodes"], config["dim_node_features"]),
+                        dtype=torch.float)
+        y = torch.randint(config["num_classes"], size=(1,),
+                          dtype=torch.long)[0]
+        data = Data(x=x, edge_index=edge_index.t().contiguous(), y=y)
+        data_list.append(data)
+
+    train_dataset = MyOwnDataset(data_list)
+    test_dataset = MyOwnDataset(data_list)
     return train_dataset, test_dataset
 
 
@@ -89,18 +94,20 @@ def test_loader_func(config, batch_size):
 class GCN(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = GCNConv(config["dim_node_features"], config["factor_num"])
-        self.conv2 = GCNConv(config["factor_num"], config["num_classes"])
+        self.conv_layer = GCNConv(config["dim_node_features"], config["num_factor"])
+        self.linear_layer = torch.nn.Linear(config["num_factor"]*config["num_nodes"],
+                                            config["num_classes"])
 
-    def forward(self, *args):
-        idx, x, edge_index = args[0], args[1][0], args[2][0]
-
-        x = self.conv1(x, edge_index)
-        x = F.relu(x)
-        x = F.dropout(x, training=self.training)
-        x = self.conv2(x, edge_index)
-        x = F.log_softmax(x, dim=1)
-        return x[idx.tolist()]
+    def forward(self, x_batch, edge_index_batch):
+        output_batch = []
+        for i in range(len(x_batch)):  # forward for each graph
+            x, edge_index = x_batch[i], edge_index_batch[i]
+            x = self.conv_layer(x, edge_index)
+            x = F.relu(x)
+            x = self.linear_layer(torch.flatten(x))
+            x = F.log_softmax(x, dim=0)
+            output_batch.append(x)
+        return torch.stack(output_batch)
 
 
 def model_creator(config):
@@ -124,7 +131,7 @@ est = Estimator.from_torch(model=model_creator,
                            workers_per_node=1)
 train_stats = est.fit(train_loader_func,
                       epochs=10,
-                      batch_size=config['num_nodes'],
+                      batch_size=32,
                       validation_data=test_loader_func)
 print("Train results:")
 for epoch_stats in train_stats:
@@ -134,8 +141,7 @@ for epoch_stats in train_stats:
 
 
 # Step 5: Distributed evaluation of the trained model
-eval_stats = est.evaluate(test_loader_func,
-                          batch_size=config['num_nodes'])
+eval_stats = est.evaluate(test_loader_func, batch_size=32)
 print("Evaluation results:")
 for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
@@ -143,13 +149,13 @@ for k, v in eval_stats.items():
 
 # Step 6: Predict the graph
 _, test_dataset = load_dataset()
-test_loader = DataLoader(test_dataset, batch_size=config['num_nodes'],
+test_loader = DataLoader(test_dataset, batch_size=32,
                          shuffle=False, num_workers=0)
 model = est.get_model()
 model.eval()
 
 for test_data in test_loader:
-    result = model(*test_data)
+    result = model(*test_data[: -1])
     print("predictions:", result)
     print("labels:", test_data[-1])
 
