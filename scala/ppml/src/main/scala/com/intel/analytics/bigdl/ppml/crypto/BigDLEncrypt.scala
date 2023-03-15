@@ -35,7 +35,7 @@ import scala.util.Random
 /**
  * BigDL general crypto for encrypt and decrypt data.
  */
-class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
+class BigDLEncrypt(enableNativeAESCBC: Boolean) extends Crypto {
   var cipher: Cipher = null
   protected var mac: Mac = null
   var ivParameterSpec: IvParameterSpec = null
@@ -55,16 +55,11 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    */
   override def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
     opMode = mode
-    val secret = dataKeyPlaintext.getBytes()
-    if (!hasHeader) {
-      // native AES with mac
-      initializationVector = Arrays.copyOfRange(secret, 0, 16)
-      ivParameterSpec = new IvParameterSpec(initializationVector)
-      encryptionKeySpec = new SecretKeySpec(secret,
-        AES_CBC_PKCS5PADDING.secretKeyAlgorithm)
-      cipher = Cipher.getInstance(AES_CBC_PKCS5PADDING.encryptionAlgorithm)
-      cipher.init(DECRYPT, encryptionKeySpec, ivParameterSpec)
-    } else {
+    if (enableNativeAESCBC && cryptoMode == AES_CBC_PKCS5PADDING) {
+      // to process data operated by native AES CBC
+      initAES(dataKeyPlaintext)
+    } else { // to process data operated by BigDL crypto cipher
+      val secret = dataKeyPlaintext.getBytes()
       // key encrypt
       val signingKey = Arrays.copyOfRange(secret, 0, 16)
       val encryptKey = Arrays.copyOfRange(secret, 16, 32)
@@ -79,6 +74,25 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
       val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
       mac.init(signingKeySpec)
     }
+    
+  }
+
+  def initAES(dataKeyPlaintext: String): Unit = {
+    initializationVector = opMode match {
+      case DECRYPT =>
+        if (iv == null){
+          throw new EncryptRuntimeException("initializationVector got from file is empty!")
+        }
+        iv
+      case ENCRYPT => 
+        val r = new SecureRandom()
+        Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
+    }
+    ivParameterSpec = new IvParameterSpec(initializationVector)
+    encryptionKeySpec = new SecretKeySpec(dataKeyPlaintext.getBytes(),
+      AES_CBC_PKCS5PADDING.secretKeyAlgorithm)
+    cipher = Cipher.getInstance(AES_CBC_PKCS5PADDING.encryptionAlgorithm)
+    cipher.init(opMode.opmode, encryptionKeySpec, ivParameterSpec)
   }
 
   protected var signingDataStream: DataOutputStream = null
@@ -88,23 +102,29 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    * @return header bytes
    */
   override def genHeader(): Array[Byte] = {
-    Log4Error.invalidOperationError(cipher != null,
-      s"you should init BigDLEncrypt first.")
-    // val timestamp: Instant = Instant.now()
-    val dataKeyCipherTextBytes = encryptedDataKey.getBytes(StandardCharsets.UTF_8)
-    val signingByteBuffer = ByteBuffer.allocate(400)
-    // val version: Byte = (0x80).toByte
-    // signingByteBuffer.put(version)
-    // signingByteBuffer.putLong(timestamp.getEpochSecond())
-    signingByteBuffer.putInt(dataKeyCipherTextBytes.length)
-    signingByteBuffer.putInt(ivParameterSpec.getIV.length)
-    signingByteBuffer.put(dataKeyCipherTextBytes)
-    signingByteBuffer.put(ivParameterSpec.getIV())
-    val suffixLength = (
-      400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length).max(0)
-    val suffix: Array[Byte] = Array.fill(suffixLength)((0x80).toByte)
-    signingByteBuffer.put(suffix)
-    signingByteBuffer.array()
+    if (!enableNativeAESCBC) {
+      Log4Error.invalidOperationError(cipher != null,
+        s"you should init BigDLEncrypt first.")
+      // val timestamp: Instant = Instant.now()
+      val dataKeyCipherTextBytes = encryptedDataKey.getBytes(StandardCharsets.UTF_8)
+      val signingByteBuffer = ByteBuffer.allocate(400)
+      // val version: Byte = (0x80).toByte
+      // signingByteBuffer.put(version)
+      // signingByteBuffer.putLong(timestamp.getEpochSecond())
+      signingByteBuffer.putInt(dataKeyCipherTextBytes.length)
+      signingByteBuffer.putInt(ivParameterSpec.getIV.length)
+      signingByteBuffer.put(dataKeyCipherTextBytes)
+      signingByteBuffer.put(ivParameterSpec.getIV())
+      val suffixLength = (
+        400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length).max(0)
+      val suffix: Array[Byte] = Array.fill(suffixLength)((0x80).toByte)
+      signingByteBuffer.put(suffix)
+      signingByteBuffer.array()
+    } else {
+      Log4Error.invalidOperationError(initializationVector != null,
+        s"AES IV does not exist! you should init BigDLEncrypt first.")
+      initializationVector
+    }
   }
 
   /**
@@ -136,7 +156,7 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    */
   override def update(content: Array[Byte]): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content)
-    if(hasHeader) mac.update(cipherText)
+    if(!enableNativeAESCBC) mac.update(cipherText)
     cipherText
   }
 
@@ -150,7 +170,7 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    */
   override def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content, offset, len)
-    if(hasHeader) mac.update(cipherText)
+    if(!enableNativeAESCBC) mac.update(cipherText)
     cipherText
   }
 
@@ -163,7 +183,7 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    */
   override def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content)
-    val hmac: Array[Byte] = if(hasHeader) {
+    val hmac: Array[Byte] = if(!enableNativeAESCBC) {
       mac.doFinal(cipherText)
     } else null
     (cipherText, hmac)
@@ -180,9 +200,11 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
    */
   override def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content, offset, len)
-    val hmac: Array[Byte] = if(hasHeader) {
+    val hmac: Array[Byte] = if (!enableNativeAESCBC) {
       mac.doFinal(cipherText)
-    } else null
+    } else {
+      null
+    }
     (cipherText, hmac)
   }
 
@@ -232,7 +254,7 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
     outputStream.flush()
   }
 
-  val hmacSize = if (hasHeader) 32 else 0
+  val hmacSize = if (!enableNativeAESCBC) 32 else 0
   def decryptPart(in: InputStream, buffer: Array[Byte]): Array[Byte] = {
     if (in.available() == 0) {
       return new Array[Byte](0)
@@ -258,16 +280,21 @@ class BigDLEncrypt(hasHeader: Boolean) extends Crypto {
   }
 
   def getHeader(in: InputStream): (String, Array[Byte]) = {
-    val header = read(in, 400)
-    val headerBuffer = ByteBuffer.wrap(header)
-    val dataKeyCipherTextBytesLength = headerBuffer.getInt
-    val initializationVectorLength = headerBuffer.getInt
-    val dataKeyCipherTextBytes: Array[Byte] = header.slice(
-      4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
-    val initializationVector: Array[Byte] = header.slice(
-      4 + 4 + dataKeyCipherTextBytesLength,
-      4 + 4 + dataKeyCipherTextBytesLength + initializationVectorLength)
-    (new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8), initializationVector)
+    if (!enableNativeAESCBC){
+      val header = read(in, 400)
+      val headerBuffer = ByteBuffer.wrap(header)
+      val dataKeyCipherTextBytesLength = headerBuffer.getInt
+      val initializationVectorLength = headerBuffer.getInt
+      val dataKeyCipherTextBytes: Array[Byte] = header.slice(
+        4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
+      val initializationVector: Array[Byte] = header.slice(
+        4 + 4 + dataKeyCipherTextBytesLength,
+        4 + 4 + dataKeyCipherTextBytesLength + initializationVectorLength)
+      (new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8), initializationVector)
+    } else {
+      val initializationVector: Array[Byte] = read(in, 16)
+      (null, initializationVector)
+    }
   }
 
   protected def decryptStream(

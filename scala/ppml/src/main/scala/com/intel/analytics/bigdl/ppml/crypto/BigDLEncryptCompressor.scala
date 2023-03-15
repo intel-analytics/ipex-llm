@@ -23,8 +23,8 @@ import org.apache.hadoop.io.compress.Compressor
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
   dataKeyCipherText: String = "",
-  hasHeader: Boolean = true) extends Compressor {
-  val bigdlEncrypt = new BigDLEncrypt(hasHeader)
+  enableNativeAESCBC: Boolean = true) extends Compressor {
+  val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
   var setHeader = false
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   var isFinished = false
@@ -75,7 +75,6 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
 
   override def compress(b: Array[Byte], off: Int, len: Int): Int = {
     // lazy encrypt, in order to doFinal in the right time.
-    if (!hasHeader) setHeader = true
     if (tryFinished) {
       val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
       bytesRead += this.lv2Len
@@ -104,7 +103,9 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
+        if (!enableNativeAESCBC){
+          bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
+        }
         bigdlEncrypt.genHeader
       }
       o.copyToArray(b, 0)
@@ -118,7 +119,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
     b = null
     off = 0
     len = 0
-    hasHeader = false
+    enableNativeAESCBC = false
     tryFinished = false
     bytesRead = 0L
     bytesWritten = 0L
@@ -145,14 +146,14 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText")
     )
-    val hasHeader = conf.get("bigdl.dataFile.hasHeader", "true") match {
+    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "true") match {
       case "true" => true
       case "false" => false
       case _ =>
-        throw new EncryptRuntimeException("Property of bigdl.read.dataKey.plainText is wrong!")
+        throw new EncryptRuntimeException("Property of bigdl.enableNativeAESCBC is wrong!")
     }
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
-      dataKeyPlainText, dataKeyCipherText, hasHeader)
+      dataKeyPlainText, dataKeyCipherText, enableNativeAESCBC)
   }
 }
 
