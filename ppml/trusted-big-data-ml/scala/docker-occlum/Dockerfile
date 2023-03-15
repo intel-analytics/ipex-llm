@@ -234,8 +234,8 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 
 # Prepare pyspark TPC-H
 RUN mkdir -p /opt/py-examples/tpch
-COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/tpch.zip /opt/py-examples/tpch/
-COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/main.py /opt/py-examples/tpch/
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/tpch.zip /opt/py-examples/tpch/
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/main.py /opt/py-examples/tpch/
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
