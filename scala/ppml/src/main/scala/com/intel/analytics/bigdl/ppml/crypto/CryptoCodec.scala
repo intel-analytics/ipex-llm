@@ -23,7 +23,7 @@ import org.apache.hadoop.io.compress.zlib.ZlibFactory
 import java.util.Arrays
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.Cipher
-
+import java.nio.charset.StandardCharsets
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -110,11 +110,11 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "false") match {
+    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false") match {
       case "true" => true
       case "false" => false
       case _ =>
-        throw new EncryptRuntimeException("Property of bigdl.enableNativeAESCBC is wrong!")
+        throw new EncryptRuntimeException("Property of spark.bigdl.enableNativeAESCBC is wrong!")
     }
     val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
     var headerVerified = false
@@ -138,8 +138,9 @@ object CryptoCodec {
       } else {
         // data file is encrypted by native AES cihper
         // no Mac integrity check defaultly
-        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.plainText")
         val (_, initializationVector) = bigdlEncrypt.getHeader(in)
+        val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
+        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
         bigdlEncrypt.initializationVector = initializationVector
         bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText)
       }

@@ -79,10 +79,15 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
       val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
       bytesRead += this.lv2Len
       isFinished = true
-      o._1 ++ o._2
-      o._1.copyToArray(b, 0)
-      o._2.copyToArray(b, o._1.length)
-      o._1.length + o._2.length
+      if (o._2 != null) { // has Mac
+        o._1 ++ o._2
+        o._1.copyToArray(b, 0)
+        o._2.copyToArray(b, o._1.length)
+        o._1.length + o._2.length
+      } else {
+        o._1.copyToArray(b, 0)
+        o._1.length
+      }
     } else {
       val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
@@ -119,8 +124,8 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
     b = null
     off = 0
     len = 0
-    tryFinished = false
     hasHeader = false
+    tryFinished = false
     bytesRead = 0L
     bytesWritten = 0L
   }
@@ -146,11 +151,11 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText")
     )
-    val enableNativeAESCBC = conf.get("bigdl.enableNativeAESCBC", "false") match {
+    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "true") match {
       case "true" => true
       case "false" => false
       case _ =>
-        throw new EncryptRuntimeException("Property of bigdl.enableNativeAESCBC is wrong!")
+        throw new EncryptRuntimeException("Property of spark.bigdl.enableNativeAESCBC is wrong!")
     }
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
       dataKeyPlainText, dataKeyCipherText, enableNativeAESCBC)

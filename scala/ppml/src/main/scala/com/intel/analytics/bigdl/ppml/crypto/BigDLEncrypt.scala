@@ -78,15 +78,15 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
   }
 
   def initAES(dataKeyPlaintext: String): Unit = {
-    if (opMode == DECRYPT && initializationVector == null){
-        throw new EncryptRuntimeException("initializationVector got from file is empty!")
-    }
-    if (opMode == ENCRYPT ) {
+    if (opMode == DECRYPT && initializationVector == null) {
+      throw new EncryptRuntimeException("initializationVector got from file is empty!")
+    } else if(opMode == ENCRYPT) {
       val r = new SecureRandom()
       initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     }
     ivParameterSpec = new IvParameterSpec(initializationVector)
-    encryptionKeySpec = new SecretKeySpec(dataKeyPlaintext.getBytes(),
+    val dataKeyPlainBytes = java.util.Base64.getDecoder().decode(dataKeyPlaintext)
+    encryptionKeySpec = new SecretKeySpec(dataKeyPlainBytes,
       AES_CBC_PKCS5PADDING.secretKeyAlgorithm)
     cipher = Cipher.getInstance(AES_CBC_PKCS5PADDING.encryptionAlgorithm)
     cipher.init(opMode.opmode, encryptionKeySpec, ivParameterSpec)
@@ -251,7 +251,7 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
     outputStream.flush()
   }
 
-  val hmacSize = if (!enableNativeAESCBC) 32 else 0
+  val hmacSize = if (!enableNativeAESCBC) 32 else -1
   def decryptPart(in: InputStream, buffer: Array[Byte]): Array[Byte] = {
     if (in.available() == 0) {
       return new Array[Byte](0)
@@ -342,7 +342,7 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
    * @return iterator of String.
    */
   override def decryptBigContent(
-        inputStream: InputStream): Iterator[String] = {
+    inputStream: InputStream):Iterator[String] = {
     // verifyHeader(read(inputStream, 25))
     new Iterator[String] {
       var cachedArray: Array[String] = null
