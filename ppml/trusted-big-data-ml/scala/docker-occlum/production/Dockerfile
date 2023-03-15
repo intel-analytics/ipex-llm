@@ -157,7 +157,7 @@ RUN cd /opt && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
     sbt package && \
-    cd zoo-tutorials/tpch-pyspark && \
+    cd /opt/zoo-tutorials/tpch-pyspark && \
     zip -r tpch.zip ./tpch
 
 ADD ./install_python_with_conda.sh /opt
