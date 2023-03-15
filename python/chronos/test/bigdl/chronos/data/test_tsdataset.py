@@ -1433,8 +1433,7 @@ class TestTSDataset(TestCase):
         import time
         endtime = time.time()
         starttime = endtime - 1000
-        # prometheus_url = os.getenv("PROMETHEUS_URL")
-        prometheus_url = 'http://172.168.2.116:9090/'
+        prometheus_url = os.getenv("PROMETHEUS_URL")
         tsdata = TSDataset.from_prometheus(prometheus_url=prometheus_url,
                                            query='prometheus_ready',
                                            starttime=starttime,

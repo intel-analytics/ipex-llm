@@ -97,7 +97,6 @@ class Prometheus:
         if resp.status_code not in [400, 422, 503]:
             resp.raise_for_status()
 
-        print("resp.text:", resp.text)
         response = resp.json()
         if response['status'] != 'success':
             invalidInputError(False, "Fail to collect data from Prometheus! "
