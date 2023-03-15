@@ -521,6 +521,42 @@ You can change the configuration in [start-spark-local.sh](https://github.com/in
 
 You can see result in logs (`docker logs -f bigdl-ppml-trusted-big-data-ml-scala-occlum`)
 
+## PySpark TPC-H example
+
+You can change the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=15GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+### Generate Data
+
+```
+git clone https://github.com/intel-analytics/zoo-tutorials.git && \
+cd zoo-tutorials/tpch-spark/dbgen && \
+make
+```
+
+Then you can generate 1G size data by:
+```
+./dbgen -s 1
+```
+
+Then mount `/path/to/zoo-tutorials/tpch-spark/dbgen` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/zoo-tutorials/tpch-spark/dbgen:/opt/occlum_spark/data
+```
+
+Start run spark tpc-h example:
+```
+bash start-spark-local.sh pytpch
+```
+
+You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` which contains sql result.
+
 ## How to debug
 Modify the `SGX_LOG_LEVEL` to one of `off, debug and trace` in `start-spark-local.sh`. 
 The default value is off, showing no log messages at all. The most verbose level is trace.

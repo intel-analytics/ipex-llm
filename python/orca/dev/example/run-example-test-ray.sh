@@ -9,6 +9,8 @@ clear_up () {
     pip uninstall -y pyspark
 }
 
+python_version=$(python --version | awk '{print$2}')
+
 echo "#start orca ray example tests"
 echo "#1 Start autoestimator example"
 start=$(date "+%s")
@@ -45,24 +47,27 @@ time3=$((now-start))
 set -e
 ray stop -f
 
-
+if [ $python_version == 3.7.10 ];then
+# rllib test does not support numpy 1.24
+# parameter server test requires tensorflow 1
+# mxnet test does not support numpy 1.24
 echo "#4 Start multi_agent example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multi_agent_two_trainers.py --iterations 5
 now=$(date "+%s")
-time5=$((now-start))
+time4=$((now-start))
 
 echo "#5 Start async_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
 now=$(date "+%s")
-time6=$((now-start))
+time5=$((now-start))
 
 echo "#6 Start sync_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/sync_parameter_server.py --iterations 10
 now=$(date "+%s")
-time7=$((now-start))
+time6=$((now-start))
 
 echo "#7 Start mxnet lenet example"
 start=$(date "+%s")
@@ -79,7 +84,8 @@ unzip -q data/mnist.zip -d data
 
 python ${BIGDL_ROOT}/python/orca/example/learn/mxnet/lenet_mnist.py -e 1 -b 256
 now=$(date "+%s")
-time8=$((now-start))
+time7=$((now-start))
+fi
 
 echo "#8 Start fashion_mnist example with Tensorboard visualization"
 start=$(date "+%s")
@@ -98,7 +104,7 @@ sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py --backend ray --batch_size=256
 now=$(date "+%s")
-time9=$((now-start))
+time8=$((now-start))
 
 
 echo "#9 start example for orca super-resolution"
@@ -115,7 +121,7 @@ fi
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py --backend ray
 
 now=$(date "+%s")
-time10=$((now-start))
+time9=$((now-start))
 
 
 echo "#10 start example for orca cifar10"
@@ -131,7 +137,7 @@ fi
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --backend ray --batch_size=256
 
 now=$(date "+%s")
-time11=$((now-start))
+time10=$((now-start))
 
 
 echo "#11 Start autoxgboost example"
@@ -145,7 +151,7 @@ fi
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/automl/autoxgboost/AutoXGBoostRegressor_spark_df.py -p ${BIGDL_ROOT}/data/incd.csv
 now=$(date "+%s")
-time12=$((now-start))
+time11=$((now-start))
 
 
 echo "#12 Start ray dataset xgboost example"
@@ -159,7 +165,7 @@ fi
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/data/ray-dataset-xgboost.py -p ${BIGDL_ROOT}/data/incd.csv
 now=$(date "+%s")
-time13=$((now-start))
+time12=$((now-start))
 
 echo "#13 start example for orca brainMRI"
 if [ -f ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/kaggle_3m ]
@@ -175,7 +181,7 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --ep
 export PYTHONPATH=${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI:$PYTHONPATH
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/brainMRI/brainMRI.py --backend=spark --epochs=1
 now=$(date "+%s")
-time14=$((now-start))
+time13=$((now-start))
 
 echo "#14 start example for orca resnet50 inference"
 if [ -f ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small ]
@@ -189,21 +195,37 @@ fi
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/inference.py ${BIGDL_ROOT}/python/orca/example/learn/pytorch/resnet50/imagenet-small -w 2 --cores 8 --workers_per_node 2 --steps 10 -j 0
 now=$(date "+%s")
-time15=$((now-start))
+time14=$((now-start))
+
+echo "#15 start example test for orca data"
+if [ -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv ]; then
+  echo "tmp/data/NAB/nyc_taxi/nyc_taxi.csv already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/data/NAB/nyc_taxi/nyc_taxi.csv \
+    -P tmp/data/NAB/nyc_taxi/
+fi
+#timer
+start=$(date "+%s")
+python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
+  -f tmp/data/NAB/nyc_taxi/nyc_taxi.csv
+
+now=$(date "+%s")
+time15=$((now - start))
 
 echo "Ray example tests finished"
 
 echo "#1 auto-estimator-pytorch time used:$time1 seconds"
 echo "#2 auto-xgboost-classifier time used:$time2 seconds"
 echo "#3 auto-xgboost-regressor time used:$time3 seconds"
-echo "#4 orca async_parameter_server time used:$time5 seconds"
-echo "#5 orca sync_parameter_server time used:$time6 seconds"
-echo "#6 orca multi_agent_two_trainers time used:$time7 seconds"
-echo "#7 mxnet_lenet time used:$time8 seconds"
-echo "#8 fashion-mnist time used:$time9 seconds"
-echo "#9 orca super-resolution example time used:$time10 seconds"
-echo "#10 orca cifar10 example time used:$time11 seconds"
-echo "#11 auto-xgboost-regressor-spark-df example time used:$time12 seconds"
-echo "#12 ray-dataset-xgboost example time used:$time13 seconds"
-echo "#13 orca brainMRI example time used:$time14 seconds"
-echo "#14 orca resnet50 inference example time used:$time15 seconds"
+echo "#4 orca async_parameter_server time used:$time4 seconds"
+echo "#5 orca sync_parameter_server time used:$time5 seconds"
+echo "#6 orca multi_agent_two_trainers time used:$time6 seconds"
+echo "#7 mxnet_lenet time used:$time7 seconds"
+echo "#8 fashion-mnist time used:$time8 seconds"
+echo "#9 orca super-resolution example time used:$time9 seconds"
+echo "#10 orca cifar10 example time used:$time10 seconds"
+echo "#11 auto-xgboost-regressor-spark-df example time used:$time11 seconds"
+echo "#12 ray-dataset-xgboost example time used:$time12 seconds"
+echo "#13 orca brainMRI example time used:$time13 seconds"
+echo "#14 orca resnet50 inference example time used:$time14 seconds"
+echo "#15 orca data time used:$time15 seconds"
