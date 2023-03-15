@@ -259,6 +259,9 @@ object PPMLContext{
     val ppmlSc = new PPMLContext
     ppmlSc.sparkSession = sparkSession
     val conf = sparkSession.sparkContext.getConf
+    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false")
+    sparkSession.sparkContext.hadoopConfiguration
+          .set("spark.bigdl.enableNativeAESCBC", enableNativeAESCBC)
     val primaryKeyNames = getPrimaryKeyNames(conf)
     primaryKeyNames.foreach{
       primaryKeyName => {

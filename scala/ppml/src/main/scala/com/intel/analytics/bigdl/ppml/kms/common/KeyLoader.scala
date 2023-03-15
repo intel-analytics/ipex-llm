@@ -47,7 +47,7 @@ case class KeyLoader(val fromKms: Boolean,
     protected val hadoopConfig = if (config != null) config else new Configuration()
     protected val enableNativeAESCBC = SparkSession.builder().getOrCreate()
       .sparkContext.hadoopConfiguration
-      .get("bigdl.enableNativeAESCBC", "true") match {
+      .get("spark.bigdl.enableNativeAESCBC", "false") match {
         case "true" => true
         case "false" => false
     }
@@ -89,6 +89,7 @@ case class KeyLoader(val fromKms: Boolean,
         val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
         sparkSession.sparkContext.hadoopConfiguration
           .set(s"bigdl.read.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
+        println(s"set $encryptedDataKey with dataKeyPlainText: $dataKeyPlainText")
         dataKeyPlainText
     }
 

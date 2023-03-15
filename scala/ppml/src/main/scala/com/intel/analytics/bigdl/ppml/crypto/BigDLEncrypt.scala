@@ -282,13 +282,17 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
       val headerBuffer = ByteBuffer.wrap(header)
       val dataKeyCipherTextBytesLength = headerBuffer.getInt
       val initializationVectorLength = headerBuffer.getInt
+      println(s"dataKeyCipherTextBytesLength:$dataKeyCipherTextBytesLength")
+      println(s"initializationVectorLength:$initializationVectorLength")
       val dataKeyCipherTextBytes: Array[Byte] = header.slice(
         4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
       val initializationVector: Array[Byte] = header.slice(
         4 + 4 + dataKeyCipherTextBytesLength,
         4 + 4 + dataKeyCipherTextBytesLength + initializationVectorLength)
-      (new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8), initializationVector)
+      val encryptedDataKeyStr = new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8)
+      (encryptedDataKeyStr, initializationVector)
     } else {
+      println("getHeader with enableNativeAESCBC")
       val initializationVector: Array[Byte] = read(in, 16)
       (null, initializationVector)
     }
@@ -380,8 +384,6 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
         pointer += 1
         cachedArray(pointer - 1)
       }
-
     }
   }
-
 }

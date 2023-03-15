@@ -23,7 +23,7 @@ import org.apache.hadoop.io.compress.Compressor
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
   dataKeyCipherText: String = "",
-  enableNativeAESCBC: Boolean = true) extends Compressor {
+  enableNativeAESCBC: Boolean = false) extends Compressor {
   val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
   var hasHeader = false
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
@@ -151,7 +151,7 @@ object BigDLEncryptCompressor {
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText")
     )
-    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "true") match {
+    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false") match {
       case "true" => true
       case "false" => false
       case _ =>
