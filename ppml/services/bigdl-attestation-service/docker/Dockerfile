@@ -3,13 +3,12 @@ ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as attestation-service-base
 
-RUN mkdir -p /opt/bigdl-as/data
 ADD ./bigdl-as-entrypoint.sh /ppml/bigdl-as-entrypoint.sh
-RUN chmod 777 /ppml/bigdl-as-entrypoint.sh
+RUN mkdir -p /opt/bigdl-as/data && \
+    chmod 777 /ppml/bigdl-as-entrypoint.sh
 
-# To do attestation with sbx server
-ADD ./libsgx_dcap_quoteverify.so /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
-RUN chmod +x /usr/lib/x86_64-linux-gnu/libsgx_dcap_quoteverify.so.1.12.102.3
+RUN apt-get update --fix-missing && \
+    apt-get install -y libtdx-attest libtdx-attest-dev libsgx-dcap-quote-verify libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl
 
 # stage 1. generate SGX secrets and prepare KMS env
 FROM attestation-service-base as temp
