@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /ppml
-export MALLOC_ARENA_MAX=8
+export MALLOC_ARENA_MAX=12
 export sgx_command="/opt/jdk8/bin/java \
     -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* \
     -Xmx1g org.apache.spark.deploy.SparkSubmit \
