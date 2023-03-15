@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ----------------------
+# Graph classification on dummy datasets using PyG and Orca
 #
 
 # Step 0: Import necessary libraries
@@ -62,11 +64,13 @@ def load_dataset():
 
     data_list = []
     for graph in range(config["num_graphs"]):
-        edge_index = torch.randint(config["num_nodes"], size=(config["num_edges"], 2),
+        edge_index = torch.randint(config["num_nodes"],
+                                   size=(config["num_edges"], 2),
                                    dtype=torch.long)
         x = torch.randn(size=(config["num_nodes"], config["dim_node_features"]),
                         dtype=torch.float)
-        y = torch.randint(config["num_classes"], size=(1,),
+        y = torch.randint(config["num_classes"],
+                          size=(1,),
                           dtype=torch.long)[0]
         data = Data(x=x, edge_index=edge_index.t().contiguous(), y=y)
         data_list.append(data)
@@ -78,15 +82,13 @@ def load_dataset():
 
 def train_loader_func(config, batch_size):
     train_dataset, _ = load_dataset()
-    train_loader = DataLoader(train_dataset, batch_size=batch_size,
-                              shuffle=True, num_workers=0)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
     return train_loader
 
 
 def test_loader_func(config, batch_size):
     _, test_dataset = load_dataset()
-    test_loader = DataLoader(test_dataset, batch_size=batch_size,
-                             shuffle=False, num_workers=0)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     return test_loader
 
 
@@ -149,8 +151,7 @@ for k, v in eval_stats.items():
 
 # Step 6: Predict the graph
 _, test_dataset = load_dataset()
-test_loader = DataLoader(test_dataset, batch_size=32,
-                         shuffle=False, num_workers=0)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=0)
 model = est.get_model()
 model.eval()
 
