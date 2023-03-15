@@ -203,18 +203,20 @@ def read_coco(file_path: str,
     :param file_path: str. A HDFS path or local path of images.
     :param split: str. a split to read.
     :return: A new SparkXShards of tuple of image, target.
-            target is a dictionary with bbox, category_id, area, iscrouwd, segmentation
+            target is a dictionary with a list of bbox, list of category_id, list of area,
+            list of iscrouwd, list of segmentation.
+            Each bbox contains four values in pixels [x_min, y_min, width, height].
     """
     spark = OrcaContext.get_spark_session()
     df = spark.read.json(file_path + "/annotations/instances_" + split + "2017.json")
     ann_df = df.select(explode(col("annotations")).alias("annotations"))
     ann_df = ann_df.select(col("annotations.area").alias("area"),
-                         col("annotations.bbox").alias("bbox"),
-                         col("annotations.category_id").alias("category_id"),
-                         col("annotations.id").alias("id"),
-                         col("annotations.image_id").alias("image_id"),
-                         col("annotations.iscrowd").alias("iscrowd"),
-                         col("annotations.segmentation").alias("segmentation"))
+                           col("annotations.bbox").alias("bbox"),
+                           col("annotations.category_id").alias("category_id"),
+                           col("annotations.id").alias("id"),
+                           col("annotations.image_id").alias("image_id"),
+                           col("annotations.iscrowd").alias("iscrowd"),
+                           col("annotations.segmentation").alias("segmentation"))
 
     ann_df = ann_df.groupby("image_id")\
         .agg(collect_list(col("bbox")).alias("bbox"),
@@ -235,17 +237,17 @@ def read_coco(file_path: str,
     node_num, core_num = get_node_and_core_number()
     total_cores = node_num * core_num
     num_partitions = num_files if num_files < total_cores else total_cores
+    # file_names is a rdd of(id, filename)
     file_names = spark.sparkContext.parallelize(file_names, num_partitions)\
         .map(lambda x: (int(x.split("/")[-1].split(".")[0]), x))
 
     def load_image(iterator):
         for f in iterator:
-            print(f)
             try:
                 img = open_image(f[1]).convert("RGB")
                 yield f[0], img
             except FileNotFoundError as e:
-                print(e)
+                invalidOperationError(False, str(e), cause=e)
             yield f[0], None
 
     image_rdd = file_names.mapPartitions(load_image)\
