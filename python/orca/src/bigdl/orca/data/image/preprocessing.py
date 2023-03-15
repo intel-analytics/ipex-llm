@@ -207,7 +207,9 @@ def read_voc(file_path: str = "VOCdevkit",
              max_samples: int = None
              ) -> "SparkXShards":
     """
-    Read VOC images into a SparkXShards. code is ported from  https://github.com/intel-analytics/BigDL/blob/main/python/orca/src/bigdl/orca/data/image/voc_dataset.py
+    Read VOC images into a SparkXShards. code is ported from
+    https://github.com/intel-analytics/BigDL/blob/main/python/orca/src/bigdl/orca/data/
+    image/voc_dataset.py
 
     :param file_path: str. A HDFS path or local path of images.
     :param split_names: splits_names: tuple, ((year, trainval)).
@@ -215,7 +217,8 @@ def read_voc(file_path: str = "VOCdevkit",
     :param diff: boolean, False ignore voc xml difficult value.
 
     :param max_samples: int. max samples returned.
-    :return: A new SparkXShards of tuple of image, target. target is a ndarray of [[x1, y1, x2, y2, cls, difficult]]
+    :return: A new SparkXShards of tuple of image, target.
+             target is a ndarray of [[x1, y1, x2, y2, cls, difficult]]
     """
 
     spark = OrcaContext.get_spark_session()
