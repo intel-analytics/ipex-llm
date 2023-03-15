@@ -12,8 +12,12 @@ refer to [Getting_Started_External.pdf (2022ww44)](https://ubit-artifactory-or.i
 cd ~
 mkdir tdx-vm && cd tdx-vm
 wget https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2022ww44/guest-images/td-guest-ubuntu-22.04.qcow2.tar.xz
+tar -xvf td-guest-ubuntu-22.04.qcow2.tar.xz
+mkdir tdvm1
+cp td-guest-ubuntu-22.04.qcow2 ./tdvm1/
 wget https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2022ww44/guest-images/vmlinuz-jammy
 wget https://raw.githubusercontent.com/intel/tdx-tools/2022ww44/doc/tdx_libvirt_direct.ubuntu.xml.template -O tdx1.xml
+cp /usr/share/qemu/OVMF_VARS.fd /usr/share/qemu/OVMF_VARS.fd.bk
 ```
 
 
@@ -30,7 +34,7 @@ sudo systemctl restart libvirtd
 ```
 #### 3.3. Edit the configuration file
 ```
-cp OVMF_VARS.fd OVMF_VARS.fd.bk
+cp /usr/share/qemu/OVMF_VARS.fd ~/tdx-vm/tdvm1/OVMF_VARS.fd.bk
 ```
 edit tdx1.xml
 ```
@@ -38,7 +42,7 @@ replace '<name>td-guest-ubuntu-22.04</name>' with '<name>td-guest-ubuntu-22.04-1
 replace '/path/to/OVMF_VARS.fd' with the desired destination of OVMF_VARS.fd
 replace '/path/to/vmlinuz' with the absolute path of '~/vmlinuz-jammy'
 replace '/path/to/td-guest-ubuntu-22.04.qcow2' with the absolute path of '~/td-guest-ubuntu-22.04.qcow2'
-replace '/usr/bin/qemu-system-x86_64' with the desired destination of qemu-system-x86_64
+replace '/usr/bin/qemu-system-x86_64' with the desired destination of qemu-system such as /usr/libexec/qemu-kvm
 replace '<vcpu placement='static'>1</vcpu>' with '<vcpu placement='static'>8</vcpu>'
 replace '<topology sockets='1' cores='1' threads='1'/>' with '<topology sockets='1' cores='8' threads='1'/>'
 ```
@@ -105,10 +109,96 @@ you can ping another TDX VM's ip to see if the network works.
 ### 4. Setup K8S cluster
 #### 4.1. update hostname
 #### 4.2. edit /etc/hosts
-#### 4.3. 
+#### 4.3. unset proxy
+vi /etc/environment
+unset no_proxy
+unset NO_PROXY
+#### 4.4. install docker
+refer to https://docs.docker.com/engine/install/ubuntu/
+vim /etc/docker/daemon.json
+```
+{
+  "registry-mirrors": ["https://ustc-edu-cn.mirror.aliyuncs.com"]
+}
+```
+```
+systemctl daemon-reload
+systemctl restart docker
+docker version
+```
+#### 4.5. install kubeadm
+```
+apt-get install kubelet=1.23.4-00 kubeadm=1.23.4-00 kubectl=1.23.4-00
+```
+```
+echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
+source /etc/profile
+echo '{"exec-opts": ["native.cgroupdriver=systemd"]}' | sudo tee /etc/docker/daemon.json
+systemctl daemon-reload
+systemctl restart docker
+systemctl restart kubelet
+kubeadm reset
+
+kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --image-repository=registry.aliyuncs.com/google_containers
+```
+```
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml # if kubectl cannot get the internet file, please wget it first and then kubectl apply the local file
+```
+
+```
+echo '{"exec-opts": ["native.cgroupdriver=systemd"]}' | sudo tee /etc/docker/daemon.json
+systemctl daemon-reload
+systemctl restart docker
+systemctl restart kubelet
+kubeadm reset
+
+kubectl join command with token and hash
+```
+
+### 5. Run workload
+```
+kubectl cluster-info # master="k8s://https://127.0.0.1:12345"
+
+kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+
+.kube/config
+kubectl config view --flatten --minify > kuberconfig
 
 
+export K8S_MASTER=k8s://$(kubectl cluster-info | grep 'https.*6443' -o -m 1)
+echo The k8s master is $K8S_MASTER .
+sudo docker run -itd --net=host \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube:/root/.kube \
+    -v /root/sparkpi.sh:/root/sparkpi.sh \
+    -v /root/test.sh:/root/test.sh \
+    -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
+    --name bigdl-k8s \
+    intelanalytics/bigdl-k8s:2.2.0 bash
 
+${SPARK_HOME}/bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master local[2] \
+  --executor-memory 2G \
+  --num-executors 2 \
+  local://${SPARK_HOME}/examples/jars/spark-examples_2.12-3.1.3.jar \
+  1000
 
+${SPARK_HOME}/bin/spark-submit \
+  --class org.apache.spark.examples.SparkPi \
+  --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode cluster \
+  --executor-memory 500MB \
+  --num-executors 2 \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+  --conf spark.kubernetes.executor.deleteOnTermination=false \
+  --conf spark.kubernetes.container.image=intelanalytics/bigdl-k8s:2.2.0 \
+  local://${SPARK_HOME}/examples/jars/spark-examples_2.12-3.1.3.jar \
+  1000
 
+ docker exec -it bigdl-k8s /bin/bash ~/sparkpi.sh
 
+https://blog.csdn.net/weixin_43114954/article/details/119153903
+kubectl taint nodes --all node-role.kubernetes.io/master-
+```
