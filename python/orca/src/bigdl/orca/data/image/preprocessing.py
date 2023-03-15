@@ -49,11 +49,11 @@ def get_file_paths(file_path):
 
 
 def read_images(file_path: str,
-                label_func: Callable = None,
-                target_path: str = None,
-                image_type: str = ".jpg",
-                target_type: str = ".png",
-                backend: str = 'pillow'):
+                label_func: Callable=None,
+                target_path: str=None,
+                image_type: str=".jpg",
+                target_type: str=".png",
+                backend: str="pillow"):
 
     backend = backend.lower()
     invalidInputError(backend == "spark" or backend == "pillow",
@@ -66,10 +66,10 @@ def read_images(file_path: str,
 
 
 def read_images_pil(file_path: str,
-                    label_func: Callable = None,
-                    target_path: str = None,
-                    image_type: str = ".jpg",
-                    target_type: str = ".png"
+                    label_func: Callable=None,
+                    target_path: str=None,
+                    image_type: str=".jpg",
+                    target_type: str=".png"
                     ) -> "SparkXShards":
     """
     Read images into a SparkXShards using PIL.
@@ -120,10 +120,10 @@ def read_images_pil(file_path: str,
 
 
 def read_images_spark(file_path: str,
-                      label_func: Callable = None,
-                      target_path: str = None,
-                      image_type: str = ".jpg",
-                      target_type: str = ".png"
+                      label_func: Callable=None,
+                      target_path: str=None,
+                      image_type: str=".jpg",
+                      target_type: str=".png"
                       ) -> "SparkXShards":
     """
     Read images into a SparkXShards using Spark backend.
@@ -319,7 +319,7 @@ def read_voc(file_path: str="VOCdevkit",
 
 
 def read_coco(file_path: str,
-              split: str = "train"):
+              split: str="train"):
     """
     Read coco 2017 images into a SparkXShards using Spark backend.
 
