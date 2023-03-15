@@ -47,16 +47,16 @@ time3=$((now-start))
 set -e
 ray stop -f
 
-
+if [ $python_version == 3.7.10 ];then
+# rllib test does not support numpy 1.24
+# parameter server test requires tensorflow 1
+# mxnet test does not support numpy 1.24
 echo "#4 Start multi_agent example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/rllib/multi_agent_two_trainers.py --iterations 5
 now=$(date "+%s")
 time4=$((now-start))
 
-if [ $python_version == 3.7.10 ];then
-# parameter server test requires tensorflow 1
-# mxnet test does not support numpy 1.24
 echo "#5 Start async_parameter example"
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/ray_on_spark/parameter_server/async_parameter_server.py --iterations 10
