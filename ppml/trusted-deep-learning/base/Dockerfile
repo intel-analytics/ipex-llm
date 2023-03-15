@@ -71,6 +71,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+# kubernetes related
+    pip3 install --no-cache kubernetes==23.3.0 && \
 # Torchserve
     pip install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
