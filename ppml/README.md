@@ -1,26 +1,24 @@
 Protecting privacy and confidentiality is critical for large-scale data analysis and machine learning. **BigDL PPML** (BigDL Privacy Preserving Machine Learning) combines various low-level hardware and software security technologies (e.g., Intel® Software Guard Extensions (Intel® SGX), Security Key Management, Remote Attestation, Data Encryption, Federated Learning, etc.) so that users can continue applying standard Big Data and AI technologies (such as Apache Spark, Apache Flink, TensorFlow, PyTorch, etc.) without sacrificing privacy. 
 
-#### Table of Contents  
-[1. What is BigDL PPML?](#1-what-is-bigdl-ppml)  
-[2. Why BigDL PPML?](#2-why-bigdl-ppml)  
-[3. Getting Started with PPML](#3-getting-started-with-ppml)  \
-&ensp;&ensp;[3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world) \
-&ensp;&ensp;[3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 0. Preparation your environment](#step-0-preparation-your-environment): detailed steps in [Prepare Environment](./docs/prepare_environment.md) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 1. Prepare your PPML image for production environment](#step-1-prepare-your-ppml-image-for-production-environment) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 2. Encrypt and Upload Data](#step-2-encrypt-and-upload-data) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 3. Build Big Data & AI applications](#step-3-build-big-data--ai-applications) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 4. Attestation ](#step-4-attestation) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 5. Submit Job](#step-5-submit-job): 4 deploy modes and 2 options to submit job  \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 6. Monitor Job by History Server](#step-6-monitor-job-by-history-server) \
-&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;[Step 7. Decrypt and Read Result](#step-7-decrypt-and-read-result) \
-&ensp;&ensp;[3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples) \
-[4. Develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml) \
-&ensp;&ensp;[4.1 Create PPMLContext](#41-create-ppmlcontext) \
-&ensp;&ensp;[4.2 Read and Write Files](#42-read-and-write-files) \
-&ensp;&ensp;[4.3 Create Multi-Party PPMLContext](#43-create-multi-party-ppmlcontext)
-
-
+- [1. What is BigDL PPML?](#1-what-is-bigdl-ppml)
+- [2. Why BigDL PPML?](#2-why-bigdl-ppml)
+- [3. Getting Started with PPML](#3-getting-started-with-ppml)
+  - [3.1 BigDL PPML Hello World](#31-bigdl-ppml-hello-world)
+  - [3.2 BigDL PPML End-to-End Workflow](#32-bigdl-ppml-end-to-end-workflow)
+    - [Step 0. Preparation your environment](#step-0-preparation-your-environment)
+    - [Step 1. Prepare your PPML image for the production environment](#step-1-prepare-your-ppml-image-for-the-production-environment)
+    - [Step 2. Attestation](#step-2-attestation)
+    - [Step 3. Encrypt Data](#step-3-encrypt-data)
+    - [Step 4. Build Big Data \& AI applications](#step-4-build-big-data--ai-applications)
+    - [Step 5. Submit Job to Query](#step-5-submit-job-to-query)
+    - [Step 6. Monitor Job by History Server](#step-6-monitor-job-by-history-server)
+    - [Step 7. Decrypt and Read Result](#step-7-decrypt-and-read-result)
+  - [3.3 More BigDL PPML Examples](#33-more-bigdl-ppml-examples)
+- [4. Develop your own Big Data \& AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml)
+  - [4.1 Create PPMLContext](#41-create-ppmlcontext)
+  - [4.2 Read and Write Files](#42-read-and-write-files)
+  - [4.3 Create Multi-Party PPMLContext](#43-create-multi-party-ppmlcontext)
+    - [**Configurations of key and KMS in PPMLContext**](#configurations-of-key-and-kms-in-ppmlcontext)
 
 ## 1. What is BigDL PPML?
 
@@ -246,8 +244,8 @@ To build a secure PPML image that can be used in a production environment, BigDL
         $DOCKER_IMAGE bash
     ```
 
-
-#### Step 2. Encrypt and Upload Data
+#### Step 2. Attestation
+#### Step 3. Encrypt Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server (or any file system such as HDFS that can be accessed by the cluster).
 
 1. Generate the input data `people.csv` for SimpleQuery application
@@ -263,6 +261,42 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     ```
 
 3. Encrypt `people.csv`
+
+You need to choose the deploy mode and the way to submit the job first.
+
+* **There are 4 modes to submit a job**:
+
+    1. **local mode**: run jobs locally without connecting to the cluster. It is exactly the same as using spark-submit to run your application: `$SPARK_HOME/bin/spark-submit --class "SimpleApp" --master local[4] target.jar`, driver and executors are not protected by SGX.
+        <p align="left">
+          <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" width='250px' />
+        </p>
+
+
+    2. **local SGX mode**: run jobs locally with SGX guarded. As the picture shows, the client JVM is running in a SGX Enclave so that driver and executors can be protected.
+        <p align="left">
+          <img src="https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png" width='250px' />
+        </p>
+
+
+    3. **client SGX mode**: run jobs in k8s client mode with SGX guarded. As we know, in K8s client mode, the driver is deployed locally as an external client to the cluster. With **client SGX mode**, the executors running in K8S cluster are protected by SGX, and the driver running in the client is also protected by SGX.
+        <p align="left">
+          <img src="https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png" width='500px' />
+        </p>
+
+
+    4. **cluster SGX mode**: run jobs in k8s cluster mode with SGX guarded. As we know, in K8s cluster mode, the driver is deployed on the k8s worker nodes like executors. With **cluster SGX mode**, the driver and executors running in K8S cluster are protected by SGX.
+        <p align="left">
+          <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" width='500px' />
+        </p>
+
+
+* **There are two options to submit PPML jobs**:
+    * use [PPML CLI](./docs/submit_job.md#ppml-cli) to submit jobs manually
+    * use [helm chart](./docs/submit_job.md#helm-chart) to submit jobs automatically
+
+Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other modes, please see [PPML CLI Usage Examples](./docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](./docs/submit_job.md#helm-chart).
+
+
 ```bash
     docker exec -i bigdl-ppml-client-k8s bash
 
@@ -303,198 +337,11 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
 `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
 
-#### Step 3. Build Big Data & AI applications
+#### Step 4. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.
 
-#### Step 4. Attestation 
-
-   Enter the client container:
-   ```
-   sudo docker exec -it bigdl-ppml-client-k8s bash
-   ```
-
-1. Disable attestation
-
-    If you do not need the attestation, you can disable the attestation service. You should configure spark-driver-template.yaml and spark-executor-template.yaml to set `ATTESTATION` value to `false`. By default, the attestation service is disabled. 
-    ``` yaml
-    apiVersion: v1
-    kind: Pod
-    spec:
-      ...
-        env:
-          - name: ATTESTATION
-            value: false
-      ...
-    ```
-
-2. Enable attestation
-
-    The bi-attestation guarantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
-    ![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
-
-    To enable attestation, first, you should have a running Attestation Service in your environment. 
-
-    **2.1. Deploy EHSM KMS & AS**
-
-      KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
-
-      BigDL PPML uses EHSM as reference KMS&AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
-
-    **2.2. Enroll in EHSM**
-
-    Execute the following command to enroll yourself in EHSM, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
-
-    ```bash
-    curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
-    ......
-    {"code":200,"message":"successful","result":{"apikey":"E8QKpBB******","appid":"8d5dd3b*******"}}
-    ```
-
-    You will get an `appid` and `apikey` pair, save it for later use.
-
-    **2.3. Attest EHSM Server (optional)**
-
-    You can attest the EHSM server and verify the service is trusted before running workloads, which avoids sending your secrets to a fake EHSM service.
-
-    To attest EHSM server, first, start a bigdl container using the custom image built before. **Note**: this is the other container different from the client.
-
-    ```bash
-    export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
-    export LOCAL_IP=YOUR_LOCAL_IP
-    export CUSTOM_IMAGE=YOUR_CUSTOM_IMAGE_BUILT_BEFORE
-    export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
-
-    sudo docker run -itd \
-        --privileged \
-        --net=host \
-        --cpus=5 \
-        --oom-kill-disable \
-        -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-        -v $KEYS_PATH:/ppml/keys \
-        --name=gramine-verify-worker \
-        -e LOCAL_IP=$LOCAL_IP \
-        -e PCCS_URL=$PCCS_URL \
-        $CUSTOM_IMAGE bash
-    ```
-
-    Enter the docker container:
-
-    ```bash
-    sudo docker exec -it gramine-verify-worker bash
-    ```
-
-    Set the variables in `verify-attestation-service.sh` before running it:
-
-      ```
-      `ATTESTATION_URL`: URL of attestation service. Should match the format `<ip_address>:<port>`.
-
-      `APP_ID`, `API_KEY`: The appID and apiKey pair generated by your attestation service.
-
-      `ATTESTATION_TYPE`: Type of attestation service. Currently support `EHSMAttestationService`.
-
-      `CHALLENGE`: Challenge to get a quote for attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
-      ```
-
-    In the container, execute `verify-attestation-service.sh` to verify the attestation service quote.
-
-      ```bash
-      bash verify-attestation-service.sh
-      ```
-
-    **2.4. Register your MREnclave to EHSM**
-
-    Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in the above steps to EHSM through running a python script:
-
-    ```bash
-    # At /ppml inside the container now
-    python register-mrenclave.py --appid <your_appid> \
-                                --apikey <your_apikey> \
-                                --url https://<kms_ip>:9000 \
-                                --mr_enclave <your_mrenclave_hash_value> \
-                                --mr_signer <your_mrensigner_hash_value>
-    ```
-    You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
-
-    **2.5. Enable Attestation in configuration**
-
-    First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
-
-    ```bash
-    kubectl create secret generic kms-secret \
-                      --from-literal=app_id=YOUR_KMS_APP_ID \
-                      --from-literal=api_key=YOUR_KMS_API_KEY \
-                      --from-literal=policy_id=YOUR_POLICY_ID
-    ```
-
-    Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
-    ``` yaml
-    apiVersion: v1
-    kind: Pod
-    spec:
-      containers:
-      - name: spark-driver
-        securityContext:
-          privileged: true
-        env:
-          - name: ATTESTATION
-            value: true
-          - name: PCCS_URL
-            value: https://your_pccs_ip:your_pccs_port
-          - name: ATTESTATION_URL
-            value: your_ehsm_ip:your_ehsm_port
-          - name: APP_ID
-            valueFrom:
-              secretKeyRef:
-                name: kms-secret
-                key: app_id
-          - name: API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: kms-secret
-                key: app_key
-          - name: ATTESTATION_POLICYID
-            valueFrom:
-              secretKeyRef:
-                name: policy-id-secret
-                key: policy_id
-    ...
-    ```
-    You should get `Attestation Success!` in logs after you submit a PPML job if the quote generated with `user_report` is verified successfully by Attestation Service. Or you will get `Attestation Fail! Application killed!` or `JASONObject["result"] is not a JASONObject`and the job will be stopped.
-
-#### Step 5. Submit Job
-When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You need to choose the deploy mode and the way to submit the job first.
-
-* **There are 4 modes to submit a job**:
-
-    1. **local mode**: run jobs locally without connecting to the cluster. It is exactly the same as using spark-submit to run your application: `$SPARK_HOME/bin/spark-submit --class "SimpleApp" --master local[4] target.jar`, driver and executors are not protected by SGX.
-        <p align="left">
-          <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" width='250px' />
-        </p>
-
-
-    2. **local SGX mode**: run jobs locally with SGX guarded. As the picture shows, the client JVM is running in a SGX Enclave so that driver and executors can be protected.
-        <p align="left">
-          <img src="https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png" width='250px' />
-        </p>
-
-
-    3. **client SGX mode**: run jobs in k8s client mode with SGX guarded. As we know, in K8s client mode, the driver is deployed locally as an external client to the cluster. With **client SGX mode**, the executors running in K8S cluster are protected by SGX, and the driver running in the client is also protected by SGX.
-        <p align="left">
-          <img src="https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png" width='500px' />
-        </p>
-
-
-    4. **cluster SGX mode**: run jobs in k8s cluster mode with SGX guarded. As we know, in K8s cluster mode, the driver is deployed on the k8s worker nodes like executors. With **cluster SGX mode**, the driver and executors running in K8S cluster are protected by SGX.
-        <p align="left">
-          <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" width='500px' />
-        </p>
-
-
-* **There are two options to submit PPML jobs**:
-    * use [PPML CLI](./docs/submit_job.md#ppml-cli) to submit jobs manually
-    * use [helm chart](./docs/submit_job.md#helm-chart) to submit jobs automatically
-
-Here we use **k8s client mode** and **PPML CLI** to run SimpleQuery. Check other modes, please see [PPML CLI Usage Examples](./docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](./docs/submit_job.md#helm-chart).
+#### Step 5. Submit Job to Query
+When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. 
 
   <details><summary>expand to see details of submitting SimpleQuery</summary>
 
