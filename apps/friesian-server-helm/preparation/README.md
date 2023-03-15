@@ -16,15 +16,17 @@ Before installing the Friesian online serving, we need to prepare some resource 
    Items' [WND](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/wnd)
    feature parquet file.
 
-   (Skip this step if having initialized Redis)
+   (Skip this step if you have initialized Redis)
 
 2. Feature-Recall Server
 
-   Users' embedding parquet file. (Skip this step if having initialized Redis)
+   Users' embedding parquet file
+   from [2 tower model](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/two_tower). (
+   Skip this step if you have initialized Redis)
 
 3. Recall Server
 
-   Items' embedding parquet file. (Skip this step if having initialized faiss model)
+   Items' embedding parquet file. (Skip this step if you have initialized faiss index)
 
 4. Ranking Server
 
@@ -48,7 +50,7 @@ Before installing the Friesian online serving, we need to prepare some resource 
     * `spec.storageClassName`: Name of the available
       cluster [storage class](https://kubernetes.io/docs/concepts/storage/storage-classes/). If
       using AWS, Alibaba Cloud, or other cloud services, we can obtain this name in the
-      dashboard/console.
+      dashboard/console, such as `kubectl get storageclasses`
 
     ```bash
     kubectl apply -f 'create-pvc.yaml' -n friesian
@@ -63,7 +65,7 @@ Before installing the Friesian online serving, we need to prepare some resource 
     kubectl apply -f 'create-volume-pod.yaml' -n friesian
     ```
 
-4. Copy resource files into the attached PV and check files' path.
+4. Copy the resource files into the attached PV and check the path of the files.
 
     ```bash
     # Copy files to the path mounted PV
@@ -97,9 +99,10 @@ Before installing the Friesian online serving, we need to prepare some resource 
     |-part-xxxxxxxxx-xxxx.parquet
     |-...
   | (Feature-Recall Server)
-  |-tmpDir
+  |-user_ebd_dir
     |-user_ebd.parquet (Users' embedding parquet file) 
-      |                (Fill tmpDir/user_ebd.parquet in `init.featureRecall.resourcePath.initialUserDataPath`)
+      |                (Fill user_ebd_dir/user_ebd.parquet in `init.featureRecall.resourcePath.initialUserDataPath`)
+      |                (user_ebd_dir is just an example directory to demonstrate how the data path is populated when there are data files in the directory)
       |-part-xxxxxxxxx-xxxx.parquet
       |-part-xxxxxxxxx-xxxx.parquet
       |-...

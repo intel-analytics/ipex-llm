@@ -12,7 +12,7 @@ Kubernetes cluster.
 
 ## Deploy Friesian server
 
-You can get the full installation document from [here](./friesian-helm/readme.md).
+You can get the full installation document from [here](./friesian-helm/README.md).
 
 ## TL;DR
 
@@ -34,7 +34,7 @@ kubectl cp /path/to/your/resources friesian/volume-pod:/resources
 kubectl delete -f '2. create-volume-pod.yaml' -n friesian
 
 # install friesian server in namespace 'friesian' with name 'my-release'
-helm upgrade --install --debug -n friesian my-release ./friesian-helm
+helm upgrade --install -n friesian my-release ./friesian-helm
 
 ```
 

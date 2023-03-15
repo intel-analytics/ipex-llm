@@ -1,18 +1,19 @@
 # Friesian Online Serving Helm Chart
 
-This document demonstrates how to use the helm chart to deploy the Friesian online serving pipeline
+This document demonstrates how to use the [helm](https://helm.sh) chart to deploy the Friesian
+online serving pipeline
 on a Kubernetes cluster.
 
 ## Prepare environments
 
 * AVX512 instruction support on nodes that deploy the recall server
 * [Preparation steps](../preparation) or a PV contains resource files
-* [Helm](https://helm.sh) 3.2.0+
+* Helm 3.2.0+
 * Kubernetes 1.19+
 
 ## Modify the configurations
 
-In [values.yaml](./values.yaml), you can edit parameters to match your cluster config.
+In [values.yaml](./values.yaml), you can edit the parameters according to your cluster config.
 
 Some important configs must be checked:
 
@@ -48,9 +49,9 @@ Some important configs must be checked:
 | `init`                         | Initialize `redis` and `recall` components with the supplied resources                                                                                                                                                                                                                                                                                                   | `init.enabled`                         |
 | `redis`                        | [Redis server](https://github.com/bitnami/charts/tree/master/bitnami/redis/) that `feature` and `featureRecall` depend on. <br />Can be disabled when external redis deployed. <br /> Nested components refer to [redis chart readme](https://github.com/bitnami/charts/tree/master/bitnami/redis/)                                                                      | `redis.enabled`                        |
 | `prometheus`                   | [Prometheus stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) that serviceMonitors depend on. <br />Can be disabled when external prometheus stack is deployed. <br /> Nested components refer to [prometheus chart readme](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) | `prometheus.enabled`                   |
-| `feature`                      | Feature server supply features                                                                                                                                                                                                                                                                                                                                           | Always On                              |
+| `feature`                      | Feature server for ranking model features                                                                                                                                                                                                                                                                                                                                | Always On                              |
 | `feature.serviceMonitor`       | Service Monitor for `feature`. <br />**`prometheus` must be enabled (or installed)**                                                                                                                                                                                                                                                                                     | `feature.serviceMonitor.enabled`       |
-| `featureRecall`                | Feature server supply user embedding                                                                                                                                                                                                                                                                                                                                     | Always On                              |
+| `featureRecall`                | Feature server for user embedding                                                                                                                                                                                                                                                                                                                                        | Always On                              |
 | `featureRecall.serviceMonitor` | Service Monitor for `featureRecall`. <br />**`prometheus` must be enabled (or installed)**                                                                                                                                                                                                                                                                               | `featureRecall.serviceMonitor.enabled` |
 | `recall`                       | Recall server                                                                                                                                                                                                                                                                                                                                                            | Always On                              |
 | `recall.serviceMonitor`        | Service Monitor for `recall`. <br />**`prometheus` must be enabled (or installed)**                                                                                                                                                                                                                                                                                      | `recall.serviceMonitor.enabled`        |
@@ -65,7 +66,7 @@ Some important configs must be checked:
 To install the chart with the release name `my-release` in namespace `friesian`:
 
 ```bash
-helm upgrade --install --debug -n friesian my-release ./friesian-helm --create-namespace
+helm upgrade --install -n friesian my-release ./friesian-helm --create-namespace
 ```
 
 After installation, follow Helm output to check whether Friesian serving works properly.
@@ -82,11 +83,12 @@ The Helm chart
 uses [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 to monitor cluster.
 This stack creates a Service for scraping kubelet information (defined
-in `kube-prometheus-stack.prometheusOperator.kubeletService`) which isn't deleted when uninstalling.
+in `kube-prometheus-stack.prometheusOperator.kubeletService`) which isn't deleted after
+uninstallation.
 See [this issue](https://github.com/SumoLogic/sumologic-kubernetes-collection/issues/1101) for a
 detailed explanation.
 
-To remove this service after uninstalling, run:
+To remove this service after uninstallation, run:
 
 ```bash
 kubectl delete svc <release_name>-prometheus-kubelet -n kube-system
@@ -94,5 +96,3 @@ kubectl delete svc <release_name>-prometheus-kubelet -n kube-system
 # In this demo, replace <release_name> with my-release
 kubectl delete svc my-release-prometheus-kubelet -n kube-system
 ```
-
-The commands remove all the Kubernetes components associated with the chart and delete the release.
