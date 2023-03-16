@@ -23,7 +23,8 @@ from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
-    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+    latency_calculate_helper, torch_loader_latency_calculate_helper,\
+    format_optimize_result, BaseInferenceOptimizer
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
@@ -172,7 +173,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
-                 output_filename: Optional[str] = None) -> None:
+                 output_filename: Optional[str] = None,
+                 no_cache: bool = False) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -201,13 +203,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | Each element in the DataLoader can be one of the following:
                 |    a. a single Tensor or dict of Tensors
                 |    b. a tuple:
-                |         b1: if the lenth is 1, the first element will be treated as input
+                |         b1: if the length is 1, the first element will be treated as input
                 |             to the model
-                |         b2: if the lenth is 2, the first element will be treated as input
+                |         b2: if the length is 2, the first element will be treated as input
                 |             to the model, with the sencond element treated as label.
                 |             if the input to the model is a tuple, it will be unpacked as
                 |             multiple inputs.
-                |         b3: if the lengh is larger than 2, the first n elements as input
+                |         b3: if the length is larger than 2, the first n elements as input
                 |             to the model, with n being the argument lenth to the model.forward
                 |             and the rest will be treated as label
                 |
@@ -219,9 +221,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
                 |
                 | Each element in the DataLoader should be a tuple as least size of two:
-                |     a: if the lenth is 2, the first element will be treated as input
+                |     a: if the length is 2, the first element will be treated as input
                 |        to the model, with the sencond element treated as label
-                |     b: if the lengh is larger than 2, the first n elements as input
+                |     b: if the length is larger than 2, the first n elements as input
                 |        to the model, with n being the argument lenth to the model.forward
                 |        and the rest will be treated as label
                 |
@@ -309,6 +311,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
+        :param no_cache: if set True, calculate average latency by iterating all the samples from
+               the provided dataloader until reaching the latency_sample_num. Default set to be
+               False, meaning always loading one single sample from cache to test latency.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -462,9 +467,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if no_cache:
+                            result_map[method]["latency"], status =\
+                                torch_loader_latency_calculate_helper(latency_sample_num,
+                                                                      baseline_time,
+                                                                      func_test,
+                                                                      acce_model,
+                                                                      input_sample,
+                                                                      training_data,
+                                                                      forward_args)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
