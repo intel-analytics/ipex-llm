@@ -15,8 +15,8 @@
 #
 
 
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
 import torch
 from torch.ao.quantization import QConfig, get_default_qconfig_mapping
