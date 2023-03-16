@@ -31,7 +31,7 @@ def write_bytes_as_string_to_file(data_file_path, content):
     with open(data_file_path, "w") as data_file:
         data_file.write(str(content, 'utf-8'))
 
-class AESCipher:
+class AESCBCCipher:
     def __init__(self, base64_secret_key: str):
         self.key = b64decode(base64_secret_key) # crypto key bytes
         self.mode = AES.MODE_CBC
@@ -51,7 +51,12 @@ class AESCipher:
 
     def encrypt_file(self, plain_text_data_file_path, encrypted_file_save_path = ""):
         if (encrypted_file_save_path == ""):
-            encrypted_file_save_path = plain_text_data_file_path + ".encrypted"
+            encrypted_file_save_path = plain_text_data_file_path + ".cbc"
+        else:
+            if not encrypted_file_save_path.endswith(".cbc"):
+                encrypted_file_save_path = encrypted_file_save_path + ".cbc"
+                print("[INFO] encrypted_file_save_path is changed to "\
+                    + encrypted_file_save_path)
         self.update()
         data_bytes = self.PCKS5Padding(\
                 str(read_data_file(plain_text_data_file_path), self.str_encoding)\
@@ -86,4 +91,5 @@ class AESCipher:
         self.update(IV)
         decrypted_bytes = self.PCKS5UnPadding(self.cipher.decrypt(encrypted_bytes[16:]))
         return str(decrypted_bytes, self.str_encoding)
+
 

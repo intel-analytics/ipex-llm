@@ -251,24 +251,40 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
     outputStream.flush()
   }
 
-  val hmacSize = if (!enableNativeAESCBC) 32 else -1
+  val hmacSize = 32
   def decryptPart(in: InputStream, buffer: Array[Byte]): Array[Byte] = {
     if (in.available() == 0) {
       return new Array[Byte](0)
     }
     val readLen = in.read(buffer)
-    if (in.available() <= hmacSize && in.available() >= 0) {
-      val last = new Array[Byte](in.available())
-      if (in.available() != 0) {
-        in.read(last)
-      }
-      val inputHmac = buffer.slice(readLen - hmacSize + last.length, readLen) ++ last
-      val (lastSlice, streamHmac) = doFinal(buffer, 0, readLen - hmacSize + last.length)
-      Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
-        "hmac not match")
-      lastSlice
-    } else {
-      update(buffer, 0, readLen)
+    enableNativeAESCBC match {
+      case false =>
+        if (in.available() <= hmacSize && in.available() >= 0) {
+          val last = new Array[Byte](in.available())
+          if (in.available() != 0) {
+            in.read(last)
+          }
+          val inputHmac = buffer.slice(readLen - hmacSize + last.length, readLen) ++ last
+          val (lastSlice, streamHmac) = doFinal(buffer,
+            0, readLen - hmacSize + last.length)
+          Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
+            "hmac not match")
+          lastSlice
+        } else {
+          update(buffer, 0, readLen)
+        }
+      case true =>
+        // not need to check MAC in NativeAESCBC
+        if (in.available() >= 0) {
+          val last = new Array[Byte](in.available())
+          if (in.available() != 0) {
+            in.read(last)
+          }
+          val (lastSlice, _) = doFinal(buffer, 0, readLen + last.length)
+          lastSlice
+        } else {
+          update(buffer, 0, readLen)
+        }
     }
   }
 
@@ -282,8 +298,6 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
       val headerBuffer = ByteBuffer.wrap(header)
       val dataKeyCipherTextBytesLength = headerBuffer.getInt
       val initializationVectorLength = headerBuffer.getInt
-      println(s"dataKeyCipherTextBytesLength:$dataKeyCipherTextBytesLength")
-      println(s"initializationVectorLength:$initializationVectorLength")
       val dataKeyCipherTextBytes: Array[Byte] = header.slice(
         4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
       val initializationVector: Array[Byte] = header.slice(
@@ -292,7 +306,6 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
       val encryptedDataKeyStr = new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8)
       (encryptedDataKeyStr, initializationVector)
     } else {
-      println("getHeader with enableNativeAESCBC")
       val initializationVector: Array[Byte] = read(in, 16)
       (null, initializationVector)
     }
