@@ -31,7 +31,7 @@ export sgx_command="/opt/jdk8/bin/java \
    /ppml/spark-$SPARK_VERSION/examples/src/main/python/wordcount.py \
    /ppml/examples/helloworld.py"
 gramine-sgx bash 2>&1 | tee test-wordcount-sgx.log
-cat test-wordcount-sgx.log | egrep 'print'
+cat test-wordcount-sgx.log | egrep 'import'
 status_2_local_spark_wordcount=$(echo $?)
 fi
 
@@ -39,6 +39,6 @@ echo "#### sexample.1 Excepted result(Pi): Pi is roughly XXX"
 echo "---- sexample.1 Actual result: "
 cat test-pi-sgx.log | egrep 'roughly'
 
-echo -e "#### example.2 Excepted result(WordCount): \nXXX1: 1\nXXX2: 2\nXXX3: 3"
+echo -e "#### example.2 Excepted result(WordCount): import: XXX"
 echo "---- example.2 Actual result: "
 cat test-wordcount-sgx.log | egrep -a 'import.*: [0-9]*$'
