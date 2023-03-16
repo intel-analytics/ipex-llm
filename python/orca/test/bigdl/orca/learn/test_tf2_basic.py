@@ -412,7 +412,11 @@ class TestTFEstimatorBasic(TestCase):
         pred_res = estimator.predict(df,
                                      feature_cols=["input_1", "input_2"],
                                      output_cols=["score_output", "class_output"])
+        pred_res.collect()
 
+        # output_cols is None
+        pred_res = estimator.predict(df,
+                                     feature_cols=["input_1", "input_2"])
         pred_res.collect()
 
 
