@@ -94,28 +94,6 @@ class MainCallback(Callback):
         """
         self.on_iter_forward(runner)
 
-    def before_train_iter(self, runner):
-        features, target = runner.batch
-        if torch.is_tensor(features):
-            runner.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            runner.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor or list/tuple, "
-                              "but got {}".format(type(features)))
-
-    def before_val_iter(self, runner):
-        features, target = runner.batch
-        if torch.is_tensor(features):
-            runner.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            runner.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor or list/tuple, "
-                              "but got {}".format(type(features)))
-
     def after_train_iter(self, runner):
         loss_item = runner.loss.item()
         runner.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(runner.batch)}
