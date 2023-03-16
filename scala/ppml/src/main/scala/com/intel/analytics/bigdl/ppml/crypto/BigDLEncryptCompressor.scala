@@ -108,7 +108,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        if (!enableNativeAESCBC){
+        if (!enableNativeAESCBC) {
           bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
         }
         bigdlEncrypt.genHeader

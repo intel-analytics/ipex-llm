@@ -74,13 +74,12 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
       val signingKeySpec = new SecretKeySpec(signingKey, cryptoMode.signingAlgorithm)
       mac.init(signingKeySpec)
     }
-    
   }
 
   def initAES(dataKeyPlaintext: String): Unit = {
     if (opMode == DECRYPT && initializationVector == null) {
       throw new EncryptRuntimeException("initializationVector got from file is empty!")
-    } else if(opMode == ENCRYPT) {
+    } else if (opMode == ENCRYPT) {
       val r = new SecureRandom()
       initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     }
@@ -180,7 +179,7 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
    */
   override def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content)
-    val hmac: Array[Byte] = if(!enableNativeAESCBC) {
+    val hmac: Array[Byte] = if (!enableNativeAESCBC) {
       mac.doFinal(cipherText)
     } else null
     (cipherText, hmac)
@@ -293,7 +292,7 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
   }
 
   def getHeader(in: InputStream): (String, Array[Byte]) = {
-    if (!enableNativeAESCBC){
+    if (!enableNativeAESCBC) {
       val header = read(in, 400)
       val headerBuffer = ByteBuffer.wrap(header)
       val dataKeyCipherTextBytesLength = headerBuffer.getInt
@@ -359,7 +358,7 @@ class BigDLEncrypt(enableNativeAESCBC: Boolean = false) extends Crypto {
    * @return iterator of String.
    */
   override def decryptBigContent(
-    inputStream: InputStream):Iterator[String] = {
+    inputStream: InputStream): Iterator[String] = {
     // verifyHeader(read(inputStream, 25))
     new Iterator[String] {
       var cachedArray: Array[String] = null
