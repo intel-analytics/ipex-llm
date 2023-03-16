@@ -434,7 +434,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
         :param output_cols: Column name(s) of the model output data. Only used when data is
-               a Spark DataFrame, noted the order of column name(s) should be consistent with the
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
                model output data. Default: None.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
