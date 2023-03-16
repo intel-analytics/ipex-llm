@@ -357,9 +357,6 @@ def split_predict_cols(y):
     if not isinstance(y, (list, tuple)):
         return {"prediction": y}
     output_cols = [f"output_{i}" for i in range(len(y))]
-    if isinstance(y, np.ndarray):
-        # Single output
-        y = [y]
 
     # Multi-output in a list format
     invalidInputError(len(output_cols) == len(y),
