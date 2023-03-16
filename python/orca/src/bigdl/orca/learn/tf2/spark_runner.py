@@ -517,7 +517,10 @@ class SparkRunner:
             if output_cols is None:
                 return {"prediction": y}
             else:
-                return dict(zip(output_cols, y))
+                if len(output_cols) == 1:
+                    return {output_cols[0]: y}
+                else:
+                    return dict(zip(output_cols, y))
         for shard in dataset:
             yield predict_fn(shard)
         self._stop_log_monitor()
