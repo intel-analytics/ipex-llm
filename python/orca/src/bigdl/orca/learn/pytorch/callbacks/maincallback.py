@@ -17,7 +17,6 @@ from .base import Callback
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.learn.pytorch.utils import (NUM_SAMPLES, get_batchsize)
 
-import torch
 
 def make_only_mainCallback(callbacks: list):
     _num_MCB = 0
