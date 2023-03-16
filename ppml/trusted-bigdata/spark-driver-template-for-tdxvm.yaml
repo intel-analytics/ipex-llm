@@ -11,7 +11,7 @@ spec:
       # - name: ATTESTATION_URL
       #   value: your_attestation_url
       # - name: PCCS_URL
-      #   value:your_pccs_url
+      #   value: your_pccs_url
       # - name: APP_ID
       #   valueFrom:
       #     secretKeyRef:
@@ -39,7 +39,7 @@ spec:
   volumes:
     - name: tdx-device
       hostPath:
-        path: /dev/tdx-attest
+        path: /dev/tdx-guest
     - name: aesm-socket
       hostPath:
         path: /var/run/aesmd/aesm.socket
