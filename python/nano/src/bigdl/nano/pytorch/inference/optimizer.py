@@ -19,7 +19,7 @@ from torch import nn
 import time
 import sigfig
 import multiprocessing as mp
-from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
+from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
@@ -410,13 +410,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     val_dataset = RepeatDataset(sample=(val_sample, val_label), num=1)
                     validation_data = DataLoader(val_dataset, batch_size=1)
                     validation_data = remove_batch_dim_fn(validation_data)
-
+        # jit cannot handle `Mapping`, so we convert it to `dict`
+        if isinstance(input_sample, Mapping):
+            input_sample = dict(input_sample)
         st = time.perf_counter()
         try:
             with torch.no_grad():
                 if isinstance(input_sample, (list, tuple)):
                     model(*input_sample)
                 else:
+                    if not isinstance(input_sample, (dict, torch.Tensor)):
+                        warnings.warn("You may need to change `input_sample` to "
+                                      "a (list/tuple/dict of) Tensor to use jit.")
                     model(input_sample)
         except Exception:
             invalidInputError(False,
