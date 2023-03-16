@@ -578,7 +578,7 @@ class IPEXJITInference_gt_1_10:
         new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
-    @pytest.mark.skipif(compare_version("intel_extension_for_pytorch", operator.ge, "1.13"),
+    @pytest.mark.skipif(compare_version("intel_extension_for_pytorch", operator.lt, "1.13"),
                         reason="jit_int8 is only supported when ipex>=1.13")
     def test_jit_int8(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
