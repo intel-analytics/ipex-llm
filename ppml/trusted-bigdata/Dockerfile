@@ -170,6 +170,7 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
 ENV BIGDL_HOME                          /ppml/bigdl-${BIGDL_VERSION}
+ENV PYSPARK_PYTHON                      /usr/bin/python
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
