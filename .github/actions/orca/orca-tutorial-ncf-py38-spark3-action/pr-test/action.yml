@@ -1,12 +1,12 @@
-name: 'Run Orca Tutorial NCF Py37 Spark'
-description: 'Run Orca Tutorial NCF Py37 Spark'
+name: 'Run Orca Tutorial NCF Py38 Spark'
+description: 'Run Orca Tutorial NCF Py38 Spark'
 runs:
   using: "composite"
   steps:
     - name: Run Test
       shell: bash
       run: |
-        source activate py37
+        source activate py38
         export SPARK_LOCAL_HOSTNAME=localhost
 
         bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
