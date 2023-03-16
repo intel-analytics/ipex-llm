@@ -19,7 +19,7 @@ from torch import nn
 import time
 import sigfig
 import multiprocessing as mp
-from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping, MappingView
+from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
@@ -411,7 +411,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     validation_data = DataLoader(val_dataset, batch_size=1)
                     validation_data = remove_batch_dim_fn(validation_data)
         # jit cannot handle `Mapping`, so we convert it to `dict`
-        if isinstance(input_sample, (Mapping, MappingView)):
+        if isinstance(input_sample, Mapping):
             input_sample = dict(input_sample)
         st = time.perf_counter()
         try:
