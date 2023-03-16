@@ -1,5 +1,10 @@
 #!/bin/bash
 
+
+if [ -e /dev/tdx-guest ]; then
+  ln -s /dev/tdx-guest /dev/tdx-attest
+fi
+
 if [ -z $PCCS_VERSION ] ; then
     PCCS_VERSION=v4
 fi
