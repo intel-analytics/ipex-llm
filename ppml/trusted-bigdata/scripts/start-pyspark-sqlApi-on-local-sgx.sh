@@ -191,6 +191,7 @@ if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
 echo "pysaprk sql api example.13 --- pyspark api functions"
   for f_num in {a..g}
   do
+echo "pysaprk sql api example.13 --- pyspark api functions --- sql_functions_${f_num}_example"
 export sgx_command="/opt/jdk8/bin/java \
       -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
       -Xmx1g \
