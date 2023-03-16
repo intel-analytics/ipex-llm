@@ -399,6 +399,9 @@ class SparkTFEstimator():
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, noted the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
