@@ -578,8 +578,8 @@ class IPEXJITInference_gt_1_10:
         new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
-    @pytest.mark.skipif(compare_version("intel_extension_for_pytorch", operator.lt, "1.13"),
-                        reason="jit_int8 is only supported when ipex>=1.13")
+    @pytest.mark.skipif(compare_version("torch", operator.lt, "1.13"),
+                        reason="jit_int8 is only supported when torch>=1.13")
     def test_jit_int8(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
@@ -588,8 +588,9 @@ class IPEXJITInference_gt_1_10:
                                                      accelerator="jit",
                                                      precision="int8")
         input_sample = next(iter(loader))[0]
-        with torch.inference_mode():
+        with InferenceOptimizer.get_context(jit_int8_model):
             output1 = jit_int8_model(input_sample)
+        with InferenceOptimizer.get_context(model):
             output2 = model(input_sample)
         np.testing.assert_allclose(output1, output2, atol=2e-1)
 
