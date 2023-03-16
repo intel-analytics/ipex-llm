@@ -62,6 +62,7 @@ class BaseInferenceOptimizer:
         "jit_fp32_channels_last", "jit_bf16", "jit_bf16_channels_last",
         "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
         "jit_bf16_ipex_channels_last", "jit_int8", "jit_int8_channels_last",
+        "jit_int8_ipex", "jit_int8_ipex_channels_last",
         "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
         "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
@@ -131,7 +132,8 @@ class BaseInferenceOptimizer:
             if precision is not None:
                 if precision == 'bf16' and not option.bf16:
                     continue
-                if precision == 'int8' and not (option.inc or option.pot or option.fx):
+                if precision == 'int8' and not (option.inc or option.pot or
+                                                option.fx or option.ipex_quant):
                     continue
                 if precision == 'fp32' and option.get_precision() != 'fp32':
                     continue

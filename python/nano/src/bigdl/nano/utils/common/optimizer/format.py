@@ -31,7 +31,7 @@ def format_acceleration_option(method_name: str,
     repr_str = ""
     for key, value in option.__dict__.items():
         if value is True:
-            if key == "pot" or key == "fx":
+            if key == "pot" or key == "fx" or key == "ipex_quant":
                 repr_str = repr_str + "int8" + " + "
             else:
                 repr_str = repr_str + key + " + "
