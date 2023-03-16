@@ -436,7 +436,7 @@ class TorchRunner(BaseRunner):
             self.batch = *features, target
         else:
             invalidInputError(False,
-                              "Features should be tensor, list/tuple, "
+                              "Features should be tensor or list/tuple, "
                               "but got {}".format(type(features)))
         self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 

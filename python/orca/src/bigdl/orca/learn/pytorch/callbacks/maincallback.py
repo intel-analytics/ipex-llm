@@ -15,7 +15,7 @@
 #
 from .base import Callback
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES, get_batchsize)
+from bigdl.orca.learn.pytorch.utils import (NUM_SAMPLES, get_batchsize)
 
 import torch
 
