@@ -90,7 +90,7 @@ def read_images_pil(file_path: str,
 
     def load_image(iterator):
         for f in iterator:
-            img = open_image(f).convert("RGB")
+            img = open_image(f)
             if label_func:
                 img = img, label_func(f)
             yield img
