@@ -153,6 +153,12 @@ build_spark() {
 
     # copy spark and bigdl and others dependencies
     copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
+
+    # add lgbm
+    cp /ppml/LightGBM/lightgbm /opt/occlum_spark/image/bin/
+    mkdir -p /opt/occlum_spark/image/ppml/
+    mv /ppml/keys /opt/occlum_spark/image/ppml/keys
+    mv /ppml/password /opt/occlum_spark/image/ppml/password
     # Build
     occlum build
 
