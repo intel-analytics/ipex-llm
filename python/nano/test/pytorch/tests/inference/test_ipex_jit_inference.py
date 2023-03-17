@@ -30,6 +30,7 @@ from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.common import compare_version
 import tempfile
 from typing import List
+import numpy as np
 
 batch_size = 256
 num_workers = 0
@@ -126,14 +127,14 @@ class IPEXJITInference_gt_1_10:
             new_model = InferenceOptimizer.load(tmp_dir_name)
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
-    
+
     def test_ipex_channels_last_inference(self):
         model = DummyMultiInputModel()
         x1 = torch.rand(10, 256, 256) # 3-dim input test
         x2 = torch.rand(10, 3, 256, 256) # 4-dim input test
         x3 = x2.tolist() # input without .to() method
 
-        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None, 
+        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None,
                                                             channels_last=True, use_ipex=True)
         with InferenceOptimizer.get_context(ipex_channels_last_model):
             ipex_channels_last_model(x1, x2, x3)
@@ -146,7 +147,7 @@ class IPEXJITInference_gt_1_10:
         model = DummyModelWith3d()
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
-        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None, 
+        ipex_channels_last_model = InferenceOptimizer.trace(model, accelerator=None,
                                                             channels_last=True, use_ipex=True)
         with InferenceOptimizer.get_context(ipex_channels_last_model):
             ipex_channels_last_model(x1, x2)
@@ -161,7 +162,7 @@ class IPEXJITInference_gt_1_10:
         x1 = torch.rand(1, 1) # 3-dim input test
         x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
         x3 = [1, 2, 3, 4] # input without .to() method
-        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit",
                                                            use_ipex=False)
         with InferenceOptimizer.get_context(jit_channels_last_model):
             jit_channels_last_model(x1, x2, x3)
@@ -174,7 +175,7 @@ class IPEXJITInference_gt_1_10:
         model = DummyModelWith3d()
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
-        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+        jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit",
                                                            use_ipex=False, channels_last=True)
         with InferenceOptimizer.get_context(jit_channels_last_model):
             jit_channels_last_model(x1, x2)
@@ -189,7 +190,7 @@ class IPEXJITInference_gt_1_10:
         x1 = torch.rand(1, 1) # 3-dim input test
         x2 = torch.rand(1, 3, 8 ,8) # 4-dim input test
         x3 = [1, 2, 3, 4] # input without .to() method
-        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit",
                                                                 use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2, x3)
@@ -202,7 +203,7 @@ class IPEXJITInference_gt_1_10:
         model = DummyModelWith3d()
         x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
         x2 = 3
-        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit", 
+        ipex_jit_channels_last_model = InferenceOptimizer.trace(model, accelerator="jit",
                                                                 use_ipex=True, channels_last=True)
         with InferenceOptimizer.get_context(ipex_jit_channels_last_model):
             ipex_jit_channels_last_model(x1, x2)
@@ -345,7 +346,7 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.jit_strict is False
-    
+
     def test_ipex_quantization(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         # test dataloader contains x+y
@@ -382,7 +383,7 @@ class IPEXJITInference_gt_1_10:
                                             calib_data=dataloader)
         with InferenceOptimizer.get_context(model):
             model(x)
-        
+
         # test single sample
         from torchvision.models import resnet18
         model = resnet18()
@@ -394,7 +395,7 @@ class IPEXJITInference_gt_1_10:
                                             calib_data=x)
         with InferenceOptimizer.get_context(model):
             model(x)
-        
+
         # test multi input
         for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
             net = model_class()
@@ -433,8 +434,8 @@ class IPEXJITInference_gt_1_10:
 
         # test with jit.script (with ipex)
         accmodel = InferenceOptimizer.trace(model, accelerator='jit',
-                                            use_ipex=True, 
-                                            input_sample=input_sample, 
+                                            use_ipex=True,
+                                            input_sample=input_sample,
                                             jit_method='script')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
@@ -450,16 +451,16 @@ class IPEXJITInference_gt_1_10:
 
 
         # test with jit.trace (with ipex)
-        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit',
                                       use_ipex=True,
-                                      input_sample=input_sample, 
+                                      input_sample=input_sample,
                                       jit_method='trace')
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
         assert output.shape[0] != expected_output_len
 
         # test with deafult jit_method
-        accmodel = InferenceOptimizer.trace(model, accelerator='jit', 
+        accmodel = InferenceOptimizer.trace(model, accelerator='jit',
                                       input_sample=input_sample)
         with InferenceOptimizer.get_context(accmodel):
             output = accmodel(input)
@@ -467,7 +468,7 @@ class IPEXJITInference_gt_1_10:
 
         # test with invalidInputError
         with pytest.raises(RuntimeError):
-            InferenceOptimizer.trace(model, accelerator='jit', 
+            InferenceOptimizer.trace(model, accelerator='jit',
                                input_sample=input_sample,
                                jit_method='scriptttt')
 
@@ -496,7 +497,7 @@ class IPEXJITInference_gt_1_10:
         with InferenceOptimizer.get_context(new_model):
             new_model(self.data_sample)
             assert new_model.weights_prepack is False
-    
+
     def test_ipex_jit_inference_onednn(self):
         # test jit + ipex
         model = InferenceOptimizer.trace(self.model, accelerator="jit",
@@ -576,6 +577,22 @@ class IPEXJITInference_gt_1_10:
             new_model = InferenceOptimizer.load(tmp_dir_name)
         new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+    @pytest.mark.skipif(compare_version("torch", operator.lt, "1.13"),
+                        reason="jit_int8 is only supported when torch>=1.13")
+    def test_jit_int8(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        jit_int8_model = InferenceOptimizer.quantize(model,
+                                                     calib_dataloader=loader,
+                                                     accelerator="jit",
+                                                     precision="int8")
+        input_sample = next(iter(loader))[0]
+        with InferenceOptimizer.get_context(jit_int8_model):
+            output1 = jit_int8_model(input_sample)
+        with InferenceOptimizer.get_context(model):
+            output2 = model(input_sample)
+        np.testing.assert_allclose(output1, output2, atol=2e-1)
 
 
 class IPEXJITInference_lt_1_10:
