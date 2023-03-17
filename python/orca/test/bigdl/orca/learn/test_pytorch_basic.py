@@ -190,16 +190,27 @@ def train_data_loader(config, batch_size):
     train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=batch_size
+        batch_size=batch_size,
+        collate_fn=config.get("collate_fn", None)
     )
     return train_loader
+
+
+def batch_collate_fn(batch):
+    print(f"batch is like {batch}")
+    # out = tuple(zip(*batch))
+    # print(f"out1 is like {out}")
+    # out = list(zip(*out))
+    # print(f"out2 is like {tuple(out)}")
+    return batch
 
 
 def val_data_loader(config, batch_size):
     val_dataset = LinearDataset(size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=batch_size
+        batch_size=batch_size,
+        collate_fn=config.get("collate_fn", None)
     )
     return validation_loader
 
@@ -215,12 +226,13 @@ def get_optimizer(model, config):
 
 def get_estimator(workers_per_node=1, model_fn=get_model,
                   loss_fn=nn.BCELoss(), metrics=Accuracy(),
-                  sync_stats=False, log_level=logging.INFO, model_dir=None):
+                  sync_stats=False, log_level=logging.INFO, model_dir=None,
+                  config={"lr": 1e-2}):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=loss_fn,
                                      metrics=metrics,
-                                     config={"lr": 1e-2},
+                                     config=config,
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
@@ -240,6 +252,31 @@ class TestPyTorchEstimatorBasic(TestCase):
 
     def test_data_creator_convergence(self):
         estimator = get_estimator(workers_per_node=2)
+        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(start_val_stats)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                                    validation_data=val_data_loader)
+        print(train_stats)
+        # 1000 // 2 is the data size for each worker
+        # batch_count is the average batches of all workers.
+        # In this unit test, two workers have the same data size.
+        assert train_stats[0]["batch_count"] == math.ceil(1000 // 2 / (128 // 2))
+        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
+        print(end_val_stats)
+        assert 0 < end_val_stats["Accuracy"] < 1
+        assert estimator.get_model()
+
+        # sanity check that training worked
+        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
+        dacc = (end_val_stats["Accuracy"] -
+                start_val_stats["Accuracy"])
+        print(f"dLoss: {dloss}, dAcc: {dacc}")
+
+        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
+
+    def test_tuple_batch_convergence(self):
+        estimator = get_estimator(workers_per_node=2,
+                                  config={"lr": 1e-2, "collate_fn": batch_collate_fn})
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
