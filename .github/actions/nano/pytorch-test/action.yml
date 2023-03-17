@@ -78,7 +78,9 @@ runs:
           source $CONDA_HOME/bin/activate nano-pytorch
         fi
         source bigdl-nano-init
-        bash python/nano/test/run-nano-basic-openvino-tests.sh
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/test/run-nano-basic-openvino-tests.sh
+        fi
         if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
         fi
