@@ -273,4 +273,9 @@ ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
 
+#LGBM make
+RUN mkdir /ppml && cd /ppml && \
+    git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
+    cd LightGBM && mkdir build && cd build && cmake -DUSE_SSL_SOCKET=1 .. && make -j4
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
