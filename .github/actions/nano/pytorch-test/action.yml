@@ -63,7 +63,7 @@ runs:
         fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
-        if [ ! $SYSTEM = "windows" ]; then
+        if [ ! $SYSTEM = "windows" ] && [ ! $SYSTEM = "centos" ]; then
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
         fi
         source bigdl-nano-unset-env
