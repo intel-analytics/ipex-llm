@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "friesian-serving.ranking.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-ranking
+    {{- include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.ranking.labels }}
+    {{ toYaml .Values.ranking.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ranking.annotations }}
+  annotations:
+    {{ toYaml .Values.ranking.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.ranking.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-ranking
+  template:
+    metadata:
+      labels:
+        app: {{ template "friesian-serving.name" . }}-ranking
+        {{- include "friesian-serving.labels" . | nindent 8 }}
+        {{- if .Values.ranking.labels }}
+        {{ toYaml .Values.ranking.labels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.ranking.annotations }}
+      annotations:
+        {{ toYaml .Values.ranking.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "friesian-serving.ranking.fullname" . }}
+          image: "{{ .Values.ranking.image.repository }}:{{ .Values.ranking.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.ranking.image.pullPolicy }}
+          args: ["ranking", "-c", "mnt/config.yaml"]
+          env:
+            - name: OMP_NUM_THREADS
+              value: "1"
+          ports:
+            - name: service
+              containerPort: {{ .Values.ranking.config.servicePort }}
+              protocol: TCP
+            - name: monitor
+              containerPort: {{ .Values.ranking.config.monitorPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /opt/work/mnt
+            - name: resources
+              mountPath: /resources
+          # livenessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.ranking.config.servicePort }}
+          # readinessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.ranking.config.servicePort }}
+          {{- with .Values.ranking.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "friesian-serving.ranking.fullname" . }}
+        - name: resources
+          persistentVolumeClaim:
+            claimName: {{ .Values.resourcePVCName }}
+      {{- if .Values.ranking.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.ranking.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ranking.affinity }}
+      affinity:
+        {{- toYaml .Values.ranking.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.ranking.tolerations }}
+      tolerations:
+        {{- toYaml .Values.ranking.tolerations | nindent 8 }}
+      {{- end }}

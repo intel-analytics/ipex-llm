@@ -250,13 +250,23 @@ class ThresholdDetector(AnomalyDetector):
                                   self.th,
                                   self.dist_measure)[1]
 
-    def anomaly_indexes(self):
+    def anomaly_indexes(self, y=None, y_pred=None):
         """
         Gets the indexes of the anomalies.
+
+        :param y: new time series to detect anomaly. if y is None, returns anomalies
+            in the fit input, y_pred is ignored in this case
+        :param y_pred: forecasts corresponding to y
 
         :return: the indexes of the anomalies.
         """
         from bigdl.nano.utils.common import invalidInputError
-        if self.anomaly_indexes_ is None:
-            invalidInputError(False, "Please call fit first")
-        return self.anomaly_indexes_
+        if y is None:
+            if self.anomaly_indexes_ is None:
+                invalidInputError(False, "please call fit before calling score")
+            return self.anomaly_indexes_
+        else:
+            return detect_anomaly(y,
+                                  y_pred,
+                                  self.th,
+                                  self.dist_measure)[0]
