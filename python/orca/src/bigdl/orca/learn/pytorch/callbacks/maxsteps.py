@@ -24,7 +24,7 @@ class MaxstepsCallback(Callback):
         self.max_step = max_step
 
     def before_run(self, runner):
-        runner.num_epochs = math.ceil(self.max_steps / len(runner.train_loader))
+        runner.num_epochs = math.ceil(self.max_step / len(runner.train_loader))
 
     def after_train_iter(self, runner):
         if runner.global_step >= self.max_step:
