@@ -413,11 +413,13 @@ class TestTFEstimatorBasic(TestCase):
                                      feature_cols=["input_1", "input_2"],
                                      output_cols=["score_output", "class_output"])
         pred_res.collect()
+        assert "score_output" and "class_output" in pred_res.columns
 
         # output_cols is None
-        pred_res = estimator.predict(df,
-                                     feature_cols=["input_1", "input_2"])
-        pred_res.collect()
+        pred_df = estimator.predict(df,
+                                    feature_cols=["input_1", "input_2"])
+        pred_df.collect()
+        assert "prediction" in pred_df.columns
 
 
 if __name__ == "__main__":
