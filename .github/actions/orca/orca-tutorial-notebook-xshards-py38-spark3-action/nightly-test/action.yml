@@ -24,12 +24,6 @@ runs:
         
         pip list
 
-        # modify the test code to be compatible with tensorflow 2
-        sed 's/learn.tf.estimator/learn.tf2.estimator/1' python/orca/tutorial/xshards/notebooks/diabetes.ipynb -i
-        sed 's/epochs=150/epochs=150, steps_per_epoch=1/1' python/orca/tutorial/xshards/notebooks/diabetes.ipynb -i
-        sed 's/learn.tf.estimator/learn.tf2.estimator/1' python/orca/tutorial/xshards/notebooks/auto_mpg.ipynb -i
-        sed 's/epochs=EPOCHS/epochs=EPOCHS, steps_per_epoch=1/1' python/orca/tutorial/xshards/notebooks/auto_mpg.ipynb -i
-
         chmod a+x python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         source deactivate
