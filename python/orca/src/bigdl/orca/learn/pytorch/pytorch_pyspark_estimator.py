@@ -420,6 +420,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
+                output_cols: Optional[List[str]]=None,
                 profile: bool=False,
                 callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
                                                                      'SparkDataFrame']:
@@ -432,6 +433,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
@@ -475,7 +479,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data,
+                                                          pred_shards,
+                                                          output_cols=output_cols)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

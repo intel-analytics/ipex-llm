@@ -45,7 +45,7 @@ from bigdl.orca.learn.metrics import Metric
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import (AverageMeterCollection, NUM_SAMPLES,
-                                            get_batchsize, index_concatenate)
+                                            get_batchsize, index_concatenate, split_predict_cols)
 from bigdl.orca.learn.pytorch.core import BaseRunner
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -633,7 +633,7 @@ class TorchRunner(BaseRunner):
                 dataset = torch.utils.data.TensorDataset(*tensors)
                 data_loader = DataLoader(dataset, **params)
                 y = self._predict(iter(data_loader), callbacks=callbacks)
-            return {"prediction": y}
+            return split_predict_cols(y)
 
         self.call_hook(callbacks, "before_pred_epoch")
         with self.timers.record("predict"):
