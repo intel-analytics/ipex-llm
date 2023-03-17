@@ -25,6 +25,7 @@ targets:
           - /opt/libhadoop.so
           - /lib/x86_64-linux-gnu/libnss_dns.so.2
           - /lib/x86_64-linux-gnu/libnss_files.so.2
+          - /lib/x86_64-linux-gnu/libgomp.so.1
   # Prepare BigDL
   - target: /bin
     copy:
@@ -46,3 +47,4 @@ targets:
           - /etc/nsswitch.conf
           - /etc/passwd
           - /etc/group
+          - /etc/hosts
