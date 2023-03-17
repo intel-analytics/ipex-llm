@@ -23,11 +23,15 @@ Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepa
 
 ## Run machine learning example
 
+The following shows how to run ML applications with [Spark MLlib](#2-run-spark-mllib-application) or [LightGBM](#3-run-lightgbm-application) locally or on distributed kubernetes.
+
 ### 1. Configure K8S Environment
 
 Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment) to create and configure K8S RBAC and secrets.
 
-### 2. Start the client container
+### 2. Run Spark MLlib Application
+
+#### 2.1 Start a client container
 
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
@@ -65,7 +69,7 @@ If you want to directyly execute a local application, run `init.sh` to init the 
 bash init.sh
 ```
 
-### 3. Run Spark Machine Learning applications
+#### 2.2 Submit Spark Machine Learning job
 
 MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/scripts` and execute one of them like this:
 
@@ -110,3 +114,31 @@ export your_application_arguments=...
     ${your_application_arguments}
 ```
 
+### 3. Run LightGBM Application
+
+#### 3.1 LightGBM Training on Kubernetes
+
+The below illustrates how to run official example of [parallel learning](https://github.com/microsoft/LightGBM/tree/master/examples/parallel_learning#distributed-learning-example) as a reference, while user are allowed to run your custom applications (feature/data/voting parallel, or training/inference) by operating `lgbm/train.conf` (then rebuild the image) and `lgbm/kubernetes/upload-data.sh` (to specify your own data and data shards).
+
+Go to the work directory:
+
+```bash
+cd lgbm/kubernetes
+```
+
+Modify parameters in `install-lgbm-trainer.sh`:
+
+```bash
+export imageName=intelanalytics/bigdl-ppml-trusted-machine-learning-gramine-reference:2.3.0-SNAPSHOT # You custom image name if needed
+export totalTrainerCount=2 # count of trainers as well as kubernetes pods
+export trainerPort=12400 # base port number, while the real port can be adapted
+export nfsMountPath=a_host_path_mounted_by_nfs_to_upload_data_before_training # the path you used to create kubernetes nfsvolumeclaim
+```
+
+Then, start training by one command:
+
+```bash
+bash install-lgbm-trainer.sh
+```
+
+You will find multiple models trained and saved by different trainers at `nfsMountPath` finally.
