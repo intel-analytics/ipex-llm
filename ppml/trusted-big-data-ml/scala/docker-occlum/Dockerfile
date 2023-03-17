@@ -164,6 +164,10 @@ RUN cd /opt && \
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
+#get ssl scripts
+RUN cd /opt && \
+    git clone https://github.com/intel-analytics/BigDL.git
+
 FROM occlum/occlum:0.29.5-ubuntu20.04 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
@@ -276,6 +280,11 @@ ADD ./py-examples /opt/py-examples
 #LGBM make
 RUN mkdir /ppml && cd /ppml && \
     git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
-    cd LightGBM && mkdir build && cd build && cmake -DUSE_SSL_SOCKET=1 .. && make -j4
+    cd LightGBM && mkdir build && cd build && cmake -DUSE_SSL_SOCKET=1 .. && make -j4 \
+
+#get ssl scripts
+COPY --from=bigdl /opt/BigDL/ppml/scripts/generate-keys.sh /ppml/
+COPY --from=bigdl /opt/BigDL/ppml/scripts/generate-password.sh /ppml/
+
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
