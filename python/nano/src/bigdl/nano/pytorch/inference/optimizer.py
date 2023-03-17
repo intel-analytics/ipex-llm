@@ -19,13 +19,15 @@ from torch import nn
 import time
 import sigfig
 import multiprocessing as mp
-from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence
+from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from bigdl.nano.utils.common import AccelerationOption, available_acceleration_combination,\
-    latency_calculate_helper, format_optimize_result, BaseInferenceOptimizer
+    latency_calculate_helper, torch_loader_latency_calculate_helper,\
+    format_optimize_result, BaseInferenceOptimizer
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.amp import BF16Model
+from bigdl.nano.pytorch.low_precision.jit_int8_api import PytorchJITINT8Model
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.ipex.ipex_api import PytorchIPEXJITModel, PytorchIPEXJITBF16Model,\
     PytorchIPEXQuantizationModel
@@ -131,6 +133,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             "jit_bf16_ipex_channels_last": TorchAccelerationOption(jit=True, bf16=True,
                                                                    ipex=True,
                                                                    channels_last=True),
+            "jit_int8": TorchAccelerationOption(fx=True, jit=True),
+            "jit_int8_channels_last": TorchAccelerationOption(fx=True, jit=True,
+                                                              channels_last=True),
             "openvino_fp32": TorchAccelerationOption(openvino=True),
             "openvino_bf16": TorchAccelerationOption(openvino=True, bf16=True),
             "openvino_fp16": TorchAccelerationOption(openvino=True, fp16=True),
@@ -168,7 +173,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  latency_sample_num: int = 100,
                  includes: Optional[List[str]] = None,
                  excludes: Optional[List[str]] = None,
-                 output_filename: Optional[str] = None) -> None:
+                 output_filename: Optional[str] = None,
+                 no_cache: bool = False) -> None:
         '''
         This function will give all available inference acceleration methods a try
         and record the latency, accuracy and model instance inside the Optimizer for
@@ -176,9 +182,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         The available methods are "original", "fp32_channels_last", "fp32_ipex",
         "fp32_ipex_channels_last", "bf16", "bf16_channels_last", "bf16_ipex",
-        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32", "jit_bf16",
+        "bf16_ipex_channels_last", "static_int8", "static_int8_ipex", "jit_fp32",
+        "jit_fp32_channels_last", "jit_bf16", "jit_bf16_channels_last",
         "jit_fp32_ipex", "jit_fp32_ipex_channels_last", "jit_bf16_ipex",
-        "jit_bf16_ipex_channels_last", "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
+        "jit_bf16_ipex_channels_last", "jit_int8", "jit_int8_channels_last",
+        "openvino_fp32", "openvino_int8", "onnxruntime_fp32",
         "onnxruntime_int8_qlinear" and "onnxruntime_int8_integer".
 
         :param model: A torch.nn.Module to be optimized
@@ -195,13 +203,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | Each element in the DataLoader can be one of the following:
                 |    a. a single Tensor or dict of Tensors
                 |    b. a tuple:
-                |         b1: if the lenth is 1, the first element will be treated as input
+                |         b1: if the length is 1, the first element will be treated as input
                 |             to the model
-                |         b2: if the lenth is 2, the first element will be treated as input
+                |         b2: if the length is 2, the first element will be treated as input
                 |             to the model, with the sencond element treated as label.
                 |             if the input to the model is a tuple, it will be unpacked as
                 |             multiple inputs.
-                |         b3: if the lengh is larger than 2, the first n elements as input
+                |         b3: if the length is larger than 2, the first n elements as input
                 |             to the model, with n being the argument lenth to the model.forward
                 |             and the rest will be treated as label
                 |
@@ -213,9 +221,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 | 1. a torch.utils.data.dataloader.DataLoader object for accuracy evaluation.
                 |
                 | Each element in the DataLoader should be a tuple as least size of two:
-                |     a: if the lenth is 2, the first element will be treated as input
+                |     a: if the length is 2, the first element will be treated as input
                 |        to the model, with the sencond element treated as label
-                |     b: if the lengh is larger than 2, the first n elements as input
+                |     b: if the length is larger than 2, the first n elements as input
                 |        to the model, with n being the argument lenth to the model.forward
                 |        and the rest will be treated as label
                 |
@@ -223,7 +231,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
         :param input_sample: (optional) A set of inputs for trace, defaults to None.
                In most cases, you don't need specify this parameter, it will be obtained from
-               training_data. You have to specidy this parameter only if the forward function
+               training_data. You have to specify this parameter only if the forward function
                of your model contains some kwargs like `def forward(self, x1, x2, x3=1)`.
         :param metric: (optional) A callable object which is used for calculating accuracy.
                It supports two kinds of callable object:
@@ -236,7 +244,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                | 2. A callable object that takes model and validation_data (if
                | validation_data is not None) as input, and returns an accuracy value in
                | this calling method metric(model, data_loader) (or metric(model) if
-               | validation_data is None).
+               | validation_data is None). Note that there is no need to call `with
+               | InferenceOptimizer.get_context()` in this object.
 
         :param direction: (optional) A string that indicates the higher/lower
                better for the metric, "min" for the lower the better and "max" for the
@@ -247,14 +256,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                accelerated model. In other words, the process of model conversion and optional
                accuracy calculation won't be restricted by this parameter. Defaults to None,
                represents that all cores will be used.
-        :param accelerator: (optional) A string tuple that specifys the accelerators to search.
+        :param accelerator: (optional) A string tuple that specifies the accelerators to search.
                The optional accelerators are: None, 'openvino', 'onnxruntime', 'jit'.
                Defaults to None which represents there is no restriction on accelerators.
-               If not None, then will only travese corresponding methods whose accelerator falls
+               If not None, then will only traverse corresponding methods whose accelerator falls
                within the specified accelerator tuple.
-        :param precision: (optional) A string tuple that specifys the precision to search.
+        :param precision: (optional) A string tuple that specifies the precision to search.
                The optional precision are: 'int8', 'bf16', and 'fp32'. Defaults to None which
-               represents no precision limit. If not None, then will only travese corresponding
+               represents no precision limit. If not None, then will only traverse corresponding
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
@@ -302,6 +311,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                search. "original" will be ignored in the excludes.
         :param output_filename: (optional) a string filename is used to specify the file which the
                optimized table will be writed. The default is None which means don't write to file.
+        :param no_cache: if set True, calculate average latency by iterating all the samples from
+               the provided dataloader until reaching the latency_sample_num. Default set to be
+               False, meaning always loading one single sample from cache to test latency.
         '''
 
         # check if model is a nn.Module or inherited from a nn.Module
@@ -398,14 +410,19 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     val_dataset = RepeatDataset(sample=(val_sample, val_label), num=1)
                     validation_data = DataLoader(val_dataset, batch_size=1)
                     validation_data = remove_batch_dim_fn(validation_data)
-
+        # jit cannot handle `Mapping`, so we convert it to `dict`
+        if isinstance(input_sample, Mapping):
+            input_sample = dict(input_sample)
         st = time.perf_counter()
         try:
             with torch.no_grad():
-                if isinstance(input_sample, (Dict, torch.Tensor)):
-                    model(input_sample)
-                else:
+                if isinstance(input_sample, (list, tuple)):
                     model(*input_sample)
+                else:
+                    if not isinstance(input_sample, (dict, torch.Tensor)):
+                        warnings.warn("You may need to change `input_sample` to "
+                                      "a (list/tuple/dict of) Tensor to use jit.")
+                    model(input_sample)
         except Exception:
             invalidInputError(False,
                               f"training_data is incompatible with your model input.")
@@ -448,16 +465,26 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 result_map[method]["status"] = "successful"
 
                 def func_test(model, input_sample):
-                    if isinstance(input_sample, (Dict, torch.Tensor)):
-                        model(input_sample)
-                    else:
+                    if isinstance(input_sample, (list, tuple)):
                         model(*input_sample)
+                    else:
+                        model(input_sample)
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if no_cache:
+                            result_map[method]["latency"], status =\
+                                torch_loader_latency_calculate_helper(latency_sample_num,
+                                                                      baseline_time,
+                                                                      func_test,
+                                                                      acce_model,
+                                                                      input_sample,
+                                                                      training_data,
+                                                                      forward_args)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             # save model even early stop
@@ -575,9 +602,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 torch.nn.Module.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
-        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
-                                None means staying in pytorch.
-        :param use_ipex:        Whether we use ipex as accelerator for inferencing.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', 'jit', defaults
+                                to None. None means staying in pytorch.
+        :param use_ipex:        Whether we use ipex as accelerator for inference.
                                 If precision != bf16, it will be ignored. Default: ``False``.
         :param calib_data:      Calibration data is required for static quantization.
                                 It's also used as validation dataloader.
@@ -585,8 +612,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                                 | 1. a torch.utils.data.dataloader.DataLoader object for training.
                                 |
-                                | 2. a single torch.Tensor which used for training, this case is
-                                | used to accept single sample input x.
+                                | 2. a single torch.Tensor used for training, this case is used
+                                | to accept single sample input x.
                                 |
                                 | 3. a tuple of torch.Tensor which used for training, this case is
                                 | used to accept single sample input (x, y) or (x1, x2) et al.
@@ -660,7 +687,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                            passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
                            ``jit_method='script'``, it will be ignored. Default to True.
         :param jit_method: Whether to use ``jit.trace`` or ``jit.script`` to convert a model
-                           to TorchScript. Accepected values are ``'trace'``, ``'script'``,
+                           to TorchScript. Accepted values are ``'trace'``, ``'script'``,
                            and ``None``. Default to be ``None`` meaning the try-except logic
                            to use ``jit.trace`` or ``jit.script``. If ``accelerator != 'jit'``,
                            this parameter will be ignored.
@@ -698,16 +725,22 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               be ignored. For more details, please refer https://github.com/
                               pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
                               onednn#pytorch---onednn-graph-api-bridge.
-        :param q_config: describes how to quantize a layer or a part of the network
-                         by providing settings (observer classes) for activations and weights
-                         respectively. Note that QConfig needs to contain observer classes
-                         (like MinMaxObserver) or a callable that returns instances on
-                         invocation, not the concrete observer instances themselves.
-                         Quantization preparation function will instantiate observers multiple
-                         times for each of the layers. For more details, please refer
-                         https://pytorch.org/docs/1.13/generated/torch.quantization.qconfig.
-                         QConfig.html#torch.quantization.qconfig.QConfig .
-                         This parameter only works for native ipex quantization.
+        :param q_config: Qconfig (https://pytorch.org/docs/stable/generated/torch.quantization.
+                         qconfig.QConfig.html#qconfig) describes how to quantize a layer or a part
+                         of the network by providing settings (observer classes) for activations
+                         and weights respectively. Note that QConfig needs to contain observer
+                         classes (like MinMaxObserver) or a callable that returns instances on
+                         invocation, not the concrete observer instances themselves. Quantization
+                         preparation function will instantiate observers multiple times for each
+                         of the layers.
+                         This parameter only works for native ipex and jit quantization with int8
+                         precision. When accelerator='jit', we also support and recommend to pass
+                         a QConfigMapping instead of single Qconfig for customized quantization.
+                         QConfigMapping (https://pytorch.org/docs/stable/generated/torch.ao.
+                         quantization.qconfig_mapping.QConfigMapping.html#qconfigmapping) is a
+                         collection of quantization configurations, user can set the qconfig for
+                         each operator (torch op calls, functional calls, module calls) in the
+                         model through qconfig_mapping.
         :param output_tensors: boolean, default to True and output of the model will be Tensors,
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
@@ -731,7 +764,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                          Can be defined for desired input of the model, for example:
                          "--mean_values data[255,255,255],info[255,255,255]". The exact meaning
                          and order of channels depend on how the original model was trained.
-        :return:            A accelerated torch.nn.Module if quantization is sucessful.
+        :return:            A accelerated torch.nn.Module if quantization is successful.
         """
         invalidInputError(precision in ['int8', 'fp16', 'bf16'],
                           "Only support 'int8', 'bf16', 'fp16' now, "
@@ -743,6 +776,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator"
                               "is openvino.".format(device))
+        model.eval()  # change model to eval mode
         if precision == 'bf16':
             if accelerator is None or accelerator == "jit":
                 if use_ipex or accelerator == "jit":
@@ -928,6 +962,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 }
                 return model.pot(calib_dataloader, thread_num=thread_num,
                                  config=openvino_config, **kwargs)
+            elif accelerator == 'jit':
+                invalidInputError(jit_method in [None, 'trace', 'script'],
+                                  "jit_method {} is invalid.".format(jit_method))
+                return PytorchJITINT8Model(model,
+                                           calib_dataloader,
+                                           q_config=q_config,
+                                           input_sample=input_sample,
+                                           channels_last=channels_last,
+                                           thread_num=thread_num,
+                                           jit_strict=jit_strict,
+                                           jit_method=jit_method,
+                                           enable_onednn=enable_onednn)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -1076,6 +1122,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             invalidInputError(False,
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
+        model.eval()  # change model to eval mode
         if accelerator == 'openvino':  # openvino backend will not care about ipex usage
             final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"}
             if openvino_config is not None:

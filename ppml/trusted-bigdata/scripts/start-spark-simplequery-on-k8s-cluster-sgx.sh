@@ -6,10 +6,10 @@ bash bigdl-ppml-submit.sh \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode cluster \
     --sgx-enabled true \
-    --sgx-driver-jvm-memory 6g\
-    --sgx-executor-jvm-memory 6g\
+    --sgx-driver-jvm-memory 1g\
+    --sgx-executor-jvm-memory 3g\
     --num-executors 4 \
-    --driver-memory 3g \
+    --driver-memory 1g \
     --driver-cores 8 \
     --executor-memory 1g \
     --executor-cores 8\

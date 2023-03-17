@@ -13,22 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os
+import pickle
 from pathlib import Path
+from typing import Sequence, Any, Union, Dict
 from tempfile import TemporaryDirectory
+
+import numpy as np
+import tensorflow as tf
+
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.tf import try_fake_inference
+from bigdl.nano.utils.tf import convert_all, tensors_to_numpy
+from bigdl.nano.tf.model import KerasOptimizedModel
+
 from ..core.model import OpenVINOModel
-from bigdl.nano.tf.model import AcceleratedKerasModel
+from ..core.utils import save
 from .utils import export
 from .dataloader import KerasOpenVINODataLoader
 from .metric import KerasOpenVINOMetric
-import tensorflow as tf
-from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.tf import try_compute_output_shape
-from ..core.utils import save
-import pickle
-import os
 
 
-class KerasOpenVINOModel(AcceleratedKerasModel):
+class KerasOpenVINOModel(KerasOptimizedModel):
     def __init__(self, model, input_spec=None, precision='fp32',
                  thread_num=None, device='CPU', config=None,
                  logging=True, **kwargs):
@@ -51,12 +58,19 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                         default: True.
         :param **kwargs: will be passed to model optimizer function.
         """
+        super().__init__()
         ov_model_path = model
         with TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec,
-                                                              try_fake_inference=not model.built)
+                self._mode = "arg"
+                self._arg_names = []
+                if isinstance(input_spec, dict):
+                    self._arg_names = list(input_spec.keys())
+                    input_spec = [input_spec[name] for name in self._arg_names]
+                    self._mode = "kwarg"
+                    kwargs["input"] = ','.join(self._arg_names)
+                try_fake_inference(model, input_spec)
                 export(model, str(tmp_dir / 'tmp.xml'),
                        precision=precision,
                        logging=logging,
@@ -67,18 +81,23 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                                           precision=precision,
                                           thread_num=thread_num,
                                           config=config)
-            super().__init__(None)
 
-    def forward_step(self, *inputs):
-        return self.ov_model.forward_step(*inputs)
-
-    def on_forward_start(self, inputs):
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         self.ov_model._model_exists_or_err()
-        inputs = self.tensors_to_numpy(inputs)
+        # todo: We should perform dtype conversion based on the
+        # dtype of the arguments that the model expects
+        inputs = args if self._mode == "arg" else [kwargs[name] for name in self._arg_names]
+        inputs = convert_all(inputs, types="numpy", dtypes=np.float32)
         return inputs
 
-    def on_forward_end(self, outputs):
+    def forward(self, inputs: Sequence[Any]):   # type: ignore[overrite]
+        return self.ov_model.forward_step(*inputs)
+
+    def postprocess(self, outputs: Sequence[Any]):
         outputs = tuple(outputs.values())
+        # todo: we should perform dtype conversion based on the
+        # dtype of the outputs of the original keras model
+        outputs = convert_all(outputs, types="tf", dtypes=tf.float32)
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs
@@ -86,8 +105,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
     @property
     def status(self):
         status = super().status
-        status.update({"xml_path": 'ov_saved_model.xml',
-                       "attr_path": "ov_saved_model_attr.pkl",
+        status.update({"attr_path": "ov_saved_model_attr.pkl",
+                       "xml_path": 'ov_saved_model.xml',
                        "compile_path": "ov_saved_model_compile.pkl",
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
@@ -108,14 +127,17 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
             thread_num=None):
         if metric:
             metric = KerasOpenVINOMetric(metric=metric, higher_better=higher_better)
-        dataloader = KerasOpenVINODataLoader(x, y, collate_fn=self.tensors_to_numpy)
+        # todo: replace `KerasOpenVINODataLoader` and `tensors_to_numpy`
+        dataloader = KerasOpenVINODataLoader(x, y,
+                                             collate_fn=tensors_to_numpy)
         model = self.ov_model.pot(dataloader, metric=metric, drop_type=drop_type,
                                   maximal_drop=maximal_drop, max_iter_num=max_iter_num,
                                   n_requests=n_requests, sample_size=sample_size)
         q_model = KerasOpenVINOModel(model, precision='int8',
                                      config=config, thread_num=thread_num,
                                      device=self.ov_model._device)
-        q_model._output_shape = self._output_shape
+        q_model._mode = self._mode
+        q_model._arg_names = self._arg_names
         return q_model
 
     @staticmethod
@@ -139,6 +161,8 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
         config = status.get('config', {})
         if "CPU_THREADS_NUM" in config:
             thread_num = int(config["CPU_THREADS_NUM"])
+        elif "INFERENCE_NUM_THREADS" in config:
+            thread_num = int(config["INFERENCE_NUM_THREADS"])
         if device is None:
             device = status.get('device', 'CPU')
         model = KerasOpenVINOModel(xml_path,
@@ -155,21 +179,26 @@ class KerasOpenVINOModel(AcceleratedKerasModel):
                 model.compile(**kwargs)
         return model
 
-    def _save_model(self, path, compression="fp32"):
+    def _save(self, path, compression="fp32"):
         """
         Save KerasOpenVINOModel to local as xml and bin file
 
         :param path: Directory to save the model.
         """
         self.ov_model._model_exists_or_err()
+
         path = Path(path)
         path.mkdir(exist_ok=True)
+        self._dump_status(path)
+
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
-        # save normal attrs
-        attrs = {"_output_shape": self._output_shape}
-        with open(Path(path) / self.status['attr_path'], "wb") as f:
+
+        attrs = {"_mode": self._mode,
+                 "_arg_names": self._arg_names}
+        with open(path / self.status["attr_path"], "wb") as f:
             pickle.dump(attrs, f)
+
         # save compile attr
         if self._is_compiled:
             kwargs = {"run_eagerly": self._run_eagerly,

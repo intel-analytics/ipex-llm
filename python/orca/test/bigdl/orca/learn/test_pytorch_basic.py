@@ -37,7 +37,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
-from bigdl.orca.learn.pytorch.callbacks.base import Callback
+from bigdl.orca.learn.pytorch.callbacks import Callback, MainCallback
 
 import tempfile
 import shutil
@@ -86,6 +86,28 @@ class Net(nn.Module):
         a3 = self.out(h2)
         y = self.out_act(a3)
         return y
+
+
+class ComplicatedOutputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 3)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input_):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        return y[:, 0], {"y1": y[:, 1], "y2": y[:, 2]}
 
 
 class IdentityNet(nn.Module):
@@ -184,6 +206,19 @@ class CustomCallback(Callback):
         assert "train_loss" in logs
         assert "val_loss" in logs
         assert self.model
+
+
+class DictMCB(MainCallback):
+    def on_pred_forward(self, runner):
+        output = runner.model(*runner.batch)
+        runner.output = {k: v.detach().numpy() for k, v in output.items()}
+
+
+class ComplicatedMCB(MainCallback):
+    def on_pred_forward(self, runner):
+        output = runner.model(*runner.batch)
+        runner.output = (output[0].detach().numpy(),
+                        {k: v.detach().numpy() for k, v in output[1].items()})
 
 
 def train_data_loader(config, batch_size):
@@ -285,7 +320,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -309,7 +344,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -441,10 +476,10 @@ class TestPyTorchEstimatorBasic(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["f"],
                            label_cols=["label"])
-        # TODO: Support this in #7607
-        # result = estimator.predict(df, batch_size=4,
-        #                            feature_cols=["f"])
-        # result.collect()
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[DictMCB()],
+                                   feature_cols=["f"])
+        result.collect()
 
     def test_dict_multi_outputs_model(self):
 
@@ -474,10 +509,35 @@ class TestPyTorchEstimatorBasic(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["f"],
                            label_cols=["label"])
-        # TODO: Support this in #7607
-        # result = estimator.predict(df, batch_size=4,
-        #                            feature_cols=["f"])
-        # result.collect()
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[DictMCB()],
+                                   feature_cols=["f"])
+        result.collect()
+
+    def test_complicated_outputs_model_predict(self):
+
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(100))
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 50,
+                                  {"y": [float(np.random.randint(0, 2, size=()))]})
+                       )
+        schema = StructType([
+            StructField("f", ArrayType(FloatType()), True),
+            StructField("label", MapType(StringType(), ArrayType(FloatType())), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: ComplicatedOutputNet()
+                                  )
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[ComplicatedMCB()],
+                                   feature_cols=["f"])
+        result.collect()
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
@@ -533,7 +593,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -579,7 +639,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([

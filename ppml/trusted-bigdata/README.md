@@ -2,13 +2,13 @@
   - [Before Running Code](#before-running-code)
     - [1. Build Docker Images](#1-build-docker-images)
       - [1.1 Build Bigdata Base Image](#11-build-bigdata-base-image)
-      - [1.2 Build Customer Image](#12-build-customer-image)
+      - [1.2 Build Custom Image](#12-build-custom-image)
     - [2. Prepare SSL key](#2-prepare-ssl-key)
       - [2.1 Prepare the Key](#21-prepare-the-key)
       - [2.2 Prepare the Password](#22-prepare-the-password)
     - [3. Register MREnclave(optional)](#3-register-mrenclaveoptional)
       - [3.1 Deploy EHSM KMS\&AS](#31-deploy-ehsm-kmsas)
-      - [3.2 Enroll yourself on EHSM](#32-enroll-yourself-on-ehsm)
+      - [3.2 Enroll yourself in EHSM](#32-enroll-yourself-in-ehsm)
       - [3.3 Attest EHSM Server](#33-attest-ehsm-server)
         - [3.3.1 Start a BigDL client container](#331-start-a-bigdl-client-container)
         - [3.3.2 Verify  EHSM Quote](#332-verify--ehsm-quote)
@@ -44,8 +44,8 @@
           - [2.1.2 Use KMS to encrypt and decrypt data](#212-use-kms-to-encrypt-and-decrypt-data)
         - [2.2 Gramine file system encryption](#22-gramine-file-system-encryption)
         - [2.3 Bigdl PPML Codec](#23-bigdl-ppml-codec)
-    - [Spark Configuration Explainations](#spark-configuration-explainations)
-      - [1. BigDL PPML SGX related configurations](#1-bigdl-ppml-sgx-related-configurations)
+    - [Spark Configuration Explanations](#spark-configuration-explanations)
+      - [1. BigDL PPML SGX-related configurations](#1-bigdl-ppml-sgx-related-configurations)
       - [2. Spark security configurations](#2-spark-security-configurations)
         - [2.1 Spark RPC](#21-spark-rpc)
           - [2.1.1 Authentication](#211-authentication)
@@ -61,10 +61,10 @@
     - [5. Submit spark task](#5-submit-spark-task)
 - [Flink](#flink)
   - [SGX](#sgx-1)
-    - [1. Enter the client contianer](#1-enter-the-client-contianer)
-    - [2. Prepare flink security configuration](#2-prepare-flink-security-configuration)
+    - [1. Enter the client container](#1-enter-the-client-container)
+    - [2. Prepare Flink security configuration](#2-prepare-flink-security-configuration)
       - [2.1 prepare ssl keystore](#21-prepare-ssl-keystore)
-    - [3. Submit flink job on native k8s mode on SGX](#3-submit-flink-job-on-native-k8s-mode-on-sgx)
+    - [3. Submit Flink job on native k8s mode on SGX](#3-submit-flink-job-on-native-k8s-mode-on-sgx)
     - [4. Flink total process memory](#4-flink-total-process-memory)
     - [5. Flink security configurations](#5-flink-security-configurations)
       - [5.1 SSL Configuration](#51-ssl-configuration)
@@ -72,28 +72,30 @@
 
 # Gramine Bigdata Toolkit Overview
 
-This image is designed for the big data field in Privacy Preserving Machine Learning (PPML). Users can run end-to-end big data analytics application (Spark, Flink, Hive and Flink) with distributed cluster on Intel Software Guard Extensions (SGX) or Trust Domain Extensions (TDX).
+This image is designed for the big data field in Privacy Preserving Machine Learning (PPML). Users can run end-to-end big data analytics applications (Spark, Flink, Hive and Flink) with a distributed cluster on Intel Software Guard Extensions (SGX) or Trust Domain Extensions (TDX).
 
 ## Before Running Code
 ### 1. Build Docker Images
 
 **Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(16G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(8G EPC and log level is error)
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all:2.3.0-SNAPSHOT
 
-`16g` in image names indicate the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default images.
+`16g` in image names indicates the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that the log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default image.
 
-**attention:** If there is `SNAPSHOT` in a image tag, the image is developing continuosly, which means you need to update the image to use the latest feature.
+**Attention:** If there is `SNAPSHOT` in an image tag, the image is developing continuously, which means you need to update the image to use the latest feature.
 
 #### 1.1 Build Bigdata Base Image
 
 The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
 
-You can use out pulic bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly same with our one.
+You can use our public bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly the same as ours.
 
 Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -101,9 +103,9 @@ Before building your own base image, please modify the paths in `ppml/trusted-bi
 ./build-bigdata-base-image.sh
 ```
 
-#### 1.2 Build Customer Image
+#### 1.2 Build Custom Image
 
-First, You need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
+First, You need to generate your enclave key using the command below, and keep it safe for future remote attestations and to start SGX enclaves more securely.
 
 It will generate a file `enclave-key.pem` in `./custom-image`  directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
 
@@ -112,7 +114,7 @@ cd custom-image
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the bigdata base image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive encalve key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the bigdata base image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive enclave key inside the final image, which is safer.
 
 ```bash
 # under custom-image dir
@@ -120,7 +122,7 @@ Then, use the `enclave-key.pem` and the bigdata base image to build your own cus
 ./build-custom-image.sh
 ```
 
-The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values and used to  register your MREnclave in the following.
+The docker build console will also output `mr_enclave` and `mr_signer` like below, which are hash values used to register your MREnclave in the following.
 
 ````bash
 ......
@@ -132,7 +134,7 @@ mr_signer        : 6f0627955......
 
 #### 2.1 Prepare the Key
 
-  The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+  The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the security keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
   sudo bash BigDL/ppml/scripts/generate-keys.sh
@@ -150,11 +152,11 @@ mr_signer        : 6f0627955......
 
 #### 3.1 Deploy EHSM KMS&AS
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer actually run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
 
-Bigdl ppml use EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
+Bigdl ppml uses EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
 
-#### 3.2 Enroll yourself on EHSM
+#### 3.2 Enroll yourself in EHSM
 
 Enroll yourself as below, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
 
@@ -164,13 +166,13 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 {"code":200,"message":"successful","result":{"apikey":"E8QKpBB******","appid":"8d5dd3b*******"}}
 ```
 
- You will get a `appid` and `apikey` pair and save it.
+ You will get an `appid` and `apikey` pair and save it.
 
 #### 3.3 Attest EHSM Server
 
 ##### 3.3.1 Start a BigDL client container
 
-First, start a bigdl container, which uses the custom image build before.
+First, start a bigdl container, which uses the custom image built before.
 
 ```bash
 export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
@@ -211,7 +213,7 @@ In the container, you can use `verify-attestation-service.sh` to verify the atte
 
 **ATTESTATION_TYPE**: Type of attestation service. Currently support `EHSMAttestationService`.
 
-**CHALLENGE**: Challenge to get quote of attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
+**CHALLENGE**: Challenge to get a quote for attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
 
 ```bash
 bash verify-attestation-service.sh
@@ -219,7 +221,7 @@ bash verify-attestation-service.sh
 
 #### 3.4 Register your MREnclave to EHSM
 
-Upload the metadata of your MREnclave obtained above to EHSM, and then only registerd MREnclave can pass the runtime verification in the following. You can register the MREnclave through running a python script:
+Upload the metadata of your MREnclave obtained above to EHSM, and then only the registered MREnclave can pass the runtime verification in the following. You can register the MREnclave by running a python script:
 
 ```bash
 # At /ppml inside the container now
@@ -236,7 +238,7 @@ Follow the guide below to run Spark on Kubernetes manually. Alternatively, you c
 ## SGX
 ### Spark Submit
 #### 1 Prepare k8s service account and kubeconfig
-Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment].
+Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment].
 
 #### 2 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
@@ -264,11 +266,11 @@ sudo docker run -itd \
     -e RUNTIME_SPARK_MASTER=$K8S_MASTERK8S_MASTER \
     -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
     -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_DRIVER_MEMORY=10g \
+    -e RUNTIME_DRIVER_MEMORY=1g \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-run `docker exec -it spark-local-k8s-client bash` to entry the container.
+run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 #### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
 
@@ -342,7 +344,7 @@ export sgx_command="${JAVA_HOME}/bin/java \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000"
 ```
 
-Note that: you can run your own Spark Appliction after changing `--class` and jar path.
+Note that: you can run your own Spark application after changing `--class` and jar path.
 
 1. `local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
@@ -473,7 +475,7 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --log-file spark-pi-cluster-sgx.log
 local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-if you are want to enable sgx, don't forget to set the sgx-related arguments
+if you want to enable sgx, don't forget to set the sgx-related arguments
 ```
 --sgx-enabled true \
 --sgx-driver-memory 8g \
@@ -600,14 +602,14 @@ If you get the following results, then the thrift server is functioning normally
 To ensure data security, we need to encrypt and store data. For ease of use, we adopt transparent encryption. Here are a few ways to achieve transparent encryption:
 ##### 2.1 HDFS Transparent Encryption
 
-If you use hdfs as warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
+If you use hdfs as a warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
 ![thrift_server_hdfs_encryption](pictures/thrift_server_hdfs_encryption.png)
 ###### 2.1.1 Start hadoop KMS(Key Management Service)
-1.	Make sure you can correctly start and use hdfs
+1.  Make sure you can correctly start and use hdfs
 ```
 hadoop fs -ls /
 ```
-2.	Config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.)
+2.  Config a KMS client in $HADOOP_HOME/etc/hadoop/core-site.xml(If your hdfs is running in a distributed system, you need to update all nodes.)
 ```xml
 <property>
     <name>hadoop.security.key.provider.path</name>
@@ -618,19 +620,19 @@ hadoop fs -ls /
     </description>
 </property>
 ```
-3. Config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file.(Update all nodes as before)
+3. Config the KMS backing KeyProvider properties in the $HADOOP_HOME/etc/hadoop/kms-site.xml configuration file. (Update all nodes as before)
 ```xml
 <property>
     <name>hadoop.kms.key.provider.uri</name>
     <value>jceks://file@/${user.home}/kms.keystore</value>
 </property>
 ```
-4. Restart you hdfs server.
+4. Restart your hdfs server.
 ```bash
 bash $HADOOP_HOME/sbin/stop-dfs.sh
 bash $HADOOP_HOME/sbin/start-dfs.sh
 ```
-5. Start KMS server.
+5. Start the KMS server.
 ```bash
 hadoop --daemon start kms
 ```
@@ -645,16 +647,16 @@ hadoop key list
 ```bash
 hadoop key create your_key
 ```
-2.	Create a new empty directory(must) and make it an encryption zone
+2.  Create a new empty directory(must) and make it an encryption zone
 ```bash
 hdfs crypto -createZone -keyName your_key -path /empty_zone
 ```
-3.	Get encryption information from the file
+3.  Get encryption information from the file
 ```bash
 hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 ```
 4. Add permission control to users or groups in $HADOOP_HOME/etc/hadoop/kms-acls.xml.It will be hotbooted after every update.
-**hint:**This should be set on name node.
+**hint:**This should be set on the name node.
 ```xml
 <property>
     <name>key.acl.your_key.ALL</name>
@@ -662,15 +664,15 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 </property>
 ```
 use_a group_a should be replaced with your user or group
-5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone. Please check encrypted zone:
+5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone. Please check the encrypted zone:
 ```bash
 hdfs crypto -listZones
 ```
-6. Then set encryption zone as spark.sql.warehouse.dir.
+6. Then set the encryption zone as spark.sql.warehouse.dir.
 ```conf
 spark.sql.warehouse.dir         hdfs://host:ip/path #encryption zone
 ```
-7. Start thrift server as above.
+7. Start the thrift server as above.
 ##### 2.2 Gramine file system encryption
 Gramine also has the ability to encrypt and decrypt data. You can see more information [here][fsdGuide].
 In this case, hdfs is not supported. If it is a stand-alone environment, the data can be directly stored locally. If it is a distributed environment, then the data can be stored on a distributed file system such as nfs. Let's take nfs as an example. The architecture diagram is as follows:
@@ -724,19 +726,19 @@ SET hive.exec.compress.output=true;
 SET mapreduce.output.fileoutputformat.compress.codec=com.intel.analytics.bigdl.ppml.crypto.CryptoCodec;
 ```
 
-### Spark Configuration Explainations
+### Spark Configuration Explanations
 
-#### 1. BigDL PPML SGX related configurations
+#### 1. BigDL PPML SGX-related configurations
 
 <img title="" src="../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
 
-The following parameters enable spark executor running on SGX.
+The following parameters enable the spark executor running on SGX.
 `spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s without SGX.
-`spark.kubernetes.sgx.driver.mem`: Spark driver SGX epc memeory.
-`spark.kubernetes.sgx.driver.jvm.mem`: Spark driver JVM memory, Recommended setting is less than half of epc memory.
-`spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.
-`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is less than half of epc memory.
-`spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.
+`spark.kubernetes.sgx.driver.mem`: Spark driver SGX epc memory.
+`spark.kubernetes.sgx.driver.jvm.mem`: Spark driver JVM memory, the Recommended setting is less than half of epc memory.
+`spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memory.
+`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, the Recommended setting is less than half of epc memory.
+`spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error, all and debug.
 The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
@@ -818,14 +820,14 @@ Below is an explanation of these security configurations, Please refer to [Spark
 
 #### 3 env MALLOC_ARENA_MAX explanations
 
-env MALLOC_ARENA_MAX can reduce EPC usage but may cause some error especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+env MALLOC_ARENA_MAX can reduce EPC usage but may cause some errors especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
 
 You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
 
 ## TDXVM
 
 ### 1. Deploy PCCS
-You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed description can refer to TDX documents.
+You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. Detailed descriptions can refer to TDX documents.
 ### 2. Deploy BigDL Remote Attestation Service 
 [Here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-attestation-service) are the two ways (docker and kubernetes) to deploy BigDL Remote Attestation Service.
 ### 3. Start BigDL bigdata client 
@@ -923,17 +925,17 @@ ${SPARK_HOME}/bin/spark-submit \
     local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 # Flink
-The client starts a flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
+The client starts a Flink cluster in application mode on k8s. First, the k8 resource provider will deploy a deployment, and then start the pods of the `jobmanager` and `taskmanager` components according to the deployment constraints, and finally complete the job execution through the cooperative work of the jobmanager and taskmanager.  
 ![flink cluster in application mode](pictures/flink_cluster_in_application_mode.png)
 ## SGX
-### 1. Enter the client contianer
+### 1. Enter the client container
 First, use the docker command to enter the client container.
 ```bash
 docker exec -it spark-local-k8s-client bash
 ```
-### 2. Prepare flink security configuration
+### 2. Prepare Flink security configuration
 #### 2.1 prepare ssl keystore
-Create keystore for flink ssl connection.
+Create a keystore for Flink ssl connection.
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 
@@ -948,21 +950,21 @@ keytool -genkeypair \
   -storetype PKCS12
 ```
 
-Use the `flink_internal.keystore` file to create secret on k8s.
+Use the `flink_internal.keystore` file to create a secret on k8s.
 ```bash
-# create the secert of keystore using flink_internal.keystore file.
+# create the secret of the keystore using flink_internal.keystore file.
 kubectl create secret generic flink-ssl-key --from-file=YOUR_PATH/flink_internal.keystore
 
-# To be on the safe side, delete the flink_internal.keystore file your created.
+# To be on the safe side, delete the flink_internal.keystore file you're created.
 rm YOUR_PATH/flink_internal.keystore
 ```
 
 > you can find the usage of `flink-ssl-key` on our `/ppml/flink-k8s-template.yaml` file.
 
-### 3. Submit flink job on native k8s mode on SGX
-Use the `$FLINK_HOME/bin/flink run-application` command to start the flink cluster in application mode. In the application mode, the jar to be executed is bound to the flink cluster, and the flink cluster will automatically terminate and exit after the submitted job is completed.
+### 3. Submit Flink job on native k8s mode on SGX
+Use the `$FLINK_HOME/bin/flink run-application` command to start the Flink cluster in application mode. In the application mode, the jar to be executed is bound to the Flink cluster, and the Flink cluster will automatically terminate and exit after the submitted job is completed.
 
-This example is `WordCount`, you can replace it with your own jar to start the flink cluster to execute job in applicaiton mode.
+This example is `WordCount`, you can replace it with your own jar to start the Flink cluster to execute a job in application mode.
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
@@ -1002,22 +1004,22 @@ $FLINK_HOME/bin/flink run-application \
     -Dsecurity.ssl.internal.key-password=$secure_password \
     local:///ppml/flink/examples/streaming/WordCount.jar
 ```
-* The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the flink cluster. The optional values of the parameter are `true` and `false`.
+* The `kubernetes.sgx.enabled` parameter specifies whether to enable `SGX` when starting the Flink cluster. The optional values of the parameter are `true` and `false`.
 * The `jobmanager.memory.process.size` parameter specifies the total memory allocated to the `jobmanager`.  
 * The `taskmanager.memory.process.size` parameter specifies the total memory allocated to the `taskmanager`.   
 * **The `kubernetes.entry.path` parameter specifies the entry point file of the program. In our image, the entry file is `/opt/flink-entrypoint.sh`.**  
-* The `kubernetes.flink.conf.dir` parameter specifies the directory of the flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
+* The `kubernetes.flink.conf.dir` parameter specifies the directory of the Flink configuration file. In our image, the default path of the config file is `/ppml/flink/conf`.  
 * The `kubernetes.jobmanager.service-account` and `kubernetes.taskmanager.service-account` parameters specify the k8s service account created in Section 1.2.  
-* The `kubernetes.cluster-id` parameter is the name of the flink cluster to be started, which can be customized by the user.  
+* The `kubernetes.cluster-id` parameter is the name of the Flink cluster to be started, which can be customized by the user.  
 * The `kubernetes.pod-template-file.jobmanager` parameter specifies the template file of the jobmanager, which is used as the configuration when k8s starts the `jobmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
 * The `kubernetes.pod-template-file.taskmanager` parameter specifies the template file of the taskmanager, which is used as the configuration when k8s starts the `taskmanager`. In our image, this configuration file is `/ppml/flink-k8s-template.yaml`.  
 * The `kubernetes.container.image` parameter specifies the image used to start `jobmanager` and `taskmanager`.  
 
-> The remaining parameters are related to the `timeout` configuration of flink cluster. For more configuration of flink cluster, please refer to the flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
+> The remaining parameters are related to the `timeout` configuration of the Flink cluster. For more configuration of the Flink cluster, please refer to the Flink [configuration page](https://nightlies.apache.org/flink/flink-docs-master/docs/deployment/config/).  
 
-After start a flink cluster in application mode on SGX, you can use `kubectl` command to get `deployment` and `pod` created by flink cluster:
+After starting a Flink cluster in application mode on SGX, you can use `kubectl` command to get `deployment` and `pod` created by the Flink cluster:
 ```bash
-# the deployment name is the kubernetes.cluster-id
+# the deployment name is kubernetes.cluster-id
 kubectl get deployment | grep "wordcount-example-flink-cluster"
 
 kubectl get pods | grep "wordcount"
@@ -1026,9 +1028,9 @@ kubectl get pods | grep "wordcount"
 Jobmanager and taskmanager will start successively. And the log of the program is in taskmanager
 
 ### 4. Flink total process memory
-[!Flink memory configuration](pictures/jobmanager_memory_allocation.jpg) introduces various memory allocation methods such as `total flink memory`, `total process memory`, and memory allocation for each memory component.   
+[!Flink memory configuration](pictures/jobmanager_memory_allocation.jpg) introduces various memory allocation methods such as `total Flink memory`, `total process memory`, and memory allocation for each memory component.   
 
-The following uses **the total process memory** to introduce how flink allocates memory.
+The following uses **the total process memory** to introduce how Flink allocates memory.
 
 The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respectively. The following memory allocation pictures show how taskmanager and jobmanager allocate the specified memory.  
 
@@ -1038,7 +1040,7 @@ The memory parameters specify **`4G`** memory for `taskmanager/jobmanager` respe
 
 The **total process memory** in jobmanager corresponds to the memory (4G) given by `jobmanager.memory.process.size` parameter, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.
 
-In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, `jobmanager off-heap` allocates 128MB by default from total flink memory, and the rest of the total flink memory is allocated to `jobmanager heap`.  
+In the picture, memory is allocated from bottom to top. First, 10% of total process memory is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total Flink memory**, `jobmanager off-heap` allocates 128MB by default from total Flink memory, and the rest of the total Flink memory is allocated to `jobmanager heap`.  
 
 <img src="pictures/taskmanager_memory_allocation.jpg" alt="taskmanager memory" width="1000" height="640">  
 
@@ -1046,14 +1048,14 @@ In the picture, memory is allocated from bottom to top. First, 10% of total proc
 
 Similar to the allocation of jobmanager memory, **the total process memory** in taskmanager corresponds to the memory (4G) given by `taskmanager.memory.process.size parameter`, and the memory specified by this parameter is allocated to the specified memory component as shown in the figure.  
 
-In the picture, memory is allocated from bottom to top. First, 10% of **total process memory** is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total flink memory**, 40% of total flink memory is allocated to `managed memory`, 10% of total flink memory is allocated to `network memory`, `framework heap` memory defaults to 128MB, `framework off-heap` memory defaults to 128MB, `taskmanager off-heap` defaults to 0, the rest of total flink memroy is allocated to `taskmanager heap`.
+In the picture, memory is allocated from bottom to top. First, 10% of **total process memory** is allocated to `JVM Overhead`, and then 256MB is allocated to `JVM Metaspace` by default. After the `JVM Overhead` and `JVM Metaspace` are allocated, the remaining memory is **total Flink memory**, 40% of total Flink memory is allocated to `managed memory`, 10% of total Flink memory is allocated to `network memory`, `framework heap` memory defaults to 128MB, `framework off-heap` memory defaults to 128MB, `taskmanager off-heap` defaults to 0, the rest of total Flink memory is allocated to `taskmanager heap`.
 
-> The value and proportion of each memory component can be specified by parameters, for more information please refer to flink memory configuration.
+> The value and proportion of each memory component can be specified by parameters, for more information please refer to the Flink memory configuration.
 
 ### 5. Flink security configurations
 #### 5.1 SSL Configuration
 
-The following are the configurations related to SSL between internal components of flink, For more information please refer to [Flink Security](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#security)
+The following are the configurations related to SSL between internal components of Flink, For more information please refer to [Flink Security](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#security)
 
 * `security.ssl.internal.enabled`: enable SSL.
 * `security.ssl.internal.keystore`: The Java keystore file with SSL Key and Certificate, to be used Flink's internal endpoints (rpc, data transport, blob server)
@@ -1063,7 +1065,7 @@ The following are the configurations related to SSL between internal components 
 * `security.ssl.internal.key-password`: The secret to decrypt the key in the keystore for Flink's internal endpoints (rpc, data transport, blob server).
 
 #### 5.2 Local Storage
-* `io.tmp.dirs`: The directories where Flink puts local data, defaults to the system temp directory (java.io.tmpdir property). If a list of directories is configured, Flink will rotate files across the directories. For more information please refer to [Flink Configuration](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#io-tmp-dirs)
+* `io.tmp.dirs`: The directories where Flink puts local data, default to the system temp directory (java.io.tmpdir property). If a list of directories is configured, Flink will rotate files across the directories. For more information please refer to [Flink Configuration](https://nightlies.apache.org/flink/flink-docs-release-1.16/docs/deployment/config/#io-tmp-dirs)
 
 Set this path to encrypted fs dir to ensure temp file encryption on SGX mode.
 ```bash
@@ -1076,4 +1078,3 @@ Set this path to encrypted fs dir to ensure temp file encryption on SGX mode.
 [kmsGuide]:https://github.com/intel-analytics/BigDL/blob/main/ppml/services/kms-utils/docker/README.md
 
 [fsdGuide]:https://github.com/intel-analytics/BigDL/tree/main/ppml/base#how-to-use-the-encryptiondecryption-function-provided-by-gramine
-

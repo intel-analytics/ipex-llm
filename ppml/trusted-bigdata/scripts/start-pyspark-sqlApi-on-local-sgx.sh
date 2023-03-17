@@ -15,7 +15,7 @@ status_13_pyspark_sql_functions_module=1
 
 # entry /ppml dir
 cd /ppml
-export MALLOC_ARENA_MAX=8
+export MALLOC_ARENA_MAX=12
 
 if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "pysaprk sql api example.1 --- DataFrame"

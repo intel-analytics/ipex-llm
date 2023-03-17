@@ -563,7 +563,7 @@ class TestInferencePipeline(TestCase):
                                thread_num=4,
                                precision=('bf16', 'int8'))
         optim_dict = inference_opt.optimized_model_dict
-        assert len(optim_dict) == 15
+        assert len(optim_dict) == 17
         with pytest.raises(RuntimeError):
             acc_model, option = inference_opt.get_best_model(precision="fp32")
 
@@ -913,3 +913,26 @@ class TestInferencePipeline(TestCase):
             InferenceOptimizer.trace(self.model, accelerator="jit",
                                      use_ipex=True, input_sample=input_sample,
                                      precision="bf16")
+
+    def test_multi_samples_single_input(self):
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=self.model,
+                               training_data=self.train_loader,
+                               thread_num=1,
+                               latency_sample_num=200,
+                               no_cache=True)
+
+    def test_multi_samples_multi_input(self):
+        x1 = torch.randn(32, 10)
+        x2 = torch.randn(32, 10)
+        y = torch.randn(32, 1)
+        dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+        model = MultipleInputNet()
+
+        inference_opt = InferenceOptimizer()
+        inference_opt.optimize(model=model,
+                               training_data=dataloader,
+                               excludes=["openvino_int8"],
+                               thread_num=1,
+                               latency_sample_num=200,
+                               no_cache=True)

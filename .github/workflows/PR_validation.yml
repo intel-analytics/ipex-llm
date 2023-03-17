@@ -199,63 +199,6 @@ jobs:
       - name: Run test
         uses: ./.github/actions/ppml-scala-ut-action
 
-  Orca-ExampleTest-Ray-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-example == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts ]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-exampletest-ray-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Tutorial-Notebook-Xshards-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK8
-        uses: ./.github/actions/jdk-setup-action
-      - name: Set up maven
-        uses: ./.github/actions/maven-setup-action
-      - name: Setup env
-        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
-      - name: Run test
-        uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-py37-spark3-action/pr-test
-      - name: Remove Env
-        if: ${{ always() }}
-        uses: ./.github/actions/remove-env
-
-  Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK8
-        uses: ./.github/actions/jdk-setup-action
-      - name: Set up maven
-        uses: ./.github/actions/maven-setup-action
-      - name: Setup env
-        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
-      - name: Run test
-        uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-image-py37-spark3-action/pr-test
-      - name: Remove Env
-        if: ${{ always() }}
-        uses: ./.github/actions/remove-env
-
   Orca-Basic-Py37-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
@@ -325,7 +268,7 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-py37-spark3-tf1-action/pr-test
     - name: Remove Env
@@ -344,85 +287,9 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-ray-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-  
-  Orca-Pytest-Py38-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-py38-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env/remove-env-py38
-
-  Orca-Pytest-Ray-Py38-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py38-spark3
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-ray-py38-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env/remove-env-py38
-
-  Orca-Pytest-Horovod-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action 
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-horovod-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Pytest-Jep-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action
-    - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-jep-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
@@ -439,28 +306,9 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action 
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-rayonspark-tf2-py37
-    - name: Run Test
-      uses: ./.github/actions/orca/orca-pytest-automl-py37-spark3-action/pr-test
-    - name: Remove Env
-      if: ${{ always() }}
-      uses: ./.github/actions/remove-env
-
-  Orca-Tutorial-Xshards-Py37-Spark3:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
-    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK8
-      uses: ./.github/actions/jdk-setup-action
-    - name: Set up maven
-      uses: ./.github/actions/maven-setup-action 
-    - name: Setup env
       uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
-      uses: ./.github/actions/orca/orca-tutorial-xshards-py37-spark3-action/pr-test
+      uses: ./.github/actions/orca/orca-pytest-automl-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
@@ -492,9 +340,85 @@ jobs:
     - name: Set up maven
       uses: ./.github/actions/maven-setup-action
     - name: Setup env
-      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-spark3
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
     - name: Run Test
       uses: ./.github/actions/orca/orca-pytest-openvino-py37-spark3
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-Notebook-Xshards-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Setup env
+        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+      - name: Run test
+        uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-py37-spark3-action/pr-test
+      - name: Remove Env
+        if: ${{ always() }}
+        uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Setup env
+        uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+      - name: Run test
+        uses: ./.github/actions/orca/orca-tutorial-notebook-xshards-image-py37-spark3-action/pr-test
+      - name: Remove Env
+        if: ${{ always() }}
+        uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-NCF-Ray-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-ncf-ray-py37-spark3-action/pr-test
+    - name: Remove Env
+      if: ${{ always() }}
+      uses: ./.github/actions/remove-env
+
+  Orca-Tutorial-NCF-Py37-Spark3:
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-tutorial == 'true' }}
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK8
+      uses: ./.github/actions/jdk-setup-action
+    - name: Set up maven
+      uses: ./.github/actions/maven-setup-action 
+    - name: Setup env
+      uses: ./.github/actions/orca/setup-env/setup-orca-python-py37-basic
+    - name: Run Test
+      uses: ./.github/actions/orca/orca-tutorial-ncf-py37-spark3-action/pr-test
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env

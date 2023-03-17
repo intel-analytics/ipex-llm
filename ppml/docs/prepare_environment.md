@@ -4,9 +4,9 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * A fully configured Kubernetes cluster [(Production Cluster Setup)](https://kubernetes.io/docs/setup/production-environment/#production-cluster-setup)
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
 * [Prepare Key and Password](#prepare-key-and-password)
-* [Configure the Environment](#configure-the-environment)
-* [Key Management Service (KMS) Setup](#key-management-service-kms-setup)
-* [Attestation Service (AS) Setup](#attestation-service-as-setup)
+* [Configure K8S Environment](#configure-k8s-environment)
+* [Key Management Service (KMS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
+* [Attestation Service (AS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitoring](#optional-k8s-monitioring-setup)
 
@@ -33,18 +33,6 @@ cd BigDL/ppml/
   kubectl apply -f password/password.yaml
   ```
   Then two secrets **ssl_keys** and **ssl_password** should be listed in `kubectl get secret`
-
-
-
-  
-* **Prepare k8s secret**
-
-  The secret created `YOUR_PASSWORD` should be the same as the password you specified in step 1:
-
-   ```bash
-   kubectl create secret generic spark-secret --from-literal secret=YOUR_PASSWORD
-   ```
-   Then the secret **spark-secret** should be listed in `kubectl get secret`
    
 
 >**Caution**: 
@@ -53,7 +41,7 @@ cd BigDL/ppml/
 >
 >Besides, Kubernetes Secrets are, by default, stored unencrypted in the API server's underlying data store (etcd). Anyone with API access can retrieve or modify a Secret, and so can anyone with access to etcd. Additionally, anyone who is authorized to create a Pod in a namespace can use that access to read any Secret in that namespace; this includes indirect access such as the ability to create a Deployment. In order to safely use Secrets, take the steps in [safely use secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
 
-### Configure the Environment
+### Configure K8S Environment
 
 1. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
 
@@ -80,15 +68,16 @@ cd BigDL/ppml/
     kubectl config view --flatten --minify > /YOUR_DIR/config
     ```
 3. Create k8s secret
+    
+    Value of `YOUR_PASSWORD`, the secret created below, should be the same as the password you specified for SSL in above section **Prepare the ssl_key and ssl_password**:
     ```bash
-    kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+    kubectl create secret generic spark-secret --from-literal secret=YOUR_PASSWORD
     kubectl create secret generic kms-secret \
                           --from-literal=app_id=YOUR_KMS_APP_ID \
                           --from-literal=api_key=YOUR_KMS_API_KEY \
                           --from-literal=policy_id=YOUR_POLICY_ID
     kubectl create secret generic kubeconfig-secret --from-file=/YOUR_DIR/config
     ```
-    **The secret created (`YOUR_SECRET`) should be the same as the password you specified in step *Prepare k8s secret***
 
 ### Key Management Service (KMS) and Attestation Service (AS) Setup
 Key Management Service (KMS) helps you manage cryptographic keys for your services. In BigDL PPML end-to-end workflow, KMS is used to generate keys, encrypt the input data and decrypt the result of Big Data & AI applications. Attestation Service (AS) makes sure applications run in SGX are provided and signed by the customer, rather than a fake one provided by an attacker. You can choose to use the KMS and AS which PPML provides or similar services provided by your platform or cloud.

@@ -1,7 +1,7 @@
 FROM ubuntu:20.04 AS builder
 
 # DCAP version (github repo branch, tag or commit hash)
-ARG DCAP_VERSION=DCAP_1.14
+ARG DCAP_VERSION=DCAP_1.15
 ARG http_proxy
 ARG https_proxy
 
