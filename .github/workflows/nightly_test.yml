@@ -2,7 +2,7 @@ name: Nightly Test
 
 on:
 
-  pull_request:
+  #pull_request:
     #branchs: [ main ]
 
   schedule:
@@ -719,7 +719,7 @@ jobs:
         runner-hosted-on: 'Shanghai' 
 
   Orca-Tutorial-Notebook-Xshards-Py37-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -777,7 +777,7 @@ jobs:
         runner-hosted-on: 'Shanghai' 
 
   Orca-Tutorial-Notebook-Xshards-Py38-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -806,7 +806,7 @@ jobs:
         runner-hosted-on: 'Shanghai' 
   
   Orca-Tutorial-Notebook-Xshards-Image-Py38-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Image-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Tutorial-Notebook-Xshards-Image-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
