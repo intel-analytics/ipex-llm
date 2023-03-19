@@ -280,7 +280,7 @@ ADD ./py-examples /opt/py-examples
 #LGBM make
 RUN mkdir /ppml && cd /ppml && \
     git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
-    cd LightGBM && mkdir build && cd build && cmake -DUSE_SSL_SOCKET=1 .. && make -j4 \
+    cd LightGBM && mkdir build && cd build && cmake -DUSE_SSL_SOCKET=1 .. && make -j4
 
 #get ssl scripts
 COPY --from=bigdl /opt/BigDL/ppml/scripts/generate-keys.sh /ppml/
