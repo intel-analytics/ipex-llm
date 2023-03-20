@@ -1,6 +1,6 @@
 #!/bin/bash
 status_1_local_spark_pi=1
-status_2_local_spark_wordcount=1
+status_2_local_spark_wordcount=0
 export MALLOC_ARENA_MAX=12
 cd /ppml
 
