@@ -43,7 +43,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install google-perftools=2.7-1ubuntu2 && \
+    apt-get install -y google-perftools=2.7-1ubuntu2 && \
     # apply tcmalloc in bash.manifest.template in LD_PRELOAD
     if [[ $(awk '/^loader\.env\.LD_PRELOAD/ {print $3}' /ppml/bash.manifest.template) != '""' ]]; then \
         sed -i 's/^\(loader\.env\.LD_PRELOAD.*\)"/\1:"/' /ppml/bash.manifest.template; \
