@@ -141,4 +141,17 @@ Then, start training by one command:
 bash install-lgbm-trainer.sh
 ```
 
-You will find multiple models trained and saved by different trainers at `nfsMountPath` finally.
+Then, you will find multiple models trained and saved by different trainers at `nfsMountPath` like the following:
+```bash
+ls $nfsMountPath/lgbm/lgbm-trainer-0/model.text
+model.text
+ls $nfsMountPath/lgbm/lgbm-trainer-1/model.text
+model.text
+```
+The models are similar to each other because they have convergenced through Allreduce.
+
+Finally, stop the trainer pods in consider of security:
+```bash
+bash uninstall-lgbm-trainer.sh
+```
+
