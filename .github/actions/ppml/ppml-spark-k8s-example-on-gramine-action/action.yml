@@ -4,7 +4,7 @@ inputs:
   image:
     description: 'image'
     required: true
-    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference'
+    default: '10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g'
   image-tag:
     description: 'image tag'
     required: true
