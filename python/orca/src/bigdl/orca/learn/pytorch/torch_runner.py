@@ -387,7 +387,6 @@ class TorchRunner(BaseRunner):
             self._train_batch(batch, callbacks=callbacks)
 
             metric_meters.update(self.metrics_stats, n=self.metrics_stats.pop(NUM_SAMPLES, 1))
-            self.global_step += 1
 
             del self.batch_idx
             del self.metrics_stats
@@ -450,6 +449,9 @@ class TorchRunner(BaseRunner):
 
         loss_item = self.loss.item()
         self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
+        
+        self.global_step += 1
+        
         self.call_hook(callbacks=callbacks, fn_name="after_train_iter")
 
         # User should not see batch/loss from last iteration
