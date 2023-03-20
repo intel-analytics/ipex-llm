@@ -322,12 +322,12 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 
     for row in iter:
         if feature_lists is None:
-            feature_lists = init_result_lists(row[:feature_tail], feature_cols)
-        add_row(row[:feature_tail], feature_lists, counter)
+            feature_lists = init_result_lists(row[0], feature_cols)
+        add_row(row[0], feature_lists, counter)
         if label_cols is not None:
             if label_lists is None:
-                label_lists = init_result_lists(get_label_row(row, feature_tail), label_cols)
-            add_row(get_label_row(row, feature_tail), label_lists, counter)
+                label_lists = init_result_lists(row[1], label_cols)
+            add_row(row[1], label_lists, counter)
         counter += 1
 
         if shard_size and counter % shard_size == 0:
@@ -421,8 +421,7 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None,
                                                               schema,
                                                               feature_cols,
                                                               label_cols,
-                                                              accept_str_col,
-                                                              unpack_list=True))
+                                                              accept_str_col))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2dict(x,
                                                               feature_cols,
                                                               label_cols,
@@ -451,8 +450,7 @@ def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
                                                               schema,
                                                               feature_cols,
                                                               label_cols,
-                                                              accept_str_col,
-                                                              unpack_list=True))
+                                                              accept_str_col))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2feature_dict(x,
                                                                       feature_cols,
                                                                       label_cols,
@@ -479,8 +477,7 @@ def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accep
                                                               schema,
                                                               feature_cols,
                                                               label_cols,
-                                                              accept_str_col,
-                                                              unpack_list=True))
+                                                              accept_str_col))
     shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2pandas(x,
                                                                 feature_cols,
                                                                 label_cols,

@@ -254,7 +254,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols,
                 invalidInputError(isinstance(row[name], SparseVector),
                                   "unsupported field {}, data {}".format(schema[name], row[name]))
                 result.append(row[name].toArray())
-        if len(result) == 1 and is_label:
+        if len(result) == 1:
             return result[0]
         return result
 
