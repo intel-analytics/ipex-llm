@@ -42,6 +42,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
+    apt-get install google-perftools=2.7-1ubuntu2 && \
+    # apply tcmalloc in bash.manifest.template in LD_PRELOAD
+    if [[ $(awk '/^loader\.env\.LD_PRELOAD/ {print $3}' /ppml/bash.manifest.template) != '""' ]]; then \
+        sed -i 's/^\(loader\.env\.LD_PRELOAD.*\)"/\1:"/' /ppml/bash.manifest.template; \
+    fi && \
+    sed -i 's|^\(loader\.env\.LD_PRELOAD.*\)"|\1/ppml/lib/libgomp.so.1:/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4"|' /ppml/bash.manifest.template && \
+    sed -i '/^sgx\.trusted_files/ a "file:/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4",' /ppml/bash.manifest.template && \
+    sed -i '/^sgx\.trusted_files/ a "file:/usr/lib/x86_64-linux-gnu/libunwind.so.8",' /ppml/bash.manifest.template && \
+    sed -i '/^sgx\.trusted_files/ a "file:/ppml/lib/libgomp.so.1",' /ppml/bash.manifest.template && \
+    sed -i '/sys\.enable_extra_runtime_domain_names_conf/ a sys.brk.max_size = "4G"' /ppml/bash.manifest.template && \
 # kubernetes related
     pip3 install --no-cache kubernetes==23.3.0 && \
 # PyTorch
