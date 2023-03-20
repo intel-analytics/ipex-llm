@@ -127,9 +127,43 @@ systemctl restart docker
 docker version
 ```
 #### 4.5. install kubeadm
+(1) install kubelet, kubectl, and kubeadm. (docker has been deprecated after k8s 1.24.0)
 ```
 apt-get install kubelet=1.23.4-00 kubeadm=1.23.4-00 kubectl=1.23.4-00
 ```
+
+(2) If the install process is stopped with message like `Unable to locate kubelet`, add the kubernets repository and refresh apt source:
+```
+echo "deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+or
+echo "deb http://mirrors.ustc.edu.cn/kubernetes/apt kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+
+apt-get update
+```
+
+when updating the apt-get source, if you encounter GPG error, fix it as below:
+
+W: GPG error: <https://mirrors.aliyun.com/kubernetes/apt> kubernetes-xenial InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY FEEA9169307EA071 NO_PUBKEY 8B57C5C2836F4BEB
+ 
+E: The repository '<https://mirrors.aliyun.com/kubernetes/apt> kubernetes-xenial InRelease' is not signed.
+ 
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+```
+curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg |sudo apt-key add -
+```
+Please replace the variables with the right ones. The key can be found in the outputted GPG error messages.
+
+Run the install command again after fixing the errors. 
+```
+apt-get install kubelet=1.23.4-00 kubeadm=1.23.4-00 kubectl=1.23.4-00
+```
+
+The same steps need to be done on the other nodes.
+
+
+4. Configure Kubernets Master
+Turn to the master-node, use the kubeadm init command to start the cluster master:
+
 ```
 echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
 source /etc/profile
@@ -138,13 +172,41 @@ systemctl daemon-reload
 systemctl restart docker
 systemctl restart kubelet
 kubeadm reset
-
-kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --image-repository=registry.aliyuncs.com/google_containers
+ 
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --image-repository=registry.aliyuncs.com/google_containers
 ```
+
+
+After a while, you can get the successful initiation message like below:
+
+```
+Your Kubernetes control-plane has initialized successfully!
+To start using your cluster，you need to run the following as a regular user:
+ 
+  mkdir -p $HOME/ .kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/ .kube/config
+  sudo chown $(id -u):$(id -g)$HOME/ .kube/config
+ 
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork] .yaml" with one of the options listed at:
+  https: //kubernetes.io/docs/concepts/cluster-administration/addons/
+kubeadm join 172.168.2.173:6443 --token 4z9x4v.5gr2dhe5oecfuiuv \
+        --discovery-token-ca-cert-hash sha256:f59fb04d6e2e0d266ce43b5ea9374b754a2e40af4af23e4f53163af9fec2702d
+```
+
+Moreover, note that there will be a kubectl join command with token and hash in the output. Please record it and use that command to join other nodes to the cluster.
+
+Then make the master-node workable:
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml # if kubectl cannot get the internet file, please wget it first and then kubectl apply the local file
+If your kubectl are not accessible to the external network, you can first download the yaml file by wget the link, and then kubectl apply the downloaded file locally.
+
 ```
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml # if kubectl cannot get the internet file, please wget it first and then kubectl apply the local file
 ```
 
+Configure the Nodes
+Then run the kubeadm join command, you can find the command in the output of kubeadm init command above:
 ```
 echo '{"exec-opts": ["native.cgroupdriver=systemd"]}' | sudo tee /etc/docker/daemon.json
 systemctl daemon-reload
