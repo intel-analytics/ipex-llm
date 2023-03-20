@@ -58,6 +58,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
@@ -101,6 +102,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
@@ -144,6 +146,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all
@@ -187,6 +190,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-py38-env -y --all

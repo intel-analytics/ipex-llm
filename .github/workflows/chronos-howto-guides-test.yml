@@ -68,6 +68,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-howto-env -y --all
@@ -118,6 +119,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Remove Chronos Env
+        if: ${{ always() }}
         shell: bash
         run: |
           conda remove -n chronos-benchmakr-tool-env -y --all
