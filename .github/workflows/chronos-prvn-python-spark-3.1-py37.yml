@@ -73,6 +73,11 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+      - name: Remove Chronos Env
+        shell: bash
+        run: |
+          conda remove -n chronos-prvn-env -y --all
+
   chronos-PRVN-part2:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
@@ -119,6 +124,11 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Remove Chronos Env
+        shell: bash
+        run: |
+          conda remove -n chronos-prvn-env -y --all
 
   chronos-PRVN-part3:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
@@ -167,6 +177,11 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+      - name: Remove Chronos Env
+        shell: bash
+        run: |
+          conda remove -n chronos-prvn-env -y --all
+
   chronos-PRVN-part4:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
@@ -213,3 +228,8 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Remove Chronos Env
+        shell: bash
+        run: |
+          conda remove -n chronos-prvn-env -y --all
