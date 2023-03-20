@@ -156,7 +156,8 @@ build_spark() {
 
     # add lgbm
     cp /ppml/LightGBM/lightgbm /opt/occlum_spark/image/bin/
-    mkdir -p /opt/occlum_spark/image/ppml/
+    mkdir -p /opt/occlum_spark/image/ppml/keys/
+    mkdir -p /opt/occlum_spark/image/ppml/password/
     cp -rf /ppml/keys/* /opt/occlum_spark/image/ppml/keys/
     cp -rf /ppml/password/* /opt/occlum_spark/image/ppml/password/
     # Build
