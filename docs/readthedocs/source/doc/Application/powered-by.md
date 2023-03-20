@@ -6,6 +6,7 @@
   <br>• [Better Together: Alibaba Cloud Realtime Compute and Distributed AI Inference](https://www.intel.cn/content/dam/www/central-libraries/cn/zh/documents/better-together-alibaba-cloud-realtime-compute-and-distibuted-ai-inference.pdf) (in Chinese)
   <br>• [Better Together: Privacy-Preserving Machine Learning](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/alibaba-privacy-preserving-machine-learning.html)
 * __AsiaInfo__
+  <br>• [AsiaInfo Technology Leverages Hardware and Software Products and Technologies to Create New Intelligent Energy Saving Solutions for 5G Cloud Based Base Station Products](https://www.intel.cn/content/www/cn/zh/communications/asiainfo-create-intelligent-energy-saving-solution.html) (in Chinese)
   <br>• [Network AI Applications using BigDL and oneAPI toolkit on Intel Xeon](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/asiainfo-taps-intelligent-network-applications.html)
 * __Baosight__
   <br>• [LSTM-Based Time Series Anomaly Detection Using Analytics Zoo for Apache Spark and BigDL at Baosight](https://www.intel.com/content/www/us/en/developer/articles/technical/lstm-based-time-series-anomaly-detection-using-analytics-zoo-for-apache-spark-and-bigdl.html)
@@ -19,6 +20,7 @@
 <br>• [Project Bose: A smart way to enable sustainable 5G networks in Capgemini](https://www.capgemini.com/insights/expert-perspectives/project-bose-a-smart-way-to-enable-sustainable-5g-networks/)
 <br>• [Intelligent 5G L2 MAC Scheduler: Powered by Capgemini NetAnticipate 5G on Intel Architecture](https://networkbuilders.intel.com/solutionslibrary/intelligent-5g-l2-mac-scheduler-powered-by-capgemini-netanticipate-5g-on-intel-architecture)
 * __China Unicom__
+  <br>• [China Unicom Data Center Energy Saving and Emissions Reduction with Intel Intelligent Energy Management](https://www.intel.com/content/www/us/en/content-details/768821/china-unicom-data-center-energy-saving-and-emissions-reduction-with-intel-intelligent-energy-management.html)
   <br>• [Cloud Data Center Power Saving using BigDL Chronos in China Unicom](https://www.intel.cn/content/www/cn/zh/customer-spotlight/cases/china-unicom-bigdl-chronos-framework-5gc.html)
 * __CERN__
  <br>• [Deep Learning Pipelines for High Energy Physics using Apache Spark with Distributed Keras on Analytics Zoo](https://databricks.com/session_eu19/deep-learning-pipelines-for-high-energy-physics-using-apache-spark-with-distributed-keras-on-analytics-zoo)
@@ -29,6 +31,8 @@
  <br>• [Face Recognition Application and Practice Based on Intel Analytics Zoo: Part 2](https://mp.weixin.qq.com/s/VIyWRORTAVAAsC4v6Fi0xw) (in Chinese)
 * __Cray__ 
 <br>• [A deep learning approach for precipitation nowcasting with RNN using Analytics Zoo in Cray](https://conferences.oreilly.com/strata/strata-ny-2018/public/schedule/detail/69413)
+* __Dangdang__
+ <br>• [Large-scale Offline Book Recommendation with BigDL at Dangdang.com](https://www.intel.com/content/www/us/en/developer/articles/technical/dangdang-offline-recommendation-service-with-bigdl.html)
 * __Dell EMC__
 <br>• [AI-assisted Radiology Using Distributed Deep
 Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en-us/asset/white-papers/solutions/h17686_hornet_wp.pdf)
@@ -72,6 +76,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 * __Telefonica__
  <br>• [Running Analytics Zoo jobs on Telefónica Open Cloud’s MRS Service](https://medium.com/@fernando.delaiglesia/running-analytics-zoo-jobs-on-telef%C3%B3nica-open-clouds-mrs-service-2e64bc823c50)
 * __Tencent__
+<br>• [Tencent Trusted Computing Solution on SGX with Intel BigDL PPML](https://www.intel.com/content/www/us/en/developer/articles/technical/tencent-trusted-computing-solution-with-bigdl-ppml.html)
 <br>• [Analytics Zoo helps Tencent Cloud improve the performance of its intelligent titanium machine learning platform](https://www.intel.cn/content/www/cn/zh/service-providers/analytics-zoo-helps-tencent-cloud-improve-ti-ml-platform-performance.html)
 <br>• [Tencent Cloud Leverages Analytics Zoo to Improve Performance of TI-ONE ML Platform](https://software.intel.com/content/www/us/en/develop/articles/tencent-cloud-leverages-analytics-zoo-to-improve-performance-of-ti-one-ml-platform.html)
 <br>• [Enhance Tencent's TUSI Identity Practice with Intel Analytics Zoo](https://mp.weixin.qq.com/s?__biz=MzAwNzc5NzM5Mw==&mid=2651030944&idx=1&sn=d6e06c6e14a7355971953a501689b232&chksm=808f8a5eb7f80348fc8e88c4c9e415341bf43ef6bdf3fd4f3001da89e2c9ba7fa2ed5deeb09a&mpshare=1&scene=1&srcid=0412WxM3eWdsLLoO2TYJGWbS&pass_ticket=E6l%2FfOZNKjhr05lsU7inAVCi7mAy5LFEehvEJOS2ZGdHg6%2FH%2BeBQisHA9sfXDOoy#rd) (in Chinese)
@@ -82,5 +87,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>• [Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __World Bank__
 <br>• [Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo using BigDL](https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl)
-* __Yunda__
+*  __Yahoo!__
+<br>• [Optimized Large-Scale Item Search with Intel BigDL at Yahoo! JAPAN Shopping](https://www.intel.com/content/www/us/en/developer/articles/technical/offline-item-search-with-bigdl-at-yahoo-japan.html)
+*  __Yunda__
 <br>• [Intelligent transformation brings "quality change" to the express delivery industry](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/yunda-brings-quality-change-to-the-express-delivery-industry.html) (in Chinese)
