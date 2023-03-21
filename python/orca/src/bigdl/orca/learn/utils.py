@@ -318,7 +318,6 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
     feature_lists = None
     label_lists = None
     counter = 0
-    feature_tail = len(feature_cols) if feature_cols else None
 
     for row in iter:
         if feature_lists is None:
