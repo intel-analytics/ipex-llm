@@ -4,15 +4,6 @@ on:
   #pull_request:
   
   workflow_dispatch:
-    # inputs:
-    #   version:
-    #     description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
-    #     required: true
-    #     default: '2.1.0'
-    #     type: string
-
-# env:
-  # PYPI_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
   contents: read
