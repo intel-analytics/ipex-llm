@@ -50,21 +50,29 @@ runs:
       shell: bash
       run: |
         docker exec -i $CONTAINER_NAME bash -c "/ppml/init.sh"
-        echo "##### Test on /ppml/scripts/start-python-helloword-on-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-helloword-on-sgx.sh"
-        echo "##### Test on /ppml/scripts/start-python-numpy-on-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-numpy-on-sgx.sh"
-        echo "##### Test on /ppml/scripts/start-spark-pi-on-local-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-local-sgx.sh"
+
+        echo "##### Test on /ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
+        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
+
+        echo "##### Test on /ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
+
         echo "##### Test on /ppml/scripts/start-pyspark-pi-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-pi-on-local-sgx.sh"
+
         echo "##### Test on /ppml/scripts/start-pyspark-simpleexamples-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-simpleexamples-on-local-sgx.sh"
         /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
+
         echo "##### Test on /ppml/scripts/start-spark-sqlexamples-on-local-sgx.sh"
         docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-sqlexamples-on-local-sgx.sh"
-        /opt/hadoop-3.2.0/bin/hadoop fs -rm -r -f hdfs://$HDFS_ADDRESS/spark-warehous
-        echo "##### Test on /ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlexamples-on-local-sgx.sh"
-        echo "##### Test on /ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
-        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-pyspark-sqlApi-on-local-sgx.sh"
+
+        echo "##### Test on /ppml/scripts/start-python-helloword-on-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-helloword-on-sgx.sh"
+
+        echo "##### Test on /ppml/scripts/start-python-numpy-on-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-python-numpy-on-sgx.sh"
+
+        echo "##### Test on /ppml/scripts/start-spark-pi-on-local-sgx.sh"
+        docker exec -i $CONTAINER_NAME bash -c "/ppml/scripts/start-spark-pi-on-local-sgx.sh"

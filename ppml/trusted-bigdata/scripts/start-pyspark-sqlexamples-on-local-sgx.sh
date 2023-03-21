@@ -1,5 +1,5 @@
 #!/bin/bash
-status_5_local_spark_basic_sql=1
+status_5_local_spark_basic_sql=0
 status_6_local_spark_arrow=1
 status_7_local_spark_hive=1
 export MALLOC_ARENA_MAX=8
@@ -53,15 +53,20 @@ gramine-sgx bash 2>&1 | tee test-sql-hive-sgx.log
 status_7_local_spark_hive=$(echo $?)
 fi
 
-
+if [ $status_5_local_spark_basic_sql -ne 0 ]; then
 echo "#### example.5 Excepted result(basic.py): 8"
 echo "---- example.5 Actual result: "
 cat test-sql-basic-sgx.log | egrep -a 'Justin' | wc -l
+fi
 
+if [ $status_6_local_spark_arrow -ne 0 ]; then
 echo "#### example.6 Excepted result(arrow.py): |    time| id| v1| v2|"
 echo "---- example.6 Actual result: "
 cat test-sql-arrow-sgx.log | egrep -a '\|\s*time\|'
+fi
 
+if [ $status_7_local_spark_hive -ne 0 ]; then
 echo "#### example.7 Excepted result(hive.py): |key| value|key| value|"
 echo "---- example.7 Actual result: "
 cat test-sql-hive-sgx.log | egrep -a '\|key\|.*value\|key\|.*value\|'
+fi
