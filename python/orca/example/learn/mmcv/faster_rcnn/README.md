@@ -30,7 +30,7 @@ git clone https://github.com/open-mmlab/mmdetection
 
 The config file we use in this example is `mmdetection/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py`
 
-If you want to use the pre-trained checkpoints for further training, also download the checkpoint file
+If you want to use the pre-trained checkpoints for further training, also download the checkpoint file:
 
 ```
 cd mmdetection
@@ -45,10 +45,39 @@ wget https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50
 ```bash
 python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from $MMDET_PATH/checkpoints/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 ```
-- `--dataset`: your dataset path to kitti_tiny
-- `--config`: the config file path, here we use the config file from mmdet repo
-- `--load_from`: the pre-trained model path
-- `$MMDET_PATH`: your mmdetection repo local path.
+`--dataset`: your local dataset path to kitti_tiny
+
+`--config`: the local config file path, here we use the config file from mmdet repo
+
+`--load_from`: the local pre-trained model path
+
+`$MMDET_PATH`: your mmdetection repo local path.
+
+
+- yarn-client mode
+
+To train with yarn-client mode, you need to make sure the dataset is under the same path of every worker node. In order to do this, you can upload the dataset to HDFS and download dataset to every worker node before training.
+
+If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, the checkpoint file can be directly read from HDFS.
+
+Finally execute:
+
+```bash
+python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --cluster_mode yarn-client --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from hdfs://ip:port/your/hdfs/path/to/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
+```
+
+`--cluster_mode`: The cluster mode, such as local, yarn-client, yarn-cluster, here we use yarn-client
+
+`--dataset`: worker node local dataset path to kitti_tiny
+
+`--config`: config file local path on driver node, here we use the config file from mmdet repo
+
+`--load_from`: the pre-trained model path on HDFS
+
+`$MMDET_PATH`: your mmdetection repo local path on driver node.
+
+
+## Results
 
 The result looks like this.
 
@@ -160,18 +189,3 @@ The result looks like this.
 (MMCVRayEpochRunner pid=188889) 2023-03-13 10:48:45,976 - mmdet - INFO - Epoch [1][25/25]       lr: 2.500e-03, eta: -1 day, 23:59:54, time: 5.530, data_time: 0.092, loss_rpn_cls: 0.0237, loss_rpn_bbox: 0.0160, loss_cls: 0.3650, acc: 87.1133, loss_bbox: 0.3418, loss: 0.7465, AP50: 0.5480, mAP: 0.5476
 Stopping orca context
 ```
-
-- yarn-client mode
-
-To train with yarn-client mode, you need to make sure the dataset is under the same path of every worker node. In order to do this, you can upload the dataset to HDFS and download dataset to every worker node before training.
-
-If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, the checkpoint file can be directly read from HDFS.
-
-Finally execute:
-
-```bash
-python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --cluster_mode yarn-client --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from hdfs://ip:port/your/hdfs/path/to/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
-```
-
-- `--cluster_mode`: The cluster mode, such as local, yarn-client, yarn-cluster, here we use yarn-client
-- other args are the same with spark local mode
