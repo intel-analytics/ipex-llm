@@ -168,7 +168,10 @@ runs:
           bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh
         fi
         bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
-        bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
