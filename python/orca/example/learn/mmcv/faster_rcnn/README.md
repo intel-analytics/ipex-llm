@@ -2,7 +2,7 @@
 
 ## Prepare the dataset
 
-This training example use the kitti_tiny dataset, you can download it from [here](https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip) and unzip the dataset.
+This training example uses the kitti_tiny dataset, you can download it from [here](https://download.openmmlab.com/mmdetection/data/kitti_tiny.zip) and unzip the dataset.
 
 ## Prepare the environment
 
