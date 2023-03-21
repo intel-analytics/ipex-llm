@@ -50,6 +50,7 @@ replace '/usr/bin/qemu-system-x86_64' with the desired destination of qemu-syste
 ```
 
 #### 3.4. Configure network between TDX VMs
+Select the network mode according to your scenario.
 ##### NAT mode
 in tdx1.xml, replace
 ```
