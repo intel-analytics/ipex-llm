@@ -30,6 +30,7 @@ path = 'pima-indians-diabetes.csv'
 data_shard = bigdl.orca.data.pandas.read_csv(path, header=None)
 column = list(data_shard.get_schema()['columns'])
 
+
 def model_creator(config):
         model = Sequential()
         model.add(Dense(12, input_shape=(8,), activation='relu'))
