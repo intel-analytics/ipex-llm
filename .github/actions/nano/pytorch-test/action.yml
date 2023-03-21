@@ -79,6 +79,7 @@ runs:
           source $CONDA_HOME/bin/activate nano-pytorch
         fi
         source bigdl-nano-init
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
         if [ ! $SYSTEM = "centos" ]; then
           bash python/nano/test/run-nano-basic-openvino-tests.sh
         fi
@@ -186,7 +187,10 @@ runs:
           bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
         fi
         bash python/nano/tutorial/notebook/preprocessing/pytorch/run-nano-howto-guides-preprocessing-pytorch-tests.sh
-        bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
