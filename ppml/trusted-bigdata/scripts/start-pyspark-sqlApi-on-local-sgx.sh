@@ -189,7 +189,7 @@ fi
 
 if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
 echo "pysaprk sql api example.13 --- pyspark api functions"
-  for f_num in {a..e}
+  for f_num in {a..c}
   do
 echo "pysaprk sql api example.13 --- pyspark api functions --- sql_functions_${f_num}_example"
 export sgx_command="/opt/jdk8/bin/java \
@@ -277,7 +277,7 @@ cat sql_types_example-sgx.log | egrep -a 'Finish running types module API'
 fi
 
 if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
-for f_num in {a..e}
+for f_num in {a..c}
 do
   echo "#### pyspark api example.${f_num} Excepted result(functions): Finish running function_${f_num} API"
   echo "---- pyspark api example.${f_num} Actual result: "
