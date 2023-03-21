@@ -73,3 +73,8 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-prvn-env -y --all
