@@ -24,7 +24,10 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
   dataKeyCipherText: String = "",
   enableNativeAESCBC: Boolean = false) extends Compressor {
-  val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
+  val bigdlEncrypt = enableNativeAESCBC match {
+      case true => new BigDLAESCBCEncrypt
+      case false => new BigDLEncrypt
+  }
   var hasHeader = false
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   var isFinished = false
@@ -161,4 +164,5 @@ object BigDLEncryptCompressor {
       dataKeyPlainText, dataKeyCipherText, enableNativeAESCBC)
   }
 }
+
 

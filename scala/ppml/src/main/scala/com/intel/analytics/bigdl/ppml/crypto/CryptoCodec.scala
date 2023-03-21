@@ -116,7 +116,10 @@ object CryptoCodec {
       case _ =>
         throw new EncryptRuntimeException("Property of spark.bigdl.enableNativeAESCBC is wrong!")
     }
-    val bigdlEncrypt = new BigDLEncrypt(enableNativeAESCBC)
+    val bigdlEncrypt = enableNativeAESCBC match {
+      case true => new BigDLAESCBCEncrypt
+      case false => new BigDLEncrypt
+    }
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -126,7 +129,16 @@ object CryptoCodec {
         return -1
       }
 
-      if (!enableNativeAESCBC) {
+      if (enableNativeAESCBC) {
+        // data file is encrypted by native AES cihper
+        // no Mac integrity check defaultly
+        val (_, initializationVector) = bigdlEncrypt.getHeader(in)
+        val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
+        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
+        bigdlEncrypt.asInstanceOf[BigDLAESCBCEncrypt]
+          .setInitializationVector(initializationVector)
+        bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText)
+      } else {
         // data file is encrypted by PPML cipher
         if (!headerVerified) {
           val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
@@ -135,18 +147,8 @@ object CryptoCodec {
           bigdlEncrypt.verifyHeader(initializationVector)
           headerVerified = true
         }
-      } else {
-        // data file is encrypted by native AES cihper
-        // no Mac integrity check defaultly
-        val (_, initializationVector) = bigdlEncrypt.getHeader(in)
-        val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
-        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
-        bigdlEncrypt.initializationVector = initializationVector
-        bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText)
       }
-
       val decompressed = bigdlEncrypt.decryptPart(in, buffer)
-
       decompressed.copyToArray(b, 0)
       decompressed.length
     }
@@ -159,5 +161,5 @@ object CryptoCodec {
       new CryptoDecompressStream(in, bufferSize, cryptoMode, conf)
     }
   }
-
 }
+
