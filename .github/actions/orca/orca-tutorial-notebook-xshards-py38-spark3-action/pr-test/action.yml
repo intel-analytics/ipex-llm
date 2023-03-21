@@ -1,12 +1,12 @@
-name: 'Run Orca Notebook Xshards Py37 Spark3'
-description: 'Run Notebook Xshards Py37 Spark3'
+name: 'Run Orca Notebook Xshards Py38 Spark3'
+description: 'Run Notebook Xshards Py38 Spark3'
 runs:
   using: "composite"
   steps:
     - name: Run Test
       shell: bash
       run: |
-        source activate py37
+        source activate py38
         pip uninstall bigdl-orca
         pip uninstall bigdl-dllib
         export SPARK_LOCAL_HOSTNAME=localhost
@@ -30,8 +30,9 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
-        
+
         pip list
+
         chmod a+x python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         python/orca/dev/test/run-tutorial-xshards-notebooks.sh
         source deactivate
