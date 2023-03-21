@@ -7,12 +7,16 @@ SNAPSHOT_MLIST_PATH="/ppml/data/lgbm/$TRAINER_POD_NAME/mlist.snapshot"
 CONVERGENCED_MLIST_PATH="/ppml/mlist.convergenced"
 MODEL_SAVE_PATH="/ppml/data/lgbm/$TRAINER_POD_NAME/model.text"
 TRAIN_CONF_PAHT="/ppml/train.conf"
+TRAINER_INDEX="${TRAINER_POD_NAME: -1}"
+
+export TRAINER_PORT=$[TRAINER_PORT+TRAINER_INDEX]
+isfree=$(netstat -taln | grep $TRAINER_PORT)
 
 echo "data = /ppml/data/lgbm/$TRAINER_POD_NAME/binary.train" >> $TRAIN_CONF_PAHT
 echo "valid_data = /ppml/data/lgbm/$TRAINER_POD_NAME/binary.test" >> $TRAIN_CONF_PAHT
 echo "output_model = $MODEL_SAVE_PATH" >> $TRAIN_CONF_PAHT
 echo "num_machines = $TOTAL_TRAINER_COUNT" >> $TRAIN_CONF_PAHT
-echo "local_listen_port = $TRAINER_TRAINER_PORT" >> $TRAIN_CONF_PAHT
+echo "local_listen_port = $TRAINER_PORT" >> $TRAIN_CONF_PAHT
 echo "machine_list_file = $CONVERGENCED_MLIST_PATH" >> $TRAIN_CONF_PAHT
 
 if [ -f $MODEL_SAVE_PATH ]
@@ -85,3 +89,4 @@ else
 fi
 
 rm $CONVERGENCED_MLIST_PATH
+rm $SNAPSHOT_MLIST_PATH

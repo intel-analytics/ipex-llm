@@ -37,10 +37,7 @@ jobs:
       - name: Run Chronos NB (pytorch) python 3.7
         shell: bash
         run: |
-          if conda info --env | grep "chronos-nb-env-py37"; then
-            source deactivate
-            conda remove -n chronos-nb-env-py37 -y --all
-          fi
+          conda remove -n chronos-nb-env-py37 -y --all
           conda create -n chronos-nb-env-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env-py37
           pip install pytest==5.4.1
@@ -56,6 +53,12 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-nb-env-py37 -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -90,10 +93,7 @@ jobs:
       - name: Run Chronos NB (pytorch,inference) python 3.7
         shell: bash
         run: |
-          if conda info --env | grep "chronos-nb-env-py37"; then
-            source deactivate
-            conda remove -n chronos-nb-env-py37 -y --all
-          fi
+          conda remove -n chronos-nb-env-py37 -y --all
           conda create -n chronos-nb-env-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env-py37
           pip install pytest==5.4.1
@@ -109,6 +109,12 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-nb-env-py37 -y --all
+
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
         if: ${{ always() }}
@@ -142,10 +148,7 @@ jobs:
       - name: Run Chronos NB (pytorch,inference,automl) python 3.7
         shell: bash
         run: |
-          if conda info --env | grep "chronos-nb-env-py37"; then
-            source deactivate
-            conda remove -n chronos-nb-env-py37 -y --all
-          fi
+          conda remove -n chronos-nb-env-py37 -y --all
           conda create -n chronos-nb-env-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env-py37
           pip install pytest==5.4.1
@@ -161,6 +164,12 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-nb-env-py37 -y --all
+
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
         if: ${{ always() }}
@@ -194,10 +203,7 @@ jobs:
       - name: Run Chronos NB (pytorch,inference,automl,distributed) python 3.7
         shell: bash
         run: |
-          if conda info --env | grep "chronos-nb-env-py37"; then
-            source deactivate
-            conda remove -n chronos-nb-env-py37 -y --all
-          fi
+          conda remove -n chronos-nb-env-py37 -y --all
           conda create -n chronos-nb-env-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env-py37
           pip install pytest==5.4.1
@@ -205,6 +211,7 @@ jobs:
           apt-get install patchelf
           pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-nano bigdl-friesian bigdl-friesian-spark3
           pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[pytorch,inference,automl,distributed]
+          pip uninstall -y colorful
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           source bigdl-nano-init
@@ -215,6 +222,12 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-nb-env-py37 -y --all
+
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
         if: ${{ always() }}
@@ -248,10 +261,7 @@ jobs:
       - name: Run Chronos NB (tensorflow,inference,automl,distributed) python 3.7
         shell: bash
         run: |
-          if conda info --env | grep "chronos-nb-env-py37"; then
-            source deactivate
-            conda remove -n chronos-nb-env-py37 -y --all
-          fi
+          conda remove -n chronos-nb-env-py37 -y --all
           conda create -n chronos-nb-env-py37 -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-nb-env-py37
           pip install pytest==5.4.1
@@ -268,7 +278,13 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
+
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-nb-env-py37 -y --all
+
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
         if: ${{ always() }}

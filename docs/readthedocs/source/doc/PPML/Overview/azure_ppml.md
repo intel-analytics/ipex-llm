@@ -53,19 +53,19 @@ apt install sgx-aesm-service
 * Go to Azure Marketplace, search "BigDL PPML" and find `BigDL PPML: Secure Big Data AI on Intel SGX` product. Click "Create" button which will lead you to `Subscribe` page.
 On `Subscribe` page, input your subscription, your Azure container registry, your resource group and your location. Then click `Subscribe` to subscribe BigDL PPML to your container registry.
 
-* Go to your Azure container regsitry (i.e. myContainerRegistry), check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine`
+* Go to your Azure container regsitry (i.e. myContainerRegistry), check `Repostirories`, and find `intel_corporation/bigdl-ppml-trusted-bigdata-gramine`
 * Login to the created VM. Then login to your Azure container registry, pull BigDL PPML image as needed.
   * If you want to run with 16G SGX memory, you can pull the image as below:
     ```bash
-    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:2.3.0-SNAPSHOT-16g
     ```
   * If you want to run with 32G SGX memory, you can pull the image as below:
     ```bash
-    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-32g
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:2.3.0-SNAPSHOT-32g
     ```
   * If you want to run with 64G SGX memory, you can pull the image as below:
     ```bash
-    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-64g
+    docker pull myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:2.3.0-SNAPSHOT-64g
     ```
 * Start container of this image
   The example script to start the image is as below:
@@ -73,7 +73,7 @@ On `Subscribe` page, input your subscription, your Azure container registry, you
   #!/bin/bash
 
   export LOCAL_IP=YOUR_LOCAL_IP
-  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:2.2.0-SNAPSHOT-16g
+  export DOCKER_IMAGE=myContainerRegistry.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:2.3.0-SNAPSHOT-16g
 
   sudo docker run -itd \
       --privileged \
@@ -316,7 +316,7 @@ export RUNTIME_DRIVER_PORT=54321
 
 RUNTIME_SPARK_MASTER=
 AZ_CONTAINER_REGISTRY=myContainerRegistry
-BIGDL_VERSION=2.2.0-SNAPSHOT
+BIGDL_VERSION=2.3.0-SNAPSHOT
 SGX_MEM=16g
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
@@ -342,7 +342,7 @@ bash bigdl-ppml-submit.sh \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name spark-decrypt-sgx \
-    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:$BIGDL_VERSION-$SGX_MEM \
     --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --jars local://$SPARK_EXTRA_JAR_PATH \
@@ -366,7 +366,7 @@ export RUNTIME_DRIVER_PORT=54321
 
 RUNTIME_SPARK_MASTER=
 AZ_CONTAINER_REGISTRY=myContainerRegistry
-BIGDL_VERSION=2.2.0-SNAPSHOT
+BIGDL_VERSION=2.3.0-SNAPSHOT
 SGX_MEM=16g
 SPARK_VERSION=3.1.3
 
@@ -391,7 +391,7 @@ bash bigdl-ppml-submit.sh \
     --executor-cores 2 \
     --num-executors 1 \
     --name simple-query-sgx \
-    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:$BIGDL_VERSION-$SGX_MEM \
     --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
@@ -442,7 +442,7 @@ Generate primary key and data key, then save to file system.
 The example code for generating the primary key and data key is like below:
 
 ```bash
-BIGDL_VERSION=2.2.0-SNAPSHOT
+BIGDL_VERSION=2.3.0-SNAPSHOT
 SPARK_VERSION=3.1.3
 java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
@@ -459,7 +459,7 @@ Encrypt data with specified BigDL `AzureKeyManagementService`
 The example code of encrypting data is like below:
 
 ```bash
-BIGDL_VERSION=2.2.0-SNAPSHOT
+BIGDL_VERSION=2.3.0-SNAPSHOT
 SPARK_VERSION=3.1.3
 java -cp /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/jars/*:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/conf/:/ppml/trusted-big-data-ml/work/spark-$SPARK_VERSION/jars/* \
     -Xmx10g \
@@ -494,7 +494,7 @@ export secure_password=`az keyvault secret show --name "key-pass" --vault-name $
 
 RUNTIME_SPARK_MASTER=
 AZ_CONTAINER_REGISTRY=myContainerRegistry
-BIGDL_VERSION=2.2.0-SNAPSHOT
+BIGDL_VERSION=2.3.0-SNAPSHOT
 SGX_MEM=16g
 SPARK_VERSION=3.1.3
 
@@ -519,7 +519,7 @@ bash bigdl-ppml-submit.sh \
     --num-executors 2 \
     --conf spark.cores.max=8 \
     --name spark-tpch-sgx \
-    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-big-data-ml-python-gramine:$BIGDL_VERSION-$SGX_MEM \
+    --conf spark.kubernetes.container.image=$AZ_CONTAINER_REGISTRY.azurecr.io/intel_corporation/bigdl-ppml-trusted-bigdata-gramine:$BIGDL_VERSION-$SGX_MEM \
     --driver-template /ppml/trusted-big-data-ml/azure/spark-driver-template-az.yaml \
     --executor-template /ppml/trusted-big-data-ml/azure/spark-executor-template-az.yaml \
     --conf spark.sql.auto.repartition=true \

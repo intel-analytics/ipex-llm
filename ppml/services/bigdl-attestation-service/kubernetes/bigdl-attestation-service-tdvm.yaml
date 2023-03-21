@@ -34,12 +34,9 @@ spec:
         app: remote-attestation-service
     spec:
       volumes:
-        - name: dev-enclave
+        - name: dev-tdx-guest
           hostPath:
-            path: /dev/sgx/enclave
-        - name: dev-provision
-          hostPath:
-            path: /dev/sgx/provision
+            path: /dev/tdx-guest
         - name: dev-aesmd
           hostPath:
             path: /var/run/aesmd
@@ -52,7 +49,7 @@ spec:
       containers:
       - name: remote-attestation-service
         image: intelanalytics/bigdl-attestation-service:2.3.0-SNAPSHOT
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         command: ["/ppml/bigdl-as-entrypoint.sh"]
         env:
         - name: PCCS_URL
@@ -68,10 +65,8 @@ spec:
         - name: SGX_ENABLED
           value: "false"
         volumeMounts:
-        - mountPath: /dev/sgx/enclave
-          name: dev-enclave
-        - mountPath: /dev/sgx/provision
-          name: dev-provision
+        - mountPath: /dev/tdx-guest
+          name: dev-tdx-guest
         - mountPath: /var/run/aesmd
           name: dev-aesmd
         - mountPath: /opt/bigdl-as/data

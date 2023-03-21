@@ -536,8 +536,10 @@ class TestPyTorchEstimatorBasic(TestCase):
                                   )
         result = estimator.predict(df, batch_size=4,
                                    callbacks=[ComplicatedMCB()],
-                                   feature_cols=["f"])
+                                   feature_cols=["f"],
+                                   output_cols=['scalar', 'dict'])
         result.collect()
+        assert "scalar" and "dict" in result.columns
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()

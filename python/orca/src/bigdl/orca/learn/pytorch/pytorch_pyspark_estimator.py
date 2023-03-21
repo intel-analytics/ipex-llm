@@ -21,6 +21,7 @@ import os
 import shutil
 import tempfile
 import logging
+import math
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -38,6 +39,7 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.orca.learn.log_monitor import start_log_server, stop_log_server
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
 from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
+from bigdl.orca.learn.pytorch.callbacks.maxsteps import MaxstepsCallback
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import invalidInputError
@@ -296,10 +298,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
         make_only_mainCallback(callbacks)
         if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
+        if max_steps is not None:
+            callbacks.append(MaxstepsCallback(max_step=max_steps))
 
         params = dict(
             epochs=epochs,
-            max_steps=max_steps,
             batch_size=batch_size,
             profile=profile,
             callbacks=callbacks
@@ -420,6 +423,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
+                output_cols: Optional[List[str]]=None,
                 profile: bool=False,
                 callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
                                                                      'SparkDataFrame']:
@@ -432,6 +436,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return: A SparkXShards that contains the predictions with key "prediction" in each shard
         """
         invalidInputError(isinstance(batch_size, int) and batch_size > 0,
@@ -475,7 +482,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                               shard_size=batch_size)
 
             pred_shards = self._predict_spark_xshards(xshards, init_params, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data,
+                                                          pred_shards,
+                                                          output_cols=output_cols)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

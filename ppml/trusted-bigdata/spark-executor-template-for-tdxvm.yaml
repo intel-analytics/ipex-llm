@@ -42,5 +42,5 @@ spec:
         path: /var/run/aesmd/aesm.socket
     - name: tdx-device
       hostPath:
-        path: /dev/tdx-attest
+        path: /dev/tdx-guest
 
