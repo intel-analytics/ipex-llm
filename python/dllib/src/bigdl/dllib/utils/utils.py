@@ -259,7 +259,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
 
     features = convert_for_cols(row, feature_cols)
     if label_cols:
-        labels = convert_for_cols(row, label_cols, True)
+        labels = convert_for_cols(row, label_cols)
         return (features, labels)
     else:
         return (features,)
