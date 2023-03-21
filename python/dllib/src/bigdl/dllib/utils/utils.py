@@ -201,9 +201,8 @@ def _is_scalar_type(dtype, accept_str_col=False):
     return False
 
 
-def convert_row_to_numpy(row, schema, feature_cols, label_cols,
-                         accept_str_col=False, unpack_list=False):
-    def convert_for_cols(row, cols, is_label=False):
+def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=False):
+    def convert_for_cols(row, cols):
         import pyspark.sql.types as df_types
         result = []
         for name in cols:
@@ -259,19 +258,11 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols,
         return result
 
     features = convert_for_cols(row, feature_cols)
-    # For pytorch we format multi-input as `f1, f2, label` instead of `[f1, f2], label`
-    # to align with PyTorch DataLoader.
     if label_cols:
         labels = convert_for_cols(row, label_cols, True)
-        if unpack_list:
-            return (*features, labels)
-        else:
-            return (features, labels)
+        return (features, labels)
     else:
-        if unpack_list:
-            return (*features,)
-        else:
-            return (features,)
+        return (features,)
 
 
 def toMultiShape(shape):

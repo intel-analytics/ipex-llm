@@ -37,7 +37,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
-from bigdl.orca.learn.pytorch.callbacks.base import Callback
+from bigdl.orca.learn.pytorch.callbacks import Callback, MainCallback
 
 import tempfile
 import shutil
@@ -86,6 +86,28 @@ class Net(nn.Module):
         a3 = self.out(h2)
         y = self.out_act(a3)
         return y
+
+
+class ComplicatedOutputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(50, 50)
+        self.relu1 = nn.ReLU()
+        self.dout = nn.Dropout(0.2)
+        self.fc2 = nn.Linear(50, 100)
+        self.prelu = nn.PReLU(1)
+        self.out = nn.Linear(100, 3)
+        self.out_act = nn.Sigmoid()
+
+    def forward(self, input_):
+        a1 = self.fc1(input_)
+        h1 = self.relu1(a1)
+        dout = self.dout(h1)
+        a2 = self.fc2(dout)
+        h2 = self.prelu(a2)
+        a3 = self.out(h2)
+        y = self.out_act(a3)
+        return y[:, 0], {"y1": y[:, 1], "y2": y[:, 2]}
 
 
 class IdentityNet(nn.Module):
@@ -186,31 +208,33 @@ class CustomCallback(Callback):
         assert self.model
 
 
+class DictMCB(MainCallback):
+    def on_pred_forward(self, runner):
+        output = runner.model(*runner.batch)
+        runner.output = {k: v.detach().numpy() for k, v in output.items()}
+
+
+class ComplicatedMCB(MainCallback):
+    def on_pred_forward(self, runner):
+        output = runner.model(*runner.batch)
+        runner.output = (output[0].detach().numpy(),
+                        {k: v.detach().numpy() for k, v in output[1].items()})
+
+
 def train_data_loader(config, batch_size):
     train_dataset = LinearDataset(size=config.get("data_size", 1000))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=batch_size,
-        collate_fn=config.get("collate_fn", None)
+        batch_size=batch_size
     )
     return train_loader
-
-
-def batch_collate_fn(batch):
-    print(f"batch is like {batch}")
-    # out = tuple(zip(*batch))
-    # print(f"out1 is like {out}")
-    # out = list(zip(*out))
-    # print(f"out2 is like {tuple(out)}")
-    return batch
 
 
 def val_data_loader(config, batch_size):
     val_dataset = LinearDataset(size=config.get("val_size", 400))
     validation_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=batch_size,
-        collate_fn=config.get("collate_fn", None)
+        batch_size=batch_size
     )
     return validation_loader
 
@@ -226,13 +250,12 @@ def get_optimizer(model, config):
 
 def get_estimator(workers_per_node=1, model_fn=get_model,
                   loss_fn=nn.BCELoss(), metrics=Accuracy(),
-                  sync_stats=False, log_level=logging.INFO, model_dir=None,
-                  config={"lr": 1e-2}):
+                  sync_stats=False, log_level=logging.INFO, model_dir=None):
     estimator = Estimator.from_torch(model=model_fn,
                                      optimizer=get_optimizer,
                                      loss=loss_fn,
                                      metrics=metrics,
-                                     config=config,
+                                     config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
                                      backend="spark",
                                      sync_stats=sync_stats,
@@ -252,31 +275,6 @@ class TestPyTorchEstimatorBasic(TestCase):
 
     def test_data_creator_convergence(self):
         estimator = get_estimator(workers_per_node=2)
-        start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(start_val_stats)
-        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
-                                    validation_data=val_data_loader)
-        print(train_stats)
-        # 1000 // 2 is the data size for each worker
-        # batch_count is the average batches of all workers.
-        # In this unit test, two workers have the same data size.
-        assert train_stats[0]["batch_count"] == math.ceil(1000 // 2 / (128 // 2))
-        end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
-        print(end_val_stats)
-        assert 0 < end_val_stats["Accuracy"] < 1
-        assert estimator.get_model()
-
-        # sanity check that training worked
-        dloss = end_val_stats["val_loss"] - start_val_stats["val_loss"]
-        dacc = (end_val_stats["Accuracy"] -
-                start_val_stats["Accuracy"])
-        print(f"dLoss: {dloss}, dAcc: {dacc}")
-
-        assert dloss < 0 < dacc, "training sanity check failed. loss increased!"
-
-    def test_tuple_batch_convergence(self):
-        estimator = get_estimator(workers_per_node=2,
-                                  config={"lr": 1e-2, "collate_fn": batch_collate_fn})
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
         train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
@@ -322,7 +320,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -346,7 +344,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         sc = init_nncontext()
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(200, numSlices=1)
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -478,10 +476,10 @@ class TestPyTorchEstimatorBasic(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["f"],
                            label_cols=["label"])
-        # TODO: Support this in #7607
-        # result = estimator.predict(df, batch_size=4,
-        #                            feature_cols=["f"])
-        # result.collect()
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[DictMCB()],
+                                   feature_cols=["f"])
+        result.collect()
 
     def test_dict_multi_outputs_model(self):
 
@@ -511,10 +509,37 @@ class TestPyTorchEstimatorBasic(TestCase):
         estimator.evaluate(df, batch_size=4,
                            feature_cols=["f"],
                            label_cols=["label"])
-        # TODO: Support this in #7607
-        # result = estimator.predict(df, batch_size=4,
-        #                            feature_cols=["f"])
-        # result.collect()
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[DictMCB()],
+                                   feature_cols=["f"])
+        result.collect()
+
+    def test_complicated_outputs_model_predict(self):
+
+        sc = init_nncontext()
+        rdd = sc.parallelize(range(100))
+
+        from pyspark.sql import SparkSession
+        spark = SparkSession.builder.getOrCreate()
+        data = rdd.map(lambda x: ([float(x)] * 50,
+                                  {"y": [float(np.random.randint(0, 2, size=()))]})
+                       )
+        schema = StructType([
+            StructField("f", ArrayType(FloatType()), True),
+            StructField("label", MapType(StringType(), ArrayType(FloatType())), True)
+        ])
+
+        df = spark.createDataFrame(data=data, schema=schema)
+
+        estimator = get_estimator(workers_per_node=2,
+                                  model_fn=lambda config: ComplicatedOutputNet()
+                                  )
+        result = estimator.predict(df, batch_size=4,
+                                   callbacks=[ComplicatedMCB()],
+                                   feature_cols=["f"],
+                                   output_cols=['scalar', 'dict'])
+        result.collect()
+        assert "scalar" and "dict" in result.columns
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
@@ -570,7 +595,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
@@ -616,7 +641,7 @@ class TestPyTorchEstimatorBasic(TestCase):
         spark = SparkSession.builder.getOrCreate()
         rdd = sc.range(0, 100)
         epochs = 2
-        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+        data = rdd.map(lambda x: (np.random.randn(50).astype(np.float32).tolist(),
                                   [float(np.random.randint(0, 2, size=()))])
                        )
         schema = StructType([
