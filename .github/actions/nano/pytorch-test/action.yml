@@ -63,7 +63,8 @@ runs:
         fi
         source bigdl-nano-init
         # We disable this because it is hard to install inc on windows
-        if [ ! $SYSTEM = "windows" ]; then
+        # And it may fail to download cifar10 dataset on CentOS runner
+        if [ ! $SYSTEM = "windows" ] && [ ! $SYSTEM = "centos" ]; then
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
         fi
         source bigdl-nano-unset-env
@@ -78,7 +79,10 @@ runs:
           source $CONDA_HOME/bin/activate nano-pytorch
         fi
         source bigdl-nano-init
-        bash python/nano/test/run-nano-basic-openvino-tests.sh
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/test/run-nano-basic-openvino-tests.sh
+        fi
         if [ ! $SYSTEM = "windows" ]; then
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
         fi
@@ -164,7 +168,10 @@ runs:
           bash python/nano/tutorial/training/pytorch-lightning/run_nano_pytorch_lightning_test.sh
         fi
         bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
-        bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -183,7 +190,10 @@ runs:
           bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
         fi
         bash python/nano/tutorial/notebook/preprocessing/pytorch/run-nano-howto-guides-preprocessing-pytorch-tests.sh
-        bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
+        # disable UT that requires resnet18-xnor-binary-onnx-0001 model on CentOS
+        if [ ! $SYSTEM = "centos" ]; then
+          bash python/nano/tutorial/notebook/inference/openvino/run-nano-howto-guides-inference-openvino-tests.sh
+        fi
         source bigdl-nano-unset-env
       env:
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
