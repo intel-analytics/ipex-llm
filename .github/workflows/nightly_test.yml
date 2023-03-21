@@ -22,9 +22,6 @@ on:
         - Orca-Basic-Py38-Spark3
         - Orca-Basic-PyTorch-Py38-Spark3
         - Orca-Basic-Tf2-Py38-Spark3
-        - Orca-Basic-Py39-Spark3
-        - Orca-Basic-PyTorch-Py39-Spark3
-        - Orca-Basic-Tf2-Py39-Spark3
         - Orca-Pytest-Ray-Py37-Spark3
         - Orca-Pytest-Ray-Py38-Spark3
         - Orca-Pytest-Py37-Spark3-Tf1
