@@ -11,7 +11,7 @@ status_9_pyspark_sql_api_DataframeWriter=0
 status_10_pyspark_sql_api_HiveContext=0
 status_11_pyspark_sql_api_Catalog=0
 status_12_pyspark_sql_types_module=1
-status_13_pyspark_sql_functions_module=1
+status_13_pyspark_sql_functions_module=0
 
 # entry /ppml dir
 cd /ppml
