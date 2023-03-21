@@ -33,6 +33,23 @@ def simple_model(config):
                                         tf.keras.layers.Dense(1)])
     return model
 
+def multi_output_model(config):
+    image_input_1 = tf.keras.Input(shape=(32, 32, 3), name="input_1")
+    image_input_2 = tf.keras.Input(shape=(32, 32, 3), name="input_2")
+
+    x1 = tf.keras.layers.Conv2D(3, 3)(image_input_1)
+    x1 = tf.keras.layers.GlobalMaxPooling2D()(x1)
+    x2 = tf.keras.layers.Conv2D(3, 3)(image_input_2)
+    x2 = tf.keras.layers.GlobalMaxPooling2D()(x2)
+    x = tf.keras.layers.concatenate([x1, x2])
+
+    score_output = tf.keras.layers.Dense(5, name="score_output")(x)
+    class_output = tf.keras.layers.Dense(5, name="class_output")(x)
+
+    model = tf.keras.Model(
+        inputs=[image_input_1, image_input_2], outputs=[score_output, class_output]
+    )
+    return model
 
 def compile_args(config):
     import tensorflow as tf
@@ -75,7 +92,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -118,7 +135,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -164,11 +181,11 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -206,11 +223,11 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -244,7 +261,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -304,7 +321,7 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
                                 int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
@@ -336,6 +353,15 @@ class TestTFEstimatorBasic(TestCase):
                               )
             assert len(os.listdir(os.path.join(temp_dir, "ckpt_3"))) > 0
 
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=2,
+                backend="spark")
+
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
                                                    save_weights_only=False,
@@ -343,16 +369,68 @@ class TestTFEstimatorBasic(TestCase):
                                                    )
             ]
 
-            res = trainer.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
-                              callbacks=callbacks,
-                              feature_cols=["feature"],
-                              label_cols=["label"],
-                              validation_data=df,
-                              validation_steps=1
-                              )
+            res = est.fit(df, epochs=3, batch_size=4, steps_per_epoch=25,
+                          callbacks=callbacks,
+                          feature_cols=["feature"],
+                          label_cols=["label"],
+                          validation_data=df,
+                          validation_steps=1
+                          )
             assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
+
+            est.shutdown()
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_multi_output_predict(self):
+        from pyspark.sql.types import FloatType, ArrayType
+        from pyspark.sql.functions import udf
+
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        df = rdd.map(lambda x:[x,
+                               np.random.rand(3072).tolist(),
+                               np.random.rand(3072).tolist()]).toDF(["index",
+                                                                     "input_1",
+                                                                     "input_2"])
+
+        def reshape(x):
+            return np.array(x).reshape([32, 32, 3]).tolist()
+
+        reshape_udf = udf(reshape, ArrayType(ArrayType(ArrayType(FloatType()))))
+
+        df = df.withColumn("input_1", reshape_udf(df.input_1))
+        df = df.withColumn("input_2", reshape_udf(df.input_2))
+
+        def model_creator(config):
+            model = multi_output_model(config)
+            model.compile(
+                optimizer=tf.keras.optimizers.RMSprop(config["lr"]),
+                loss=[tf.keras.losses.MeanSquaredError(),
+                      tf.keras.losses.CategoricalCrossentropy()],
+            )
+            return model
+
+        estimator = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config={"lr": 0.2},
+            workers_per_node=2,
+            backend="spark")
+
+        pred_res = estimator.predict(df,
+                                     feature_cols=["input_1", "input_2"],
+                                     output_cols=["score_output", "class_output"])
+        pred_res.collect()
+        assert "score_output" and "class_output" in pred_res.columns
+
+        # output_cols is None
+        pred_df = estimator.predict(df,
+                                    feature_cols=["input_1", "input_2"])
+        pred_df.collect()
+        assert "prediction" in pred_df.columns
 
 
 if __name__ == "__main__":

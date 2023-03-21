@@ -1,0 +1,41 @@
+name: 'Run Orca Python ExampleTest Ray Py38 Spark3'
+description: 'Run Orca Python ExampleTest Ray Py38 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py38
+        export SPARK_LOCAL_HOSTNAME=localhost
+        bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
+        
+        # install dllib
+        pip install -i https://pypi.org/simple python/dllib/src/dist/bigdl_dllib*-py3-none-manylinux1_x86_64.whl
+
+        # install orca
+        pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca*-py3-none-manylinux1_x86_64.whl
+
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r python/requirements/orca/requirements_ray.txt
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} xgboost_ray==0.1.8
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} gym[atari]==0.17.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tqdm==4.46.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} dm_tree==0.1.8
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mxnet==1.6.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} matplotlib==3.5.3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow==4.0.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} albumentations
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+
+        chmod a+x python/orca/dev/example/run-example-test-ray.sh
+        python/orca/dev/example/run-example-test-ray.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

@@ -44,6 +44,12 @@ python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/simulator \
        -k "not test_tcn_keras_forecaster_quantization"
 
+exit_status_0=$?
+if [ $exit_status_0 -ne 0 ];
+then
+    exit $exit_status_0
+fi
+
 # When test [tensorflow,inference] option, need to trigger this ut
 if [[ ${OPTIONS} =~ "tf2" ]] && ! [[ ${OPTIONS} =~ "not inference" ]]; then
     python -m pytest -s test/bigdl/chronos/forecaster/tf/\

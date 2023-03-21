@@ -325,7 +325,7 @@ class TestTFDataset(ZooTestCase):
         dataset = tf.data.Dataset.from_tensor_slices((np.random.randn(102, 28, 28, 1),
                                                       np.random.randint(0, 10, size=(102,)),
                                                       np.ones(shape=(102, 28, 28, 1),
-                                                              dtype=np.bool)))
+                                                              dtype=bool)))
         dataset = TFDataset.from_tf_data_dataset(dataset, batch_size=16)
 
         feature, labels, mask = dataset.tensors
@@ -401,7 +401,7 @@ class TestTFDataset(ZooTestCase):
     def test_tfdataset_with_dataframe(self):
 
         rdd = self.sc.range(0, 1000)
-        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float)),
+        df = rdd.map(lambda x: (DenseVector(np.random.rand(20).astype(np.float32)),
                                 x % 10)).toDF(["feature", "label"])
         train_df, val_df = df.randomSplit([0.7, 0.3])
 
@@ -416,6 +416,48 @@ class TestTFDataset(ZooTestCase):
         create_ds = self.make_create_ds_fn(train_df, val_df)
         self.check_dataset(create_ds)
 
+    def test_read_parquet_dataset_train_simple(self):
+
+        import shutil
+        from bigdl.orca.data.image.parquet_dataset import ParquetDataset, _write_ndarrays
+        from bigdl.orca.learn.tf.estimator import Estimator
+        temp_dir = tempfile.mkdtemp()
+
+        try:
+            _write_ndarrays(images=np.random.randn(500, 28, 28, 1).astype(np.float32),
+                            labels=np.random.randint(0, 10, (500,)).astype(np.int32),
+                            output_path="file://" + temp_dir)
+            dataset = ParquetDataset.read_as_tf("file://" + temp_dir)
+
+            def preprocess(data):
+                return data['image'], data["label"]
+
+            dataset = dataset.map(preprocess)
+
+            model = tf.keras.Sequential(
+                [tf.keras.layers.Conv2D(20, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                                        input_shape=(28, 28, 1), padding='valid'),
+                 tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+                 tf.keras.layers.Conv2D(50, kernel_size=(5, 5), strides=(1, 1), activation='tanh',
+                                        padding='valid'),
+                 tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='valid'),
+                 tf.keras.layers.Flatten(),
+                 tf.keras.layers.Dense(500, activation='tanh'),
+                 tf.keras.layers.Dense(10, activation='softmax'),
+                 ]
+            )
+
+            model.compile(optimizer=tf.keras.optimizers.RMSprop(),
+                          loss='sparse_categorical_crossentropy',
+                          metrics=['accuracy'])
+
+            est = Estimator.from_keras(keras_model=model)
+            est.fit(data=dataset,
+                    batch_size=100,
+                    epochs=1)
+
+        finally:
+            shutil.rmtree(temp_dir)
 
 if __name__ == "__main__":
     pytest.main([__file__])

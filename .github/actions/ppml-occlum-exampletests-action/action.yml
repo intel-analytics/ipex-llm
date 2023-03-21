@@ -26,7 +26,7 @@ runs:
         export DATA_PATH=/home/icx/glorysdj/data
         export KEYS_PATH=/home/icx/glorysdj/keys
         export SECURE_PASSWORD_PATH=/home/icx/glorysdj/password
-        export SGX_MEM_SIZE=60GB
+        export SGX_MEM_SIZE=30GB
         export SGX_KERNEL_HEAP=2GB
         export IMAGE=${{ env.DEFAULT_IMAGE }}
 
@@ -60,6 +60,7 @@ runs:
         status_7_spark_gbt=1
         status_8_pyspark_sklearn=1
         status_9_pyspark_sql=1
+        status_10_pyspark_tpch=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
         echo "################## start spark pi"
@@ -155,6 +156,16 @@ runs:
              cat test-pyspark-sql-sgx.log | egrep 'Example API finished'"
         status_9_pyspark_sql=$(echo $?)
         fi
+        
+        if [ $status_10_pyspark_tpch -ne 0 ]; then
+        echo "################## start spark tpch"
+        echo "example.10 pyspark tpch"
+        docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
+             sed -i 's#/host/data/ /host/data/output/ true#/host/data/tpch/ /host/data/output/ false#g' run_spark_on_occlum_glibc.sh && \
+             bash run_spark_on_occlum_glibc.sh pytpch | tee pyspark-tpch.log && \
+             cat pyspark-tpch.log | egrep 'total time is'"
+        status_10_pyspark_tpch=$(echo $?)
+        fi
 
         echo "status_1_spark_pi $status_1_spark_pi"
         echo "status_2_bigdl_lenet_mnist $status_2_bigdl_lenet_mnist"
@@ -165,3 +176,4 @@ runs:
         echo "status_7_spark_gbt $status_7_spark_gbt"
         echo "status_8_pyspark_sklearn $status_8_pyspark_sklearn"
         echo "status_9_pyspark_sql $status_9_pyspark_sql"
+        echo "status_10_pyspark_tpch $status_10_pyspark_tpch"

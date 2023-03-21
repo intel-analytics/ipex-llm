@@ -5,8 +5,8 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
 * [Prepare Key and Password](#prepare-key-and-password)
 * [Configure K8S Environment](#configure-k8s-environment)
-* [Key Management Service (KMS) Setup](#key-management-service-kms-setup)
-* [Attestation Service (AS) Setup](#attestation-service-as-setup)
+* [Key Management Service (KMS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
+* [Attestation Service (AS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitoring](#optional-k8s-monitioring-setup)
 

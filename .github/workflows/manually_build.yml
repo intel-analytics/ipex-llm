@@ -840,7 +840,7 @@ jobs:
           --build-arg JDK_VERSION=8u192 \
           --build-arg JDK_URL=${JDK_URL} \
           --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
-          --build-arg no_proxy=${LOCAL_IP} \
+          --build-arg no_proxy=${NO_PROXY} \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
           -t ${bigdata_base_image}:${TAG} -f ./Dockerfile .
@@ -857,6 +857,22 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g
+        sudo docker build \
+          --no-cache=true \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=8G \
+          --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -868,13 +884,14 @@ jobs:
         sudo docker push 10.239.45.10/arda/intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest
         sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
 
-        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g
         sudo docker build \
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8G \
+          --build-arg SGX_MEM_SIZE=4G \
           --build-arg SGX_LOG_LEVEL=error \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -889,6 +906,7 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
@@ -903,6 +921,22 @@ jobs:
           --build-arg BASE_IMAGE_TAG=${TAG} \
           --build-arg SGX_MEM_SIZE=8G \
           --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t ${bigdata_custom_image}:${TAG} \
+          -f ./Dockerfile .
+        sudo docker push ${bigdata_custom_image}:${TAG}
+        sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+        sudo docker rmi -f ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
+
+        export bigdata_custom_image=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all
+        sudo docker build \
+          --no-cache=true \
+          --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg SGX_MEM_SIZE=4G \
+          --build-arg SGX_LOG_LEVEL=all \
+          --build-arg no_proxy=${NO_PROXY} \
           -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}

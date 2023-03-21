@@ -1,9 +1,8 @@
-# Deploy BigDL-PCCS on Kubernetes
-
+# Deploy BigDL-PCCS with Docker
 ## Prerequests
 
 - Please make sure you have a workable **Kubernetes cluster/machine**.
-- Please make sure you have a usable https proxy.
+- Please make sure PCCS has Internet access. If you are using a proxy, make sure https proxy is correctly set. Otherwise set `HTTPS_PROXY_URL `in `install-bigdl-pccs.sh` to `""`.
 - Please make sure you have an usable PCCS ApiKey for your platform. The PCCS uses this API key to request collaterals from Intel's Provisioning Certificate Service. User needs to subscribe first to obtain an API key. For how to subscribe to Intel Provisioning Certificate Service and receive an API key, goto https://api.portal.trustedservices.intel.com/provisioning-certification and click on 'Subscribe'.
 
 ## 1. Pull/Build the PCCS Image
@@ -150,3 +149,17 @@ namespace "bigdl-pccs" deleted
 
 ``` 
 
+## 5. Register a machine to PCCS
+1. According to your system version, download PCKIDRetrievalTool from [here](https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/)
+2. If you set proxy in PCCS, export no_proxy=your_host_ip
+3. modify PCKIDRetrievalTool_v1.15.100.3/network_setting.conf
+```
+PCCS_URL=https://pccs_ip:pccs_port/sgx/certification/interface_version(v3, v4, etc.)/platforms
+USE_SECURE_CERT=FALSE
+```
+4. modify /etc/sgx_default_qcnl.conf
+```
+    PCCS_URL=https://pccs_ip:pccs_port/sgx/certification/interface_version(v3, v4, etc.)/platforms
+    USE_SECURE_CERT=FALSE
+```
+5. ./PCKIDRetrievalTool -user_token your_user_password

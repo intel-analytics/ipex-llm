@@ -12,7 +12,7 @@ BigDL seamlessly scales your data analytics & AI applications from laptop to clo
 
 - [Orca](#orca): Distributed Big Data & AI (TF & PyTorch) Pipeline on Spark and Ray
 
-- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs
+- [Nano](#nano): Transparent Acceleration of Tensorflow & PyTorch Programs on XPU
 
 - [DLlib](#dllib): “Equivalent of Spark MLlib” for Deep Learning
 

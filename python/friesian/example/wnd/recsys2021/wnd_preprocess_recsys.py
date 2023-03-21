@@ -121,7 +121,7 @@ def _parse_args():
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--train_files', type=str, default="000-269",
+    parser.add_argument('--train_files', type=str, default="all",
                         help="range for preprocessing train files, such as 000-269, 000-001.")
     parser.add_argument('--input_train_folder', type=str, required=True,
                         help="Path to the folder of train parquet files.")
@@ -133,8 +133,9 @@ def _parse_args():
                         help='bucket sizes for cross columns', default="600")
 
     args = parser.parse_args()
-    start, end = args.train_files.split('-')
-    args.train_files = list(range(int(start), int(end) + 1))
+    if args.train_files != "all":
+        start, end = args.train_files.split('-')
+        args.train_files = list(range(int(start), int(end) + 1))
 
     args.cross_sizes = [int(x) for x in args.cross_sizes.split(',')]
 
@@ -207,9 +208,12 @@ if __name__ == '__main__':
                           ", but got " + args.cluster_mode)
 
     start = time()
-    train_paths = [os.path.join(args.input_train_folder, 'part-%05d.parquet' % i)
-                   for i in args.train_files]
-    train_tbl = FeatureTable.read_parquet(train_paths)
+    if args.train_files != "all":
+        train_paths = [os.path.join(args.input_train_folder, 'part-%05d*.parquet' % i)
+                       for i in args.train_files]
+        train_tbl = FeatureTable.read_parquet(train_paths)
+    else:
+        train_tbl = FeatureTable.read_parquet(args.input_train_folder)
     train_tbl.df.printSchema()
 
     test_tbl = FeatureTable.read_parquet(args.input_test_folder)

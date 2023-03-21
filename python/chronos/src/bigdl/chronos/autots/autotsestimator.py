@@ -20,7 +20,6 @@ from bigdl.orca.automl.auto_estimator import AutoEstimator
 from bigdl.chronos.data import TSDataset
 import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots.model import AutoModelFactory
-from bigdl.chronos.autots.tspipeline import TSPipeline
 from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
@@ -286,6 +285,7 @@ class AutoTSEstimator:
             )
 
         if self.backend == "torch":
+            from bigdl.chronos.autots.tspipeline import TSPipeline
             best_model = self._get_best_automl_model()
             return TSPipeline(model=best_model.model,
                               loss=best_model.criterion,

@@ -8,6 +8,10 @@ export BASE_IMAGE_TAG=your_base_image_tag
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \
     --build-arg https_proxy=http://${HTTPS_PROXY_HOST}:${HTTPS_PROXY_PORT} \
+    --build-arg BASE_IMAGE_NAME=$BASE_IMAGE_NAME \
+    --build-arg BASE_IMAGE_TAG=$BASE_IMAGE_TAG \
+    --build-arg SGX_MEM_SIZE=MEM_SIZE_OF_SGX \
+    --build-arg SGX_LOG_LEVEL=LOG_LEVEL_OF_SGX \
     --build-arg no_proxy=x.x.x.x \
     -t intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0-SNAPSHOT -f ./Dockerfile ."
 

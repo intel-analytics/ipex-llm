@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "friesian-serving.feature-recall.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature-recall
+    {{- include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.featureRecall.labels }}
+    {{ toYaml .Values.featureRecall.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.featureRecall.annotations }}
+  annotations:
+    {{ toYaml .Values.featureRecall.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.featureRecall.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-feature-recall
+  template:
+    metadata:
+      labels:
+        app: {{ template "friesian-serving.name" . }}-feature-recall
+        {{- include "friesian-serving.labels" . | nindent 8 }}
+        {{- if .Values.featureRecall.labels }}
+        {{ toYaml .Values.featureRecall.labels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.featureRecall.annotations }}
+      annotations:
+        {{ toYaml .Values.featureRecall.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "friesian-serving.feature-recall.fullname" . }}
+          image: "{{ .Values.featureRecall.image.repository }}:{{ .Values.featureRecall.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.featureRecall.image.pullPolicy }}
+          args: ["feature", "-c", "mnt/config.yaml"]
+          ports:
+            - name: service
+              containerPort: {{ .Values.featureRecall.config.servicePort }}
+              protocol: TCP
+            - name: monitor
+              containerPort: {{ .Values.featureRecall.config.monitorPort }}
+              protocol: TCP
+          volumeMounts:
+          - name: config
+            mountPath: /opt/work/mnt
+          # livenessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.featureRecall.config.servicePort }}
+          # readinessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.featureRecall.config.servicePort }}
+          {{- with .Values.featureRecall.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "friesian-serving.feature-recall.fullname" . }}
+      {{- if .Values.featureRecall.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.featureRecall.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.featureRecall.affinity }}
+      affinity:
+        {{- toYaml .Values.featureRecall.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.featureRecall.tolerations }}
+      tolerations:
+        {{- toYaml .Values.featureRecall.tolerations | nindent 8 }}
+      {{- end }}

@@ -152,62 +152,87 @@ def add_predict_to_pd_xshards(xshards, pred_xshards):
     return result
 
 
-def convert_predict_xshards_to_dataframe(df, pred_shards):
+def get_length(input):
+    if isinstance(input, (list, tuple)):
+        return get_length(input[0])
+    elif isinstance(input, dict):
+        return get_length(list(input.values())[0])
+    else:
+        return input.shape[0]
+
+
+def filter_elem(input, i):
+    if isinstance(input, (list, tuple)):
+        return [filter_elem(elem, i) for elem in input]
+    elif isinstance(input, dict):
+        return {k: filter_elem(v, i) for k, v in input.items()}
+    else:
+        return input[i]
+
+
+def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
     def flatten(data):
-        data = data["prediction"]
-        is_list = isinstance(data, list)
-        is_tuple = isinstance(data, tuple)
-        if is_list or is_tuple:
-            length = data[0].shape[0]
-            ls_data = data
-        else:
-            length = data.shape[0]
-            ls_data = [data]
+        length = get_length(data)
+
+        data = list(data.values())
 
         for i in range(length):
-            row = [elem[i] for elem in ls_data]
-            if is_list:
-                yield row
-            elif is_tuple:
-                yield tuple(row)
-            else:
-                yield row[0]
+            # Always yield a list here
+            yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
-    result = convert_predict_rdd_to_dataframe(df, pred_rdd)
+    result = convert_predict_rdd_to_dataframe(df, pred_rdd, output_cols)
     return result
 
 
-def convert_predict_rdd_to_dataframe(df, prediction_rdd):
+def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     from pyspark.sql import Row
-    from pyspark.sql.types import FloatType, ArrayType
     from pyspark.ml.linalg import Vectors
 
-    def combine(pair):
+    def convert_elem(elem):
         # list of np array
-        if isinstance(pair[1], list):
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                        [[Vectors.dense(elem) for elem in pair[1]]]))
-        # scalar
-        elif len(pair[1].shape) == 0:
-            row = Row(*([pair[0][col] for col in pair[0].__fields__] + [float(pair[1].item(0))]))
+        if isinstance(elem, (list, tuple)):
+            return [convert_elem(i) for i in elem]
+        # dict of np array as values
+        elif isinstance(elem, dict):
+            return {k: convert_elem(v) for k, v in elem.items()}
+        # scalar in basic type
+        elif isinstance(elem, np.ScalarType):
+            return float(elem)
         # np ndarray
         else:
-            dim = len(pair[1].shape)
-            if dim == 1:
+            dim = len(elem.shape)
+            if dim in [0, 1]:
                 # np 1-D array
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] +
-                            [Vectors.dense(pair[1])]))
+                return Vectors.dense(elem)
             else:
                 # multi-dimensional array
-                structType = FloatType()
-                for _ in range(dim):
-                    structType = ArrayType(structType)
-                row = Row(*([pair[0][col] for col in pair[0].__fields__] + [pair[1].tolist()]))
-        return row
+                return elem.tolist()
+
+    def combine(pair):
+        if not output_cols:
+            # a singleton list in pair[1] and stacked like [f1, f2] + [output1]
+            if isinstance(pair[1], (list, tuple)) and len(pair[1]) == 1:
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             convert_elem(pair[1])))
+            else:
+                # a multiple list in pair[1] and stacked like [f1, f2] + [[output1], [output2]]
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             [convert_elem(pair[1])]))
+        elif not isinstance(pair[1], (list, tuple)):
+            # if pair[1] is not iterable, don't split them into list
+            return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                         [convert_elem(pair[1])]))
+        else:
+            # a multiple columns in pair[1] and merged like [f1, f2] + [output1, output2]
+            return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                         [convert_elem(item) for item in pair[1]]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    columns = df.columns + ["prediction"]
+    if output_cols is None:
+        columns = df.columns + ["prediction"]
+    else:
+        columns = df.columns + output_cols
     # Converting to DataFrame will trigger the computation
     # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)

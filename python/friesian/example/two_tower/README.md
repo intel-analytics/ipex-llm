@@ -10,7 +10,7 @@ pip install tensorflow==2.9.0
 pip install --pre --upgrade bigdl-friesian[train]
 ```
 ## Preprocess data
-You can download the full Twitter dataset from [here](http://www.recsyschallenge.com/2021/) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the original data.
+You can download the full Twitter dataset from [here](http://www.recsyschallenge.com/2021/) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/wnd/recsys2021#prepare-the-data) to preprocess the original data.
 
 ## Training 2 tower model
 * Spark local, we can use some sample data to have a trial, example command:

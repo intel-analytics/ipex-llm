@@ -107,6 +107,24 @@ function display-help {
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
+# Find bigdl-nano-init dir
+if [ ! -z $BASH_SOURCE ]; then
+    # using bash
+    if [ "$BASH_SOURCE" = "$0" ]; then
+        echo "Error: Incorrect usage: bigdl-nano-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname $BASH_SOURCE)"
+else
+    # using zsh
+    if [ "$zsh_eval_context" = "toplevel" ]; then
+        echo "Error: Incorrect usage: bigdl-nano-init must be sourced."
+        exit 1
+    fi
+    BIN_DIR="$(dirname ${(%):-%N})"
+fi
+echo "Sourcing bigdl-nano-init in: $BIN_DIR"
+
 # Init internal variables
 ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
@@ -184,16 +202,6 @@ done
 
 shift $((OPTIND -1))
 
-# Find bigdl-nano-init dir
-if [ ! -z $BASH_SOURCE ]; then
-    # using bash
-    BIN_DIR="$(dirname $BASH_SOURCE)"
-else
-    # using zsh
-    BIN_DIR="$(dirname ${(%):-%N})"
-fi
-echo "Sourcing bigdl-nano-init in: $BIN_DIR"
-
 LIB_DIR=`dirname ${BIN_DIR}`/lib
 NANO_DIR=$(dirname $(python3 -c "import bigdl; print(bigdl.__file__)"))/nano
 PYTHON_VERSION=`python3 --version | awk '{print $2}'`
@@ -209,18 +217,16 @@ else
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD
-OPENMP=0
+OPENMP=1
 export LD_PRELOAD=""
 export DYLD_INSERT_LIBRARIES=""
 if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
-    : # do nothing
+    OPENMP=0
 elif [[ "${PERF_VAR}" -eq 1 ]]; then
-    OPENMP=1
+    : # do nothing
 elif [ $OS = "linux" ] && [ -f "${LIB_DIR}/libiomp5.so" ]; then
-    OPENMP=1
     export LD_PRELOAD="${LIB_DIR}/libiomp5.so"
 elif [ $OS = "macos" ] && [ -f "${LIB_DIR}/libiomp5.dylib" ]; then
-    OPENMP=1
     export DYLD_INSERT_LIBRARIES="${LIB_DIR}/libiomp5.dylib"
 else
     echo "No OpenMP library found in ${LIB_DIR}."
