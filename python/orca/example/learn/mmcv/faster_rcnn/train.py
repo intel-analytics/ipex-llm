@@ -82,10 +82,10 @@ def mmcv_runner_creator(cfg):
 
                 data_anno = dict(
                     bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
-                    labels=np.array(gt_labels, dtype=np.long),
+                    labels=np.array(gt_labels, dtype=int),
                     bboxes_ignore=np.array(gt_bboxes_ignore,
                                            dtype=np.float32).reshape(-1, 4),
-                    labels_ignore=np.array(gt_labels_ignore, dtype=np.long))
+                    labels_ignore=np.array(gt_labels_ignore, dtype=int))
 
                 data_info.update(ann=data_anno)
                 data_infos.append(data_info)
