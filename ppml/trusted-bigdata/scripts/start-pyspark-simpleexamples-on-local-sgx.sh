@@ -35,10 +35,14 @@ cat test-wordcount-sgx.log | egrep 'import'
 status_2_local_spark_wordcount=$(echo $?)
 fi
 
+if [ $status_1_local_spark_pi -ne 0 ]; then
 echo "#### sexample.1 Excepted result(Pi): Pi is roughly XXX"
 echo "---- sexample.1 Actual result: "
 cat test-pi-sgx.log | egrep 'roughly'
+fi
 
+if [ $status_2_local_spark_wordcount -ne 0 ]; then
 echo -e "#### example.2 Excepted result(WordCount): import: XXX"
 echo "---- example.2 Actual result: "
 cat test-wordcount-sgx.log | egrep -a 'import.*: [0-9]*$'
+fi
