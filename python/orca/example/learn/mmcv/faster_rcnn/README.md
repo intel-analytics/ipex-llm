@@ -8,7 +8,7 @@ This training example use the kitti_tiny dataset, you can download it from [here
 
 We recommend you to use Anaconda to prepare the environment:
 
-```
+```python
 conda create -n bigdl-orca pyton=3.7  # "bigdl-orca" is conda environment name, you can use any name you like.
 conda activate bigdl-orca
 
@@ -17,8 +17,7 @@ pip install -U openmim
 mim install mmcv-full
 pip install mmdet
 
-pip install --pre --upgrade bigdl-orca
-pip install ray
+pip install --pre --upgrade bigdl-orca[ray]
 ```
 
 ## Download MMDet
@@ -46,10 +45,12 @@ wget https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50
 ```bash
 python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from $MMDET_PATH/checkpoints/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 ```
+- `--dataset`: your dataset path to kitti_tiny
+- `--config`: the config file path, here we use the config file from mmdet repo
+- `--load_from`: the pre-trained model path
+- `$MMDET_PATH`: your mmdetection repo local path.
 
-`$MMDET_PATH`: your mmdetection repo local path.
-
-The result should looks like this.
+The result looks like this.
 
 ```
 (MMCVRayEpochRunner pid=188889) 2023-03-13 10:45:51,431 - mmdet - INFO - Start running, host: root@xxx, work_dir: /root/xxx/mmdetection/tutorial_exps
@@ -162,9 +163,15 @@ Stopping orca context
 
 - yarn-client mode
 
-If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, then execute
+To train with yarn-client mode, you need to make sure the dataset is under the same path of every worker node. In order to do this, you can upload the dataset to HDFS and download dataset to every worker node before training.
+
+If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, the checkpoint file can be directly read from HDFS.
+
+Finally execute:
 
 ```bash
 python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --cluster_mode yarn-client --config $MMDET_PATH/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from hdfs://ip:port/your/hdfs/path/to/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 ```
 
+- `--cluster_mode`: The cluster mode, such as local, yarn-client, yarn-cluster, here we use yarn-client
+- other args are the same with spark local mode
