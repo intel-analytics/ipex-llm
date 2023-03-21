@@ -525,6 +525,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                prediction results is not guaranteed to be the same as the input order, so you need
                to add id information to the input to identify the corresponding prediction results.
                Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
