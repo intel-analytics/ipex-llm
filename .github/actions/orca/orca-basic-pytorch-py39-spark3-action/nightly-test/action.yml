@@ -1,0 +1,19 @@
+name: 'Run Orca Basic Pytorch Py39 Spark3'
+description: 'Run Orca Basic Pytorch Py39 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py39
+        export SPARK_LOCAL_HOSTNAME=localhost
+        
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip list
+        chmod a+x python/orca/dev/test/run-pytests-basic-pytorch.sh
+        python/orca/dev/test/run-pytests-basic-pytorch.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
