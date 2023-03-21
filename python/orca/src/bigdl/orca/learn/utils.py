@@ -358,13 +358,6 @@ arrays2feature_dict = partial(arrays2others, generate_func=_generate_feature_dic
 arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
-def get_label_row(row, anchor):
-    if anchor == len(row)-1:  # In case label is the last one
-        return row[-1]
-    else:
-        return row[anchor:]
-
-
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
     def single_col_to_numpy(col_series, dtype):
         if dtype == np.ndarray:
