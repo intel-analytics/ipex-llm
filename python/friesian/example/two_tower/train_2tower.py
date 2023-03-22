@@ -163,8 +163,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')
-    parser.add_argument('--backend', type=str, default='ray',
-                        choices=('spark', 'ray'),
+    parser.add_argument('--backend', type=str, default="ray",
+                        choices=("spark", "ray"),
                         help='The backend of Orca Estimator, either ray or spark.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ray_on_spark = True if args.backend=='ray' else False
+    ray_on_spark = args.backend == "ray"
     if args.cluster_mode == "local":
         sc = init_orca_context("local", init_ray_on_spark=ray_on_spark)
     elif args.cluster_mode == "standalone":
