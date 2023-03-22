@@ -24,63 +24,12 @@ jobs:
     - uses: actions/checkout@v3
     - name: set env
       run: |
-        echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
-        cp scala/pom.xml scala/pom.xml.origin
-        cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
-        cp scala/common/spark-version/3.0/pom.xml scala/common/spark-version/3.0/pom.xml.origin
-        cp scala/dllib/pom.xml scala/dllib/pom.xml.origin
-        cp scala/orca/pom.xml scala/orca/pom.xml.origin
-        cp scala/friesian/pom.xml scala/friesian/pom.xml.origin
-        cp scala/grpc/pom.xml scala/grpc/pom.xml.origin
-        cp scala/serving/pom.xml scala/serving/pom.xml.origin
-        cp scala/ppml/pom.xml scala/ppml/pom.xml.origin
-        cp scala/assembly/pom.xml scala/assembly/pom.xml.origin
-        sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>${spark-version.project}-${SPARK_PLATFORM}<\/artifactId>/' scala/dllib/pom.xml
-        sed -i 's/<artifactId>3.0<\/artifactId>/<artifactId>3.0-${SPARK_PLATFORM}<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/common/spark-version/3.0/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/dllib/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/orca/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/friesian/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/grpc/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/serving/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/ppml/pom.xml
-        sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/assembly/pom.xml
-        echo ${{ secrets.HTTP_PROXY_HOST_2 }}
-        echo ${{ secrets.HTTP_PROXY_PORT_2 }}
-        mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean install -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
-      
-        mv scala/pom.xml.origin scala/pom.xml
-        mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
-        mv scala/common/spark-version/3.0/pom.xml.origin scala/common/spark-version/3.0/pom.xml
-        mv scala/dllib/pom.xml.origin scala/dllib/pom.xml
-        mv scala/orca/pom.xml.origin scala/orca/pom.xml
-        mv scala/friesian/pom.xml.origin scala/friesian/pom.xml
-        mv scala/grpc/pom.xml.origin scala/grpc/pom.xml
-        mv scala/serving/pom.xml.origin scala/serving/pom.xml
-        mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
-        mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
+        sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/dllib/pom.xml
+        sed -i 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/common/spark-version/2.0/pom.xml
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com
       run: |
         cd scala
-        synk monitor
-        #mvn clean install -f common/spark-version/2.0/pom.xml
-        #snyk monitor
-        #mvn clean install -f dllib/pom.xml -DskipTests
-        #snyk monitor
-        #mvn clean install -f orca/pom.xml -DskipTests
-        #snyk monitor 
-        #mvn clean install -f grpc/pom.xml -DskipTests
-        #snyk monitor
-        #mvn clean install -f friesian/pom.xml -DskipTests
-        #snyk monitor
-        #mvn clean install -f serving/pom.xml -DskipTests
-        #snyk monitor
-        #mvn clean install -f ppml/pom.xml -DskipTests
-        #snyk monitor
-        #mvn clean install -f assembly/pom.xml -DskipTests
-        #snyk monitor
-        # cd -
+        synk monitor --all-projects
+        cd -
