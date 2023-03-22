@@ -1,4 +1,4 @@
- name: 'Run Orca Notebook Xshards Py39 Spark3'
+name: 'Run Orca Notebook Xshards Py39 Spark3'
 description: 'Run Notebook Xshards Py39 Spark3'
 runs:
   using: "composite"
