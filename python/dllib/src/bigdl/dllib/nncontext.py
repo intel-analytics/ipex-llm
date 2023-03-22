@@ -94,7 +94,8 @@ def init_spark_on_yarn(hadoop_conf,
     :param additional_archive: Comma-separated list of additional archives to be uploaded and
            unpacked on executors. Default to be None.
     :param hadoop_user_name: The user name for running the yarn cluster. Default to be None.
-           None means os.environ["HADOOP_USER_NAME"], or current user if HADOOP_USER_NAME is unset.
+           The default None means reading from env, the value of os.environ["HADOOP_USER_NAME"],
+           or current user if HADOOP_USER_NAME is unset.
     :param spark_yarn_archive: Conf value for setting spark.yarn.archive. Default to be None.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
@@ -170,7 +171,8 @@ def init_spark_on_yarn_cluster(hadoop_conf,
     :param additional_archive: Comma-separated list of additional archives to be uploaded and
            unpacked on executors. Default to be None.
     :param hadoop_user_name: The user name for running the yarn cluster. Default to be None.
-           None means os.environ["HADOOP_USER_NAME"], or current user if HADOOP_USER_NAME is unset.
+           The default None means reading from env, the value of os.environ["HADOOP_USER_NAME"],
+           or current user if HADOOP_USER_NAME is unset.
     :param spark_yarn_archive: Conf value for setting spark.yarn.archive. Default to be None.
     :param spark_log_level: The log level for Spark. Default to be 'WARN'.
     :param redirect_spark_log: Whether to redirect the Spark log to local file. Default to be True.
