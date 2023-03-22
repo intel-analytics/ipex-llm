@@ -33,7 +33,6 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
     case Encrypter.NATIVE_AES_CBC =>
       bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   }
-  
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0

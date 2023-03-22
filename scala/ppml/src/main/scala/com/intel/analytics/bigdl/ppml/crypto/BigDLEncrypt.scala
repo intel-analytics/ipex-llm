@@ -46,7 +46,6 @@ class BigDLEncrypt extends Crypto {
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
-  
   // Init an encrypter
   def init(cryptoMode: CryptoMode, mode: OperationMode,
            dataKeyPlaintext: String, dataKeyCipherText: String): Unit = {
