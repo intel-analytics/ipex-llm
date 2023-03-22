@@ -378,9 +378,11 @@ class BaseTF2Forecaster(Forecaster):
         else:
             if isinstance(data, tuple):
                 input_data, target = data
+            elif isinstance(data, TSDataset):
+                input_data, target = data.to_numpy()
             else:
                 input_data = data
-                target = np.asarray(tuple(map(lambda x: x[1], data.as_numpy_iterator())))
+                target = np.concatenate(list((map(lambda x: x[1], data.as_numpy_iterator()))))
             if quantize:
                 invalidInputError(self.accelerate_method == "tensorflow_int8",
                                   "Can't find the quantized model, "
