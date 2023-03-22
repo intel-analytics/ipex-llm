@@ -1,0 +1,19 @@
+name: 'Run Orca Basic Py39 Spark3'
+description: 'Run Orca Basic Py39 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py39
+        export SPARK_LOCAL_HOSTNAME=localhost
+        
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3
+
+        pip list
+        chmod a+x python/orca/dev/test/run-pytests-basic-env.sh
+        python/orca/dev/test/run-pytests-basic-env.sh
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
