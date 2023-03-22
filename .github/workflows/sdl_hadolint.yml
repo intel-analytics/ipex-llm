@@ -9,10 +9,13 @@ on:
   workflow_dispatch:
 jobs:
   scan-dockerfile:
-    runs-on: [self-hosted, SDL-TEST]
+    runs-on: [self-hosted, HADOLINT]
     steps:
     - uses: actions/checkout@v3
+    - name: "set up env"
+      run: |
+        apt-get update
+        apt-get install git -y
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
-        docker run  -i hadolint/hadolint < ./docker/bigdl-k8s/Dockerfile > new.log
-        cat new.log
+        hadolint ./docker/bigdl-k8s/Dockerfile
