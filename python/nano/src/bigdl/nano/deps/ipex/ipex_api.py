@@ -132,13 +132,13 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
                                         jit_strict=jit_strict)
 
 
-def PytorchIPEXPUModel(model, thread_num=None):
+def PytorchIPEXPUModel(model, thread_num=None, precision="fp32"):
     '''
     :param model: the model(nn.module) to be transform.
     :param thread_num: the thread num allocated for this model.
     '''
     from .ipex_inference_xpu_model import PytorchIPEXPUModel
-    return PytorchIPEXPUModel(model, thread_num=thread_num)
+    return PytorchIPEXPUModel(model, thread_num=thread_num, precision=precision)
 
 
 def load_ipexjit_model(path, model, inplace=False, input_sample=None):

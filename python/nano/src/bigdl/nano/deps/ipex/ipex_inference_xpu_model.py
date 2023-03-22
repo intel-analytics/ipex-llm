@@ -23,10 +23,11 @@ from bigdl.nano.pytorch.context_manager import generate_context_manager
 
 class PytorchIPEXPUModel(AcceleratedLightningModule):
 
-    def __init__(self, model: torch.nn.Module, thread_num=None):
+    def __init__(self, model: torch.nn.Module, thread_num=None, precision="fp32"):
         super().__init__(model)
         self.model = model.to('xpu')
         self.thread_num = thread_num
+        self.precision = precision
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="fp32",
                                                               thread_num=thread_num,
@@ -36,6 +37,17 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
         inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
         # TODO: transform kwargs
         return self.model(*inputs, **kwargs)
+
+    def __getattr__(self, name: str):
+        # the search order is:
+        # 1. current instance, like channels_last will be found at this place
+        # 2. super class, like model will be found at this place
+        # 3. original model, like additional attributes of original model
+        #    will be found at this place
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.model, name)
 
     @property
     def status(self):

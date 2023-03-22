@@ -772,7 +772,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         # device name might be: CPU, GPU, GPU.0, VPUX ...
         invalidInputError(device == 'CPU' or 'GPU' in device or device == 'VPUX',
                           "Now we only support CPU, GPU and VPUX, not {}".format(device))
-        if device != 'CPU' and accelerator != 'openvino':
+        if device != 'CPU' and accelerator not in ['openvino', None]:
             invalidInputError(False,
                               "Now we only support {} device when accelerator"
                               "is openvino.".format(device))
@@ -978,7 +978,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
         if precision == 'fp16':
-            invalidInputError(accelerator == 'openvino',
+            invalidInputError(accelerator in ['openvino', None],
                               "fp16 is not supported on {} accelerator.".format(accelerator))
             if device == 'VPUX':
                 # for fp16 on VPUX, must specify mean_value.
@@ -987,6 +987,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "VPUX device, you must specify mean_value for model optimizer "
                                   "function. For more details about model optimizer, you can "
                                   "see mo --help .")
+            if accelerator is None and device == "GPU":
+                return PytorchIPEXPUModel(model, thread_num=thread_num, precision=precision).to("xpu")
             return PytorchOpenVINOModel(model, input_sample,
                                         precision=precision,
                                         thread_num=thread_num,
@@ -1160,7 +1162,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            output_tensors=output_tensors,
                                            **kwargs)
         if accelerator is None and device == "GPU":
-            return PytorchIPEXPUModel(model, thread_num=thread_num)
+            return PytorchIPEXPUModel(model, thread_num=thread_num).to("xpu")
         if (accelerator == 'jit' or use_ipex is True or channels_last is True) and device == "CPU":
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
