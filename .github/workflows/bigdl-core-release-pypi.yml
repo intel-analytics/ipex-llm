@@ -5,11 +5,6 @@ on:
   
   workflow_dispatch:
     inputs:
-      version:
-        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
-        required: true
-        default: '2.2.0b20221205'
-        type: string
       branch:
         description: 'bigdl core branch (e.g. master, branch-2.1)'
         required: true
@@ -22,7 +17,6 @@ on:
         type: string
 
 env:
-  PYPI_VERSION: ${{ github.event.inputs.version }}
   Branch: ${{ github.event.inputs.branch }}
   JAR_URL: ${{ github.event.inputs.jarurl }}
 
@@ -89,7 +83,8 @@ jobs:
       run: |
         set -x
         export TIMESTAMP=`date '+%Y%m%d'`
-        echo ${{ env.PYPI_VERSION }}
+        export PYPI_VERSION=$(cat ./python/version.txt | head -1)
+        echo ${PYPI_VERSION}
         export ORIGINAL_PATH=$PATH
         
         echo ${{ env.JAR_URL }}
@@ -97,8 +92,8 @@ jobs:
         #export PYPI_VERSION=2.2.0b20221205
         cd python/dev/
         ## linux ##
-        bash release_default_linux.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_linux.sh ${{ env.JAR_URL }} ${PYPI_VERSION} true
         
         ## mac ##
-        bash release_default_mac.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_mac.sh ${{ env.JAR_URL }} ${PYPI_VERSION} true
         
