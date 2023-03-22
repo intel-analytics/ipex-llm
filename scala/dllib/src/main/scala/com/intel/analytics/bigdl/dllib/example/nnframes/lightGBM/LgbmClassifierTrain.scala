@@ -40,7 +40,7 @@ object LgbmClassifierTrain {
         StructField("petal length", DoubleType, true),
         StructField("petal width", DoubleType, true),
         StructField("class", StringType, true)))
-      val df = spark.read.schema(schema).csv(params.inputPath)
+      val df = spark.read.schema(schema).csv(params.inputPath).repartition(sc.defaultParallelism)
 
       val stringIndexer = new StringIndexer()
         .setInputCol("class")
