@@ -71,7 +71,7 @@ val_shard = scale.transform(val_shard)
 # Change data types
 def change_data_type(df):
     df['x_scaled'] = df['x_scaled'].apply(lambda x: np.array(x, dtype=np.float32))
-    df['target'] = df['target'].apply(lambda x: np.long(x))
+    df['target'] = df['target'].apply(lambda x: int(x))
     return df
 train_shard = train_shard.transform_shard(change_data_type)
 val_shard = val_shard.transform_shard(change_data_type)
