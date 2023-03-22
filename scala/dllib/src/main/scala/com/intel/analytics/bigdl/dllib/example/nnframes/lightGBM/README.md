@@ -28,6 +28,7 @@ spark-submit \
   --class com.intel.analytics.bigdl.dllib.examples.nnframes.lightGBM.LgbmClassifierTrain \
   --input /path/to/bigdl-dllib-spark_3.1.2-2.2.0-SNAPSHOT-jar-with-dependencies.jar \
   --numIterations 100 \
-  --modelSavePath /tmp/lgbm/scala/classifier
+  --modelSavePath /tmp/lgbm/scala/classifier \
+  --partition 4
 
 ```
