@@ -263,7 +263,6 @@ if __name__ == "__main__":
     parser.add_option('--cluster_mode', type=str, default="local",
                       help='The cluster mode, such as local, yarn or standalone.')
     parser.add_option('--backend', type=str, default="ray",
-                      choices=("spark", "ray"),
                       help='The backend of Orca Estimator, either ray or spark.')
     parser.add_option('--master', type=str, default=None,
                       help='The master url, only used when cluster mode is standalone.')
@@ -289,7 +288,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
     options.hidden_units = [int(x) for x in options.hidden_units.split(',')]
 
-    ray_on_spark = args.backend == "ray"
+    ray_on_spark = options.backend == "ray"
     if options.cluster_mode == "local":
         init_orca_context("local", cores=options.executor_cores, memory=options.executor_memory,
                           init_ray_on_spark=ray_on_spark)
