@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
 import scala.collection.mutable.HashMap
 import com.intel.analytics.bigdl.ppml.kms.KeyManagementService
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT, Encrypter}
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import com.intel.analytics.bigdl.ppml.kms.common.KmsMetaFormatSerializer
 import org.apache.hadoop.fs.{Path, FileSystem}
@@ -45,51 +45,45 @@ case class KeyLoader(val fromKms: Boolean,
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
     protected val hadoopConfig = if (config != null) config else new Configuration()
-    protected val enableNativeAESCBC = SparkSession.builder().getOrCreate()
-      .sparkContext.hadoopConfiguration
-      .get("spark.bigdl.enableNativeAESCBC", "false") match {
-        case "true" => true
-        case "false" => false
-    }
+    protected val encrypterType = SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration
+      .get("spark.bigdl.encryter.type", Encrypter.COMMON)
 
     // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
-        val encryptedDataKey = if (enableNativeAESCBC) {
-          // native AES CBC uses file granularity instead of folder
-          val filePath = new Path(fileDirPath).toString
-          val fs: FileSystem = FileSystem.get(new URI(filePath), hadoopConfig)
-          val inStream = fs.open(new Path(filePath))
-          val iv = new Array[Byte](16)
-          inStream.read(iv)
-          new String(iv, StandardCharsets.UTF_8)
-        } else {
-          val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
-          val fs: FileSystem = FileSystem.get(new URI(metaPath), hadoopConfig)
-          val inStream = fs.open(new Path(metaPath))
-          val jsonStr = scala.io.Source.fromInputStream(inStream)
-            .takeWhile(_ != null).mkString
-          KmsMetaFormatSerializer(jsonStr).encryptedDataKey
+        val encryptedDataKey = encrypterType match {
+          case Encrypter.NATIVE_AES_CBC =>
+            // native AES CBC uses file granularity instead of folder
+            val filePath = new Path(fileDirPath).toString
+            val fs: FileSystem = FileSystem.get(new URI(filePath), hadoopConfig)
+            val inStream = fs.open(new Path(filePath))
+            val iv = new Array[Byte](16)
+            inStream.read(iv)
+            new String(iv, StandardCharsets.UTF_8)
+          case Encrypter.COMMON =>
+            val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
+            val fs: FileSystem = FileSystem.get(new URI(metaPath), hadoopConfig)
+            val inStream = fs.open(new Path(metaPath))
+            val jsonStr = scala.io.Source.fromInputStream(inStream)
+              .takeWhile(_ != null).mkString
+            KmsMetaFormatSerializer(jsonStr).encryptedDataKey
         }
 
         val dataKeyPlainText = if (fromKms) {
           kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
-          if (enableNativeAESCBC) {
-            // native AES CBC automatically goes here as it is not from KMS
-            // and primaryKeyPlainText is its raw data key without wrapping
-            primaryKeyPlainText
-          } else {
-            // unwrap the data key with primaryKeyPlainText
-            val cipher = dataKeyCipher(Cipher.DECRYPT_MODE)
-            val encryptedDataKeyBytes = Base64.getDecoder().decode(encryptedDataKey)
-            val dataKeyPlainTextBytes = cipher.doFinal(encryptedDataKeyBytes)
-            new String(dataKeyPlainTextBytes, StandardCharsets.UTF_8)
+          encrypterType match {
+            case Encrypter.NATIVE_AES_CBC => primaryKeyPlainText
+            case Encrypter.COMMON =>
+              // unwrap the data key with primaryKeyPlainText
+              val cipher = dataKeyCipher(Cipher.DECRYPT_MODE)
+              val encryptedDataKeyBytes = Base64.getDecoder().decode(encryptedDataKey)
+              val dataKeyPlainTextBytes = cipher.doFinal(encryptedDataKeyBytes)
+              new String(dataKeyPlainTextBytes, StandardCharsets.UTF_8)
           }
         }
-        val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-        sparkSession.sparkContext.hadoopConfiguration
+
+        SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration
           .set(s"bigdl.read.dataKey.$encryptedDataKey.plainText", dataKeyPlainText)
-        println(s"set $encryptedDataKey with dataKeyPlainText: $dataKeyPlainText")
         dataKeyPlainText
     }
 
@@ -102,9 +96,9 @@ case class KeyLoader(val fromKms: Boolean,
               "", null, encryptedDataKey)
             (dataKeyPlainText, encryptedDataKey)
         } else {
-            if (enableNativeAESCBC) {
-              (primaryKeyPlainText, null)
-            } else {
+          encrypterType match {
+            case Encrypter.NATIVE_AES_CBC => (primaryKeyPlainText, null)
+            case Encrypter.COMMON =>
               val dataKeyPlainText: String = {
                 val generator = KeyGenerator.getInstance("AES")
                 generator.init(keySize, SecureRandom.getInstanceStrong())
@@ -114,12 +108,11 @@ case class KeyLoader(val fromKms: Boolean,
               encryptedDataKey = {
                 val cipher = dataKeyCipher(Cipher.ENCRYPT_MODE)
                 val encryptedDataKeyBytes = cipher.doFinal(
-                  dataKeyPlainText.getBytes(StandardCharsets.UTF_8)
-                )
+                  dataKeyPlainText.getBytes(StandardCharsets.UTF_8))
                 Base64.getEncoder().encodeToString(encryptedDataKeyBytes)
               }
               (dataKeyPlainText, encryptedDataKey)
-            }
+          }
         }
     }
 

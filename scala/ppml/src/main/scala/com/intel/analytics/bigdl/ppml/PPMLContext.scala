@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT, Encrypter}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.kms.common.{KeyLoader, KeyLoaderManagement}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -227,7 +227,7 @@ object PPMLContext{
         appName: String,
         ppmlArgs: Map[String, String]): PPMLContext = {
     val conf = createSparkConf(sparkConf)
-    ppmlArgs.foreach{arg =>
+    ppmlArgs.foreach { arg =>
       conf.set(arg._1, arg._2)
     }
     initPPMLContext(conf, appName)
@@ -258,9 +258,9 @@ object PPMLContext{
     val ppmlSc = new PPMLContext
     ppmlSc.sparkSession = sparkSession
     val conf = sparkSession.sparkContext.getConf
-    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false")
-    sparkSession.sparkContext.hadoopConfiguration
-      .set("spark.bigdl.enableNativeAESCBC", enableNativeAESCBC)
+    sparkSession.sparkContext.hadoopConfiguration.set(
+      "spark.bigdl.encryter.type",
+      conf.get("spark.bigdl.encryter.type", Encrypter.COMMON))
     val primaryKeyNames = getPrimaryKeyNames(conf)
     primaryKeyNames.foreach{
       primaryKeyName => {

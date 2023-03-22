@@ -46,6 +46,21 @@ class BigDLEncrypt extends Crypto {
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
+  
+  // Init an encrypter
+  def init(cryptoMode: CryptoMode, mode: OperationMode,
+           dataKeyPlaintext: String, dataKeyCipherText: String): Unit = {
+    encryptedDataKey = dataKeyCipherText
+    init(cryptoMode, mode, dataKeyPlaintext)
+  }
+
+  // Init a decrypter
+  def init(cryptoMode: CryptoMode, mode: OperationMode,
+           dataKeyPlaintext: String, initializationVector: Array[Byte]): Unit = {
+    init(cryptoMode, mode, dataKeyPlaintext)
+    verifyHeader(initializationVector)
+  }
+
 
   /**
    * Init this crypto with crypto mode, operation mode and keys.
@@ -232,10 +247,6 @@ class BigDLEncrypt extends Crypto {
     } else {
       update(buffer, 0, readLen)
     }
-  }
-
-  def setEncryptedDataKey(encryptedDataKey: String): Unit = {
-    this.encryptedDataKey = encryptedDataKey
   }
 
   def getHeader(in: InputStream): (String, Array[Byte]) = {

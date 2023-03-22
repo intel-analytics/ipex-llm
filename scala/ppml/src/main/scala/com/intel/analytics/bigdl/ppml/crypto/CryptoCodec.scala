@@ -110,16 +110,8 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false") match {
-      case "true" => true
-      case "false" => false
-      case _ =>
-        throw new EncryptRuntimeException("Property of spark.bigdl.enableNativeAESCBC is wrong!")
-    }
-    val bigdlEncrypt = enableNativeAESCBC match {
-      case true => new BigDLAESCBCEncrypt
-      case false => new BigDLEncrypt
-    }
+    val encrypterType = conf.get("spark.bigdl.encryter.type", Encrypter.COMMON)
+    val bigdlEncrypt = Encrypter(encrypterType)
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -129,24 +121,22 @@ object CryptoCodec {
         return -1
       }
 
-      if (enableNativeAESCBC) {
-        // data file is encrypted by native AES cihper
-        // no Mac integrity check defaultly
-        val (_, initializationVector) = bigdlEncrypt.getHeader(in)
-        val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
-        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
-        bigdlEncrypt.asInstanceOf[BigDLAESCBCEncrypt]
-          .setInitializationVector(initializationVector)
-        bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText)
-      } else {
-        // data file is encrypted by PPML cipher
-        if (!headerVerified) {
-          val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
-          val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
-          bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
-          bigdlEncrypt.verifyHeader(initializationVector)
-          headerVerified = true
-        }
+      encrypterType match {
+        case Encrypter.NATIVE_AES_CBC =>
+          // data file is encrypted by native AES cihper
+          // no Mac integrity check defaultly
+          val (_, initializationVector) = bigdlEncrypt.getHeader(in)
+          val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
+          val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
+          bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText, initializationVector)
+        case Encrypter.COMMON =>
+          // data file is encrypted by PPML cipher
+          if (!headerVerified) {
+            val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
+            val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
+            bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText, initializationVector)
+            headerVerified = true
+          }
       }
       val decompressed = bigdlEncrypt.decryptPart(in, buffer)
       decompressed.copyToArray(b, 0)

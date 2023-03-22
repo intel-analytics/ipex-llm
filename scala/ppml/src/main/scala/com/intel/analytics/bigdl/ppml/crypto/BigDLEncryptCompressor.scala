@@ -23,13 +23,17 @@ import org.apache.hadoop.io.compress.Compressor
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
   dataKeyCipherText: String = "",
-  enableNativeAESCBC: Boolean = false) extends Compressor {
-  val bigdlEncrypt = enableNativeAESCBC match {
-      case true => new BigDLAESCBCEncrypt
-      case false => new BigDLEncrypt
-  }
+  encrypterType: String = Encrypter.COMMON) extends Compressor {
+  val bigdlEncrypt = Encrypter(encrypterType)
   var hasHeader = false
-  bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
+  encrypterType match {
+    case Encrypter.COMMON =>
+      bigdlEncrypt.asInstanceOf[BigDLEncrypt]
+        .init(cryptoMode, ENCRYPT, dataKeyPlainText, dataKeyCipherText)
+    case Encrypter.NATIVE_AES_CBC =>
+      bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
+  }
+  
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0
@@ -111,9 +115,6 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        if (!enableNativeAESCBC) {
-          bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
-        }
         bigdlEncrypt.genHeader
       }
       o.copyToArray(b, 0)
@@ -150,18 +151,13 @@ object BigDLEncryptCompressor {
   }
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
-    val (dataKeyPlainText, dataKeyCipherText) = (
+    val (dataKeyPlainText, dataKeyCipherText, encrypterType) = (
       conf.get("bigdl.write.dataKey.plainText"),
-      conf.get("bigdl.write.dataKey.cipherText")
+      conf.get("bigdl.write.dataKey.cipherText"),
+      conf.get("spark.bigdl.encryter.type", Encrypter.COMMON)
     )
-    val enableNativeAESCBC = conf.get("spark.bigdl.enableNativeAESCBC", "false") match {
-      case "true" => true
-      case "false" => false
-      case _ =>
-        throw new EncryptRuntimeException("Property of spark.bigdl.enableNativeAESCBC is wrong!")
-    }
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
-      dataKeyPlainText, dataKeyCipherText, enableNativeAESCBC)
+      dataKeyPlainText, dataKeyCipherText, encrypterType)
   }
 }
 

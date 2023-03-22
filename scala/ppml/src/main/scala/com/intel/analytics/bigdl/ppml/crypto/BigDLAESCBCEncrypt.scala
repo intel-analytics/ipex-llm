@@ -29,6 +29,13 @@ import javax.crypto.Cipher
  */
 class BigDLAESCBCEncrypt extends BigDLEncrypt {
 
+  // Init a decrypter
+  override def init(cryptoMode: CryptoMode, mode: OperationMode,
+    dataKeyPlaintext: String, initializationVector: Array[Byte]): Unit = {
+    this.initializationVector = initializationVector
+    init(cryptoMode, mode, dataKeyPlaintext)
+  }
+
   /**
    * Init this crypto with crypto mode, operation mode and keys.
    * @param cryptoMode cryptoMode to en/decrypt data, such as AES_CBC_PKCS5PADDING.
@@ -151,10 +158,6 @@ class BigDLAESCBCEncrypt extends BigDLEncrypt {
   override def getHeader(in: InputStream): (String, Array[Byte]) = {
     val initializationVector: Array[Byte] = super.read(in, 16)
     (null, initializationVector)
-  }
-
-  def setInitializationVector(initializationVector: Array[Byte]): Unit = {
-    this.initializationVector = initializationVector
   }
 }
 
