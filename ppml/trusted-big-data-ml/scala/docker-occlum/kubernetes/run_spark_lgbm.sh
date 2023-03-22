@@ -26,4 +26,5 @@ ${SPARK_HOME}/bin/spark-submit \
     local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar \
     --inputPath /host/data/iris.data \
     --numIterations 100 \
+    --partition 8 \
     --modelSavePath /host/data/iris_output
