@@ -205,5 +205,5 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                                    jit_method=status.get('jit_method', None),
                                    enable_onednn=status.get('enable_onednn', False))
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         torch.jit.save(self.model, path / "ckpt.pth")
