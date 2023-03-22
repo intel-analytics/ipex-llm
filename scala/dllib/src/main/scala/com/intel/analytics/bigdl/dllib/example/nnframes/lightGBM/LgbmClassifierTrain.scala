@@ -40,7 +40,7 @@ object LgbmClassifierTrain {
         StructField("petal length", DoubleType, true),
         StructField("petal width", DoubleType, true),
         StructField("class", StringType, true)))
-      val df = spark.read.schema(schema).csv(params.inputPath).repartition(sc.defaultParallelism)
+      val df = spark.read.schema(schema).csv(params.inputPath).repartition(params.nPartition)
 
       val stringIndexer = new StringIndexer()
         .setInputCol("class")
@@ -96,7 +96,8 @@ private object Utils {
     minDataInLeaf: Int = 20,
     maxBin: Int = 255,
     numIterations: Int = 100,
-    modelSavePath: String = "/tmp/lgbm/classifier")
+    modelSavePath: String = "/tmp/lgbm/classifier",
+    nPartition: Int = 4)
 
   val parser = new OptionParser[LGBMParams]("LGBM example") {
     opt[String]("inputPath")
@@ -129,5 +130,8 @@ private object Utils {
     opt[String]("modelSavePath")
       .text(s"modelSavePath")
       .action((x, c) => c.copy(modelSavePath = x))
+    opt[Int]('p', "partition")
+      .text("The number of partitions")
+      .action((x, c) => c.copy(nPartition = x))
   }
 }
