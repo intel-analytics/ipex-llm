@@ -16,13 +16,13 @@
 # This example is adapted from
 # https://machinelearningmastery.com/tutorial-first-neural-network-python-keras
 
+import math
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
 import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.tf2.estimator import Estimator
-import math
 
 init_orca_context(cluster_mode="local", cores=4, memory="3g")
 

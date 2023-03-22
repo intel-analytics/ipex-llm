@@ -16,11 +16,11 @@
 # This example is adapted from
 # https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/keras/basic_regression.ipynb
 
+import math
 import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.transformer import *
 from bigdl.orca.learn.tf2.estimator import Estimator
-import math
 
 import tensorflow.compat.v1 as tf
 from tensorflow.keras.models import Sequential
