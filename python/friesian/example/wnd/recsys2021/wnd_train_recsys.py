@@ -288,23 +288,19 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
     options.hidden_units = [int(x) for x in options.hidden_units.split(',')]
 
-    ray_on_spark = options.backend == "ray"
     if options.cluster_mode == "local":
-        init_orca_context("local", cores=options.executor_cores, memory=options.executor_memory,
-                          init_ray_on_spark=ray_on_spark)
+        init_orca_context("local", cores=options.executor_cores, memory=options.executor_memory)
     elif options.cluster_mode == "standalone":
         init_orca_context("standalone", master=options.master,
                           cores=options.executor_cores, num_nodes=options.num_executor,
                           memory=options.executor_memory,
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
-                          conf=conf,
-                          init_ray_on_spark=ray_on_spark)
+                          conf=conf)
     elif options.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=options.executor_cores,
                           num_nodes=options.num_executor, memory=options.executor_memory,
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
-                          conf=conf,
-                          init_ray_on_spark=ray_on_spark)
+                          conf=conf)
     elif options.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
