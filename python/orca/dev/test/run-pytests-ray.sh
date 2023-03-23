@@ -42,7 +42,7 @@ ray stop -f
 
 # TODO: fix extra fixture {"spark.python.worker.reuse": "false"}
 #       for tensorflow estimator ray backend unit tests
-python -m pytest -v test/bigdl/orca/learn/ray/tf/
+python -m pytest -v test/bigdl/orca/learn/ray/tf/ -s
 exit_status_2=$?
 if [ $exit_status_2 -ne 0 ];
 then

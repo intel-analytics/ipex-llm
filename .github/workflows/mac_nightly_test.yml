@@ -5,7 +5,7 @@ concurrency:
   cancel-in-progress: true
 on:
 
-  #pull_request:
+  pull_request:
     #branchs: [ main ]
 
   schedule:
@@ -243,7 +243,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-UT-Ray-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
