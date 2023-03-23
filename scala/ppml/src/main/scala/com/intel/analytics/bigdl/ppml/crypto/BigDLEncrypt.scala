@@ -352,3 +352,25 @@ class BigDLEncrypt extends Crypto {
   }
 }
 
+object BigDLEncrypt {
+
+  val COMMON = "common"
+  val NATIVE_AES_CBC = "nativeaescbc"
+
+  /**
+   * Create encrypter by type string
+   */
+   def apply(s: String): BigDLEncrypt = {
+     s.toLowerCase() match {
+       case COMMON =>
+         new BigDLEncrypt
+       case NATIVE_AES_CBC =>
+         new BigDLAESCBCEncrypt
+       case _ =>
+         Log4Error.invalidInputError(false,
+          s"Excepted $COMMON or $NATIVE_AES_CBC " +
+          s"in spark.bigdl.encryter.type but got $s")
+         null
+     }
+   }
+}

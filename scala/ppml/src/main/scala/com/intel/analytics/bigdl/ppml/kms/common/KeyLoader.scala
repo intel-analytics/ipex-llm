@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets
 import scala.collection.mutable.HashMap
 import com.intel.analytics.bigdl.ppml.kms.KeyManagementService
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT, Encrypter}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import com.intel.analytics.bigdl.ppml.kms.common.KmsMetaFormatSerializer
 import org.apache.hadoop.fs.{Path, FileSystem}
@@ -46,12 +46,12 @@ case class KeyLoader(val fromKms: Boolean,
     protected var encryptedDataKey: String = ""
     protected val hadoopConfig = if (config != null) config else new Configuration()
     protected val encrypterType = SparkSession.builder().getOrCreate().sparkContext
-      .hadoopConfiguration.get("spark.bigdl.encryter.type", Encrypter.COMMON)
+      .hadoopConfiguration.get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON)
 
     // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
         val encryptedDataKey = encrypterType match {
-          case Encrypter.NATIVE_AES_CBC =>
+          case BigDLEncrypt.NATIVE_AES_CBC =>
             // native AES CBC uses file granularity instead of folder
             val filePath = new Path(fileDirPath).toString
             val fs: FileSystem = FileSystem.get(new URI(filePath), hadoopConfig)
@@ -59,7 +59,7 @@ case class KeyLoader(val fromKms: Boolean,
             val iv = new Array[Byte](16)
             inStream.read(iv)
             new String(iv, StandardCharsets.UTF_8)
-          case Encrypter.COMMON =>
+          case BigDLEncrypt.COMMON =>
             val metaPath = new Path(fileDirPath + "/" + META_FILE_NAME).toString
             val fs: FileSystem = FileSystem.get(new URI(metaPath), hadoopConfig)
             val inStream = fs.open(new Path(metaPath))
@@ -72,8 +72,8 @@ case class KeyLoader(val fromKms: Boolean,
           kms.retrieveDataKeyPlainText(primaryKeyMaterial, "", null, encryptedDataKey)
         } else {
           encrypterType match {
-            case Encrypter.NATIVE_AES_CBC => primaryKeyPlainText
-            case Encrypter.COMMON =>
+            case BigDLEncrypt.NATIVE_AES_CBC => primaryKeyPlainText
+            case BigDLEncrypt.COMMON =>
               // unwrap the data key with primaryKeyPlainText
               val cipher = dataKeyCipher(Cipher.DECRYPT_MODE)
               val encryptedDataKeyBytes = Base64.getDecoder().decode(encryptedDataKey)
@@ -97,8 +97,8 @@ case class KeyLoader(val fromKms: Boolean,
             (dataKeyPlainText, encryptedDataKey)
         } else {
           encrypterType match {
-            case Encrypter.NATIVE_AES_CBC => (primaryKeyPlainText, null)
-            case Encrypter.COMMON =>
+            case BigDLEncrypt.NATIVE_AES_CBC => (primaryKeyPlainText, null)
+            case BigDLEncrypt.COMMON =>
               val dataKeyPlainText: String = {
                 val generator = KeyGenerator.getInstance("AES")
                 generator.init(keySize, SecureRandom.getInstanceStrong())

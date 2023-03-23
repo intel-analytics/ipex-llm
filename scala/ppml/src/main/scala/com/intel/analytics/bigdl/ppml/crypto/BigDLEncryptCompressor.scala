@@ -23,14 +23,14 @@ import org.apache.hadoop.io.compress.Compressor
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
   dataKeyCipherText: String = "",
-  encrypterType: String = Encrypter.COMMON) extends Compressor {
-  val bigdlEncrypt = Encrypter(encrypterType)
+  encrypterType: String = BigDLEncrypt.COMMON) extends Compressor {
+  val bigdlEncrypt = BigDLEncrypt(encrypterType)
   var hasHeader = false
   encrypterType match {
-    case Encrypter.COMMON =>
+    case BigDLEncrypt.COMMON =>
       bigdlEncrypt.asInstanceOf[BigDLEncrypt]
         .init(cryptoMode, ENCRYPT, dataKeyPlainText, dataKeyCipherText)
-    case Encrypter.NATIVE_AES_CBC =>
+    case BigDLEncrypt.NATIVE_AES_CBC =>
       bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
   }
   var isFinished = false
@@ -153,7 +153,7 @@ object BigDLEncryptCompressor {
     val (dataKeyPlainText, dataKeyCipherText, encrypterType) = (
       conf.get("bigdl.write.dataKey.plainText"),
       conf.get("bigdl.write.dataKey.cipherText"),
-      conf.get("spark.bigdl.encryter.type", Encrypter.COMMON)
+      conf.get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON)
     )
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
       dataKeyPlainText, dataKeyCipherText, encrypterType)

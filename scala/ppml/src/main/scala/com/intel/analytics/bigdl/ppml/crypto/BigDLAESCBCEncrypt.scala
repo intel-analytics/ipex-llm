@@ -46,9 +46,8 @@ class BigDLAESCBCEncrypt extends BigDLEncrypt {
     opMode = mode
     opMode match {
       case DECRYPT =>
-        if (initializationVector == null) {
-          throw new EncryptRuntimeException("initializationVector got from file is empty!")
-        }
+        Log4Error.invalidInputError(initializationVector != null,
+          "initializationVector got from input data file is empty")
       case ENCRYPT =>
         val r = new SecureRandom()
         initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)

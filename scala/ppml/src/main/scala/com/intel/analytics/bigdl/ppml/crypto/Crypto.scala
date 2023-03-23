@@ -276,24 +276,3 @@ case object PLAIN_TEXT extends CryptoMode {
   override def secretKeyAlgorithm: String = ""
 }
 
-object Encrypter {
-
-  val COMMON = "common"
-  val NATIVE_AES_CBC = "nativeaescbc"
-
-  /**
-   * Create encrypter by string.
-   */
-   def apply(s: String): BigDLEncrypt = {
-     s.toLowerCase() match {
-       case COMMON =>
-         new BigDLEncrypt
-       case NATIVE_AES_CBC =>
-         new BigDLAESCBCEncrypt
-       case _ =>
-         throw new EncryptRuntimeException(
-          "Property of spark.bigdl.encryter.type is wrong!")
-         null
-     }
-   }
-}
