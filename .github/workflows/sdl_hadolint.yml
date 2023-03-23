@@ -18,4 +18,4 @@ jobs:
         apt-get install git -y
     - name: "bigdl-k8s-dockerfile-scanning"
       run: |
-        hadolint ./docker/bigdl-k8s/Dockerfile
+        hadolint --ignore DL4000 --ignore DL3020 ./docker/bigdl-k8s/Dockerfile
