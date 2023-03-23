@@ -58,16 +58,37 @@ elif [ "$action" = "encrypt" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.Encrypt \
-		--inputPath $input_path \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /home/key/ehsm_encrypted_data_key \
-                --kmsType EHSMKeyManagementService \
-		--kmsServerIP $EHSM_KMS_IP \
-                --kmsServerPort $EHSM_KMS_PORT \
-                --ehsmAPPID $appid \
-                --ehsmAPIKEY $apikey
+		/opt/jdk8/bin/java \
+    		-cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:/${SPARK_HOME}/examples/jars/*:${BIGDL_HOME}/jars/*" -Xmx1g \
+    		org.apache.spark.deploy.SparkSubmit \
+    		--master local[2] \
+        	--deploy-mode client \
+			--driver-memory 5g \
+			--driver-cores 4 \
+			--executor-memory 5g \
+			--executor-cores 4 \
+			--num-executors 2 \
+			--conf spark.cores.max=8 \
+			--conf spark.network.timeout=10000000 \
+			--conf spark.executor.heartbeatInterval=10000000 \
+			--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+			--conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+			--conf spark.bigdl.primaryKey.amy.kms.type=EHSMKeyManagementService \
+			--conf spark.bigdl.primaryKey.amy.material=/home/key/ehsm_encrypted_primary_key \
+			--conf spark.bigdl.primaryKey.amy.kms.ip=$EHSM_KMS_IP \
+			--conf spark.bigdl.primaryKey.amy.kms.port=$EHSM_KMS_PORT \
+			--conf spark.bigdl.primaryKey.amy.kms.appId=$appid \
+			--conf spark.bigdl.primaryKey.amy.kms.apiKey=$apikey \
+			--verbose \
+			--class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+			--conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+			--conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
+			--name amy-encrypt \
+			local://${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+			--inputDataSourcePath $input_path \
+			--outputDataSinkPath $output_path \
+			--cryptoMode aes/cbc/pkcs5padding \
+			--dataSourceType csv
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    apikey=$3
