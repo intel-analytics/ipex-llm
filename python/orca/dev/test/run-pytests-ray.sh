@@ -45,6 +45,15 @@ python -m pytest -v test/bigdl/orca/learn/ray \
       --ignore=test/bigdl/orca/learn/ray/horovod/ \
       --ignore=test/bigdl/orca/learn/ray/ctx/ \
       --ignore=test/bigdl/orca/learn/ray/mxnet/
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];
+then
+    exit $exit_status_2
+fi
+ray stop -f
+
+echo "Running orca data ray related tests"
+python -m pytest -v test/bigdl/orca/data/ray
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
@@ -52,19 +61,10 @@ then
 fi
 ray stop -f
 
-echo "Running orca data ray related tests"
-python -m pytest -v test/bigdl/orca/data/ray
+echo "Running orca learn spark backend tests"
+python -m pytest -v test/bigdl/orca/learn/spark/
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then
     exit $exit_status_4
-fi
-ray stop -f
-
-echo "Running orca learn spark backend tests"
-python -m pytest -v test/bigdl/orca/learn/spark/
-exit_status_6=$?
-if [ $exit_status_6 -ne 0 ];
-then
-    exit $exit_status_6
 fi
