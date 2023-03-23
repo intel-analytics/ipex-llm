@@ -174,8 +174,6 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
     def flatten(data):
         length = get_length(data)
 
-        data = list(data.values())
-
         for i in range(length):
             # Always yield a list here
             yield filter_elem(data, i)
@@ -195,7 +193,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
             return [convert_elem(i) for i in elem]
         # dict of np array as values
         elif isinstance(elem, dict):
-            return {k: convert_elem(v) for k, v in elem.items()}
+            return [convert_elem(v) for k, v in elem.items()]
         # scalar in basic type
         elif isinstance(elem, np.ScalarType):
             return float(elem)
@@ -218,7 +216,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
             else:
                 # a multiple list in pair[1] and stacked like [f1, f2] + [[output1], [output2]]
                 return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                             [convert_elem(pair[1])]))
+                             convert_elem(pair[1])))
         elif not isinstance(pair[1], (list, tuple)):
             # if pair[1] is not iterable, don't split them into list
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
@@ -229,10 +227,8 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                          [convert_elem(item) for item in pair[1]]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    if output_cols is None:
-        columns = df.columns + ["prediction"]
-    else:
-        columns = df.columns + output_cols
+    schema = [k for k in prediction_rdd.first()]
+    columns = df.columns + schema
     # Converting to DataFrame will trigger the computation
     # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)
