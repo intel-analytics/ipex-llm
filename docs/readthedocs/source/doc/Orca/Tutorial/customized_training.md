@@ -55,12 +55,12 @@ class MainCallback(Callback);
         self.on_iter_forward(runner)
 ```
 
-In general, there are 23 points where callbacks can be inserted from the beginning to the end of model training:
+In general, there are 24 points where callbacks can be inserted from the beginning to the end of model training:
 
 * global points: `before_run`, `after_run`, `before_epoch`, `after_epoch`, `before_iter`, `after_iter`, *`on_iter_forward`
 * training points: `before_train_epoch`, `after_train_epoch`,  `before_train_iter`, `before_val_iter`, *`on_train_forward`, *`on_iter_backward`, *`on_lr_adjust`
 * validation points: `before_val_epoch`, `after_val_epoch`, `before_val_iter`, `after_val_iter`, *`on_val_forward`
-* prediction points: `before_pred_epoch`, `after_pred_epoch`, `before_pred_iter`, `after_pred_iter`
+* prediction points: `before_pred_epoch`, `after_pred_epoch`, `before_pred_iter`, `after_pred_iter`, `on_pred_forward`
 
 Note that points marked with star are only available in `MainCallBack`.
 
@@ -87,7 +87,7 @@ for epoch in range(epochs):
 
         call_hooks("on_iter_forward", self)
 
-        call_hooks("on_iter_backward", self)# this will be called when training
+        call_hooks("on_iter_backward", self)  # this will be called when training
 
         call_hooks("on_iter_end", self)
 
@@ -98,7 +98,7 @@ for epoch in range(epochs):
            del self.outputs
            del self.loss
 
-    call_hooks("on_lr_adjust", self)# this will be called when training
+    call_hooks("on_lr_adjust", self)  # this will be called when training
 
     call_hooks("on_epoch_end", self)
 
@@ -111,21 +111,24 @@ call_hooks("on_run_end", self)
 There are attributes that you can access **all the time** and others that can only be accessed **in some stages**:
 
 Globally Access:
-* num_epochs: Total epochs to be trained.
-* epochs: Current epoch number.
-* train_loader: The train dataloader returned by train_dataloader_creator.
-* val_loader: The validation dataloader returned by val_dataloader_creator.
-* rank: The rank of this runner.
-* model: The model returned by model_creator.
-* optimizer: The optimizer returned by optimizer_creator.
-* scheduler: The scheduler returned by scheduler_creator.
+* num_epochs: Int. Total epochs to be trained.
+* epochs: Int. Current epoch number.
+* train_loader: Torch dataloader. The train dataloader returned by train_dataloader_creator.
+* val_loader: Torch dataloader. The validation dataloader returned by val_dataloader_creator.
+* rank: Int. The rank of this runner.
+* model: Torch module. The model returned by model_creator.
+* optimizer: Torch optimaizer. The optimizer returned by optimizer_creator.
+* scheduler: Torch scheduler. The scheduler returned by scheduler_creator.
 * criterion: The loss function returned by loss_creator.
+* stop: Boolean. Whether to stop training in this iteration.
+* global_step: Int. The total number of iterations.
 
 Can be accessed within iterations(like `before_train_iter`, `after_train_iter` etc.):
 * batch: The data batch of this iteration.
 * batch_idx: The batch index of this iteration.
 * output: The output of the model in this iteration.
 * loss: The loss calculated in this iteration.
+
 
 ## Callback Usage Examples
 
