@@ -71,10 +71,16 @@ bash init.sh
 
 #### 2.2 Submit Spark Machine Learning job
 
-MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/scripts` and execute one of them like this:
+MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/mllib/scripts` and execute one of them like this:
 
 ```bash 
-bash scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
+bash mllib/scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
+```
+
+The MLlib toolkit also provides machine learning examples that use Kubernetes, and you can distinguish whether they use Kubernetes and what deploy mode they use by the script name. You can run one of the Kubernetes examples like this:
+
+```bash
+bash mllib/scripts/classification/native/start-random-forest-classifier-on-k8s-client-native.sh
 ```
 
 Or submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
@@ -114,59 +120,6 @@ export your_application_arguments=...
     ${your_application_arguments}
 ```
 
-#### 2.3 Submit Spark Machine Learning job with k8s
-You can also use bigdl-ppml-submit.sh to submit Machine Learning job with k8s.
-```bash
-export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
-
-bash bigdl-ppml-submit.sh \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode client \
-    --driver-memory 32g \
-    --driver-cores 8 \
-    --executor-memory 32g \
-    --executor-cores 8 \
-    --num-executors 2 \
-    --conf spark.driver.host=$LOCAL_IP \
-    --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=8g \
-    --conf spark.executor.cores=8 \
-    --conf spark.executor.memory=8g \
-    --conf spark.executor.instances=2 \
-    --conf spark.cores.max=16 \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    --conf spark.authenticate=true \
-    --conf spark.authenticate.secret=$secure_password \
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.authenticate.enableSaslEncryption=true \
-    --conf spark.network.crypto.enabled=true \
-    --conf spark.network.crypto.keyLength=128 \
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-    --conf spark.io.encryption.enabled=true \
-    --conf spark.io.encryption.keySizeBits=128 \
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-    --conf spark.ssl.enabled=true \
-    --conf spark.ssl.port=8043 \
-    --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/keys/keystore.jks \
-    --conf spark.ssl.keyStorePassword=$secure_password \
-    --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
-    --conf spark.ssl.trustStorePassword=$secure_password \
-    --conf spark.ssl.trustStoreType=JKS \
-    --class org.apache.spark.examples.ml.RandomForestClassifierExample \
-    --name RandomForestClassifierExample \
-    --verbose \
-    --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-    local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
-```
 
 ### 3. Run LightGBM Application
 
