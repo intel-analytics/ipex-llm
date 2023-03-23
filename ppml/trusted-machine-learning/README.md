@@ -69,7 +69,7 @@ If you want to directyly execute a local application, run `init.sh` to init the 
 bash init.sh
 ```
 
-#### 2.2 Submit a local Spark Machine Learning job 
+#### 2.2 Submit local Spark Machine Learning job 
 
 MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/mllib/scripts` and execute one of them like this:
 
