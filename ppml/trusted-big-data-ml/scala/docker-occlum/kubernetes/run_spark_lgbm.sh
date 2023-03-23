@@ -13,13 +13,12 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
-    --conf spark.kubernetes.executor.podNamePrefix="sparklgbm" \
+    --conf spark.kubernetes.executor.podNamePrefix="spark-lgbm" \
     --conf spark.kubernetes.sgx.log.level=off \
     --num-executors 2 \
     --executor-cores 4 \
     --conf spark.cores.max=8 \
     --executor-memory 1g \
-    --conf spark.default.parallelism=8 \
     --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" \
     --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="5G" \
     --verbose \

@@ -169,7 +169,12 @@ Then:
 ```bash
 ./run_spark_lgbm.sh
 ```
-Note that if you do not have ssl key and certificate in `/ppml/keys`, the distributed lgbm training will failed.
+Note that if you do not have ssl key and certificate in `/ppml/keys`, the distributed lgbm training will failed like this:
+```
+[LightGBM] [Warning] Unable to set TLSV2 cipher, ignored and try to set TLSV3...
+error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
+error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
+```
 
 #### Source code
 You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
