@@ -90,8 +90,8 @@ def optimizer_creator(model, config):
 
 criterion = BCELoss()
 
-orca_estimator = Estimator.from_torch(model=model,
-                                      optimizer=optimizer,
+orca_estimator = Estimator.from_torch(model=model_creator,
+                                      optimizer=optimizer_creator,
                                       loss=criterion,
                                       metrics=[Accuracy()],
                                       backend="spark",
