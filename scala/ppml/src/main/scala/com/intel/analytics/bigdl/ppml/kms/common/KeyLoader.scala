@@ -45,8 +45,9 @@ case class KeyLoader(val fromKms: Boolean,
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
     protected val hadoopConfig = if (config != null) config else new Configuration()
-    protected val encrypterType = SparkSession.builder().getOrCreate().sparkContext
-      .hadoopConfiguration.get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON)
+    protected val encrypterType = SparkSession.builder().getOrCreate()
+      .sparkContext.hadoopConfiguration
+      .get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON).toLowerCase
 
     // retrieve the plaintext string of an existing data key
     def retrieveDataKeyPlainText(fileDirPath: String): String = {
