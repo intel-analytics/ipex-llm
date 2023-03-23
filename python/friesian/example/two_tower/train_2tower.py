@@ -42,7 +42,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.executor.memoryOverhead": "120g"}
 
 
-def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.'):
+def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', backend='ray'):
     two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
 
     def model_creator(config):
@@ -56,6 +56,7 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.'):
 
     estimator = Estimator.from_keras(model_creator=model_creator,
                                      verbose=False,
+                                     backend=backend,
                                      config=config)
 
     callbacks = []
@@ -162,6 +163,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn, standalone or spark-submit.')
+    parser.add_argument('--backend', type=str, default="ray",
+                        choices=("spark", "ray"),
+                        help='The backend of Orca Estimator, either ray or spark.')
     parser.add_argument('--master', type=str, default=None,
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=8,
@@ -185,21 +189,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local", init_ray_on_spark=True)
+        sc = init_orca_context("local")
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
                                memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf,
-                               init_ray_on_spark=True)
+                               conf=spark_conf)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                                conf=spark_conf, extra_python_lib="model.py",
-                               object_store_memory="80g",
-                               init_ray_on_spark=True)
+                               object_store_memory="80g")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit")
     else:
@@ -235,6 +237,6 @@ if __name__ == '__main__':
                     "intra_op_parallelism": args.executor_cores}
 
     train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
-          model_dir=args.model_dir)
+          model_dir=args.model_dir, backend=args.backend)
 
     stop_orca_context()

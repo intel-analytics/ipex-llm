@@ -27,7 +27,7 @@ command:
 spark-submit \
   --master local[4] \
   --conf spark.task.cpus=2 \
-  --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExample \
+  --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExample \
   /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   /path/to/iris.data 2 100 /path/to/model_to_be_saved
 ```
@@ -59,7 +59,7 @@ parameters:
 spark-submit \
   --master local[4] \
   --conf spark.task.cpus=2 \
-  --class com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierPredictExample \
+  --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierPredictExample \
   /path/to/bigdl-dllib-spark_2.4.6-0.14.0-SNAPSHOT-jar-with-dependencies.jar \
   /path/to/iris.data /path/to/model/saved
 ```
