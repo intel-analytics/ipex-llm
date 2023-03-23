@@ -165,7 +165,7 @@ RUN cd /opt && \
 RUN mkdir /ppml && cd /ppml && \
     git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     cd LightGBM && mkdir build && cd build && \
-    cmake -DUSE_SWIG=ON -DUSE_SSL_SOCKET=1 .. && make -j4
+    cmake -DUSE_SWIG=ON -DUSE_SSL=1 .. && make -j4
 
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
