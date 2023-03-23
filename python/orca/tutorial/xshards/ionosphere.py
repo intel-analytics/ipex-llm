@@ -78,15 +78,26 @@ def update_label_to_zero_base(df):
     return df
 data_shard = data_shard.transform_shard(update_label_to_zero_base)
 
-model = MLP(34)
+
+def model_creator(config):
+    model = MLP(config["n_inputs"])
+    model.train()
+    return model
+
+
+def optimizer_creator(model, config):
+    optimizer = SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
+
 criterion = BCELoss()
-optimizer = SGD(model.parameters(), lr=0.01, momentum=0.9)
 
 orca_estimator = Estimator.from_torch(model=model,
                                       optimizer=optimizer,
                                       loss=criterion,
                                       metrics=[Accuracy()],
-                                      backend="bigdl")
+                                      backend="spark",
+                                      config={"n_inputs": 34,
+                                              "lr": 0.01,
+                                              "momentum": 0.9})
 
 data_shard = data_shard.assembleFeatureLabelCols(featureCols=list(column[:-1]),
                                                  labelCols=[column[-1]])
