@@ -78,6 +78,7 @@ object LgbmClassifierTrain {
 
       val acc = evaluatorMulti.evaluate(predictions)
       println("acc:", acc)
+      model.saveNativeModel(params.modelSavePath)
 
       sc.stop()
     }
