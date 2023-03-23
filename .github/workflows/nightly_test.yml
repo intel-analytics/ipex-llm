@@ -50,7 +50,6 @@ on:
         - Orca-Tutorial-Notebook-Xshards-Image-Py37-Spark3
         - Orca-Tutorial-Notebook-Xshards-Py38-Spark3
         - Orca-Tutorial-Notebook-Xshards-Image-Py38-Spark3
-        #- Orca-Tutorial-Notebook-Xshards-Py39-Spark3
         - Orca-Tutorial-Notebook-Xshards-Image-Py39-Spark3
         - Orca-Tutorial-NCF-Ray-Py37-Spark3
         - Orca-Tutorial-NCF-Py37-Spark3
