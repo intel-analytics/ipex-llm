@@ -799,7 +799,8 @@ class TestTF2EstimatorRayBackend(TestCase):
 
         from pyspark.ml.linalg import DenseVector
         df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature",
+                                                                              "label"])
 
         config = {
             "lr": 0.2
