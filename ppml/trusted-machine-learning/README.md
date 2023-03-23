@@ -69,18 +69,12 @@ If you want to directyly execute a local application, run `init.sh` to init the 
 bash init.sh
 ```
 
-#### 2.2 Submit Spark Machine Learning job
+#### 2.2 Submit a local Spark Machine Learning job 
 
 MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/mllib/scripts` and execute one of them like this:
 
 ```bash 
 bash mllib/scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
-```
-
-The MLlib toolkit also provides machine learning examples that use Kubernetes, and you can distinguish whether they use Kubernetes and what deploy mode they use by the script name. You can run one of the Kubernetes examples like this:
-
-```bash
-bash mllib/scripts/classification/native/start-random-forest-classifier-on-k8s-client-native.sh
 ```
 
 Or submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
@@ -120,6 +114,12 @@ export your_application_arguments=...
     ${your_application_arguments}
 ```
 
+#### 2.3 Submit Spark Machine Learning job with Kubernetes
+The MLlib toolkit also provides machine learning examples that use Kubernetes, and you can distinguish whether they use Kubernetes and what deploy mode they use by the script name. You can run one of the Kubernetes examples like this:
+
+```bash
+bash mllib/scripts/classification/native/start-random-forest-classifier-on-k8s-client-native.sh
+```
 
 ### 3. Run LightGBM Application
 
