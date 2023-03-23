@@ -170,7 +170,7 @@ def filter_elem(input, i):
         return input[i]
 
 
-def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
+def convert_predict_xshards_to_dataframe(df, pred_shards):
     def flatten(data):
         length = get_length(data)
 
@@ -179,11 +179,11 @@ def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
             yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
-    result = convert_predict_rdd_to_dataframe(df, pred_rdd, output_cols)
+    result = convert_predict_rdd_to_dataframe(df, pred_rdd)
     return result
 
 
-def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
+def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     from pyspark.sql import Row
     from pyspark.ml.linalg import Vectors
 
@@ -208,23 +208,14 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
                 return elem.tolist()
 
     def combine(pair):
-        if not output_cols:
-            # a singleton list in pair[1] and stacked like [f1, f2] + [output1]
-            if isinstance(pair[1], (list, tuple)) and len(pair[1]) == 1:
-                return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                             convert_elem(pair[1])))
-            else:
-                # a multiple list in pair[1] and stacked like [f1, f2] + [[output1], [output2]]
-                return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                             convert_elem(pair[1])))
-        elif not isinstance(pair[1], (list, tuple)):
-            # if pair[1] is not iterable, don't split them into list
+        # a singleton list in pair[1] and stacked like [f1, f2] + [output1]
+        if isinstance(pair[1], (list, tuple)) and len(pair[1]) == 1:
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                         [convert_elem(pair[1])]))
+                            convert_elem(pair[1])))
         else:
-            # a multiple columns in pair[1] and merged like [f1, f2] + [output1, output2]
+            # a multiple list in pair[1] and stacked like [f1, f2] + [output1, output2]
             return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                         [convert_elem(item) for item in pair[1]]))
+                            convert_elem(pair[1])))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     schema = [k for k in prediction_rdd.first()]
