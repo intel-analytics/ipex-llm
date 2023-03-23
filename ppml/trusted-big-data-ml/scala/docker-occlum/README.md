@@ -310,7 +310,7 @@ You can find GBT result under folder `/path/to/data/model/`.
 ## BigDL LGBM Example
 
 ### Download data
-You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data). Split 1g of data from the dataset and put it into a folder. Then mount `/path/to/data/1g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).Then mount `/path/to/data/iris.data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
 ```
 -v /path/to/data/:/opt/occlum_spark/data
 ```
