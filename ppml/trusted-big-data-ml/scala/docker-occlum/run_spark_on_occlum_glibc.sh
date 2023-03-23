@@ -469,9 +469,9 @@ run_spark_lgbm() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
-                --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM.LgbmClassifierTrain \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --inputPath /host/data/iris.data \
                 --numIterations 100 \
