@@ -51,8 +51,9 @@ class MainCallback(Callback):
         this will be called during forward when training and validating.
         Any behavior inconsistent with the default forward behavior should be overridden here.
         """
-        # Forward features
+        # unpack features into features and targets
         *features, target = runner.batch
+        # Forward features
         runner.output = runner.model(*features)
         # Ensure `targetL` and `outputL` are always in a list format.
         targetL = [target] if not isinstance(target, (list, tuple)) else target
