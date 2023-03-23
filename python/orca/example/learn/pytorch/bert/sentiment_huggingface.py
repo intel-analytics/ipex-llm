@@ -214,13 +214,6 @@ def parse_args():
     # Sanity checks
     if args.task_name is None and args.train_file is None and args.validation_file is None:
         raise ValueError("Need either a task name or a training/validation file.")
-    else:
-        if args.train_file is not None:
-            extension = args.train_file.split(".")[-1]
-            assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
-        if args.validation_file is not None:
-            extension = args.validation_file.split(".")[-1]
-            assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
 
     if args.push_to_hub:
         assert args.output_dir is not None, "Need an `output_dir` to create a repo when `--push_to_hub` is passed."
@@ -251,7 +244,14 @@ def train_loader_creator(config, batch_size):
         if config['validation_file'] is not None:
             data_files["validation"] = config['validation_file']
         extension = (config['train_file'] if config['train_file'] is not None else config['validation_file']).split(".")[-1]
-        raw_datasets = load_dataset(extension, data_files=data_files)
+        if extension == "txt":
+            extension = "text"
+            raw_datasets = load_dataset(extension, data_files=data_files)
+        elif extension == "tsv":
+            extension = "csv"
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+        else:
+            raw_datasets = load_dataset(extension, data_files=data_files)
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -355,7 +355,14 @@ def eval_loader_creator(config, batch_size):
         if config['validation_file'] is not None:
             data_files["validation"] = config['validation_file']
         extension = (config['train_file'] if config['train_file'] is not None else config['validation_file']).split(".")[-1]
-        raw_datasets = load_dataset(extension, data_files=data_files)
+        if extension == "txt":
+            extension = "text"
+            raw_datasets = load_dataset(extension, data_files=data_files)
+        elif extension == "tsv":
+            extension = "csv"
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+        else:
+            raw_datasets = load_dataset(extension, data_files=data_files)
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -507,98 +514,6 @@ class MyMainCallback(MainCallback):
         pass
 
 
-class StepModelCheckpointCallback(ModelCheckpoint):
-    def __init__(self,
-                 data_size,
-                 gradient_accumulation_steps=1,
-                 filepath=None,
-                 save_weights_only=False,
-                 step_frequency=None,
-                 resume_training=False,
-
-                 ):
-        """
-                ModelCheckpoint callback is used in conjunction with training using estimator.fit() to save
-                a model or weights (in a checkpoint file) at some interval, so the model or weights can be
-                loaded later to continue the training from the state saved.
-                Example:
-                    >>> checkpoint_callback = ModelCheckpoint(
-                    ...     filepath='my/path/sample-mnist-step_{step:02d}',
-                    ... )
-                And checkpoints will be saved as file with path like 'my/path/sample-mnist-epoch=1.ckpt'
-                with different epoch values.
-                :param filepath: path to save the model file.
-                :param step_frequency: step interval to save checkpoint
-                """
-        super().__init__(filepath, save_weights_only)
-        self.step_frequency = step_frequency
-        self.resume_training = resume_training
-        self.gradient_accumulation_steps = gradient_accumulation_steps
-        self.data_size = data_size
-
-    def before_run(self, runner):
-        """
-        Called at the beginning of training.
-        Subclasses should override for any actions to run.
-        :param logs: Dict. Currently, no data is passed to this argument for this method
-          but that may change in the future.
-        """
-        # todo: support resume training
-        dirname = os.path.dirname(self.filepath)
-        from bigdl.orca.data.file import exists, listdir, makedirs
-        if exists(dirname):
-            files = [os.path.basename(f) for f in listdir(dirname)]
-            files = [x for x in files if "ckpt" in x]
-            if len(files) == 0:
-                return None
-            if not self.resume_training:
-                invalidInputError(False,
-                              f"Find non-empty dirname with filepath of {self.filepath}.")
-        else:
-            makedirs(dirname)
-
-    @classmethod
-    def _format_checkpoint_name(cls, dirname, filename, stats=None):
-        """
-        checkpoint name is in the format of 'epoch={epoch}.ckpt'
-        """
-        # check and parse user passed keys in the string
-        groups = re.findall(r"(\{.*?)[:\}]", filename)
-        if len(groups) >= 0:
-            stats = dict() if stats is None else stats
-            for group in groups:
-                name = group[1:]
-
-                if "step" not in name:
-                    warnings.warn("We only support filepath with {step} for now.")
-
-                if name not in stats:
-                    stats[name] = 0
-            filename = filename.format(**stats)
-        ckpt_name = f"{filename}{cls.FILE_EXTENSION}"
-        ckpt_path = os.path.join(dirname, ckpt_name)
-        return ckpt_path
-
-    def after_train_epoch(self, runner):
-        return
-
-    def after_train_iter(self, runner):
-        print("global step: ", runner.global_step)
-        complete_steps = runner.epochs * math.ceil(self.data_size / self.gradient_accumulation_steps)
-        remain = runner.global_step % self.data_size
-        if remain % self.gradient_accumulation_steps == 0 or remain == self.data_size - 1:
-            complete_steps += math.ceil(remain / self.gradient_accumulation_steps)
-            if (complete_steps) % self.step_frequency == 0:
-                stats = {"step": complete_steps}
-                last_ckpt_path = self._format_checkpoint_name(dirname=self.dirname,
-                                                          filename=self.filename,
-                                                          stats=stats)
-                runner.save_checkpoint(last_ckpt_path, self.save_weights_only)
-
-    def after_run(self, runner):
-        pass
-
-
 def main():
     args = parse_args()
     config = vars(args)
@@ -672,7 +587,14 @@ def main():
         if args.validation_file is not None:
             data_files["validation"] = args.validation_file
         extension = (args.train_file if args.train_file is not None else args.validation_file).split(".")[-1]
-        raw_datasets = load_dataset(extension, data_files=data_files)
+        if extension == "txt":
+            extension = "text"
+            raw_datasets = load_dataset(extension, data_files=data_files)
+        elif extension == "tsv":
+            extension = "csv"
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+        else:
+            raw_datasets = load_dataset(extension, data_files=data_files)
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -799,7 +721,7 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=None)
 
     def custom_collate(data):  # (2)
-        data2 = data_collator(data)
+        data2 = data_collator(data).data
         target = data2['labels']
         # data2.pop('labels')
         return data2, target
@@ -866,37 +788,36 @@ def main():
             print(f"Resumed from checkpoint: {args.resume_from_checkpoint}")
             est.load_checkpoint(args.resume_from_checkpoint)
             path = os.path.basename(args.resume_from_checkpoint)
-        else:
-            # Get the most recent checkpoint
-            dirs = [f.name for f in os.scandir(os.getcwd()) if f.is_dir()]
-            dirs.sort(key=os.path.getctime)
-            path = dirs[-1]  # Sorts folders by date modified, most recent checkpoint is the last
+        # else:
+        #     # Get the most recent checkpoint in folder
+        #     print(f"Resumed from checkpoint: {args.resume_from_checkpoint}/last.ckpt")
+        #     est.load_checkpoint(os.path.join(args.resume_from_checkpoint, "last.ckpt"))
         # Extract `epoch_{i}` or `step_{i}`
         training_difference = os.path.splitext(path)[0]
 
         if "epoch" in training_difference:
-            starting_epoch = int(training_difference.replace("epoch_", "")) + 1
+            starting_epoch = int(training_difference.replace("model_epoch=", "")) + 1
             resume_step = None
         else:
-            resume_step = int(training_difference.replace("step_", ""))
+            resume_step = int(training_difference.replace("model_step=", ""))
             starting_epoch = resume_step // len(train_dataloader)
             resume_step -= starting_epoch * len(train_dataloader)
 
     callbacks = [MyMainCallback(len(train_dataloader), gradient_accumulation_steps=args.gradient_accumulation_steps)]
-    if args.checkpointing_steps is not None:
+    if checkpointing_steps is not None:
         if checkpointing_steps == "epoch":
             callbacks.append(
-                ModelCheckpoint(filepath=os.path.join(args.output_dir, "epoch_{epoch}"),
-                            save_weights_only=True)
+                ModelCheckpoint(filepath=os.path.join(args.output_dir, "model_{epoch}"),
+                                save_weights_only=True
+                                )
             )
         else:
             callbacks.append(
-                StepModelCheckpointCallback(data_size=len(train_dataloader),
-                                            gradient_accumulation_steps=args.gradient_accumulation_steps,
-                                            filepath=os.path.join(args.output_dir, "step_{step}"),
-                                            save_weights_only=True,
-                                            step_frequency=checkpointing_steps,
-                                            resume_training=args.resume_from_checkpoint is not None)
+                ModelCheckpoint(filepath=os.path.join(args.output_dir, "model_{step}"),
+                                save_weights_only=True,
+                                by_epoch=False,
+                                interval=checkpointing_steps
+                                )
             )
     stats = est.fit(data=train_loader_creator,
             epochs=args.num_train_epochs,
