@@ -327,7 +327,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list) and not isinstance(data, dict):
+        if not isinstance(data, (list, tuple, dict)):
             arrays = [data]
         else:
             arrays = data
