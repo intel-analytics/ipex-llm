@@ -87,6 +87,7 @@ def model_creator(config):
 
 def optimizer_creator(model, config):
     optimizer = SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
+    return optimizer
 
 criterion = BCELoss()
 
