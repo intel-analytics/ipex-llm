@@ -1,0 +1,37 @@
+name: 'Run Orca Tutorial NCF Py39 Spark'
+description: 'Run Orca Tutorial NCF Py39 Spark'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py39
+        export SPARK_LOCAL_HOSTNAME=localhost
+
+        pip install -i https://pypi.org/simple --pre --upgrade bigdl-orca-spark3
+        unset SPARK_HOME
+        
+        # install requires
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tqdm
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==1.2.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+
+        pip list
+
+        # TODO: delete the following two lines after fix saving optimizer states in spark backend
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_spark_dataframe.py -i
+        sed 's/args.backend = "ray"/args.backend = "spark"/1' python/orca/tutorial/NCF/tf_train_xshards.py -i
+
+        chmod a+x python/orca/dev/test/run-tutorial-NCF.sh
+        python/orca/dev/test/run-tutorial-NCF.sh spark ml-1m
+        python/orca/dev/test/run-tutorial-NCF.sh spark ml-100k
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
