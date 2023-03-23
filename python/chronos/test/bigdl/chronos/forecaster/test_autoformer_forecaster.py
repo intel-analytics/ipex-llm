@@ -20,6 +20,7 @@ import tempfile
 import os
 
 from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase

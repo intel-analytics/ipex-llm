@@ -186,6 +186,9 @@ class AutoformerForecaster(Forecaster):
         self.loss_creator = loss_creator
         self.cxt_manager = DummyForecasterContextManager()
         self.context_enabled = False
+        current_num_threads = torch.get_num_threads()
+        self.thread_num = current_num_threads
+        self.accelerate_method = None
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
