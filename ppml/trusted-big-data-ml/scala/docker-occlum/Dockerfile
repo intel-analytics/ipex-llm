@@ -24,7 +24,7 @@ ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential wget git unzip zip swig cmake && \
+        openjdk-8-jdk build-essential wget git unzip zip swig libssl-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
