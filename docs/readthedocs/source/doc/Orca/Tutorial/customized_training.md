@@ -129,6 +129,9 @@ Can be accessed within iterations(like `before_train_iter`, `after_train_iter` e
 * output: The output of the model in this iteration.
 * loss: The loss calculated in this iteration.
 
+### How can users save and load their customized attributes?
+
+
 
 ## Callback Usage Examples
 
