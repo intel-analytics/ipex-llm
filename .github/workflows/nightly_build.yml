@@ -267,6 +267,9 @@ jobs:
         docker build \
         --build-arg http_proxy=${HTTP_PROXY} \
         --build-arg https_proxy=${HTTPS_PROXY} \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=${JDK_URL} \
+        --build-arg no_proxy=${NO_PROXY} \
         --rm --no-cache -t ${IMAGE}:${TAG} .
         # tag 'latest'
         docker push ${IMAGE}:${TAG}
