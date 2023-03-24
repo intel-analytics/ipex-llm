@@ -78,7 +78,7 @@ class TestTFEstimatorBasic(TestCase):
         class.  setup_method is invoked for every test method of a class.
         """
         conf = {"spark.python.worker.reuse": "false"}
-        sc = init_orca_context(cores=8, conf=conf)
+        sc = init_orca_context(cores=8)
 
     def tearDown(self):
         """ teardown any state that was previously setup with a setup_method
