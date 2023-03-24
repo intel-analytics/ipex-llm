@@ -74,7 +74,7 @@ object MultiPartySparkQueryExample extends Supportive {
       }
 
       val unionDf = timing("5/8 union Amy developers and Bob developers") {
-        amyDevelopers.union(bobDevelopers).repartition(1)
+        amyDevelopers.union(bobDevelopers)
       }
 
       timing("6/8 encrypt and save union outputs") {
