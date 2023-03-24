@@ -10,9 +10,8 @@
       - [3.1 Deploy EHSM KMS\&AS](#31-deploy-ehsm-kmsas)
       - [3.2 Enroll yourself in EHSM](#32-enroll-yourself-in-ehsm)
       - [3.3 Attest EHSM Server](#33-attest-ehsm-server)
-        - [3.3.1 Start a BigDL client container](#331-start-a-bigdl-client-container)
-        - [3.3.2 Verify  EHSM Quote](#332-verify--ehsm-quote)
       - [3.4 Register your MREnclave to EHSM](#34-register-your-mrenclave-to-ehsm)
+      - [3.5 Enable Attestation in configuration](#35-enable-attestation-in-configuration)
 - [Spark](#spark)
   - [SGX](#sgx)
     - [Spark Submit](#spark-submit)
@@ -33,25 +32,15 @@
         - [1.1 Prepare the configuration file](#11-prepare-the-configuration-file)
         - [1.2 Three ways to start](#12-three-ways-to-start)
           - [1.2.1 Start with spark official script](#121-start-with-spark-official-script)
-          - [1.2.2 Start with JAVA scripts](#122-start-with-java-scripts)
-          - [1.2.3 Start with bigdl-ppml-submit.sh](#123-start-with-bigdl-ppml-submitsh)
         - [1.3 Use beeline to connect Thrift Server](#13-use-beeline-to-connect-thrift-server)
-          - [1.3.1 Start beeline](#131-start-beeline)
-          - [1.3.2 Test thrift server](#132-test-thrift-server)
       - [2. Enable transparent encryption](#2-enable-transparent-encryption)
         - [2.1 HDFS Transparent Encryption](#21-hdfs-transparent-encryption)
-          - [2.1.1 Start hadoop KMS(Key Management Service)](#211-start-hadoop-kmskey-management-service)
-          - [2.1.2 Use KMS to encrypt and decrypt data](#212-use-kms-to-encrypt-and-decrypt-data)
         - [2.2 Gramine file system encryption](#22-gramine-file-system-encryption)
         - [2.3 Bigdl PPML Codec](#23-bigdl-ppml-codec)
     - [Spark Configuration Explanations](#spark-configuration-explanations)
       - [1. BigDL PPML SGX-related configurations](#1-bigdl-ppml-sgx-related-configurations)
       - [2. Spark security configurations](#2-spark-security-configurations)
         - [2.1 Spark RPC](#21-spark-rpc)
-          - [2.1.1 Authentication](#211-authentication)
-          - [2.1.2 Encryption](#212-encryption)
-          - [2.1.3. Local Storage Encryption](#213-local-storage-encryption)
-          - [2.1.4 SSL Configuration](#214-ssl-configuration)
       - [3 env MALLOC\_ARENA\_MAX explanations](#3-env-malloc_arena_max-explanations)
   - [TDXVM](#tdxvm)
     - [1. Deploy PCCS](#1-deploy-pccs)
@@ -170,7 +159,7 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 
 #### 3.3 Attest EHSM Server
 
-##### 3.3.1 Start a BigDL client container
+**3.3.1 Start a BigDL client container**
 
 First, start a bigdl container, which uses the custom image built before.
 
@@ -199,7 +188,7 @@ Enter the work environment:
 sudo docker exec -it gramine-verify-worker bash
 ```
 
-##### 3.3.2 Verify  EHSM Quote
+**3.3.2 Verify  EHSM Quote**
 
 You need to first attest the EHSM server and verify the service as trusted before running workloads, to avoid sending your secrets to a fake EHSM service.
 
@@ -231,6 +220,52 @@ python register-mrenclave.py --appid <your_appid> \
                              --mr_enclave <your_mrenclave_hash_value> \
                              --mr_signer <your_mrensigner_hash_value>
 ```
+
+#### 3.5 Enable Attestation in configuration
+
+  First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
+
+  ```bash
+  kubectl create secret generic kms-secret \
+                    --from-literal=app_id=YOUR_KMS_APP_ID \
+                    --from-literal=api_key=YOUR_KMS_API_KEY \
+                    --from-literal=policy_id=YOUR_POLICY_ID
+  ```
+
+  Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
+  ``` yaml
+  apiVersion: v1
+  kind: Pod
+  spec:
+    containers:
+    - name: spark-driver
+      securityContext:
+        privileged: true
+      env:
+        - name: ATTESTATION
+          value: true
+        - name: PCCS_URL
+          value: https://your_pccs_ip:your_pccs_port
+        - name: ATTESTATION_URL
+          value: your_attestation_url
+        - name: APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: kms-secret
+              key: app_id
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kms-secret
+              key: app_key
+        - name: ATTESTATION_POLICYID
+          valueFrom:
+            secretKeyRef:
+              name: policy-id-secret
+              key: policy_id
+  ...
+  ```
+  You should get `Attestation Success!` in logs after you submit a PPML job if the quote generated with `user_report` is verified successfully by Attestation Service. Or you will get `Attestation Fail! Application killed!` or `JASONObject["result"] is not a JASONObject`and the job will be stopped.
 
 # Spark
 
@@ -532,7 +567,7 @@ sbin/start-thriftserver.sh
 ```
 **Tip:** The startup of the thrift server will create the metastore_db file at the startup location of the command, which means that every startup command needs to be run at the same location, in the example it is SPARK_HOME.
 
-###### 1.2.2 Start with JAVA scripts
+**1.2.2 Start with JAVA scripts**
 
 ```bash
 /opt/jdk8/bin/java \
@@ -545,7 +580,7 @@ sbin/start-thriftserver.sh
   local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
 ```
 
-###### 1.2.3 Start with bigdl-ppml-submit.sh
+**1.2.3 Start with bigdl-ppml-submit.sh**
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
@@ -574,13 +609,14 @@ sgx is started in this script, and the thrift server runs in a trusted environme
 
 ##### 1.3 Use beeline to connect Thrift Server
 
-###### 1.3.1 Start beeline
+**1.3.1 Start beeline**
+
 ```bash
 cd $SPARK_HOME
 ./bin/beeline
 ```
 
-###### 1.3.2 Test thrift server
+**1.3.2 Test thrift server**
 
 ```bash
 !connect jdbc:hive2://localhost:10000 #connect thrift server
@@ -604,7 +640,9 @@ To ensure data security, we need to encrypt and store data. For ease of use, we 
 
 If you use hdfs as a warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
 ![thrift_server_hdfs_encryption](pictures/thrift_server_hdfs_encryption.png)
-###### 2.1.1 Start hadoop KMS(Key Management Service)
+
+**2.1.1 Start hadoop KMS(Key Management Service)**
+
 1.  Make sure you can correctly start and use hdfs
 ```
 hadoop fs -ls /
@@ -642,7 +680,8 @@ hadoop key list
 ```
 
 
-###### 2.1.2 Use KMS to encrypt and decrypt data
+**2.1.2 Use KMS to encrypt and decrypt data**
+
 1. Create a new encryption key for an encryption zone
 ```bash
 hadoop key create your_key
@@ -763,7 +802,9 @@ When SGX is not used, the configuration is the same as spark native.
 #### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.
 ##### 2.1 Spark RPC
-###### 2.1.1 Authentication
+
+**2.1.1 Authentication**
+
 `spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
 `spark.authenticate.secret`: The secret key used authentication.
 `spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
@@ -776,7 +817,8 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.authenticate.enableSaslEncryption=true
 ```
 
-###### 2.1.2 Encryption
+**2.1.2 Encryption**
+
 `spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.
 `spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.
 `spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.
@@ -785,7 +827,8 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.network.crypto.keyLength=128
     --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
 ```
-###### 2.1.3. Local Storage Encryption
+**2.1.3. Local Storage Encryption**
+
 `spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.
 `spark.io.encryption.keySizeBits`: IO encryption key size in bits.
 `spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.
@@ -794,7 +837,8 @@ Below is an explanation of these security configurations, Please refer to [Spark
     --conf spark.io.encryption.keySizeBits=128
     --conf spark.io.encryption.keygen.algorithm=HmacSHA1
 ```
-###### 2.1.4 SSL Configuration
+**2.1.4 SSL Configuration**
+
 `spark.ssl.enabled`: true -> enable SSL.
 `spark.ssl.port`: the port where the SSL service will listen on.
 `spark.ssl.keyPassword`: the password to the private key in the key store.
