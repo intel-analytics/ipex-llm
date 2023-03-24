@@ -1,23 +1,23 @@
 # How to Customize Your Pytorch Training Process
 
-This tutorial provides a overall guide on how to customize your own pytorch training process with callbacks mechanism.
+This tutorial provides a guide on customizing your PyTorch training process with the callbacks mechanism.
 
 
 ## Callback Mechanism Introduction
 
 ### What is callback mechanism?
 
-A callback function is a function passed into another function as an argument, which is then invoked inside the outer function to complete some kind of routine or action.
+The callback mechanism involves passing a function as an argument into another function, which is then executed within the outer function to accomplish a specific task or action.
 
 ### How does a callback work?
 
-Callbacks mechanism divides the entire training process into several points according to different stages, so users can implement various processes of training by overriding these callbacks of corresponding points.
+The callback mechanism breaks down the entire training process into several stages, allowing users to customize different training processes by overriding the corresponding callbacks.
 
 ### How many callbacks are there?
 
-And there are two kinds of callbacks here:
+There are two types of callbacks:
 
-One is the callback that does nothing by default like `on_run_end`. We may utilize our existing Callback class to achieve this.
+The first type is a callback that does nothing by default, such as `on_run_end`. We can use our existing Callback class to implement this.
 ```python
 class Callback:
     
@@ -29,7 +29,7 @@ class Callback:
     def on_iter_end(self, runner): ...
 ```
 
-Another is the callback that contains default behaviors defined by orca: on_iter_forward, on_iter_backward and on_lr_adjust. These methods are somewhat special, because only one special MainCallback should be allowed to implement these methods among all callbacks(otherwise there will propagate forward and backward twice).
+Another is the callback that contains default behaviors defined by orca: on_iter_forward, on_iter_backward and on_lr_adjust. These methods are somewhat special, because only one MainCallback should be allowed to implement these methods among all callbacks(otherwise there will propagate forward and backward twice).
 ```python
 class MainCallback(Callback);
 
@@ -131,6 +131,30 @@ Can be accessed within iterations(like `before_train_iter`, `after_train_iter` e
 
 ### How can users save and load their customized attributes?
 
+Our Torch Runner provides `put&get` APIs to save and load user's customized attributes. Users can utilize such a storage place to assign and fetch their own attributes across hooks.
+
+* runner.put(k, v): store a new value `v` with the key `k`.
+* runner.update(k, v): update the value under key `k` with a new value `v`.
+* runner.get(k): return the value under key `k`.
+* runner.remove(k): remove the value under key `k`.
+
+```python
+#  Usage: Forward with dummy data.
+class ResNetPerfCallback(MainCallback):
+    def before_val_epoch(self, runner):
+        ...
+        if runner.config["dummy"]:
+            runner.put("images", images)
+            runner.put("target", target)
+        ...
+    
+    def on_val_forward(self, runner):
+        if runner.config["dummy"]:
+            images = runner.get("images")
+            target = runner.get("target")
+        ...
+        output, target, loss = self.forward(runner, images, target, warmup=False)
+```
 
 
 ## Callback Usage Examples
