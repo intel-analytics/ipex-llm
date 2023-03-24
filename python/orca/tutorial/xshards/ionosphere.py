@@ -74,6 +74,7 @@ data_shard = label_encoder.fit_transform(data_shard)
 
 
 def update_label_to_zero_base(df):
+    df[:-1] = df[:-1].astype("float32")
     df['34'] = df['34'] - 1
     return df
 data_shard = data_shard.transform_shard(update_label_to_zero_base)
