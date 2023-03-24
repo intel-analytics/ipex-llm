@@ -411,7 +411,7 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     ```
 
 3. Encrypt `people.csv`
-<details>
+    <details>
     <summary>Method 1: Encrypt with Data Key from Key Management Service</summary>
 
     ```bash
@@ -447,9 +447,9 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
         --dataSourceType csv \
         --action encrypt
     ```
-</details>
+    </details>
 
-<details>
+    <details>
     <summary>Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key</summary>
 
     **Note: Do not use this in production in consider of security!**
@@ -485,7 +485,7 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
 
     `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
-</details>
+    </details>
 
 
 #### Step 4. Build Big Data & AI applications
