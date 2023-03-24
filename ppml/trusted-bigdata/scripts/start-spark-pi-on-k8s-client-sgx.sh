@@ -6,7 +6,7 @@ TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 SPARK_LOCAL_IP=$LOCAL_IP && \
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* \
-    -Xmx8g \
+    -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $mode \

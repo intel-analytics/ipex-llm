@@ -594,6 +594,13 @@ class IPEXJITInference_gt_1_10:
             output2 = model(input_sample)
         np.testing.assert_allclose(output1, output2, atol=2e-1)
 
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(jit_int8_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        with InferenceOptimizer.get_context(loaded_model):
+            output3 = loaded_model(input_sample)
+        np.testing.assert_allclose(output1, output3, atol=2e-1)
+
 
 class IPEXJITInference_lt_1_10:
     def test_placeholder(self):

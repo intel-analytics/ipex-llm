@@ -1,0 +1,33 @@
+name: 'Run Orca Tutorial NCF Ray Py39 Spark3'
+description: 'Run Orca Tutorial NCF Ray Py39 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        source activate py39
+
+        export SPARK_LOCAL_HOSTNAME=localhost
+        unset SPARK_HOME
+        
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
+
+        # install requires
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tqdm
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==1.2.2
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pyarrow
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
+
+        pip list
+        chmod a+x python/orca/dev/test/run-tutorial-NCF.sh
+        python/orca/dev/test/run-tutorial-NCF.sh ray ml-1m
+        python/orca/dev/test/run-tutorial-NCF.sh ray ml-100k
+        source deactivate
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

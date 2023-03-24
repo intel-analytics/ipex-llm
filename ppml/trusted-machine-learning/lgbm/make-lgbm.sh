@@ -40,7 +40,7 @@ mkdir build
 cd build
 if [ "${MAKE_FLAG}" == "SSL" ]
 then
-   cmake -DUSE_SSL_SOCKET=1 .. # secure LGBM use ssl socket for communication
+   cmake -DUSE_SSL=1 .. # secure LGBM use ssl socket for communication
 elif [ "${MAKE_FLAG}" == "PLAIN" ]
 then
    cmake .. # use plain tcp socket

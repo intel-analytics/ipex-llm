@@ -437,6 +437,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  batch: Optional[int] = None,
                  thread_num: Optional[int] = None,
                  device: Optional[str] = 'CPU',
+                 custom_objects=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
@@ -519,6 +520,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                         only valid when accelerator='openvino', otherwise will be ignored.
                         'CPU', 'GPU' and 'VPUX' are supported for now.
+        :param custom_objects: Optional dictionary mapping names (strings) to custom classes
+                               or functions to be considered during deserialization.
+                               Only may be required when quantizing bf16 model and `accelerator`
+                               is None.
         :param inputs:      A list of input names.
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
@@ -612,7 +617,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             logging=logging,
                                             **kwargs)
             elif accelerator is None:
-                return BF16Model(model)
+                return BF16Model(model, custom_objects=custom_objects)
             return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -770,7 +775,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Optional[Model] = None, device=None):
+    def load(path, model: Optional[Model] = None, device=None, custom_objects=None):
         """
         Load a model from local.
 
@@ -786,6 +791,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                3. you want to the loaded model contains the attributes of original model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
+        :param custom_objects: Same to `custom_objects` parameter of `tf.keras.models.load_model`,
+               only may be required when loading bf16 model.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
@@ -807,13 +814,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'KerasQuantizedModel':
             result = load_inc_model(path, model, framework='tensorflow')
             return patch_attrs(result, model)
-        if model_type == 'BF16Model':
-            result = load_bf16_model(path)
-            return patch_attrs(result, model)
+        # Arriving here means we are loading a bf16 model or normal keras model
         checkpoint_path = metadata.get('checkpoint', None)
         invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
         checkpoint_path = path / metadata['checkpoint']
-        model = keras.models.load_model(checkpoint_path)
+        model = keras.models.load_model(checkpoint_path, custom_objects=custom_objects)
         return model
 
 
