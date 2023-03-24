@@ -412,6 +412,8 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
 3. Encrypt `people.csv`
 
+*3.1 Method 1: Encrypt with Data Key from Key Management Service*
+
 ```bash
     docker exec -i bigdl-ppml-client-k8s bash
 
@@ -426,7 +428,6 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
         --conf spark.cores.max=8 \
         --conf spark.network.timeout=10000000 \
         --conf spark.executor.heartbeatInterval=10000000 \
-        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
         --conf spark.bigdl.primaryKey.amy.kms.type=EHSMKeyManagementService \
         --conf spark.bigdl.primaryKey.amy.material=path_to/your_primary_key \
@@ -443,8 +444,43 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
         --inputDataSourcePath file://</save/path/of/people.csv> \
         --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
         --cryptoMode aes/cbc/pkcs5padding \
-        --dataSourceType csv
+        --dataSourceType csv \
+        --action encrypt
 ```
+
+*3.2 Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key*
+
+**Note: Do not use this in production in consider of security!**
+
+```bash
+    docker exec -i bigdl-ppml-client-k8s bash
+    
+    export PLAIN_TEXT_DATA_KEY=your_self_provided_128_bit_base_64_string
+
+    bash bigdl-ppml-submit.sh \
+     --master local[2] \
+     --sgx-enabled false \
+     --driver-memory 32g \
+     --driver-cores 4 \
+     --executor-memory 32g \
+     --executor-cores 4 \
+     --num-executors 2 \
+     --conf spark.cores.max=8 \
+     --conf spark.network.timeout=10000000 \
+     --conf spark.executor.heartbeatInterval=10000000 \
+     --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+     --conf spark.bigdl.primaryKey.dataSource1PK.plainText=${PLAIN_TEXT_DATA_KEY} \
+     --verbose \
+     --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+     --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+     local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+     --inputDataSourcePath file://</save/path/of/people.csv> \
+     --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
+     --cryptoMode aes/cbc/pkcs5padding \
+     --dataSourceType csv \
+     --action encrypt
+```     
+
 
 `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
 
