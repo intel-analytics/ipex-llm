@@ -1,5 +1,5 @@
-name: 'Run Orca Python Exampletest Horovod Tf2 Py38 Spark3'
-description: 'Run Orca Python Exampletest Horovod Tf2 Py38 Spark3'
+name: 'Run Orca Python Exampletest Horovod Py38 Spark3'
+description: 'Run Orca Python Exampletest Horovod Py38 Spark3'
 runs:
   using: "composite"
   steps:
@@ -14,8 +14,6 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-learn==0.22.2.post1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} matplotlib
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.15.3
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} aiohttp==3.8.1
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} async-timeout==4.0.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorboard==2.3.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorboard-data-server==0.6.1
@@ -29,13 +27,14 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} h5py==2.10.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-optimize==0.8.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas==1.1.5
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} Keras-Applications==1.0.8
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} Keras-Preprocessing==1.1.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} opencv-python-headless
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} numpy==1.19.5
-        
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.4.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.5.0
+
         # build horovod
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} mxnet==1.6.0
+        HOROVOD_WITH_PYTORCH=1
         HOROVOD_WITH_TENSORFLOW=1
         HOROVOD_WITH_GLOO=1
         pip install --no-cache-dir horovod==0.19.2
@@ -44,6 +43,8 @@ runs:
         chmod a+x python/orca/dev/example/run-example-test-ray-horovod-tf.sh
         python/orca/dev/example/run-example-test-ray-horovod-tf.sh
         ray stop
+        chmod a+x python/orca/dev/example/run-example-test-ray-horovod-pytorch.sh
+        python/orca/dev/example/run-example-test-ray-horovod-pytorch.sh
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
