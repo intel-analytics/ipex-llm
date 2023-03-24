@@ -31,7 +31,6 @@
       - [1. Start thrift server](#1-start-thrift-server)
         - [1.1 Prepare the configuration file](#11-prepare-the-configuration-file)
         - [1.2 Three ways to start](#12-three-ways-to-start)
-          - [1.2.1 Start with spark official script](#121-start-with-spark-official-script)
         - [1.3 Use beeline to connect Thrift Server](#13-use-beeline-to-connect-thrift-server)
       - [2. Enable transparent encryption](#2-enable-transparent-encryption)
         - [2.1 HDFS Transparent Encryption](#21-hdfs-transparent-encryption)
@@ -559,7 +558,7 @@ spark.sql.warehouse.dir         hdfs://host:ip/path #location of data
 
 ##### 1.2 Three ways to start
 
-###### 1.2.1 Start with spark official script
+**1.2.1 Start with spark official script**
 
 ```bash
 cd $SPARK_HOME
