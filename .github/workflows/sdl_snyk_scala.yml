@@ -1,10 +1,9 @@
 name: Scanner-snyk-scala
 on:
+#  pull_request:
+#    branchs: [ main ]
   schedule:
     - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
-  #pull_request:
-  #branchs: [ main ]
-
   workflow_dispatch:
     inputs:
       snyk_apitoken:
@@ -25,29 +24,12 @@ jobs:
     - uses: actions/checkout@v3
     - name: set env
       run: |
-        echo "SNYK_APITOKEN=${{ github.event.inputs.snyk_apitoken }}"
-#    - name: "Auth Synk"
-#      run: |
-#        snyk auth -d $SNYK_APITOKEN
+        sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/dllib/pom.xml
+        sed -i 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/common/spark-version/2.0/pom.xml
     - name: "run Snyk test scan"
       env: 
           no_proxy: snyk.devtools.intel.com, intel.com
       run: |
         cd scala
-        mvn clean install -f common/spark-version/2.0/pom.xml
-        snyk monitor
-        mvn clean install -f dllib/pom.xml -DskipTests
-        snyk monitor
-        mvn clean install -f orca/pom.xml -DskipTests
-        snyk monitor 
-        mvn clean install -f grpc/pom.xml -DskipTests
-        snyk monitor
-        mvn clean install -f friesian/pom.xml -DskipTests
-        snyk monitor
-        mvn clean install -f serving/pom.xml -DskipTests
-        snyk monitor
-        mvn clean install -f ppml/pom.xml -DskipTests
-        snyk monitor
-        mvn clean install -f assembly/pom.xml -DskipTests
-        snyk monitor
+        snyk monitor --all-projects
         cd -

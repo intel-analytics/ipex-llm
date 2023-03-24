@@ -393,7 +393,7 @@ bash bigdl-ppml-submit.sh \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
-        --log-file spark-pi-local-sgx.log
+        --log-file spark-pi-local-sgx.log \
         --verbose \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
@@ -420,7 +420,7 @@ bash bigdl-ppml-submit.sh \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
-        --log-file spark-pi-client-sgx.log
+        --log-file spark-pi-client-sgx.log \
         --verbose \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
@@ -447,7 +447,7 @@ bash bigdl-ppml-submit.sh \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
-        --log-file spark-pi-cluster-sgx.log
+        --log-file spark-pi-cluster-sgx.log \
         --verbose \
         --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
@@ -472,7 +472,7 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --name spark-pi \
 --verbose \
 --class org.apache.spark.examples.SparkPi \
---log-file spark-pi-cluster-sgx.log
+--log-file spark-pi-cluster-sgx.log \
 local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 if you want to enable sgx, don't forget to set the sgx-related arguments

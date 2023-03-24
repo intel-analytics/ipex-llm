@@ -36,7 +36,7 @@ spec:
       #- name: QUOTE_TYPE
       #  value: gramine
       - name: MALLOC_ARENA_MAX
-        value: ${MALLOC_ARENA_MAX}
+        value: 4
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
