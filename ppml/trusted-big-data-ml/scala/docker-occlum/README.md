@@ -307,6 +307,44 @@ You can find GBT result under folder `/path/to/data/model/`.
     └── _SUCCESS
 ```
 
+## BigDL LGBM Example
+
+### Download data
+You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).Then mount `/path/to/data/iris.data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/:/opt/occlum_spark/data
+```
+
+You can enlarge the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=15GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+```
+
+You can change the configuration If you enter image and run /opt/run_spark_on_occlum_glibc.sh lgbm in docker container. The source code is [here](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/lightGBM/LgbmClassifierTrain.scala).
+You can see it and use more configuration.
+``` bash
+#start-spark-local.sh
+#run_spark_lgbm()
+--inputPath /host/data/iris.data \
+--numIterations 100 \
+--partition 4 \
+--modelSavePath /host/data/iris_output
+```
+
+Start run BigDL Spark LGBM example:
+```
+bash start-spark-local.sh lgbm
+```
+
+You can find lgbm result under folder `/path/to/data/iris_model/`.
+```
+/path/to/data/iris_model/*.txt
+```
+
 ## BigDL GBT e2e Example
 
 ### Download data

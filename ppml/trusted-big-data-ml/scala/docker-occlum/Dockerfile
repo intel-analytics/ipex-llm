@@ -12,6 +12,7 @@ ENV HADOOP_VERSION=${HADOOP_VERSION}
 ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_SCALA_VERSION=${SPARK_SCALA_VERSION}
 ENV SPARK_HOME=/opt/spark
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 ARG SPARK_JAR_REPO_URL
 
@@ -23,7 +24,7 @@ ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential wget git unzip zip && \
+        openjdk-8-jdk build-essential wget git unzip zip swig libssl-dev cmake && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -160,6 +161,11 @@ RUN cd /opt && \
     cd /opt/zoo-tutorials/tpch-pyspark && \
     zip -r tpch.zip ./tpch
 
+#LGBM make
+RUN mkdir /ppml && cd /ppml && \
+    git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
+    cd LightGBM && mkdir build && cd build && \
+    cmake -DUSE_SWIG=ON -DUSE_SSL=1 .. && make -j4
 
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
@@ -273,4 +279,7 @@ ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
 
+# replace lightgbmlib.jar
+RUN rm -rf $BIGDL_HOME/jars/lightgbmlib*
+COPY --from=bigdl /ppml/LightGBM/build/lightgbmlib.jar $BIGDL_HOME/jars/
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
