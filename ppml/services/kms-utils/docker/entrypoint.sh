@@ -55,6 +55,7 @@ elif [ "$action" = "encrypt" ]; then
 	appid=$2
 	apikey=$3
 	input_path=$4
+	output_path=${input_path}.encrypted
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    apikey=$3
@@ -92,14 +93,35 @@ elif [ "$action" = "encrypt" ]; then
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.Encrypt \
-                --inputPath $input_path \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-                --kmsType SimpleKeyManagementService \
-		--simpleAPPID $appid \
-                --simpleAPIKEY $apikey
+		/opt/jdk8/bin/java \
+			-cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:/${SPARK_HOME}/examples/jars/*:${BIGDL_HOME}/jars/*" -Xmx1g \
+			org.apache.spark.deploy.SparkSubmit \
+			--master local[2] \
+			--deploy-mode client \
+			--driver-memory 5g \
+			--driver-cores 4 \
+			--executor-memory 5g \
+			--executor-cores 4 \
+			--num-executors 2 \
+			--conf spark.cores.max=8 \
+			--conf spark.network.timeout=10000000 \
+			--conf spark.executor.heartbeatInterval=10000000 \
+			--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+			--conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+			--conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
+			--conf spark.bigdl.primaryKey.AmyPK.kms.appId=${appid} \
+			--conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=${apikey} \
+			--conf spark.bigdl.primaryKey.AmyPK.material=/home/key/simplePrimaryKey \
+			--verbose \
+			--class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+			--conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+			--conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
+			--name amy-encrypt \
+			local://${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+			--inputDataSourcePath $input_path \
+			--outputDataSinkPath $output_path \
+			--cryptoMode aes/cbc/pkcs5padding \
+			--dataSourceType csv
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
