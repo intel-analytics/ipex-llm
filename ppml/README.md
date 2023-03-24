@@ -448,6 +448,7 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
         --action encrypt
     ```
 </details>
+
 <details>
     <summary>Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key</summary>
 
@@ -484,7 +485,8 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
 
     `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
-    </details>
+</details>
+
 
 #### Step 4. Build Big Data & AI applications
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.
