@@ -87,7 +87,7 @@ Learning on Apache Spark and Analytics Zoo](https://www.dellemc.com/resources/en
 <br>• [Technical Verification of SGX and BigDL Based Privacy Computing for Multi Source Financial Big Data](https://www.intel.cn/content/www/cn/zh/now/data-centric/sgx-bigdl-financial-big-data.html) (in Chinese)
 * __World Bank__
 <br>• [Using Crowdsourced Images to Create Image Recognition Models with Analytics Zoo using BigDL](https://databricks.com/session/using-crowdsourced-images-to-create-image-recognition-models-with-bigdl)
-*  __Yahoo!__
+*  __Yahoo! JAPAN__
 <br>• [Optimized Large-Scale Item Search with Intel BigDL at Yahoo! JAPAN Shopping](https://www.intel.com/content/www/us/en/developer/articles/technical/offline-item-search-with-bigdl-at-yahoo-japan.html)
 *  __Yunda__
 <br>• [Intelligent transformation brings "quality change" to the express delivery industry](https://www.intel.cn/content/www/cn/zh/analytics/artificial-intelligence/yunda-brings-quality-change-to-the-express-delivery-industry.html) (in Chinese)
