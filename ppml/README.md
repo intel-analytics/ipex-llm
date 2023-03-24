@@ -412,9 +412,9 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
 3. Encrypt `people.csv`
 
-*3.1 Method 1: Encrypt with Data Key from Key Management Service*
+    *3.1 Method 1: Encrypt with Data Key from Key Management Service*
 
-```bash
+    ```bash
     docker exec -i bigdl-ppml-client-k8s bash
 
     bash bigdl-ppml-submit.sh \
@@ -446,13 +446,13 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
         --cryptoMode aes/cbc/pkcs5padding \
         --dataSourceType csv \
         --action encrypt
-```
+    ```
 
-*3.2 Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key*
+    *3.2 Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key*
 
-**Note: Do not use this in production in consider of security!**
+    **Note: Do not use this in production in consider of security!**
 
-```bash
+    ```bash
     docker exec -i bigdl-ppml-client-k8s bash
     
     export PLAIN_TEXT_DATA_KEY=your_self_provided_128_bit_base_64_string
@@ -479,7 +479,7 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
      --cryptoMode aes/cbc/pkcs5padding \
      --dataSourceType csv \
      --action encrypt
-```     
+    ```     
 
 
 `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
