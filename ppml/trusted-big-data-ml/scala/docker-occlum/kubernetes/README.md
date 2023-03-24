@@ -150,14 +150,14 @@ And you can find the source code [here](https://github.com/intel-analytics/BigDL
 
 ### Generate SSL keys and ertificate
 You can get bash from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate-ssl.sh).
-Then generate your ssl key and certificate in /ppml/keys.
+Then generate your ssl key and certificate in /ppml/keys, and mount it to `/opt/occlum_spark/image/ppml` in pods.
 If you run this examples in local node, you can mount like the `data-exchange`.
 Or you can use nfs server to mount:
 ```
 #driver.yaml  and executor.yaml
 volumeMounts:
 - name: nfs-data
-  mountPath: /ppml
+  mountPath: /opt/occlum_spark/image/ppml
 volumes:
   - name: nfs-data
     nfs:
