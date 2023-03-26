@@ -208,6 +208,14 @@ class TestTFEstimatorBasic(TestCase):
                             validation_steps=2,
                             feature_cols=["feature"],
                             label_cols=["label"])
+        
+        trainer.shutdown()
+        trainer = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config=config,
+            workers_per_node=2,
+            backend="spark")
 
         res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                             feature_cols=["feature"],
@@ -227,14 +235,12 @@ class TestTFEstimatorBasic(TestCase):
         spark = OrcaContext.get_spark_session()
 
         from pyspark.ml.linalg import DenseVector
-        data = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                  int(np.random.randint(0, 2, size=())))).collect()
-        df = spark.createDataFrame(data=data, schema=["feature", "label"])
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         val_rdd = sc.range(0, 20, numSlices=6)
-        val_data = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                               int(np.random.randint(0, 2, size=())))).collect()
-        val_df = spark.createDataFrame(data=val_data, schema=["feature", "label"])
+        val_df = val_rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                             int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
 
         config = {
             "lr": 0.2
