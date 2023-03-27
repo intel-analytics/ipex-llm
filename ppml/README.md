@@ -411,9 +411,12 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     ```
 
 3. Encrypt `people.csv`
+    
+    As for data encryption/decryption based on crypto, We recommend you to use data key generated from primary key, which are both managed by KMS(Key Management Service) that is not only convenient but also safe. This is contributed by that our KMSs like [EHSM](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes) have hardware-protected memory and TLS/SSL-encrypted network etc. and no sensitive secret is written to disk.
+    In practice, you only need to specify a KMS-pre-generated primary key when submitting job, and PPMLContext backend will automatically generate a data key from the primary one you provide, and manage the two in the whole lifecycle:
     <details>
-    <summary>Method 1: Encrypt with Data Key from Key Management Service</summary>
-
+    <summary>Method 1: Encrypt with KMS-Managed Primary and Data Keys</summary>
+    
     ```bash
     docker exec -i bigdl-ppml-client-k8s bash
 
@@ -449,8 +452,9 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     ```
     </details>
 
+    As there may be a scenario where KMS cannot be accessed, you are allowed to directly provide a primary key in plain text instead of requesting from the service:
     <details>
-    <summary>Mehtod 2: Encrypt with a Self-Provided Plaintext Data Key</summary>
+    <summary>Mehtod 2: Encrypt with a Self-Provided Plaintext Primary Key</summary>
 
     **Note: Do not use this in production in consider of security!**
 
