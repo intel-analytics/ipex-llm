@@ -193,7 +193,7 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
             return [convert_elem(i) for i in elem]
         # dict of np array as values
         elif isinstance(elem, dict):
-            return [convert_elem(v) for k, v in elem.items()]
+            return {k: convert_elem(v) for k, v in elem.items()}
         # scalar in basic type
         elif isinstance(elem, np.ScalarType):
             return float(elem)
@@ -214,8 +214,13 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                          convert_elem(pair[1])))
         else:
             # a multiple list in pair[1] and stacked like [f1, f2] + [output1, output2]
-            return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                         convert_elem(pair[1])))
+            if isinstance(pair[1], dict):
+                new_pair = [v for k, v in pair[1].items()]
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             [convert_elem(item) for item in new_pair]))
+            else:
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             convert_elem(pair[1])))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
     schema = [k for k in prediction_rdd.first()]
