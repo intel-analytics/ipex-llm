@@ -151,9 +151,9 @@ class TemporalConvNet(Model):
         for i in range(num_levels):
             dilation_rate = 2 ** i
             self.network.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
-                                              padding='causal', dropout_rate=dropout))
+                                           padding='causal', dropout_rate=dropout))
         self.network.add(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
-                                          padding='causal', dropout_rate=dropout))
+                                       padding='causal', dropout_rate=dropout))
 
         self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
