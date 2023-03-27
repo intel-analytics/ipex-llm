@@ -293,7 +293,14 @@ class SparkRunner:
     def setup(self):
         import tensorflow as tf
         tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
-        tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
+        try:
+            tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
+        except RuntimeError as e:
+            if tf.config.threading.get_intra_op_parallelism_threads() != 0:
+                # not the default value, already configured
+                pass
+            else:
+                raise e
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
