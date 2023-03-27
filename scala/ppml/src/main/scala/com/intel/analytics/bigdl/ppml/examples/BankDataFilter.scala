@@ -57,7 +57,6 @@ object BankDataFilter extends Supportive {
       .toJSON
       .write
       .mode("overwrite")
-      .option("compression", "gzip")
       .text(outputFilePath+"/output1.json")
 
     // Method 2: Total number of income and expense for each month
@@ -67,7 +66,6 @@ object BankDataFilter extends Supportive {
       .toJSON
       .write
       .mode("overwrite")
-      .option("compression", "gzip")
       .text(outputFilePath+"/output1.json")
 
     // Method 3: Total number of RENT, FOOD, Transport, Clothing and Other
@@ -79,7 +77,6 @@ object BankDataFilter extends Supportive {
       .toJSON
       .write
       .mode("overwrite")
-      .option("compression", "gzip")
       .text(outputFilePath+"/output1.json")
 
     // Stop SparkSession
