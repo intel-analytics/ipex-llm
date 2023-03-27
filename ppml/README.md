@@ -453,10 +453,9 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     </details>
 
     As there may be a scenario where KMS cannot be accessed, you are allowed to directly provide a primary key in plain text instead of requesting from the service:
+    **Note: Do not use this in production in consider of security!**
     <details>
     <summary>Method 2: Encrypt with Self-Provided Primary Key in Plain Text</summary>
-
-    **Note: Do not use this in production in consider of security!**
 
     ```bash
     docker exec -i bigdl-ppml-client-k8s bash
