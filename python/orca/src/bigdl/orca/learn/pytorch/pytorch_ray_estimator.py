@@ -23,8 +23,7 @@ from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, reload_dataloader_creator, \
-    add_predict_to_pd_xshards
+    process_xshards_of_pandas_dataframe, add_predict_to_pd_xshards
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
@@ -84,7 +83,7 @@ def partition_refs_to_creator(partition_refs):
         data_loader = DataLoader(dataset, **params)
         return data_loader
 
-    return reload_dataloader_creator(data_creator)
+    return data_creator
 
 
 class PyTorchRayEstimator(BaseRayEstimator):
@@ -314,8 +313,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               " Ray Dataset or a callable function, but"
                               " got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
-            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
+            params["data_creator"] = data
+            params["validation_data_creator"] = validation_data
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))  # type:ignore
@@ -506,7 +505,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
+            params["data_creator"] = data
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
 
         if reduce_results:
