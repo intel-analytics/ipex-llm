@@ -454,7 +454,7 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
 
     As there may be a scenario where KMS cannot be accessed, you are allowed to directly provide a primary key in plain text instead of requesting from the service:
     <details>
-    <summary>Mehtod 2: Encrypt with a Self-Provided Plaintext Primary Key</summary>
+    <summary>Method 2: Encrypt with Self-Provided Primary Key in Plain Text</summary>
 
     **Note: Do not use this in production in consider of security!**
 
