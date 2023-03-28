@@ -27,6 +27,7 @@ if find_spec('jep') is None:
     invalidInputError(False, "jep not found, please install jep first.")
 
 
+# TODO(will delete in 2.2.0)
 class TorchLoss(Criterion):
     """
     TorchLoss wraps a loss function for distributed inference or training.

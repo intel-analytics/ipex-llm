@@ -19,6 +19,7 @@ This module imports contents from CloudPickle in a way that is compatible with t
 ``pickle_module`` parameter of PyTorch's model persistence function: ``torch.save``
 and ``torch.load``.
 TODO: remove this when PyTorch have compatible pickling APIs.
+TODO(will delete in 2.2.0)
 """
 from cloudpickle import *
 from cloudpickle import CloudPickler as Pickler

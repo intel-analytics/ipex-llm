@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import com.intel.analytics.bigdl.orca.net.TorchOptim.DecayType
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
+@deprecated("don't use this, will be remove in 2.2.0")
 class TorchOptim[@specialized(Float, Double) T: ClassTag](
     torchOptim: Array[Byte],
     decayType: DecayType)(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {

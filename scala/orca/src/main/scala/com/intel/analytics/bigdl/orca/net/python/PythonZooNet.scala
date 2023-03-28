@@ -142,22 +142,27 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
     model.getExtraParameter().map(toJTensor)
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def createTorchModel(model: Array[Byte], weights: JTensor): TorchModel = {
     TorchModel(model, weights.storage)
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def getTorchModelBytes(torchModel: TorchModel): Array[Byte] = {
     torchModel.modelHolder.torchBytes
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def createTorchLoss(criterion: Array[Byte]): TorchLoss = {
     TorchLoss(criterion)
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def createTorchOptim(optim: Array[Byte], decayType: String): TorchOptim[T] = {
     TorchOptim(optim, decayType)
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def createFeatureSetFromTfDataset(
        dataset: Array[Byte],
        totalSize: Int): PythonFeatureSet[MiniBatch[Float]] = {
@@ -192,6 +197,7 @@ class PythonZooNet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZoo
       "data", "", totalSize, imports)
   }
 
+  @deprecated("don't use this, will be remove in 2.2.0")
   def createFeatureSetFromPyTorch(
        dataloader: Array[Byte],
        creator: Boolean,

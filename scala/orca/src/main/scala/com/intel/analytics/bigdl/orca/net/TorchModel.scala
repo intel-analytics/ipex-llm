@@ -32,6 +32,7 @@ import jep.{Jep, NDArray}
 import org.apache.spark.TaskContext
 import com.intel.analytics.bigdl.dllib.nn.Utils._
 
+@deprecated("don't use this, will be remove in 2.2.0")
 class TorchModel (
     private[bigdl] val modelHolder: TorchModel2Holder,
     init_weights: Array[Float])

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 
+@deprecated("don't use this, will be remove in 2.2.0")
 object PythonInterpreter {
   protected val logger = LogManager.getLogger(this.getClass)
 

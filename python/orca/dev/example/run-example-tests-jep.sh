@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# TODO: remove jep
 set -e
 
 echo "#1 start example for MNIST"

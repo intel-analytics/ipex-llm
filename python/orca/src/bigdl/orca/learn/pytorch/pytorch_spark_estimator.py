@@ -32,6 +32,7 @@ import types
 from bigdl.dllib.utils.log4Error import *
 
 
+# TODO(will delete in 2.2.0)
 class PyTorchSparkEstimator(OrcaSparkEstimator):
     def __init__(self, model, loss, optimizer, config=None, metrics=None, model_dir=None,
                  bigdl_type="float"):

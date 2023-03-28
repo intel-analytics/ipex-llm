@@ -204,6 +204,7 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
 if args.backend == "bigdl":
+    # TODO(remove jep)
     net = model_creator()
     optimizer = optim_creator(model=net, config={"lr": 0.001})
     orca_estimator = Estimator.from_torch(model=net,

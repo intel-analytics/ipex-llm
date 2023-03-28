@@ -34,6 +34,7 @@ if find_spec('jep') is None:
     invalidInputError(False, "jep not found, please install jep first.")
 
 
+# TODO(will delete in 2.2.0)
 class TorchModel(Layer):
     """
     TorchModel wraps a PyTorch model as a single layer, thus the PyTorch model can be used for
