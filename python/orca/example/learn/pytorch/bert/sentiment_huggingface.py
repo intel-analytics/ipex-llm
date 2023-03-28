@@ -94,6 +94,18 @@ def parse_args():
         "--validation_file", type=str, default=None, help="A csv or a json file containing the validation data."
     )
     parser.add_argument(
+        "--dataset_name",
+        type=str,
+        default=None,
+        help="The name of the dataset to use (via the datasets library).",
+    )
+    parser.add_argument(
+        "--dataset_config_name",
+        type=str,
+        default=None,
+        help="The configuration name of the dataset to use (via the datasets library).",
+    )
+    parser.add_argument(
         "--max_length",
         type=int,
         default=128,
@@ -212,8 +224,8 @@ def parse_args():
     args = parser.parse_args()
 
     # Sanity checks
-    if args.task_name is None and args.train_file is None and args.validation_file is None:
-        raise ValueError("Need either a task name or a training/validation file.")
+    if args.task_name is None and args.train_file is None and args.validation_file is None and args.dataset_name is None:
+        raise ValueError("Need either a task name, dataset name or a training/validation file.")
 
     if args.push_to_hub:
         assert args.output_dir is not None, "Need an `output_dir` to create a repo when `--push_to_hub` is passed."
@@ -235,23 +247,25 @@ def train_loader_creator(config, batch_size):
     # download the dataset.
     if config['task_name'] is not None:
         # Downloading and loading a dataset from the hub.
-        raw_datasets = load_dataset("glue", config['task_name'])
+        raw_datasets = load_dataset("glue", config['task_name'], split="train")
+    elif config['dataset_name'] is not None:
+        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'], split="train")
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
         if config['train_file'] is not None:
             data_files["train"] = config['train_file']
-        if config['validation_file'] is not None:
-            data_files["validation"] = config['validation_file']
-        extension = (config['train_file'] if config['train_file'] is not None else config['validation_file']).split(".")[-1]
+        # if config['validation_file'] is not None:
+        #     data_files["validation"] = config['validation_file']
+        extension = config['train_file'].split(".")[-1]
         if extension == "txt":
             extension = "text"
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="train")
         elif extension == "tsv":
             extension = "csv"
-            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files, split="train")
         else:
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="train")
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -268,7 +282,7 @@ def train_loader_creator(config, batch_size):
         sentence1_key, sentence2_key = task_to_keys[config['task_name']]
     else:
         # Again, we try to have some nice defaults but don't hesitate to tweak to your use case.
-        non_label_column_names = [name for name in raw_datasets["train"].column_names if name != "label"]
+        non_label_column_names = [name for name in raw_datasets.column_names if name != "label"]
         if "sentence1" in non_label_column_names and "sentence2" in non_label_column_names:
             sentence1_key, sentence2_key = "sentence1", "sentence2"
         else:
@@ -300,11 +314,11 @@ def train_loader_creator(config, batch_size):
     processed_datasets = raw_datasets.map(
             preprocess_function,
             batched=True,
-            remove_columns=raw_datasets["train"].column_names,
+            remove_columns=raw_datasets.column_names,
             desc="Running tokenizer on dataset",
         )
 
-    train_dataset = processed_datasets["train"]
+    train_dataset = processed_datasets
 
     # Log a few random samples from the training set:
     for index in random.sample(range(len(train_dataset)), 3):
@@ -346,23 +360,23 @@ def eval_loader_creator(config, batch_size):
     # download the dataset.
     if config['task_name'] is not None:
         # Downloading and loading a dataset from the hub.
-        raw_datasets = load_dataset("glue", config['task_name'])
+        raw_datasets = load_dataset("glue", config['task_name'], split="validation")
+    elif config['dataset_name'] is not None:
+        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'], split="validation")
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
-        if config['train_file'] is not None:
-            data_files["train"] = config['train_file']
         if config['validation_file'] is not None:
             data_files["validation"] = config['validation_file']
-        extension = (config['train_file'] if config['train_file'] is not None else config['validation_file']).split(".")[-1]
+        extension = config['validation_file'].split(".")[-1]
         if extension == "txt":
             extension = "text"
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="validation")
         elif extension == "tsv":
             extension = "csv"
-            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files, split="validation")
         else:
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="validation")
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -377,7 +391,7 @@ def eval_loader_creator(config, batch_size):
         sentence1_key, sentence2_key = task_to_keys[config['task_name']]
     else:
         # Again, we try to have some nice defaults but don't hesitate to tweak to your use case.
-        non_label_column_names = [name for name in raw_datasets["train"].column_names if name != "label"]
+        non_label_column_names = [name for name in raw_datasets.column_names if name != "label"]
         if "sentence1" in non_label_column_names and "sentence2" in non_label_column_names:
             sentence1_key, sentence2_key = "sentence1", "sentence2"
         else:
@@ -408,11 +422,11 @@ def eval_loader_creator(config, batch_size):
     processed_datasets = raw_datasets.map(
             preprocess_function,
             batched=True,
-            remove_columns=raw_datasets["train"].column_names,
+            remove_columns=raw_datasets.column_names,
             desc="Running tokenizer on dataset",
         )
 
-    eval_dataset = processed_datasets["validation_matched" if config['task_name'] == "mnli" else "validation"]
+    eval_dataset = processed_datasets
 
     # DataLoaders creation:
     if config['pad_to_max_length']:
@@ -561,8 +575,8 @@ def main():
     )
 
     # If passed along, set the training seed now.
-    if args.seed is not None:
-        set_seed(args.seed)
+    # if args.seed is not None:
+    #     set_seed(args.seed)
 
     # Get the datasets: you can either provide your own CSV/JSON training and evaluation files (see below)
     # or specify a GLUE benchmark task (the dataset will be downloaded automatically from the datasets Hub).
@@ -578,23 +592,24 @@ def main():
     # download the dataset.
     if args.task_name is not None:
         # Downloading and loading a dataset from the hub.
-        raw_datasets = load_dataset("glue", args.task_name)
+        raw_datasets = load_dataset("glue", args.task_name, split="train")
+    elif args.dataset_name is not None:
+        raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name, split="train")
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
         if args.train_file is not None:
             data_files["train"] = args.train_file
-        if args.validation_file is not None:
-            data_files["validation"] = args.validation_file
-        extension = (args.train_file if args.train_file is not None else args.validation_file).split(".")[-1]
+        extension = args.train_file.split(".")[-1]
         if extension == "txt":
             extension = "text"
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="train")
         elif extension == "tsv":
             extension = "csv"
-            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files)
+            raw_datasets = load_dataset(extension, delimiter='\t', data_files=data_files, split="train")
         else:
-            raw_datasets = load_dataset(extension, data_files=data_files)
+            raw_datasets = load_dataset(extension, data_files=data_files, split="train")
+
     # See more about loading any type of standard or custom dataset at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -602,19 +617,19 @@ def main():
     if args.task_name is not None:
         is_regression = args.task_name == "stsb"
         if not is_regression:
-            label_list = raw_datasets["train"].features["label"].names
+            label_list = raw_datasets.features["label"].names
             num_labels = len(label_list)
         else:
             num_labels = 1
     else:
         # Trying to have good defaults here, don't hesitate to tweak to your needs.
-        is_regression = raw_datasets["train"].features["label"].dtype in ["float32", "float64"]
+        is_regression = raw_datasets.features["label"].dtype in ["float32", "float64"]
         if is_regression:
             num_labels = 1
         else:
             # A useful fast method:
             # https://huggingface.co/docs/datasets/package_reference/main_classes.html#datasets.Dataset.unique
-            label_list = raw_datasets["train"].unique("label")
+            label_list = raw_datasets.unique("label")
             label_list.sort()  # Let's sort it for determinism
             num_labels = len(label_list)
     # add to config
@@ -640,7 +655,7 @@ def main():
         sentence1_key, sentence2_key = task_to_keys[args.task_name]
     else:
         # Again, we try to have some nice defaults but don't hesitate to tweak to your use case.
-        non_label_column_names = [name for name in raw_datasets["train"].column_names if name != "label"]
+        non_label_column_names = [name for name in raw_datasets.column_names if name != "label"]
         if "sentence1" in non_label_column_names and "sentence2" in non_label_column_names:
             sentence1_key, sentence2_key = "sentence1", "sentence2"
         else:
@@ -698,11 +713,11 @@ def main():
     processed_datasets = raw_datasets.map(
             preprocess_function,
             batched=True,
-            remove_columns=raw_datasets["train"].column_names,
+            remove_columns=raw_datasets.column_names,
             desc="Running tokenizer on dataset",
         )
 
-    train_dataset = processed_datasets["train"]
+    train_dataset = processed_datasets
 
     # Log a few random samples from the training set:
     for index in random.sample(range(len(train_dataset)), 3):
