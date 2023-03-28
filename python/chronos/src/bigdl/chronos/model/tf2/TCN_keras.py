@@ -144,23 +144,22 @@ class TemporalConvNet(Model):
             init = tf.keras.initializers.HeUniform()
 
         # initialize model
-        self.network = []
+        self.network = tf.keras.Sequential()
 
         # The model contains "num_levels" TemporalBlock
         num_levels = len(num_channels)
         for i in range(num_levels):
             dilation_rate = 2 ** i
-            self.network.append(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
-                                              padding='causal', dropout_rate=dropout))
-        self.network.append(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
-                                          padding='causal', dropout_rate=dropout))
+            self.network.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
+                                           padding='causal', dropout_rate=dropout))
+        self.network.add(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
+                                       padding='causal', dropout_rate=dropout))
 
         self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
 
     def call(self, x, training=False):
-        for layer in self.network:
-            y = layer(x, training=training)
+        y = self.network(x, training=training)
         y = self.permute(y)
         y = self.linear(y)
         y = self.permute(y)
