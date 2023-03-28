@@ -28,6 +28,7 @@ import datasets
 import torch
 import numpy as np
 from datasets import load_dataset
+from datasets.download.download_config import DownloadConfig
 from torch.utils.data import DataLoader
 import torch.nn as nn
 from tqdm.auto import tqdm
@@ -246,11 +247,13 @@ def train_loader_creator(config, batch_size):
 
     # In distributed training, the load_dataset function guarantee that only one local process can concurrently
     # download the dataset.
+    download_config = DownloadConfig(resume_download=True, max_retries=3, etag_timeout=100)
     if config['task_name'] is not None:
         # Downloading and loading a dataset from the hub.
         raw_datasets = load_dataset("glue", config['task_name'], split="train")
     elif config['dataset_name'] is not None:
-        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'], split="train")
+        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'],
+                                    split="train", download_config=download_config)
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
@@ -275,7 +278,10 @@ def train_loader_creator(config, batch_size):
     #
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-    tokenizer = AutoTokenizer.from_pretrained(config['model_name_or_path'], use_fast=not config['use_slow_tokenizer'])
+    tokenizer = AutoTokenizer.from_pretrained(config['model_name_or_path'],
+                                              use_fast=not config['use_slow_tokenizer'],
+                                              resume_download=True, max_retries=3, etag_timeout=100
+                                              )
 
 
     # Preprocessing the datasets
@@ -359,11 +365,13 @@ def eval_loader_creator(config, batch_size):
 
     # In distributed training, the load_dataset function guarantee that only one local process can concurrently
     # download the dataset.
+    download_config = DownloadConfig(resume_download=True, max_retries=3, etag_timeout=100)
     if config['task_name'] is not None:
         # Downloading and loading a dataset from the hub.
         raw_datasets = load_dataset("glue", config['task_name'], split="validation")
     elif config['dataset_name'] is not None:
-        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'], split="validation")
+        raw_datasets = load_dataset(config['dataset_name'], config['dataset_config_name'],
+                                    split="validation", download_config=download_config)
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
@@ -385,7 +393,9 @@ def eval_loader_creator(config, batch_size):
     #
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-    tokenizer = AutoTokenizer.from_pretrained(config['model_name_or_path'], use_fast=not config['use_slow_tokenizer'])
+    tokenizer = AutoTokenizer.from_pretrained(config['model_name_or_path'],
+                                              use_fast=not config['use_slow_tokenizer'],
+                                              resume_download=True, max_retries=3, etag_timeout=100)
 
     # Preprocessing the datasets
     if config['task_name'] is not None:
@@ -485,12 +495,17 @@ def model_creator(config):
         random.seed(config['seed'])
         np.random.seed(config['seed'])
         torch.manual_seed(config['seed'])
-    model_config = AutoConfig.from_pretrained(config['model_name_or_path'], num_labels=config['num_labels'], finetuning_task=config['task_name'])
+    model_config = AutoConfig.from_pretrained(config['model_name_or_path'],
+                                              num_labels=config['num_labels'],
+                                              finetuning_task=config['task_name'],
+                                              resume_download=True, max_retries=3, etag_timeout=100
+                                              )
     model = AutoModelForSequenceClassification.from_pretrained(
         config['model_name_or_path'],
         from_tf=bool(".ckpt" in config['model_name_or_path']),
         config=model_config,
         ignore_mismatched_sizes=config['ignore_mismatched_sizes'],
+        resume_download=True, max_retries=3, etag_timeout=100
     )
     if config['label_to_id'] is not None:
         model.config.label2id = config['label_to_id']
@@ -591,11 +606,12 @@ def main():
 
     # In distributed training, the load_dataset function guarantee that only one local process can concurrently
     # download the dataset.
+    download_config = DownloadConfig(resume_download=True, max_retries=3, etag_timeout=100)
     if args.task_name is not None:
         # Downloading and loading a dataset from the hub.
         raw_datasets = load_dataset("glue", args.task_name, split="train")
     elif args.dataset_name is not None:
-        raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name, split="train")
+        raw_datasets = load_dataset(args.dataset_name, args.dataset_config_name, split="train", download_config=download_config)
     else:
         # Loading the dataset from local csv or json file.
         data_files = {}
@@ -642,13 +658,21 @@ def main():
     #
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
-    model_config = AutoConfig.from_pretrained(args.model_name_or_path, num_labels=num_labels, finetuning_task=args.task_name)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=not args.use_slow_tokenizer)
+    model_config = AutoConfig.from_pretrained(args.model_name_or_path,
+                                              num_labels=num_labels,
+                                              finetuning_task=args.task_name,
+                                              resume_download=True,
+                                              max_retries=3,
+                                              etag_timeout=100)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
+                                              use_fast=not args.use_slow_tokenizer,
+                                              resume_download=True, max_retries=3, etag_timeout=100)
     model = AutoModelForSequenceClassification.from_pretrained(
         args.model_name_or_path,
         from_tf=bool(".ckpt" in args.model_name_or_path),
         config=model_config,
         ignore_mismatched_sizes=args.ignore_mismatched_sizes,
+        resume_download=True, max_retries=3, etag_timeout=100
     )
 
     # Preprocessing the datasets
