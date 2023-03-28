@@ -43,39 +43,51 @@ object BankDataFilter extends Supportive {
       .csv(csvFilePath)
 
     // Filter data based on user inputs
-    val filteredData = df.filter(col("BANK").isin(bankFilter:_*) &&
-      col("MONTH").between(startDate, endDate))
+    val filteredData1 = df.filter(col("BANK").isin(bankFilter:_*))
+
+    filteredData1.show()
+
+    filteredData1.printSchema()
+    println(startDate)
+    println(endDate)
+
+    val filteredData = filteredData1.filter(date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate)
+      || col("MONTH") == lit(startDate) || col("MONTH") == lit(endDate))
+    filteredData.printSchema()
 
     filteredData.show()
 
-    // Method 1: Total number of each category for each month
-    val categoryData = filteredData.groupBy("MONTH")
+    // Table 1: Total number of each category for each month
+    filteredData.groupBy("MONTH")
       .agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
         sum(when(col("FOOD") > 0, col("FOOD"))).as("FOOD"),
         sum(when(col("Transport") > 0, col("Transport"))).as("Transport"),
         sum(when(col("Clothing") > 0, col("Clothing"))).as("Clothing"),
         sum(when(col("Other") > 0, col("Other"))).as("Other"))
+      .repartition(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/output1")
+      .json(outputFilePath+"/categoryDate")
 
-    // Method 2: Total number of income and expense for each month
-    val incomeExpenseData = filteredData.groupBy("MONTH")
-      .agg(sum(when(col("INCOME") > 0, col("INCOME"))).as("INCOME"),
-        sum(when(col("EXPENSE") > 0, col("EXPENSE"))).as("EXPENSE"))
+    // Table 2: Total number of income and expense for each month
+    filteredData.groupBy("MONTH")
+      .agg(sum(col("INCOME")).as("INCOME"),
+        sum(col("EXPENSE")).as("EXPENSE"))
+      .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/output2")
+      .json(outputFilePath+"/incomeExpenseDate")
 
-    // Method 3: Total number of RENT, FOOD, Transport, Clothing and Other
-    val totalData = filteredData.agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
+    // Table 3: Total number of RENT, FOOD, Transport, Clothing and Other
+    filteredData.agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
       sum(when(col("FOOD") > 0, col("FOOD"))).as("FOOD"),
       sum(when(col("Transport") > 0, col("Transport"))).as("Transport"),
       sum(when(col("Clothing") > 0, col("Clothing"))).as("Clothing"),
       sum(when(col("Other") > 0, col("Other"))).as("Other"))
+      .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/output3")
+      .json(outputFilePath+"/totalCategory")
 
     // Stop SparkSession
     sparkSession.stop()
