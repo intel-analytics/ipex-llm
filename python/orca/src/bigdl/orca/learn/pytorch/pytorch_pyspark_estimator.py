@@ -474,7 +474,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         params = dict(
             batch_size=batch_size,
             profile=profile,
-            callbacks=callbacks
+            callbacks=callbacks,
+            output_cols=output_cols
         )
 
         if isinstance(data, DataFrame):  # Computation would be triggered by the user
