@@ -170,7 +170,7 @@ def filter_elem(input, i):
         return input[i]
 
 
-def convert_predict_xshards_to_dataframe(df, pred_shards):
+def convert_predict_xshards_to_dataframe(df, pred_shards, multi_output):
     def flatten(data):
         length = get_length(data)
 
@@ -179,7 +179,7 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
             yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
-    result = convert_predict_rdd_to_dataframe(df, pred_rdd)
+    result = convert_predict_rdd_to_dataframe(df, pred_rdd, multi_output)
     return result
 
 
