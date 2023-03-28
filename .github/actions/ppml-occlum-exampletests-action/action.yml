@@ -169,8 +169,8 @@ runs:
         fi
         
         if [ $status_11_spark_lgbm -ne 0 ]; then
-        echo "################## start spark tpch"
-        echo "example.10 pyspark tpch"
+        echo "################## start spark lgbm"
+        echo "example.11 spark lgbm"
         docker exec -i $CONTAINER_NAME bash -c "cd /opt && \
              bash run_spark_on_occlum_glibc.sh lgbm | tee spark-lgbm.log && \
              cat spark-lgbm.log | egrep 'acc:'"
