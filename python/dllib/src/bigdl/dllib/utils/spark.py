@@ -77,7 +77,7 @@ class SparkRunner:
                            extra_python_lib=None,
                            penv_archive=None,
                            additional_archive=None,
-                           hadoop_user_name="root",
+                           hadoop_user_name=None,
                            spark_yarn_archive=None,
                            conf=None,
                            jars=None,
@@ -85,7 +85,10 @@ class SparkRunner:
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
-        os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        if hadoop_user_name:
+            os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        elif not os.environ.get("HADOOP_USER_NAME"):
+            os.environ["HADOOP_USER_NAME"] = os.getlogin()
         os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
 
         pack_env = False
@@ -149,7 +152,7 @@ class SparkRunner:
                                    extra_python_lib=None,
                                    penv_archive=None,
                                    additional_archive=None,
-                                   hadoop_user_name="root",
+                                   hadoop_user_name=None,
                                    spark_yarn_archive=None,
                                    conf=None,
                                    jars=None,
@@ -157,7 +160,10 @@ class SparkRunner:
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
-        os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        if hadoop_user_name:
+            os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        elif not os.environ.get("HADOOP_USER_NAME"):
+            os.environ["HADOOP_USER_NAME"] = os.getlogin()
 
         pack_env = False
         invalidInputError(penv_archive or conda_name,
