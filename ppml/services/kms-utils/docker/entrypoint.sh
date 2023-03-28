@@ -213,7 +213,6 @@ elif [ "$action" = "decrypt" ]; then
     -cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:/${SPARK_HOME}/examples/jars/*:${BIGDL_HOME}/jars/*" -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
         --master local[2] \
-        --deploy-mode client \
         --driver-memory 5g \
         --driver-cores 4 \
         --executor-memory 5g \
@@ -253,7 +252,6 @@ elif [ "$action" = "decrypt" ]; then
 		-cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:/${SPARK_HOME}/examples/jars/*:${BIGDL_HOME}/jars/*" -Xmx1g \
 		org.apache.spark.deploy.SparkSubmit \
 			--master local[2] \
-			--deploy-mode client \
 			--driver-memory 5g \
 			--driver-cores 4 \
 			--executor-memory 5g \
@@ -262,7 +260,6 @@ elif [ "$action" = "decrypt" ]; then
 			--conf spark.cores.max=8 \
 			--conf spark.network.timeout=10000000 \
 			--conf spark.executor.heartbeatInterval=10000000 \
-			--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 			--conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
 			--conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
 			--conf spark.bigdl.primaryKey.AmyPK.kms.appId=${appid} \
