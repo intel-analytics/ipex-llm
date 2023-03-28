@@ -545,7 +545,7 @@ class TestPyTorchEstimatorBasic(TestCase):
                                      callbacks=[ComplicatedMCB()],
                                      feature_cols=["f"])
         result_1.collect()
-        assert "torch_output_0" and "torch_output_1" in result.columns
+        assert "torch_output_0" and "torch_output_1" in result_1.columns
 
     def test_data_parallel_sgd_correctness(self):
         sc = init_nncontext()
