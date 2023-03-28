@@ -183,7 +183,7 @@ def convert_predict_xshards_to_dataframe(df, pred_shards):
     return result
 
 
-def convert_predict_rdd_to_dataframe(df, prediction_rdd):
+def convert_predict_rdd_to_dataframe(df, prediction_rdd, multi_output=False):
     from pyspark.sql import Row
     from pyspark.ml.linalg import Vectors
 
@@ -220,10 +220,14 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                              [convert_elem(item) for item in new_pair]))
             else:
                 return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                             convert_elem(pair[1])))
+                             [convert_elem(pair[1])]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    schema = [k for k in prediction_rdd.first()]
+
+    if multi_output is True:
+        schema = [k for k in prediction_rdd.first()]
+    else:
+        schema = ["prediction"]
     columns = df.columns + schema
     # Converting to DataFrame will trigger the computation
     # to infer the schema of the prediction column.
