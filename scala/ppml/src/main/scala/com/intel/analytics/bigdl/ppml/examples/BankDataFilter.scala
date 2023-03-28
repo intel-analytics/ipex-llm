@@ -43,17 +43,8 @@ object BankDataFilter extends Supportive {
       .csv(csvFilePath)
 
     // Filter data based on user inputs
-    val filteredData1 = df.filter(col("BANK").isin(bankFilter:_*))
-
-    filteredData1.show()
-
-    filteredData1.printSchema()
-    println(startDate)
-    println(endDate)
-
-    val filteredData = filteredData1.filter(date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate)
-      || col("MONTH") == lit(startDate) || col("MONTH") == lit(endDate))
-    filteredData.printSchema()
+    val filteredData = df.filter(col("BANK").isin(bankFilter:_*)
+        && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate))
 
     filteredData.show()
 
