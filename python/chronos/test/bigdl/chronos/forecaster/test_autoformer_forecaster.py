@@ -20,6 +20,7 @@ import tempfile
 import os
 
 from bigdl.chronos.utils import LazyImport
+torch = LazyImport('torch')
 AutoformerForecaster = LazyImport('bigdl.chronos.forecaster.autoformer_forecaster.AutoformerForecaster')
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
@@ -461,3 +462,23 @@ class TestChronosModelAutoformerForecaster(TestCase):
         forecaster.tune(train_data, validation_data=val_data, n_trials=2,
                         study_name=name, sampler=SamplerType.Grid,
                         storage=storage, n_parallels=2)
+
+    def test_autoformer_forecaster_ctx_manager(self):
+        train_loader, val_loader, test_loader = create_data(loader=True)
+        forecaster = AutoformerForecaster(past_seq_len=24,
+                                          future_seq_len=5,
+                                          input_feature_num=2,
+                                          output_feature_num=2,
+                                          label_len=12,
+                                          freq='s')
+        forecaster.fit(train_loader, epochs=1, batch_size=32)
+
+        original_thread = torch.get_num_threads()
+        assert forecaster.thread_num == original_thread
+
+        num = max(1, original_thread//2)
+        with forecaster.get_context(thread_num=num):
+            assert forecaster.context_enabled == True
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
+            pred = forecaster.predict(test_loader)
