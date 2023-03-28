@@ -67,18 +67,19 @@ export appid=your_appid
 export apikey=your_apikey
 export container_input_file_path=mounted_address_of_host_input_file_path
 export container_input_folder_path=mounted_address_of_host_input_folder_path
-
+export data_source_type=your_data_source_type
+# The data_source_type can be any one of csv, json, parquet, or textfile. If you do not specify this parameter, it will be set to csv by default
 
 # Generatekeys
 docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
 
 # Encrypt a single data file
 # encrpted data is next to $container_input_file_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $container_input_file_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $container_input_file_path" $data_source_type
 
 
 # Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $container_input_file_path"
+docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $container_input_file_path" $data_source_type
 
 # SplitAndEncrypt
 # encrpted data is in a directory next to $container_input_folder_path
