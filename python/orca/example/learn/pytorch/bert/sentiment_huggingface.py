@@ -26,6 +26,7 @@ import warnings
 
 import datasets
 import torch
+import numpy as np
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -480,6 +481,10 @@ def scheduler_creator(optimizer, config):
     return lr_scheduler
 
 def model_creator(config):
+    if config['seed'] is not None:
+        random.seed(config['seed'])
+        np.random.seed(config['seed'])
+        torch.manual_seed(config['seed'])
     model_config = AutoConfig.from_pretrained(config['model_name_or_path'], num_labels=config['num_labels'], finetuning_task=config['task_name'])
     model = AutoModelForSequenceClassification.from_pretrained(
         config['model_name_or_path'],
@@ -573,10 +578,6 @@ def main():
         datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO,
     )
-
-    # If passed along, set the training seed now.
-    # if args.seed is not None:
-    #     set_seed(args.seed)
 
     # Get the datasets: you can either provide your own CSV/JSON training and evaluation files (see below)
     # or specify a GLUE benchmark task (the dataset will be downloaded automatically from the datasets Hub).
