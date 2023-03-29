@@ -8,11 +8,12 @@
 wget https://files.grouplens.org/datasets/movielens/ml-1m.zip
 unzip ./ml-1m.zip
 
+# Upload the dataset to HDFS if you run on yarn:
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
 ```
-
+ 
 ## Arguments
 + `--data_dir`: The path to load data from local or remote resources (default to be `./`). You should input an HDFS path if you run on yarn.
 + `--dataset`: The name of the dataset, ml-1m or ml-100k (default to be `ml-1m`).
