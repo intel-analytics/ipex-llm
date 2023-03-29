@@ -54,7 +54,7 @@ object BankDataFilter extends Supportive {
         sum(col("Transport")).as("Transport"),
         sum(col("Clothing")).as("Clothing"),
         sum(col("Other")).as("Other"))
-      .repartition(1)
+      .coalesce(1)
       .write
       .mode("overwrite")
       .json(outputFilePath + "/categoryDate")
