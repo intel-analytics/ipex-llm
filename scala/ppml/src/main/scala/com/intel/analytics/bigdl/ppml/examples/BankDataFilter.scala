@@ -17,10 +17,9 @@
 package com.intel.analytics.bigdl.ppml.examples
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.PLAIN_TEXT
 import com.intel.analytics.bigdl.ppml.utils.Supportive
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, AES_CBC_PKCS5PADDING, PLAIN_TEXT}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 
 object BankDataFilter extends Supportive {
