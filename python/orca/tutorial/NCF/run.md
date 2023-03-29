@@ -194,3 +194,10 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
 ```
+
+## 3 Appendix
+
+See also
+
++ [Transfer Learning](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/tf/transfer_learning.py) using Xception with TensorFlow Dataset on cats_vs_dogs dataset.
++ [Transfer Learning](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/transfer_learning/train.py) using ConvNet with PyTorch DataLoader on hymenoptera dataset.
