@@ -5,15 +5,19 @@
 - https://files.grouplens.org/datasets/movielens/ml-100k.zip
 
 ```bash
+# wget and unzip the data
+wget https://files.grouplens.org/datasets/movielens/ml-1m.zip
+unzip ./ml-1m.zip
+# Upload the dataset to HDFS if you run on yarn:
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
 ```
 
 ## Arguments
-+ `--data_dir`: The path to load data from local or remote resources (default to be `./`).
++ `--data_dir`: The path to load data from local or remote resources (default to be `./`). You should input an HDFS path if you run on yarn.
 + `--dataset`: The name of the dataset, ml-1m or ml-100k (default to be `ml-1m`).
-+ `--model_dir`: The path to save model and logs (default to be `./`).
++ `--model_dir`: The path to save model and logs (default to be `./`). You should input an HDFS path if you run on yarn.
 + `--cluster_mode`: The cluster mode, one of `local`, `yarn-client`, `yarn-cluster`, `k8s-client`, `k8s-cluster`, `spark-submit` or `bigdl-submit` (default to be `local`).
 + `--backend`: The backend of Orca Estimator, either ray or spark (default to be `spark`).
 + `--workers_per_node`: The number of workers on each node (default to be `1`).
@@ -33,7 +37,7 @@ pip install --pre --upgrade bigdl-orca-spark3[ray]
 pip install tensorflow==2.9.0
 # PyTorch
 pip install torch torchvision torchmetrics==0.10.0 tqdm
-# Data Lodaer
+# PyTorch DataLoader
 pip install pandas scikit-learn
 # XShards
 pip install pandas scikit-learn pyarrow
@@ -47,21 +51,18 @@ pip install tensorboard
 ```bash
 python pytorch_train_spark_dataframe.py --data_dir file:///local/path/to/NCF
 ```
-You can replace the file name with other files. Need to run the train script first before resume training or prediction.
+You can replace the file name with [other files](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/NCF/README.md). Need to run the train script first before resume training or prediction.
 
 ### Results
 
-The above command will return the following files
-+ `NCF_model`: A zip file containing the trained PyTorch model 
+Check the processed data and saved model files after running the train script
++ `NCF_model`: The directory or zip archive containing the trained model 
 + `config.json`: The model configuration for predict and resume training
-+ Processed dataframe parquet under `data_dir`
-    + `ml-1m/train_processed_dataframe.parquet`
-    + `ml-1m/test_processed_dataframe.parquet`
++ Processed dataframe parquet/xshards under `data_dir`
 <details>
 <summary> Click to see the console output </summary>
 
 ```bash
-Loading data...
 Train results:
 num_samples: 3938789
 epoch: 1.0
@@ -90,8 +91,7 @@ num_samples: 983858
 Accuracy: 0.8859977722167969
 Precision: 0.7784695625305176
 Recall: 0.6156555414199829
-val_loss: 0.26760029486236536
-Stopping orca context  
+val_loss: 0.26760029486236536  
 ```
 
 </details>
@@ -100,8 +100,8 @@ Stopping orca context
 
 ### Run Command
 ```bash
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-client
-python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF  --cluster_mode yarn-cluster
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --cluster_mode yarn-client
+python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --cluster_mode yarn-cluster
 ```
 
 ## 2-2 Run on YARN with bigdl-submit
@@ -119,7 +119,7 @@ bigdl-submit \
     --executor-cores 4 \
     --executor-memory 10g \
     --driver-memory 2g \
-    --py-files process_spark_dataframe.py,pytorch_model.py,utils.py \
+    --py-files pytorch_model.py \
     --archives environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
@@ -170,7 +170,7 @@ ${SPARK_HOME}/bin/spark-submit \
    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
    --conf spark.pyspark.driver.python=python \
    --conf spark.pyspark.python=environment/bin/python \
-   --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,process_spark_dataframe.py,pytorch_model.py,utils.py \
+   --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,pytorch_model.py \
    --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
    pytorch_train_spark_dataframe.py \
    --cluster_mode spark-submit \
