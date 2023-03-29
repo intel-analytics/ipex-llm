@@ -5,10 +5,9 @@
 - https://files.grouplens.org/datasets/movielens/ml-100k.zip
 
 ```bash
-# wget and unzip the data
 wget https://files.grouplens.org/datasets/movielens/ml-1m.zip
 unzip ./ml-1m.zip
-# Upload the dataset to HDFS if you run on yarn:
+
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
@@ -55,8 +54,8 @@ You can replace the file name with [other files](https://github.com/intel-analyt
 
 ### Results
 
-Check the processed data and saved model files after running the train script
-+ `NCF_model`: The directory or zip archive containing the trained model 
+Check the processed data and saved model files after running the train script:
++ `NCF_model`: The trained model 
 + `config.json`: The model configuration for predict and resume training
 + Processed dataframe parquet/xshards under `data_dir`
 <details>
@@ -194,10 +193,3 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
 ```
-
-## 3 Appendix
-
-See also
-
-+ [Transfer Learning](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/tf/transfer_learning.py) using Xception with TensorFlow Dataset on cats_vs_dogs dataset.
-+ [Transfer Learning](https://github.com/intel-analytics/BigDL/blob/main/python/orca/tutorial/pytorch/transfer_learning/train.py) using ConvNet with PyTorch DataLoader on hymenoptera dataset.
