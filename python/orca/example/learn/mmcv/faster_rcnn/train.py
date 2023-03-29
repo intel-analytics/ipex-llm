@@ -19,6 +19,7 @@ import os
 
 import numpy as np
 import os.path as osp
+from os.path import exists, join
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import get_remote_dir_to_local
@@ -222,8 +223,12 @@ def main():
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.cores, memory="10g")
     elif args.cluster_mode.startswith("yarn"):
+        additional = None
+        if exists(join(args.dataset, "kitti_tiny.zip")):
+            additional = join(args.dataset, "kitti_tiny.zip#", args.dataset)
         init_orca_context(cluster_mode="yarn-client", cores=args.cores, memory="4g",
-                          num_nodes=args.num_nodes, driver_cores=4, driver_memory="2g")
+                          num_nodes=args.num_nodes, driver_cores=4, driver_memory="2g",
+                          additional_archive=additional)
     else:
         print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn-client', "
               "but got" + args.cluster_mode)

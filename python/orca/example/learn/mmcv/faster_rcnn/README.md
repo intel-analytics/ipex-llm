@@ -58,6 +58,8 @@ python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --config $MMDET_PAT
 
 To train with yarn-client mode, you need to make sure the dataset is under the same path of every worker node. In order to do this, you can upload the dataset to HDFS and download dataset to every worker node before training.
 
+To prepare dataset under every cluster node, you need to prepare the compressed package of the dataset and put it under the corresponding archive.
+
 If you want to use the pre-trained checkpoints, please first upload the checkpoint file to HDFS, the checkpoint file can be directly read from HDFS.
 
 Finally execute:
@@ -78,8 +80,6 @@ python train.py  --dataset /your/dataset/path/to/kitti_tiny/ --cluster_mode yarn
 
 
 ## Results
-
-**For "ray" backend**
 
 ```
 (MMCVRayEpochRunner pid=188889)
