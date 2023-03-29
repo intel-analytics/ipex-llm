@@ -44,21 +44,21 @@ object BankDataFilter extends Supportive {
 
     // Filter data based on user inputs
     val filteredData = df.filter(col("BANK").isin(bankFilter:_*)
-        && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate))
+        && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate,endDate))
 
     filteredData.show()
 
     // Table 1: Total number of each category for each month
     filteredData.groupBy("MONTH")
-      .agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
-        sum(when(col("FOOD") > 0, col("FOOD"))).as("FOOD"),
-        sum(when(col("Transport") > 0, col("Transport"))).as("Transport"),
-        sum(when(col("Clothing") > 0, col("Clothing"))).as("Clothing"),
-        sum(when(col("Other") > 0, col("Other"))).as("Other"))
+      .agg(sum(col("RENT")).as("RENT"),
+        sum(col("FOOD")).as("FOOD"),
+        sum(col("Transport")).as("Transport"),
+        sum(col("Clothing")).as("Clothing"),
+        sum(col("Other")).as("Other"))
       .repartition(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/categoryDate")
+      .json(outputFilePath + "/categoryDate")
 
     // Table 2: Total number of income and expense for each month
     filteredData.groupBy("MONTH")
@@ -67,18 +67,18 @@ object BankDataFilter extends Supportive {
       .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/incomeExpenseDate")
+      .json(outputFilePath + "/incomeExpenseDate")
 
     // Table 3: Total number of RENT, FOOD, Transport, Clothing and Other
     filteredData.agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
-      sum(when(col("FOOD") > 0, col("FOOD"))).as("FOOD"),
-      sum(when(col("Transport") > 0, col("Transport"))).as("Transport"),
-      sum(when(col("Clothing") > 0, col("Clothing"))).as("Clothing"),
-      sum(when(col("Other") > 0, col("Other"))).as("Other"))
+      sum(col("FOOD")).as("FOOD"),
+      sum(col("Transport")).as("Transport"),
+      sum(col("Clothing")).as("Clothing"),
+      sum(col("Other")).as("Other"))
       .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath+"/totalCategory")
+      .json(outputFilePath + "/totalCategory")
 
     // Stop SparkSession
     sparkSession.stop()
