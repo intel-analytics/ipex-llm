@@ -44,7 +44,7 @@ object BankDataFilter extends Supportive {
 
     // Filter data based on user inputs
     val filteredData = df.filter(col("BANK").isin(bankFilter:_*)
-        && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate,endDate))
+        && date_format(col("MONTH"),"yyyy-MM-dd").between(startDate,endDate))
 
     filteredData.show()
 
