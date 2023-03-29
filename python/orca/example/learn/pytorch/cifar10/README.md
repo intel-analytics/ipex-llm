@@ -19,11 +19,6 @@ pip install tqdm  # progress bar
 # For ray backend
 pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
-
-# For bigdl backend
-pip install bigdl-orca
-pip install jep==3.9.0
-pip install six cloudpickle
 ```
 
 ## Run on local after pip install
@@ -38,12 +33,6 @@ You can run with `ray` backend via:
 
 ```
 python cifar10.py --backend ray
-```
-
-You can run with `bigdl` backend via:
-
-```
-python cifar10.py --backend bigdl
 ```
 
 ## Run on yarn cluster for yarn-client mode after pip install
@@ -64,17 +53,5 @@ Final test results will be printed at the end:
 num_samples : 10000
 Accuracy : tensor(0.5378)
 val_loss : 1.3078322240829467
-```
-
-**For "bigdl" backend**
-
-You can find the logs for training as follows:
-```
-2020-12-03 15:25:30 INFO  DistriOptimizer$:426 - [Epoch 2 47680/50000][Iteration 24420][Wall Clock 497.634203315s] Trained 4 records in 0.022554577 seconds. Throughput is 177.3476 records/second. Loss is 0.82751834.
-```
-
-Final test results will be printed at the end:
-```
-Accuracy of the network on the test images: {'Top1Accuracy': 0.541100025177002}
 ```
 

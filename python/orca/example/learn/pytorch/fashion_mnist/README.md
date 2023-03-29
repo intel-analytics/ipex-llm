@@ -20,11 +20,6 @@ pip install tqdm  # progress bar
 # For ray backend
 pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
-
-# For bigdl backend
-pip install bigdl-orca
-pip install jep==3.9.0
-pip install six cloudpickle
 ```
 
 ## Run on local after pip install
@@ -39,12 +34,6 @@ You can run with `ray` backend via:
 
 ```
 python fashion_mnist.py --backend ray
-```
-
-You can run with `bigdl` backend via:
-
-```
-python fashion_mnist.py --backend bigdl
 ```
 
 To see the result figures after it finishes:
@@ -77,18 +66,4 @@ You can find the results of training and validation as follows:
 Train stats: [{'num_samples': 60000, 'epoch': 1, 'batch_count': 15000, 'train_loss': 0.6387080065780457, 'last_train_loss': 0.17801283299922943}, {'num_samples': 60000, 'epoch': 2, 'batch_count': 15000, 'train_loss': 0.372230169281755, 'last_train_loss': 0.19179978966712952}, {'num_samples': 60000, 'epoch': 3, 'batch_count': 15000, 'train_loss': 0.32247564417196833, 'last_train_loss': 0.30726122856140137}, {'num_samples': 60000, 'epoch': 4, 'batch_count': 15000, 'train_loss': 0.2959285915141232, 'last_train_loss': 0.2786743640899658}, {'num_samples': 60000, 'epoch': 5, 'batch_count': 15000, 'train_loss': 0.27712880933261197, 'last_train_loss': 0.2697388529777527}]
 
 Validation stats: {'num_samples': 10000, 'Accuracy': tensor(0.8788), 'val_loss': 0.34675604103680596}
-```
-
-**For "bigdl" backend**
-
-You can find the logs for training as follows:
-
-```
-2021-03-24 14:33:36 INFO  DistriOptimizer$:427 - [Epoch 4 52876/60000][Iteration 58219][Wall Clock 1230.685682812s] Trained 4.0 records in 0.016452279 seconds. Throughput is 243.12741 records/second. Loss is 0.0136261955.
-```
-
-Final test results will be printed at the end:
-
-```
-2021-03-24 14:39:43 INFO  DistriOptimizer$:1759 - Top1Accuracy is Accuracy(correct: 8851, count: 10000, accuracy: 0.8851)
 ```

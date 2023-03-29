@@ -246,47 +246,7 @@ def optim_creator(model, config):
 criterion = nn.MSELoss()
 model_dir = opt.data_dir+"/models"
 
-if opt.backend == "bigdl":
-    # TODO(remove jep)
-    model = model_creator(
-        config={
-            "upscale_factor": opt.upscale_factor,
-            "seed": opt.seed
-        }
-    )
-    optimizer = optim_creator(model, config={"lr": opt.lr})
-    estimator = Estimator.from_torch(
-        model=model,
-        optimizer=optimizer,
-        loss=criterion,
-        metrics=[MSE()],
-        model_dir=model_dir,
-        backend="bigdl"
-    )
-
-    train_loader = train_data_creator(
-        config={
-            "upscale_factor": opt.upscale_factor,
-            "threads": opt.threads
-        },
-        batch_size=opt.batch_size
-    )
-    test_loader = validation_data_creator(
-        config={
-            "upscale_factor": opt.upscale_factor,
-            "threads": opt.threads
-        },
-        batch_size=opt.batch_size
-    )
-
-    estimator.fit(data=train_loader, epochs=opt.epochs, validation_data=test_loader,
-                  checkpoint_trigger=EveryEpoch())
-
-    val_stats = estimator.evaluate(data=test_loader)
-    print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
-          .format(10 * log10(1. / val_stats["MSE"]), val_stats["MSE"]))
-
-elif opt.backend in ["ray", "spark"]:
+if opt.backend in ["ray", "spark"]:
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optim_creator,
@@ -326,7 +286,7 @@ elif opt.backend in ["ray", "spark"]:
     estimator.save(last_model_path)
     print("Checkpoint saved to {}".format(last_model_path))
 else:
-    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend, "
+    invalidInputError(False, "Only ray, and spark are supported as the backend, "
                       "but got {}".format(opt.backend))
 
 stop_orca_context()

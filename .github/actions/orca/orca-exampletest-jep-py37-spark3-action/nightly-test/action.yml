@@ -1,5 +1,5 @@
-name: 'Run Orca Jep ExampleTest Py37 Spark3'
-description: 'Run Orca Jep ExampleTest Py37 Spark3'
+name: 'Run Orca ExampleTest Py37 Spark3'
+description: 'Run Orca ExampleTest Py37 Spark3'
 runs:
   using: "composite"
   steps:
@@ -13,7 +13,7 @@ runs:
 
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} jep==3.9.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} cloudpickle
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pandas
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} matplotlib

@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
     from bigdl.orca.learn.metrics import Metric
     from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
-    from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
     from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
     from bigdl.orca.learn.pytorch.experimential.mmcv.mmcv_ray_estimator import MMCVRayEstimator
 
@@ -48,7 +47,6 @@ class Estimator(object):
                    log_level: int=logging.INFO,
                    log_to_driver: bool=True,
                    ) -> Union['PyTorchRayEstimator',
-                              'PyTorchSparkEstimator',
                               'PyTorchPySparkEstimator',
                               None]:
         """
@@ -64,8 +62,8 @@ class Estimator(object):
         :param metrics: One or a list of Orca validation metrics. Function(s) that computes the
                metrics between the output and target tensors are also supported.
                Default: None if no validation is involved.
-        :param backend: The distributed backend for the Estimator. One of "spark",  "ray",
-               "bigdl" or "horovod".
+        :param backend: The distributed backend for the Estimator. One of "spark",  "ray"
+               or "horovod".
                Default: "spark".
         :param config: A parameter config dict, CfgNode or any class instance that plays a role of
                configuration to create model, loss, optimizer, scheduler and data.
@@ -104,16 +102,6 @@ class Estimator(object):
                                        backend=backend,
                                        sync_stats=sync_stats,
                                        log_level=log_level)
-        elif backend == "bigdl":
-            # TODO(remove jep)
-            from bigdl.orca.learn.pytorch.pytorch_spark_estimator import PyTorchSparkEstimator
-            return PyTorchSparkEstimator(model=model,
-                                         loss=loss,
-                                         optimizer=optimizer,
-                                         config=config,
-                                         metrics=metrics,
-                                         model_dir=model_dir,
-                                         bigdl_type="float")
         elif backend == "spark":
             from bigdl.orca.learn.pytorch.pytorch_pyspark_estimator import PyTorchPySparkEstimator
             return PyTorchPySparkEstimator(model_creator=model,
@@ -132,7 +120,7 @@ class Estimator(object):
         else:
             from bigdl.dllib.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Only horovod, ray, bigdl and spark backends are "
+                              "Only horovod, ray and spark backends are "
                               f"supported for now, got backend: {backend}")
             return None
 

@@ -20,13 +20,14 @@ from importlib.util import find_spec
 from bigdl.orca.torch import zoo_pickle_module
 from bigdl.dllib.optim.optimizer import OptimMethod
 from bigdl.dllib.utils.log4Error import invalidInputError
+from deprecated import deprecated
 
 
 if find_spec('jep') is None:
     invalidInputError(False, "jep not found, please install jep first.")
 
 
-# TODO(will delete in 2.2.0)
+@deprecated(version='2.3.0', reason="Please use spark engine and ray engine.")
 class TorchOptim(OptimMethod):
     """
     TorchOptim wraps a torch optimizer for distributed inference or training.
