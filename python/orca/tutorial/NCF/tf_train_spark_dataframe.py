@@ -28,7 +28,6 @@ from bigdl.orca.learn.tf2 import Estimator
 
 # Step 1: Init Orca Context
 args = parse_args("TensorFlow NCF Training with Spark DataFrame")
-args.backend = "ray"  # TODO: fix spark backend for saving optimizer states
 init_orca(args.cluster_mode, extra_python_lib="process_spark_dataframe.py,tf_model.py,utils.py")
 
 
