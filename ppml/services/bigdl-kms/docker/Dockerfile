@@ -15,22 +15,13 @@ RUN apt-get update --fix-missing && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
-# bigdl
-FROM ubuntu:20.04 as bigdl
+# bigdl keywhiz
+FROM maven:3.6-jdk-11
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
-RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils curl wget unzip git
-RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
-    chmod a+x ./download-bigdl.sh
-RUN ./download-bigdl.sh && \
-    rm bigdl*.zip
-
-# bigdl keywhiz
-FROM maven:3.6-jdk-11
 ARG http_proxy
 ARG https_proxy
 
@@ -88,7 +79,7 @@ RUN useradd -ms /bin/false keywhiz && \
     echo 'alias key.provider="java -jar server/target/keywhiz-server-*-SNAPSHOT-shaded.jar"' >> ~/.bashrc && \
     echo salt > /usr/src/app/salt && \
     cd /usr/src/app && \
-    wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_${SPARK_VERSION}/{BIGDL_VERSION}/bigdl-ppml-spark_${SPARK_VERSION}-{BIGDL_VERSION}-jar-with-dependencies.jar
+    wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_${SPARK_VERSION}/${BIGDL_VERSION}/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar
 
 EXPOSE 4444
 
@@ -104,14 +95,6 @@ ADD ./start-https-frontend.sh /usr/src/app/start-https-frontend.sh
 RUN chmod a+x /usr/src/app/start-https-frontend.sh && \
     chmod a+x /usr/src/app/server/target/keywhiz-server-0.10.2-SNAPSHOT-shaded.jar
 
-ENV LC_ALL	C.UTF-8
-ENV LANG	C.UTF-8
-ARG BIGDL_VERSION
-ARG SPARK_VERSION
-ENV SPARK_VERSION               ${SPARK_VERSION}
-ENV BIGDL_VERSION               ${BIGDL_VERSION}
-ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+ENV LC_ALL      C.UTF-8
+ENV LANG        C.UTF-8
 COPY --from=java /opt/jdk  /opt/jdk8
-COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
-
-ENTRYPOINT ["/usr/src/app/entry.sh"]
