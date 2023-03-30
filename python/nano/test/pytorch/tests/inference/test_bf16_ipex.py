@@ -349,6 +349,20 @@ class Pytorch1_11:
         with InferenceOptimizer.get_context(new_model):
             new_model(x)
             assert new_model.enable_onednn is True
+        
+        model = InferenceOptimizer.quantize(model, precision='bf16',
+                                            accelerator="jit",
+                                            use_ipex=True,
+                                            input_sample=x,
+                                            enable_onednn=False)
+        with InferenceOptimizer.get_context(model):
+            model(x)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(model, tmp_dir_name)
+            new_model = InferenceOptimizer.load(tmp_dir_name)
+        with InferenceOptimizer.get_context(new_model):
+            new_model(x)
+            assert new_model.enable_onednn is False
 
     def test_ipex_jit_channels_last_3d_inference(self):
         model = DummyModelWith3d()
