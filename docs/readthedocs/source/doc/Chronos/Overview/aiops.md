@@ -6,7 +6,7 @@ Chronos provides a template(i.e., `ConfigGenerator`) as an easy-to-use builder f
 
 AIOps application typically relies on a decision system with one or multiple AI models. Generally, this AI system needs to be trained with some training data with a self-defined checkpoint. When using the AI system, we first initialize it throught previously trained checkpoint and inform the AI system with current status to get the suggested configuration.
 
-![image](../Image/aiops-workflow.png)
+![](../Image/aiops-workflow.png)
 
 Sometimes the AI system need to be informed some **timely** information (e.g., some events in log or some monitoring data every second). Chronos also defines some triggers for this kind of usage.
 
