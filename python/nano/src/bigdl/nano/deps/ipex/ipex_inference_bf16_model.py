@@ -77,7 +77,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
                                      jit_method=jit_method, weights_prepack=weights_prepack,
-                                     compression=compression)
+                                     enable_onednn=enable_onednn, compression=compression)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
