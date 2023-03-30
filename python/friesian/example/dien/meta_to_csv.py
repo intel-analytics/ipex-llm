@@ -30,4 +30,4 @@ for line in fi:
         cat = obj["categories"][0][-1]
         print(obj["asin"] + "\t" + cat, file=fo)
     else:
-        print("Invalid metadata.")
+        print("Invalid line in input_meta file. Json like data is expected.")
