@@ -18,17 +18,12 @@ if [ "$action" = "enroll" ]; then
 	fi
 elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
-	    appid=$2
-	    apikey=$3
-		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-		--dataKeyPath /home/key/ehsm_encrypted_data_key \
-		--kmsType EHSMKeyManagementService \
-		--kmsServerIP $EHSM_KMS_IP \
-		--kmsServerPort $EHSM_KMS_PORT \
-		--ehsmAPPID $appid \
-		--ehsmAPIKEY $apikey
+		if [ ! -d "$BIGDL_HOME/python/bigdl" ]; then 
+			unzip $BIGDL_HOME/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip -d $BIGDL_HOME/python/
+		fi
+		export APPID=$2
+		export APIKEY=$3
+		python3 $BIGDL_HOME/python/bigdl/ppml/kms/ehsm/client.py -api generate_primary_key -ip $EHSM_KMS_IP -port $EHSM_KMS_PORT
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    apikey=$3
