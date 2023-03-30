@@ -49,8 +49,8 @@ object BankDataFilter extends Supportive {
 
     // Table 1: Total number of each category for each month
     filteredData.groupBy("MONTH")
-      .agg(sum(col("RENT")).as("RENT"),
-        sum(col("FOOD")).as("FOOD"),
+      .agg(sum(col("Rent")).as("Rent"),
+        sum(col("Food")).as("Food"),
         sum(col("Transport")).as("Transport"),
         sum(col("Clothing")).as("Clothing"),
         sum(col("Other")).as("Other"))
@@ -69,8 +69,8 @@ object BankDataFilter extends Supportive {
       .json(outputFilePath + "/incomeExpenseDate")
 
     // Table 3: Total number of RENT, FOOD, Transport, Clothing and Other
-    filteredData.agg(sum(when(col("RENT") > 0, col("RENT"))).as("RENT"),
-      sum(col("FOOD")).as("FOOD"),
+    filteredData.agg(sum(col("Rent")).as("Rent"),
+      sum(col("Food")).as("Food"),
       sum(col("Transport")).as("Transport"),
       sum(col("Clothing")).as("Clothing"),
       sum(col("Other")).as("Other"))
