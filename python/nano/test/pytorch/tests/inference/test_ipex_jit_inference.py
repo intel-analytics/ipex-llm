@@ -419,6 +419,33 @@ class IPEXJITInference_gt_1_10:
                 else:
                     model(x1, x2, x3)
 
+    def test_ipex_jit_keyword_argument(self):
+        net = MultipleInputNet()
+        x1 = torch.randn(32, 10)
+        x2 = torch.randn(32, 10)
+        y = torch.randn(32, 1)
+        dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+
+        model = InferenceOptimizer.trace(net,
+                                         accelerator=None,
+                                         use_ipex=True,
+                                         calib_data=dataloader)
+        with InferenceOptimizer.get_context(model):
+            model(x1, x2)
+            # test keyword argument
+            model(x1, x2=x2)
+            model(x1=x1, x2=x2)
+
+        model = InferenceOptimizer.trace(net,
+                                         accelerator='jit',
+                                         use_ipex=True,
+                                         calib_data=dataloader)
+        with InferenceOptimizer.get_context(model):
+            model(x1, x2)
+            # test keyword argument
+            model(x1, x2=x2)
+            model(x1=x1, x2=x2)
+
     def test_ipex_jit_inference_jit_method(self):
         class Net(nn.Module):
             def __init__(self):

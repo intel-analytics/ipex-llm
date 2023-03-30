@@ -169,10 +169,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return [input_value.debugName() for input_value in self.model.graph.inputs()
                 if not input_value.debugName().startswith('self')]
 
-    def on_forward_start(self, inputs):
-        return inputs
-
-    def forward_step(self, *inputs):
+    def forward(self, *inputs, **kwargs):
         if self.channels_last:
             # generate channels_last_available list is possible
             # this won't affect inference latency much since it will only run 1 time
@@ -186,10 +183,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                     self.channels_last_available[idx], inputs[idx]),
                 range(converted_input_length))) + inputs[converted_input_length:]
 
-        return self.model(*inputs)
-
-    def on_forward_end(self, outputs):
-        return outputs
+        return self.model(*inputs, **kwargs)
 
     @property
     def status(self):

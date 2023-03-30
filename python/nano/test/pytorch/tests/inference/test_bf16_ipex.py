@@ -17,6 +17,7 @@ from unittest import TestCase
 import pytest
 import torch
 from torch import nn
+from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import PropertyMock, patch
@@ -55,6 +56,26 @@ class DummyModelWith3d(nn.Module):
 
     def forward(self, x1, x2:int):
         return self.conv3d_1(x1), x2
+
+
+class MultipleInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2):
+        return self.dense1(x1) + self.dense2(x2)
+
+
+class MultipleInputWithKwargsNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2, x3=10):
+        return self.dense1(x1) + self.dense2(x2) + x3
 
 
 class Pytorch1_11:
@@ -382,6 +403,34 @@ class Pytorch1_11:
             load_model = InferenceOptimizer.load(tmp_dir_name)
             with InferenceOptimizer.get_context(load_model):
                 load_model(x1, x2)
+
+    def test_ipex_jit_keyword_argument(self):
+        net = MultipleInputNet()
+        x1 = torch.randn(32, 10)
+        x2 = torch.randn(32, 10)
+        y = torch.randn(32, 1)
+        dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+
+        model = InferenceOptimizer.quantize(net,
+                                            precision='bf16',
+                                            accelerator=None,
+                                            use_ipex=True,
+                                            calib_data=dataloader)
+        with InferenceOptimizer.get_context(model):
+            model(x1, x2)
+            # test keyword argument
+            model(x1, x2=x2)
+            model(x1=x1, x2=x2)
+
+        model = InferenceOptimizer.quantize(net,
+                                            precision='bf16',
+                                            accelerator='jit',
+                                            use_ipex=True,
+                                            calib_data=dataloader)
+        with InferenceOptimizer.get_context(model):
+            # test keyword argument
+            model(x1=x1, x2=x2)
+            # TODO: call two times will report error
 
 
 TORCH_VERSION_CLS = Pytorch1_11
