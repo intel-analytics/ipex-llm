@@ -292,11 +292,8 @@ class SparkRunner:
 
     def setup(self):
         import tensorflow as tf
-        try:
-            tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
-            tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
-        except:
-            pass
+        tf.config.threading.set_inter_op_parallelism_threads(self.inter_op_parallelism)
+        tf.config.threading.set_intra_op_parallelism_threads(self.intra_op_parallelism)
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
@@ -328,10 +325,7 @@ class SparkRunner:
         ips = set([node.split(":")[0] for node in cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
-        try:
-            self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
-        except:
-            self.strategy = tf.distribute.get_strategy()
+        self.strategy = tf.distribute.MultiWorkerMirroredStrategy()
 
     def distributed_train_func(self, data_creator, config, epochs=1, verbose=1,
                                callbacks=None, initial_epoch=0, validation_data_creator=None,
