@@ -534,7 +534,7 @@ class AutoformerForecaster(Forecaster):
                               batch_size=batch_size,
                               shuffle=False)
         if not self.context_enabled:
-            self.cxt_manager = ForecasterContextManager(self, self.thread_num, acceleration)
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, optimize=False)
         with self.cxt_manager:
             return self.trainer.predict(self.internal, data)
 
