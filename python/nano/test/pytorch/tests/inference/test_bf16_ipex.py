@@ -369,6 +369,55 @@ class Pytorch1_11:
             with InferenceOptimizer.get_context(load_model):
                 load_model(x1, x2)
 
+    def test_ipex_jit_keyword_argument(self):
+        # test multi input
+        for model_class in [MultipleInputNet, MultipleInputWithKwargsNet]:
+            net = model_class()
+            x1 = torch.randn(32, 10)
+            x2 = torch.randn(32, 10)
+            y = torch.randn(32, 1)
+            if isinstance(net, MultipleInputNet):
+                dataloader = DataLoader(TensorDataset(x1, x2, y), batch_size=1)
+            else:
+                x3 = torch.randn(32, 1)
+                dataloader = DataLoader(TensorDataset(x1, x2, x3, y), batch_size=1)
+
+            model = InferenceOptimizer.quantize(net,
+                                                precision='bf16',
+                                                accelerator=None,
+                                                method='ipex',
+                                                calib_data=dataloader)
+            with InferenceOptimizer.get_context(model):
+                if isinstance(net, MultipleInputNet):
+                    model(x1, x2)
+                    # test keyword argument
+                    model(x1, x2=x2)
+                    model(x1=x1, x2=x2)
+                else:
+                    model(x1, x2, x3)
+                    # test keyword argument
+                    model(x1, x2, x3=x3)
+                    model(x1, x2=x2, x3=x3)
+                    model(x1=x1, x2=x2, x3=x3)
+
+            model = InferenceOptimizer.quantize(net,
+                                                precision='bf16',
+                                                accelerator='jit',
+                                                method='ipex',
+                                                calib_data=dataloader)
+            with InferenceOptimizer.get_context(model):
+                if isinstance(net, MultipleInputNet):
+                    model(x1, x2)
+                    # test keyword argument
+                    model(x1, x2=x2)
+                    model(x1=x1, x2=x2)
+                else:
+                    model(x1, x2, x3)
+                    # test keyword argument
+                    model(x1, x2, x3=x3)
+                    model(x1, x2=x2, x3=x3)
+                    model(x1=x1, x2=x2, x3=x3)
+
 
 TORCH_VERSION_CLS = Pytorch1_11
 
