@@ -25,13 +25,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 # stage.1 jdk & spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
-ARG PY4J_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
 ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
+ARG PY4J_VERSION                        ${PY4J_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git && \
 # java
