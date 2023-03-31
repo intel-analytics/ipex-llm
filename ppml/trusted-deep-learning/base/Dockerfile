@@ -11,7 +11,7 @@ ARG TINI_VERSION
 ENV TINI_VERSION                        $TINI_VERSION
 
 # Environment used for build pytorch
-ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
+ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_NCCL=0 USE_MPI=0 BUILD_CAFFE2=0 USE_ROCM=0 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
 ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.8/dist-packages/:/usr/local/lib/"
 
 RUN mkdir /ppml/examples
@@ -31,17 +31,12 @@ ADD ./filelock.patch /filelock.patch
 
 # PyTorch Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y libssl-dev && \
+    apt-get install -y libssl-dev libpthread-stubs0-dev && \
     pip install --no-cache-dir astunparse numpy ninja pyyaml setuptools cmake cffi typing_extensions future six requests dataclasses mkl mkl-include intel-openmp && \
-    pip install --no-cache-dir torchvision==0.13.1 && \
     cd /usr/local/lib && \
     ln -s libmkl_gnu_thread.so.2 libmkl_gnu_thread.so && \
     ln -s libmkl_intel_lp64.so.2 libmkl_intel_lp64.so && \
     ln -s libmkl_core.so.2 libmkl_core.so && \
-# huggingface related
-    pip3 install --no-cache datasets==2.6.1 transformers intel_extension_for_pytorch && \
-# Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch] && \
     env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y google-perftools=2.7-1ubuntu2 && \
     # apply tcmalloc in bash.manifest.template in LD_PRELOAD
@@ -56,17 +51,25 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # kubernetes related
     pip3 install --no-cache kubernetes==23.3.0 && \
 # PyTorch
-    rm -rf /usr/local/lib/python3.8/dist-packages/torch && \
-    git clone https://github.com/analytics-zoo/pytorch /pytorch && \
-    cd /pytorch && git checkout devel-v1.13.0-2022-11-16 && \
+    git clone https://github.com/pytorch/pytorch.git /pytorch && \
+    cd /pytorch && git checkout v1.13.1 && \
     git submodule sync && git submodule update --init --recursive --jobs 0 && \
     rm -rf ./third_party/gloo && \
     cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
     cd gloo && git checkout  devel-pt-v1.13.0-2022-11-16 && \
     cd /pytorch && \
+    pip3 install -r requirements.txt && \
+    sed -i 's/^version = get_torch_version()/version = "1.13.1"/' setup.py && \
     python3 setup.py install && \
     cd /ppml/ && \
     rm -rf /pytorch && \
+# Install torch related packages
+    # huggingface related
+    pip3 install --no-cache datasets==2.6.1 transformers && \
+    # We need to ensure that the required PyTorch version is 1.13.1
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch]==2.3.0b20230331 && \
+# Install torch-ccl
+    pip3 install oneccl_bind_pt==1.13.0 -f https://developer.intel.com/ipex-whl-stable-cpu && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
