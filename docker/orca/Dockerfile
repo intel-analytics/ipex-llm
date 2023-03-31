@@ -21,11 +21,11 @@ ARG JDK_VERSION=8u192
 ARG JDK_URL=your_jdk_url
 ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 ARG DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.9
 
 # stage.1 jdk & spark
 FROM ubuntu:20.04 as spark
 ARG SPARK_VERSION
-ARG PY4J_VERSION
 ARG JDK_VERSION
 ARG JDK_URL
 ARG SPARK_HOME
@@ -90,27 +90,19 @@ RUN /opt/download-bigdl.sh && \
 FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
-ARG RUNTIME_SPARK_MASTER=local[4]
-ARG RUNTIME_DRIVER_CORES=4
-ARG RUNTIME_DRIVER_MEMORY=20g
-ARG RUNTIME_EXECUTOR_CORES=4
-ARG RUNTIME_EXECUTOR_MEMORY=20g
-ARG RUNTIME_EXECUTOR_INSTANCES=1
+ARG PY4J_VERSION
 ARG DEBIAN_FRONTEND
+ARG PYTHON_VERSION
 ENV SPARK_VERSION                   ${SPARK_VERSION}
 ENV BIGDL_VERSION                   ${BIGDL_VERSION}
-ENV RUNTIME_SPARK_MASTER            ${RUNTIME_SPARK_MASTER}
-ENV RUNTIME_DRIVER_CORES            ${RUNTIME_DRIVER_CORES}
-ENV RUNTIME_DRIVER_MEMORY           ${RUNTIME_DRIVER_MEMORY}
-ENV RUNTIME_EXECUTOR_CORES          ${RUNTIME_EXECUTOR_CORES}
-ENV RUNTIME_EXECUTOR_MEMORY         ${RUNTIME_EXECUTOR_MEMORY}
-ENV RUNTIME_EXECUTOR_INSTANCES      ${RUNTIME_EXECUTOR_INSTANCES}
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
+ENV PY4J_VERSION                    ${PY4J_VERSION}
 ENV BIGDL_HOME                      /opt/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME                       /opt/jdk
 ENV BIGDL_CLASSPATH                 ${BIGDL_HOME}/jars/*
 ENV PYTHONPATH                      ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/conf/spark-bigdl.conf:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-${PY4J_VERSION}-src.zip
 ENV PATH                            ${JAVA_HOME}/bin:${PATH}
+ENV PYTHON_VERSION                  ${PYTHON_VERSION}
 
 WORKDIR /opt/work
 
@@ -135,7 +127,7 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-4.5.4-Linux-x86_64.sh && \
 # python
-    /opt/install-orca-env.sh
+    /opt/install-orca-env.sh ${PYTHON_VERSION}
 
 RUN echo "source activate bigdl" > ~/.bashrc
 ENV PATH /usr/local/envs/bigdl/bin:$PATH
