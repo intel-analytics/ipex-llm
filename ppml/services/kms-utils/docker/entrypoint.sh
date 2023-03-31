@@ -235,7 +235,7 @@ elif [ "$action" = "decrypt" ]; then
         --dataSourceType $data_source_type \
         --action decrypt
 	elif [ "$KMS_TYPE" = "simple" ]; then
-		appid=$2
+	appid=$2
         apikey=$3
         input_path=$4
 		data_source_type=$5
