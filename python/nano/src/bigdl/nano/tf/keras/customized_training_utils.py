@@ -108,12 +108,12 @@ class _Nano_Customized_Training(object):
                 if isinstance(arg, tf.data.Dataset):
                     warnings.warn('If dataset is created by `from_generator`, please initiate '
                                   '`_GeneratorState` of the dataset first, that is '
-                                  'dataset._GeneratorState = dataset._GeneratorState(generator).' 
+                                  'dataset._GeneratorState = dataset._GeneratorState(generator). '
                                   'Otherwise, there exists errors because of a known limitation: '
                                   'https://www.tensorflow.org/api_docs/python/tf/data/Dataset'
                                   '#from_generator')
                     if hasattr(arg, '_GeneratorState') and \
-                        hasattr(arg._GeneratorState, '_generator'):
+                       hasattr(arg._GeneratorState, '_generator'):
                         # support dataset created by `from_generator`
                         train_ds_gen = arg._GeneratorState._generator
                         train_ds_signature = arg.element_spec
@@ -167,6 +167,7 @@ class _Nano_Customized_Training(object):
 
         return histrories[0]
 
+
 def _train_func(target_path, *args):
     mirrored_strategy = tf.distribute.MultiWorkerMirroredStrategy()
 
@@ -190,7 +191,7 @@ def _train_func(target_path, *args):
                     from tensorflow.python.distribute.coordinator.values import \
                         deserialize_dataset_from_graph
                     original_dataset = deserialize_dataset_from_graph(arg[1], arg[2])
-                except:
+                except ValueError:
                     original_dataset = tf.data.Dataset.from_generator(arg[1],
                                                                       output_signature=arg[2])
                 actrual_args[i] = mirrored_strategy.experimental_distribute_dataset(
@@ -217,7 +218,7 @@ def _train_func(target_path, *args):
                 with open(arg[1], 'rb') as f:
                     actrual_args[i] = cloudpickle.load(f)
                     if callable(actrual_args[i]) and \
-                        isinstance(actrual_args[i], nano_multiprocessing):
+                       isinstance(actrual_args[i], nano_multiprocessing):
                         actrual_args[i] = partial(actrual_args[i],
                                                   mirrored_strategy=mirrored_strategy)
 
@@ -231,10 +232,13 @@ def _train_func(target_path, *args):
             path = os.path.join('trained_model_weights')
             new_model.save_weights(path, overwrite=True)
 
-    # Related to https://github.com/tensorflow/tensorflow/issues/50487, to avoid such error
-    import atexit
-    atexit.register(mirrored_strategy._extended._cross_device_ops._pool.close)
-    atexit.register(mirrored_strategy._extended._host_cross_device_ops._pool.close)
+    try:
+        # Related to https://github.com/tensorflow/tensorflow/issues/50487, to avoid such error
+        import atexit
+        atexit.register(mirrored_strategy._extended._cross_device_ops._pool.close)
+        atexit.register(mirrored_strategy._extended._host_cross_device_ops._pool.close)
+    except AttributeError:
+        pass
     return res
 
 
@@ -260,4 +264,3 @@ class Nano_Customized_Loss(Loss):
     def call(self, y_true, y_pred):
         """Run the loss function for multi-process training."""
         return self.fn(y_true, y_pred, **self._fn_kwargs)
-
