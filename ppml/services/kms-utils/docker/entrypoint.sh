@@ -259,7 +259,7 @@ elif [ "$action" = "decrypt" ]; then
 			--conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
 			--conf spark.bigdl.primaryKey.AmyPK.kms.appId=${appid} \
 			--conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=${apikey} \
-			--conf spark.bigdl.primaryKey.AmyPK.material=/home/key/simplePrimaryKey \
+			--conf spark.bigdl.primaryKey.AmyPK.material=/home/key/simple_encrypted_primary_key \
 			--verbose \
 			--class com.intel.analytics.bigdl.ppml.utils.Encrypt \
 			--conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
