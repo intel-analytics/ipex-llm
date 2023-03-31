@@ -19,7 +19,7 @@ if [ "$action" = "enroll" ]; then
 elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 		if [ ! -d "$BIGDL_HOME/python/bigdl" ]; then 
-			unzip $BIGDL_HOME/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip -d $BIGDL_HOME/python/
+			unzip $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python/
 		fi
 		export APPID=$2
 		export APIKEY=$3
