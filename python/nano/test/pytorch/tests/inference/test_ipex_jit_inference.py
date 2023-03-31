@@ -26,8 +26,8 @@ from torch import nn
 import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
-from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import compare_version, _avx512_checker
 import tempfile
 from typing import List
 import numpy as np
@@ -602,14 +602,18 @@ class IPEXJITInference_gt_1_10:
         np.testing.assert_allclose(output1, output3, atol=2e-1)
 
 
-class IPEXJITInference_lt_1_10:
+class IPEXJITInference_placeholder:
     def test_placeholder(self):
         pass
 
 
 TORCH_VERSION_CLS = IPEXJITInference_gt_1_10
 if TORCH_VERSION_LESS_1_10:
-    TORCH_VERSION_CLS = IPEXJITInference_lt_1_10
+    TORCH_VERSION_CLS = IPEXJITInference_placeholder
+if not TORCH_VERSION_LESS_2_0 and not _avx512_checker():
+    # TODO: avx2 checker
+    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
+    TORCH_VERSION_CLS = IPEXJITInference_placeholder
 
 
 class TestIPEXJITInference(TORCH_VERSION_CLS, TestCase):
