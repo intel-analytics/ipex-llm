@@ -50,7 +50,7 @@ sudo docker run -itd \
     -e PCCS_URL=$PCCS_URL \
     $ENROLL_IMAGE_NAME bash
 ```
-## 3. Key Management APIs
+## 3. Key Management and Data Crypto APIs
 
 1. **Enroll:**
 
