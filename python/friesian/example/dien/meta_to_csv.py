@@ -25,7 +25,7 @@ fi = open(args.input_meta, "r")
 out_file = args.input_meta.split(".json")[0] + ".csv"
 fo = open(out_file, "w")
 for line in fi:
-    if line.beginswith("{") and line.endswith("}"):
+    if line.startswith("{") and line.endswith("}"):
         obj = eval(line)
         cat = obj["categories"][0][-1]
         print(obj["asin"] + "\t" + cat, file=fo)
