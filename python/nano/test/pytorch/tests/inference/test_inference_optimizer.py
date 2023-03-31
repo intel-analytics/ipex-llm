@@ -30,7 +30,7 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12, TORCH_VERSION_LESS_2_0
 from bigdl.nano.utils.common import invalidOperationError
-from bigdl.nano.utils.common import compare_version, _avx512_checker
+from bigdl.nano.utils.common import compare_version, _avx512_checker, _avx2_checker
 
 
 data_transform = transforms.Compose([
@@ -116,7 +116,7 @@ class MultipleInputWithKwargsNet(nn.Module):
         return self.dense1(x1) + self.dense2(x2) + x3
 
 
-class TestInferencePipelineAVX:
+class InferencePipeline:
     num_workers = 0
     data_dir = "/tmp/data"
     metric = torchmetrics.Accuracy('multiclass', num_classes=10, top_k=1)
@@ -938,19 +938,18 @@ class TestInferencePipelineAVX:
                                no_cache=True)
 
 
-TORCH_CLS = TestInferencePipelineAVX
+TORCH_CLS = InferencePipeline
 
 
-class Test_placeholder:
+class CaseWithoutAVX2:
     def test_placeholder(self):
         pass
 
 
-if not TORCH_VERSION_LESS_2_0 and not _avx512_checker():
-    print("IPEX Inference Model Without AVX2")
-    # TODO: avx2 checker
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("Inference Optimizer Without AVX2")
     # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_CLS = Test_placeholder
+    TORCH_CLS = CaseWithoutAVX2
 
 
 class TestInferencePipeline(TORCH_CLS, TestCase):

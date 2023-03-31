@@ -27,7 +27,7 @@ import operator
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_2_0
-from bigdl.nano.utils.common import compare_version, _avx512_checker
+from bigdl.nano.utils.common import compare_version, _avx512_checker, _avx2_checker
 import tempfile
 from typing import List
 import numpy as np
@@ -91,7 +91,7 @@ class MultipleInputWithKwargsNet(nn.Module):
         return self.dense1(x1) + self.dense2(x2) + x3
 
 
-class IPEXJITInference_gt_1_10:
+class IPEXJITInference:
     model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
     data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     data_sample = next(iter(data_loader))[0]
@@ -602,18 +602,19 @@ class IPEXJITInference_gt_1_10:
         np.testing.assert_allclose(output1, output3, atol=2e-1)
 
 
-class IPEXJITInference_placeholder:
+class CaseWithoutAVX2:
     def test_placeholder(self):
         pass
 
 
-TORCH_VERSION_CLS = IPEXJITInference_gt_1_10
+TORCH_VERSION_CLS = IPEXJITInference
 if TORCH_VERSION_LESS_1_10:
-    TORCH_VERSION_CLS = IPEXJITInference_placeholder
-if not TORCH_VERSION_LESS_2_0 and not _avx512_checker():
-    # TODO: avx2 checker
+    print("IPEX Inference Model Without AVX512")
+    TORCH_VERSION_CLS = CaseWithoutAVX2
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("IPEX Inference Model Without AVX2")
     # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_VERSION_CLS = IPEXJITInference_placeholder
+    TORCH_VERSION_CLS = CaseWithoutAVX2
 
 
 class TestIPEXJITInference(TORCH_VERSION_CLS, TestCase):

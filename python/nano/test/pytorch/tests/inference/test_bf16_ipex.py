@@ -21,7 +21,7 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import PropertyMock, patch
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
-from bigdl.nano.utils.common import compare_version, _avx512_checker
+from bigdl.nano.utils.common import compare_version, _avx512_checker, _avx2_checker
 import tempfile
 from typing import List
 
@@ -387,19 +387,18 @@ class Pytorch1_11:
 
 TORCH_VERSION_CLS = Pytorch1_11
 
-class BF16IPEX_placeholder:
+class CaseWithoutAVX2:
     def test_placeholder(self):
         pass
 
 
 if not _avx512_checker():
-    print("IPEX Inference Model Without AVX512")
+    print("IPEX BF16 Inference Model Without AVX512")
     TORCH_VERSION_CLS = CaseWithoutAVX512
-if not TORCH_VERSION_LESS_2_0 and not _avx512_checker():
-    print("IPEX Inference Model Without AVX2")
-    # TODO: avx2 checker
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("IPEX BF16 Inference Model Without AVX2")
     # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_VERSION_CLS = BF16IPEX_placeholder
+    TORCH_VERSION_CLS = CaseWithoutAVX2
 
 
 class TestIPEXBF16(TORCH_VERSION_CLS, TestCase):
