@@ -18,8 +18,12 @@ import json
 import os
 import cloudpickle
 import sys
+import tensorflow as tf
 
 if __name__ == '__main__':
+    # Set number of threads in subprocess
+    tf.config.threading.set_inter_op_parallelism_threads(int(sys.argv[2]))
+    tf.config.threading.set_intra_op_parallelism_threads(int(sys.argv[2]))
     temp_dir = sys.argv[1]
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
