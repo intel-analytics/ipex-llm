@@ -71,15 +71,15 @@ sudo docker run -itd \
    export apikey=your_apikey
    export container_input_file_path=mounted_address_of_host_input_file_path
    export container_input_folder_path=mounted_address_of_host_input_folder_path
-   export data_source_type=your_data_source_type
-   # The data_source_type can be any one of csv, json, parquet, or textfile. If you do not specify this parameter, it will be set to csv by default
+   export data_source_type=your_data_source_type # The data_source_type can be any one of csv, json, parquet, or textfile.
+   # If you do not specify data_source_type, it will be set to csv by default
    ```
 
 2.  **Generatekeys:**
 
-   ```bash
-   docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
-   ```
+    ```bash
+    docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
+    ```
 
 3. **Encrypt File:**
 
