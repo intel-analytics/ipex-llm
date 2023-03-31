@@ -243,10 +243,7 @@ def _train_func(target_path, *args):
 
 
 def nano_multiprocessing_loss(**kwargs):
-    """
-    A decorator to run customized loss on multiple processes.
-
-    """
+    """A decorator to run customized loss on multiple processes."""
     def decorator(func):
         return Nano_Customized_Loss(func, **kwargs)
     return decorator
