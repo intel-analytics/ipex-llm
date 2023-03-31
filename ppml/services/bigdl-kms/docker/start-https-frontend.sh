@@ -34,7 +34,7 @@ java \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-min=100 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-max=120 \
     -Dakka.actor.default-dispatcher.fork-join-executor.parallelism-factor=1 \
-    -cp "$BIGDL_HOME/jars/*" \
+    -cp /usr/src/app/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     com.intel.analytics.bigdl.ppml.kms.frontend.BigDLKMSFrontend \
     --keywhizHost "keywhiz-service" \
     --httpsKeyStorePath "${https_key_store_path}" \

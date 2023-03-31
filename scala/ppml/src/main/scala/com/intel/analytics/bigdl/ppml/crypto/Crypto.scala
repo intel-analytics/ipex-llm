@@ -275,3 +275,4 @@ case object PLAIN_TEXT extends CryptoMode {
    */
   override def secretKeyAlgorithm: String = ""
 }
+

@@ -20,7 +20,10 @@ import com.intel.analytics.bigdl.ppml.crypto.CryptoCodec.CryptoDecompressStream
 import org.apache.hadoop.conf.{Configurable, Configuration}
 import org.apache.hadoop.io.compress._
 import org.apache.hadoop.io.compress.zlib.ZlibFactory
-
+import java.util.Arrays
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.Cipher
+import java.nio.charset.StandardCharsets
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -107,7 +110,8 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         conf: Configuration) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val bigdlEncrypt = new BigDLEncrypt()
+    val encrypterType = conf.get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON)
+    val bigdlEncrypt = BigDLEncrypt(encrypterType)
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -116,17 +120,24 @@ object CryptoCodec {
         eof = true
         return -1
       }
-
       if (!headerVerified) {
-        val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
-        val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
-        bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText)
-        bigdlEncrypt.verifyHeader(initializationVector)
         headerVerified = true
+        encrypterType match {
+          case BigDLEncrypt.NATIVE_AES_CBC =>
+            // data file is encrypted by native AES cihper
+            // no Mac integrity check defaultly
+            val (_, initializationVector) = bigdlEncrypt.getHeader(in)
+            val ivStr = new String(initializationVector, StandardCharsets.UTF_8)
+            val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$ivStr.plainText")
+            bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlainText, initializationVector)
+          case BigDLEncrypt.COMMON =>
+            // data file is encrypted by PPML cipher
+            val (encryptedDataKey, initializationVector) = bigdlEncrypt.getHeader(in)
+            val dataKeyPlainText = conf.get(s"bigdl.read.dataKey.$encryptedDataKey.plainText")
+            bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlainText, initializationVector)
+          }
       }
-
       val decompressed = bigdlEncrypt.decryptPart(in, buffer)
-
       decompressed.copyToArray(b, 0)
       decompressed.length
     }
@@ -139,5 +150,5 @@ object CryptoCodec {
       new CryptoDecompressStream(in, bufferSize, cryptoMode, conf)
     }
   }
-
 }
+

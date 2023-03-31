@@ -335,6 +335,65 @@ In the container, execute `verify-attestation-service.sh` to verify the attestat
   ```bash
   bash verify-attestation-service.sh
   ```
+  **4. Register your MREnclave to EHSM**
+
+  Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
+
+  ```bash
+  # At /ppml/trusted-big-data-ml inside the container now
+  python register-mrenclave.py --appid <your_appid> \
+                              --apikey <your_apikey> \
+                              --url https://<kms_ip>:9000 \
+                              --mr_enclave <your_mrenclave_hash_value> \
+                              --mr_signer <your_mrensigner_hash_value>
+  ```
+  You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
+
+  **5. Enable Attestation in configuration**
+
+  First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
+
+  ```bash
+  kubectl create secret generic kms-secret \
+                    --from-literal=app_id=YOUR_KMS_APP_ID \
+                    --from-literal=api_key=YOUR_KMS_API_KEY \
+                    --from-literal=policy_id=YOUR_POLICY_ID
+  ```
+
+  Configure `spark-driver-template.yaml` and `spark-executor-template.yaml` to enable Attestation as follows:
+  ``` yaml
+  apiVersion: v1
+  kind: Pod
+  spec:
+    containers:
+    - name: spark-driver
+      securityContext:
+        privileged: true
+      env:
+        - name: ATTESTATION
+          value: true
+        - name: PCCS_URL
+          value: https://your_pccs_ip:your_pccs_port
+        - name: ATTESTATION_URL
+          value: your_attestation_url
+        - name: APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: kms-secret
+              key: app_id
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: kms-secret
+              key: app_key
+        - name: ATTESTATION_POLICYID
+          valueFrom:
+            secretKeyRef:
+              name: policy-id-secret
+              key: policy_id
+  ...
+  ```
+  You should get `Attestation Success!` in logs after you submit a PPML job if the quote generated with `user_report` is verified successfully by Attestation Service. Or you will get `Attestation Fail! Application killed!` or `JASONObject["result"] is not a JASONObject`and the job will be stopped.
 
 #### Step 3. Encrypt Data
 Encrypt the input data of your Big Data & AI applications (here we use SimpleQuery) and then upload encrypted data to the nfs server (or any file system such as HDFS that can be accessed by the cluster).
@@ -352,6 +411,91 @@ Encrypt the input data of your Big Data & AI applications (here we use SimpleQue
     ```
 
 3. Encrypt `people.csv`
+    
+    As for data encryption/decryption based on crypto, We recommend you to use data key generated from primary key, which are both managed by KMS(Key Management Service) that is not only convenient but also safe. This is contributed by that our KMSs like [EHSM](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes) have hardware-protected memory and TLS/SSL-encrypted network etc. and no sensitive secret is written to disk.
+    
+    In practice, you only need to specify a KMS-pre-generated primary key when submitting job, and PPMLContext backend will automatically generate a data key from the primary one you provide, and manage the two in the whole lifecycle:
+    <details>
+    <summary>Method 1: Encrypt with KMS-Managed Primary and Data Keys</summary>
+    
+    ```bash
+    docker exec -i bigdl-ppml-client-k8s bash
+
+    bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --sgx-enabled false \
+        --driver-memory 5g \
+        --driver-cores 4 \
+        --executor-memory 5g \
+        --executor-cores 4 \
+        --num-executors 2 \
+        --conf spark.cores.max=8 \
+        --conf spark.network.timeout=10000000 \
+        --conf spark.executor.heartbeatInterval=10000000 \
+        --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+        --conf spark.bigdl.primaryKey.amy.kms.type=EHSMKeyManagementService \
+        --conf spark.bigdl.primaryKey.amy.material=path_to/your_primary_key \
+        --conf spark.bigdl.primaryKey.amy.kms.ip=your_kms_ip \
+        --conf spark.bigdl.primaryKey.amy.kms.port=your_kms_port \
+        --conf spark.bigdl.primaryKey.amy.kms.appId=your_kms_appId \
+        --conf spark.bigdl.primaryKey.amy.kms.apiKey=your_kms_apiKey\
+        --verbose \
+        --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+        --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
+        --conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
+        --name amy-encrypt \
+        local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
+        --inputDataSourcePath file://</save/path/of/people.csv> \
+        --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
+        --cryptoMode aes/cbc/pkcs5padding \
+        --dataSourceType csv \
+        --action encrypt
+    ```
+    </details>
+
+    As there may be a scenario where KMS cannot be accessed, you are allowed to directly provide a primary key in plain text instead of requesting from the service. **Note: Do not use this in production in consider of security**:
+    <details>
+    <summary>Method 2: Encrypt with Self-Provided Primary Key in Plain Text</summary>
+
+    ```bash
+    docker exec -i bigdl-ppml-client-k8s bash
+    
+    export PLAIN_TEXT_DATA_KEY=your_self_provided_128_bit_base_64_string
+
+    bash bigdl-ppml-submit.sh \
+     --master local[2] \
+     --sgx-enabled false \
+     --driver-memory 32g \
+     --driver-cores 4 \
+     --executor-memory 32g \
+     --executor-cores 4 \
+     --num-executors 2 \
+     --conf spark.cores.max=8 \
+     --conf spark.network.timeout=10000000 \
+     --conf spark.executor.heartbeatInterval=10000000 \
+     --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+     --conf spark.bigdl.primaryKey.dataSource1PK.plainText=${PLAIN_TEXT_DATA_KEY} \
+     --verbose \
+     --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
+     --jars local://$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar,local://$BIGDL_HOME/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+     local://$BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar \
+     --inputDataSourcePath file://</save/path/of/people.csv> \
+     --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
+     --cryptoMode aes/cbc/pkcs5padding \
+     --dataSourceType csv \
+     --action encrypt
+    ```     
+
+
+    `Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
+    </details>
+
+
+#### Step 4. Build Big Data & AI applications
+To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.
+
+#### Step 5. Submit Job to Query
+When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs.
 
 You need to choose the deploy mode and the way to submit the job first.
 
@@ -387,52 +531,6 @@ You need to choose the deploy mode and the way to submit the job first.
 
 Here we use **k8s client mode** and **PPML CLI** to run. Check other modes, please see [PPML CLI Usage Examples](./docs/submit_job.md#usage-examples). Alternatively, you can also use Helm to submit jobs automatically, see the details in [Helm Chart Usage](./docs/submit_job.md#helm-chart).
 
-
-```bash
-    docker exec -i bigdl-ppml-client-k8s bash
-
-    export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
-    bash bigdl-ppml-submit.sh \
-        --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode client \
-        --sgx-enabled true \
-        --driver-memory 5g \
-        --sgx-driver-jvm-memory 10g \
-        --driver-cores 4 \
-        --executor-memory 5g \
-        --sgx-executor-jvm-memory 10g \
-        --executor-cores 4 \
-        --num-executors 2 \
-        --conf spark.cores.max=8 \
-        --conf spark.network.timeout=10000000 \
-        --conf spark.executor.heartbeatInterval=10000000 \
-        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-        --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
-        --conf spark.bigdl.primaryKey.amy.kms.type=EHSMKeyManagementService \
-        --conf spark.bigdl.primaryKey.amy.material=path_to/your_primary_key \
-        --conf spark.bigdl.primaryKey.amy.kms.ip=your_kms_ip \
-        --conf spark.bigdl.primaryKey.amy.kms.port=your_kms_port \
-        --conf spark.bigdl.primaryKey.amy.kms.appId=your_kms_appId \
-        --conf spark.bigdl.primaryKey.amy.kms.apiKey=your_kms_apiKey\
-        --verbose \
-        --class com.intel.analytics.bigdl.ppml.utils.Encrypt \
-        --conf spark.executor.extraClassPath=$BIGDL_HOME/jars/* \
-        --conf spark.driver.extraClassPath=$BIGDL_HOME/jars/* \
-        --name amy-encrypt \
-        local://$BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar \
-        --inputDataSourcePath file://</save/path/of/people.csv> \
-        --outputDataSinkPath file://</output/path/to/save/encrypted/people.csv> \
-        --cryptoMode aes/cbc/pkcs5padding \
-        --dataSourceType csv
-```
-
-`Amy` is free to set, as long as it is consistent in the parameters. Do this step twice to encrypt amy.csv and bob.csv. If the application works successfully, you will see the encrypted files in `outputDataSinkPath`.
-
-#### Step 4. Build Big Data & AI applications
-To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#4-develop-your-own-big-data--ai-applications-with-bigdl-ppml). The code of SimpleQuery is in [here](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/SimpleQuerySparkExample.scala), it is already built into bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar, and the jar is put into PPML image.
-
-#### Step 5. Submit Job to Query
-When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. 
 
   <details><summary>expand to see details of submitting SimpleQuery</summary>
 

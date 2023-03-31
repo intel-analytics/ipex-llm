@@ -422,18 +422,7 @@ class TorchRunner(BaseRunner):
                 calculate averages.
 
         """
-        # unpack features into list to support multiple inputs model
-        # and restore batch to what it should be.
-        features, target = batch
-        if torch.is_tensor(features) or \
-                (isinstance(features, np.ndarray) and torch.is_tensor(features[0])):
-            self.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor or list/tuple, "
-                              "but got {}".format(type(features)))
+        self.batch = batch
         self.call_hook(callbacks=callbacks, fn_name="before_train_iter")
 
         # Compute output.
@@ -445,7 +434,7 @@ class TorchRunner(BaseRunner):
             self.call_hook(callbacks=callbacks, fn_name="on_iter_backward")
 
         loss_item = self.loss.item()
-        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(features)}
+        self.metrics_stats = {"train_loss": loss_item, NUM_SAMPLES: get_batchsize(batch)}
 
         self.global_step += 1
 
@@ -570,15 +559,7 @@ class TorchRunner(BaseRunner):
         """
         # unpack features into list to support multiple inputs model
         # and restore batch to what it should be.
-        features, target = batch
-        if torch.is_tensor(features):
-            self.batch = features, target
-        elif isinstance(features, (tuple, list)):
-            self.batch = *features, target
-        else:
-            invalidInputError(False,
-                              "Features should be tensor, list/tuple, "
-                              "but got {}".format(type(features)))
+        self.batch = batch
         self.call_hook(callbacks=callbacks, fn_name="before_val_iter")
 
         # compute output
