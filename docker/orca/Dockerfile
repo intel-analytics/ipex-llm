@@ -31,7 +31,6 @@ ARG SPARK_HOME
 ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          ${SPARK_HOME}
-ARG PY4J_VERSION                        ${PY4J_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git && \
 # java
@@ -90,6 +89,7 @@ RUN /opt/download-bigdl.sh && \
 FROM ubuntu:20.04
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
+ARG PY4J_VERSION
 ARG RUNTIME_SPARK_MASTER=local[4]
 ARG RUNTIME_DRIVER_CORES=4
 ARG RUNTIME_DRIVER_MEMORY=20g
@@ -106,6 +106,7 @@ ENV RUNTIME_EXECUTOR_CORES          ${RUNTIME_EXECUTOR_CORES}
 ENV RUNTIME_EXECUTOR_MEMORY         ${RUNTIME_EXECUTOR_MEMORY}
 ENV RUNTIME_EXECUTOR_INSTANCES      ${RUNTIME_EXECUTOR_INSTANCES}
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
+ENV PY4J_VERSION                    ${PY4J_VERSION}
 ENV BIGDL_HOME                      /opt/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME                       /opt/jdk
 ENV BIGDL_CLASSPATH                 ${BIGDL_HOME}/jars/*
