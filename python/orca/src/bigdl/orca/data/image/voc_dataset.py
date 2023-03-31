@@ -94,7 +94,7 @@ class VOCDatasets:
     @no_type_check
     def _load_label(self, idx: int) -> "ndarray":
         img_id = self._imgid_items[idx]
-        invalidInputError(img_id[0].beginswith("VOC"),
+        invalidInputError(img_id[0].startswith("VOC"),
                           "the vocfolder {} is invalid.".format(img_id[0]))
         invalidInputError(len(img_id[1]) <= 6 and img_id[1].isdigit(),
                           "the image id {} is invalid.".format(img_id[1]))
