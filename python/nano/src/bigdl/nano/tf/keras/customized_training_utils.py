@@ -205,7 +205,7 @@ def _train_func(target_path, *args):
 
                 def loss_object(*args, **kwargs):
                     per_example_loss = original_loss_object(*args, **kwargs)
-                    if per_example_loss.shape == []:
+                    if per_example_loss.shape == [] or per_example_loss.shape[0] == 0:
                         size = mirrored_strategy.num_replicas_in_sync
                         return tf.math.reduce_sum(per_example_loss) / size
                     else:
