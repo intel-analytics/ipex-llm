@@ -58,7 +58,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd third_party && git clone https://github.com/analytics-zoo/gloo.git && \
     cd gloo && git checkout  devel-pt-v1.13.0-2022-11-16 && \
     cd /pytorch && \
-    pip3 install -r requirements.txt && \
     sed -i 's/^version = get_torch_version()/version = "1.13.1"/' setup.py && \
     python3 setup.py install && \
     cd /ppml/ && \
