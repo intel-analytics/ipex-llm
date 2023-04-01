@@ -26,7 +26,7 @@ if [ -f ./distilbert-base-uncased ]
 then
     echo "model distilbert-base-uncased already exists"
 else
-    wget -r -np -nH $FTP_URI/analytics-zoo-data/distilbert-base-uncased/
+    wget -r -np -nH --cut-dirs=1 $FTP_URI/analytics-zoo-data/distilbert-base-uncased/
 fi
 
 echo "Running Friesian feature tests"
