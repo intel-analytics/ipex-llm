@@ -26,10 +26,12 @@ class AsymWeightLoss(nn.Module):
     '''
     def __init__(self, underestimation_penalty=1, L1=False):
         '''
-        :param underestimation_penalty: when underestimation_penalty is set to 1, the loss is MSE
+        :param underestimation_penalty: when underestimation_penalty is set to 1, the loss is MSE,
+               if set larger than 1, this loss panelize underestimate more and vice versa.
         '''
         super().__init__()
-        invalidInputError(underestimation_penalty > 0, "underestimation_penalty should be larger than 0")
+        invalidInputError(underestimation_penalty > 0,
+                          "underestimation_penalty should be larger than 0")
         self.L1 = L1
         self.underestimation_penalty = underestimation_penalty
 
