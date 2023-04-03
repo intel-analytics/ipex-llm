@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import json
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
@@ -25,9 +26,9 @@ fi = open(args.input_meta, "r")
 out_file = args.input_meta.split(".json")[0] + ".csv"
 fo = open(out_file, "w")
 for line in fi:
-    if line.startswith("{") and line.endswith("}"):
-        obj = eval(line)
+    try:
+        obj = json.loads(line)
         cat = obj["categories"][0][-1]
         print(obj["asin"] + "\t" + cat, file=fo)
-    else:
+    except:
         print("Invalid line in input_meta file. Json like data is expected.")
