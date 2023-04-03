@@ -11,7 +11,7 @@ ARG TINI_VERSION
 ENV TINI_VERSION                        $TINI_VERSION
 
 # Environment used for build pytorch
-ARG USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_NCCL=0 USE_MPI=0 BUILD_CAFFE2=0 USE_ROCM=0 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
+ARG USE_CUDA=0 USE_CUDNN=0 USE_OPENMP=1 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_NCCL=0 USE_MPI=0 BUILD_CAFFE2=0 USE_ROCM=0 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
 ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.8/dist-packages/:/usr/local/lib/"
 
 RUN mkdir /ppml/examples
@@ -26,7 +26,7 @@ ADD ./pert_ipex.py               /ppml/examples/pert_ipex.py
 ADD ./pert_nano.py               /ppml/examples/pert_nano.py
 ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
-ADD ./filelock.patch /filelock.patch
+ADD ./filelock.patch             /filelock.patch
 
 
 # PyTorch Dependencies
