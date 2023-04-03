@@ -747,7 +747,7 @@ jobs:
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
@@ -763,7 +763,7 @@ jobs:
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
@@ -779,7 +779,7 @@ jobs:
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
