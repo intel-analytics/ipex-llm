@@ -40,7 +40,7 @@ init_instance() {
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
     occlum init
-    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
+    new_yaml="$(yq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
@@ -48,8 +48,8 @@ init_instance() {
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
         .env.untrusted = [ "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
-        .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
-    echo "${new_json}" > Occlum.json
+        .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.yaml)" && \
+    echo "${new_yaml}" > Occlum.yaml
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
     #copy python lib and attestation lib
@@ -59,32 +59,31 @@ init_instance() {
     if [[ $USING_TMP_HOSTFS == "true" ]]; then
         echo "use tmp hostfs"
         mkdir ./shuffle
-        edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/tmp","type": "hostfs","source": "./shuffle"}]')" && \
-        echo "${edit_json}" > Occlum.json
+        yq eval '.mount += [{"target": "/tmp", "type": "hostfs", "source": "./shuffle"}]' -i Occlum.yaml
     fi
 
     if [[ -z "$SGX_MEM_SIZE" ]]; then
-        sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
+        sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.yaml
     else
-        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.yaml
     fi
 
     if [[ -z "$SGX_THREAD" ]]; then
-        sed -i "s/\"SGX_THREAD\"/512/g" Occlum.json
+        sed -i "s/\"SGX_THREAD\"/512/g" Occlum.yaml
     else
-        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json
+        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.yaml
     fi
 
     if [[ -z "$SGX_HEAP" ]]; then
-        sed -i "s/SGX_HEAP/512MB/g" Occlum.json
+        sed -i "s/SGX_HEAP/512MB/g" Occlum.yaml
     else
-        sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.json
+        sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.yaml
     fi
 
     if [[ -z "$SGX_KERNEL_HEAP" ]]; then
-        sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.json
+        sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.yaml
     else
-        sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
+        sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.yaml
     fi
 
     # check attestation setting
@@ -134,7 +133,7 @@ init_instance() {
         fi
     fi
 
-    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
+    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.yaml
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
 
