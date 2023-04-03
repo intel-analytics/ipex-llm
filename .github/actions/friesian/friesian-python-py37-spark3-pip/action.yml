@@ -26,7 +26,8 @@ runs:
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca_spark3-*-py3-none-manylinux1_x86_64.whl
         # install friesian
         pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
-        python -m pytest -v python/friesian/test/bigdl/friesian/feature/
+        chmod a+x python/friesian/dev/test/run-pytests-friesian
+        python/friesian/dev/test/run-pytests-friesian
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
