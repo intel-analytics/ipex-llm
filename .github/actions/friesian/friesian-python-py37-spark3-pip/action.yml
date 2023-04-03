@@ -26,7 +26,19 @@ runs:
         pip install -i https://pypi.org/simple python/orca/src/dist/bigdl_orca_spark3-*-py3-none-manylinux1_x86_64.whl
         # install friesian
         pip install -i https://pypi.org/simple python/friesian/src/dist/bigdl_friesian_spark3-*-py3-none-manylinux1_x86_64.whl
+        
+        # download model from ftp
+        if [ -f ./distilbert-base-uncased ]
+        then
+            echo "model distilbert-base-uncased already exists"
+        else
+            wget -r -np -nH --cut-dirs=1 $FTP_URI/analytics-zoo-data/distilbert-base-uncased/
+        fi
         python -m pytest -v python/friesian/test/bigdl/friesian/feature/
+        
+        # remove the model
+        rm -rf ./distilbert-base-uncased
+        
         source deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
