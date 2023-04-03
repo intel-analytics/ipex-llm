@@ -135,7 +135,7 @@ init_instance() {
         fi
     fi
 
-    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.yaml
+    sed -i "s/ENABLE_SGX_DEBUG/$ENABLE_SGX_DEBUG/g" Occlum.yaml
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
 
