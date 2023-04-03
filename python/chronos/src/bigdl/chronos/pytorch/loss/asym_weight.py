@@ -22,7 +22,7 @@ from bigdl.nano.utils.common import invalidInputError
 
 class AsymWeightLoss(nn.Module):
     '''
-    AsynWeightLoss is an asymmetric loss.
+    AsymWeightLoss is an asymmetric loss.
     '''
     def __init__(self, underestimation_penalty=1, L1=False):
         '''

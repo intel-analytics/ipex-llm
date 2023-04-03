@@ -33,15 +33,15 @@ class TestChronosPytorchLoss(TestCase):
     def tearDown(self):
         pass
 
-    def test_linex_loss(self):
+    def test_asym_weight_loss(self):
         y = torch.rand(100, 10, 2)
         yhat_high = y + 1
         yhat_low = y - 1
 
-        # when a is set to > 0, this loss panelize underestimate more.
+        # when underestimation_penalty is set to > 1, this loss panelize underestimate more.
         loss = AsymWeightLoss(underestimation_penalty=2)
         assert loss(yhat_high, y) < loss(yhat_low, y)
 
-        # when a is set to < 0, this loss panelize overestimate more.
+        # when underestimation_penalty is set to < 1, this loss panelize overestimate more.
         loss = AsymWeightLoss(underestimation_penalty=0.5)
         assert loss(yhat_high, y) > loss(yhat_low, y)
