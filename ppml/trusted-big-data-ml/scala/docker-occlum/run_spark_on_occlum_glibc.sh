@@ -42,7 +42,7 @@ init_instance() {
     occlum init
     new_yaml="$(yq '.resource_limits.user_space_size.init = "SGX_MEM_SIZE" |
         .resource_limits.user_space_size.max = "SGX_MEM_SIZE" |
-        .resource_limits.max_num_of_threads = "SGX_THREAD" |
+        .resource_limits.num_of_cpus = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size.init="SGX_KERNEL_HEAP" |
@@ -71,9 +71,9 @@ init_instance() {
     fi
 
     if [[ -z "$SGX_THREAD" ]]; then
-        sed -i "s/\"SGX_THREAD\"/512/g" Occlum.yaml
+        sed -i "s/SGX_THREAD/512/g" Occlum.yaml
     else
-        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.yaml
+        sed -i "s/SGX_THREAD/${SGX_THREAD}/g" Occlum.yaml
     fi
 
     if [[ -z "$SGX_HEAP" ]]; then
