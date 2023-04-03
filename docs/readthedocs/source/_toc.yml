@@ -238,6 +238,7 @@ subtrees:
                 - file: doc/Chronos/Overview/forecasting
                 - file: doc/Chronos/Overview/anomaly_detection
                 - file: doc/Chronos/Overview/simulation
+                - file: doc/Chronos/Overview/aiops
                 - file: doc/Chronos/Overview/speed_up
                 - file: doc/Chronos/Overview/useful_functionalities
           - file: doc/Chronos/Howto/index

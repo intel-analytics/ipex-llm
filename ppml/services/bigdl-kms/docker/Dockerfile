@@ -33,8 +33,8 @@ RUN apt-get update && \
 WORKDIR /usr/src/app
 
 # caching trick to speed up build, this should allow non-dynamic dependencies to be cached
-RUN git clone https://github.com/analytics-zoo/keywhiz.git -b BigDL-Keywhiz && \
-    cd keywhiz && \
+RUN git clone https://github.com/analytics-zoo/keywhiz.git && \
+    cd keywhiz && git checkout df3a8f5 && \
     mkdir -p /usr/src/app/api \
              /usr/src/app/cli \
              /usr/src/app/client \

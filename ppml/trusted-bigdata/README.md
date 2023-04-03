@@ -74,8 +74,11 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.3.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-4g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g:2.3.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-16g:2.3.0-SNAPSHOT
 
-`16g` in image names indicates the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that the log level is all. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default image.
+`16g` in image names indicates the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that the log level is all. `noattest` means the attestation service is disabled in this image, which applies to the case where `aesmd` and `pccs` are not installed successfully. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default image.
 
 **Attention:** If there is `SNAPSHOT` in an image tag, the image is developing continuously, which means you need to update the image to use the latest feature.
 

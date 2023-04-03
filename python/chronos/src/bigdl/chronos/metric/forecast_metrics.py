@@ -341,7 +341,7 @@ class Evaluator(object):
                     except e:
                         # nothing to plot, skip following grids
                         continue
-                ax = plt.subplot(row_num * 100 + col_num * 10 + iter_num)
+                ax = plt.subplot(row_num, col_num, iter_num)
                 ax.plot(y_index, y[instance_index, :, feature_index], color="royalblue")
                 if ground_truth is not None:
                     ax.plot(y_index, ground_truth[instance_index, :, feature_index],
