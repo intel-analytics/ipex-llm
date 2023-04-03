@@ -31,11 +31,13 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
         self._nano_context_manager = generate_context_manager(accelerator=None,
                                                               precision="fp32",
                                                               thread_num=thread_num,
-                                                              enable_onednn=False)
+                                                              enable_onednn=False,
+                                                              use_xpu=True)
 
     def forward(self, *inputs, **kwargs):
         inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
-        # TODO: transform kwargs
+        for key, val in kwargs.items():
+            kwargs[key] = apply_data_to_xpu(val)
         return self.model(*inputs, **kwargs)
 
     def __getattr__(self, name: str):
