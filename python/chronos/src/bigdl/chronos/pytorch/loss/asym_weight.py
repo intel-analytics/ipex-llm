@@ -28,6 +28,7 @@ class AsymWeightLoss(nn.Module):
         '''
         :param underestimation_penalty: when underestimation_penalty is set to 1, the loss is MSE,
                if set larger than 1, this loss panelize underestimate more and vice versa.
+        :param L1: if use L1 loss rather than MSE(L2) loss.
         '''
         super().__init__()
         invalidInputError(underestimation_penalty > 0,
