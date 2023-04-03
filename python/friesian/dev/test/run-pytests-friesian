@@ -36,3 +36,6 @@ if [ $exit_status -ne 0 ];
 then
     exit $exit_status
 fi
+
+# remove the model
+rm -rf ./distilbert-base-uncased
