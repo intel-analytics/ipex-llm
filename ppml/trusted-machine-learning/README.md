@@ -15,7 +15,7 @@ Before building your own base image, please modify the paths in `build-base-imag
 ```
 #### 1.2 Build Custom Image
 
-Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-customer-image) to build a custom image with enclave signed by your private key.
+Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-custom-image) to build a custom image with enclave signed by your private key.
 
 ### 2. Prepare SSL key and password
 
