@@ -236,7 +236,7 @@ if __name__ == '__main__':
                     "inter_op_parallelism": 4,
                     "intra_op_parallelism": args.executor_cores}
 
-    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
+    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size, \
                 model_dir=args.model_dir, backend=args.backend)
 
     import math
@@ -256,10 +256,12 @@ if __name__ == '__main__':
                                     verbose=True,
                                     config=train_config,
                                     backend=args.backend)
-    user_est.load_weights(os.path.join(args.model_dir, "user-model"))
+    user_est.load_weights(os.path.join(args.model_dir, "user-model/"))
     result = user_est.predict(data=full_tbl.df,
-                              batch_size=args.batch_size,
+                              verbose=True,
                               feature_cols=train_config["user_col_info"].get_name_list())
+    print("Prediction results of the first 5 rows:")
+    result.show(5)
     
     result = FeatureTable(result)
     result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
