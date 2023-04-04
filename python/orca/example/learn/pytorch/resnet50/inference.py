@@ -243,7 +243,7 @@ def validate(args):
                 model = models.__dict__[arch]()
 
         if args.ipex:
-            model.eval()
+            model.train(False)
             print("using ipex model to do inference\n")
             import intel_extension_for_pytorch as ipex
 
@@ -263,7 +263,7 @@ def validate(args):
                     prepared_model.load_qconf_summary(qconf_summary=args.configure_dir)
                     model = ipex.quantization.convert(prepared_model)
                     model = torch.jit.trace(model, x)
-                    model = torch.jit.freeze(model.eval())
+                    model = torch.jit.freeze(model.train(False))
                     y = model(x)
                     print("running int8 evaluation step\n")
             else:
@@ -287,15 +287,15 @@ def validate(args):
                     if args.bf16:
                         x = x.to(torch.bfloat16)
                         with torch.cpu.amp.autocast(), torch.no_grad():
-                            model = torch.jit.trace(model, x).eval()
+                            model = torch.jit.trace(model, x).train(False)
                     else:
                         with torch.no_grad():
-                            model = torch.jit.trace(model, x).eval()
+                            model = torch.jit.trace(model, x).train(False)
                     model = torch.jit.freeze(model)
         else:
             print("using official pytorch model to do inference\n")
 
-        model.eval()
+        model.train(False)
         return model
 
     def optimizer_creator(model, config):
