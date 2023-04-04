@@ -17,8 +17,10 @@
 from importlib.util import find_spec
 from bigdl.nano.utils.common import CPUInfo
 import os
+import operator
 import subprocess
 from bigdl.nano.utils.common import invalidInputError
+from .version import compare_version
 
 
 def _inc_checker():
@@ -67,29 +69,12 @@ def _avx512_checker():
     return cpuinfo.has_avx512
 
 
-def get_cpu_info():
-    # copied from https://github.com/intel/intel-extension-for-pytorch
-    cpu_info_path = "/proc/cpuinfo"
-    if os.path.exists(cpu_info_path):
-        cpu_info_command = "cat {}".format(cpu_info_path)
-        all_sub_cpu_info = subprocess.getoutput(cpu_info_command).strip()
-        for sub_cpu_info in all_sub_cpu_info.split("\n"):
-            if sub_cpu_info.startswith("flags"):
-                cpu_flags = sub_cpu_info.replace("\t", '').upper().split(":")
-                invalidInputError(len(cpu_flags) >= 2, "Less than two CPU flags.")
-                all_cpu_flags = cpu_flags[1].split(" ")
-                return all_cpu_flags
-
-        return []
-    else:
-        sys.exit("The extension does not support current platform - {}.".format(platform.system()))
-
-
 def _avx2_checker():
     # copied from https://github.com/intel/intel-extension-for-pytorch
-    cpu_flags = get_cpu_info()
-    minimal_binary_isa = "AVX2"
-    if minimal_binary_isa not in cpu_flags:
+    try:
+        if compare_version("intel_extension_for_pytorch", operator.ge, "2.0.0"):
+            import intel_extension_for_pytorch._isa_help as isa
+            return isa._check_isa_avx2()
+    except SystemExit:
         return False
-
     return True

@@ -29,6 +29,8 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback, CheckIPEXFusedStepCallback
 from test.pytorch.tests.train.trainer.test_lightning import ResNet18
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import _avx2_checker
 
 num_classes = 10
 batch_size = 32
@@ -37,7 +39,7 @@ num_workers = 0
 data_dir = "/tmp/data"
 
 
-class TestPlugin(TestCase):
+class Plugin:
     model = ResNet18(pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -81,6 +83,24 @@ class TestPlugin(TestCase):
                           callbacks=[CheckIPEXCallback(), CheckIPEXFusedStepCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
+
+
+TORCH_CLS = Plugin
+
+
+class CaseWithoutAVX2:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("Plugin IPEX Without AVX2")
+    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
+    TORCH_CLS = CaseWithoutAVX2
+
+
+class TestPlugin(TORCH_CLS, TestCase):
+    pass
 
 
 if __name__ == '__main__':
