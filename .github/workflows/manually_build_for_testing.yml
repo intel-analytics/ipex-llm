@@ -743,7 +743,7 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=16g \
+          --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
@@ -759,7 +759,7 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8g \
+          --build-arg SGX_MEM_SIZE=8G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
@@ -775,7 +775,7 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=4g \
+          --build-arg SGX_MEM_SIZE=4G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
