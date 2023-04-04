@@ -212,6 +212,9 @@ python ${BIGDL_ROOT}/python/orca/example/data/spark_pandas.py \
 now=$(date "+%s")
 time15=$((now - start))
 
+disable_mmcv=$1
+if [ ! -n $disable_mmcv ]
+then
 echo "#16 start example for mmcv faster-rcnn training"
 if [ -f ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/kitti_tiny ]
 then
@@ -235,11 +238,11 @@ else
     wget -nv $FTP_URI/analytics-zoo-data/mmcv/mmdetection-master.zip -P ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn
     unzip -d ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/mmdetection-master.zip
 fi
-
 start=$(date "+%s")
 python ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/train.py --dataset ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/kitti_tiny/ --config ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/mmdetection-master/configs/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_1x_coco.py --load_from ${BIGDL_ROOT}/python/orca/example/learn/mmcv/faster_rcnn/faster_rcnn_r50_caffe_fpn_mstrain_3x_coco_20210526_095054-1f77628b.pth
 now=$(date "+%s")
 time16=$((now-start))
+fi
 
 echo "Ray example tests finished"
 
@@ -258,4 +261,8 @@ echo "#12 ray-dataset-xgboost example time used:$time12 seconds"
 echo "#13 orca brainMRI example time used:$time13 seconds"
 echo "#14 orca resnet50 inference example time used:$time14 seconds"
 echo "#15 orca data time used:$time15 seconds"
+
+if [ ! -n $disable_mmcv ]
+then
 echo "#16 mmcv faster_rcnn training example time used:$time16 seconds"
+fi
