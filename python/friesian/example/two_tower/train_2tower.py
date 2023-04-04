@@ -47,7 +47,7 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
 
     def model_creator(config):
         model = two_tower.build_model()
-        print(model.summary())
+        # print(model.summary())
         optimizer = tf.keras.optimizers.Adam(config["lr"])
         model.compile(optimizer=optimizer,
                       loss='binary_crossentropy',
@@ -241,8 +241,10 @@ if __name__ == '__main__':
 
     import math
     full_tbl = train_tbl.concat(test_tbl, "outer")
+    print("full size: "+str(full_tbl.size()))
     full_steps_per_epoch = math.ceil(full_tbl.size() / args.batch_size)
-    two_tower = TwoTowerModel(train_config["user_col_info"], train_config["item_col_info"])
+    # train_steps_per_epoch = math.ceil(train_tbl.size() / args.batch_size)
+    print("steps: "+str(full_steps_per_epoch))
 
     def user_model_creator(config):
         two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
@@ -254,13 +256,26 @@ if __name__ == '__main__':
                                     verbose=True,
                                     config=train_config,
                                     backend=args.backend)
+    user_est.load_weights(os.path.join(args.model_dir, "user-model"))
     result = user_est.predict(data=full_tbl.df,
                               batch_size=args.batch_size,
                               steps=full_steps_per_epoch,
                               feature_cols=train_config["user_col_info"].get_name_list())
     
     result = FeatureTable(result)
-    result = result.select(['engaging_user_id', 'prediction']).drop_duplicates()
+    result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
     result.write_parquet(os.path.join(args.model_dir, 'user_embd'))
+    user_columns = "user columns: "+ str(result.columns)
+
+    del result, user_est
+
+    def item_model_creator(config):
+        two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
+        model = get_1tower_model(two_tower.build_model(), config["item_col_info"])
+        model.compile()
+        return model
+
+    print(user_columns)
+
 
     stop_orca_context()
