@@ -21,9 +21,12 @@ import sys
 import cloudpickle
 
 from pytorch_lightning.utilities.seed import reset_seed
+from bigdl.nano.utils.common import invalidInputError
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
+
+    invalidInputError(os.path.isdir(temp_dir), 'f{temp_dir} is not an available path')
 
     with open(os.path.join(temp_dir, "search_kwargs.pkl"), 'rb') as f:
         kwargs = cloudpickle.load(f)

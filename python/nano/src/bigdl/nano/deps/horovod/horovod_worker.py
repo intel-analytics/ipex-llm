@@ -17,10 +17,13 @@
 import os
 import cloudpickle
 import sys
+from bigdl.nano.utils.common import invalidInputError
 
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
+
+    invalidInputError(os.path.isdir(temp_dir), 'f{temp_dir} is not an available path')
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)

@@ -21,11 +21,13 @@ import cloudpickle
 import multiprocessing
 from torch.multiprocessing.spawn import _wrap
 from bigdl.nano.pytorch.dispatcher import patch_torch
-
+from bigdl.nano.utils.common import invalidInputError
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
     process_idx = int(os.environ["PROCESS_IDX"])
+
+    invalidInputError(os.path.isdir(temp_dir), 'f{temp_dir} is not an available path')
 
     # set the same `multiprocessing.current_process().authkey` as the main process
     # so that we can load the `sys_path.pkl` and `args.pkl`
