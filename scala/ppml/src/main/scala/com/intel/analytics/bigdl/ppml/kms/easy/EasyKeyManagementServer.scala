@@ -218,7 +218,7 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   val argumentsParser =
-   new scopt.OptionParser[BigDLKMSFrontendArguments](name) {
+   new scopt.OptionParser[EasyKeyManagementArguments](name) {
     head(name)
     opt[String]('i', "ip")
       .action((x, c) => c.copy(ip = x))
@@ -252,7 +252,7 @@ object EasyKeyManagementServer extends Supportive {
   }
 }
 
-case class BigDLKMSFrontendArguments(
+case class EasyKeyManagementArguments(
     ip: String = "0.0.0.0",
     port: Int = 9875,
     httpsKeyStorePath: String = null,
