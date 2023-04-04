@@ -1,0 +1,64 @@
+name: Scanner Checkmarx
+
+on:
+  workflow_call:
+    inputs:
+      repos:
+        description: 'Enter Project repo for which you want to run checkmarx scan:'
+        required: true
+        type: string
+      refs:
+        description: 'Enter Project branch, tag:'
+        required: true
+        type: string
+      projectid:
+        description: 'Enter project-id:'
+        required: true
+        type: string
+      region:
+        description: 'Enter User-account region : eg- INTEL-GAR, INTEL-GER, INTEL-AMR'
+        required: true
+        type: string
+    secrets:
+      CHECKMARX_PASSWORD:
+        description: 'Enter CHECKMARX_PASSWORD:'
+        required: true
+      SYS_ACCOUNT:
+        description: 'Enter SYS_ACCOUNT:'
+        required: true        
+      token:
+        description: 'GITHUB_TOKEN or a repo scoped PAT.'
+        required: true        
+jobs:
+  checkmarx_job:
+    runs-on: [self-hosted, Linux, gasp]  # See the GitHub Runners section below to use gasp runners
+    name: checkmarx
+    container:
+      image: cache-registry.caas.intel.com/cache/library/python:slim
+    steps:
+      - name: Checkout Project Repo
+        uses: actions/checkout@v3
+        with:
+          repository: intel-innersource/${{inputs.repos}}
+          token: ${{ secrets.token }}
+          path: code
+          ref: ${{inputs.refs}}
+      - name: Pack Additional Resources
+        run: |
+          apt-get update
+          apt-get install curl jq zip unzip -y
+          zip -r ${{inputs.repos}}-checkmarx.zip ${GITHUB_WORKSPACE}/code/.*
+      - name: Run Checkmarx Scan
+        uses: intel-innersource/frameworks.actions.checkmarx@v1.4
+        with:
+          checkmarx_username: '${{inputs.region}}/${{ secrets.SYS_ACCOUNT }}'
+          checkmarx_password: "${{ secrets.CHECKMARX_PASSWORD }}"
+          checkmarx_project_id: ${{inputs.projectid}}
+          checkmarx_zip_file: "${{inputs.repos}}-checkmarx.zip"
+      - name: Upload Checkmarx reports to GitHub Actions Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Checkmarx_Reports
+          path: |
+            CT39_checkmarx_results.pdf
+            checkmarx_results.csv
