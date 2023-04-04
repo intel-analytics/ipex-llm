@@ -6,6 +6,7 @@ FROM $MACHINE_LEARNING_BASE_IMAGE_NAME:$MACHINE_LEARNING_BASE_IMAGE_TAG as temp
 
 ARG SGX_MEM_SIZE
 ARG SGX_LOG_LEVEL
+ARG ENABLE_DCAP_ATTESTATION
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
 ADD ./make-sgx.sh /ppml/make-sgx.sh
