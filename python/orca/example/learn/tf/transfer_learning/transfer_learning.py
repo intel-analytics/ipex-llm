@@ -89,19 +89,15 @@ validation_dir = os.path.join(base_dir, 'validation')
 
 # Directory with our training cat pictures
 train_cats_dir = os.path.join(train_dir, 'cats')
-print('Total training cat images:', len(os.listdir(train_cats_dir)))
 
 # Directory with our training dog pictures
 train_dogs_dir = os.path.join(train_dir, 'dogs')
-print('Total training dog images:', len(os.listdir(train_dogs_dir)))
 
 # Directory with our validation cat pictures
 validation_cats_dir = os.path.join(validation_dir, 'cats')
-print('Total validation cat images:', len(os.listdir(validation_cats_dir)))
 
 # Directory with our validation dog pictures
 validation_dogs_dir = os.path.join(validation_dir, 'dogs')
-print('Total validation dog images:', len(os.listdir(validation_dogs_dir)))
 
 image_size = 160  # All images will be resized to 160x160
 batch_size = args.batch_size
