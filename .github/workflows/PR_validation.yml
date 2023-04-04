@@ -555,24 +555,3 @@ jobs:
     - name: Remove Env
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
-
-  Mac-Orca-Python-ExampleTest-Ray-Spark3:
-    needs: changes
-    if: ${{ always() }} 
-    runs-on: [self-hosted, mac, macOS]
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Run Test
-      uses: ./.github/actions/mac/orca/mac-orca-python-exampletest-ray-spark3
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: Mac-Orca-Python-ExampleTest-Ray-Spark3.json
-        type: job
-        job-name: Mac-Orca-Python-ExampleTest-Ray-Spark3
-        runner-hosted-on: 'Shanghai'
