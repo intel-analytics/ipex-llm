@@ -191,6 +191,7 @@ jobs:
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
           fi
+          pip install numpy==1.23.4
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           source $CONDA/bin/deactivate
