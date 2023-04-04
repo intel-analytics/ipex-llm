@@ -169,6 +169,10 @@ def encode_user_id(tbl):
         .encode_string("user_id", user_index, broadcast=False) \
         .rename({"user_id": "enaging_user_id"})\
         .fillna(0, "enaging_user_id")
+    tbl = tbl.rename({"tweet_id": "sim_tweet_id"}) \
+        .encode_string("sim_tweet_id", item_index, broadcast=False) \
+        .rename({"sim_tweet_id": "tweet_id"})\
+        .fillna(0, "tweet_id")
     return tbl
 
 
@@ -226,9 +230,11 @@ if __name__ == '__main__':
 
     user_index = train_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
                                            'col_name': 'user_id'})
+    item_index = train_tbl.gen_string_idx({'src_cols': ['tweet_id'],
+                                           'col_name': 'sim_tweet_id'})
     train_tbl = encode_user_id(train_tbl)
     test_tbl = encode_user_id(test_tbl)
-    test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id"])
+    test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id", "tweet_id"])
 
     indexes = train_tbl.gen_string_idx(list_cols, do_split=True, sep='\t')
     train_tbl = train_tbl.encode_string(list_cols, indexes,

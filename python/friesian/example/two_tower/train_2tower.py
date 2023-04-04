@@ -236,7 +236,30 @@ if __name__ == '__main__':
                     "inter_op_parallelism": 4,
                     "intra_op_parallelism": args.executor_cores}
 
-    train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
-          model_dir=args.model_dir, backend=args.backend)
+    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
+                model_dir=args.model_dir, backend=args.backend)
+
+    full_tbl = train_tbl.concat(test_tbl, "outer")
+    full_steps_per_epoch = math.ceil(full_tbl.size() / args.batch_size)
+    two_tower = TwoTowerModel(train_config["user_col_info"], train_config["item_col_info"])
+
+    def model_loader(config):
+        model = tf.saved_model.load(os.path.join(args.model_dir, "user-model"))
+
+        return model
+
+    user_est = Estimator.from_keras(model_creator=model_loader,
+                                    verbose=True,
+                                    config=train_config,
+                                    backend=args.backend)
+    # user_est.load(os.path.join(args.model_dir, "user-model"))
+    result = user_est.predict(data=full_tbl.df,
+                              batch_size=args.batch_size,
+                              steps=full_steps_per_epoch,
+                              feature_cols=train_config["user_col_info"].get_name_list())
+    
+    result = FeatureTable(result)
+    result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
+    result.write_parquet(os.path.join(args.model_dir, 'user_embd'))
 
     stop_orca_context()
