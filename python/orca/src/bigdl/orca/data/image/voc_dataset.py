@@ -64,17 +64,12 @@ class VOCDatasets:
     def _load_items(self, splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
 
         img_ids = []
-        img_id_allow_list = list(range(1000000))
-        def get_item(vocfolder, line):
-            return (vocfolder, "{0:06d}".format(img_id_allow_list[int(line)]))
-
         for year, txtname in splits_names:
             vocfolder = osp.join(self._root, "VOC{}".format(year))
             txtpath = osp.join(vocfolder, 'ImageSets', 'Main', txtname + '.txt')
             try:
                 with open(txtpath, 'r', encoding='utf-8') as f:
-                    img_ids += [get_item(vocfolder, line) \
-                        for line in f.readlines()]
+                    img_ids += [(vocfolder, line.strip()) for line in f.readlines()]
             except:
                 continue
         return img_ids
