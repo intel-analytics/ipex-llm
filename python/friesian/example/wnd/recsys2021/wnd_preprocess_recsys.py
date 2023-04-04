@@ -267,6 +267,7 @@ if __name__ == '__main__':
         cat_sizes_dict[list_cols[i]] = indexes[i].size()
     cat_sizes_dict['engaged_with_user_id'] = user_index.size()
     cat_sizes_dict['enaging_user_id'] = user_index.size()
+    cat_sizes_dict['tweet_id'] = len(item_index)
 
     cross_sizes_dict = dict(zip(["_".join(cross_names) for cross_names in cross_cols],
                                 args.cross_sizes))
