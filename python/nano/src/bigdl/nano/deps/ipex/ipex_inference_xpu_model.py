@@ -20,6 +20,7 @@ import intel_extension_for_pytorch as ipex
 from bigdl.nano.utils.pytorch import apply_data_to_xpu
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.common import invalidInputError
+import warnings
 
 
 class PytorchIPEXPUModel(AcceleratedLightningModule):
@@ -28,8 +29,11 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
                  precision="fp32", use_ipex=False):
         super().__init__(model)
         invalidInputError(precision in ["fp32", "fp16"],
-                          f"support precision for GPU device only for fp32 and fp16, but"
+                          f"support precision for GPU device only for fp32 and fp16, but "
                           f"found {precision}")
+        if not use_ipex:
+            warnings.warn("IPEX is required to be installed for GPU device inferencing even "
+                          "the model is not optimized by IPEX.")
 
         if precision == "fp16":
             self.model = self.model.half()
