@@ -40,7 +40,7 @@ export NFS_INPUT_PATH=/YOUR_DIR/data
 export KEYS_PATH=/YOUR_DIR/keys
 export SECURE_PASSWORD_PATH=/YOUR_DIR/password
 export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-export LOCAL_IP=YOUT_LOCAL_IP
+export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
     --privileged \
