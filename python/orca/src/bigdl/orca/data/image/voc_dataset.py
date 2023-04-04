@@ -69,9 +69,7 @@ class VOCDatasets:
             txtpath = osp.join(vocfolder, 'ImageSets', 'Main', txtname + '.txt')
             try:
                 with open(txtpath, 'r', encoding='utf-8') as f:
-                    img_id_list = list(range(1000000))
-                    img_ids += [(vocfolder, img_id_list[int(line.strip())]) \
-                        for line in f.readlines()]
+                    img_ids += [(vocfolder, line.strip()) for line in f.readlines()]
             except:
                 continue
         return img_ids
@@ -96,7 +94,9 @@ class VOCDatasets:
     @no_type_check
     def _load_label(self, idx: int) -> "ndarray":
         img_id = self._imgid_items[idx]
-        anno_path = self._anno_path.format(img_id[0], "{0:06d}".format(img_id[1]))
+        img_id_list = list(range(1000000))
+        anno_path = self._anno_path.format(img_id[0],
+                                           "{0:06d}".format(img_id_list[int(img_id[1])]))
         root = ET.parse(anno_path).getroot()
         width = 0
         height = 0
