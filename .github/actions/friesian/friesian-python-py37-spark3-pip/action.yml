@@ -32,7 +32,7 @@ runs:
         then
             echo "model distilbert-base-uncased already exists"
         else
-            wget $FTP_URI/analytics-zoo-data/distilbert-base-uncased.zip
+            wget $FTP_URI/analytics-zoo-models/distilbert-base-uncased.zip
             unzip distilbert-base-uncased.zip
         fi
         python -m pytest -v python/friesian/test/bigdl/friesian/feature/
