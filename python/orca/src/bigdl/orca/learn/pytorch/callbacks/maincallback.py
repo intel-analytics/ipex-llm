@@ -93,6 +93,7 @@ class MainCallback(Callback):
         Any behavior inconsistent with the default training behavior should be overridden here.
         """
         self.on_iter_forward(runner)
+        runner.target = runner.batch[-1]
 
     def on_pred_forward(self, runner):
         """
