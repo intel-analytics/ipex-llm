@@ -26,7 +26,8 @@ if [ -f ./distilbert-base-uncased ]
 then
     echo "model distilbert-base-uncased already exists"
 else
-    wget -r -np -nH --cut-dirs=1 $FTP_URI/analytics-zoo-data/distilbert-base-uncased/
+    wget $FTP_URI/analytics-zoo-models/distilbert-base-uncased.zip
+    unzip distilbert-base-uncased.zip
 fi
 
 echo "Running Friesian feature tests"
@@ -39,3 +40,4 @@ fi
 
 # remove the model
 rm -rf ./distilbert-base-uncased
+rm -f ./distilbert-base-uncased.zip
