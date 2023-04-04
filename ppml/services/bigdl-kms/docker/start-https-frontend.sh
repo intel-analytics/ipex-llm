@@ -38,4 +38,4 @@ java \
     com.intel.analytics.bigdl.ppml.kms.frontend.BigDLKMSFrontend \
     --keywhizHost "keywhiz-service" \
     --httpsKeyStorePath "${https_key_store_path}" \
-    --httpsKeyStoreToken "${https_secure_password}" | tee ./bkeywhiz-https-frontend.log
+    --httpsKeyStoreToken "${https_secure_password}" | tee ./bigdl-kms-https-frontend.log
