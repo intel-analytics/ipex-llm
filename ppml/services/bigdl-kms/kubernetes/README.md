@@ -103,4 +103,4 @@ XY********Yw==
 
 ## Test KMS with PPML end-to-end example
 
-`BigDLKeyManagement` is an allowed type in [SimpleQuery example](https://github.com/intel-analytics/BigDL/tree/main/ppml#32-bigdl-ppml-end-to-end-workflow).
+`BigDLKeyManagementService` is an allowed type in [SimpleQuery example](https://github.com/intel-analytics/BigDL/tree/main/ppml#32-bigdl-ppml-end-to-end-workflow).
