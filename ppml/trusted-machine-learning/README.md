@@ -15,7 +15,7 @@ Before building your own base image, please modify the paths in `build-base-imag
 ```
 #### 1.2 Build Custom Image
 
-Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-customer-image) to build a custom image with enclave signed by your private key.
+Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-custom-image) to build a custom image with enclave signed by your private key.
 
 ### 2. Prepare SSL key and password
 
@@ -40,7 +40,7 @@ export NFS_INPUT_PATH=/YOUR_DIR/data
 export KEYS_PATH=/YOUR_DIR/keys
 export SECURE_PASSWORD_PATH=/YOUR_DIR/password
 export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-export LOCAL_IP=$LOCAL_IP
+export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
     --privileged \
@@ -55,7 +55,7 @@ sudo docker run -itd \
     -v $SECURE_PASSWORD_PATH:/ppml/password \
     -v $KUBECONFIG_PATH:/root/.kube/config \
     -v $NFS_INPUT_PATH:/ppml/data \
-    -e RUNTIME_SPARK_MASTER=$K8S_MASTERK8S_MASTER \
+    -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
     -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
     -e RUNTIME_DRIVER_PORT=54321 \
     -e RUNTIME_DRIVER_MEMORY=10g \
