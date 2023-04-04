@@ -64,12 +64,17 @@ class VOCDatasets:
     def _load_items(self, splits_names: List[Tuple[int, str]]) -> List[Tuple[str, str]]:
 
         img_ids = []
+        img_id_allow_list = list(range(1000000))
+        def get_item(vocfolder, line):
+            return (vocfolder, "{0:06d}".format(img_id_allow_list[int(line)]))
+
         for year, txtname in splits_names:
             vocfolder = osp.join(self._root, "VOC{}".format(year))
             txtpath = osp.join(vocfolder, 'ImageSets', 'Main', txtname + '.txt')
             try:
                 with open(txtpath, 'r', encoding='utf-8') as f:
-                    img_ids += [(vocfolder, line.strip()) for line in f.readlines()]
+                    img_ids += [get_item(vocfolder, line) \
+                        for line in f.readlines()]
             except:
                 continue
         return img_ids
@@ -94,9 +99,7 @@ class VOCDatasets:
     @no_type_check
     def _load_label(self, idx: int) -> "ndarray":
         img_id = self._imgid_items[idx]
-        img_id_list = list(range(1000000))
-        anno_path = self._anno_path.format(img_id[0],
-                                           "{0:06d}".format(img_id_list[int(img_id[1])]))
+        anno_path = self._anno_path.format(*img_id)
         root = ET.parse(anno_path).getroot()
         width = 0
         height = 0
