@@ -988,7 +988,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "function. For more details about model optimizer, you can "
                                   "see mo --help .")
             if accelerator is None and device == "GPU":
-                return PytorchIPEXPUModel(model, thread_num=thread_num, precision=precision).to("xpu")
+                return PytorchIPEXPUModel(model, thread_num=thread_num,
+                                          precision=precision, use_ipex=use_ipex).to("xpu")
             return PytorchOpenVINOModel(model, input_sample,
                                         precision=precision,
                                         thread_num=thread_num,
@@ -1162,7 +1163,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            output_tensors=output_tensors,
                                            **kwargs)
         if accelerator is None and device == "GPU":
-            return PytorchIPEXPUModel(model, thread_num=thread_num).to("xpu")
+            return PytorchIPEXPUModel(model, thread_num=thread_num, use_ipex=use_ipex).to("xpu")
         if (accelerator == 'jit' or use_ipex is True or channels_last is True) and device == "CPU":
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
