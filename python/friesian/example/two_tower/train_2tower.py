@@ -259,7 +259,6 @@ if __name__ == '__main__':
     user_est.load_weights(os.path.join(args.model_dir, "user-model"))
     result = user_est.predict(data=full_tbl.df,
                               batch_size=args.batch_size,
-                              steps=full_steps_per_epoch,
                               feature_cols=train_config["user_col_info"].get_name_list())
     
     result = FeatureTable(result)
