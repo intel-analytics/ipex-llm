@@ -51,6 +51,7 @@ indicator_cols = cat_cols + count_cols
 # indicator_dims = cat_dims + count_dims
 
 embedding_cols = [
+    'tweet_id',
     'engaged_with_user_id',
     'enaging_user_id',
     'hashtags',
@@ -310,6 +311,28 @@ if __name__ == "__main__":
 
     train_tbl, test_tbl, indicator_sizes, embedding_sizes, cross_sizes = get_size(options.data_dir)
 
+    user_feature = ['enaging_user_id',
+                    'enaging_user_follower_count',
+                    'enaging_user_following_count',
+                    'enaging_user_is_verified']
+    item_feature = ['tweet_id',
+                    'present_media',
+                    'language',
+                    'tweet_type',
+                    'engaged_with_user_follower_count',
+                    'engaged_with_user_following_count',
+                    'len_hashtags',
+                    'len_domains',
+                    'len_links',
+                    'present_media_language',
+                    'engaged_with_user_is_verified'
+                    ]
+    full_tbl = train_tbl.concat(test_tbl, "outer")
+    full_tbl.select(user_feature).drop_duplicates().\
+             write_parquet(os.path.join(args.model_dir, 'wnd_user.parquet'))
+    full_tbl.select(item_feature).drop_duplicates().\
+             write_parquet(os.path.join(args.model_dir, 'wnd_item.parquet'))    
+
     column_info = ColumnFeatureInfo(wide_base_cols=wide_cols,
                                     wide_base_dims=wide_dims,
                                     wide_cross_cols=cross_cols,
@@ -369,8 +392,9 @@ if __name__ == "__main__":
             label_cols=column_info.label_cols)
     end = time()
     print("Training time is: ", end - start)
-    est.save(os.path.join(options.model_dir, "model-%d.ckpt" % options.epochs))
+    # est.save(os.path.join(options.model_dir, "model-%d.ckpt" % options.epochs))
     model = est.get_model()
-    model.save_weights(os.path.join(options.model_dir, "model.h5"))
+    # model.save_weights(os.path.join(options.model_dir, "model.h5"))
 
+    tf.saved_model.save(model, "recsys_wnd")
     stop_orca_context()
