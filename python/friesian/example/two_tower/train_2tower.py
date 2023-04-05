@@ -142,13 +142,14 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
                                                     "present_media", "tweet_type", "language"],
                                     indicator_dims=[2, 13, 3, 67],  # max + 1
-                                    embed_cols=["engaged_with_user_id", "hashtags",
+                                    embed_cols=["tweet_id", "engaged_with_user_id", "hashtags",
                                                 "present_links", "present_domains"],
-                                    embed_in_dims=[embed_in_dims["engaged_with_user_id"],
+                                    embed_in_dims=[embed_in_dims["tweet_id"],
+                                                   embed_in_dims["engaged_with_user_id"],
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16, 16, 16, 16],
+                                    embed_out_dims=[16, 16, 16, 16, 16],
                                     numerical_cols=["item_num"],
                                     numerical_dims=[6],
                                     name="item")
@@ -217,7 +218,7 @@ if __name__ == '__main__':
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
                   "enaging_user_follower_following_ratio"]
-    embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
+    embed_cols = ["enaging_user_id", "tweet_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
     useful_cols = num_cols + cat_cols + embed_cols
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
@@ -257,7 +258,7 @@ if __name__ == '__main__':
                                     config=train_config,
                                     backend=args.backend)
     user_est.load_weights(os.path.join(args.model_dir, "user-model/"))
-    result = user_est.predict(data=full_tbl.df,
+    result = user_est.predict(data=test_tbl.df,
                               verbose=True,
                               feature_cols=train_config["user_col_info"].get_name_list())
     print("Prediction results of the first 5 rows:")
@@ -266,7 +267,7 @@ if __name__ == '__main__':
     result = FeatureTable(result)
     result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
     result.write_parquet(os.path.join(args.model_dir, 'user_embd'))
-    user_columns = "user columns: "+ str(result.columns)
+    print("user columns: "+ str(result.columns))
 
     del result, user_est
 
@@ -275,8 +276,21 @@ if __name__ == '__main__':
         model = get_1tower_model(two_tower.build_model(), config["item_col_info"])
         model.compile()
         return model
+    
+    item_est = Estimator.from_keras(model_creator=item_model_creator,
+                                    verbose=True,
+                                    config=train_config,
+                                    backend=args.backend)
+    item_est.load_weights(os.path.join(args.model_dir, "item-model/"))
+    result = item_est.predict(data=test_tbl.df,
+                              verbose=True,
+                              feature_cols=train_config["item_col_info"].get_name_list())
+    print("Prediction results of the first 5 rows:")
+    result.show(5)
 
-    print(user_columns)
-
+    result = FeatureTable(result)
+    result = result.select(['tweet_id', 'prediction']).drop_duplicates()
+    result.write_parquet(os.path.join(args.model_dir, 'item_embd'))
+    print("item columns: "+ str(result.columns))
 
     stop_orca_context()

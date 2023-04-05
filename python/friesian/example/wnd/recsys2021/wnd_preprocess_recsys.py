@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     user_index = train_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
                                            'col_name': 'user_id'})
-    item_index = train_tbl.gen_string_idx(['tweet_id'])
+    item_index = train_tbl.gen_string_idx('tweet_id')
     train_tbl = encode_user_id(train_tbl)
     test_tbl = encode_user_id(test_tbl)
     test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id", "tweet_id"])
@@ -238,6 +238,7 @@ if __name__ == '__main__':
                                         do_split=True, sep='\t', keep_most_frequent=True)
     test_tbl = test_tbl.encode_string(list_cols, indexes,
                                       do_split=True, sep='\t', keep_most_frequent=True)
+    train_tbl = train_tbl.fillna(0, list_cols)
     test_tbl = test_tbl.fillna(0, list_cols)
 
     train_tbl.cache()
@@ -267,7 +268,7 @@ if __name__ == '__main__':
         cat_sizes_dict[list_cols[i]] = indexes[i].size()
     cat_sizes_dict['engaged_with_user_id'] = user_index.size()
     cat_sizes_dict['enaging_user_id'] = user_index.size()
-    cat_sizes_dict['tweet_id'] = item_index[0].size()
+    cat_sizes_dict['tweet_id'] = item_index.size()
 
     cross_sizes_dict = dict(zip(["_".join(cross_names) for cross_names in cross_cols],
                                 args.cross_sizes))
