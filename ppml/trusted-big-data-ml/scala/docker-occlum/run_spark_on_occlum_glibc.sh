@@ -53,6 +53,9 @@ init_instance() {
     echo "${new_yaml}" > Occlum.yaml
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
+    # to use /host/data
+    yq eval '.mount += [{"target": "/host", "type": "hostfs", "source": "."}]' -i Occlum.yaml
+
     #copy python lib and attestation lib
     copy_bom -f /opt/python-glibc.yaml --root image --include-dir /opt/occlum/etc/template
     # enable tmp hostfs
