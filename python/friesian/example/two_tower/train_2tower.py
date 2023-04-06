@@ -47,7 +47,7 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
 
     def model_creator(config):
         model = two_tower.build_model()
-        print(model.summary())
+        # print(model.summary())
         optimizer = tf.keras.optimizers.Adam(config["lr"])
         model.compile(optimizer=optimizer,
                       loss='binary_crossentropy',
@@ -82,9 +82,9 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
+    tf.keras.models.save_model(model, os.path.join(model_dir, "twotower-model"))
+    tf.keras.models.save_model(user_model, os.path.join(model_dir, "user-model"))
+    tf.keras.models.save_model(item_model, os.path.join(model_dir, "item-model"))
     estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
     print("saved models")
     return estimator
@@ -107,7 +107,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
                                "engaged_with_user_follower_count",
                                "engaged_with_user_following_count",
                                "engaged_with_user_follower_following_ratio").alias("item_num"),
-                         *cat_cols, *embed_cols, "label")
+                         *cat_cols, *embed_cols, "tweet_id", "label")
         return tbl
 
     print("reindexing embedding cols")
@@ -116,6 +116,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     embed_in_dims = {}
     for i, c, in enumerate(embed_cols):
         embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
+    embed_in_dims["tweet_id"] = train_tbl.concat(test_tbl).get_stats("tweet_id", "max")["tweet_id"]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
@@ -142,13 +143,14 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
                                                     "present_media", "tweet_type", "language"],
                                     indicator_dims=[2, 13, 3, 67],  # max + 1
-                                    embed_cols=["engaged_with_user_id", "hashtags",
+                                    embed_cols=["tweet_id", "engaged_with_user_id", "hashtags",
                                                 "present_links", "present_domains"],
-                                    embed_in_dims=[embed_in_dims["engaged_with_user_id"],
+                                    embed_in_dims=[embed_in_dims["tweet_id"],
+                                                   embed_in_dims["engaged_with_user_id"],
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16, 16, 16, 16],
+                                    embed_out_dims=[16, 16, 16, 16, 16],
                                     numerical_cols=["item_num"],
                                     numerical_dims=[6],
                                     name="item")
@@ -211,8 +213,7 @@ if __name__ == '__main__':
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links", "hashtags", "present_links",
-                "present_domains"]
+                "len_hashtags", "len_domains", "len_links"]
     cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
@@ -238,5 +239,57 @@ if __name__ == '__main__':
 
     train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
           model_dir=args.model_dir, backend=args.backend)
+
+    full_tbl = train_tbl.concat(test_tbl)
+    full_tbl.write_parquet("two_tower_processed.parquet")
+    full_tbl = FeatureTable.read_parquet("two_tower_processed.parquet")
+
+    def user_model_creator(config):
+        two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
+        model = get_1tower_model(two_tower.build_model(), config["user_col_info"])
+        model.compile()
+        return model
+
+    user_est = Estimator.from_keras(model_creator=user_model_creator,
+                                    verbose=True,
+                                    config=train_config,
+                                    backend=args.backend)
+    user_est.load_weights(os.path.join(args.model_dir, "user-model/"))
+    result = user_est.predict(data=full_tbl.df,
+                              verbose=True,
+                              feature_cols=train_config["user_col_info"].get_name_list(),
+                              batch_size=args.batch_size)
+    print("Prediction results of the first 5 rows:")
+    result.show(5)
+
+    result = FeatureTable(result)
+    result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
+    result.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
+    print("user columns: "+ str(result.columns))
+
+    del result, user_est
+
+    def item_model_creator(config):
+        two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
+        model = get_1tower_model(two_tower.build_model(), config["item_col_info"])
+        model.compile()
+        return model
+
+    item_est = Estimator.from_keras(model_creator=item_model_creator,
+                                    verbose=True,
+                                    config=train_config,
+                                    backend=args.backend)
+    item_est.load_weights(os.path.join(args.model_dir, "item-model/"))
+    result = item_est.predict(data=test_tbl.df,
+                              verbose=True,
+                              feature_cols=train_config["item_col_info"].get_name_list(),
+                              batch_size=args.batch_size)
+    print("Prediction results of the first 5 rows:")
+    result.show(5)
+
+    result = FeatureTable(result)
+    result = result.select(['tweet_id', 'prediction']).drop_duplicates()
+    result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
+    print("item columns: "+ str(result.columns))
 
     stop_orca_context()

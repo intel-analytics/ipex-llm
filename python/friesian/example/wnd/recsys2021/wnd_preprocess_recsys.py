@@ -230,6 +230,10 @@ if __name__ == '__main__':
     test_tbl = encode_user_id(test_tbl)
     test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id"])
 
+    item_index = train_tbl.concat(test_tbl).gen_string_idx("tweet_id")
+    train_tbl = train_tbl.encode_string("tweet_id", item_index).fillna(0, "tweet_id")
+    test_tbl = test_tbl.encode_string("tweet_id", item_index).fillna(0, "tweet_id")
+
     indexes = train_tbl.gen_string_idx(list_cols, do_split=True, sep='\t')
     train_tbl = train_tbl.encode_string(list_cols, indexes,
                                         do_split=True, sep='\t', keep_most_frequent=True)
