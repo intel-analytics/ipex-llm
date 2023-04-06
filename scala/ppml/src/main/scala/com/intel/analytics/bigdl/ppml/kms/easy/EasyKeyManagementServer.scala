@@ -51,9 +51,6 @@ object EasyKeyManagementServer extends Supportive {
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-
-
-
   val rootKey = sys.env("ROOTKEY")
   Log4Error.invalidOperationError(rootKey != "",
     "Excepted ROOTKEY but found it empty, please upload it as k8s secret")
