@@ -35,7 +35,7 @@ java \
   -Xms2g \
   -Xmx10g \
   -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
-  -cp /usr/src/app/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  -cp /ppml/${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
   --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
   --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./easy-kms-server.log

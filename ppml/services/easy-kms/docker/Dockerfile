@@ -22,6 +22,7 @@ RUN apt-get update --fix-missing && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
 
 FROM keinos/sqlite3 as sqlite
+USER root
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
@@ -30,8 +31,7 @@ ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
 ARG http_proxy
 ARG https_proxy
 ADD ./init.sh /ppml/init.sh
-RUN mkdir /ppml && \
-    cd /ppml && \
+RUN cd /ppml && \
     wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_${SPARK_VERSION}/${BIGDL_VERSION}/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar && \
     chmod a+x /ppml/init.sh
 COPY --from=java /opt/jdk  /opt/jdk8
