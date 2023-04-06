@@ -50,9 +50,9 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
                                                               use_xpu=True)
 
     def forward(self, *inputs, **kwargs):
-        inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
         if self.precision == "fp16":
             inputs = tuple(map(lambda item: apply_data_to_half(item), inputs))
+        inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
         for key, val in kwargs.items():
             new_val = apply_data_to_xpu(val)
             if self.precision == "fp16":
