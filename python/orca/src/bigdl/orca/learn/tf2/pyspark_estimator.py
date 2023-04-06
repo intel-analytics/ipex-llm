@@ -109,12 +109,10 @@ class SparkTFEstimator():
 
     def _get_cluster_info(self, sc):
         def get_worker_address(iter):
-            res = []
             worker_ip = get_node_ip()
             worker_port = find_free_port()
-            address = [f"{worker_ip}:{worker_port}"]
-            address.extend(find_ip_and_free_port(iter))
-            res.append(address)
+            addresses = find_ip_and_free_port(iter)
+            res = [(f"{worker_ip}:{worker_port}", address) for address in addresses]
             return res
 
         worker_info = self.workerRDD.barrier().mapPartitions(get_worker_address).collect()
