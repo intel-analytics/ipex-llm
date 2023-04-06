@@ -226,9 +226,9 @@ if __name__ == '__main__':
     train_tbl, language_idx = train_tbl.category_encode("language")
     test_tbl = test_tbl.encode_string("language", language_idx)
 
-    user_index = train_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
-                                           'col_name': 'user_id'})
-    item_index = train_tbl.gen_string_idx('tweet_id')
+    user_index = train_tbl.concat(test_tbl).gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
+                                                            'col_name': 'user_id'})
+    item_index = train_tbl.concat(test_tbl).gen_string_idx('tweet_id')
     train_tbl = encode_user_id(train_tbl)
     test_tbl = encode_user_id(test_tbl)
     test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id", "tweet_id"])
