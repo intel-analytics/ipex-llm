@@ -19,7 +19,12 @@ package com.intel.analytics.bigdl.ppml.kms.frontend
 import java.io.File
 import java.security.{KeyStore, SecureRandom}
 import java.util.concurrent.TimeUnit
+import java.sql.{Connection, DriverManager, ResultSet, SQLException, Statement}
+import java.security.MessageDigest 
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
+
+import java.security.SecureRandom
+import javax.crypto.{KeyGenerator, SecretKey}
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.{ConnectionContext, Http}
@@ -34,6 +39,7 @@ import scala.concurrent.Await
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import sys.process._
 import java.util.Base64
+import java.nio.charset.StandardCharsets
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
 
@@ -45,125 +51,138 @@ object EasyKeyManagementServer extends Supportive {
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-  implicit val (encrypter, decrypter) = {
-    val base64RootK = sys.env("ROOTKEY")
-    Log4Error.invalidOperationError(base64RootK != "",
-      "Excepted ROOTKEY but found it empty, please upload it as k8s secret")
-    val kSpec = new SecretKeySpec(byteBase64.getDecoder().decode(base64RootK), "AES")
-    (createCipher(kSpec, Cipher.ENCRYPT_MODE), createCipher(kSpec, Cipher.DECRYPT_MODE))
-  }
-  implicit val jdbc = {
 
-  }
+
+
+  val rootKey = sys.env("ROOTKEY")
+  Log4Error.invalidOperationError(rootKey != "",
+    "Excepted ROOTKEY but found it empty, please upload it as k8s secret")
+
+  val md = MessageDigest.getInstance("MD5")
 
   def main(args: Array[String]): Unit = {
-      val arguments = timing("parse arguments") {
-        argumentsParser.parse(args, EasyKeyManagementArguments()) match {
-          case Some(arguments) => logger.info(s"starting with $arguments"); arguments
-          case None => argumentsParser.failure("miss args, please see the usage info"); null
+    val arguments = timing("parse arguments") {
+      argumentsParser.parse(args, EasyKeyManagementArguments()) match {
+        case Some(arguments) => logger.info(s"starting with $arguments"); arguments
+        case None => argumentsParser.failure("miss args, please see the usage info"); null
+      }
+    }
+    val dbc = DriverManager.getConnection("jdbc:sqlite:" + arguments.dbFilePath)
+    val route = timing("initialize https route") {
+      path("") {
+        timing("welcome") {
+          val response = s"welcome to $name \n \n" +
+          "create a user like: " +
+          "POST /user/{userName}?token=a_token_string_for_the_user \n" +
+          "create a primary key like: " +
+          "POST /primaryKey/{primaryKeyName}?user=your_username&&token=your_token \n" +
+          "create a data key like: " +
+          "POST /dataKey/{dataKeyName}?" +
+          "primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token \n" +
+          "get the data key like: " +
+          "GET /dataKey/{dataKeyName}?" +
+          "primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token"
+          complete(response)
+        }
+      } ~ path("primaryKey" / Segment) { primaryKeyName =>
+        post {
+          parameters("user", "token") {
+            (user, token) => { timing("generate primary key") {
+              try {
+                login(user, token, dbc)
+                val encryptedPrimaryKey = {
+                  val base64AES256Key: String = generateAESKey(256)
+                  keyCryptoCodec(rootKey, base64AES256Key, Cipher.ENCRYPT_MODE)
+                }
+                saveKey2DB(user, primaryKeyName, encryptedPrimaryKey, dbc)
+                complete(s"generate primaryKey [$primaryKeyName] successfully!")
+              } catch {
+                case e: Exception =>
+                  e.printStackTrace()
+                  complete(500, e.getMessage + "\n please get a primary key like: " +
+                    "POST /primaryKey/{primaryKeyName}?user=your_username&&token=your_token")
+              }
+             }
+            }
+          }
+        }
+      } ~ path("dataKey" / Segment) { dataKeyName =>
+        post {
+          parameters("primaryKeyName", "user", "token") {
+            (primaryKeyName, user, token) => { timing("generate data key") {
+              try {
+                login(user, token, dbc)
+                val encryptedDataKey: String = {
+                  val encryptedPrimaryKey: String = queryKeyFromDB(user,
+                    primaryKeyName, dbc).get
+                  Log4Error.invalidOperationError(encryptedPrimaryKey != null,
+                    "wrong primary key")
+                  val primaryKeyPlainText = keyCryptoCodec(rootKey,
+                    encryptedPrimaryKey, Cipher.DECRYPT_MODE)
+                  val base64AES128Key: String = generateAESKey(128)
+                  encryptKey(primaryKeyPlainText, base64AES128Key)
+                }
+                saveKey2DB(user, dataKeyName, encryptedDataKey, dbc)
+                complete(s"dataKey [$dataKeyName] is generated successfully!")
+              } catch {
+                case e: Exception =>
+                  e.printStackTrace()
+                  complete(500, e.getMessage + "\n please get a data key like: " +
+                    "POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
+                    "&&user=your_username&&token=your_token")
+              }
+             }
+            }
+          }
+        }
+      } ~ path("user" / Segment) { userName =>
+        post {
+          parameters("token") {
+            (token) => { timing("enroll") {
+              try {
+                saveUser2DB(userName, token, dbc)
+                complete(s"user [$userName] is created successfully!")
+              } catch {
+                case e: Exception =>
+                  e.printStackTrace()
+                  complete(500, e.getMessage + "\n please create a user like: " +
+                    "POST /user/{userName}?token=a_token_for_the_user")
+              }
+             }
+            }
+          }
+        }
+      } ~ path("dataKey" / Segment) { dataKeyName =>
+        get {
+          parameters("primaryKeyName", "user", "token") {
+            (primaryKeyName, user, token) => { timing("get data key") {
+              try {
+                login(user, token, dbc)
+                val base64DataKeyPlainText: String = {
+                  val encryptedPrimaryKey = queryKeyFromDB(user,
+                    primaryKeyName, dbc).get
+                  Log4Error.invalidOperationError(encryptedPrimaryKey != null,
+                    "wrong primary key")
+                  val encryptedDataKey = queryKeyFromDB(user,
+                    dataKeyName, dbc).get
+                  val primaryKeyPlainText = keyCryptoCodec(rootKey,
+                    encryptedPrimaryKey, Cipher.DECRYPT_MODE)
+                  decryptKey(primaryKeyPlainText, encryptedDataKey)
+                }
+                complete(base64DataKeyPlainText)
+              } catch {
+                case e: Exception =>
+                  e.printStackTrace()
+                  complete(500, e.getMessage + "\n please get the data key like: " +
+                    "GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
+                    "&&user=your_username&&token=your_token")
+              }
+             }
+            }
+          }
         }
       }
-      val route = timing("initialize https route") {
-        path("") {
-          timing("welcome") {
-            val response = s"welcome to $name \n \n" +
-            "create a user like: " +
-            "POST /user/{userName}?token=a_token_string_for_the_user \n" +
-            "create a primary key like: " +
-            "POST /primaryKey/{primaryKeyName}?user=your_username&&token=your_token \n" +
-            "create a data key like: " +
-            "POST /dataKey/{dataKeyName}?" +
-            "primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token \n" +
-            "get the data key like: " +
-            "GET /dataKey/{dataKeyName}?" +
-            "primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token"
-            complete(response)
-          }
-        } ~ path("primaryKey" / Segment) { primaryKeyName =>
-          post {
-            parameters("user", "token") {
-              (user, token) => { timing("generate primary key") {
-                try {
-                  login(user, token)
-                  val base64AES256Key: String = generateAESKey(256)
-                  saveK2DB(user, primaryKeyName, base64AES256Key)
-                  complete(s"generate primaryKey [$primaryKeyName] successfully!")
-                } catch {
-                  case e: Exception =>
-                    e.printStackTrace()
-                    complete(500, e.getMessage + "\n please get a primary key like: " +
-                      "POST /primaryKey/{primaryKeyName}?user=your_username&&token=your_token")
-                }
-              }
-             }
-            }
-          }
-        } ~ path("dataKey" / Segment) { dataKeyName =>
-          post {
-            parameters("primaryKeyName", "user", "token") {
-              (primaryKeyName, user, token) => { timing("generate data key") {
-                try {
-                  login(user, token)
-                  val encryptedDataKey: String = {
-                    val primaryKey: String = queryKFromDB(user, primaryKeyName)
-                    val base64AES128Key: String = generateAESKey(128)
-                    encryptDataKey(primaryKey, base64AES128Key)
-                  }
-                  saveK2DB(user, dataKeyName, encryptedDataKey)
-                  complete(s"dataKey [$dataKeyName] is generated successfully!")
-                } catch {
-                  case e: Exception =>
-                    e.printStackTrace()
-                    complete(500, e.getMessage + "\n please get a data key like: " +
-                      "POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
-                      "&&user=your_username&&token=your_token")
-                }
-              }
-             }
-            }
-          }
-        } ~ path("user" / Segment) { userName =>
-            post {
-              parameters("token") {
-                (token) => { timing("enroll") {
-                  try {
-                    saveUser2DB(userName, token)
-                    complete(s"user [$userName] is created successfully!")
-                  } catch {
-                    case e: Exception =>
-                      e.printStackTrace()
-                      complete(500, e.getMessage + "\n please create a user like: " +
-                        "POST /user/{userName}?token=a_token_for_the_user")
-                  }
-                 }
-                }
-              }
-            }
-          } ~ path("dataKey" / Segment) { dataKeyName =>
-              get {
-                parameters("primaryKeyName", "user", "token") {
-                  (primaryKeyName, user, token) => { timing("get data key") {
-                    try {
-                      login(user, token)
-                      val base64DataKeyPlainText: String = {
-                        val primaryKey = getKeyFromDB(user, primaryKeyName)
-                        val base64DataKeyCipherText = getKeyFromDB(user, dataKeyName)
-                        decryptDataKey(primaryKey, base64DataKeyCipherText)
-                      }
-                      complete(base64DataKeyPlainText)
-                    } catch {
-                      case e: Exception =>
-                        e.printStackTrace()
-                        complete(500, e.getMessage + "\n please get the data key like: " +
-                          "GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name" +
-                          "&&user=your_username&&token=your_token")
-                    }
-                   }
-                  }
-                }
-              }
-          }
-      }
+    }
 
       val serverContext = defineServerContext(arguments.httpsKeyStoreToken,
         arguments.httpsKeyStorePath)
@@ -172,49 +191,92 @@ object EasyKeyManagementServer extends Supportive {
       logger.info(s"$name started at https://${arguments.ip}:${arguments.port}")
   }
 
-  def login(user: String, token: String): Unit = {
-
+  def md5(data: String): String = {
+    md.update(data.getBytes(StandardCharsets.UTF_8))
+    val digest: Array[Byte] = md.digest
+    val hash: String = Base64.getEncoder().encodeToString(digest)
+    hash
   }
 
-  def saveK2DB(user, primaryKeyName, base64AES256Key): Unit = {
-
+  def insertDB(statement: String, dbc: Connection): Unit = {
+    dbc.createStatement().executeUpdate(statement)
   }
 
-  def saveUser2DB(userName, token): Unit = {
-
+  def queryDB(statement: String, dbc: Connection): ResultSet = {
+    dbc.createStatement().executeQuery(statement)
   }
 
-  def queryKFromDB(user, primaryKeyName): Unit = {
-
+  def login(user: String, token: String, dbc: Connection): Unit = {
+    val userHash = md5(user)
+    val statement = s"select * from user where name='$userHash'"
+    val rs = queryDB(statement, dbc)
+    if (rs.next()) {
+      val tokenHashFromDB = rs.getString("token")
+      val userProvidedTokenHash = md5(token)
+      Log4Error.invalidOperationError(tokenHashFromDB == userProvidedTokenHash,
+        "wrong token or user")
+    } else {
+      Log4Error.invalidOperationError(false, "wrong token or user")
+    }
   }
 
-  def createCipher(kSpec: SecretKeySpec, om: Int): Cipher = {
-    val cipher = Cipher.getInstance("AES")
-    cipher.init(om, kSpec)
-    cipher
+  def saveKey2DB(user: String, keyName: String,
+    encryptedKey: String, dbc: Connection): Unit = {
+      val (userHash, keyNameHash) = (md5(user), md5(keyName))
+      val statement = s"insert into key values('$userHash', '$keyNameHash', '$encryptedKey') " +
+        s"where not exists(select from key where user='$userHash' and name='$keyNameHash')"
+      insertDB(statement, dbc)
   }
 
-  def dataKeyCryptoCodec(base64PrimaryKeyPlainText: String,
-    base64DataKey: String, om: Int): String = {
-    val bytePrimaryKeyPlainText = Base64.getDecoder().decode(base64PrimaryKeyPlainText)
-    val encryptionKeySpec = new SecretKeySpec(bytePrimaryKeyPlainText, "AES")
-    val cipher = createCipher(encryptionKeySpec, om)
-    val byteDataKey = Base64.getDecoder().decode(base64DataKey)
-    val byteDataKeyOperated = cipher.doFinal(byteDataKey)
-    val base64DataKeyOperated = Base64.getEncoder.encodeToString(byteDataKeyOperated)
-    base64DataKeyOperated
+  def saveUser2DB(user: String, token: String, dbc: Connection): Unit = {
+      val (userHash, tokenHash) = (md5(user), md5(token))
+      val statement = s"insert into user values('$userHash', '$tokenHash') " +
+        s"where not exists(select from user where name='$userHash')"
+      insertDB(statement, dbc)
   }
 
-  def encryptDataKey(base64PrimaryKeyPlainText: String,
-    base64DataKeyPlainText: String): String = {
-    dataKeyCryptoCodec(base64PrimaryKeyPlainText,
-      base64DataKeyPlainText, Cipher.ENCRYPT_MODE)
+  def queryKeyFromDB(user: String, keyName: String,
+    dbc: Connection): Option[String] = {
+      val (userHash, keyNameHash) = (md5(user), md5(keyName))
+      val statement = s"select * from user where user='$userHash' and name='$keyNameHash'"
+      val rs = queryDB(statement, dbc)
+      if (rs.next()) {
+        val encryptedKey = rs.getString("data")
+        Some(encryptedKey)
+      } else {
+        Log4Error.invalidOperationError(false, "wrong key name")
+        Some(null)
+      }
   }
 
-  def decryptDataKey(base64PrimaryKeyPlainText: String,
-    base64DataKeyCipherText: String): String = {
-    dataKeyCryptoCodec(base64PrimaryKeyPlainText,
-      base64DataKeyCipherText, Cipher.DECRYPT_MODE)
+  def keyCryptoCodec(base64WrappingKeyPlainText: String,
+    base64ChildKey: String, om: Int): String = {
+      val wrappingKeyBytes = Base64.getDecoder().decode(base64WrappingKeyPlainText)
+      val encryptionKeySpec = new SecretKeySpec(wrappingKeyBytes, "AES")
+      val cipher = Cipher.getInstance("AES")
+      cipher.init(om, encryptionKeySpec)
+      val childKeyBytes = Base64.getDecoder().decode(base64ChildKey)
+      val operatedChildKeyBytes = cipher.doFinal(childKeyBytes)
+      val base64OperatedChildKey = Base64.getEncoder.encodeToString(operatedChildKeyBytes)
+      base64OperatedChildKey
+  }
+
+  def encryptKey(wrappingKeyPlianText: String, childKeyPlainText: String): String = {
+    keyCryptoCodec(wrappingKeyPlianText,
+      childKeyPlainText, Cipher.ENCRYPT_MODE)
+  }
+
+  def decryptKey(wrappingKeyPlianText: String, childKeyCipherText: String): String = {
+    keyCryptoCodec(wrappingKeyPlianText,
+      childKeyCipherText, Cipher.DECRYPT_MODE)
+  }
+
+  def generateAESKey(keySize: Int): String = {
+    val generator = KeyGenerator.getInstance("AES");
+    generator.init(keySize, SecureRandom.getInstanceStrong());
+    val key: SecretKey = generator.generateKey();
+    val base64Key: String = Base64.getEncoder().encodeToString(key.getEncoded());
+    return base64Key;
   }
 
   val argumentsParser =
@@ -226,6 +288,9 @@ object EasyKeyManagementServer extends Supportive {
     opt[Int]('p', "port")
       .action((x, c) => c.copy(port = x))
       .text(s"port of $name")
+    opt[String]('p', "dbFilePath")
+      .action((x, c) => c.copy(dbFilePath = x))
+      .text("database file path of KMS storage")
     opt[String]('p', "httpsKeyStorePath")
       .action((x, c) => c.copy(httpsKeyStorePath = x))
       .text("https keyStore path")
@@ -253,9 +318,10 @@ object EasyKeyManagementServer extends Supportive {
 }
 
 case class EasyKeyManagementArguments(
-    ip: String = "0.0.0.0",
-    port: Int = 9875,
-    httpsKeyStorePath: String = null,
-    httpsKeyStoreToken: String = null
+  ip: String = "0.0.0.0",
+  port: Int = 9875,
+  dbFilePath: String = "/ppml/data/kms.db",
+  httpsKeyStorePath: String = null,
+  httpsKeyStoreToken: String = null
 )
 
