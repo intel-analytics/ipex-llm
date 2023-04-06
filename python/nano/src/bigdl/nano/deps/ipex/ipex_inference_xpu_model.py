@@ -34,7 +34,9 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
         if not use_ipex:
             warnings.warn("IPEX is required to be installed for GPU device inferencing even "
                           "the model is not optimized by IPEX.")
-
+        self.original_state_dict = None
+        if use_ipex:
+            self.original_state_dict = model.state_dict()
         if precision == "fp16":
             self.model = self.model.half()
         self.model = model.to('xpu')
@@ -93,4 +95,7 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
 
     def _save_model(self, path, compression="fp32"):
         invalidInputError(compression == "fp32", "Could not compress ckpt for XPU model.")
-        torch.save(self.model.state_dict(), path / "ckpt.pth")
+        if self.use_ipex:
+            torch.save(self.original_state_dict, path / "ckpt.pth")
+        else:
+            torch.save(self.model.state_dict(), path / "ckpt.pth")
