@@ -311,13 +311,13 @@ if __name__ == "__main__":
 
     train_tbl, test_tbl, indicator_sizes, embedding_sizes, cross_sizes = get_size(options.data_dir)
 
-    user_feature = ['enaging_user_id',
-                    'enaging_user_follower_count',
+    user_feature = ['enaging_user_follower_count',
                     'enaging_user_following_count',
+                    'enaging_user_id',
                     'enaging_user_is_verified']
-    item_feature = ['tweet_id',
-                    'present_media',
+    item_feature = ['present_media',
                     'language',
+                    'tweet_id',
                     'tweet_type',
                     'engaged_with_user_follower_count',
                     'engaged_with_user_following_count',
