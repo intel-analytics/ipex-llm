@@ -131,12 +131,6 @@ object lgbmClassifierTrainingExampleOnCriteoClickLogsDataset {
     val lgbmClassifier = new LightGBMClassifier()
     lgbmClassifier.setFeaturesCol("features")
     lgbmClassifier.setLabelCol("classIndex")
-    lgbmClassifier.setNumIterations(100)
-    lgbmClassifier.setNumLeaves(10)
-    lgbmClassifier.setLambdaL1(0.01)
-    lgbmClassifier.setLambdaL2(0.01)
-    lgbmClassifier.setBaggingFreq(5)
-    lgbmClassifier.setMaxBin(255)
     lgbmClassifier.setMaxDepth(maxDepth)
     lgbmClassifier.setNumIterations(maxIter)
     // Train model. This also runs the indexer.
