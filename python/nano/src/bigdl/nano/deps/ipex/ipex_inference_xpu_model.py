@@ -77,7 +77,8 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
         status.update({"thread_num": self.thread_num,
                        "checkpoint": "ckpt.pth",
                        "use_ipex": self.use_ipex,
-                       "precision": self.precision})
+                       "precision": self.precision,
+                       "compression": "fp32"})
         return status
 
     def _load(path, model, input_sample=None, inplace=False):
