@@ -17,7 +17,7 @@
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 import torch
 import intel_extension_for_pytorch as ipex
-from bigdl.nano.utils.pytorch import apply_data_to_xpu
+from bigdl.nano.utils.pytorch import apply_data_to_xpu, apply_data_to_half
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.common import invalidInputError
 import warnings
@@ -51,8 +51,13 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
 
     def forward(self, *inputs, **kwargs):
         inputs = tuple(map(lambda item: apply_data_to_xpu(item), inputs))
+        if self.precision == "fp16":
+            inputs = tuple(map(lambda item: apply_data_to_half(item), inputs))
         for key, val in kwargs.items():
-            kwargs[key] = apply_data_to_xpu(val)
+            new_val = apply_data_to_xpu(val)
+            if self.precision == "fp16":
+                new_val = apply_data_to_half(new_val)
+            kwargs[key] = new_val
         return self.model(*inputs, **kwargs)
 
     def __getattr__(self, name: str):
@@ -78,9 +83,13 @@ class PytorchIPEXPUModel(AcceleratedLightningModule):
     def _load(path, model, input_sample=None, inplace=False):
         status = PytorchIPEXPUModel._load_status(path)
         checkpoint_path = path / status['checkpoint']
-        state_dict = torch.load(checkpoint_path)
+        state_dict = torch.load(checkpoint_path, map_location="xpu")
         model.eval()
         model.load_state_dict(state_dict)
         return PytorchIPEXPUModel(model, thread_num=status["thread_num"],
                                   precision=status["precision"],
                                   use_ipex=status["use_ipex"])
+
+    def _save_model(self, path, compression="fp32"):
+        invalidInputError(compression == "fp32", "Could not compress ckpt for XPU model.")
+        torch.save(self.model.state_dict(), path / "ckpt.pth")

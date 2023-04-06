@@ -25,3 +25,12 @@ def apply_data_to_xpu(input_item):
     if torch.is_tensor(input_item):
         return input_item.to('xpu')
     return input_item
+
+def apply_data_to_half(input_item):
+    '''
+    This function will apply xpu flag to
+    the input item
+    '''
+    if torch.is_tensor(input_item):
+        return input_item.half()
+    return input_item
