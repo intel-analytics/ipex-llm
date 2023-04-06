@@ -25,6 +25,8 @@ import json
 
 from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.tf.keras.distributed_utils import _find_free_port
+from tensorflow.keras.losses import Loss
+import warnings
 
 
 def nano_bf16(func):
@@ -104,13 +106,27 @@ class _Nano_Customized_Training(object):
 
                 # serialize the dataset
                 if isinstance(arg, tf.data.Dataset):
-                    from tensorflow.python.distribute.coordinator.values import \
-                        serialize_dataset_to_graph
+                    warnings.warn('If dataset is created by `from_generator`, please initiate '
+                                  '`_GeneratorState` of the dataset first, that is '
+                                  'dataset._GeneratorState = dataset._GeneratorState(generator). '
+                                  'Otherwise, there exists errors because of a known limitation: '
+                                  'https://www.tensorflow.org/api_docs/python/tf/data/Dataset'
+                                  '#from_generator')
+                    if hasattr(arg, '_GeneratorState') and \
+                       hasattr(arg._GeneratorState, '_generator'):
+                        # support dataset created by `from_generator`
+                        train_ds_gen = arg._GeneratorState._generator
+                        train_ds_signature = arg.element_spec
+                        new_args.append(("dataset", train_ds_gen, train_ds_signature))
+                        continue
+                    else:
+                        from tensorflow.python.distribute.coordinator.values import \
+                            serialize_dataset_to_graph
 
-                    train_ds_def = serialize_dataset_to_graph(arg).numpy()
-                    train_elem_spec = arg.element_spec
-                    new_args.append(("dataset", train_ds_def, train_elem_spec))
-                    continue
+                        train_ds_def = serialize_dataset_to_graph(arg).numpy()
+                        train_elem_spec = arg.element_spec
+                        new_args.append(("dataset", train_ds_def, train_elem_spec))
+                        continue
 
                 with open(os.path.join(temp_dir, f"args_{i}.pkl"), 'wb') as f:
                     cloudpickle.dump(arg, f)
@@ -142,13 +158,14 @@ class _Nano_Customized_Training(object):
                     'no_proxy': "localhost"
                 })
 
-            # TODO: validation needs to be done on non-NoneType histories
             histrories = backend.run(target=_train_func,
                                      args=(target_path, *new_args),
                                      nprocs=self.nproc,
                                      envs=envs)
 
             main_model.load_weights('trained_model_weights')
+
+        return histrories[0]
 
 
 def _train_func(target_path, *args):
@@ -157,9 +174,8 @@ def _train_func(target_path, *args):
     actrual_args = [None] * len(args)
     new_model = None
 
-    for i, arg in enumerate(args):
-        with mirrored_strategy.scope():
-            # deserialize model
+    with mirrored_strategy.scope():
+        for i, arg in enumerate(args):
             if arg[0] == "model":
                 actrual_args[i] = tf.keras.models.load_model(arg[1])
                 new_model = actrual_args[i]
@@ -169,46 +185,79 @@ def _train_func(target_path, *args):
                 with open(arg[1], 'rb') as f:
                     actrual_args[i] = cloudpickle.load(f)
                 continue
-        # deserialize dataset
-        if arg[0] == "dataset":
-            # TODO: only dataset is supported here
-            # data generator is needed to be supported
-            # Dataset.from_generator could not be used due to a known limitation
-            # https://www.tensorflow.org/api_docs/python/tf/data/Dataset#from_generator
-            from tensorflow.python.distribute.coordinator.values import \
-                deserialize_dataset_from_graph
-            original_dataset = deserialize_dataset_from_graph(arg[1], arg[2])
-            actrual_args[i] = mirrored_strategy.experimental_distribute_dataset(original_dataset)
-            continue
-        # deserialize loss
-        if arg[0] == "loss":
-            with open(arg[1], 'rb') as f:
-                original_loss_object = cloudpickle.load(f)
-                original_loss_object.reduction = tf.keras.losses.Reduction.NONE
+            # deserialize dataset
+            if arg[0] == "dataset":
+                try:
+                    from tensorflow.python.distribute.coordinator.values import \
+                        deserialize_dataset_from_graph
+                    original_dataset = deserialize_dataset_from_graph(arg[1], arg[2])
+                except ValueError:
+                    original_dataset = tf.data.Dataset.from_generator(arg[1],
+                                                                      output_signature=arg[2])
+                actrual_args[i] = mirrored_strategy.experimental_distribute_dataset(
+                    original_dataset)
+                continue
 
-            def loss_object(*args, **kwargs):
-                per_example_loss = original_loss_object(*args, **kwargs)
-                size = per_example_loss.shape[0] * mirrored_strategy.num_replicas_in_sync
-                return tf.nn.compute_average_loss(per_example_loss, global_batch_size=size)
-            actrual_args[i] = loss_object
-            continue
-        # deserialize others
-        if arg[0] == "others":
-            with open(arg[1], 'rb') as f:
-                actrual_args[i] = cloudpickle.load(f)
-                if callable(actrual_args[i]) and isinstance(actrual_args[i], nano_multiprocessing):
-                    actrual_args[i] = partial(actrual_args[i], mirrored_strategy=mirrored_strategy)
+            if arg[0] == "loss":
+                with open(arg[1], 'rb') as f:
+                    original_loss_object = cloudpickle.load(f)
+                    original_loss_object.reduction = tf.keras.losses.Reduction.NONE
 
-    with open(target_path, 'rb') as f:
-        target_func = cloudpickle.load(f)
+                def loss_object(*args, **kwargs):
+                    per_example_loss = original_loss_object(*args, **kwargs)
+                    if per_example_loss.shape == [] or per_example_loss.shape[0] == 0:
+                        size = mirrored_strategy.num_replicas_in_sync
+                        return tf.math.reduce_sum(per_example_loss) / size
+                    else:
+                        size = per_example_loss.shape[0] * mirrored_strategy.num_replicas_in_sync
+                        return tf.nn.compute_average_loss(per_example_loss, global_batch_size=size)
+                actrual_args[i] = loss_object
+                continue
+            # deserialize others
+            if arg[0] == "others":
+                with open(arg[1], 'rb') as f:
+                    actrual_args[i] = cloudpickle.load(f)
+                    if callable(actrual_args[i]) and \
+                       isinstance(actrual_args[i], nano_multiprocessing):
+                        actrual_args[i] = partial(actrual_args[i],
+                                                  mirrored_strategy=mirrored_strategy)
 
-    res = target_func(*actrual_args)
+        with open(target_path, 'rb') as f:
+            target_func = cloudpickle.load(f)
 
-    task_id = mirrored_strategy.cluster_resolver.task_id
-    # TODO: only task 0's model weight is stored
-    # could not understand why we need other task's weight
-    if task_id == 0:
-        path = os.path.join('trained_model_weights')
-        new_model.save_weights(path, overwrite=True)
+        res = target_func(*actrual_args)
 
+        task_id = mirrored_strategy.cluster_resolver.task_id
+        if task_id == 0:
+            path = os.path.join('trained_model_weights')
+            new_model.save_weights(path, overwrite=True)
+
+    try:
+        # Related to https://github.com/tensorflow/tensorflow/issues/50487, to avoid such error
+        import atexit
+        atexit.register(mirrored_strategy._extended._cross_device_ops._pool.close)
+        atexit.register(mirrored_strategy._extended._host_cross_device_ops._pool.close)
+    except AttributeError:
+        pass
     return res
+
+
+def nano_multiprocessing_loss(**kwargs):
+    """A decorator to run customized loss on multiple processes."""
+    def decorator(func):
+        return Nano_Customized_Loss(func, **kwargs)
+    return decorator
+
+
+class Nano_Customized_Loss(Loss):
+    """Wraps a loss function in the `Loss` class."""
+
+    def __init__(self, func, reduction=tf.keras.losses.Reduction.NONE, name=None, **kwargs):
+        """Initialize the loss function."""
+        super().__init__(reduction=reduction, name=name)
+        self.fn = func
+        self._fn_kwargs = kwargs
+
+    def call(self, y_true, y_pred):
+        """Run the loss function for multi-process training."""
+        return self.fn(y_true, y_pred, **self._fn_kwargs)

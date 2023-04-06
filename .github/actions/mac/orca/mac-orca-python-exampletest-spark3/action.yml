@@ -18,7 +18,7 @@ runs:
         FILE=python/orca/dev/example/run-example-tests.sh
         if [ -f $FILE ];then
           chmod a+x python/orca/dev/example/run-example-tests.sh
-          python/orca/dev/example/run-example-tests.sh  
+          python/orca/dev/example/run-example-tests.sh disable_mmcv
   
         fi
         source deactivate

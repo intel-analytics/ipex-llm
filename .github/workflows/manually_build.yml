@@ -856,11 +856,11 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=16g \
+          --build-arg SGX_MEM_SIZE=16G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
@@ -872,11 +872,11 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=8g \
+          --build-arg SGX_MEM_SIZE=8G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
@@ -888,11 +888,11 @@ jobs:
           --no-cache=true \
           --build-arg BASE_IMAGE_NAME=${bigdata_base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-          --build-arg SGX_MEM_SIZE=4g \
+          --build-arg SGX_MEM_SIZE=4G \
           --build-arg SGX_LOG_LEVEL=error \
           --build-arg no_proxy=${NO_PROXY} \
           --build-arg ENABLE_DCAP_ATTESTATION=false \
-          -t ${image}:${TAG} \
+          -t ${bigdata_custom_image}:${TAG} \
           -f ./Dockerfile .
         sudo docker push ${bigdata_custom_image}:${TAG}
         sudo docker tag ${bigdata_custom_image}:${TAG} 10.239.45.10/arda/${bigdata_custom_image}:${TAG}
