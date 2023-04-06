@@ -266,7 +266,7 @@ if __name__ == '__main__':
     
     result = FeatureTable(result)
     result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
-    result.write_parquet(os.path.join(args.model_dir, 'user_embd'))
+    result.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
     print("user columns: "+ str(result.columns))
 
     del result, user_est
@@ -290,7 +290,7 @@ if __name__ == '__main__':
 
     result = FeatureTable(result)
     result = result.select(['tweet_id', 'prediction']).drop_duplicates()
-    result.write_parquet(os.path.join(args.model_dir, 'item_embd'))
+    result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
     print("item columns: "+ str(result.columns))
 
     stop_orca_context()

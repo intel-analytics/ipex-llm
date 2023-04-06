@@ -396,5 +396,5 @@ if __name__ == "__main__":
     model = est.get_model()
     # model.save_weights(os.path.join(options.model_dir, "model.h5"))
 
-    tf.saved_model.save(model, "recsys_wnd")
+    tf.saved_model.save(model, options.model_dir)
     stop_orca_context()
