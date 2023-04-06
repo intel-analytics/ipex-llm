@@ -92,7 +92,7 @@ object EasyKeyManagementServer extends Supportive {
                 login(user, token, dbc)
                 val encryptedPrimaryKey = {
                   val base64AES256Key: String = generateAESKey(256)
-                  keyCryptoCodec(rootKey, base64AES256Key, Cipher.ENCRYPT_MODE)
+                  encrypteKey(rootKey, base64AES256Key)
                 }
                 saveKey2DB(user, primaryKeyName, encryptedPrimaryKey, dbc)
                 complete(s"generate primaryKey [$primaryKeyName] successfully!")
@@ -117,8 +117,7 @@ object EasyKeyManagementServer extends Supportive {
                     primaryKeyName, dbc).get
                   Log4Error.invalidOperationError(encryptedPrimaryKey != null,
                     "wrong primary key")
-                  val primaryKeyPlainText = keyCryptoCodec(rootKey,
-                    encryptedPrimaryKey, Cipher.DECRYPT_MODE)
+                  val primaryKeyPlainText = decryptKey(rootKey, encryptedPrimaryKey)
                   val base64AES128Key: String = generateAESKey(128)
                   encryptKey(primaryKeyPlainText, base64AES128Key)
                 }
@@ -165,8 +164,7 @@ object EasyKeyManagementServer extends Supportive {
                     "wrong primary key")
                   val encryptedDataKey = queryKeyFromDB(user,
                     dataKeyName, dbc).get
-                  val primaryKeyPlainText = keyCryptoCodec(rootKey,
-                    encryptedPrimaryKey, Cipher.DECRYPT_MODE)
+                  val primaryKeyPlainText = decryptKey(rootKey, encryptedPrimaryKey)
                   decryptKey(primaryKeyPlainText, encryptedDataKey)
                 }
                 complete(base64DataKeyPlainText)
