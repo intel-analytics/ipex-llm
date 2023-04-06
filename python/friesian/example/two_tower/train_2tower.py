@@ -82,9 +82,9 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
+    tf.keras.models.save_model(model, os.path.join(model_dir, "twotower-model"))
+    tf.keras.models.save_model(user_model, os.path.join(model_dir, "user-model"))
+    tf.keras.models.save_model(item_model, os.path.join(model_dir, "item-model"))
     estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
     print("saved models")
     return estimator
@@ -110,12 +110,17 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
                          *cat_cols, *embed_cols, "label")
         return tbl
 
-    print("reindexing embedding cols")
-    train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
-    test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
-    embed_in_dims = {}
-    for i, c, in enumerate(embed_cols):
-        embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
+    if args.frequency_limit > 1:
+        print("reindexing embedding cols")
+        train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
+        test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
+        embed_in_dims = {}
+        for i, c, in enumerate(embed_cols):
+            embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
+    else:
+        embed_in_dims = {}
+        for col in embed_cols:
+            embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
@@ -190,7 +195,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local")
+        sc = init_orca_context("local", cores=args.executor_cores,
+                               num_nodes=args.num_executors, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
@@ -212,8 +218,7 @@ if __name__ == '__main__':
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links", "hashtags", "present_links",
-                "present_domains"]
+                "len_hashtags", "len_domains", "len_links"]
     cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
@@ -224,12 +229,16 @@ if __name__ == '__main__':
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
     full_tbl = train_tbl.concat(test_tbl, "outer")
-    reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+    if args.frequency_limit <= 1:
+        reindex_tbls = full_tbl
+    else:
+        reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
-    output_dir = args.data_dir + "/embed_reindex/"
-    for i, c in enumerate(embed_cols):
-        reindex_tbls[i].write_parquet(output_dir + "_" + c)
+    if args.frequency_limit > 1:
+        output_dir = args.data_dir + "/embed_reindex/"
+        for i, c in enumerate(embed_cols):
+            reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
     train_config = {"lr": 1e-3,
                     "user_col_info": user_info,
@@ -239,58 +248,8 @@ if __name__ == '__main__':
 
     est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size, \
                 model_dir=args.model_dir, backend=args.backend)
-
-    import math
-    full_tbl = train_tbl.concat(test_tbl, "outer")
-    print("full size: "+str(full_tbl.size()))
-    full_steps_per_epoch = math.ceil(full_tbl.size() / args.batch_size)
-    # train_steps_per_epoch = math.ceil(train_tbl.size() / args.batch_size)
-    print("steps: "+str(full_steps_per_epoch))
-
-    def user_model_creator(config):
-        two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
-        model = get_1tower_model(two_tower.build_model(), config["user_col_info"])
-        model.compile()
-        return model
-
-    user_est = Estimator.from_keras(model_creator=user_model_creator,
-                                    verbose=True,
-                                    config=train_config,
-                                    backend=args.backend)
-    user_est.load_weights(os.path.join(args.model_dir, "user-model/"))
-    result = user_est.predict(data=test_tbl.df,
-                              verbose=True,
-                              feature_cols=train_config["user_col_info"].get_name_list())
-    print("Prediction results of the first 5 rows:")
-    result.show(5)
     
-    result = FeatureTable(result)
-    result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
-    result.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
-    print("user columns: "+ str(result.columns))
-
-    del result, user_est
-
-    def item_model_creator(config):
-        two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
-        model = get_1tower_model(two_tower.build_model(), config["item_col_info"])
-        model.compile()
-        return model
-    
-    item_est = Estimator.from_keras(model_creator=item_model_creator,
-                                    verbose=True,
-                                    config=train_config,
-                                    backend=args.backend)
-    item_est.load_weights(os.path.join(args.model_dir, "item-model/"))
-    result = item_est.predict(data=test_tbl.df,
-                              verbose=True,
-                              feature_cols=train_config["item_col_info"].get_name_list())
-    print("Prediction results of the first 5 rows:")
-    result.show(5)
-
-    result = FeatureTable(result)
-    result = result.select(['tweet_id', 'prediction']).drop_duplicates()
-    result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
-    print("item columns: "+ str(result.columns))
+    full_tbl = train_tbl.concat(test_tbl)
+    full_tbl.write_parquet(os.path.join(args.model_dir, "full_parquet"))
 
     stop_orca_context()
