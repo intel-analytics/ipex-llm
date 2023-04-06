@@ -327,10 +327,10 @@ if __name__ == "__main__":
                     'present_media_language',
                     'engaged_with_user_is_verified'
                     ]
-    full_tbl = train_tbl.concat(test_tbl, "outer")
-    test_tbl.select(user_feature).drop_duplicates().\
+    full_tbl = train_tbl.concat(test_tbl)
+    full_tbl.select(user_feature).drop_duplicates().\
              write_parquet(os.path.join(options.model_dir, 'wnd_user.parquet'))
-    test_tbl.select(item_feature).drop_duplicates().\
+    full_tbl.select(item_feature).drop_duplicates().\
              write_parquet(os.path.join(options.model_dir, 'wnd_item.parquet'))    
 
     column_info = ColumnFeatureInfo(wide_base_cols=wide_cols,
