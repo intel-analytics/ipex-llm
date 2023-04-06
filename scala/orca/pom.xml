@@ -175,6 +175,10 @@
                 <exclusion>
                     <groupId>com.jcraft</groupId>
                     <artifactId>jsch</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
