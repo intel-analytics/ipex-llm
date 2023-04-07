@@ -51,11 +51,11 @@ indicator_cols = cat_cols + count_cols
 # indicator_dims = cat_dims + count_dims
 
 embedding_cols = [
-    'tweet_id',
-    'engaged_with_user_id',
-    'enaging_user_id',
-    'hashtags',
-    'present_domains',  #
+    # 'tweet_id',
+    # 'engaged_with_user_id',
+    # 'enaging_user_id',
+    # 'hashtags',
+    # 'present_domains',  #
 ]
 
 len_cols = ['len_hashtags',
