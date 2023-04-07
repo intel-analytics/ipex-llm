@@ -82,9 +82,9 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.keras.models.save_model(model, os.path.join(model_dir, "twotower-model"))
-    tf.keras.models.save_model(user_model, os.path.join(model_dir, "user-model"))
-    tf.keras.models.save_model(item_model, os.path.join(model_dir, "item-model"))
+    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
+    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
+    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
     estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
     print("saved models")
     return estimator
@@ -121,6 +121,9 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         embed_in_dims = {}
         for col in embed_cols:
             embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
+
+    for col in id_cols:
+        embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
@@ -223,8 +226,9 @@ if __name__ == '__main__':
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
                   "enaging_user_follower_following_ratio"]
-    embed_cols = ["enaging_user_id", "tweet_id", "engaged_with_user_id", "hashtags",
-                  "present_links", "present_domains"]
+    embed_cols = ["engaged_with_user_id", "hashtags", "present_links", "present_domains"]
+    id_cols = ["engaing_user_id", "tweet_id"]
+
     useful_cols = num_cols + cat_cols + embed_cols
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
