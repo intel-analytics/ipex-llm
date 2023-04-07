@@ -248,7 +248,7 @@ class TorchRunner(BaseRunner):
         self.call_hook(callbacks=callbacks, fn_name="before_run")
 
         stats_list = list()
-        for i in range(self.num_epochs):
+        for i in range(self.epochs, self.num_epochs):
             del self.epoch_stats
             self.call_hook(callbacks=callbacks, fn_name="before_train_epoch")
             stats = self.train_epoch(self.train_loader, profile=profile,
