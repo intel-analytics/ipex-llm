@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.kms.frontend
+package com.intel.analytics.bigdl.ppml.kms
 
 import java.io.File
 import java.security.{KeyStore, SecureRandom}
@@ -47,7 +47,7 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 
 object EasyKeyManagementServer extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
-  val name = "Easy Key Management Server"
+  val name = "easy-key-management-server"
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
@@ -64,7 +64,7 @@ object EasyKeyManagementServer extends Supportive {
         case None => argumentsParser.failure("miss args, please see the usage info"); null
       }
     }
-    val dbc = DriverManager.getConnection("jdbc:sqlite:" + arguments.dbFilePath)
+    val url = "jdbc:sqlite:" + arguments.dbFilePath
     val route = timing("initialize https route") {
       path("") {
         timing("welcome") {
@@ -86,12 +86,12 @@ object EasyKeyManagementServer extends Supportive {
           parameters("user", "token") {
             (user, token) => { timing("generate primary key") {
               try {
-                login(user, token, dbc)
+                login(user, token, url)
                 val encryptedPrimaryKey = {
                   val base64AES256Key: String = generateAESKey(256)
-                  encrypteKey(rootKey, base64AES256Key)
+                  encryptKey(rootKey, base64AES256Key)
                 }
-                saveKey2DB(user, primaryKeyName, encryptedPrimaryKey, dbc)
+                saveKey2DB(user, primaryKeyName, encryptedPrimaryKey, url)
                 complete(s"generate primaryKey [$primaryKeyName] successfully!")
               } catch {
                 case e: Exception =>
@@ -108,17 +108,17 @@ object EasyKeyManagementServer extends Supportive {
           parameters("primaryKeyName", "user", "token") {
             (primaryKeyName, user, token) => { timing("generate data key") {
               try {
-                login(user, token, dbc)
+                login(user, token, url)
                 val encryptedDataKey: String = {
                   val encryptedPrimaryKey: String = queryKeyFromDB(user,
-                    primaryKeyName, dbc).get
+                    primaryKeyName, url).get
                   Log4Error.invalidOperationError(encryptedPrimaryKey != null,
                     "wrong primary key")
                   val primaryKeyPlainText = decryptKey(rootKey, encryptedPrimaryKey)
                   val base64AES128Key: String = generateAESKey(128)
                   encryptKey(primaryKeyPlainText, base64AES128Key)
                 }
-                saveKey2DB(user, dataKeyName, encryptedDataKey, dbc)
+                saveKey2DB(user, dataKeyName, encryptedDataKey, url)
                 complete(s"dataKey [$dataKeyName] is generated successfully!")
               } catch {
                 case e: Exception =>
@@ -136,7 +136,7 @@ object EasyKeyManagementServer extends Supportive {
           parameters("token") {
             (token) => { timing("enroll") {
               try {
-                saveUser2DB(userName, token, dbc)
+                saveUser2DB(userName, token, url)
                 complete(s"user [$userName] is created successfully!")
               } catch {
                 case e: Exception =>
@@ -153,14 +153,14 @@ object EasyKeyManagementServer extends Supportive {
           parameters("primaryKeyName", "user", "token") {
             (primaryKeyName, user, token) => { timing("get data key") {
               try {
-                login(user, token, dbc)
+                login(user, token, url)
                 val base64DataKeyPlainText: String = {
                   val encryptedPrimaryKey = queryKeyFromDB(user,
-                    primaryKeyName, dbc).get
+                    primaryKeyName, url).get
                   Log4Error.invalidOperationError(encryptedPrimaryKey != null,
                     "wrong primary key")
                   val encryptedDataKey = queryKeyFromDB(user,
-                    dataKeyName, dbc).get
+                    dataKeyName, url).get
                   val primaryKeyPlainText = decryptKey(rootKey, encryptedPrimaryKey)
                   decryptKey(primaryKeyPlainText, encryptedDataKey)
                 }
@@ -193,18 +193,24 @@ object EasyKeyManagementServer extends Supportive {
     hash
   }
 
-  def insertDB(statement: String, dbc: Connection): Unit = {
-    dbc.createStatement().executeUpdate(statement)
+  def insertDB(statement: String, url: String): Unit = {
+    val connection = DriverManager.getConnection(url)
+    val rs = connection.createStatement().executeUpdate(statement)
+    if(connection != null) connection.close()
+    rs
   }
 
-  def queryDB(statement: String, dbc: Connection): ResultSet = {
-    dbc.createStatement().executeQuery(statement)
+  def queryDB(statement: String, url: String): ResultSet = {
+    val connection = DriverManager.getConnection(url)
+    val rs = connection.createStatement().executeQuery(statement)
+    if(connection != null) connection.close()
+    rs
   }
 
-  def login(user: String, token: String, dbc: Connection): Unit = {
+  def login(user: String, token: String, url: String): Unit = {
     val userHash = md5(user)
     val statement = s"select * from user where name='$userHash'"
-    val rs = queryDB(statement, dbc)
+    val rs = queryDB(statement, url)
     if (rs.next()) {
       val tokenHashFromDB = rs.getString("token")
       val userProvidedTokenHash = md5(token)
@@ -216,25 +222,25 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   def saveKey2DB(user: String, keyName: String,
-    encryptedKey: String, dbc: Connection): Unit = {
+    encryptedKey: String, url: String): Unit = {
       val (userHash, keyNameHash) = (md5(user), md5(keyName))
       val statement = s"insert into key values('$userHash', '$keyNameHash', '$encryptedKey') " +
         s"where not exists(select from key where user='$userHash' and name='$keyNameHash')"
-      insertDB(statement, dbc)
+      insertDB(statement, url)
   }
 
-  def saveUser2DB(user: String, token: String, dbc: Connection): Unit = {
+  def saveUser2DB(user: String, token: String, url: String): Unit = {
       val (userHash, tokenHash) = (md5(user), md5(token))
       val statement = s"insert into user values('$userHash', '$tokenHash') " +
         s"where not exists(select from user where name='$userHash')"
-      insertDB(statement, dbc)
+      insertDB(statement, url)
   }
 
   def queryKeyFromDB(user: String, keyName: String,
-    dbc: Connection): Option[String] = {
+    url: String): Option[String] = {
       val (userHash, keyNameHash) = (md5(user), md5(keyName))
       val statement = s"select * from user where user='$userHash' and name='$keyNameHash'"
-      val rs = queryDB(statement, dbc)
+      val rs = queryDB(statement, url)
       if (rs.next()) {
         val encryptedKey = rs.getString("data")
         Some(encryptedKey)

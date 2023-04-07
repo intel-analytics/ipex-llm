@@ -19,15 +19,11 @@
 #set -x
 DB_FILE_PAHT=/ppml/data/kms.db
 
-if [! -f $DB_FILE_PAHT ]
-then
-  echo "[INFO] db does not exist, creating..."
-  sqlite3 $DB_FILE_PAHT "create table user (name TEXT PRIMARY KEY,token TEXT);"
-  sqlite3 $DB_FILE_PAHT "create table key (user TEXT,name TEXT,data TEXT, PRIMARY KEY (user, name));"
-else
-  echo "[INFO] db file has existed, start from it..."
-fi
+echo "[INFO] try to create database..."
+sqlite3 $DB_FILE_PAHT "create table if not exists user (name TEXT PRIMARY KEY,token TEXT);"
+sqlite3 $DB_FILE_PAHT "create table if not exists key (user TEXT,name TEXT,data TEXT, PRIMARY KEY (user, name));"
 
+echo "[INFO] starting easy key management jvm process..."
 HTTPS_KEY_STORE_TOKEN=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 HTTPS_KEY_STORE_PAHT=/ppml/keys/keystore.pkcs12
 
