@@ -38,6 +38,7 @@ class TCNForecaster(BaseTF2Forecaster):
                  output_feature_num,
                  num_channels=[16]*3,
                  kernel_size=3,
+                 normalization=False,
                  repo_initialization=True,
                  dropout=0.1,
                  optimizer="Adam",
@@ -63,6 +64,10 @@ class TCNForecaster(BaseTF2Forecaster):
                TCN's encoder. This value defaults to [16]*3.
         :param kernel_size: Specify convolutional layer filter height in TCN's
                encoder. This value defaults to 3.
+        :param normalization: bool, Specify if to use normalization trick to
+               alleviate distribution shift. It first subtractes the last value
+               of the sequence and add back after the model forwarding.
+               This value defaults to False.
         :param repo_initialization: if to use framework default initialization,
                True to use paper author's initialization and False to use the
                framework's default initialization. The value defaults to True.
@@ -106,6 +111,7 @@ class TCNForecaster(BaseTF2Forecaster):
             "loss": loss,
             "lr": lr,
             "optim": optimizer,
+            "normalization": normalization,
         }
 
         # model creator settings

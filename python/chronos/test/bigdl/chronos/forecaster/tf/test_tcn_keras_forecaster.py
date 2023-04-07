@@ -106,6 +106,20 @@ class TestTCNForecaster(TestCase):
                                        multioutput="raw_values")
         assert mse[0].shape == test_data[1].shape[1:]
 
+    def test_tcn_forecaster_fit_predict_evaluate_normalization(self):
+        train_data, _, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2,
+                                   num_channels=[15]*7,
+                                   normalization=True)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
+        yhat = forecaster.predict(test_data[0], batch_size=32)
+        assert yhat.shape == (400, 2, 2)
+        mse = forecaster.evaluate(test_data, batch_size=32, multioutput="raw_values")
+        assert mse[0].shape == test_data[1].shape[1:]
+
     def test_tcn_forecaster_evaluate(self):
         train_tsdata, _, test_tsdata = create_tsdataset()
         forecaster = TCNForecaster.from_tsdataset(train_tsdata, past_seq_len=24, future_seq_len=5)
