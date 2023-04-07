@@ -273,7 +273,7 @@ To enable attestation, you should have a running Attestation Service in your env
 
   KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
 
-  BigDL PPML uses EHSM as a reference KMS & AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes#deploy-bigdl-ehsm-kms-on-kubernetes-with-helm-charts) to deploy EHSM in your environment.
+  BigDL PPML uses EHSM as a reference KMS & AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes) to deploy EHSM in your environment.
 
 **2. Enroll in EHSM**
 

@@ -7,33 +7,17 @@
       - [2.1 Prepare the Key](#21-prepare-the-key)
       - [2.2 Prepare the Password](#22-prepare-the-password)
     - [3. Register MREnclave(optional)](#3-register-mrenclaveoptional)
-      - [3.1 Deploy EHSM KMS\&AS](#31-deploy-ehsm-kmsas)
-      - [3.2 Enroll yourself in EHSM](#32-enroll-yourself-in-ehsm)
-      - [3.3 Attest EHSM Server](#33-attest-ehsm-server)
-      - [3.4 Register your MREnclave to EHSM](#34-register-your-mrenclave-to-ehsm)
-      - [3.5 Enable Attestation in configuration](#35-enable-attestation-in-configuration)
 - [Spark](#spark)
   - [SGX](#sgx)
     - [Spark Submit](#spark-submit)
       - [1 Prepare k8s service account and kubeconfig](#1-prepare-k8s-service-account-and-kubeconfig)
       - [2 Start the client container](#2-start-the-client-container)
-      - [3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)](#3-init-the-client-and-run-spark-applications-on-k8s-13-can-be-skipped-if-you-are-using-14-to-submit-jobs)
-        - [3.1 Configure `spark-executor-template.yaml` in the container](#31-configure-spark-executor-templateyaml-in-the-container)
-        - [3.2 Submit spark command](#32-submit-spark-command)
-        - [3.3 Spark-Pi example](#33-spark-pi-example)
-      - [4 Use bigdl-ppml-submit.sh to submit ppml jobs](#4-use-bigdl-ppml-submitsh-to-submit-ppml-jobs)
-        - [4.1 Spark-Pi on local mode](#41-spark-pi-on-local-mode)
-        - [4.2 Spark-Pi on local sgx mode](#42-spark-pi-on-local-sgx-mode)
-        - [4.3 Spark-Pi on client mode](#43-spark-pi-on-client-mode)
-        - [4.4 Spark-Pi on cluster mode](#44-spark-pi-on-cluster-mode)
-        - [4.5 bigdl-ppml-submit.sh explanations](#45-bigdl-ppml-submitsh-explanations)
+      - [3 run Spark applications](#3-run-spark-applications)
+      - [4 bigdl-ppml-submit.sh explanations](#4-bigdl-ppml-submitsh-explanations)
     - [Spark Thrift Server](#spark-thrift-server)
       - [1. Start thrift server](#1-start-thrift-server)
-        - [1.1 Prepare the configuration file](#11-prepare-the-configuration-file)
-        - [1.2 Three ways to start](#12-three-ways-to-start)
-        - [1.3 Use beeline to connect Thrift Server](#13-use-beeline-to-connect-thrift-server)
       - [2. Enable transparent encryption](#2-enable-transparent-encryption)
-        - [2.1 HDFS Transparent Encryption](#21-hdfs-transparent-encryption)
+        - [2.1. HDFS Transparent Encryption](#21-hdfs-transparent-encryption)
         - [2.2 Gramine file system encryption](#22-gramine-file-system-encryption)
         - [2.3 Bigdl PPML Codec](#23-bigdl-ppml-codec)
     - [Spark Configuration Explanations](#spark-configuration-explanations)
@@ -84,9 +68,9 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 
 #### 1.1 Build Bigdata Base Image
 
-The bigdata base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following.
+The bigdata base image constitutes foundational dependencies, libraries, and devoid of confidential information. Utilize this base image to craft your custom image as detailed below.
 
-You can use our public bigdata base image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT`, which is recommended. Or you can build your own base image, which is expected to be exactly the same as ours.
+It is advisable to employ our public big data base image, `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.3.0-SNAPSHOT`. Alternatively, you may construct an individual base image, expected to be the same with our offering.
 
 Before building your own base image, please modify the paths in `ppml/trusted-bigdata/build-base-image.sh`. Then build the docker image with the following command.
 
@@ -96,9 +80,9 @@ Before building your own base image, please modify the paths in `ppml/trusted-bi
 
 #### 1.2 Build Custom Image
 
-First, You need to generate your enclave key using the command below, and keep it safe for future remote attestations and to start SGX enclaves more securely.
+First, You need to generate your enclave key using the command below, preserving it securely for future remote attestations and the enhanced security of SGX enclave initiation .
 
-It will generate a file `enclave-key.pem` in `./custom-image`  directory, which will be your enclave key. To store the key elsewhere, modify the outputted file path.
+Generate a file `enclave-key.pem` in `./custom-image`  directory, serving as your enclave key. To designate an alternate storage location, modify the output file path.
 
 ```bash
 cd custom-image
@@ -125,7 +109,7 @@ mr_signer        : 6f0627955......
 
 #### 2.1 Prepare the Key
 
-  The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the security keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
+  BigDL PPML e2e workflow needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the security keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
 ```bash
   sudo bash BigDL/ppml/scripts/generate-keys.sh
@@ -141,15 +125,38 @@ mr_signer        : 6f0627955......
 
 ### 3. Register MREnclave(optional)
 
-#### 3.1 Deploy EHSM KMS&AS
+Enter the client container:
+```
+sudo docker exec -it bigdl-ppml-client-k8s bash
+```
 
-KMS (Key Management Service) and AS (Attestation Service) make sure applications of the user actually run in the SGX MREnclave signed above by the user's private key, rather than a fake one fake by an attacker.
+If you do not need the attestation, you can disable the attestation service. You should configure `spark-driver-template.yaml` and `spark-executor-template` in the client container.yaml to set `ATTESTATION` value to `false` and skip the rest of the step. By default, the attestation service is disabled.
+``` yaml
+apiVersion: v1
+kind: Pod
+spec:
+  ...
+    env:
+      - name: ATTESTATION
+        value: false
+  ...
+```
 
-Bigdl ppml uses EHSM as reference KMS&AS, you can deploy EHSM following a guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs-ehsm/kubernetes#deploy-bigdl-pccs-ehsm-kms-on-kubernetes-with-helm-charts).
+The bi-attestation guarantees that the MREnclave in runtime containers is a secure one made by you. Its workflow is as below:
+![image](https://user-images.githubusercontent.com/60865256/198168194-d62322f8-60a3-43d3-84b3-a76b57a58470.png)
 
-#### 3.2 Enroll yourself in EHSM
 
-Enroll yourself as below, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
+To enable attestation, you should have a running Attestation Service in your environment.
+
+**1. Deploy EHSM KMS & AS**
+
+  KMS (Key Management Service) and AS (Attestation Service) make sure applications of the customer run in the SGX MREnclave signed above by customer-self, rather than a fake one fake by an attacker.
+
+  BigDL PPML uses EHSM as a reference KMS & AS, you can follow the guide [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/ehsm/kubernetes) to deploy EHSM in your environment.
+
+**2. Enroll in EHSM**
+
+Execute the following command to enroll yourself in EHSM, The `<kms_ip>` is your configured-ip of EHSM service in the deployment section:
 
 ```bash
 curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
@@ -157,13 +164,13 @@ curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
 {"code":200,"message":"successful","result":{"apikey":"E8QKpBB******","appid":"8d5dd3b*******"}}
 ```
 
- You will get an `appid` and `apikey` pair and save it.
+You will get an `appid` and `apikey` pair. Please save it for later use.
 
-#### 3.3 Attest EHSM Server
+**3. Attest EHSM Server (optional)**
 
-**3.3.1 Start a BigDL client container**
+You can attest EHSM server and verify the service is trusted before running workloads to avoid sending your secrets to a fake service.
 
-First, start a bigdl container, which uses the custom image built before.
+To attest EHSM server, start a BigDL container using the custom image built before. **Note**: this is the other container different from the client.
 
 ```bash
 export KEYS_PATH=YOUR_LOCAL_SPARK_SSL_KEYS_FOLDER_PATH
@@ -174,56 +181,54 @@ export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from 
 sudo docker run -itd \
     --privileged \
     --net=host \
-    --cpuset-cpus="0-5" \
+    --cpus=5 \
     --oom-kill-disable \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $KEYS_PATH:/ppml/keys \
+    -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     --name=gramine-verify-worker \
     -e LOCAL_IP=$LOCAL_IP \
     -e PCCS_URL=$PCCS_URL \
     $CUSTOM_IMAGE bash
 ```
 
-Enter the work environment:
+Enter the docker container:
 
 ```bash
 sudo docker exec -it gramine-verify-worker bash
 ```
 
-**3.3.2 Verify  EHSM Quote**
+Set the variables in `verify-attestation-service.sh` before running it:
 
-You need to first attest the EHSM server and verify the service as trusted before running workloads, to avoid sending your secrets to a fake EHSM service.
+  ```
+  `ATTESTATION_URL`: URL of attestation service. Should match the format `<ip_address>:<port>`.
 
-In the container, you can use `verify-attestation-service.sh` to verify the attestation service quote. Please set the variables in the script and then run it:
+  `APP_ID`, `API_KEY`: The appID and apiKey pair generated by your attestation service.
 
-**Parameters in verify-attestation-service.sh:**
+  `ATTESTATION_TYPE`: Type of attestation service. Currently support `EHSMAttestationService`.
 
-**ATTESTATION_URL**: URL of attestation service. Should match the format `<ip_address>:<port>`.
+  `CHALLENGE`: Challenge to get a quote for attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
+  ```
 
-**APP_ID**, **API_KEY**: The appID and apiKey pair generated by your attestation service.
+In the container, execute `verify-attestation-service.sh` to verify the attestation service quote.
 
-**ATTESTATION_TYPE**: Type of attestation service. Currently support `EHSMAttestationService`.
+  ```bash
+  bash verify-attestation-service.sh
+  ```
+  **4. Register your MREnclave to EHSM**
 
-**CHALLENGE**: Challenge to get a quote for attestation service which will be verified by local SGX SDK. Should be a BASE64 string. It can be a casual BASE64 string, for example, it can be generated by the command `echo anystring|base64`.
+  Register the MREnclave with metadata of your MREnclave (appid, apikey, mr_enclave, mr_signer) obtained in above steps to EHSM through running a python script:
 
-```bash
-bash verify-attestation-service.sh
-```
+  ```bash
+  # At /ppml/trusted-big-data-ml inside the container now
+  python register-mrenclave.py --appid <your_appid> \
+                              --apikey <your_apikey> \
+                              --url https://<kms_ip>:9000 \
+                              --mr_enclave <your_mrenclave_hash_value> \
+                              --mr_signer <your_mrensigner_hash_value>
+  ```
+  You will receive a response containing a `policyID` and save it which will be used to attest runtime MREnclave when running distributed kubernetes application.
 
-#### 3.4 Register your MREnclave to EHSM
-
-Upload the metadata of your MREnclave obtained above to EHSM, and then only the registered MREnclave can pass the runtime verification in the following. You can register the MREnclave by running a python script:
-
-```bash
-# At /ppml inside the container now
-python register-mrenclave.py --appid <your_appid> \
-                             --apikey <your_apikey> \
-                             --url https://<kms_ip>:9000 \
-                             --mr_enclave <your_mrenclave_hash_value> \
-                             --mr_signer <your_mrensigner_hash_value>
-```
-
-#### 3.5 Enable Attestation in configuration
+  **5. Enable Attestation in configuration**
 
   First, upload `appid`, `apikey` and `policyID` obtained before to kubernetes as secrets:
 
@@ -271,14 +276,14 @@ python register-mrenclave.py --appid <your_appid> \
 
 # Spark
 
-Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [Using Helm to run your Spark job][https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-gramine/kubernetes#25-using-helm-to-run-your-spark-job].
+Follow the guide below to run Spark on Kubernetes.
 ## SGX
 ### Spark Submit
 #### 1 Prepare k8s service account and kubeconfig
-Please follow the guide [here][https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment].
+Please follow the guide [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-k8s-environment).
 
 #### 2 Start the client container
-Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
+Configure the environment variables in the following script before running it.
 ```bash
 export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
 export NFS_INPUT_PATH=/YOUR_DIR/data
@@ -309,134 +314,87 @@ sudo docker run -itd \
 ```
 run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
-#### 3 Init the client and run Spark applications on k8s (1.3 can be skipped if you are using 1.4 to submit jobs)
+#### 3 run Spark applications
 
-##### 3.1 Configure `spark-executor-template.yaml` in the container
+If you run SGX applications in local or client, remeber to run `init.sh` first.
 
-We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
+We use Spark pi as an example. The result should look something like this:
 
-Please prepare the following and put them in your NFS directory:
+> Pi is roughly 3.1421223142122314
 
-- The data (in a directory called `data`),
-- The kubeconfig file.
+There are three ways to submit Spark jobs.
 
-##### 3.2 Submit spark command
 
+1. Spark's official submission command method(not in SGX)
 ```bash
-./init.sh
-export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
-export TF_MKL_ALLOC_MAX_BYTES=10737418240
-export SPARK_LOCAL_IP=$LOCAL_IP
-export sgx_command="${JAVA_HOME}/bin/java \
-        -cp '${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:${SPARK_HOME}/examples/jars/*' \
-        -Xmx8g \
-        org.apache.spark.deploy.SparkSubmit \
-        --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode $SPARK_MODE \
-        --name spark-pi-sgx \
-        --conf spark.driver.host=$SPARK_LOCAL_IP \
-        --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
-        --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
-        --conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
-        --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
-        --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
-        --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
-        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-        --conf spark.kubernetes.driver.podTemplateFile=/ppml/spark-driver-template.yaml \
-        --conf spark.kubernetes.executor.podTemplateFile=/ppml/spark-executor-template.yaml \
-        --conf spark.kubernetes.executor.deleteOnTermination=false \
-        --conf spark.network.timeout=10000000 \
-        --conf spark.executor.heartbeatInterval=10000000 \
-        --conf spark.python.use.daemon=false \
-        --conf spark.python.worker.reuse=false \
-        --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
-        --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
-        --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
-        --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
-        --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
-        --conf spark.authenticate=true \
-        --conf spark.authenticate.secret=$secure_password \
-        --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-        --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-        --conf spark.authenticate.enableSaslEncryption=true \
-        --conf spark.network.crypto.enabled=true \
-        --conf spark.network.crypto.keyLength=128 \
-        --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-        --conf spark.io.encryption.enabled=true \
-        --conf spark.io.encryption.keySizeBits=128 \
-        --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-        --conf spark.ssl.enabled=true \
-        --conf spark.ssl.port=8043 \
-        --conf spark.ssl.keyPassword=$secure_password \
-        --conf spark.ssl.keyStore=/ppml/keys/keystore.jks \
-        --conf spark.ssl.keyStorePassword=$secure_password \
-        --conf spark.ssl.keyStoreType=JKS \
-        --conf spark.ssl.trustStore=/ppml/keys/keystore.jks \
-        --conf spark.ssl.trustStorePassword=$secure_password \
-        --conf spark.ssl.trustStoreType=JKS \
-        --class org.apache.spark.examples.SparkPi \
-        --verbose \
-        --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000"
+/opt/jdk8/bin/java \
+    -cp "/ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/*" -Xmx1g \
+    org.apache.spark.deploy.SparkSubmit \
+    --master local[4] \
+    --class org.apache.spark.examples.SparkPi \
+    local:///ppml/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 ```
 
-Note that: you can run your own Spark application after changing `--class` and jar path.
-
-1. `local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
-2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
-
-##### 3.3 Spark-Pi example
-
+2. PPML submit Spark command to run in SGX
 ```bash
-gramine-sgx bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+export sgx_command="/opt/jdk8/bin/java \
+    -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* -Xmx1g \
+    org.apache.spark.deploy.SparkSubmit \
+    --master local[4] \
+    --executor-memory 4g \
+    --driver-memory 4g \
+    --class org.apache.spark.examples.SparkPi \
+    --conf spark.network.timeout=10000000 \
+    --conf spark.executor.heartbeatInterval=10000000 \
+    --verbose \
+    local:///ppml/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100"
+gramine-sgx bash 2>&1 | tee spark-pi-local-sgx.log
 ```
-#### 4 Use bigdl-ppml-submit.sh to submit ppml jobs
 
-Here, we assume you have started the client container and executed `init.sh`.
+3. User-friendly CLI bigdl-ppml-submit.sh (recommended)
 
-##### 4.1 Spark-Pi on local mode
+`bigdl-ppml-submit.sh` is in `/ppml`.
+
+**3.1 Spark-Pi on local mode**
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
-        --master local[2] \
-        --driver-memory 8g \
+        --master local[4] \
+        --driver-memory 4g \
         --driver-cores 8 \
-        --executor-memory 8g \
+        --executor-memory 4g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
         --log-file spark-pi-local.log \
-        --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 ```
-##### 4.2 Spark-Pi on local sgx mode
+
+**3.2 Spark-Pi on local sgx mode**
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
-        --master local[2] \
+        --master local[4] \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-jvm-memory 6g\
-        --sgx-executor-jvm-memory 6g\
-        --driver-memory 8g \
+        --sgx-driver-jvm-memory 4g\
+        --sgx-executor-jvm-memory 4g\
+        --driver-memory 1g \
         --driver-cores 8 \
-        --executor-memory 8g \
+        --executor-memory 1g \
         --executor-cores 8 \
         --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --log-file spark-pi-local-sgx.log \
         --verbose \
-        --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 
 ```
-##### 4.3 Spark-Pi on client mode
+**3.3 Spark-Pi on client mode**
 ![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
 
 ```
@@ -446,12 +404,11 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode client \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-jvm-memory 6g\
-        --sgx-executor-jvm-memory 6g\
-        --driver-memory 8g \
+        --sgx-driver-jvm-memory 4g\
+        --sgx-executor-jvm-memory 4g\
+        --driver-memory 1g \
         --driver-cores 8 \
-        --executor-memory 8g \
+        --executor-memory 1g \
         --executor-cores 8 \
         --num-executors 2 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
@@ -459,11 +416,10 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --log-file spark-pi-client-sgx.log \
         --verbose \
-        --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 ```
 
-##### 4.4 Spark-Pi on cluster mode
+**3.4 Spark-Pi on cluster mode**
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 
 ```
@@ -473,12 +429,11 @@ bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
         --deploy-mode cluster \
         --sgx-enabled true \
-        --sgx-log-level error \
-        --sgx-driver-jvm-memory 6g\
-        --sgx-executor-jvm-memory 6g\
-        --driver-memory 8g \
+        --sgx-driver-jvm-memory 4g\
+        --sgx-executor-jvm-memory 4g\
+        --driver-memory 1g \
         --driver-cores 8 \
-        --executor-memory 8g \
+        --executor-memory 1g \
         --executor-cores 8 \
         --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --num-executors 2 \
@@ -486,15 +441,14 @@ bash bigdl-ppml-submit.sh \
         --name spark-pi \
         --log-file spark-pi-cluster-sgx.log \
         --verbose \
-        --jars local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar \
-        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
+        local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 ```
-##### 4.5 bigdl-ppml-submit.sh explanations
 
-bigdl-ppml-submit.sh is used to simplify the steps in 1.4
+If you need a distributed file system, you can use HDFS of Network File System (NFS) configured for the Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
+#### 4 bigdl-ppml-submit.sh explanations
 
-1. To use bigdl-ppml-submit.sh, first set the following required arguments:
-```
+1. To use bigdl-ppml-submit.sh, set the following required arguments:
+```bash
 --master $RUNTIME_SPARK_MASTER \
 --deploy-mode cluster \
 --driver-memory 8g \
@@ -512,27 +466,28 @@ bigdl-ppml-submit.sh is used to simplify the steps in 1.4
 --log-file spark-pi-cluster-sgx.log \
 local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
-if you want to enable sgx, don't forget to set the sgx-related arguments
-```
+The following is sgx-related arguments
+```bash
 --sgx-enabled true \
 --sgx-driver-memory 8g \
 --sgx-driver-jvm-memory 6g \
 --sgx-executor-memory 8g \
 --sgx-executor-jvm-memory 6g \
 ```
-you can update the application arguments to anything you want to run
-```
---class org.apache.spark.examples.SparkPi \
-local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
-```
+you can update the application arguments to others to run your own application.
+
+`local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar` => `your_jar_path`
+
+ `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 2. If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
-```
+```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 ```
 
-3. The following spark properties are set by default in bigdl-ppml-submit.sh. If you want to overwrite them or add new spark properties, just append the spark properties to bigdl-ppml-submit.sh as arguments.
-```
+The following spark properties are set by default in bigdl-ppml-submit.sh and will be enabled if `secure_password` is set. If you want to overwrite them or add new spark properties, just append the spark properties to bigdl-ppml-submit.sh as arguments.
+
+```bash
 --conf spark.driver.host=$LOCAL_IP \
 --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
 --conf spark.network.timeout=10000000 \
@@ -551,7 +506,7 @@ Spark SQL Thrift server is a port of Apache Hive’s HiverServer2 which allows t
 
 #### 1. Start thrift server
 
-##### 1.1 Prepare the configuration file
+1. Prepare the configuration file
 
 Create the file `spark-defaults.conf` at `$SPARK_HOME/conf` with the following content:
 
@@ -559,9 +514,9 @@ Create the file `spark-defaults.conf` at `$SPARK_HOME/conf` with the following c
 spark.sql.warehouse.dir         hdfs://host:ip/path #location of data
 ```
 
-##### 1.2 Three ways to start
+2. Three ways to start
 
-**1.2.1 Start with spark official script**
+**2.1 Start with spark official script**
 
 ```bash
 cd $SPARK_HOME
@@ -569,7 +524,7 @@ sbin/start-thriftserver.sh
 ```
 **Tip:** The startup of the thrift server will create the metastore_db file at the startup location of the command, which means that every startup command needs to be run at the same location, in the example it is SPARK_HOME.
 
-**1.2.2 Start with JAVA scripts**
+**2.2 Start with JAVA scripts**
 
 ```bash
 /opt/jdk8/bin/java \
@@ -582,7 +537,7 @@ sbin/start-thriftserver.sh
   local://$SPARK_HOME/jars/spark-hive-thriftserver_2.12-$SPARK_VERSION.jar
 ```
 
-**1.2.3 Start with bigdl-ppml-submit.sh**
+**2.3 Start with bigdl-ppml-submit.sh**
 
 ```bash
 export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
@@ -609,16 +564,16 @@ bash bigdl-ppml-submit.sh \
 ```
 sgx is started in this script, and the thrift server runs in a trusted environment.
 
-##### 1.3 Use beeline to connect Thrift Server
+3. Use beeline to connect Thrift Server
 
-**1.3.1 Start beeline**
+**3.1 Start beeline**
 
 ```bash
 cd $SPARK_HOME
 ./bin/beeline
 ```
 
-**1.3.2 Test thrift server**
+**3.2 Test thrift server**
 
 ```bash
 !connect jdbc:hive2://localhost:10000 #connect thrift server
@@ -638,7 +593,7 @@ If you get the following results, then the thrift server is functioning normally
 ```
 #### 2. Enable transparent encryption
 To ensure data security, we need to encrypt and store data. For ease of use, we adopt transparent encryption. Here are a few ways to achieve transparent encryption:
-##### 2.1 HDFS Transparent Encryption
+##### 2.1. HDFS Transparent Encryption
 
 If you use hdfs as a warehouse, you can simply enable hdfs transparent encryption. You can refer to [here](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/TransparentEncryption.html) for more information. The architecture diagram is as follows:
 ![thrift_server_hdfs_encryption](pictures/thrift_server_hdfs_encryption.png)
