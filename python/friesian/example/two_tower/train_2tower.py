@@ -107,7 +107,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
                                "engaged_with_user_follower_count",
                                "engaged_with_user_following_count",
                                "engaged_with_user_follower_following_ratio").alias("item_num"),
-                         *cat_cols, *embed_cols, "label")
+                         *cat_cols, *embed_cols, *id_cols, "label")
         return tbl
 
     if args.frequency_limit > 1:
@@ -226,10 +226,9 @@ if __name__ == '__main__':
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
                   "enaging_user_follower_following_ratio"]
-    embed_cols = ["engaged_with_user_id", "hashtags", "present_links", "present_domains"]
-    id_cols = ["engaing_user_id", "tweet_id"]
+    embed_cols = ["hashtags", "present_links", "present_domains"]
+    id_cols = ["enaging_user_id", "engaged_with_user_id", "tweet_id"]
 
-    useful_cols = num_cols + cat_cols + embed_cols
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
     full_tbl = train_tbl.concat(test_tbl)
