@@ -331,7 +331,6 @@ else
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
         if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
             echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init -g" >> $ACTIVATED_PATH/nano_vars.sh
-            echo "    source ${ONEAPI_HOME}/setvars.sh" >> $ACTIVATED_PATH/nano_vars.sh
         else
             echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
         fi
