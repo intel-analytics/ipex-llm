@@ -53,7 +53,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     from bigdl.nano.pytorch.context_manager import generate_context_manager
     from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
     from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
-        load_ipex_quantization_model
+        load_ipex_quantization_model, load_ipex_xpu_model
     from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
     from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 
@@ -85,6 +85,8 @@ def load_model(path, model: nn.Module = None, input_sample=None,
         return load_bf16_model(path, model)
     if model_type == 'PytorchJITINT8Model':
         return load_pytorchjitint8_model(path)
+    if model_type == 'PytorchIPEXPUModel':
+        return load_ipex_xpu_model(path, model)
     if result is not None:
         if isinstance(model, torch.nn.Module):
             # patch attributes to accelerated model
