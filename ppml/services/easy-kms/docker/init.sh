@@ -31,7 +31,7 @@ java \
   -Xms2g \
   -Xmx10g \
   -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
-  -cp /ppml/${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+  -cp "/ppml/jars/*" \
   com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
   --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
   --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./easy-kms-server.log
