@@ -85,6 +85,6 @@ runs:
         pip install ConfigSpace optuna
 
         # required by NoteBook and Tutorial test
-        pip install tensorflow-datasets jinja2 jupyter nbconvert nbmake
+        pip install tensorflow-datasets<4.9 jinja2 jupyter nbconvert nbmake
       env:
         OS: ${{ inputs.os }}
