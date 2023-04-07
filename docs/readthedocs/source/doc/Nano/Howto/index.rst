@@ -42,6 +42,7 @@ TensorFlow
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 * |tensorflow_training_embedding_sparseadam_link|_
 * `How to conduct BFloat16 Mixed Precision training in your TensorFlow Keras application <Training/TensorFlow/tensorflow_training_bf16.html>`_
+* `How to accelerate TensorFlow Keras customized training loop through multiple instances <Training/TensorFlow/tensorflow_custom_training_multi_instance.html>`_
 
 .. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
 .. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
