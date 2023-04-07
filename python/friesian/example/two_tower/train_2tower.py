@@ -223,8 +223,8 @@ if __name__ == '__main__':
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
                   "enaging_user_follower_following_ratio"]
-    embed_cols = ["enaging_user_id", "tweet_id", "engaged_with_user_id", "hashtags", "present_links",
-                  "present_domains"]
+    embed_cols = ["enaging_user_id", "tweet_id", "engaged_with_user_id", "hashtags",
+                  "present_links", "present_domains"]
     useful_cols = num_cols + cat_cols + embed_cols
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
@@ -245,9 +245,9 @@ if __name__ == '__main__':
                     "inter_op_parallelism": 4,
                     "intra_op_parallelism": args.executor_cores}
 
-    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size, \
+    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
                 model_dir=args.model_dir, backend=args.backend)
-    
+
     full_tbl = train_tbl.concat(test_tbl)
     full_tbl.write_parquet(os.path.join(args.model_dir, "full_parquet"))
 

@@ -29,7 +29,7 @@ parser.add_argument('--model_dir', default='recsys_2tower', type=str,
 parser.add_argument('--executor_cores', type=int, default=8,
                     help='The executor core number.')
 parser.add_argument('--executor_memory', type=str, default="2g",
-                        help='The executor memory.')
+                    help='The executor memory.')
 parser.add_argument('--data_dir', type=str, help='data directory')
 args = parser.parse_args()
 
@@ -60,8 +60,9 @@ item_est = Estimator.from_keras(config=train_config,
                                 backend=args.backend)
 item_est.load(os.path.join(args.model_dir, "item-model"))
 result = item_est.predict(data=full_tbl.df,
-                          feature_cols=['engaged_with_user_is_verified', 'present_media', 'tweet_type',
-                                        'language', 'tweet_id', 'engaged_with_user_id', 'hashtags',
+                          feature_cols=['engaged_with_user_is_verified', 'present_media',
+                                        'tweet_type', 'language', 'tweet_id',
+                                        'engaged_with_user_id', 'hashtags',
                                         'present_links', 'present_domains', 'item_num'])
 
 print("Prediction results of the first 5 rows:")

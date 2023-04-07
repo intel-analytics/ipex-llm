@@ -90,7 +90,7 @@ type_map = {
     'TopLevel': 2,
 }
 
-cross_cols = [['present_media','language']]
+cross_cols = [['present_media', 'language']]
 
 user_features = [
     'enaging_user_follower_count',
@@ -251,7 +251,7 @@ if __name__ == '__main__':
 
     full_tbl = train_tbl.concat(test_tbl)
     user_index = full_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
-                                                            'col_name': 'user_id'})
+                                          'col_name': 'user_id'})
     item_index = full_tbl.gen_string_idx('tweet_id')
     train_tbl = encode_id(train_tbl)
     test_tbl = encode_id(test_tbl)
@@ -282,10 +282,10 @@ if __name__ == '__main__':
     train_tbl.write_parquet(os.path.join(args.output_folder, "train_parquet"))
     test_tbl.write_parquet(os.path.join(args.output_folder, "test_parquet"))
     full_tbl = train_tbl.concat(test_tbl)
-    full_tbl.select(user_features).drop_duplicates().\
-             write_parquet(os.path.join(args.model_dir, 'wnd_user.parquet'))
-    full_tbl.select(item_features).drop_duplicates().\
-             write_parquet(os.path.join(args.model_dir, 'wnd_item.parquet'))   
+    full_tbl.select(user_features).drop_duplicates()\
+            .write_parquet(os.path.join(args.model_dir, 'wnd_user.parquet'))
+    full_tbl.select(item_features).drop_duplicates()\
+            .write_parquet(os.path.join(args.model_dir, 'wnd_item.parquet'))
 
     # save meta
     cat_sizes_dict = {}
