@@ -124,17 +124,21 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val xgbInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, test) = xgbInput.randomSplit(Array(0.8, 0.2))
+    val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
 
     train.cache().count()
-
+    eval1.cache().count()
+    eval2.cache().count()
 
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
     log.info("--preprocess time is " + elapsed + " s")
+    // use scala tracker
+    val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
+      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
+    )
 
-
-    val xgbClassifier = new XGBClassifier()
+    val xgbClassifier = new XGBClassifier(xgbParam)
     xgbClassifier.setFeaturesCol("features")
     xgbClassifier.setLabelCol("classIndex")
     xgbClassifier.setNumClass(2)
