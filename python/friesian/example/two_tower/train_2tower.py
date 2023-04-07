@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores,
-                               num_nodes=args.num_executors, memory=args.executor_memory)
+                               memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
@@ -229,9 +229,8 @@ if __name__ == '__main__':
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
     full_tbl = train_tbl.concat(test_tbl)
-    if args.frequency_limit <= 1:
-        reindex_tbls = full_tbl
-    else:
+    reindex_tbls = None
+    if args.frequency_limit > 1:
         reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
