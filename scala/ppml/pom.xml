@@ -26,11 +26,6 @@
                 <version>${scala.version}</version>
 	    </dependency>
             <dependency>
-                <groupId>org.xerial</groupId>
-                <artifactId>sqlite-jdbc</artifactId>
-                <version>3.41.2.1</version>
-            </dependency>
-            <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
                 <version>1.2.4</version>
@@ -90,6 +85,11 @@
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
             <scope>${spark-scope}</scope>
+        </dependency>
+	<dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>

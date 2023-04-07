@@ -47,11 +47,12 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 
 object EasyKeyManagementServer extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
+  Class.forName("org.sqlite.JDBC")
   val name = "easy-key-management-server"
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-  val rootKey = sys.env("ROOTKEY")
+  val rootKey = sys.env("ROOT_KEY")
   Log4Error.invalidOperationError(rootKey != "",
     "Excepted ROOTKEY but found it empty, please upload it as k8s secret")
 
@@ -231,8 +232,8 @@ object EasyKeyManagementServer extends Supportive {
 
   def saveUser2DB(user: String, token: String, url: String): Unit = {
       val (userHash, tokenHash) = (md5(user), md5(token))
-      val statement = s"insert into user values('$userHash', '$tokenHash') " +
-        s"where not exists(select from user where name='$userHash')"
+      val statement = s"insert into user select '$userHash', '$tokenHash' " +
+        s"where not exists(select 1 from user where name='$userHash')"
       insertDB(statement, url)
   }
 
