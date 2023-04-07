@@ -255,7 +255,7 @@ class Nano_Customized_Loss(Loss):
     def __init__(self, func, reduction=None, name=None, **kwargs):
         """Initialize the loss function."""
         if reduction is None:
-            reduction=tf.keras.losses.Reduction.NONE
+            reduction = tf.keras.losses.Reduction.NONE
         super().__init__(reduction=reduction, name=name)
         self.fn = func
         self._fn_kwargs = kwargs
