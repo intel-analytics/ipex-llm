@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.example.nnframes.xgboost
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import ml.dmlc.xgboost4j.scala.spark.TrackerConf
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
@@ -123,21 +124,17 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val xgbInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, eval1, eval2, test) = xgbInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
+    val Array(train, test) = xgbInput.randomSplit(Array(0.8, 0.2))
 
     train.cache().count()
-    eval1.cache().count()
-    eval2.cache().count()
+
 
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
     log.info("--preprocess time is " + elapsed + " s")
-    // use scala tracker
-    val xgbParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
-      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
-    )
 
-    val xgbClassifier = new XGBClassifier(xgbParam)
+
+    val xgbClassifier = new XGBClassifier()
     xgbClassifier.setFeaturesCol("features")
     xgbClassifier.setLabelCol("classIndex")
     xgbClassifier.setNumClass(2)
@@ -161,6 +158,18 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
     log.info("--model save time is " + elapsed + " s")
+
+    val predictions = xgbClassificationModel.transform(test);
+    val evaluatorMulti = new MulticlassClassificationEvaluator()
+      .setLabelCol("classIndex")
+      .setMetricName("accuracy")
+
+    val acc = evaluatorMulti.evaluate(predictions)
+    println("acc:", acc)
+    val tAfterTransform = System.nanoTime()
+    elapsed = (tAfterTransform - tAfterSave) / 1000000000.0f // second
+    log.info("--test data transform time is " + elapsed + " s")
+
     elapsed = (tAfterSave - tStart) / 1000000000.0f // second
     log.info("--end-to-end time is " + elapsed + " s")
     sc.stop()
