@@ -10,8 +10,12 @@ set -e
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
 start=$(date "+%s")
+
 python -m pytest -s ${NANO_RAY_TEST_DIR}/test_ray_trainer.py ${NANO_RAY_TEST_DIR}/test_torch_nano_ray.py
-python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/nano/test/pytorch/tests/train/trainer/test_scale_lr.py -k 'ray'
+version=$(python -c "import torch;print(torch.__version__)")
+if [ ${version} != "2.0.0+cu117" ];then  # workaround as we have not upgrade pl
+    python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/nano/test/pytorch/tests/train/trainer/test_scale_lr.py -k 'ray'
+fi
 
 now=$(date "+%s")
 time=$((now-start))

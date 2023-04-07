@@ -30,6 +30,8 @@ from bigdl.nano.pytorch import Trainer
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from test.pytorch.tests.train.trainer.test_lightning import ResNet18
+from bigdl.nano.utils.common import compare_version
+import operator
 
 import copy
 
@@ -68,6 +70,8 @@ class TestPlugin(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+                    reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
@@ -79,6 +83,8 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+                    reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_sys_path(self):
         """test whether child process can inherit parent process's sys.path"""
         # add current directory to sys.path and
@@ -151,6 +157,8 @@ class TestPlugin(TestCase):
         return
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+                    reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_with_ccl(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
@@ -163,6 +171,8 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+                    reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_spawn_with_ccl(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
