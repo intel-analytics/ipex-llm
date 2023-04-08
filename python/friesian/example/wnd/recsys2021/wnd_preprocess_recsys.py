@@ -283,9 +283,9 @@ if __name__ == '__main__':
     test_tbl.write_parquet(os.path.join(args.output_folder, "test_parquet"))
     full_tbl = train_tbl.concat(test_tbl)
     full_tbl.select(user_features).drop_duplicates()\
-            .write_parquet(os.path.join(args.model_dir, 'wnd_user.parquet'))
+            .write_parquet(os.path.join(args.output_folder, 'wnd_user.parquet'))
     full_tbl.select(item_features).drop_duplicates()\
-            .write_parquet(os.path.join(args.model_dir, 'wnd_item.parquet'))
+            .write_parquet(os.path.join(args.output_folder, 'wnd_item.parquet'))
 
     # save meta
     cat_sizes_dict = {}

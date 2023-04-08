@@ -370,7 +370,7 @@ if __name__ == "__main__":
             label_cols=column_info.label_cols)
     end = time()
     print("Training time is: ", end - start)
-    est.save(os.path.join(options.model_dir, "recsys_wnd"))
+    est.save(options.model_dir)
     model = est.get_model()
 
     stop_orca_context()
