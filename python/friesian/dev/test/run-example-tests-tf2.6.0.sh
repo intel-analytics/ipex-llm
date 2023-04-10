@@ -23,26 +23,6 @@ set -e
 mkdir -p result
 mkdir -p result/stats
 
-echo "#1 start example test for two tower train"
-#timer
-start=$(date "+%s")
-if [ -d data/input_2tower ]; then
-  echo "data/input_2tower already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/input_2tower.tar.gz -P data
-  tar -xvzf data/input_2tower.tar.gz -C data
-fi
-
-python ../../example/two_tower/train_2tower.py \
-    --executor_cores 4 \
-    --executor_memory 10g \
-    --data_dir ./data/input_2tower \
-    --model_dir ./result \
-    --frequency_limit 2
-
-now=$(date "+%s")
-time1=$((now - start))
-
 if [ -d data/recsys_preprocessed ]; then
   echo "data/recsys_preprocessed already exists"
 else
@@ -50,7 +30,7 @@ else
   tar -xvzf data/recsys_preprocessed.tar.gz -C data
 fi
 
-echo "#2 start example test for wnd recsys2021 train"
+echo "#1 start example test for wnd recsys2021 train"
 #timer
 start=$(date "+%s")
 python ../../example/wnd/recsys2021/wnd_train_recsys.py \
@@ -59,6 +39,20 @@ python ../../example/wnd/recsys2021/wnd_train_recsys.py \
     --data_dir ./data/recsys_preprocessed \
     --model_dir ./result \
     -b 1600
+
+now=$(date "+%s")
+time1=$((now - start))
+
+echo "#2 start example test for two tower train"
+#timer
+start=$(date "+%s")
+
+python ../../example/two_tower/train_2tower.py \
+    --executor_cores 4 \
+    --executor_memory 10g \
+    --data_dir ./data/recsys_preprocessed \
+    --model_dir ./result \
+    --frequency_limit 1
 
 now=$(date "+%s")
 time2=$((now - start))
