@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-#set -x
+set -x
 DB_FILE_PAHT=/ppml/data/kms.db
 
 echo "[INFO] try to create database..."
@@ -27,11 +27,21 @@ echo "[INFO] starting easy key management jvm process..."
 HTTPS_KEY_STORE_TOKEN=`openssl rsautl -inkey /ppml/password/key.txt -decrypt </ppml/password/output.bin`
 HTTPS_KEY_STORE_PAHT=/ppml/keys/keystore.pkcs12
 
-java \
-  -Xms2g \
-  -Xmx10g \
-  -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
-  -cp "/ppml/jars/*" \
-  com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
-  --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
-  --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./easy-kms-server.log
+if [ "$SGX_ENABLED" = "true" ]; then
+  bash /ppml/init.sh
+  export sgx_command="java -cp /ppml/jars/*: \
+    -Xms2g -Xmx10g -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
+    com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
+    --httpsKeyStorePath ${HTTPS_KEY_STORE_PAHT} \
+    --httpsKeyStoreToken ${HTTPS_KEY_STORE_TOKEN}"
+  gramine-sgx bash 2>&1 | tee ./easy-kms-server.log
+else
+  java \
+    -Xms2g \
+    -Xmx10g \
+    -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
+    -cp "/ppml/jars/*" \
+    com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
+    --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
+    --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./easy-kms-server.log
+fi
