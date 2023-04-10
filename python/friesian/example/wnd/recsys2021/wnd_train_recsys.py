@@ -51,7 +51,6 @@ indicator_cols = cat_cols + count_cols
 # indicator_dims = cat_dims + count_dims
 
 embedding_cols = [
-    'tweet_id',
     'engaged_with_user_id',
     'enaging_user_id',
     'hashtags',
@@ -371,6 +370,5 @@ if __name__ == "__main__":
     end = time()
     print("Training time is: ", end - start)
     est.save(options.model_dir)
-    model = est.get_model()
 
     stop_orca_context()

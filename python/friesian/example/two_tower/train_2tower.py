@@ -24,6 +24,16 @@ from bigdl.orca.learn.tf2.estimator import Estimator
 from model import *
 from bigdl.dllib.utils.log4Error import *
 
+numeric_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
+                "engaged_with_user_follower_count", "engaged_with_user_following_count",
+                "len_hashtags", "len_domains", "len_links"]
+cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
+            "present_media", "tweet_type", "language"]
+ratio_cols = ["engaged_with_user_follower_following_ratio",
+              "enaging_user_follower_following_ratio"]
+embed_cols = ["hashtags", "present_links", "present_domains"]
+id_cols = ["enaging_user_id", "engaged_with_user_id", "tweet_id"]
+
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -82,9 +92,9 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
+    tf.keras.models.save_model(model, os.path.join(model_dir, "twotower-model"))
+    tf.keras.models.save_model(user_model, os.path.join(model_dir, "user-model"))
+    tf.keras.models.save_model(item_model, os.path.join(model_dir, "item-model"))
     estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
     print("saved models")
     return estimator
@@ -102,23 +112,22 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
 
     def organize_cols(tbl):
         tbl = tbl.select(array("enaging_user_follower_count", "enaging_user_following_count",
-                               "enaging_user_follower_following_ratio").alias("user_num"),
+                               "enaging_user_follower_following_ratio").alias("user_numeric"),
                          array("len_hashtags", "len_domains", "len_links",
                                "engaged_with_user_follower_count",
                                "engaged_with_user_following_count",
-                               "engaged_with_user_follower_following_ratio").alias("item_num"),
+                               "engaged_with_user_follower_following_ratio").alias("item_numeric"),
                          *cat_cols, *embed_cols, *id_cols, "label")
         return tbl
 
+    embed_in_dims = {}
     if args.frequency_limit > 1:
         print("reindexing embedding cols")
         train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
         test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
-        embed_in_dims = {}
         for i, c, in enumerate(embed_cols):
             embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
     else:
-        embed_in_dims = {}
         for col in embed_cols:
             embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
@@ -130,8 +139,8 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     test_tbl = add_ratio_features(test_tbl)
 
     print("scale numerical features")
-    train_tbl, min_max_dic = train_tbl.min_max_scale(num_cols + ratio_cols)
-    test_tbl = test_tbl.transform_min_max_scale(num_cols + ratio_cols, min_max_dic)
+    train_tbl, min_max_dic = train_tbl.min_max_scale(numeric_cols + ratio_cols)
+    test_tbl = test_tbl.transform_min_max_scale(numeric_cols + ratio_cols, min_max_dic)
 
     stats_dir = os.path.join(args.model_dir, 'stats')
     if not exists(stats_dir):
@@ -144,7 +153,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
                                     embed_cols=["enaging_user_id"],
                                     embed_in_dims=[embed_in_dims["enaging_user_id"]],
                                     embed_out_dims=[16],
-                                    numerical_cols=["user_num"],
+                                    numerical_cols=["user_numeric"],
                                     numerical_dims=[3],
                                     name="user")
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
@@ -157,8 +166,8 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16, 16, 16, 16, 16],
-                                    numerical_cols=["item_num"],
+                                    embed_out_dims=[16] * len(embed_cols),
+                                    numerical_cols=["item_numeric"],
                                     numerical_dims=[6],
                                     name="item")
 
@@ -219,16 +228,6 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
-    num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
-                "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links"]
-    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
-                "present_media", "tweet_type", "language"]
-    ratio_cols = ["engaged_with_user_follower_following_ratio",
-                  "enaging_user_follower_following_ratio"]
-    embed_cols = ["hashtags", "present_links", "present_domains"]
-    id_cols = ["enaging_user_id", "engaged_with_user_id", "tweet_id"]
-
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
     full_tbl = train_tbl.concat(test_tbl)
@@ -238,7 +237,7 @@ if __name__ == '__main__':
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
     if args.frequency_limit > 1:
-        output_dir = args.data_dir + "/embed_reindex/"
+        output_dir = os.path.join(args.data_dir, "embed_reindex")
         for i, c in enumerate(embed_cols):
             reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
@@ -248,10 +247,10 @@ if __name__ == '__main__':
                     "inter_op_parallelism": 4,
                     "intra_op_parallelism": args.executor_cores}
 
-    est = train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
-                model_dir=args.model_dir, backend=args.backend)
+    train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
+          model_dir=args.model_dir, backend=args.backend)
 
     full_tbl = train_tbl.concat(test_tbl)
-    full_tbl.write_parquet(os.path.join(args.model_dir, "full_parquet"))
+    full_tbl.write_parquet(os.path.join(args.model_dir, "user_item_parquet"))
 
     stop_orca_context()
