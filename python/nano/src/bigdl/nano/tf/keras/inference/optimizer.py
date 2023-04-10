@@ -28,6 +28,7 @@ import inspect
 import sigfig
 import tensorflow as tf
 import keras
+import json
 from typing import Dict, Optional, List, Union, Callable
 from bigdl.nano.utils.common import BaseInferenceOptimizer, available_acceleration_combination,\
     AccelerationOption, latency_calculate_helper, format_optimize_result
@@ -268,7 +269,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 # save accelerated model
                                 InferenceOptimizer.save(acce_model, temp_dir)
                             _filename = os.path.join(temp_dir, "params")
-                            cloudpickle.dump(params, open(_filename, "wb"))
+                            json.dump(params, open(_filename, "w"))
                             my_env = os.environ.copy()
                             my_env["OMP_NUM_THREADS"] = str(thread_num)
                             worker_file = os.path.join(
