@@ -7,7 +7,7 @@ servicePort: 8085
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
-monitorPort: 1236
+# monitorPort: 1236
 
 # 'kv' or 'inference' default: kv
 serviceType: kv
@@ -39,13 +39,13 @@ redisClusterItemSlotType:
 
 ### Redis Configuration
 # default: localhost:6379
-# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+#redisUrl: localhost:6379
 
 # default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
-# redisType:
+# redisType: sentinel
 
 # default: null, must be provided if redisType=sentinel
-# redisSentinelMasterName:
+# redisSentinelMasterName: mymaster
 
 # default: localhost:26379
 # redisSentinelMasterURL:

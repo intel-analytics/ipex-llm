@@ -3,7 +3,7 @@
 ### Basic setting
 
 # Default: 8082, which port to create the server
-servicePort: 8082
+# servicePort: 8082
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
@@ -22,7 +22,7 @@ redisKeyPrefix:
 # userFeatureColumns: enaging_user_follower_count, enaging_user_following_count, enaging_user_is_verified
 
 # default: null, if serviceType='kv,inference', itemFeatureColumns must be provided
-# itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, len_hashtags, len_domains, len_links, present_media_language, engaged_with_user_is_verified
+ # itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, tweet_id, engaged_with_user_id, enaing_user_id, hashtags, present_domains, len_hashtags, len_domains, len_links, present_media_language, engaged_with_user_is_verified
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
@@ -39,13 +39,13 @@ redisKeyPrefix:
 
 ### Redis Configuration
 # default: localhost:6379, if redisType=sentinel, redisUrl will be ignored
-redisUrl: 10.239.158.177:6379
+# redisUrl: localhost:6399
 
 # default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
-# redisType:
+# redisType: sentinel
 
 # default: null, must be provided if redisType=sentinel
-# redisSentinelMasterName:
+# redisSentinelMasterName: mymaster
 
 # default: localhost:26379
 # redisSentinelMasterURL:
