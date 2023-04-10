@@ -8,7 +8,7 @@
 # monitorPort: 1238
 
 # default: 128, the dimensionality of the embedding vectors
-# indexDim: 50
+# indexDim: 128
 
 # default: null, path to saved index path, must be provided
 indexPath: ./mnt/item_128.idx
