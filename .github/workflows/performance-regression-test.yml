@@ -44,14 +44,14 @@ jobs:
 
       - name: Run benchmark
         run: |
-          wget https://raw.githubusercontent.com/HensonMa/BigDL/run-tmp/python/benchmark/run.py -O ./python/benchmark/run.py
-          python python/benchmark/run.py chronos tsdataset_processing
-          python python/benchmark/run.py chronos forecaster_training
-          python python/benchmark/run.py chronos forecaster_inference
-          python python/benchmark/run.py nano torch_inference_optimizer
-          python python/benchmark/run.py nano resnet_inference
-          python python/benchmark/run.py nano resnet50
-          python python/benchmark/run.py nano keras_inference_optimizer
+          wget https://raw.githubusercontent.com/HensonMa/BigDL/run-tmp/python/benchmark/run.py
+          python run.py chronos tsdataset_processing
+          python run.py chronos forecaster_training
+          python run.py chronos forecaster_inference
+          python run.py nano torch_inference_optimizer
+          python run.py nano resnet_inference
+          python run.py nano resnet50
+          python run.py nano keras_inference_optimizer
 
         env:
           USER: ${{ github.actor }}
