@@ -154,7 +154,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
 
     with tempfile.TemporaryDirectory() as local_path:
         get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
-                                local_path)
+                                 local_path)
         with open(os.path.join(local_path, "categorical_sizes.pkl"), 'rb') as f:
             cat_sizes_dict = pickle.load(f)
             for col in id_cols:
