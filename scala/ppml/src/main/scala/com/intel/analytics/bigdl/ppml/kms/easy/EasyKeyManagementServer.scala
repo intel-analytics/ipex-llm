@@ -195,38 +195,37 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   def insertDB(statement: String, url: String): Unit = {
+    logger.info(s"[INFO] insert statment: $statement")
     val connection = DriverManager.getConnection(url)
-    val rs = connection.createStatement().executeUpdate(statement)
+    connection.createStatement().executeUpdate(statement)
     if(connection != null) connection.close()
-    rs
   }
 
-  def queryDB(statement: String, url: String): ResultSet = {
-    val connection = DriverManager.getConnection(url)
-    val rs = connection.createStatement().executeQuery(statement)
-    if(connection != null) connection.close()
-    rs
+  def queryDB(statement: String, url: String,
+    columnName: String): Option[String] = {
+      logger.info(s"[INFO] query statment: $statement")
+      val connection = DriverManager.getConnection(url)
+      val rs = connection.createStatement().executeQuery(statement)
+      val value = if (rs.next) rs.getString(columnName) else null
+      if(connection != null) connection.close()
+      Some(value)
   }
 
   def login(user: String, token: String, url: String): Unit = {
     val userHash = md5(user)
     val statement = s"select * from user where name='$userHash'"
-    val rs = queryDB(statement, url)
-    if (rs.next()) {
-      val tokenHashFromDB = rs.getString("token")
-      val userProvidedTokenHash = md5(token)
-      Log4Error.invalidOperationError(tokenHashFromDB == userProvidedTokenHash,
-        "wrong token or user")
-    } else {
-      Log4Error.invalidOperationError(false, "wrong token or user")
-    }
+    val tokenHashFromDB = queryDB(statement, url, "token").get
+    val userProvidedTokenHash = md5(token)
+    println(s"[INFO] tokenHashFromDB:$tokenHashFromDB, userProvidedTokenHash:$userProvidedTokenHash")
+    Log4Error.invalidOperationError(tokenHashFromDB != null
+      && tokenHashFromDB == userProvidedTokenHash, "wrong token or user")
   }
 
   def saveKey2DB(user: String, keyName: String,
     encryptedKey: String, url: String): Unit = {
       val (userHash, keyNameHash) = (md5(user), md5(keyName))
-      val statement = s"insert into key values('$userHash', '$keyNameHash', '$encryptedKey') " +
-        s"where not exists(select from key where user='$userHash' and name='$keyNameHash')"
+      val statement = s"insert into key select '$userHash', '$keyNameHash', '$encryptedKey' " +
+        s"where not exists(select 1 from key where user='$userHash' and name='$keyNameHash')"
       insertDB(statement, url)
   }
 
@@ -240,15 +239,9 @@ object EasyKeyManagementServer extends Supportive {
   def queryKeyFromDB(user: String, keyName: String,
     url: String): Option[String] = {
       val (userHash, keyNameHash) = (md5(user), md5(keyName))
-      val statement = s"select * from user where user='$userHash' and name='$keyNameHash'"
-      val rs = queryDB(statement, url)
-      if (rs.next()) {
-        val encryptedKey = rs.getString("data")
-        Some(encryptedKey)
-      } else {
-        Log4Error.invalidOperationError(false, "wrong key name")
-        Some(null)
-      }
+      val statement = s"select * from key where user='$userHash' and name='$keyNameHash'"
+      val encryptedKey = queryDB(statement, url, "data")
+      encryptedKey
   }
 
   def keyCryptoCodec(base64WrappingKeyPlainText: String,
