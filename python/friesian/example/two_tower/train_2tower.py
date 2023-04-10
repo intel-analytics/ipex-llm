@@ -16,26 +16,48 @@
 
 import pickle
 import argparse
+from model import *
 from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.data.file import exists, makedirs
+from bigdl.orca.data.file import get_remote_file_to_local
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2.estimator import Estimator
-from model import *
 from bigdl.dllib.utils.log4Error import *
 
-numeric_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
-                "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links"]
-cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
-            "present_media", "tweet_type", "language"]
-ratio_cols = ["engaged_with_user_follower_following_ratio",
-              "enaging_user_follower_following_ratio"]
-embed_cols = ["hashtags", "present_links", "present_domains"]
-user_id_cols = ["enaging_user_id"]
-item_id_cols = ["tweet_id", "engaged_with_user_id"]
-id_cols = user_id_cols + item_id_cols
+numeric_cols = [
+    "enaging_user_follower_count", 
+    "enaging_user_following_count",
+    "engaged_with_user_follower_count",
+    "engaged_with_user_following_count",
+    "len_hashtags",
+    "len_domains",
+    "len_links"
+]
 
+cat_cols = [
+    "engaged_with_user_is_verified",
+    "enaging_user_is_verified",
+    "present_media",
+    "tweet_type",
+    "language"
+]
+
+ratio_cols = [
+    "engaged_with_user_follower_following_ratio",
+    "enaging_user_follower_following_ratio"
+]
+
+embed_cols = [
+    "hashtags",
+    "present_links",
+    "present_domains"
+]
+
+id_cols = [
+    "enaging_user_id",
+    "tweet_id",
+    "engaged_with_user_id"
+]
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -133,10 +155,13 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         for col in embed_cols:
             embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
-    with open(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"), 'rb') as f:
-        cat_sizes_dict = pickle.load(f)
-        for col in id_cols:
-            embed_in_dims[col] = cat_sizes_dict[col]
+    with tempfile.TemporaryDirectory() as local_path:
+        get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
+                                 os.path.join(local_path, "meta/categorical_sizes.pkl"))
+        with open(os.path.join(local_path, "meta/categorical_sizes.pkl"), 'rb') as f:
+            cat_sizes_dict = pickle.load(f)
+            for col in id_cols:
+                embed_in_dims[col] = cat_sizes_dict[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
@@ -145,12 +170,6 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     print("scale numerical features")
     train_tbl, min_max_dic = train_tbl.min_max_scale(numeric_cols + ratio_cols)
     test_tbl = test_tbl.transform_min_max_scale(numeric_cols + ratio_cols, min_max_dic)
-
-    stats_dir = os.path.join(args.model_dir, 'stats')
-    if not exists(stats_dir):
-        makedirs(stats_dir)
-    with open(os.path.join(stats_dir, "min_max.pkl"), 'wb') as f:
-        pickle.dump(min_max_dic, f)
 
     user_col_info = ColumnInfoTower(indicator_cols=["enaging_user_is_verified"],
                                     indicator_dims=[2],
@@ -163,13 +182,13 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
                                                     "present_media", "tweet_type", "language"],
                                     indicator_dims=[2, 13, 3, 67],  # max + 1
-                                    embed_cols=item_id_cols + embed_cols,
+                                    embed_cols=["tweet_id", "engaged_with_user_id"] + embed_cols,
                                     embed_in_dims=[embed_in_dims["tweet_id"],
                                                    embed_in_dims["engaged_with_user_id"],
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16] * len(item_id_cols + embed_cols),
+                                    embed_out_dims=[16, 16, 16, 16, 16],
                                     numerical_cols=["item_numeric"],
                                     numerical_dims=[6],
                                     name="item")

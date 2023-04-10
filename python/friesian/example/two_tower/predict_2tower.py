@@ -22,7 +22,7 @@ from bigdl.friesian.feature import FeatureTable
 
 parser = argparse.ArgumentParser(description="Two Tower Inference")
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The cluster mode, such as local, yarn, standalone or spark-submit.')
+                    help='The cluster mode, such as local, yarn or spark-submit.')
 parser.add_argument('--backend', type=str, default="ray",
                     choices=("spark", "ray"),
                     help="The backend of Orca Estimator, either ray or spark.")
@@ -42,16 +42,14 @@ if args.cluster_mode == "local":
     sc = init_orca_context("local", cores=args.executor_cores,
                            memory=args.executor_memory)
 elif args.cluster_mode == "yarn":
-    from train_2tower import spark_conf
     sc = init_orca_context("yarn-client", cores=args.executor_cores,
                            num_nodes=args.num_executors, memory=args.executor_memory,
-                           conf=spark_conf, extra_python_lib="model.py",
-                           object_store_memory="80g")
+                           extra_python_lib="model.py")
 elif args.cluster_mode == "spark-submit":
     sc = init_orca_context("spark-submit")
 else:
     invalidInputError(False,
-                      "cluster_mode should be one of 'local', 'yarn', and"
+                      "cluster_mode should be one of 'local', 'yarn' and"
                       " 'spark-submit', but got " + args.cluster_mode)
 
 config = {"inter_op_parallelism": 4,
@@ -83,8 +81,8 @@ result = item_est.predict(data=full_tbl.df,
                                         'present_links', 'present_domains', 'item_numeric'])
 result = FeatureTable(result)
 result = result.select(['tweet_id', 'prediction']).drop_duplicates()
-result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
 print("Embeddings of the first 5 items:")
 result.show(5)
+result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
 
 stop_orca_context()

@@ -43,11 +43,11 @@ python ../../example/two_tower/train_2tower.py \
 now=$(date "+%s")
 time1=$((now - start))
 
-if [ -d data/recsys_sample ]; then
-  echo "data/recsys_sample already exists"
+if [ -d data/recsys_preprocessed ]; then
+  echo "data/recsys_preprocessed already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
-  tar -xvzf data/recsys_sample.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/recsys_preprocessed.tar.gz -P data
+  tar -xvzf data/recsys_preprocessed.tar.gz -C data
 fi
 
 echo "#2 start example test for wnd recsys2021 train"
@@ -56,7 +56,7 @@ start=$(date "+%s")
 python ../../example/wnd/recsys2021/wnd_train_recsys.py \
     --executor_cores 4 \
     --executor_memory 10g \
-    --data_dir ./data/recsys_sample \
+    --data_dir ./data/recsys_preprocessed \
     --model_dir ./result \
     -b 1600
 

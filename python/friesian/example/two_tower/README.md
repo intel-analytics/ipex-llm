@@ -54,4 +54,4 @@ __Options:__
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
-* `model_dir`: The output, including model for trained models and stats to store reindex dicts and min_max.pkl.
+* `model_dir`: The output, including model for trained models and stats to store reindex dicts.
