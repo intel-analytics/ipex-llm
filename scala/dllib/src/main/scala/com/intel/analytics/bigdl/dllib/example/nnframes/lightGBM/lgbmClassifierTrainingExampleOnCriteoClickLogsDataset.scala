@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dllib.example.nnframes.gbt
+package com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM
 
 import com.intel.analytics.bigdl.dllib.NNContext
+import com.intel.analytics.bigdl.dllib.nnframes.LightGBMClassifier
 import org.apache.spark.ml.classification.GBTClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
@@ -47,7 +48,7 @@ case class Params(
                    maxDepth: Int = 2
                  )
 
-object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
+object lgbmClassifierTrainingExampleOnCriteoClickLogsDataset {
 
   val featureNum = 39
 
@@ -114,9 +115,9 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
       setInputCols(inputCols).
       setOutputCol("features")
 
-    val gbtInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
+    val lgbmInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, test) = gbtInput.randomSplit(Array(0.8, 0.2))
+    val Array(train, test) = lgbmInput.randomSplit(Array(0.8, 0.2))
 
     train.cache().count()
 
@@ -124,32 +125,27 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
     log.info("--preprocess time is " + elapsed + " s")
-    // use scala tracker
-    //    val gbtParam = Map("tracker_conf" -> TrackerConf(0L, "scala"),
-    //      "eval_sets" -> Map("eval1" -> eval1, "eval2" -> eval2)
-    //    )
 
-    // Train a GBT model.
-    val gbtClassifier = new GBTClassifier()
-    gbtClassifier.setFeaturesCol("features")
-    gbtClassifier.setLabelCol("classIndex")
-    gbtClassifier.setMaxDepth(maxDepth)
-    gbtClassifier.setMaxIter(maxIter)
-    gbtClassifier.setFeatureSubsetStrategy("auto")
 
+    // Train a LGBM model.
+    val lgbmClassifier = new LightGBMClassifier()
+    lgbmClassifier.setFeaturesCol("features")
+    lgbmClassifier.setLabelCol("classIndex")
+    lgbmClassifier.setMaxDepth(maxDepth)
+    lgbmClassifier.setNumIterations(maxIter)
     // Train model. This also runs the indexer.
-    val gbtClassificationModel = gbtClassifier.fit(train)
+    val lgbmClassificationModel = lgbmClassifier.fit(train)
     val tAfterTraining = System.nanoTime()
     elapsed = (tAfterTraining - tBeforeTraining) / 1000000000.0f // second
     log.info("--training time is " + elapsed + " s")
 
-    gbtClassificationModel.write.overwrite().save(modelSavePath)
+    lgbmClassificationModel.saveNativeModel(modelSavePath)
 
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
     log.info("--model save time is " + elapsed + " s")
 
-    val predictions = gbtClassificationModel.transform(test);
+    val predictions = lgbmClassificationModel.transform(test);
     val evaluatorMulti = new MulticlassClassificationEvaluator()
       .setLabelCol("classIndex")
       .setMetricName("accuracy")
@@ -165,7 +161,7 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     sc.stop()
   }
 
-  val parser: OptionParser[Params] = new OptionParser[Params]("input gbt config") {
+  val parser: OptionParser[Params] = new OptionParser[Params]("input lgbm config") {
     opt[String]('i', "trainingDataPath")
       .text("trainingData Path")
       .action((v, p) => p.copy(trainingDataPath = v))
