@@ -59,7 +59,7 @@ user_est = Estimator.from_keras(config=config, backend=args.backend)
 user_est.load(os.path.join(args.model_dir, "user-model"))
 
 full_tbl = FeatureTable.read_parquet(os.path.join(args.model_dir, "user_item_parquet"))
-print("full table size: "+str(full_tbl.size()))
+print("Data size: " + str(full_tbl.size()))
 
 result = user_est.predict(data=full_tbl.df,
                           feature_cols=['enaging_user_is_verified', 'enaging_user_id',

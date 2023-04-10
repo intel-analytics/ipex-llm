@@ -51,8 +51,7 @@ python ../../example/two_tower/train_2tower.py \
     --executor_cores 4 \
     --executor_memory 10g \
     --data_dir ./data/recsys_preprocessed \
-    --model_dir ./result \
-    --frequency_limit 1
+    --model_dir ./result
 
 now=$(date "+%s")
 time2=$((now - start))

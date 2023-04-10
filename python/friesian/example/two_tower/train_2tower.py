@@ -151,25 +151,24 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
         for i, c, in enumerate(embed_cols):
             embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
-    else:
-        for col in embed_cols:
-            embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
     with tempfile.TemporaryDirectory() as local_path:
         get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
-                                 os.path.join(local_path, "meta/categorical_sizes.pkl"))
-        with open(os.path.join(local_path, "meta/categorical_sizes.pkl"), 'rb') as f:
+                                local_path)
+        print(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"))
+        with open(os.path.join(local_path, "categorical_sizes.pkl"), 'rb') as f:
             cat_sizes_dict = pickle.load(f)
             for col in id_cols:
-                embed_in_dims[col] = cat_sizes_dict[col]
+                if col not in embed_in_dims:
+                    embed_in_dims[col] = cat_sizes_dict[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
     test_tbl = add_ratio_features(test_tbl)
 
     print("scale numerical features")
-    train_tbl, min_max_dic = train_tbl.min_max_scale(numeric_cols + ratio_cols)
-    test_tbl = test_tbl.transform_min_max_scale(numeric_cols + ratio_cols, min_max_dic)
+    train_tbl, min_max_dict = train_tbl.min_max_scale(numeric_cols + ratio_cols)
+    test_tbl = test_tbl.transform_min_max_scale(numeric_cols + ratio_cols, min_max_dict)
 
     user_col_info = ColumnInfoTower(indicator_cols=["enaging_user_is_verified"],
                                     indicator_dims=[2],
