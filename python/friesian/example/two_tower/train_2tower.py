@@ -25,7 +25,7 @@ from bigdl.orca.learn.tf2.estimator import Estimator
 from bigdl.dllib.utils.log4Error import *
 
 numeric_cols = [
-    "enaging_user_follower_count", 
+    "enaging_user_follower_count",
     "enaging_user_following_count",
     "engaged_with_user_follower_count",
     "engaged_with_user_following_count",
