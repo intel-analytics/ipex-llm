@@ -32,7 +32,9 @@ cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
 ratio_cols = ["engaged_with_user_follower_following_ratio",
               "enaging_user_follower_following_ratio"]
 embed_cols = ["hashtags", "present_links", "present_domains"]
-id_cols = ["enaging_user_id", "engaged_with_user_id", "tweet_id"]
+user_id_cols = ["enaging_user_id"]
+item_id_cols = ["tweet_id", "engaged_with_user_id"]
+id_cols = user_id_cols + item_id_cols
 
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -121,7 +123,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         return tbl
 
     embed_in_dims = {}
-    if args.frequency_limit > 1:
+    if reindex_tbls:
         print("reindexing embedding cols")
         train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
         test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
@@ -131,8 +133,10 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         for col in embed_cols:
             embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
 
-    for col in id_cols:
-        embed_in_dims[col] = train_tbl.concat(test_tbl).get_stats(col, "max")[col]
+    with open(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"), 'rb') as f:
+        cat_sizes_dict = pickle.load(f)
+        for col in id_cols:
+            embed_in_dims[col] = cat_sizes_dict[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
@@ -159,14 +163,13 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
                                                     "present_media", "tweet_type", "language"],
                                     indicator_dims=[2, 13, 3, 67],  # max + 1
-                                    embed_cols=["tweet_id", "engaged_with_user_id", "hashtags",
-                                                "present_links", "present_domains"],
+                                    embed_cols=item_id_cols + embed_cols,
                                     embed_in_dims=[embed_in_dims["tweet_id"],
                                                    embed_in_dims["engaged_with_user_id"],
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16] * len(embed_cols),
+                                    embed_out_dims=[16] * len(item_id_cols + embed_cols),
                                     numerical_cols=["item_numeric"],
                                     numerical_dims=[6],
                                     name="item")
@@ -230,13 +233,12 @@ if __name__ == '__main__':
 
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    full_tbl = train_tbl.concat(test_tbl)
     reindex_tbls = None
     if args.frequency_limit > 1:
-        reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+        reindex_tbls = train_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
-    if args.frequency_limit > 1:
+    if reindex_tbls:
         output_dir = os.path.join(args.data_dir, "embed_reindex")
         for i, c in enumerate(embed_cols):
             reindex_tbls[i].write_parquet(output_dir + "_" + c)

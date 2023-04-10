@@ -52,7 +52,6 @@ indicator_cols = cat_cols + count_cols
 
 embedding_cols = [
     'engaged_with_user_id',
-    'enaging_user_id',
     'hashtags',
     'present_domains'
 ]

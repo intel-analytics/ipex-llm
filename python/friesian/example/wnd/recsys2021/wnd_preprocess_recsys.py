@@ -110,7 +110,10 @@ item_features = [
     'len_domains',
     'len_links',
     'present_media_language',
-    'engaged_with_user_is_verified'
+    'engaged_with_user_is_verified',
+    'engaged_with_user_id',
+    'hashtags',
+    'present_domains'
 ]
 
 conf = {"spark.network.timeout": "10000000",
