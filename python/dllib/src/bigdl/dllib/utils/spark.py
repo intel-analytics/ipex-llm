@@ -224,7 +224,8 @@ class SparkRunner:
             print(sys_args)
             submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
             print(submit_command)
-            return_value = os.system(submit_command)
+            submit_command_list = submit_command.split()
+            return_value = subprocess.run(submit_command_list)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
