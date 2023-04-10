@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.orca.tfpark
 
 import java.io._
-
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.models.utils.{CachedModels, ModelBroadcast, ModelInfo}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
@@ -30,6 +29,7 @@ import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.net.SerializationHolder
 import com.intel.analytics.bigdl.orca.tfpark.Util._
+import org.apache.commons.io.serialization.ValidatingObjectInputStream
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -174,8 +174,9 @@ private[bigdl] class ModelInfo[T: ClassTag](var uuid: String, @transient var mod
       val read = in.read(w, numOfBytes, len - numOfBytes)
       numOfBytes += read
     }
-
-    val ois = new CheckedObjectInputStream(classOf[Module[T]], new ByteArrayInputStream(w))
+    // val ois = new CheckedObjectInputStream(classOf[Module[T]], new ByteArrayInputStream(w))
+    val ois = new ValidatingObjectInputStream(new ByteArrayInputStream(w))
+    ois.accept(classOf[Module[T]])
     try {
       model = ois.readObject().asInstanceOf[Module[T]]
       CachedModels.add(uuid, model)
