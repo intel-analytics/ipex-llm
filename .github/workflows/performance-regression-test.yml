@@ -44,6 +44,7 @@ jobs:
 
       - name: Run benchmark
         run: |
+          wget https://raw.githubusercontent.com/HensonMa/BigDL/run-tmp/python/benchmark/run.py -O ./python/benchmark/run.py
           python python/benchmark/run.py chronos tsdataset_processing
           python python/benchmark/run.py chronos forecaster_training
           python python/benchmark/run.py chronos forecaster_inference
