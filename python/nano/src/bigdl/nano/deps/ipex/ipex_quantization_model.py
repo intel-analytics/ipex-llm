@@ -21,6 +21,7 @@ from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 from bigdl.nano.utils.common import compare_version
+import operator
 import torch
 
 

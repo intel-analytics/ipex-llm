@@ -22,6 +22,7 @@ from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError, compare_version
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 from bigdl.nano.utils.pytorch import transform_state_dict_to_dtype
+import operator
 import torch
 import copy
 
@@ -129,25 +130,28 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                     with torch.cpu.amp.autocast():
                         if self.jit_method == 'trace':
                             if compare_version("torch", operator.ge, "2.0"):
-                                self.model = torch.jit.trace(self.model,
-                                                             example_inputs=input_sample,
-                                                             check_trace=False,
-                                                             strict=jit_strict,
-                                                             example_kwarg_inputs=example_kwarg_inputs)
+                                self.model = torch.jit.trace(
+                                    self.model,
+                                    example_inputs=input_sample,
+                                    check_trace=False,
+                                    strict=jit_strict,
+                                    example_kwarg_inputs=example_kwarg_inputs)
                             else:
-                                self.model = torch.jit.trace(self.model, input_sample,
-                                                            check_trace=False,
-                                                            strict=jit_strict)
+                                self.model = torch.jit.trace(
+                                    self.model, input_sample,
+                                    check_trace=False,
+                                    strict=jit_strict)
                         elif self.jit_method == 'script':
                             self.model = torch.jit.script(self.model)
                         else:
                             try:
                                 if compare_version("torch", operator.ge, "2.0"):
-                                    self.model = torch.jit.trace(self.model,
-                                                                 example_inputs=input_sample,
-                                                                 check_trace=False,
-                                                                 strict=jit_strict,
-                                                                 example_kwarg_inputs=example_kwarg_inputs)
+                                    self.model = torch.jit.trace(
+                                        self.model,
+                                        example_inputs=input_sample,
+                                        check_trace=False,
+                                        strict=jit_strict,
+                                        example_kwarg_inputs=example_kwarg_inputs)
                                 else:
                                     self.model = torch.jit.trace(self.model, input_sample,
                                                                  check_trace=False,

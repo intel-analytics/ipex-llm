@@ -746,9 +746,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
-        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be 
+        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
                                      passed to ``torch.jit.trace``. Default: None. Either this
-                                     argument or ``input_sample`` should be specified. The dict 
+                                     argument or ``input_sample`` should be specified. The dict
                                      will be unpacking by the arguments name of the traced
                                      function. Only valid when accelerator='jit' and torch>=2.0,
                                      otherwise will be ignored.
@@ -1032,7 +1032,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               enable_onednn: bool = True,
               output_tensors: bool = True,
               strict_check: bool = True,
-              example_kwarg_inputs = None,
+              example_kwarg_inputs=None,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -1112,7 +1112,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              param helps to eliminate the not critical checking, which may enable
                              more models to be optimized while may bring some strange error
                              message. Default to ``True``.
-        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be 
+        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
                                      passed to ``torch.jit.trace``. Default: None. Either this
                                      argument or ``input_sample`` should be specified. The dict
                                      will be unpacking by the arguments name of the traced function.
