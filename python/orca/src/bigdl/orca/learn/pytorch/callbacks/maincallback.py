@@ -60,6 +60,7 @@ class MainCallback(Callback):
         outputL = [runner.output] if not isinstance(runner.output, (list, tuple)) else runner.output
         # Compute loss
         runner.loss = runner.criterion(*outputL, *targetL)
+        runner.target = target
 
     def on_iter_backward(self, runner):
         """

@@ -575,9 +575,9 @@ class TorchRunner(BaseRunner):
             del self.output
 
         # User should not see batch from last iteration
-        # Assume target is always the last one in a batch.
         if hasattr(self, "target"):
             target = self.target
+            del self.target
         del self.batch
 
         if hasattr(self, "loss"):
