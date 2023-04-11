@@ -16,6 +16,7 @@
 
 import numpy as np
 
+
 def _flatten(inputs, result):
     for x in inputs:
         if isinstance(x, np.ndarray) or np.isscalar(x):

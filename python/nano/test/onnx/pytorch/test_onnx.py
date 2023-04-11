@@ -62,6 +62,27 @@ class MultiInputModel(nn.Module):
         return self.layer_3(x)
 
 
+class TupleInputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 128)
+        self.layer_2 = nn.Linear(28 * 28, 128)
+        self.layer_3 = nn.Linear(256, 1)
+    
+    def forward(self, x1, x2, x3):
+        x1 = self.layer_1(x1)
+        x2_ = None
+        for x in x2:
+            if x2_ is None:
+                x2_ = self.layer_2(x)
+            else:
+                x2_ += self.layer_2(x)
+        x = torch.cat([x1, x2_], axis=1)
+
+        return self.layer_3(x) + x3
+
+
 class TestOnnx(TestCase):
     def test_trace_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -354,6 +375,28 @@ class TestOnnx(TestCase):
             forward_res_numpy = test_onnx_model(x)
             assert isinstance(forward_res_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
+        
+    def test_onnx_tuple_input(self):
+        model = TupleInputModel()
+        x1 = torch.randn(100, 28 * 28)
+        x2 = [torch.randn(100, 28 * 28), torch.randn(100, 28 * 28), torch.randn(100, 28 * 28)]  # tuple
+        x3 = 5
+        target = model(x1, x2, x3)
+
+        ov_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2, x3))
+        with InferenceOptimizer.get_context(ov_model):
+            # TODO: handle int and float
+            output1 = ov_model(x1, x2, np.array(x3))
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model(x1, x2, np.array(x3))
+            np.testing.assert_almost_equal(target.numpy(), output2.numpy(), decimal=5)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
