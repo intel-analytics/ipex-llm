@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.example.nnframes.xgboost
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.XGBClassifier
 import ml.dmlc.xgboost4j.scala.spark.TrackerConf
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
@@ -161,6 +162,18 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
     log.info("--model save time is " + elapsed + " s")
+
+    val predictions = xgbClassificationModel.transform(test);
+    val evaluatorMulti = new MulticlassClassificationEvaluator()
+      .setLabelCol("classIndex")
+      .setMetricName("accuracy")
+
+    val acc = evaluatorMulti.evaluate(predictions)
+    println("acc:", acc)
+    val tAfterTransform = System.nanoTime()
+    elapsed = (tAfterTransform - tAfterSave) / 1000000000.0f // second
+    log.info("--test data transform time is " + elapsed + " s")
+
     elapsed = (tAfterSave - tStart) / 1000000000.0f // second
     log.info("--end-to-end time is " + elapsed + " s")
     sc.stop()

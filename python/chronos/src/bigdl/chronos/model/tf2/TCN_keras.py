@@ -45,6 +45,7 @@ import tensorflow as tf
 from bigdl.nano.tf.keras import Model
 from tensorflow.keras.layers import Conv1D, BatchNormalization,\
     Activation, Dropout, Input, Layer
+from bigdl.chronos.model.tf2.keras_model_wrapper import NormalizeTSModel
 
 
 class TemporalBlock(Layer):
@@ -196,6 +197,8 @@ def model_creator(config):
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True))
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
     inputs = np.zeros(shape=(1, config["past_seq_len"], config["input_feature_num"]))
     # init weights matrix
     model(inputs)

@@ -30,6 +30,8 @@ class BaseTF2Forecaster(Forecaster):
     def __init__(self, **kwargs):
         if self.seed:
             # TF seed can't be set to None, just to be consistent with torch.
+            warnings.warn("If users want to set the random seed for training, it's better to "
+                          f"call 'tf.keras.utils.set_random_seed({self.seed})' manually.")
             from tensorflow.keras.utils import set_random_seed
             set_random_seed(seed=self.seed)
         if self.distributed:
