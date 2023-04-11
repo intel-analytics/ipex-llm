@@ -108,8 +108,18 @@ class SparkTFEstimator():
             self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
-        return cluster_info
+        def get_worker_address(iter):
+            worker_ip = get_node_ip()
+            worker_port = find_free_port()
+            addresses = find_ip_and_free_port(iter)
+            res = [(f"{worker_ip}:{worker_port}", address) for address in addresses]
+            return res
+
+        worker_info = self.workerRDD.barrier().mapPartitions(get_worker_address).collect()
+        address_info = [info[0] for info in worker_info]
+        cluster_info = [info[1] for info in worker_info]
+
+        return address_info, cluster_info
 
     def fit(self,
             data: Union["SparkXShards", "SparkDataFrame", Callable],
