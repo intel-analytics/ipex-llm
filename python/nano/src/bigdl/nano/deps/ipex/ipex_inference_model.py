@@ -163,16 +163,34 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
             else:
                 with torch.no_grad():
                     if self.jit_method == 'trace':
-                        self.model = torch.jit.trace(self.model, input_sample,
-                                                     check_trace=False,
-                                                     strict=jit_strict)
+                        if compare_version("torch", operator.ge, "2.0"):
+                            self.model = torch.jit.trace(
+                                self.model,
+                                example_inputs=input_sample,
+                                check_trace=False,
+                                strict=jit_strict,
+                                example_kwarg_inputs=example_kwarg_inputs)
+                        else:
+                            self.model = torch.jit.trace(
+                                self.model, input_sample,
+                                check_trace=False,
+                                strict=jit_strict)
                     elif self.jit_method == 'script':
                         self.model = torch.jit.script(self.model)
                     else:
                         try:
-                            self.model = torch.jit.trace(self.model, input_sample,
-                                                         check_trace=False,
-                                                         strict=jit_strict)
+                            if compare_version("torch", operator.ge, "2.0"):
+                                self.model = torch.jit.trace(
+                                    self.model,
+                                    example_inputs=input_sample,
+                                    check_trace=False,
+                                    strict=jit_strict,
+                                    example_kwarg_inputs=example_kwarg_inputs)
+                            else:
+                                self.model = torch.jit.trace(
+                                    self.model, input_sample,
+                                    check_trace=False,
+                                    strict=jit_strict)
                         except Exception:
                             self.model = torch.jit.script(self.model)
                     self.model = torch.jit.freeze(self.model)

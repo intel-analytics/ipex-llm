@@ -78,7 +78,8 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
                                use_jit=use_jit, channels_last=channels_last,
                                thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
                                jit_method=jit_method, weights_prepack=weights_prepack,
-                               enable_onednn=enable_onednn)
+                               enable_onednn=enable_onednn,
+                               example_kwarg_inputs=example_kwarg_inputs)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
@@ -115,7 +116,8 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                                    use_jit=use_jit, channels_last=channels_last,
                                    thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
                                    jit_method=jit_method, weights_prepack=weights_prepack,
-                                   enable_onednn=enable_onednn)
+                                   enable_onednn=enable_onednn,
+                                   example_kwarg_inputs=example_kwarg_inputs)
 
 
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
@@ -143,7 +145,8 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
     return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
                                         input_sample=input_sample, channels_last=channels_last,
                                         thread_num=thread_num, inplace=inplace,
-                                        jit_strict=jit_strict)
+                                        jit_strict=jit_strict,
+                                        example_kwarg_inputs=example_kwarg_inputs)
 
 
 def PytorchIPEXPUModel(model, thread_num=None, precision="fp32", use_ipex=False):
