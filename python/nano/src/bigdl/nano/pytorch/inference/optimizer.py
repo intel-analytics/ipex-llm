@@ -1259,7 +1259,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     @staticmethod
     def load(path, model: Optional[nn.Module] = None, input_sample=None,
-             inplace=False, device=None):
+             inplace=False, device=None, cache_dir=None):
         """
         Load a model from local.
 
@@ -1281,11 +1281,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
+        :param cache_dir: A directory for OpenVINO to cache the model. Default to None. 
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model, input_sample=input_sample,
-                          inplace=inplace, device=device)
+                          inplace=inplace, device=device, cache_dir=cache_dir)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,

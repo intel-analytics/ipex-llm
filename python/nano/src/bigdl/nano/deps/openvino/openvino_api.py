@@ -67,21 +67,26 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 **kwargs)
 
 
-def load_openvino_model(path, framework='pytorch', device=None):
+def load_openvino_model(path, framework='pytorch', device=None, cache_dir=None):
     """
     Load an OpenVINO model for inference from directory.
 
     :param path: Path to model to be loaded.
     :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
+    :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
+    if cache_dir is not None:
+        from pathlib import Path
+        Path(cache_dir).mkdir(exist_ok=True)
+
     if framework == 'pytorch':
         from .pytorch.model import PytorchOpenVINOModel
-        return PytorchOpenVINOModel._load(path, device=device)
+        return PytorchOpenVINOModel._load(path, device=device, cache_dir=cache_dir)
     elif framework == 'tensorflow':
         from .tf.model import KerasOpenVINOModel
-        return KerasOpenVINOModel._load(path, device=device)
+        return KerasOpenVINOModel._load(path, device=device, cache_dir=cache_dir)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."

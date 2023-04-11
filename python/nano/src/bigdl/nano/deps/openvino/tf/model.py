@@ -141,7 +141,7 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         return q_model
 
     @staticmethod
-    def _load(path, device=None):
+    def _load(path, device=None, cache_dir=None):
         """
         Load an OpenVINO model for inference from directory.
 
@@ -163,6 +163,8 @@ class KerasOpenVINOModel(KerasOptimizedModel):
             thread_num = int(config["CPU_THREADS_NUM"])
         elif "INFERENCE_NUM_THREADS" in config:
             thread_num = int(config["INFERENCE_NUM_THREADS"])
+        if cache_dir is not None:
+            config["CACHE_DIR"] = cache_dir
         if device is None:
             device = status.get('device', 'CPU')
         model = KerasOpenVINOModel(xml_path,

@@ -28,7 +28,7 @@ from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
 
 
 def load_model(path, model: nn.Module = None, input_sample=None,
-               inplace=False, device=None):
+               inplace=False, device=None, cache_dir=None):
     """
     Load a model from local.
 
@@ -45,6 +45,8 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param device: A string represents the device of the inference. Default to None.
                    Only valid for openvino model, otherwise will be ignored.
+    :param cache_dir: A directory for OpenVINO to cache the model. Default to None. 
+                      Only valid for openvino model, otherwise will be ignored.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -68,7 +70,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     model_type = metadata.get('ModelType', None)
     result = None
     if model_type == 'PytorchOpenVINOModel':
-        result = load_openvino_model(path, device=device)
+        result = load_openvino_model(path, device=device, cache_dir=cache_dir)
     if model_type == 'PytorchONNXRuntimeModel':
         result = load_onnxruntime_model(path)
     if model_type == 'PytorchQuantizedModel':

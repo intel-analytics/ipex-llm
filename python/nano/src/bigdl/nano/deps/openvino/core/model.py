@@ -21,6 +21,7 @@ from bigdl.nano.utils.common import invalidInputError
 from openvino.runtime import Model
 from openvino.runtime import AsyncInferQueue
 import numpy as np
+from datetime import datetime
 from .utils import save, OpenVINO_LESS_2022_3
 
 
@@ -38,6 +39,8 @@ class OpenVINOModel:
 
     def on_forward_start(self, inputs):
         self._model_exists_or_err()
+        if self._infer_request is None:
+            self.create_infer_request()
         return inputs
 
     def forward_step(self, *inputs):
@@ -90,13 +93,77 @@ class OpenVINOModel:
         if self.additional_config is not None and self._device == 'CPU':
             # TODO: check addition config based on device
             config.update(self.additional_config)
-        self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                      device_name=self._device,
-                                                      config=config)
-        self._infer_request = self._compiled_model.create_infer_request()
         self.final_config = config
+
+        self._compiled_model = None
+        self._infer_request = None
+        
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
+
+    def create_infer_request(self):
+        start_time = datetime.utcnow()
+        self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                      device_name=self._device,
+                                                      config=self.final_config)
+        self._infer_request = self._compiled_model.create_infer_request()
+        duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
+        print(f"Compile model and create infer request took {duration_ms} ms")
+
+
+    def reshape(self, shapes):
+        """
+        Reshape the model to fit the inputs.Be aware that not all models support reshaping, 
+        and models that do, may not support all input shapes. The model accuracy may also 
+        suffer if you reshape the model.
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]'.
+               This parameter affect model Parameter shape, can be dynamic. For dynamic dimesions 
+               use symbol `?`, `-1` or range `low.. up`.'
+        """
+        invalidInputError(isinstance(shapes, str), "Shapes only supports string inputs " 
+                          "like 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]' but got "
+                           f"{shapes.__class__.__name__}.")
+        
+        shapes, reshape = self._get_reshape_info(shapes)
+        if not reshape:
+            print(f"Skip the reshape process since the input shapes are same as the current model shapes.")
+            return
+        
+        start_time = datetime.utcnow()
+        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v)) for k, v in shapes.items())))
+        self.ie_network.reshape(shapes)
+        duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
+        print(f"Reshape model took {duration_ms} ms")
+
+        self.create_infer_request()
+
+    def _get_reshape_info(self, shapes):
+        invalidInputError(isinstance(shapes, str), "`_get_reshape_info` only supports string input.")
+        from openvino.tools.benchmark.utils.utils import parse_input_parameters, get_node_names
+        from openvino.runtime import PartialShape
+        
+        inputs = self.ie_network.inputs
+        input_names = [port.any_name for port in inputs]
+        inputs_info = [(i.any_name, i.node.friendly_name, i.partial_shape) for i in inputs]
+        shape_map = parse_input_parameters(shapes, input_names=input_names)
+        reshape = False
+        input_shapes = {}
+        for name, node_name, shape in inputs_info:
+            new_shape = None
+            if name in shape_map:
+                new_shape = PartialShape(shape_map[name])
+            elif node_name in shape_map:
+                new_shape = PartialShape(shape_map[node_name])
+
+            if new_shape is None:
+                input_shapes[name] = shape
+            else:
+                if new_shape != shape:
+                    reshape = True
+                input_shapes[name] = new_shape
+
+        return input_shapes, reshape
+
 
     def _save(self, path):
         """
@@ -198,7 +265,7 @@ class OpenVINOModel:
 
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
-
+            
     def async_predict(self,
                       input_data: Union[List[np.ndarray], List[List[np.ndarray]]],
                       num_requests: int = 0) -> List[np.ndarray]:

@@ -115,6 +115,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         elif len(outputs) == 1:
             outputs = outputs[0]
         return outputs
+    
+    def reshape(self, shapes):
+        return self.ov_model.reshape(shapes=shapes)
 
     @property
     def status(self):
@@ -130,7 +133,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return self.ov_model.forward_args
 
     @staticmethod
-    def _load(path, device=None):
+    def _load(path, device=None, cache_dir=None):
         """
         Load an OpenVINO model for inference from directory.
 
@@ -152,6 +155,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             thread_num = int(config["CPU_THREADS_NUM"])
         elif "INFERENCE_NUM_THREADS" in config:
             thread_num = int(config["INFERENCE_NUM_THREADS"])
+        if cache_dir is not None:
+            config["CACHE_DIR"] = cache_dir
         if device is None:
             device = status.get('device', 'CPU')
         return PytorchOpenVINOModel(xml_path,
