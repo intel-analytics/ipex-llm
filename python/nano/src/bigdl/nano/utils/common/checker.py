@@ -68,6 +68,7 @@ def _avx512_checker():
     cpuinfo = CPUInfo()
     return cpuinfo.has_avx512
 
+
 def _avx2_checker():
     # copied from https://github.com/intel/intel-extension-for-pytorch
     try:
