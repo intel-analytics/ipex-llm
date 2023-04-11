@@ -27,12 +27,12 @@ redisClusterItemSlotType:
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# userModelPath: /mnt/path/to/user-model
+# userModelPath: ./mnt/path/to/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# itemModelPath: /mnt/path/to/item-model
+# itemModelPath: ./mnt/path/to/item-model
 
 # default: 1, number of models used for inference
 # modelParallelism: 3
