@@ -17,6 +17,8 @@
 
 from bigdl.nano.utils.common import invalidInputError
 from .core.base_metric import BaseINCMetric
+from bigdl.nano.utils.common import compare_version
+import operator
 
 
 def quantize(model, dataloader=None, eval_func=None, metric=None,
@@ -92,7 +94,10 @@ def _quantize(
     **kwargs
 ):
     from neural_compressor import quantization
-    from neural_compressor.quantization import PostTrainingQuantConfig
+    if compare_version("neural_compressor", operator.ge, "2.1"):
+        from neural_compressor import PostTrainingQuantConfig
+    else:
+        from neural_compressor.quantization import PostTrainingQuantConfig
     from neural_compressor.config import AccuracyCriterion, TuningCriterion
     from neural_compressor.conf.pythonic_config import Config
     from neural_compressor.conf.config import QuantConf
@@ -214,12 +219,17 @@ def _quantize(
     )
     if metric is None and eval_func is None:
         config.performance_only = True
-    config = Config(quantization=config, benchmark=None, pruning=None,
-                    distillation=None, nas=None)
 
-    q_conf = QuantConf()
-    q_conf.map_pyconfig_to_cfg(config)
-    q_conf.usr_cfg.model.framework = framework
+    if compare_version("neural_compressor", operator.ge, "2.1"):
+        q_conf = config
+        # TODO: how to pass framework?
+    else:
+        config = Config(quantization=config, benchmark=None, pruning=None,
+                        distillation=None, nas=None)
+
+        q_conf = QuantConf()
+        q_conf.map_pyconfig_to_cfg(config)
+        q_conf.usr_cfg.model.framework = framework
 
     q_model = quantization.fit(
         model=model,
