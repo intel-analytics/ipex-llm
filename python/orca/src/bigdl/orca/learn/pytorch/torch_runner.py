@@ -122,6 +122,7 @@ class TorchRunner(BaseRunner):
 
         self.timers = utils.TimerCollection()
         self.epochs = 0
+        self.epoch_step = 0
         self.global_step = 0
         self.models = None
         self.optimizers = None
@@ -371,6 +372,8 @@ class TorchRunner(BaseRunner):
                 self._train_loop(iterator, metric_meters, callbacks)
         else:
             self._train_loop(iterator, metric_meters, callbacks)
+        
+        self.epoch_step = 0
 
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
 
@@ -379,6 +382,8 @@ class TorchRunner(BaseRunner):
 
     def _train_loop(self, iterator, metric_meters, callbacks):
         for batch_idx, batch in enumerate(iterator):
+            if batch_idx < self.epoch_step:
+                continue
             self.batch_idx = batch_idx
 
             self._train_batch(batch, callbacks=callbacks)
