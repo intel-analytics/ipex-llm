@@ -37,6 +37,7 @@ import multiprocessing
 import subprocess
 import sys
 import uuid
+import json
 from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
 
@@ -104,11 +105,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                     cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
             # we also need to pass sys.path to subprocess
-            with open(os.path.join(temp_dir, "sys_path.pkl"), "wb") as f:
-                cloudpickle.dump(sys.path, f)
+            with open(os.path.join(temp_dir, "sys_path.json"), "w") as f:
+                json.dump(sys.path, f)
 
-            with open(os.path.join(temp_dir, "patch_status.pkl"), "wb") as f:
-                cloudpickle.dump(_get_patch_status(), f)
+            with open(os.path.join(temp_dir, "patch_status.json"), "w") as f:
+                json.dump(_get_patch_status(), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
