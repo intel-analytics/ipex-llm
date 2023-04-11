@@ -29,7 +29,7 @@ num_workers = 0
 data_dir = "/tmp/data"
 
 
-class TestVisionIPEX(TestCase):
+class VisionIPEX:
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
