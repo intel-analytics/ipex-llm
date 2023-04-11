@@ -19,7 +19,7 @@ from bigdl.nano.utils.pytorch import generate_channels_last_available,\
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, compare_version
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 from bigdl.nano.utils.pytorch import transform_state_dict_to_dtype
 import torch
@@ -31,7 +31,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True,
-                 compression="fp32"):
+                 compression="fp32", example_kwarg_inputs=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -71,6 +71,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                file sill be saved with some accuracy loss. Users always need to use nano
                to load the compressed file if compression is set other than "fp32".
                Currently, "bf16" and "fp32"(default) are supported.
+        :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+               to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+               should be specified when use_jit is ``True`` and torch > 2.0,
+               otherwise will be ignored.
         """
         super().__init__(model)
         if from_load:
@@ -124,16 +128,30 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 with torch.no_grad():
                     with torch.cpu.amp.autocast():
                         if self.jit_method == 'trace':
-                            self.model = torch.jit.trace(self.model, input_sample,
-                                                         check_trace=False,
-                                                         strict=jit_strict)
+                            if compare_version("torch", operator.ge, "2.0"):
+                                self.model = torch.jit.trace(self.model,
+                                                             example_inputs=input_sample,
+                                                             check_trace=False,
+                                                             strict=jit_strict,
+                                                             example_kwarg_inputs=example_kwarg_inputs)
+                            else:
+                                self.model = torch.jit.trace(self.model, input_sample,
+                                                            check_trace=False,
+                                                            strict=jit_strict)
                         elif self.jit_method == 'script':
                             self.model = torch.jit.script(self.model)
                         else:
                             try:
-                                self.model = torch.jit.trace(self.model, input_sample,
-                                                             check_trace=False,
-                                                             strict=jit_strict)
+                                if compare_version("torch", operator.ge, "2.0"):
+                                    self.model = torch.jit.trace(self.model,
+                                                                 example_inputs=input_sample,
+                                                                 check_trace=False,
+                                                                 strict=jit_strict,
+                                                                 example_kwarg_inputs=example_kwarg_inputs)
+                                else:
+                                    self.model = torch.jit.trace(self.model, input_sample,
+                                                                 check_trace=False,
+                                                                 strict=jit_strict)
                             except Exception:
                                 self.model = torch.jit.script(self.model)
                         if self.use_ipex:

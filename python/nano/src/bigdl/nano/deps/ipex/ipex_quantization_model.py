@@ -20,13 +20,15 @@ from intel_extension_for_pytorch.quantization import prepare, convert
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.utils.common import compare_version
 import torch
 
 
 class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module, calib_data, q_config=None,
                  input_sample=None, channels_last=None, thread_num=None,
-                 from_load=False, inplace=False, jit_strict=True):
+                 from_load=False, inplace=False, jit_strict=True,
+                 example_kwarg_inputs=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -52,6 +54,10 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         :param from_load: this will only be set by _load method.
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param jit_strict: Whether recording your mutable container types.
+        :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+               to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+               should be specified when use_jit is ``True`` and torch > 2.0,
+               otherwise will be ignored.
         """
         super().__init__(model)
         if from_load:
@@ -107,8 +113,16 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         # convert to static quantized model
         self.model = convert(self.model)
         with torch.no_grad():
-            self.model = torch.jit.trace(self.model, input_sample,
-                                         strict=jit_strict)
+            if compare_version("torch", operator.ge, "2.0"):
+                self.model = torch.jit.trace(self.model,
+                                             example_inputs=input_sample,
+                                             check_trace=False,
+                                             strict=jit_strict,
+                                             example_kwarg_inputs=example_kwarg_inputs)
+            else:
+                self.model = torch.jit.trace(self.model, input_sample,
+                                             check_trace=False,
+                                             strict=jit_strict)
             self.model = torch.jit.freeze(self.model)
         # patch attributes from original model
         patch_attrs_from_model_to_object(self.original_model, self)
