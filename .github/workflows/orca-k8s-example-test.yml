@@ -1,0 +1,54 @@
+name: 'ORCA-Spark-K8s-Example-Prvn'
+description: 'ORCA-Spark-K8s-Example-Prvn'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: 'intelanalytics/bigdl-k8s'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        echo "CONTAINER_NAME=spark-k8s-exmaples-test-gramine" >> $GITHUB_ENV
+        echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+
+  - name: Start Container
+    shell: bash
+    run: |
+      set -x
+      docker pull $IMAGE
+      docker stop $CONTAINER_NAME
+      docker rm $CONTAINER_NAME
+      docker run -id \
+      --net=host \
+      --shm-size 15g \
+      --name $CONTAINER_NAME \
+      -v /etc/kubernetes:/etc/kubernetes \
+      -v /root/.kube:/root/.kube \
+      -e NotebookPort=12345 \
+      -e NotebookToken="1234qwer" \
+      -e http_proxy=http://child-prc.intel.com:913 \
+      -e https_proxy=http://child-prc.intel.com:913 \
+      -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
+      -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+      -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
+      -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+      -e RUNTIME_DRIVER_HOST=$LOCAL_IP \
+      -e RUNTIME_DRIVER_PORT=54323 \
+      -e RUNTIME_EXECUTOR_INSTANCES=4 \
+      -e RUNTIME_EXECUTOR_CORES=8 \
+      -e RUNTIME_EXECUTOR_MEMORY=10g \
+      -e RUNTIME_TOTAL_EXECUTOR_CORES=32 \
+      -e RUNTIME_DRIVER_CORES=4 \
+      -e RUNTIME_DRIVER_MEMORY=10g \
+      -v /disk1/nfsdata/default-nfsvolumeclaim-pvc-d77a2e75-905f-49c1-ad1d-4eaee67c0967:/bigdl2.0/data
+      $IMAGE bash 
