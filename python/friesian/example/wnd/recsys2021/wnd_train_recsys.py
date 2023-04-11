@@ -52,9 +52,8 @@ indicator_cols = cat_cols + count_cols
 
 embedding_cols = [
     'engaged_with_user_id',
-    'enaging_user_id',
     'hashtags',
-    'present_domains',  #
+    'present_domains'
 ]
 
 len_cols = ['len_hashtags',
@@ -369,8 +368,6 @@ if __name__ == "__main__":
             label_cols=column_info.label_cols)
     end = time()
     print("Training time is: ", end - start)
-    est.save(os.path.join(options.model_dir, "model-%d.ckpt" % options.epochs))
-    model = est.get_model()
-    model.save_weights(os.path.join(options.model_dir, "model.h5"))
+    est.save(options.model_dir)
 
     stop_orca_context()
