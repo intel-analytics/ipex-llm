@@ -27,6 +27,7 @@ import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import org.apache.commons.lang.StringEscapeUtils
 
 import scala.collection.mutable
 
@@ -766,7 +767,7 @@ object TorchFile {
       string(i) = rawData.get.toChar
       i += 1
     }
-    new String(string)
+    StringEscapeUtils.escapeJava(new String(string))
   }
 
   private def readNumber(rawData: ByteBuffer): Double = {
