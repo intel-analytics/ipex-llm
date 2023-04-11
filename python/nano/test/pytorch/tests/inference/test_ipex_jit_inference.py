@@ -20,7 +20,7 @@ from unittest import TestCase
 import operator
 import pytest
 import torch
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, Dataset
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import operator
@@ -680,6 +680,41 @@ class IPEXJITInference:
             loaded_model = InferenceOptimizer.load(tmp_dir)
         output2 = loaded_model(x1, x3)
         np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
+        
+        # test jit int8
+        # custom dataloader
+        class CustomDataset(Dataset):
+            def __init__(self):
+                self.x1 = x1
+                self.x3 = x3
+            
+            def __len__(self):
+                return 1
+
+            def __getitem__(self, idx):
+                return (self.x1, None, self.x3), target
+
+        def fn(input):
+            return input
+
+        dataset = CustomDataset()
+        loader = DataLoader(dataset, batch_size=1, collate_fn=fn)
+
+        # TODO: below code works after we solve wrong dataloader transform issue
+        # opt_model = InferenceOptimizer.quantize(model,
+        #                                         calib_data=loader,
+        #                                         input_sample=None,
+        #                                         example_kwarg_inputs={'x1':x1, 'x3':x3},
+        #                                         accelerator="jit",
+        #                                         precision="int8",
+        #                                         jit_method='trace')
+        # output1 = opt_model(x1, x3)
+        # np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-5)
+        # with tempfile.TemporaryDirectory() as tmp_dir:
+        #     InferenceOptimizer.save(opt_model, tmp_dir)
+        #     loaded_model = InferenceOptimizer.load(tmp_dir)
+        # output2 = loaded_model(x1, x3)
+        # np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
 
 
 class CaseWithoutAVX2:
