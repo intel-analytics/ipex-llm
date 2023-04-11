@@ -3,7 +3,6 @@ set -e
 
 docker_name=intelanalytics/friesian-serving:2.2.0-SNAPSHOT
 
-cd ..
 configPath=src/main/resources/config
 
 docker run -itd --net host  --rm --name ranking -v $(pwd):/opt/work/mnt -e OMP_NUM_THREADS=1 $docker_name ranking -c mnt/$configPath/config_ranking.yaml
