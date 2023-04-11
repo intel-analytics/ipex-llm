@@ -34,10 +34,6 @@ runs:
       --name $CONTAINER_NAME \
       -v /etc/kubernetes:/etc/kubernetes \
       -v /root/.kube:/root/.kube \
-      -e NotebookPort=12345 \
-      -e NotebookToken="1234qwer" \
-      -e http_proxy=http://child-prc.intel.com:913 \
-      -e https_proxy=http://child-prc.intel.com:913 \
       -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
       -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
       -e RUNTIME_K8S_SPARK_IMAGE=$IMAGE \
@@ -51,4 +47,4 @@ runs:
       -e RUNTIME_DRIVER_CORES=4 \
       -e RUNTIME_DRIVER_MEMORY=10g \
       -v /disk1/nfsdata/default-nfsvolumeclaim-pvc-d77a2e75-905f-49c1-ad1d-4eaee67c0967:/bigdl2.0/data
-      $IMAGE bash 
+      $IMAGE bash
