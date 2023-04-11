@@ -38,7 +38,7 @@ ADD ./python-pslinux.patch /python-pslinux.patch
 
 # Python3.7
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install software-properties-common -y && \
+    apt install software-properties-common wget -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
 # Python3.8
