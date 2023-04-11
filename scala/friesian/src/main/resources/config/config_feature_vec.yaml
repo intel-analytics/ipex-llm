@@ -27,12 +27,12 @@ redisClusterItemSlotType:
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# userModelPath: ./mnt/path/to/user-model
+# userModelPath: ./mnt/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# itemModelPath: ./mnt/path/to/item-model
+# itemModelPath: ./mnt/item-model
 
 # default: 1, number of models used for inference
 # modelParallelism: 3
@@ -42,10 +42,10 @@ redisClusterItemSlotType:
 # redisUrl: localhost:6379
 
 # default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
-# redisType: sentinel
+# redisType:
 
 # default: null, must be provided if redisType=sentinel
-# redisSentinelMasterName: mymaster
+# redisSentinelMasterName:
 
 # default: localhost:26379
 # redisSentinelMasterURL:
