@@ -108,8 +108,7 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.8"]
         pytorch-version: [
-          # The reason why torch_110 is skipped is now inc quantize ut will cause segmentation fault
-          # "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
+          "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
           "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
           "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
           "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
@@ -190,11 +189,11 @@ jobs:
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
+            if [ ${requirements[0]} != "pytorch_110" ]; then
+              source bigdl-nano-init
+              bash python/nano/test/run-nano-pytorch-inc-tests.sh
+              source $CONDA/bin/deactivate
           fi
-          pip install numpy==1.23.4
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-pytorch-inc-tests.sh
-          source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n inc-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
