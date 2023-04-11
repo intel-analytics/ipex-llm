@@ -21,6 +21,6 @@ runs:
         pip list
         chmod a+x python/orca/dev/test/run-pytests-basic-tf2.sh
         python/orca/dev/test/run-pytests-basic-tf2.sh
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
