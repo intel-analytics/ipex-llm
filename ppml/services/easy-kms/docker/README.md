@@ -10,6 +10,7 @@ Or you are allowed to build the image manually:
 ```
 # Note: set the arguments inside the build script first
 bash build-docker-image.sh
+```
 
 In consider of security, SGX user needs to build his own custom-signed image, and thus the compiling and execution of in-enclave application are verifiable. This can be achived by the following:
 ```
