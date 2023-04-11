@@ -113,7 +113,9 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Attestation
 ## How to use and configure attestation policy in Microsoft Azure Attestation (MAA) with AttestationCLI
 
 1. Create your attestation provider (here)[https://portal.azure.com/#create/microsoft.Free]
+
 2. Configure policy in azure portal.
+
 ```
 version= 1.1;
 configurationrules{
@@ -133,6 +135,7 @@ issuancerules{
 };
 ```
 Here is an example sgx-mrenclave policy. You can configure your `mrenclave` and `mrsigner` in authorizationrules part. More information can refer [here](https://learn.microsoft.com/en-us/azure/attestation/author-sign-policy)
+
 3. Use URL of the specified attestation provider during attestation.
 ```bash
 java -Xmx1g -cp /ppml/spark-3.1.3/examples/jars/*:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.3.0-SNAPSHOT/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -t AzureAttestationService -u <your_attestation_provider_url>
