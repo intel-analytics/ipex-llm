@@ -26,6 +26,8 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 
 from bigdl.nano.pytorch import TorchNano
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import _avx2_checker
 
 batch_size = 256
 num_workers = 0
@@ -140,7 +142,7 @@ class MyNanoLoadStateDict(TorchNano):
         assert model.fc1.weight.data == 0.25, f"wrong weights: {model.fc1.weight.data}"
 
 
-class TestLite(TestCase):
+class Lite:
     def setUp(self):
         test_dir = os.path.dirname(__file__)
         # project_test_dir = BigDL/python/nano
@@ -181,6 +183,24 @@ class TestLite(TestCase):
 
     def test_torch_nano_load_state_dict(self):
         MyNanoLoadStateDict(use_ipex=True).train(0.25)
+
+
+TORCH_CLS = Lite
+
+
+class CaseWithoutAVX2:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("Torch_nano IPEX Without AVX2")
+    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
+    TORCH_CLS = CaseWithoutAVX2
+
+
+class TestLite(TORCH_CLS, TestCase):
+    pass
 
 
 if __name__ == '__main__':

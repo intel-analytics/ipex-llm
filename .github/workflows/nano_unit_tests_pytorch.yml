@@ -27,12 +27,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
         pytorch-version: [
           "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
           "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
           "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
           "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
+          "pytorch_20 neural-compressor==2.1 oneccl_bind_pt==2.0",
           ]
     steps:
       - uses: actions/checkout@v2
@@ -45,11 +46,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-
       - name: Run Nano-init test
         shell: bash
         run: |
-          $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4
+          $CONDA/bin/conda create -n bigdl-init -y python==3.8.16 setuptools==58.0.4
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
@@ -83,7 +83,7 @@ jobs:
       - name: Run PyTorch unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n pytorch -y python==3.7.10 setuptools=58.0.4 cryptography==39.0.1
+          $CONDA/bin/conda create -n pytorch -y python==3.8.16 setuptools=58.0.4 cryptography==39.0.1
           source $CONDA/bin/activate pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -106,12 +106,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
         pytorch-version: [
           "pytorch_110 neural-compressor==1.13.1 oneccl_bind_pt==1.10",
           "pytorch_111 neural-compressor==1.13.1 oneccl_bind_pt==1.11",
           "pytorch_112 neural-compressor==1.13.1 oneccl_bind_pt==1.12.100",
           "pytorch_113 neural-compressor==2.0 oneccl_bind_pt==1.13",
+          "pytorch_20 neural-compressor==2.1 oneccl_bind_pt==2.0",
           ]
     steps:
       - uses: actions/checkout@v3
@@ -119,7 +120,7 @@ jobs:
       - name: Run PyTorch unit tests(Ray)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n ray-pytorch -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate ray-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -142,7 +143,7 @@ jobs:
       - name: Run PyTorch unit tests (OpenVINO)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n openvino-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n openvino-pytorch -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate openvino-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -162,7 +163,7 @@ jobs:
       - name: Run PyTorch unit tests (Automl)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -179,7 +180,7 @@ jobs:
       - name: Run PyTorch unit tests (INC)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n inc-pytorch -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate inc-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -189,6 +190,7 @@ jobs:
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
           fi
+          pip install numpy==1.23.4
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           source $CONDA/bin/deactivate
@@ -199,7 +201,7 @@ jobs:
       - name: Run PyTorch unit tests (ONNX)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n onnx-pytorch -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate onnx-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -223,7 +225,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
@@ -231,6 +233,7 @@ jobs:
           # seems will cause strange behaior of context manager, which will make some tests of nano fail.
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==2.0",
+          "pytorch_20 neural-compressor==2.1",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -246,11 +249,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-
       - name: Run PyTorch IPEX unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n pytorch-ipex -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n pytorch-ipex -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate pytorch-ipex
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -275,13 +277,14 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
         pytorch-version: [
           # The reason why ipex1.10 is not currently supported is that the optimization of ipex1.10
           # will change the require_grad attribute of layers, which will make some tests of nano fail.
           "pytorch_111 neural-compressor==1.13.1",
           "pytorch_112 neural-compressor==1.13.1",
           "pytorch_113 neural-compressor==2.0",
+          "pytorch_20 neural-compressor==2.1",
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -297,11 +300,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-
       - name: Run PyTorch InferenceOptimizer unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n pytorch-inf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n pytorch-inf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate pytorch-inf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch,inference

@@ -30,6 +30,7 @@ from .checker import _onnxruntime_checker
 from .checker import _openvino_checker
 from .checker import _bf16_checker
 from .checker import _avx512_checker
+from .checker import _avx2_checker
 
 from .model import AcceleratedModel
 

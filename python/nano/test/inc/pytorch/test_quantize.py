@@ -33,6 +33,8 @@ from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.utils.common import invalidOperationError
 from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import _avx2_checker
 
 batch_size = 256
 num_workers = 0
@@ -244,6 +246,7 @@ class TestINC(TestCase):
 
     # This UT will fail with INC < 2.0
     @pytest.mark.skipif(compare_version("neural_compressor", operator.lt, "2.0"), reason="")
+    @pytest.mark.skipif(not TORCH_VERSION_LESS_2_0 and not _avx2_checker(), reason="")
     def test_ipex_int8_quantize_with_model_cannot_deepcopy(self):
         model = ModelCannotCopy(num_classes=10)
         InferenceOptimizer.quantize(model,
@@ -332,6 +335,7 @@ class TestINC(TestCase):
                                              thread_num=8)
         assert qmodel
 
+    @pytest.mark.skipif(not TORCH_VERSION_LESS_2_0 and not _avx2_checker(), reason="")
     def test_quantize_loading_behavior(self):
         # test nn.Module
         model = resnet18()
