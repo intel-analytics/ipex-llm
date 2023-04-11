@@ -58,7 +58,7 @@ config = {"inter_op_parallelism": 4,
 user_est = Estimator.from_keras(config=config, backend=args.backend)
 user_est.load(os.path.join(args.model_dir, "user-model"))
 
-full_tbl = FeatureTable.read_parquet(os.path.join(args.model_dir, "user_item_parquet"))
+full_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "user_item_parquet"))
 print("Data size: " + str(full_tbl.size()))
 
 user_embed = user_est.predict(data=full_tbl.df,
@@ -68,7 +68,7 @@ user_embed = FeatureTable(user_embed)
 user_embed = user_embed.select(['enaging_user_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
-user_embed.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
+user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
 
 item_est = Estimator.from_keras(config=config, backend=args.backend)
 item_est.load(os.path.join(args.model_dir, "item-model"))
@@ -81,6 +81,6 @@ item_embed = FeatureTable(item_embed)
 item_embed = item_embed.select(['tweet_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 items:")
 item_embed.show(5)
-item_embed.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
+item_embed.write_parquet(os.path.join(args.data_dir, 'item_ebd.parquet'))
 
 stop_orca_context()

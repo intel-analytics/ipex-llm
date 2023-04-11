@@ -219,9 +219,10 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: snapshot)')
-    parser.add_argument('--data_dir', type=str, help='data directory')
+    parser.add_argument('--model_dir', default='recsys_2tower', type=str,
+                        help='model directory name (default: recsys_2tower)')
+    parser.add_argument('--data_dir', type=str,
+                        help='data directory of processed features for the two tower model')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
 
     args = parser.parse_args()
@@ -270,6 +271,6 @@ if __name__ == '__main__':
           model_dir=args.model_dir, backend=args.backend)
 
     full_tbl = train_tbl.concat(test_tbl)
-    full_tbl.write_parquet(os.path.join(args.model_dir, "user_item_parquet"))
+    full_tbl.write_parquet(os.path.join(args.data_dir, "user_item_parquet"))
 
     stop_orca_context()
