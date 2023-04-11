@@ -16,10 +16,7 @@
 
 from importlib.util import find_spec
 from bigdl.nano.utils.common import CPUInfo
-import os
 import operator
-import subprocess
-from bigdl.nano.utils.common import invalidInputError
 from .version import compare_version
 
 
@@ -75,6 +72,6 @@ def _avx2_checker():
         if compare_version("intel_extension_for_pytorch", operator.ge, "2.0.0"):
             import intel_extension_for_pytorch._isa_help as isa
             return isa._check_isa_avx2()
-    except SystemExit:
+    except (SystemExit, ImportError):
         return False
     return True
