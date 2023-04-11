@@ -3,29 +3,29 @@ apiVersion: v1
 kind: Service
 metadata:
   name: easy-key-management-service
-  namespace: easy-kms
   labels:
     app: easy-kms
 spec:
-  clusterIP: None
+  type: LoadBalancer
   ports:
     - name: easy-kms-port
       port: 9875
       targetPort: 9875
   selector:
     app: easy-kms
+  sessionAffinity: ClientIP
+  externalIPs:
+  - $serviceIP
 ---
 # EasyKMS StatefulSet
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: easy-key-management-server
-  namespace: easy-kms
 spec:
   selector:
     matchLabels:
       app: easy-kms
-  serviceName: "easy-key-management-service"
   replicas: 1
   template:
     metadata:
@@ -38,8 +38,7 @@ spec:
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /ppml/data
-          hostPath:
-            path: $dataStoragePath
+          name: persisten-db-storage
         - name: ssl-keys
           mountPath: /ppml/keys
         - name: ssl-password
@@ -50,9 +49,9 @@ spec:
           mountPath: /var/run/aesmd/aesm.socket
         env:
         - name: ROOT_KEY
-          value: $rootKey
+          value: "$rootKey"
         - name: SGX_ENABLED
-          value: $sgxEnabled
+          value: "$sgxEnabled"
         resources:
           requests:
             cpu: 8
@@ -60,13 +59,16 @@ spec:
             sgx.intel.com/epc: 34359738368
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
-        limits:
-          cpu: 10
-          memory: 40Gi
-          sgx.intel.com/epc: 34359738368
-          sgx.intel.com/enclave: 1
-          sgx.intel.com/provision: 1
+          limits:
+            cpu: 10
+            memory: 40Gi
+            sgx.intel.com/epc: 34359738368
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
       volumes:
+      - name: persisten-db-storage
+        hostPath:
+          path: $dataStoragePath
       - name: ssl-keys
         secret:
           secretName: ssl-keys

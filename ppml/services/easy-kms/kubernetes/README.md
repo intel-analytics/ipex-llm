@@ -8,7 +8,7 @@ Easy KMS applies multiple security techniques e.g. trusted execution environment
 ## Prerequests
 
 - Make sure you have a workable **Kubernetes cluster/machine**
-- Prepare [easy-kms docker image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/easy-kms/docker#pullbuild-container-image)
+- Prepare [easy-kms docker image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/easy-kms/docker#pullbuild-container-image). **Note** that if enable SGX, please use a custom-signed image.
 
 ## Start BigDL KMS on Kubernetes
 ### 1. Prepare SSL Key and Password
@@ -19,10 +19,11 @@ Modify parameters in script `install-easy-kms.sh`:
 
 ```
 ......
-dataStoragePath ---> a_host_path_for_persistent_stoarge
-serviceIP ---> your_key_management_service_ip_to_expose
-rootKey ---> your_256bit_base64_AES_key_string
-sgxEnabled ---> true for SGX user, and false for TDX user
+imageName       ---> if enable SGX, replace with custom image
+dataStoragePath ---> a host path for persistent stoarge
+serviceIP       ---> your key management service ip to expose
+rootKey         ---> your 256bit base64 AES key string
+sgxEnabled      ---> true for SGX user, and false for TDX user
 ......
 ```
 
@@ -43,10 +44,23 @@ bash install-easy-kms.sh
 
 Check the service whether it has successfully been running (it may take seconds).
 ```bash
-kubectl get all -n easy-kms
+kubectl get all | grep easy
+```
+
+It is expected to get outputs similar to the following:
+```bash
+pod/easy-key-management-server-f4985d65f-2qctz    1/1            Running
+service/easy-key-management-service               LoadBalancer   10.99.15.77     <serviceIP>    9875:31157/TCP
+deployment.apps/easy-key-management-server        1/1            1               1
+replicaset.apps/easy-key-management-server-f4985d65f
 ```
 
 ## REST APIs of Key Management
 
 Easy KMS has the [same APIs](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-kms/kubernetes#validate-status-of-bigdl-kms) to `bigdl-kms`, while `kmsIP` is the above `serviceIP` and default port number of Easy KMS is `9875`.
 
+
+## Stop Easy KMS
+```
+kubectl delete -f easy-kms.yaml
+```
