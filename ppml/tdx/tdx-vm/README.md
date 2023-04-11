@@ -3,7 +3,8 @@
 TDX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and BigDL model training with distributed cluster on Intel Trust Domain Extensions (Intel TDX). Currently, we provide TDX-VM and TDX-CC as Trusted Execution Environments, this user guide will focus on TDX-VM.
 
 ### Overview Architecture
-![image](https://user-images.githubusercontent.com/30695225/190288851-fd852a51-f193-444c-bdea-1edad8375dd1.png)
+<img width="920" alt="image" src="https://user-images.githubusercontent.com/61072813/231132816-72a8482c-b6a2-420e-aa79-b375a203f512.png">
+
 
 
 ## Prepare TDX-VM Environment
@@ -11,20 +12,23 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 To deploy an actual workload with TDX-VM, you need to prepare the environment first.
 
 1. Configure Hardware
-    CPU and firmware need to be upgraded to the latest release version. Some jumpers must be set to enable TDX work on Archer City or Vulcan City board. 
-2. Configure BIOS
-    TDX should be enabled in BIOS. This step is required to be performed every time BIOS is flashed.
-3. Build and install packages
-    Packages of host kernel, guest kernel, qemu, libvirt should be built first. 
-4. Setup TDX Guest Image
-    A proper guest image utilizing the guest kernel, grub, and shim should be built. 
-5. Launch TD Guests
-    It is time to launch TD guests. Section Launch TD Guest leads you step by step to create and launch TD guests.
-6. Verify statuses
-    The Verify TDX Status section provides guidance on how to verify whether TDX is initializing on both the host and guest.
-7. Test TDX
-    TDX tests are used to validate basic functionality of TDX software stack. The tests focus on TDVM lifecycle management and environment validation.
+    CPU and firmware need to be upgraded to the latest release version. Some jumpers must be set to enable TDX work on Archer City or Vulcan City board. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
 
+2. Configure BIOS
+    TDX should be enabled in BIOS. This step is required to be performed every time BIOS is flashed. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+
+3. Build and install packages on TDX host
+    Packages of host kernel, guest kernel, qemu, libvirt should be built first. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+    
+    
+4. Launch TD Guests
+    It is time to launch TD guests. Section Launch TD Guest leads you step by step to create and launch TD guests. Execute `./scripts/orchestrate_tdvm.sh` to launch multiple tdvms.
+    
+5. Verify statuses
+    The Verify TDX Status section provides guidance on how to verify whether TDX is initializing on both the host and guest. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+
+6. Deploy Kubernetes cluster on tdvms
+    Execute `./scripts/install_k8s.sh` on each tdvm and `./scripts/deploy_k8s_cluster.sh` on master node to get a Kubernetes cluster. 
 
 
 ## Run Sparkpi as Spark Local Mode
