@@ -16,16 +16,8 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, _flatten
 import numpy as np
-
-
-def _flatten(inputs, result):
-    for x in inputs:
-        if isinstance(x, np.ndarray) or np.isscalar(x):
-            result.append(x)
-        else:
-            _flatten(x, result)
 
 
 class ONNXRuntimeModel:

@@ -52,3 +52,5 @@ from .env import _find_library
 from .env import EnvContext
 
 from .optimizer import *
+
+from .function import _flatten
