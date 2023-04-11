@@ -373,7 +373,7 @@ You can change the configuration If you enter image and run /opt/run_spark_on_oc
 -d 5                 // -d means maxDepth
 ```
 
-Start run BigDL Spark GBT example:
+Start run BigDL Spark LightGBM criteo example:
 ```
 bash start-spark-local.sh lgbm_criteo
 ```

@@ -134,6 +134,9 @@ Parameters:
 * -d means max_depth: Int.
 We recommend using hdfs to read input-data and write output-result instead of mouting data.
 
+#### Source code
+You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset.scala).
+
 ## BigDL LGBM Example
 
 ### Download data
@@ -217,9 +220,6 @@ Note that if you do not have ssl key and certificate in `/ppml/keys`, the distri
 error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
 error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
 ```
-
-#### Source code
-You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
 
 ### Run Spark TPC-H example
 
