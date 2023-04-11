@@ -56,6 +56,13 @@ python ../../example/two_tower/train_2tower.py \
 now=$(date "+%s")
 time2=$((now - start))
 
+if [ -d data/recsys_sample ]; then
+  echo "data/recsys_sample already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
+  tar -xvzf data/recsys_sample.tar.gz -C data
+fi
+
 echo "#3 start example test for xgboost train"
 #timer
 start=$(date "+%s")
