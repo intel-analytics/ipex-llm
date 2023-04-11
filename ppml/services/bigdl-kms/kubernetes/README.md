@@ -61,8 +61,10 @@ You can communicate with BigDL KMS using client [BigDLKeyManagementService](http
 
 #### 1. Test Service readiness
 
+The default port number of bigdl kms is `9876`.
+
 ```bash
-curl -k -v "https://<kmsIP>:9876/" # default port of bigdl-kms is 9876 and can be configured in bigdl-kms.yaml
+curl -k -v "https://<kmsIP>:<kmsPort>/" # default port of bigdl-kms is 9876 and can be configured in bigdl-kms.yaml
 
 # you will get similar to below
 welcome to BigDL KMS Frontend
@@ -76,28 +78,28 @@ get the data key like: GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key
 #### 2. Enroll
 
 ```bash
-curl -X POST -k -v "https://<kmsIP>:9876/user/<userName>?token=<userToken>"
+curl -X POST -k -v "https://<kmsIP>:<kmsPort>/user/<userName>?token=<userToken>"
 user [<userName>] is created successfully!
 ```
 
 #### 3. Generate Primary Key
 
 ```bash
-curl -X POST -k -v "https://<kmsIP>:9876/primaryKey/<primaryKeyName>?user=<userName>&&token=<userToken>"
+curl -X POST -k -v "https://<kmsIP>:<kmsPort>/primaryKey/<primaryKeyName>?user=<userName>&&token=<userToken>"
 primaryKey [<primaryKeyName>] is generated successfully!
 ```
 
 #### 4. Generate Data Key from the Primary Key
 
 ```bash
-curl -X POST -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
+curl -X POST -k -v "https://<kmsIP>:<kmsPort>/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
 dataKey [<dataKeyName>] is generated successfully!
 ```
 
 #### 5. Retrieve Plain Text of the Data Key
 
 ```bash
-curl -X GET -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
+curl -X GET -k -v "https://<kmsIP>:<kmsPort>/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
 XY********Yw==
 ```
 
