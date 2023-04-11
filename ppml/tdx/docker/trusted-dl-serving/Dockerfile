@@ -103,6 +103,7 @@ RUN mkdir -p /dl-serving/usr/local/cuda/lib64/stubs && \
 FROM tensorflow/serving:latest-devel as tf-serving
 
 # DL-Serving
+ARG BASE_IMAGE_TAG
 FROM intelanalytics/bigdl-ppml-trusted-deep-learning:$BASE_IMAGE_TAG
 ARG http_proxy
 ARG https_proxy
