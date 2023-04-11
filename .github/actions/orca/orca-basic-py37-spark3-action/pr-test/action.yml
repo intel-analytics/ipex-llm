@@ -6,7 +6,7 @@ runs:
     - name: Run Test
       shell: bash
       run: |
-        source activate py37
+        conda activate py37
         export SPARK_LOCAL_HOSTNAME=localhost
         
         bash python/dev/release_default_linux_spark3.sh default false false false -Ddata-store-url=$HTTP_URI -U
@@ -20,6 +20,6 @@ runs:
         pip list
         chmod a+x python/orca/dev/test/run-pytests-basic-env.sh
         python/orca/dev/test/run-pytests-basic-env.sh
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
