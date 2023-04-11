@@ -27,7 +27,7 @@ redisClusterItemSlotType:
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
+# userModelPath: /path/to/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
