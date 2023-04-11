@@ -51,7 +51,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Intel-VTune
-    wget https:/registrationcenter-download.intel.com/akdlm/IRC_NAS/4466ed1b-5d4a-4b30-9146-1eabc336c647/l_oneapi_vtune_p_2023.1.0.44286_offline.sh && \
+    wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/4466ed1b-5d4a-4b30-9146-1eabc336c647/l_oneapi_vtune_p_2023.1.0.44286_offline.sh && \
     sh ./l_oneapi_vtune_p_2023.1.0.44286_offline.sh -a -s --eula accept && \
 # Gramine
     apt-get update --fix-missing && \
