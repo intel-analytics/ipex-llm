@@ -67,6 +67,12 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-howto-env -y --all
+
   chronos-benchmark-tool-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
@@ -88,10 +94,7 @@ jobs:
       - name: Run tests for Chronos-benchmark-tool
         shell: bash
         run: |
-          if conda info --env | grep "chronos-benchmakr-tool-env"; then
-            source deactivate
-            conda remove -n chronos-benchmakr-tool-env -y --all
-          fi
+          conda remove -n chronos-benchmakr-tool-env -y --all
           conda create -n chronos-benchmakr-tool-env -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-benchmakr-tool-env
           apt-get update
@@ -114,4 +117,10 @@ jobs:
         env:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          conda remove -n chronos-benchmakr-tool-env -y --all
           

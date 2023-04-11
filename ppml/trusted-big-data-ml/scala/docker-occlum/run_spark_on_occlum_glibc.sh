@@ -153,6 +153,7 @@ build_spark() {
 
     # copy spark and bigdl and others dependencies
     copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
+
     # Build
     occlum build
 
@@ -455,6 +456,26 @@ run_spark_gbt() {
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
 
+run_spark_lgbm() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark lgbm${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM.LgbmClassifierTrain \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                --inputPath /host/data/iris.data \
+                --numIterations 100 \
+                --partition 4 \
+                --modelSavePath /host/data/iris_output
+}
+
 run_spark_gbt_e2e() {
     init_instance spark
     build_spark
@@ -609,6 +630,10 @@ case "$arg" in
         ;;
     gbt)
         run_spark_gbt
+        cd ../
+        ;;
+    lgbm)
+        run_spark_lgbm
         cd ../
         ;;
     gbt_e2e)

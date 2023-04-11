@@ -51,3 +51,5 @@ from .convert import export_to_onnx
 from .save import save_model
 from .save import transform_state_dict_to_dtype
 from .load import load_model
+
+from .xpu import apply_data_to_xpu, apply_data_to_half

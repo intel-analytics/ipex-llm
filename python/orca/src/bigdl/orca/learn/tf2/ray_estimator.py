@@ -497,7 +497,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
                 feature_cols: Optional[List[str]]=None,
-                min_partition_num: Optional[int]=None) -> Union["SparkXShards",
+                min_partition_num: Optional[int]=None,
+                output_cols: Optional[List[str]]=None) -> Union["SparkXShards",
                                                                 "SparkDataFrame"]:
         """
         Predict the input data
@@ -524,6 +525,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                prediction results is not guaranteed to be the same as the input order, so you need
                to add id information to the input to identify the corresponding prediction results.
                Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
@@ -542,6 +546,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             steps=steps,
             callbacks=callbacks,
             data_config=data_config,
+            output_cols=output_cols
         )
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
@@ -556,7 +561,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               accept_str_col=True,
                                               shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
         elif isinstance(data, SparkXShards):
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

@@ -108,8 +108,18 @@ class SparkTFEstimator():
             self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
-        return cluster_info
+        def get_worker_address(iter):
+            worker_ip = get_node_ip()
+            worker_port = find_free_port()
+            addresses = find_ip_and_free_port(iter)
+            res = [(f"{worker_ip}:{worker_port}", address) for address in addresses]
+            return res
+
+        worker_info = self.workerRDD.barrier().mapPartitions(get_worker_address).collect()
+        address_info = [info[0] for info in worker_info]
+        cluster_info = [info[1] for info in worker_info]
+
+        return address_info, cluster_info
 
     def fit(self,
             data: Union["SparkXShards", "SparkDataFrame", Callable],
@@ -383,7 +393,8 @@ class SparkTFEstimator():
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
-                feature_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
+                feature_cols: Optional[List[str]]=None,
+                output_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.
@@ -398,6 +409,9 @@ class SparkTFEstimator():
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
@@ -438,7 +452,8 @@ class SparkTFEstimator():
             batch_size=batch_size,
             steps=steps,
             callbacks=callbacks,
-            data_config=data_config
+            data_config=data_config,
+            output_cols=output_cols
         )
 
         def transform_func(iter, init_param, param):
@@ -462,7 +477,7 @@ class SparkTFEstimator():
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':

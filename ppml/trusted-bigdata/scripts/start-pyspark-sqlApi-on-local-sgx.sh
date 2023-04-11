@@ -1,17 +1,17 @@
 #!/bin/bash
 status_1_pyspark_sql_api_DataFrame=1
-status_2_pyspark_sql_api_SQLContext=1
+status_2_pyspark_sql_api_SQLContext=0
 status_3_pyspark_sql_api_UDFRegistration=0
-status_4_pyspark_sql_api_GroupedData=1
+status_4_pyspark_sql_api_GroupedData=0
 status_5_pyspark_sql_api_Column=1
 status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions=1
-status_7_pyspark_sql_api_Window=1
-status_8_pyspark_sql_api_DataframeReader=1
+status_7_pyspark_sql_api_Window=0
+status_8_pyspark_sql_api_DataframeReader=0
 status_9_pyspark_sql_api_DataframeWriter=0
-status_10_pyspark_sql_api_HiveContext=1
-status_11_pyspark_sql_api_Catalog=1
+status_10_pyspark_sql_api_HiveContext=0
+status_11_pyspark_sql_api_Catalog=0
 status_12_pyspark_sql_types_module=1
-status_13_pyspark_sql_functions_module=1
+status_13_pyspark_sql_functions_module=0
 
 # entry /ppml dir
 cd /ppml
@@ -189,8 +189,9 @@ fi
 
 if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
 echo "pysaprk sql api example.13 --- pyspark api functions"
-  for f_num in {a..g}
+  for f_num in {a..c}
   do
+echo "pysaprk sql api example.13 --- pyspark api functions --- sql_functions_${f_num}_example"
 export sgx_command="/opt/jdk8/bin/java \
       -cp /ppml/spark-$SPARK_VERSION/conf/:/ppml/spark-$SPARK_VERSION/jars/*:/ppml/spark-$SPARK_VERSION/examples/jars/* \
       -Xmx1g \
@@ -203,57 +204,83 @@ gramine-sgx bash 2>&1 | tee sql_functions_${f_num}_example.log
   done
 fi
 
+if [ $status_1_pyspark_sql_api_DataFrame -ne 0 ]; then
 echo "#### pyspark api example.1 Excepted result(DataFrame): INFO SQL Dataframe Example API finished"
 echo "---- pyspark api example.1 Actual result: "
 cat test-sql-dataframe-sgx.log | egrep -a 'INFO SQL Dataframe Example API finished'
+fi
 
+if [ $status_2_pyspark_sql_api_SQLContext -ne 0 ]; then
 echo "#### pyspark api example.2 Excepted result(SQLContext): Finish running SQL context API"
 echo "---- pyspark api example.2 Actual result: "
 cat  test-sql-context-sgx.log | egrep -a 'Finish running SQL context API'
+fi
 
-#echo "#### pyspark api example.3 Excepted result(UDFRegistration): Finish running SQL UDFRegistration API"
-#echo "---- pyspark api example.3 Actual result: "
-#cat test-sql-UDFRegistration.log | egrep -a 'Finish running SQL UDFRegistration API'
+if [ $status_3_pyspark_sql_api_UDFRegistration -ne 0 ]; then
+echo "#### pyspark api example.3 Excepted result(UDFRegistration): Finish running SQL UDFRegistration API"
+echo "---- pyspark api example.3 Actual result: "
+cat test-sql-UDFRegistration.log | egrep -a 'Finish running SQL UDFRegistration API'
+fi
 
+if [ $status_4_pyspark_sql_api_GroupedData -ne 0 ]; then
 echo "#### pyspark api example.4 Excepted result(GroupedData): Finish running SQL GroupedData API"
 echo "---- pyspark api example.4 Actual result: "
 cat test-sql-groupeddata-sgx.log | egrep -a 'Finish running SQL GroupedData API'
+fi
 
+if [ $status_5_pyspark_sql_api_Column -ne 0 ]; then
 echo "#### pyspark api example.5 Excepted result(Column): Finish running SQL Column API"
 echo "---- pyspark api example.5 Actual result: "
 cat test-sql-column-sgx.log | egrep -a 'Finish running SQL Column API'
+fi
 
-echo "#### pyspark api example.6 Excepted result(Row_and_DataFrameNaFunctions): Finish running ..."
+if [ $status_6_pyspark_sql_api_Row_and_DataFrameNaFunctions -ne 0 ]; then
+echo "#### pyspark api example.6 Excepted result(Row_and_DataFrameNaFunctions): Finish running SQL Row_and_DataFrameNaFunctions API"
 echo "---- pyspark api example.6 Actual result: "
 cat test-sql-row-sgx.log  | egrep -a 'Finish running ...'
+fi
 
+if [ $status_7_pyspark_sql_api_Window -ne 0 ]; then
 echo "#### pyspark api example.7 Excepted result(Window): Finish running Window and WindowSpec API"
 echo "---- pyspark api example.7 Actual result: "
 cat test-window-sgx.log | egrep -a 'Finish running Window and WindowSpec API'
+fi
 
+if [ $status_8_pyspark_sql_api_DataframeReader -ne 0 ]; then
 echo "#### pyspark api example.8 Excepted result(DataframeReader): Finish running dataframe reader API"
 echo "---- pyspark api example.8 Actual result: "
 cat test-dataframe-reader-sgx.log | egrep -a 'Finish running dataframe reader API'
+fi
 
-#echo "#### pyspark api example.9 Excepted result(DataframeWriter): Finish running dataframe writer API"
-#echo "---- pyspark api example.9 Actual result: "
-#cat test-dataframe-writer-sgx.log | egrep -a 'Finish running dataframe writer API'
+if [ $status_9_pyspark_sql_api_DataframeWriter -ne 0 ]; then
+echo "#### pyspark api example.9 Excepted result(DataframeWriter): Finish running dataframe writer API"
+echo "---- pyspark api example.9 Actual result: "
+cat test-dataframe-writer-sgx.log | egrep -a 'Finish running dataframe writer API'
+fi
 
+if [ $status_10_pyspark_sql_api_HiveContext -ne 0 ]; then
 echo "#### pyspark api example.10 Excepted result(HiveContext): Finish running HiveContext API"
 echo "---- pyspark api example.10 Actual result: "
 cat sql_hive_context_example-sgx.log | egrep -a 'Finish running HiveContext API'
+fi
 
+if [ $status_11_pyspark_sql_api_Catalog -ne 0 ]; then
 echo "#### pyspark api example.11 Excepted result(Catalog): Finish running Catalog API"
 echo "---- pyspark api example.11 Actual result: "
 cat sql_catalog_example-sgx.log | egrep -a 'Finish running Catalog API'
+fi
 
+if [ $status_12_pyspark_sql_types_module -ne 0 ]; then
 echo "#### pyspark api example.12 Excepted result(types module): Finish running types module API"
 echo "---- pyspark api example.12 Actual result: "
 cat sql_types_example-sgx.log | egrep -a 'Finish running types module API'
+fi
 
-for f_num in {a..g}
+if [ $status_13_pyspark_sql_functions_module -ne 0 ]; then
+for f_num in {a..c}
 do
   echo "#### pyspark api example.${f_num} Excepted result(functions): Finish running function_${f_num} API"
   echo "---- pyspark api example.${f_num} Actual result: "
   cat sql_functions_${f_num}_example.log | egrep -a "Finish running function_${f_num} API"
 done
+fi

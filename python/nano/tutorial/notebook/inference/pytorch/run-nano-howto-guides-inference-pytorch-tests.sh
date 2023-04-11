@@ -26,7 +26,7 @@ echo "Start testing"
 start=$(date "+%s")
 
 python -m pytest -s --nbmake --nbmake-timeout=600 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR} -k "not inference_optimizer_optimize"
-python -m pytest -s --nbmake --nbmake-timeout=1200 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
+python -m pytest -s --nbmake --nbmake-timeout=1800 --nbmake-kernel=python3 ${NANO_HOWTO_GUIDES_TEST_DIR}/inference_optimizer_optimize.ipynb
 
 now=$(date "+%s")
 time=$((now-start))

@@ -61,9 +61,11 @@ list_cols = [
     "present_links"
 ]
 
-len_cols = ['len_hashtags',
-            'len_domains',
-            'len_links']
+len_cols = [
+    'len_hashtags',
+    'len_domains',
+    'len_links'
+]
 
 
 media_map = {
@@ -89,6 +91,30 @@ type_map = {
 }
 
 cross_cols = [['present_media', 'language']]
+
+user_features = [
+    'enaging_user_follower_count',
+    'enaging_user_following_count',
+    'enaging_user_id',
+    'enaging_user_is_verified'
+]
+
+item_features = [
+    'present_media',
+    'language',
+    'tweet_id',
+    'tweet_type',
+    'engaged_with_user_follower_count',
+    'engaged_with_user_following_count',
+    'len_hashtags',
+    'len_domains',
+    'len_links',
+    'present_media_language',
+    'engaged_with_user_is_verified',
+    'engaged_with_user_id',
+    'hashtags',
+    'present_domains'
+]
 
 conf = {"spark.network.timeout": "10000000",
         "spark.sql.broadcastTimeout": "7200",
@@ -160,7 +186,7 @@ def preprocess(tbl):
     return tbl
 
 
-def encode_user_id(tbl):
+def encode_id(tbl):
     tbl = tbl.rename({"engaged_with_user_id": "user_id"}) \
         .encode_string("user_id", user_index, broadcast=False) \
         .rename({"user_id": "engaged_with_user_id"})\
@@ -169,6 +195,8 @@ def encode_user_id(tbl):
         .encode_string("user_id", user_index, broadcast=False) \
         .rename({"user_id": "enaging_user_id"})\
         .fillna(0, "enaging_user_id")
+    tbl = tbl.encode_string("tweet_id", item_index, broadcast=False) \
+             .fillna(0, "tweet_id")
     return tbl
 
 
@@ -224,17 +252,19 @@ if __name__ == '__main__':
     train_tbl, language_idx = train_tbl.category_encode("language")
     test_tbl = test_tbl.encode_string("language", language_idx)
 
-    user_index = train_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
-                                           'col_name': 'user_id'})
-    train_tbl = encode_user_id(train_tbl)
-    test_tbl = encode_user_id(test_tbl)
-    test_tbl = test_tbl.fillna(0, ["engaged_with_user_id", "enaging_user_id"])
+    full_tbl = train_tbl.concat(test_tbl)
+    user_index = full_tbl.gen_string_idx({'src_cols': ['engaged_with_user_id', 'enaging_user_id'],
+                                          'col_name': 'user_id'})
+    item_index = full_tbl.gen_string_idx('tweet_id')
+    train_tbl = encode_id(train_tbl)
+    test_tbl = encode_id(test_tbl)
 
     indexes = train_tbl.gen_string_idx(list_cols, do_split=True, sep='\t')
     train_tbl = train_tbl.encode_string(list_cols, indexes,
                                         do_split=True, sep='\t', keep_most_frequent=True)
     test_tbl = test_tbl.encode_string(list_cols, indexes,
                                       do_split=True, sep='\t', keep_most_frequent=True)
+    train_tbl = train_tbl.fillna(0, list_cols)
     test_tbl = test_tbl.fillna(0, list_cols)
 
     train_tbl.cache()
@@ -254,6 +284,11 @@ if __name__ == '__main__':
     # save preprocessed data
     train_tbl.write_parquet(os.path.join(args.output_folder, "train_parquet"))
     test_tbl.write_parquet(os.path.join(args.output_folder, "test_parquet"))
+    full_tbl = train_tbl.concat(test_tbl)
+    full_tbl.select(user_features).drop_duplicates()\
+            .write_parquet(os.path.join(args.output_folder, 'wnd_user.parquet'))
+    full_tbl.select(item_features).drop_duplicates()\
+            .write_parquet(os.path.join(args.output_folder, 'wnd_item.parquet'))
 
     # save meta
     cat_sizes_dict = {}
@@ -264,6 +299,7 @@ if __name__ == '__main__':
         cat_sizes_dict[list_cols[i]] = indexes[i].size()
     cat_sizes_dict['engaged_with_user_id'] = user_index.size()
     cat_sizes_dict['enaging_user_id'] = user_index.size()
+    cat_sizes_dict['tweet_id'] = item_index.size()
 
     cross_sizes_dict = dict(zip(["_".join(cross_names) for cross_names in cross_cols],
                                 args.cross_sizes))

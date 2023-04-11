@@ -15,8 +15,8 @@
 #
 
 
-from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.model import AcceleratedLightningModule
 
 import torch
 from torch.ao.quantization import QConfig, get_default_qconfig_mapping
@@ -205,5 +205,5 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
                                    jit_method=status.get('jit_method', None),
                                    enable_onednn=status.get('enable_onednn', False))
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         torch.jit.save(self.model, path / "ckpt.pth")

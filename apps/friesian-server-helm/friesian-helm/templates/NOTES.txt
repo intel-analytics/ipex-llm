@@ -1,0 +1,30 @@
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+APP VERSION: {{ .Chart.AppVersion }}
+
+** Please be patient while the chart is being deployed **
+
+Get the list of pods by executing:
+
+  kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+  
+Friesian serving recommender can be accessed on following url from your cluster:
+
+  {{ include "friesian-serving.recommender.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.recommender.config.servicePort }}
+
+The following command can verify that friesian serving is working properly (modify recommender suffix in the command):
+
+  kubectl run {{ include "friesian-serving.recommender.fullname" . }}-test -it -n {{ .Release.Namespace }} --image=busybox --restart=Never --rm \
+  -- wget -O- 'http://{{ include "friesian-serving.recommender.fullname" . }}:{{ .Values.recommender.config.servicePort }}/recommender/recommend/15'
+
+If you don't want to use busybox, you can also use friesian serving pods for testing:
+
+  kubectl exec -n {{ .Release.Namespace }} {{ include "friesian-serving.recommender.fullname" . }}-<recommender pod suffix> \
+  -- "/usr/bin/wget" -O- 'http://{{ include "friesian-serving.recommender.fullname" . }}:{{ .Values.recommender.config.servicePort }}/recommender/recommend/15'
+
+Friesian serving works fine if the props output is a non-zero array.
+To access your Friesian Serving recommender server from outside the cluster, execute the following command:
+
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "friesian-serving.recommender.fullname" . }} {{ .Values.recommender.config.servicePort }} --address='0.0.0.0'
+
+After port forwarding, recommender can be accessed through port {{ .Values.recommender.config.servicePort }} of the master's IP.

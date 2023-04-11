@@ -256,6 +256,32 @@ jobs:
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
         mv ./Dockerfile docker/chronos-nightly/Dockerfile
+    - name: docker deploy bigdl-orca
+      run: |
+        cd docker/orca
+        export IMAGE=intelanalytics/bigdl-orca
+        export TAG=latest
+        echo "########################################"
+        echo "################# bigdl-orca ###########"
+        echo "########################################"
+        docker build \
+        --build-arg http_proxy=${HTTP_PROXY} \
+        --build-arg https_proxy=${HTTPS_PROXY} \
+        --build-arg JDK_VERSION=8u192 \
+        --build-arg JDK_URL=${JDK_URL} \
+        --build-arg no_proxy=${NO_PROXY} \
+        --build-arg SPARK_VERSION=3.1.3 \
+        --build-arg PY4J_VERSION=0.10.9 \
+        --rm --no-cache -t ${IMAGE}:${TAG} .
+        # tag 'latest'
+        docker push ${IMAGE}:${TAG}
+        docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+        docker push 10.239.45.10/arda/${IMAGE}:${TAG}
+        # tag SNAPSHOT
+        export TAG_SNAPSHOT=2.3.0-SNAPSHOT
+        docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
+        docker push ${IMAGE}:${TAG_SNAPSHOT}
+        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
 
     - name: Create Job Badge
       if: ${{ always() }}

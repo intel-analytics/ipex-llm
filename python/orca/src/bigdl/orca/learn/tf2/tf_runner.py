@@ -482,7 +482,8 @@ class TFRunner:
 
         return stats
 
-    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
+    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config,
+                output_cols):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
@@ -547,7 +548,13 @@ class TFRunner:
                 y = local_model.predict(shard["x"], **params)
             else:
                 y = local_model.predict(shard, **params)
-            return {"prediction": y}
+            if output_cols is None:
+                return {"prediction": y}
+            else:
+                if len(output_cols) == 1:
+                    return {output_cols[0]: y}
+                else:
+                    return dict(zip(output_cols, y))
 
         new_part = [predict_fn(shard) for shard in partition]
 

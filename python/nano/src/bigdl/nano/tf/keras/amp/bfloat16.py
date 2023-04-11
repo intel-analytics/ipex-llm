@@ -23,7 +23,7 @@ from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.tf import patch_compiled
 
 
-def BF16Model(model):
+def BF16Model(model, custom_objects=None):
     original_policies = []
     policy_bf16 = mixed_precision.Policy('mixed_bfloat16')
     for layer in model.layers:
@@ -33,8 +33,7 @@ def BF16Model(model):
         # save or load operation may fail
         with TemporaryDirectory() as temp_dir:
             model.save(temp_dir)
-            # todo: fix loading custom object
-            bf16_model = tf.keras.models.load_model(temp_dir)
+            bf16_model = tf.keras.models.load_model(temp_dir, custom_objects=custom_objects)
     except Exception as _e:
         # if a functional model failed to save or load, try `from_config`
         if hasattr(model, "input_shape"):

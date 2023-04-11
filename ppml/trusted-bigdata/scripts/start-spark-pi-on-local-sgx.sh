@@ -4,8 +4,8 @@ export sgx_command="/opt/jdk8/bin/java \
     -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master local[4] \
-    --executor-memory 8g \
-    --driver-memory 8g \
+    --executor-memory 4g \
+    --driver-memory 4g \
     --class org.apache.spark.examples.SparkPi \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \

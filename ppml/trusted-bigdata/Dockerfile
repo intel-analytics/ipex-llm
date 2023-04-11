@@ -170,6 +170,7 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
 ENV BIGDL_HOME                          /ppml/bigdl-${BIGDL_VERSION}
+ENV PYSPARK_PYTHON                      /usr/bin/python
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -193,6 +194,8 @@ ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
 ADD ./zeppelin /ppml/zeppelin
+ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
+ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \

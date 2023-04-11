@@ -170,20 +170,22 @@ def filter_elem(input, i):
         return input[i]
 
 
-def convert_predict_xshards_to_dataframe(df, pred_shards):
+def convert_predict_xshards_to_dataframe(df, pred_shards, output_cols=None):
     def flatten(data):
-        data = data["prediction"]
         length = get_length(data)
 
+        data = list(data.values())
+
         for i in range(length):
+            # Always yield a list here
             yield filter_elem(data, i)
 
     pred_rdd = pred_shards.rdd.flatMap(flatten)
-    result = convert_predict_rdd_to_dataframe(df, pred_rdd)
+    result = convert_predict_rdd_to_dataframe(df, pred_rdd, output_cols)
     return result
 
 
-def convert_predict_rdd_to_dataframe(df, prediction_rdd):
+def convert_predict_rdd_to_dataframe(df, prediction_rdd, output_cols=None):
     from pyspark.sql import Row
     from pyspark.ml.linalg import Vectors
 
@@ -195,8 +197,8 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
         elif isinstance(elem, dict):
             return {k: convert_elem(v) for k, v in elem.items()}
         # scalar in basic type
-        elif not isinstance(elem, np.ndarray) and len(elem.shape) == 0:
-            return float(elem.item(0))
+        elif isinstance(elem, np.ScalarType):
+            return float(elem)
         # np ndarray
         else:
             dim = len(elem.shape)
@@ -208,11 +210,29 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
                 return elem.tolist()
 
     def combine(pair):
-        return Row(*([pair[0][col] for col in pair[0].__fields__] +
-                     [convert_elem(pair[1])]))
+        if not output_cols:
+            # a singleton list in pair[1] and stacked like [f1, f2] + [output1]
+            if isinstance(pair[1], (list, tuple)) and len(pair[1]) == 1:
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             convert_elem(pair[1])))
+            else:
+                # a multiple list in pair[1] and stacked like [f1, f2] + [[output1], [output2]]
+                return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                             [convert_elem(pair[1])]))
+        elif not isinstance(pair[1], (list, tuple)):
+            # if pair[1] is not iterable, don't split them into list
+            return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                         [convert_elem(pair[1])]))
+        else:
+            # a multiple columns in pair[1] and merged like [f1, f2] + [output1, output2]
+            return Row(*([pair[0][col] for col in pair[0].__fields__] +
+                         [convert_elem(item) for item in pair[1]]))
 
     combined_rdd = df.rdd.zip(prediction_rdd).map(combine)
-    columns = df.columns + ["prediction"]
+    if output_cols is None:
+        columns = df.columns + ["prediction"]
+    else:
+        columns = df.columns + output_cols
     # Converting to DataFrame will trigger the computation
     # to infer the schema of the prediction column.
     result_df = combined_rdd.toDF(columns)
@@ -307,7 +327,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
             return [[] for r in cols]
 
     def add_row(data, results, current):
-        if not isinstance(data, list) and not isinstance(data, dict):
+        if not isinstance(data, (list, tuple, dict)):
             arrays = [data]
         else:
             arrays = data
@@ -551,29 +571,6 @@ def get_arrow_hex_str(batched_data, names):
     pred_arrow = pred_arrow.decode("utf-8")
     sink.close()
     return pred_arrow
-
-
-def make_dataloader_list_wrapper(func):
-    import torch
-
-    def make_feature_list(batch):
-        if func is not None:
-            batch = func(batch)
-        *features, target = batch
-        if len(features) == 1 and torch.is_tensor(features[0]):
-            features = features[0]
-        return features, target
-
-    return make_feature_list
-
-
-def reload_dataloader_creator(dataloader_func):
-    def reload_dataloader(config, batch_size):
-        dataloader = dataloader_func(config, batch_size)
-        dataloader.collate_fn = make_dataloader_list_wrapper(dataloader.collate_fn)
-        return dataloader
-
-    return reload_dataloader if dataloader_func else None
 
 
 def data_length(data):

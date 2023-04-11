@@ -1,0 +1,73 @@
+{{- if .Values.recommender.ingress.enabled -}}
+{{- $fullName := include "friesian-serving.recommender.fullname" . -}}
+{{- $servicePort := .Values.recommender.config.servicePort -}}
+{{- if and .Values.recommender.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.recommender.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.recommender.ingress.annotations "kubernetes.io/ingress.class" .Values.recommender.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recommender
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recommender.labels }}
+    {{ toYaml .Values.recommender.labels | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.recommender.annotations .Values.recommender.ingress.annotations }}
+  annotations:
+    {{- if .Values.recommender.annotations }}
+    {{- toYaml .Values.recommender.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.recommender.ingress.annotations }}
+    {{- toYaml .Values.recommender.ingress.annotations | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if and .Values.recommender.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.recommender.ingress.className }}
+  {{- end }}
+  {{- if .Values.recommender.ingress.tls }}
+  tls:
+    {{- range .Values.recommender.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.recommender.ingress.hosts }}
+    - {{- if .host }}
+      host: {{ .host | quote }}
+      {{- end }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $servicePort }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}

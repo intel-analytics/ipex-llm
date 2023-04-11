@@ -1,6 +1,6 @@
 ARG JDK_VERSION=8u192
 ARG SPARK_VERSION=3.1.3
-ARG BIGDL_VERSION=2.2.0-SNAPSHOT
+ARG BIGDL_VERSION=2.3.0-SNAPSHOT
 
 # stage.1 java & spark
 FROM ubuntu:20.04 AS builder
@@ -75,7 +75,7 @@ ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 # Step 1. Install requirement tools
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
-    apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf17 libssl1.1 make kmod g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
+    apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf17 libssl1.1 make kmod g++ libjsoncpp-dev uuid-dev openjdk-8-jdk unzip && \
 # Step 2. Install Intel SGX SDK
     mkdir /opt/intel && cd /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
@@ -100,6 +100,8 @@ COPY --from=bigdl   ${BIGDL_HOME} ${BIGDL_HOME}
 RUN apt-get install -y python3-minimal && \
     apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
     pip3 install --upgrade pip && \
-    pip install setuptools==58.4.0
+    pip3 install cryptography && \
+    pip3 install requests && \
+    pip install setuptools==58.4.0 
 
 CMD ["sh", "sleep 10s"]
