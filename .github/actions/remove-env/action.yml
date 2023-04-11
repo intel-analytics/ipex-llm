@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         unset PYTHONHOME 
-        conda activate py37
+        source activate py37
         pip uninstall -y pyspark bigdl-friesian bigdl bigdl-dllib-spark3 bigdl-orca-spark3 bigdl-tf bigdl-math bigdl-orca  bigdl-dllib bigdl-tf bigdl-chronos bigdl-nano
         conda deactivate
         conda remove -n py37 -y --all
