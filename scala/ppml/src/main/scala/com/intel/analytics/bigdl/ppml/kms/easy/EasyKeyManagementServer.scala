@@ -20,7 +20,7 @@ import java.io.File
 import java.security.{KeyStore, SecureRandom}
 import java.util.concurrent.TimeUnit
 import java.sql.{Connection, DriverManager, ResultSet, SQLException, Statement}
-import java.security.MessageDigest 
+import java.security.MessageDigest
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 
 import java.security.SecureRandom
@@ -216,7 +216,6 @@ object EasyKeyManagementServer extends Supportive {
     val statement = s"select * from user where name='$userHash'"
     val tokenHashFromDB = queryDB(statement, url, "token").get
     val userProvidedTokenHash = md5(token)
-    println(s"[INFO] tokenHashFromDB:$tokenHashFromDB, userProvidedTokenHash:$userProvidedTokenHash")
     Log4Error.invalidOperationError(tokenHashFromDB != null
       && tokenHashFromDB == userProvidedTokenHash, "wrong token or user")
   }
@@ -267,11 +266,11 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   def generateAESKey(keySize: Int): String = {
-    val generator = KeyGenerator.getInstance("AES");
-    generator.init(keySize, SecureRandom.getInstanceStrong());
-    val key: SecretKey = generator.generateKey();
-    val base64Key: String = Base64.getEncoder().encodeToString(key.getEncoded());
-    return base64Key;
+    val generator = KeyGenerator.getInstance("AES")
+    generator.init(keySize, SecureRandom.getInstanceStrong())
+    val key: SecretKey = generator.generateKey()
+    val base64Key: String = Base64.getEncoder().encodeToString(key.getEncoded())
+    base64Key
   }
 
   val argumentsParser =
