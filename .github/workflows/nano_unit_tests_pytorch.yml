@@ -189,10 +189,12 @@ jobs:
             requirements=(${{matrix.pytorch-version}})
             bash python/nano/dev/build_and_install.sh linux default false ${requirements[0]} -f https://software.intel.com/ipex-whl-stable
             pip install ${requirements[1]}
+            # The reason why torch_110 is skipped is now inc quantize ut will cause segmentation fault
             if [ ${requirements[0]} != "pytorch_110" ]; then
               source bigdl-nano-init
               bash python/nano/test/run-nano-pytorch-inc-tests.sh
               source $CONDA/bin/deactivate
+            fi
           fi
           $CONDA/bin/conda remove -n inc-pytorch --all
         env:
