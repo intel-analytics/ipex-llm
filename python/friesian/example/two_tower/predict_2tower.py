@@ -61,28 +61,26 @@ user_est.load(os.path.join(args.model_dir, "user-model"))
 full_tbl = FeatureTable.read_parquet(os.path.join(args.model_dir, "user_item_parquet"))
 print("Data size: " + str(full_tbl.size()))
 
-result = user_est.predict(data=full_tbl.df,
-                          feature_cols=['enaging_user_is_verified', 'enaging_user_id',
-                                        'user_numeric'])
-result = FeatureTable(result)
-result = result.select(['enaging_user_id', 'prediction']).drop_duplicates()
+user_embed = user_est.predict(data=full_tbl.df,
+                              feature_cols=['enaging_user_is_verified', 'enaging_user_id',
+                                            'user_numeric'])
+user_embed = FeatureTable(user_embed)
+user_embed = user_embed.select(['enaging_user_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 users:")
-result.show(5)
-result.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
-
-del result, user_est
+user_embed.show(5)
+user_embed.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
 
 item_est = Estimator.from_keras(config=config, backend=args.backend)
 item_est.load(os.path.join(args.model_dir, "item-model"))
-result = item_est.predict(data=full_tbl.df,
-                          feature_cols=['engaged_with_user_is_verified', 'present_media',
-                                        'tweet_type', 'language', 'tweet_id',
-                                        'engaged_with_user_id', 'hashtags',
-                                        'present_links', 'present_domains', 'item_numeric'])
-result = FeatureTable(result)
-result = result.select(['tweet_id', 'prediction']).drop_duplicates()
+item_embed = item_est.predict(data=full_tbl.df,
+                              feature_cols=['engaged_with_user_is_verified', 'present_media',
+                                            'tweet_type', 'language', 'tweet_id',
+                                            'engaged_with_user_id', 'hashtags',
+                                            'present_links', 'present_domains', 'item_numeric'])
+item_embed = FeatureTable(item_embed)
+item_embed = item_embed.select(['tweet_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 items:")
-result.show(5)
-result.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
+item_embed.show(5)
+item_embed.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
 
 stop_orca_context()
