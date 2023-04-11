@@ -50,6 +50,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --upgrade requests && \
     pip install setuptools==58.4.0 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
+# Intel-VTune
+    wget https:/registrationcenter-download.intel.com/akdlm/IRC_NAS/4466ed1b-5d4a-4b30-9146-1eabc336c647/l_oneapi_vtune_p_2023.1.0.44286_offline.sh && \
+    sh ./l_oneapi_vtune_p_2023.1.0.44286_offline.sh -a -s --eula accept && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
@@ -62,7 +65,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /gramine && \
     git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
-    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
+    meson setup build/ --buildtype=debugoptimized -Dvtune=enabled -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
