@@ -1259,7 +1259,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
     @staticmethod
     def load(path, model: Optional[nn.Module] = None, input_sample=None,
-             inplace=False, device=None, cache_dir=None):
+             inplace=False, device=None, cache_dir=None, shapes=None):
         """
         Load a model from local.
 
@@ -1283,11 +1283,17 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                Only valid for openvino model, otherwise will be ignored.
         :param cache_dir: A directory for OpenVINO to cache the model. Default to None. 
                Only valid for openvino model, otherwise will be ignored.
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', 
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be 
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'. 
+               Default to None, which means you don't want to reshape the model inputs. 
+               Only valid for openvino model, otherwise will be ignored. 
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model, input_sample=input_sample,
-                          inplace=inplace, device=device, cache_dir=cache_dir)
+                          inplace=inplace, device=device, cache_dir=cache_dir, 
+                          shapes=shapes)
 
     @staticmethod
     def to_multi_instance(model: nn.Module, num_processes: int = 4,

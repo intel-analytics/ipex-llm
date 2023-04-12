@@ -27,7 +27,7 @@ from .utils import save, OpenVINO_LESS_2022_3
 
 class OpenVINOModel:
     def __init__(self, ie_network: str, device='CPU', precision='fp32',
-                 thread_num=None, config=None):
+                 thread_num=None, config=None, shapes=None):
         self._ie = Core()
         # check device
         self._check_device(self._ie, device)
@@ -35,12 +35,11 @@ class OpenVINOModel:
         self._precision = precision
         self.thread_num = thread_num
         self.additional_config = config
+        self.shapes = shapes
         self.ie_network = ie_network
 
     def on_forward_start(self, inputs):
         self._model_exists_or_err()
-        if self._infer_request is None:
-            self.create_infer_request()
         return inputs
 
     def forward_step(self, *inputs):
@@ -95,8 +94,10 @@ class OpenVINOModel:
             config.update(self.additional_config)
         self.final_config = config
 
-        self._compiled_model = None
-        self._infer_request = None
+        if self.shapes is None:
+            self.create_infer_request()
+        else:
+            self.reshape(self.shapes)
         
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names

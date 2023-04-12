@@ -32,7 +32,8 @@ from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, precision='fp32',
                  thread_num=None, device='CPU', dynamic_axes=True,
-                 logging=True, config=None, output_tensors=True, **kwargs):
+                 logging=True, config=None, output_tensors=True, 
+                 shapes=None, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -65,6 +66,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         :param config: The config to be inputted in core.compile_model.
         :param output_tensors: boolean, default to True and output of the model will be Tensors. If
                                output_tensors=False, output of the OpenVINO model will be ndarray.
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', 
+                       '[1,3,224,224]'. This parameter affect model Parameter shape, can be 
+                       dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'. 
+                       Only valid for openvino model, otherwise will be ignored.
         :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
         """
         ov_model_path = model
@@ -90,7 +95,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                                           device=device,
                                           precision=precision,
                                           thread_num=thread_num,
-                                          config=config)
+                                          config=config, 
+                                          shapes=shapes)
             super().__init__(None)
         self._nano_context_manager = generate_context_manager(accelerator="openvino",
                                                               precision="fp32",
@@ -133,7 +139,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return self.ov_model.forward_args
 
     @staticmethod
-    def _load(path, device=None, cache_dir=None):
+    def _load(path, device=None, cache_dir=None, shapes=None):
         """
         Load an OpenVINO model for inference from directory.
 
@@ -162,7 +168,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         return PytorchOpenVINOModel(xml_path,
                                     config=config,
                                     thread_num=thread_num,
-                                    device=device)
+                                    device=device, 
+                                    shapes=shapes)
 
     def pot(self,
             dataloader,
