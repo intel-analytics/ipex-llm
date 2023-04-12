@@ -111,11 +111,10 @@ class OpenVINOModel:
         duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
         print(f"Compile model and create infer request took {duration_ms} ms")
 
-
     def reshape(self, shapes):
         """
-        Reshape the model to fit the inputs.Be aware that not all models support reshaping, 
-        and models that do, may not support all input shapes. The model accuracy may also 
+        Reshape the model to fit the inputs.Be aware that not all models support reshaping,
+        and models that do, may not support all input shapes. The model accuracy may also
         suffer if you reshape the model.
         :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]'.
                This parameter affect model Parameter shape, can be dynamic. For dynamic dimesions
@@ -123,15 +122,17 @@ class OpenVINOModel:
         """
         invalidInputError(isinstance(shapes, str), "Shapes only supports string inputs "
                           "like 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]' but got "
-                           f"{shapes.__class__.__name__}.")
+                          f"{shapes.__class__.__name__}.")
 
         shapes, reshape = self._get_reshape_info(shapes)
         if not reshape:
-            print(f"Skip the reshape process since the input shapes are same as the current model shapes.")
+            print(f"Skip the reshape process since the input shapes are same as the current \
+                  model shapes.")
             return
 
         start_time = datetime.utcnow()
-        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v)) for k, v in shapes.items())))
+        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v)) 
+                                                     for k, v in shapes.items())))
         self.ie_network.reshape(shapes)
         duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
         print(f"Reshape model took {duration_ms} ms")
@@ -139,7 +140,7 @@ class OpenVINOModel:
         self.create_infer_request()
 
     def _get_reshape_info(self, shapes):
-        invalidInputError(isinstance(shapes, str), 
+        invalidInputError(isinstance(shapes, str),
                           "`_get_reshape_info` only supports string input.")
         from openvino.tools.benchmark.utils.utils import parse_input_parameters
         from openvino.runtime import PartialShape
@@ -165,7 +166,6 @@ class OpenVINOModel:
                 input_shapes[name] = new_shape
 
         return input_shapes, reshape
-
 
     def _save(self, path):
         """
@@ -267,7 +267,7 @@ class OpenVINOModel:
 
     def _model_exists_or_err(self):
         invalidInputError(self.ie_network is not None, "self.ie_network shouldn't be None.")
-            
+
     def async_predict(self,
                       input_data: Union[List[np.ndarray], List[List[np.ndarray]]],
                       num_requests: int = 0) -> List[np.ndarray]:

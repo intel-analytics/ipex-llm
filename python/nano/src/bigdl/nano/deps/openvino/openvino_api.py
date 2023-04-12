@@ -75,9 +75,9 @@ def load_openvino_model(path, framework='pytorch', device=None, cache_dir=None, 
     :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
     :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
-    :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', 
-               '[1,3,224,224]'. This parameter affect model Parameter shape, can be 
-               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'. 
+    :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
                Only valid for openvino model, otherwise will be ignored.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
