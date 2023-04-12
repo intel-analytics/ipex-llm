@@ -372,7 +372,7 @@ class TorchRunner(BaseRunner):
                 self._train_loop(iterator, metric_meters, callbacks)
         else:
             self._train_loop(iterator, metric_meters, callbacks)
-        
+
         self.epoch_step = 0
 
         self.call_hook(callbacks=callbacks, fn_name="on_lr_adjust")
@@ -673,6 +673,8 @@ class TorchRunner(BaseRunner):
         """Returns the state of the runner."""
         state = {
             "epoch": self.epochs,
+            "epoch_step": self.epoch_step,
+            "global_step": self.global_step,
             "models": [model.state_dict() for model in self.models]
         }
         if self.optimizers:
@@ -711,6 +713,10 @@ class TorchRunner(BaseRunner):
                 scheduler.load_state_dict(state_dict)
         if "epoch" in state:
             self.epochs = state["epoch"]
+        if "global_step" in state:
+            self.global_step = state["global_step"]
+        if "epoch_step" in state:
+            self.epoch_step = state["epoch_step"]
 
     def save_checkpoint(self, filepath, save_weights_only=False):
         if self.rank == 0:
