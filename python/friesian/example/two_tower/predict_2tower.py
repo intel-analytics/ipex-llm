@@ -74,9 +74,9 @@ engaged_user_df = full_tbl.select(['engaged_with_user_id', 'engaged_with_user_is
                           .rename({'engaged_with_user_id': 'user_id',
                                    'engaged_with_user_is_verified': 'is_verified'})
 user_df = enaging_user_df.concat(engaged_user_df)
-user_embed = user_est.predict(data=user_df.df, feature_cols=user_df.columns)
 
-user_embed = FeatureTable(user_embed).select(['user_id', 'prediction'])
+user_embed = FeatureTable(user_est.predict(data=user_df.df, feature_cols=user_df.columns))\
+    .select(['user_id', 'prediction'])
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
 user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
