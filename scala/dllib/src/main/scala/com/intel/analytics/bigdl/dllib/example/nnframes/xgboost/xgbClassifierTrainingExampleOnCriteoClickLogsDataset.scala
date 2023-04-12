@@ -172,7 +172,7 @@ object xgbClassifierTrainingExampleOnCriteoClickLogsDataset {
     println("acc:", acc)
     val tAfterTransform = System.nanoTime()
     elapsed = (tAfterTransform - tAfterSave) / 1000000000.0f // second
-    log.info("--test data transform time is " + elapsed + " s")
+    log.info("--test data transform and evaluate time is " + elapsed + " s")
 
     elapsed = (tAfterSave - tStart) / 1000000000.0f // second
     log.info("--end-to-end time is " + elapsed + " s")
