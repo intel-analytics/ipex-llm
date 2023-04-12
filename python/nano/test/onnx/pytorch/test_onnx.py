@@ -383,19 +383,19 @@ class TestOnnx(TestCase):
         x3 = 5
         target = model(x1, x2, x3)
 
-        ov_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2, x3))
-        with InferenceOptimizer.get_context(ov_model):
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2, x3))
+        with InferenceOptimizer.get_context(onnx_model):
             # TODO: handle int and float
-            output1 = ov_model(x1, x2, np.array(x3))
+            output1 = onnx_model(x1, x2, np.array(x3))
             np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
         
         with InferenceOptimizer.get_context(load_model):
             output2 = load_model(x1, x2, np.array(x3))
-            np.testing.assert_almost_equal(target.numpy(), output2.numpy(), decimal=5)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
 
 
 if __name__ == '__main__':
