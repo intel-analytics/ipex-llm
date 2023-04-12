@@ -120,7 +120,8 @@ def setup_package():
     # ipex is only avaliable for linux now
     pytorch_20_requires = ["torch==2.0.0",
                            "torchvision==0.15.1",
-                           "intel_extension_for_pytorch==2.0.0;platform_system=='Linux'"]
+                           "intel_extension_for_pytorch==2.0.0;platform_system=='Linux'",
+                           "pytorch_lightning==2.0.0"]
 
     pytorch_113_requires = ["torch==1.13.1",
                             "torchvision==0.14.1",
@@ -148,7 +149,7 @@ def setup_package():
     pytorch_nightly_requires = ["torch~=1.14.0.dev",
                                 "torchvision~=0.15.0.dev"]
 
-    pytorch_common_requires = ["pytorch_lightning==2.0.0",
+    pytorch_common_requires = ["pytorch_lightning==1.6.4",
                                "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
@@ -157,7 +158,7 @@ def setup_package():
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
-    pytorch_20_requires += pytorch_common_requires
+    pytorch_20_requires += pytorch_common_requires[1:]
     pytorch_113_requires += pytorch_common_requires
     pytorch_113_xpu_requires += pytorch_common_requires
     pytorch_112_requires += pytorch_common_requires
