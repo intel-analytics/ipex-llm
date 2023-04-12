@@ -38,7 +38,7 @@ jobs:
           echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
           echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
       - name: Run Test
-        uses: ./.github/actions/orca-exampletest-k8s-action
+        uses: ./.github/actions/orca/orca-exampletest-k8s-action
         with:
           image: ${{env.IMAGE}}
           image-tag: ${{env.TAG}}
