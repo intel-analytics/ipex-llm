@@ -149,12 +149,8 @@ def _parse_args():
                         help='The driver memory.')
     parser.add_argument('--train_files', type=str, default="all",
                         help="range for preprocessing train files, such as 000-269, 000-001.")
-    parser.add_argument('--input_train_folder', type=str, required=True,
-                        help="Path to the folder of train parquet files.")
-    parser.add_argument('--input_test_folder', type=str, required=True,
-                        help="Path to the folder of test parquet files.")
-    parser.add_argument('--output_folder', type=str, default=".",
-                        help="The path to save the preprocessed data to parquet files. ")
+    parser.add_argument('--data_dir', type=str, required=True,
+                        help="Path to load raw parquet files and save processed parquet files")
     parser.add_argument('--cross_sizes', type=str,
                         help='bucket sizes for cross columns', default="600")
 
@@ -236,6 +232,9 @@ if __name__ == '__main__':
                           ", but got " + args.cluster_mode)
 
     start = time()
+    args.input_train_folder = os.path.join(args.data_dir, 'train')
+    args.input_test_folder = os.path.join(args.data_dir, 'test')
+    args.output_folder = os.path.join(args.data_dir, 'preprocessed')
     if args.train_files != "all":
         train_paths = [os.path.join(args.input_train_folder, 'part-%05d*.parquet' % i)
                        for i in args.train_files]
