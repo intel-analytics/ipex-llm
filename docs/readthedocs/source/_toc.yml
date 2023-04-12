@@ -169,6 +169,7 @@ subtrees:
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_onnx
                               - file: doc/Nano/Howto/Inference/PyTorch/pytorch_save_and_load_openvino
                               - file: doc/Nano/Howto/Inference/PyTorch/multi_instance_pytorch_inference
+                              - file: doc/Nano/Howto/Inference/PyTorch/accelerate_pytorch_inference_gpu
                         - file: doc/Nano/Howto/Inference/TensorFlow/index
                           title: "TensorFlow"
                           subtrees:
