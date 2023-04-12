@@ -312,16 +312,16 @@ class TestOnnx(TestCase):
         accmodel = InferenceOptimizer.trace(model,
                                             accelerator="onnxruntime",
                                             input_sample=torch.rand(2,3,1,1))
-        result_m = accmodel(x, np.array([y]))  # TODO: make y work here
+        result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
 
         # sample with only all parameters (in a tuple)
         accmodel = InferenceOptimizer.trace(model,
                                             accelerator="onnxruntime",
                                             input_sample=(torch.rand(2,3,1,1),3))
-        result_m = accmodel(x, np.array([y]))  # TODO: make y work here
+        result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
-    
+
     def test_onnx_dynamic_axes(self):
         class CustomModel(nn.Module):
             def __init__(self):
@@ -385,8 +385,7 @@ class TestOnnx(TestCase):
 
         onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2, x3))
         with InferenceOptimizer.get_context(onnx_model):
-            # TODO: handle int and float
-            output1 = onnx_model(x1, x2, np.array(x3))
+            output1 = onnx_model(x1, x2, x3)
             np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -394,8 +393,33 @@ class TestOnnx(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name)
         
         with InferenceOptimizer.get_context(load_model):
-            output2 = load_model(x1, x2, np.array(x3))
+            output2 = load_model(x1, x2, x3)
             np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+
+    def test_onnx_kwargs(self):
+        model = MultiInputModel()
+        x1 = torch.randn(100, 28 * 28)
+        x2 = torch.randn(100, 28 * 28)
+        target = model(x1, x2)
+
+        onnx_model = InferenceOptimizer.trace(model,
+                                              accelerator='onnxruntime',
+                                              input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
+            output2 = onnx_model(x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+            output3 = onnx_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output3.numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        
+        with InferenceOptimizer.get_context(load_model):
+            output4 = load_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output4.numpy(), output4.numpy(), decimal=5)
 
 
 if __name__ == '__main__':

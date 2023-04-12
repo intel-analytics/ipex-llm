@@ -44,9 +44,10 @@ class OpenVINOModel:
         flattened_inputs = []
         _flatten(inputs, flattened_inputs)
         args_length = len(inputs)
-        for arg in self.forward_args[args_length:]:
-            if arg in kwargs:
-                flattened_inputs.append(kwargs[arg].numpy())
+        if kwargs is not None and len(kwargs) > 0:
+            for arg in self.forward_args[args_length:]:
+                if arg in kwargs:
+                    flattened_inputs.append(kwargs[arg])
         if len(self._forward_args) != len(flattened_inputs):
             # formatting a Tensor will cost much time,
             # so we put it in this `if` statement

@@ -27,6 +27,7 @@ from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import cope_with_keyword_arguments
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
@@ -107,6 +108,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
 
     def forward_step(self, *inputs, **kwargs):
         return self.ov_model.forward_step(*inputs, **kwargs)
+
+    def on_forward_start_kwargs(self, **kwargs):
+        cope_with_keyword_arguments(kwargs)
+        return kwargs
 
     def on_forward_end(self, outputs):
         outputs = list(outputs.values())

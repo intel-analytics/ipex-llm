@@ -30,6 +30,7 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
 
     def forward(self, *inputs, **kwargs):
         inputs = self.on_forward_start(inputs)
+        kwargs = self.on_forward_start_kwargs(**kwargs)
         outputs = self.forward_step(*inputs, **kwargs)
         return self.on_forward_end(outputs)
 
@@ -44,6 +45,9 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
     def forward_step(self, *inputs, **kwargs):
         return self.model(*inputs, **kwargs)
 
+    def on_forward_start_kwargs(self, **kwargs):
+        return kwargs
+
     @staticmethod
     def tensors_to_numpy(tensors):
         # TODO: add more type transformation here
@@ -55,7 +59,8 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
                 elif isinstance(x, np.ndarray):
                     result.append(x)
                 elif np.isscalar(x):
-                    result.append(x)
+                    # convert scalar to numpy
+                    result.append(np.array(x))
                 elif isinstance(x, Sequence):
                     result.append(to_numpy(x))
                 else:
