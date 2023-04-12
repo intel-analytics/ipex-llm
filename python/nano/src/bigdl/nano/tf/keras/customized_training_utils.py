@@ -27,6 +27,7 @@ from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.tf.keras.distributed_utils import _find_free_port
 from tensorflow.keras.losses import Loss
 import warnings
+from bigdl.nano.utils.common import invalidInputError
 
 
 def nano_bf16(func):
@@ -132,6 +133,22 @@ class _Nano_Customized_Training(object):
                     cloudpickle.dump(arg, f)
                     new_args.append(("others", os.path.join(temp_dir, f"args_{i}.pkl")))
 
+            # check necessary objects
+            arg_instance = list(map(lambda x: x[0], new_args))
+            invalidInputError("model" in arg_instance, "Please check whether 'model' in the input "
+                                                       "parameter in train function.")
+            invalidInputError("optimizer" in arg_instance, "Please check whether 'optimizer' in "
+                                                           "input parameter in train function.")
+            invalidInputError("loss" in arg_instance, "Please check whether 'loss' in the input "
+                                                      "parameter in train function. Moreover, if "
+                                                      "you use a customized loss, please add "
+                                                      "'nano_multiprocessing_loss' decorator.")
+            invalidInputError("dataset" in arg_instance, "Please check whether 'dataset' in the "
+                                                         "input parameter in train function. "
+                                                         "Moreover, if dataset is created by "
+                                                         "'from_generator', please initiate "
+                                                         "'_GeneratorState' of dataset first.")
+
             target_path = os.path.join(temp_dir, "target.pkl")
             with open(target_path, 'wb') as f:
                 cloudpickle.dump(self.func, f)
@@ -225,7 +242,11 @@ def _train_func(target_path, *args):
         with open(target_path, 'rb') as f:
             target_func = cloudpickle.load(f)
 
-        res = target_func(*actrual_args)
+        try:
+            res = target_func(*actrual_args)
+        except TypeError:
+            invalidInputError(False, "Please check whether add 'nano_multiprocessing' decorator "
+                                     "to the train_step function.")
 
         task_id = mirrored_strategy.cluster_resolver.task_id
         if task_id == 0:
