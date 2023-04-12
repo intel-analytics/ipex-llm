@@ -105,8 +105,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
-    def forward_step(self, *inputs):
-        return self.ov_model.forward_step(*inputs)
+    def forward_step(self, *inputs, **kwargs):
+        return self.ov_model.forward_step(*inputs, **kwargs)
 
     def on_forward_end(self, outputs):
         outputs = list(outputs.values())
