@@ -131,7 +131,7 @@ class OpenVINOModel:
             return
 
         start_time = datetime.utcnow()
-        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v)) 
+        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v))
                                                      for k, v in shapes.items())))
         self.ie_network.reshape(shapes)
         duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
