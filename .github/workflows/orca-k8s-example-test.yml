@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - '.github/workflows/chronos-nb-python-2.4-py37.yml'
+      - '.github/workflows/orca-k8s-example-test.yml'
   workflow_dispatch:
     inputs:
       artifact:
