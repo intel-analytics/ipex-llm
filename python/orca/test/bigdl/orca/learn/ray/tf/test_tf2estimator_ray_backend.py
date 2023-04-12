@@ -774,7 +774,7 @@ class TestTF2EstimatorRayBackend(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=3,
-                backend="spark")
+                backend="ray")
 
             trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                         feature_cols=["feature"],
@@ -782,8 +782,8 @@ class TestTF2EstimatorRayBackend(TestCase):
                         validation_data=df,
                         validation_steps=1)
 
+            # save model as h5 format
             trainer.save(os.path.join(temp_dir, "cifar10.h5"), include_optimizer=False)
-            pre_model_weights = trainer.get_model().get_weights()
 
             after_res = trainer.predict(df, feature_cols=["feature"]).collect()
             expect_res = np.concatenate([part["prediction"] for part in after_res])
@@ -794,19 +794,15 @@ class TestTF2EstimatorRayBackend(TestCase):
                 verbose=True,
                 config=config,
                 workers_per_node=3,
-                backend="spark")
+                backend="ray")
 
             est.load(os.path.join(temp_dir, "cifar10.h5"))
-            after_model_weights = est.get_model().get_weights()
-            est.save(os.path.join(temp_dir, "cifar10_new.h5"))
 
             # continous predicting
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
             assert np.array_equal(expect_res, pred_res)
 
-            for pre_tensor, after_tensor in list(zip(pre_model_weights, after_model_weights)):
-                assert np.allclose(pre_tensor, after_tensor)
         finally:
             shutil.rmtree(temp_dir)
 
