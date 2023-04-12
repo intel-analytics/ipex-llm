@@ -17,7 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Union  # for typehint
 from openvino.runtime import Core
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, _flatten
 from openvino.runtime import Model
 from openvino.runtime import AsyncInferQueue
 import numpy as np
@@ -41,7 +41,17 @@ class OpenVINOModel:
         return inputs
 
     def forward_step(self, *inputs):
-        return self._infer_request.infer(list(inputs))
+        flattened_inputs = []
+        _flatten(inputs, flattened_inputs)
+        if len(self._forward_args) != len(flattened_inputs):
+            # formatting a Tensor will cost much time,
+            # so we put it in this `if` statement
+            invalidInputError(False,
+                              "The length of inputs is "
+                              "inconsistent with the length of OpenVINO's inputs, "
+                              f"got model_forward_args: {self._forward_args}, "
+                              f"and flattened inputs: {flattened_inputs}")
+        return self._infer_request.infer(list(flattened_inputs))
 
     def on_forward_end(self, outputs):
         arrays = tuple(outputs.values())
