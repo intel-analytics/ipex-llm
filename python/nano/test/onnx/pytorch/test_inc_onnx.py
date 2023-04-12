@@ -22,7 +22,7 @@ import tempfile
 
 import torch
 from torch import nn
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, Dataset
 import torchmetrics
 import numpy as np
 
@@ -453,6 +453,48 @@ class TestOnnx(TestCase):
             forward_res_numpy = test_onnx_model(x)
             assert isinstance(forward_res_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
+
+    def test_onnx_quantize_kwargs(self):
+        model = MultiInputModel()
+        x1 = torch.randn(100, 28 * 28)
+        x2 = torch.randn(100, 28 * 28)
+        target = model(x1, x2)
+        class CustomDataset(Dataset):
+            def __init__(self):
+                self.x1 = x1
+                self.x2 = x2
+
+            def __len__(self):
+                return 100
+
+            def __getitem__(self, idx):
+                return (self.x1[idx], self.x2[idx]), target
+
+        dataset = CustomDataset()
+        loader = DataLoader(dataset, batch_size=1, collate_fn=None)
+        
+        # TODO: below code works after we solve wrong dataloader transform issue
+        # onnx_model = InferenceOptimizer.quantize(model,
+        #                                          accelerator='onnxruntime',
+        #                                          precision='int8',
+        #                                          input_sample=(x1, x2),
+        #                                          calib_data=loader)
+        # with InferenceOptimizer.get_context(onnx_model):
+        #     output1 = onnx_model(x1, x2)
+        #     np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=1)
+        #     output2 = onnx_model(x1, x2=x2)
+        #     np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+        #     output3 = onnx_model(x1=x1, x2=x2)
+        #     np.testing.assert_almost_equal(output1.numpy(), output3.numpy(), decimal=5)
+
+        # with tempfile.TemporaryDirectory() as tmp_dir_name:
+        #     InferenceOptimizer.save(onnx_model, tmp_dir_name)
+        #     load_model = InferenceOptimizer.load(tmp_dir_name)
+        
+        # with InferenceOptimizer.get_context(load_model):
+        #     output4 = load_model(x1=x1, x2=x2)
+        #     np.testing.assert_almost_equal(output4.numpy(), output4.numpy(), decimal=5)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
