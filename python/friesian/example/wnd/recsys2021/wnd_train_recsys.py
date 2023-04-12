@@ -51,7 +51,6 @@ indicator_cols = cat_cols + count_cols
 # indicator_dims = cat_dims + count_dims
 
 embedding_cols = [
-    'engaged_with_user_id',
     'hashtags',
     'present_domains'
 ]
