@@ -17,7 +17,6 @@ sgx.vtune_profile = true
 sgx.debug = true
 sgx.ra_client_spid = ""
 sgx.allow_file_creation = true
-sgx.debug = false
 sgx.nonpie_binary = true
 sgx.enclave_size = "{{ g_sgx_size }}"
 sgx.thread_num = {{ g_sgx_thread_num }}
