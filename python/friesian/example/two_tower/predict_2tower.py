@@ -65,6 +65,7 @@ enaging_user_df = full_tbl.select(['enaging_user_id', 'enaging_user_is_verified'
                                    'user_numeric']).drop_duplicates()\
                           .rename({'enaging_user_id': 'user_id',
                                    'enaging_user_is_verified': 'is_verified'})
+# the last 3 columns of "item_numeric" are engaged users' numeric
 engaged_user_df = full_tbl.select(['engaged_with_user_id', 'engaged_with_user_is_verified',
                                    'item_numeric']).drop_duplicates()\
                           .apply("item_numeric", "user_numeric",
