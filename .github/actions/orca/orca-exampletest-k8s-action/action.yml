@@ -15,7 +15,7 @@ runs:
     - name: TF1 Examples Test
       shell: bash
       run: |
-        docker exec -i $CONTAINER_NAME bash -c "/opt/spark/bin/spark-submit \
+        /opt/spark/bin/spark-submit \
         --master ${RUNTIME_SPARK_MASTER} \
         --deploy-mode client \
         --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
@@ -48,4 +48,4 @@ runs:
         --conf spark.driver.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
         --conf spark.executor.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
         local:///opt/bigdl-2.3.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
-        --cluster_mode 'spark-submit'"
+        --cluster_mode 'spark-submit'
