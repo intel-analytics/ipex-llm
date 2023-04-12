@@ -98,7 +98,7 @@ class OpenVINOModel:
             self.create_infer_request()
         else:
             self.reshape(self.shapes)
-        
+
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
 
@@ -118,18 +118,18 @@ class OpenVINOModel:
         and models that do, may not support all input shapes. The model accuracy may also 
         suffer if you reshape the model.
         :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]'.
-               This parameter affect model Parameter shape, can be dynamic. For dynamic dimesions 
+               This parameter affect model Parameter shape, can be dynamic. For dynamic dimesions
                use symbol `?`, `-1` or range `low.. up`.'
         """
-        invalidInputError(isinstance(shapes, str), "Shapes only supports string inputs " 
+        invalidInputError(isinstance(shapes, str), "Shapes only supports string inputs "
                           "like 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]' but got "
                            f"{shapes.__class__.__name__}.")
-        
+
         shapes, reshape = self._get_reshape_info(shapes)
         if not reshape:
             print(f"Skip the reshape process since the input shapes are same as the current model shapes.")
             return
-        
+
         start_time = datetime.utcnow()
         print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v)) for k, v in shapes.items())))
         self.ie_network.reshape(shapes)
@@ -139,10 +139,11 @@ class OpenVINOModel:
         self.create_infer_request()
 
     def _get_reshape_info(self, shapes):
-        invalidInputError(isinstance(shapes, str), "`_get_reshape_info` only supports string input.")
-        from openvino.tools.benchmark.utils.utils import parse_input_parameters, get_node_names
+        invalidInputError(isinstance(shapes, str), 
+                          "`_get_reshape_info` only supports string input.")
+        from openvino.tools.benchmark.utils.utils import parse_input_parameters
         from openvino.runtime import PartialShape
-        
+
         inputs = self.ie_network.inputs
         input_names = [port.any_name for port in inputs]
         inputs_info = [(i.any_name, i.node.friendly_name, i.partial_shape) for i in inputs]

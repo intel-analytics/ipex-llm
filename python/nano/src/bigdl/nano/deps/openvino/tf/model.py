@@ -56,9 +56,9 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                        inference. default: None.
         :param logging: whether to log detailed information of model conversion.
                         default: True.
-        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', 
-                       '[1,3,224,224]'. This parameter affect model Parameter shape, can be 
-                       dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'. 
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+                       '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+                       dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
                        Only valid for openvino model, otherwise will be ignored.
         :param **kwargs: will be passed to model optimizer function.
         """

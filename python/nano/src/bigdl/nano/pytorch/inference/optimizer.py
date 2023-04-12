@@ -1281,18 +1281,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param inplace: whether to perform inplace optimization. Default: ``False``.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
-        :param cache_dir: A directory for OpenVINO to cache the model. Default to None. 
+        :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
                Only valid for openvino model, otherwise will be ignored.
-        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', 
-               '[1,3,224,224]'. This parameter affect model Parameter shape, can be 
-               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'. 
-               Default to None, which means you don't want to reshape the model inputs. 
-               Only valid for openvino model, otherwise will be ignored. 
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
+               Default to None, which means you don't want to reshape the model inputs.
+               Only valid for openvino model, otherwise will be ignored.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                  precision(FP32/FP16/BF16/INT8).
         """
         return load_model(path, model, input_sample=input_sample,
-                          inplace=inplace, device=device, cache_dir=cache_dir, 
+                          inplace=inplace, device=device, cache_dir=cache_dir,
                           shapes=shapes)
 
     @staticmethod
