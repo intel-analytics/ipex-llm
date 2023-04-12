@@ -61,28 +61,29 @@ user_est.load(os.path.join(args.model_dir, "user-model"))
 full_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "user_item_parquet"))
 print("Data size: " + str(full_tbl.size()))
 
-enaging_user_df = full_tbl.select(['enaging_user_is_verified', 'enaging_user_id',
-                                   'user_numeric'])
+enaging_user_df = full_tbl.select(['enaging_user_id',
+                                   'enaging_user_is_verified',
+                                   'user_numeric'])\
+                          .drop_duplicates()\
+                          .rename({'enaging_user_id': 'user_id',
+                                   'enaging_user_is_verified': 'is_verified'})
 enaging_user_embed = user_est.predict(data=enaging_user_df.df,
                                       feature_cols=enaging_user_df.columns)
-engaged_user_df = full_tbl.select(['engaged_with_user_is_verified', 'engaged_with_user_id',
-                                   'item_numeric'])
-engaged_user_df = engaged_user_df.apply("item_numeric", "user_numeric",
-                                        lambda item_numeric: item_numeric[-3:],
-                                        dtype="array<float>")
-engaged_user_df = engaged_user_df.rename({'engaged_with_user_is_verified': 'enaging_user_is_verified',
-                                          'engaged_with_user_id': 'enaging_user_id'})
+
+engaged_user_df = full_tbl.select(['engaged_with_user_id',
+                                   'engaged_with_user_is_verified',
+                                   'item_numeric'])\
+                          .drop_duplicates()\
+                          .apply("item_numeric", "user_numeric",
+                                 lambda item_numeric: item_numeric[-3:],
+                                 dtype="array<float>")\
+                          .rename({'engaged_with_user_id': 'user_id',
+                                   'engaged_with_user_is_verified': 'is_verified'})
 engaged_user_embed = user_est.predict(data=engaged_user_df.df,
                                       feature_cols=enaging_user_df.columns)
 
-engaged_user_embed = FeatureTable(engaged_user_embed)
-engaged_user_embed = engaged_user_embed.select(['enaging_user_id', 'prediction']).drop_duplicates()\
-                                       .rename({"enaging_user_id": "user_id"})
-enaging_user_embed = FeatureTable(enaging_user_embed)
-enaging_user_embed = enaging_user_embed.select(['enaging_user_id', 'prediction']).drop_duplicates()\
-                                       .rename({"enaging_user_id": "user_id"})
-user_embed = enaging_user_embed.concat(engaged_user_embed)
-
+user_embed = FeatureTable(enaging_user_embed).concat(FeatureTable(engaged_user_embed))\
+                                             .select(['user_id', 'prediction'])
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
 user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
