@@ -33,7 +33,7 @@ runs:
         --conf spark.kubernetes.executorEnv.https_proxy=http://child-prc.intel.com:913 \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
         --archives /opt/spark/work-dir/environemnt.tar.gz#environment \
-        --conf spark.pyspark.driver.python=environment/bin/python \
+        --conf spark.pyspark.driver.python=python \
         --conf spark.pyspark.python=environment/bin/python \
         --conf spark.executor.instances=4 \
         --executor-cores 16 \
