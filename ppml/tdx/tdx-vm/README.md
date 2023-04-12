@@ -24,10 +24,10 @@ To deploy an actual workload with TDX-VM, you need to prepare the environment fi
     The Verify TDX Host Status section provides guidance on how to verify whether TDX is initializing on the host. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
 
 5. Launch TD Guests
-    It is time to launch TD guests. Execute `./scripts/orchestrate_tdvm.sh` to launch multiple tdvms based on images ppml provided.
+    It is time to launch TD guests. Execute `./scripts/orchestrate-tdxvm.sh` to launch multiple tdvms based on images ppml provided.
     
 6. Deploy Kubernetes cluster on tdvms
-    Execute `./scripts/install_k8s.sh` on each tdvm and `./scripts/deploy_k8s_cluster.sh` on master node to get a Kubernetes cluster. 
+    Execute `./scripts/install-k8s-components.sh` on each tdvm and `./scripts/deploy-k8s-cluster.sh` on master node to get a Kubernetes cluster. 
 
 
 ## Run Sparkpi as Spark Local Mode
