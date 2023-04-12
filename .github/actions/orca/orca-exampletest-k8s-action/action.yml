@@ -12,8 +12,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v3
-    - name: Set Variable
+    - name: Run tests
       shell: bash
       env:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
@@ -21,13 +20,11 @@ runs:
         echo "CONTAINER_NAME=orca-spark-k8s-exmaples-test" >> $GITHUB_ENV
         echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
 
-    - name: Start Container
-      shell: bash
-      run: |
-        set -x
         docker pull $IMAGE
         docker stop $CONTAINER_NAME
-        docker rm $CONTAINER_NAME
+        
+        docker rm -f $CONTAINER_NAME
+
         docker run -id \
         --net=host \
         --shm-size 15g \
