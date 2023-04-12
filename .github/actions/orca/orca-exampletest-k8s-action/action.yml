@@ -17,8 +17,8 @@ runs:
       env:
         DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
       run: |
-        echo "CONTAINER_NAME=orca-spark-k8s-exmaples-test" >> $GITHUB_ENV
-        echo "IMAGE=${{ env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+        export CONTAINER_NAME="orca-spark-k8s-exmaples-test"
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
 
         docker pull $IMAGE
         docker stop $CONTAINER_NAME
