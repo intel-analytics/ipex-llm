@@ -46,8 +46,8 @@ sshpass -p $slavepass2 ssh -o StrictHostKeyChecking=no  root@$slaveip2 'sh /root
 
 echo "......................._remove file content otherwise it create ambiguity-"
 
-#>output.sh
-#>output.txt
+>output.sh
+>output.txt
 
 sleep 30s
 
