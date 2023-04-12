@@ -148,7 +148,7 @@ def setup_package():
     pytorch_nightly_requires = ["torch~=1.14.0.dev",
                                 "torchvision~=0.15.0.dev"]
 
-    pytorch_common_requires = ["pytorch_lightning==1.6.4",
+    pytorch_common_requires = ["pytorch_lightning==2.0.0",
                                "torchmetrics==0.11.0",
                                "opencv-python-headless",
                                "PyTurboJPEG",
