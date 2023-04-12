@@ -67,8 +67,6 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --no-cache datasets==2.6.1 transformers && \
     # We need to ensure that the required PyTorch version is 1.13.1
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch]==2.3.0b20230331 && \
-# Install torch-ccl
-    pip3 install oneccl_bind_pt==1.13.0 -f https://developer.intel.com/ipex-whl-stable-cpu && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
