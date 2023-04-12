@@ -39,7 +39,6 @@ permissions:
 jobs:
 
   ORCA-Spark-K8s-Example-Prvn:
-  if: ${{ github.event.schedule || github.event.inputs.artifact == 'ORCA-Spark-K8s-Example-Prvn' || github.event.inputs.artifact == 'all' }}
   runs-on: [self-hosted, Almaren]
 
   steps:
