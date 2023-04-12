@@ -92,11 +92,25 @@ type_map = {
 
 cross_cols = [['present_media', 'language']]
 
-user_features = [
+enaging_features = [
     'enaging_user_follower_count',
     'enaging_user_following_count',
     'enaging_user_id',
     'enaging_user_is_verified'
+]
+
+engaged_features = [
+    'engaged_with_user_follower_count',
+    'engaged_with_user_following_count',
+    'engaged_with_user_id',
+    'engaged_with_user_is_verified'
+]
+
+user_features = [
+    'user_follower_count',
+    'user_following_count',
+    'user_id',
+    'user_is_verified'
 ]
 
 item_features = [
@@ -285,8 +299,12 @@ if __name__ == '__main__':
     train_tbl.write_parquet(os.path.join(args.output_folder, "train_parquet"))
     test_tbl.write_parquet(os.path.join(args.output_folder, "test_parquet"))
     full_tbl = train_tbl.concat(test_tbl)
-    full_tbl.select(user_features).drop_duplicates()\
-            .write_parquet(os.path.join(args.output_folder, 'wnd_user.parquet'))
+    enaging_user = full_tbl.select(enaging_features)\
+                           .rename(dict(zip(enaging_features, user_features)))
+    engaged_user = full_tbl.select(engaged_features)\
+                           .rename(dict(zip(engaged_features, user_features)))
+    enaging_user.concat(engaged_user).drop_duplicates()\
+                .write_parquet(os.path.join(args.output_folder, 'wnd_user.parquet'))
     full_tbl.select(item_features).drop_duplicates()\
             .write_parquet(os.path.join(args.output_folder, 'wnd_item.parquet'))
 
