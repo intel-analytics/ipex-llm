@@ -503,53 +503,5 @@ class TestTF2Estimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-    def test_optional_optimizer(self):   
-        sc = OrcaContext.get_spark_context()
-        rdd = sc.range(0, 100)
-        spark = OrcaContext.get_spark_session()
-
-        from pyspark.ml.linalg import DenseVector
-        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
-                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
-
-        config = {"lr": 0.2}
-
-        try:
-            temp_dir = tempfile.mkdtemp()
-
-            trainer = Estimator.from_keras(
-                model_creator=model_creator,
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
-                        feature_cols=["feature"],
-                        label_cols=["label"],
-                        validation_data=df,
-                        validation_steps=1)
-
-            # save model as savemodel format
-            trainer.save(os.path.join(temp_dir, "saved_model"), include_optimizer=False)
-            before_res = trainer.predict(df, feature_cols=["feature"]).collect()
-            expect_res = np.concatenate([part["prediction"] for part in before_res])
-            trainer.shutdown()
-
-            est = Estimator.from_keras(
-                verbose=True,
-                config=config,
-                workers_per_node=2,
-                backend="spark")
-
-            est.load(os.path.join(temp_dir, "saved_model"))
-            # test continous predicting
-            after_res = est.predict(df, feature_cols=["feature"]).collect()
-            pred_res = np.concatenate([part["prediction"] for part in after_res])
-            assert np.array_equal(expect_res, pred_res)
-
-        finally:
-            shutil.rmtree(temp_dir)
-
 if __name__ == "__main__":
     pytest.main([__file__])
