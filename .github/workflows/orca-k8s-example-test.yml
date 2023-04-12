@@ -4,39 +4,20 @@ name:  ORCA K8S Test
 on:
   schedule:
     - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
-  push:
-    branches: [ main ]
-    paths:
-      - 'python/orca/**'
-      - '.github/workflows/orca-k8s-example-test.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/orca/**'
       - '.github/workflows/orca-k8s-example-test.yml'
+      - '.github/actions/orca/orca-exampletest-k8s-action/action.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/orca/**'
+      - '.github/workflows/orca-k8s-example-test.yml'
+      - '.github/actions/orca/orca-exampletest-k8s-action/action.yml'
   workflow_dispatch:
-    inputs:
-      artifact:
-        description: 'select which job to run("all" will make all jobs run)'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-        - all
-        - ORCA-Spark-K8s-Example-Prvn
-      image:
-        description: 'docker image name'
-        required: true
-        default: 'intelanalytics/bigdl-k8s'
-        type: string
-      tag:
-        description: 'docker image tag'
-        required: true
-        default: 'latest'
-        type: string
 
-env:
-  GIST_ID: 5c25555055d45e2de7849bca1618f53c
 
 permissions:
   contents: read
@@ -45,7 +26,8 @@ permissions:
 jobs:
 
   ORCA-Spark-K8s-Example-Prvn:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'ORCA-Spark-K8s-Example-Prvn' || github.event.inputs.artifact == 'all' }}
+    needs: changes
+    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Almaren]
 
     steps:
