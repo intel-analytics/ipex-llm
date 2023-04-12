@@ -39,30 +39,31 @@ permissions:
 jobs:
 
   ORCA-Spark-K8s-Example-Prvn:
-  runs-on: [self-hosted, Almaren]
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'ORCA-Spark-K8s-Example-Prvn' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Almaren]
 
-  steps:
-    - uses: actions/checkout@v3
-    - name: set env
-      env:
-        DEFAULT_IMAGE: 'intelanalytics/bigdl-k8s'
-        DEFAULT_TAG: 'latest'
-      run: |
-        echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
-        echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
-    - name: Run Test
-      uses: ./.github/actions/orca-exampletest-k8s-action
-      with:
-        image: ${{env.IMAGE}}
-        image-tag: ${{env.TAG}}
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: ORCA-Spark-K8s-Example-Prvn.json
-        type: job
-        job-name: ORCA-Spark-K8s-Example-Prvn
-        runner-hosted-on: 'Shanghai'
+    steps:
+      - uses: actions/checkout@v3
+      - name: set env
+        env:
+          DEFAULT_IMAGE: 'intelanalytics/bigdl-k8s'
+          DEFAULT_TAG: 'latest'
+        run: |
+          echo "TAG=${{ github.event.inputs.tag || env.DEFAULT_TAG }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ github.event.inputs.image || env.DEFAULT_IMAGE }}" >> $GITHUB_ENV
+      - name: Run Test
+        uses: ./.github/actions/orca-exampletest-k8s-action
+        with:
+          image: ${{env.IMAGE}}
+          image-tag: ${{env.TAG}}
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: ORCA-Spark-K8s-Example-Prvn.json
+          type: job
+          job-name: ORCA-Spark-K8s-Example-Prvn
+          runner-hosted-on: 'Shanghai'
