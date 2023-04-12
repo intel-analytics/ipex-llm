@@ -635,7 +635,7 @@ class SparkTFEstimator():
         )
         model = load_model(**self.load_params)
         self.model_weights = model.get_weights()
-        if model.optimizer:
+        if model.optimizer is not None:
             self.optimizer_weights = model.optimizer.get_weights()
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
