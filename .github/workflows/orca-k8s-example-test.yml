@@ -26,8 +26,6 @@ permissions:
 jobs:
 
   ORCA-Spark-K8s-Example-Prvn:
-    needs: changes
-    if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Almaren]
 
     steps:
