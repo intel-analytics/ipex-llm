@@ -19,19 +19,20 @@ To deploy an actual workload with TDX-VM, you need to prepare the environment fi
 
 3. Build and install packages on TDX host
     Packages of host kernel, guest kernel, qemu, libvirt should be built first. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
-    
-    
-4. Launch TD Guests
-    It is time to launch TD guests. Section Launch TD Guest leads you step by step to create and launch TD guests. Execute `./scripts/orchestrate_tdvm.sh` to launch multiple tdvms.
-    
-5. Verify statuses
-    The Verify TDX Status section provides guidance on how to verify whether TDX is initializing on both the host and guest. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
 
+4. Verify TDX Host Status
+    The Verify TDX Host Status section provides guidance on how to verify whether TDX is initializing on the host. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+
+5. Launch TD Guests
+    It is time to launch TD guests. Execute `./scripts/orchestrate_tdvm.sh` to launch multiple tdvms based on images ppml provided.
+    
 6. Deploy Kubernetes cluster on tdvms
     Execute `./scripts/install_k8s.sh` on each tdvm and `./scripts/deploy_k8s_cluster.sh` on master node to get a Kubernetes cluster. 
 
 
 ## Run Sparkpi as Spark Local Mode
+Build ppml-trusted-big-data image according to ./../docker/trusted-big-data/README.md or pull image from `intelanalytics/bigdl-ppml-trusted-bigd-data:2.3.0-SNAPSHOT`
+
 Start the client container
 ```bash
 sudo docker run -itd --net=host \
@@ -54,35 +55,24 @@ ${SPARK_HOME}/bin/spark-submit \
 ## Run Simple Query as Spark on Kubernetes Mode
 
 ### 1. Start the client container to run applications in spark K8s mode
-#### 1.1 Prepare the keys and password
-Please refer to the previous section about [prepare keys](#Prepare the key) and [prepare password](#Prepare the password).
-```bash
-bash ../../../scripts/generate-keys.sh
-bash ../../../scripts/generate-password.sh YOUR_PASSWORD
-kubectl apply -f keys/keys.yaml
-kubectl apply -f password/password.yaml
-```
-#### 1.2 Prepare the k8s configurations
-##### 1.2.1 Create the RBAC
+#### 1.1 Prepare the k8s configurations
+##### 1.1.1 Create the RBAC
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
-##### 1.2.2 Generate k8s config file
+##### 1.1.2 Generate k8s config file
 ```bash
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
-##### 1.2.3 Create k8s secret
-```bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_PASSWORD
-```
-The secret created (YOUR_PASSWORD) should be the same as the password you specified in section 1.1 for generating the key.
 
-#### 1.3 Start the client container
+#### 1.2 Start the client container
+Build ppml-trusted-big-data image according to ./../docker/trusted-big-data/README.md or pull image from `intelanalytics/bigdl-ppml-trusted-bigd-data:2.3.0-SNAPSHOT`
+
 ```bash
 export K8S_MASTER=k8s://$(kubectl cluster-info | grep 'https.*6443' -o -m 1)
 echo The k8s master is $K8S_MASTER .
-export SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.3.0-SNAPSHOT
+export SPARK_IMAGE=intelanalytics/bigdl-ppml-trusted-bigd-data:2.3.0-SNAPSHOT
 sudo docker run -itd --net=host \
 -v /etc/kubernetes:/etc/kubernetes \
 -v /root/.kube/config:/root/.kube/config \
