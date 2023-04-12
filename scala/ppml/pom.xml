@@ -13,7 +13,6 @@
 
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
-        <parquet.version>1.12.2</parquet.version>
         <akka.http.version>10.1.15</akka.http.version>
         <akka.actor.version>2.5.31</akka.actor.version>
     </properties>
@@ -78,6 +77,18 @@
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-column</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-hadoop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -89,20 +100,17 @@
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-column</artifactId>
-            <version>${parquet.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>

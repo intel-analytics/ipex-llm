@@ -250,6 +250,22 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-column</artifactId>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
