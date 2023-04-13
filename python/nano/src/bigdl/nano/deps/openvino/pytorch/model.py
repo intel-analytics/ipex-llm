@@ -26,14 +26,16 @@ from bigdl.nano.utils.common import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager
-from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.utils.pytorch import get_input_example, get_forward_args, \
+    patch_attrs_from_model_to_object, MetaData
+import pickle
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):
     def __init__(self, model, input_sample=None, precision='fp32',
                  thread_num=None, device='CPU', dynamic_axes=True,
                  logging=True, config=None, output_tensors=True,
-                 shapes=None, **kwargs):
+                 shapes=None, output_metadata=None, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -70,8 +72,10 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                        '[1,3,224,224]'. This parameter affect model Parameter shape, can be
                        dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
                        Only valid for openvino model, otherwise will be ignored.
+        :param output_metadata: metadata of model output, defaults to None.
         :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
         """
+        self.output_metadata = output_metadata
         ov_model_path = model
         with TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -90,6 +94,15 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                        precision=precision, dynamic_axes=dynamic_axes,
                        logging=logging, **kwargs)
                 ov_model_path = tmpdir / 'tmp.xml'
+
+                # test run to get output metadata
+                forward_args = get_forward_args(model)
+                input_sample = get_input_example(model, input_sample, forward_args)
+                if isinstance(input_sample, (list, tuple)):
+                    output = model(*input_sample)
+                else:
+                    output = model(input_sample)
+                self.output_metadata = MetaData.construct_matadata(output)
 
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
@@ -124,6 +137,8 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             outputs = self.numpy_to_tensors(outputs)
         elif len(outputs) == 1:
             outputs = outputs[0]
+        if self.output_metadata is not None:
+            outputs = MetaData.reconstruct_output(outputs, self.output_metadata)
         return outputs
 
     def reshape(self, shapes):
@@ -133,9 +148,12 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
     def status(self):
         status = super().status
         status.update({"xml_path": 'ov_saved_model.xml',
+                       "metadata_path": 'matadata.pkl',
                        "weight_path": 'ov_saved_model.bin',
                        "config": self.ov_model.final_config,
-                       "device": self.ov_model._device})
+                       "device": self.ov_model._device,
+                       "output_tensors": self.output_tensors,
+                       })
         return status
 
     @property  # type: ignore
@@ -169,11 +187,21 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             config["CACHE_DIR"] = cache_dir
         if device is None:
             device = status.get('device', 'CPU')
+        output_tensors = status.get('output_tensors', True)
+        # load meatdata
+        metadata_path = status.get('metadata_path', None)
+        if metadata_path is None or not metadata_path:
+            output_metadata = None
+        else:
+            with open(path / status['metadata_path'], "rb") as f:
+                output_metadata = pickle.load(f)
         return PytorchOpenVINOModel(xml_path,
                                     config=config,
                                     thread_num=thread_num,
                                     device=device,
-                                    shapes=shapes)
+                                    shapes=shapes,
+                                    output_tensors=output_tensors,
+                                    output_metadata=output_metadata)
 
     def pot(self,
             dataloader,
@@ -215,6 +243,9 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
         save(self.ov_model.ie_network, xml_path)
+        # save metadata
+        with open(path / self.status['metadata_path'], "wb") as f:
+            pickle.dump(self.output_metadata, f)
 
     def async_predict(self,
                       input_data: Union[DataLoader, List[torch.Tensor], List[List[torch.Tensor]]],

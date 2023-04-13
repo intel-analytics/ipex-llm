@@ -60,6 +60,57 @@ class MultipleInputNet(nn.Module):
         return self.dense1(x1) + 2 * self.dense2(x2)
 
 
+class DictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2, "x3": x3}
+        return output
+
+
+class DictOutputModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x3": x3, "x1": x1, "x2": x2}
+        return output
+
+
+class DictTensorOutputModel1(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2}
+        return output, x3
+
+
 class TestOpenVINO(TestCase):
     def test_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
@@ -396,8 +447,8 @@ class TestOpenVINO(TestCase):
         image_latents2 = torch.randn(latent_shape2, device = "cpu", dtype=torch.float32)
         encoder_hidden_states2 = torch.randn((1, 12, 10), device = "cpu", dtype=torch.float32)
 
-        unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
-        unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        target_sample1 = unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        target_sample2 = unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
         # Static shape
         dynamic_axes= False
@@ -470,8 +521,12 @@ class TestOpenVINO(TestCase):
                                             input_shape="[-1,4,8,8],[1],[-1,12,10]",
                                             input="sample,timestep,encoder_hidden_states"
                                             )
-        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
-        nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        output1 = nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        output2 = nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        # TODO: change output1["sample"] -> output1.sample
+        # we may need to support custom class output
+        np.testing.assert_almost_equal(output1["sample"].detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
         nano_unet.reshape("sample[1,4,8,8],encoder_hidden_states[1,12,10]")
         nano_unet_inputs = {i.any_name: i.shape for i in nano_unet.ov_model.ie_network.inputs}
@@ -486,6 +541,11 @@ class TestOpenVINO(TestCase):
             new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
             assert list(new_model_inputs["sample"]) == [1, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [1, 12, 10]
+
+        output1 = new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        output2 = new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        np.testing.assert_almost_equal(output1["sample"].detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
     def test_openvino_trace_output_tensors(self):
         model = mobilenet_v3_small(pretrained=True)
@@ -505,6 +565,19 @@ class TestOpenVINO(TestCase):
         for x, y in dataloader:
             forward_model_tensor = openvino_model(x).numpy()
             forward_model_numpy = test_openvino_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_openvino_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in dataloader:
+            forward_model_tensor = load_model(x).numpy()
+            forward_model_numpy = test_load_model(x)
             assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
 
@@ -556,3 +629,52 @@ class TestOpenVINO(TestCase):
 
             with pytest.raises(RuntimeError):
                 ov_model(x1, x1=x2)
+
+    def test_openvino_dict_output(self):
+        # test1: output is a single dict
+        for Model in [DictOutputModel, DictOutputModel2]:
+            model = Model()
+            x1 = torch.randn(10, 28 * 28)
+            x2 = torch.randn(10, 28 * 28)
+            output = model(x1, x2)
+            assert isinstance(output, dict)
+
+            ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+            with InferenceOptimizer.get_context(ov_model):
+                output1 = ov_model(x1, x2)
+
+            assert output.keys() == output1.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(ov_model, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name)
+
+            with InferenceOptimizer.get_context(load_model):
+                output2 = load_model(x1, x2)
+
+            assert output.keys() == output2.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output2[k].detach().numpy(), decimal=5)
+
+        # test2: output is a dict with other non-list items
+        model = DictTensorOutputModel1()
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        dic, out = model(x1, x2)
+        assert isinstance(dic, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            dic1, out1 = ov_model(x1, x2)
+        assert dic1.keys() == dic.keys()
+        np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            dic2, out2 = load_model(x1, x2)
+        assert dic2.keys() == dic1.keys()
+        np.testing.assert_almost_equal(out2.detach().numpy(), out1.detach().numpy(), decimal=5)

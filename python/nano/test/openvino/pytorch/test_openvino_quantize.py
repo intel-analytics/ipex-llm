@@ -429,6 +429,19 @@ class TestOpenVINO(TestCase):
             forward_model_numpy = test_openvino_model(x)
             assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_openvino_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in dataloader:
+            forward_model_tensor = load_model(x).numpy()
+            forward_model_numpy = test_load_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
 
     def test_openvino_quantize_keyword_argument(self):
         model = mobilenet_v3_small(num_classes=10)
