@@ -12,6 +12,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Env Prepare
+      shell: bash
+      run: |
+      conda activate bigdl
     - name: TF1 Examples Test
       shell: bash
       run: |
