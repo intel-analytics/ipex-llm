@@ -28,7 +28,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
-                <version>1.2.4</version>
+                <version>1.2.10</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -279,7 +279,6 @@
         <dependency>
             <groupId>com.azure</groupId>
 	    <artifactId>azure-identity</artifactId>
-	    <version>1.81</version>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
