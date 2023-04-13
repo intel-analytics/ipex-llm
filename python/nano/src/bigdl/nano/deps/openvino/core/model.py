@@ -45,6 +45,14 @@ class OpenVINOModel:
         _flatten(inputs, flattened_inputs)
         args_length = len(inputs)
         if kwargs is not None and len(kwargs) > 0:
+            # check kwargs first, to avoid user call model(t1, t2, b=t3, c=t4)
+            # when the signature is def forward(a, b, c)
+            for arg in kwargs:
+                if arg in self.forward_args[:args_length]:
+                    invalidInputError(False,
+                                      f"You shouldn't pass arguement {arg} as it has "
+                                      "been passed as a positional arguement.")
+            # add inputs based on original order
             for arg in self.forward_args[args_length:]:
                 if arg in kwargs:
                     flattened_inputs.append(kwargs[arg])

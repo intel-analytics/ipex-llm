@@ -24,7 +24,6 @@ from bigdl.nano.utils.pytorch import export_to_onnx
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
-from bigdl.nano.utils.pytorch import cope_with_keyword_arguments
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -107,7 +106,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         return inputs
 
     def on_forward_start_kwargs(self, **kwargs):
-        cope_with_keyword_arguments(kwargs)
+        self.cope_with_keyword_arguments(kwargs)
         return kwargs
 
     def on_forward_end(self, outputs):

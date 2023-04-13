@@ -34,7 +34,11 @@ class ONNXRuntimeModel:
         '''
         flattened_inputs = []
         _flatten(inputs, flattened_inputs)
-        if len(kwargs) == 0 and len(self._forward_args) != len(flattened_inputs):
+        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
+        if kwargs is not None and len(kwargs) > 0:
+            zipped_inputs.update(kwargs)
+        # TODO: kwargs has tuple or dict?
+        if len(self._forward_args) != len(zipped_inputs):
             # formatting a Tensor will cost much time,
             # so we put it in this `if` statement
             invalidInputError(False,
@@ -42,9 +46,6 @@ class ONNXRuntimeModel:
                               "inconsistent with the length of ONNX Runtime session's inputs, "
                               f"got model_forward_args: {self._forward_args}, "
                               f"and flattened inputs: {flattened_inputs}")
-        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
-        if kwargs is not None and len(kwargs) > 0:
-            zipped_inputs.update(kwargs)
         ort_outs = self.ortsess.run(None, zipped_inputs)
         return ort_outs
 

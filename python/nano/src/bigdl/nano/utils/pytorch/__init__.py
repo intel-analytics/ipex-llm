@@ -54,5 +54,3 @@ from .save import transform_state_dict_to_dtype
 from .load import load_model
 
 from .xpu import apply_data_to_xpu, apply_data_to_half
-
-from .tensor_convert import cope_with_keyword_arguments

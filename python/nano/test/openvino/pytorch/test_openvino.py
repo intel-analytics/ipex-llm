@@ -473,3 +473,16 @@ class TestOpenVINO(TestCase):
             output3 = ov_model(x1=x1, x2=x2).numpy()
             np.testing.assert_allclose(output1, output2, atol=1e-5)
             np.testing.assert_allclose(output1, output3, atol=1e-5)
+
+            # test some bad cases
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x2, x2=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x2, x1=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x2, x1=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x1=x2)

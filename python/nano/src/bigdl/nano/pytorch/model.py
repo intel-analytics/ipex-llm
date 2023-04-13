@@ -74,3 +74,14 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         if len(tensors) == 1:
             tensors = tensors[0]
         return tensors
+
+    @staticmethod
+    def cope_with_keyword_arguments(kwargs):
+        # inplace convert kwargs
+        for k in kwargs.keys():
+            if isinstance(kwargs[k], tuple):
+                kwargs[k] = numpy_to_tensors(kwargs[k])
+            if isinstance(kwargs[k], torch.Tensor):
+                kwargs[k] = kwargs[k].cpu().detach().numpy()
+            if np.isscalar(kwargs[k]):
+                kwargs[k] = np.array(kwargs[k])
