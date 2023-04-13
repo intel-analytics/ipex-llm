@@ -25,19 +25,25 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn.parallel.distributed import DistributedDataParallel
-from pytorch_lightning.lite import LightningLite
-from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
-from pytorch_lightning.utilities.apply_func import apply_to_collection
 from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, \
-    TORCH_VERSION_LESS_1_13, check_ccl
+    TORCH_VERSION_LESS_1_13, LIGHTNING_VERSION_GREATER_2_0, check_ccl
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.strategies import IPEXStrategy, DDPSpawnStrategy, \
     DDPSubprocessStrategy, create_ray_strategy, DDPK8sStrategy
 
+if LIGHTNING_VERSION_GREATER_2_0:
+    from lightning.fabric import Fabric as LightningLite
+    from lightning.fabric.wrappers import _FabricModule as _LiteModule
+    from lightning.fabric.wrappers import _FabricOptimizer as _LiteOptimizer
+    from lightning.fabric.utilities.apply_func import apply_to_collection
+else:
+    from pytorch_lightning.lite import LightningLite
+    from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
+    from pytorch_lightning.utilities.apply_func import apply_to_collection
 
 class _TorchNanoModule(_LiteModule):
     def __init__(self, module, precision_plugin, channels_last) -> None:

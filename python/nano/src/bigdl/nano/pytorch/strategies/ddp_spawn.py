@@ -56,12 +56,12 @@ from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.common import EnvContext
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 
 import logging
 import warnings
 
-if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+if LIGHTNING_VERSION_GREATER_2_0:
     from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
     from pytorch_lightning.core.optimizer import _validate_optimizers_attached
     from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
@@ -316,7 +316,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 if self.lightning_module.automatic_optimization
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
-            if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+            if LIGHTNING_VERSION_GREATER_2_0:
                 _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
                 _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
             else:

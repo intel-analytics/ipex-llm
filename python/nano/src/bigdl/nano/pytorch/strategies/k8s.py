@@ -31,10 +31,10 @@ from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _validate_scheduler_api
 from pytorch_lightning.plugins.environments import KubeflowEnvironment
 from bigdl.nano.utils.common import invalidInputError, compare_version
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
-if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+if LIGHTNING_VERSION_GREATER_2_0:
     from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
     from pytorch_lightning.core.optimizer import _validate_optimizers_attached
 else:
@@ -186,7 +186,7 @@ class DDPK8sStrategy(DDPStrategy):
                 if self.lightning_module.automatic_optimization
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
-            if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+            if LIGHTNING_VERSION_GREATER_2_0:
                 _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
                 _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
             else:
