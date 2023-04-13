@@ -128,14 +128,16 @@ class OpenVINOModel:
         if not reshape:
             print(f"Skip the reshape process since the input shapes are same as the current \
                   model shapes.")
-            return
-
-        start_time = datetime.utcnow()
-        print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v))
-                                                     for k, v in shapes.items())))
-        self.ie_network.reshape(shapes)
-        duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
-        print(f"Reshape model took {duration_ms} ms")
+        else:
+            start_time = datetime.utcnow()
+            print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v))
+                                                        for k, v in shapes.items())))
+            try:
+                self.ie_network.reshape(shapes)
+                duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
+                print(f"Reshape model took {duration_ms} ms")
+            except:
+                print(f"Failed to reshape this model, compile the original model instead.")
 
         self.create_infer_request()
 
