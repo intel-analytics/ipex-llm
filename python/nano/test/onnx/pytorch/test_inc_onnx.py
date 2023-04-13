@@ -352,7 +352,7 @@ class TestOnnx(TestCase):
                                                accelerator="onnxruntime",
                                                calib_data=((torch.rand(2,3,1,1), 5), torch.zeros(2,3,1,1)))
         data = torch.zeros(1,3,1,1) - 5
-        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
+        result_m = accmodel(data, 5)
         assert abs(torch.sum(result_m).item()) < 1e-5
 
         # sample with only required parameters (in a tuple)
@@ -360,7 +360,7 @@ class TestOnnx(TestCase):
                                                accelerator="onnxruntime",
                                                calib_data=(torch.rand(2,3,1,1), 5))
         data = torch.zeros(1,3,1,1) - 5
-        result_m = accmodel(data, np.array([5]))  # TODO: make this 5
+        result_m = accmodel(data, 5)
         assert abs(torch.sum(result_m).item()) < 1e-5
 
         # default None values
@@ -415,7 +415,7 @@ class TestOnnx(TestCase):
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="onnxruntime",
                                                calib_data=((x1,x2,x3,x4, 1, 1), torch.zeros(1,3,1,1)))
-        result_m = accmodel(x1,x2,x3,x4,np.array([1]),np.array([1]))
+        result_m = accmodel(x1,x2,x3,x4,1,1)
         assert abs(torch.sum(result_m).item()) < 1e-5 + 6
 
         # sample with only required parameters (in a tuple)
@@ -429,7 +429,7 @@ class TestOnnx(TestCase):
         accmodel = InferenceOptimizer.quantize(model,
                                                accelerator="onnxruntime",
                                                calib_data=(x1,x2,x3,x4, 1))
-        result_m = accmodel(x1,x2,x3,x4, np.array([2]))
+        result_m = accmodel(x1,x2,x3,x4,2)
         assert abs(torch.sum(result_m).item()) < 1e-5 + 6
 
     def test_onnx_quantize_output_tensors(self):
