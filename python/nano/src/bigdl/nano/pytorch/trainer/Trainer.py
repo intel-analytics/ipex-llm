@@ -23,8 +23,10 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
+from pytorch_lightning.strategies import SingleDeviceStrategy
 from bigdl.nano.pytorch import InferenceOptimizer
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, check_ccl
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, check_ccl, \
+    LIGHTNING_VERSION_GREATER_2_0
 from bigdl.nano.utils.pytorch import ChannelsLastCallback
 from bigdl.nano.utils.pytorch import save_model, load_model
 from bigdl.nano.pytorch.algorithms import SelectiveBackprop
@@ -144,7 +146,11 @@ class Trainer(pl.Trainer):
             num_processes = 1
 
         if num_processes == 1:
-            kwargs["strategy"] = IPEXStrategy(dtype=dtype) if self.use_ipex else None
+            if LIGHTNING_VERSION_GREATER_2_0:
+                kwargs["strategy"] = IPEXStrategy(dtype=dtype) \
+                    if self.use_ipex else SingleDeviceStrategy()
+            else:
+                kwargs["strategy"] = IPEXStrategy(dtype=dtype) if self.use_ipex else None
             super().__init__(*args, **kwargs)
         else:
             invalidInputError(distributed_backend in distributed_backends,
