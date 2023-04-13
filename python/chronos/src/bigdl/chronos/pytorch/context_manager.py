@@ -57,6 +57,8 @@ class ForecasterContextManager(object):
         # call `torch.set_num_threads` at most once
         self.forecaster.thread_num = set_pytorch_thread(self.thread_num,
                                                         self.forecaster.thread_num)
+        self.forecaster.optimized_model_thread_num = \
+            set_pytorch_thread(self.thread_num, self.forecaster.optimized_model_thread_num)
         self.forecaster.context_enabled = True
         self.infer_mode.__enter__()
         if self.bf16_enable:
