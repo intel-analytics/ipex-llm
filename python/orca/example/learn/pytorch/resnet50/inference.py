@@ -140,6 +140,7 @@ class ResNetPerfCallback(MainCallback):
 
         runner.output = output
         runner.loss = loss
+        runner.target = target
 
     def forward(self, runner, images, target, warmup=False):
         # compute output
