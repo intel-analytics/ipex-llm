@@ -17,12 +17,12 @@ runs:
     - name: TF1 Examples Test
       shell: bash
       run: |
-        /root/anaconda3/bin/conda create -n orca-tf1 -y python==3.8
+        /root/anaconda3/bin/conda create -n orca-py38 -y python==3.8
         source /root/anaconda3/bin/activate bigdl
         export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
         PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
-        pip install tensorflow==1.15.0
+        pip install tensorflow==2.6.0 keras==2.6.0
         pip install --pre --upgrade bigdl-spark3
         
         /opt/spark/bin/spark-submit \
@@ -31,7 +31,7 @@ runs:
         --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
         --conf spark.driver.port=54321 \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --name basic_text_classification \
+        --name orca-k8s-application \
         --conf spark.kubernetes.container.image=intelanalytics/bigdl-k8s:2.3.0-SNAPSHOT-3.1.3:latest \
         --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
         --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl2.0/data \
@@ -52,10 +52,10 @@ runs:
         --driver-cores 4 \
         --driver-memory 50g \
         --properties-file /opt/bigdl-2.3.0-SNAPSHOT/conf/spark-bigdl.conf \
-        --py-files /opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-orca-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py  \
+        --py-files /opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-orca-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/examples/friesian/ncf/ncf_train.py  \
         --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
         --conf spark.sql.catalogImplementation='in-memory' \
         --conf spark.driver.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
         --conf spark.executor.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
-        local:///opt/bigdl-2.3.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
+        local:///opt/bigdl-2.3.0-SNAPSHOT/examples/friesian/ncf/ncf_train.py \
         --cluster_mode 'spark-submit'
