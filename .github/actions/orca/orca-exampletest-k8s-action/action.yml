@@ -4,15 +4,12 @@ description: 'ORCA-Spark-K8s-Example-Prvn'
 runs:
   using: "composite"
   steps:
-    - name: Env Prepare
+    - name: TF1 Examples Test
       shell: bash
       run: |
         source /root/anaconda3/bin/activate bigdl
         export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
 
-    - name: TF1 Examples Test
-      shell: bash
-      run: |
         /opt/spark/bin/spark-submit \
         --master ${RUNTIME_SPARK_MASTER} \
         --deploy-mode client \
