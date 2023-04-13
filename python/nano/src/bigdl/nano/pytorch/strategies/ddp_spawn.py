@@ -49,8 +49,6 @@ from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _validate_scheduler_api
-from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher
-from pytorch_lightning.strategies import DDPStrategy as _DDPStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
 from bigdl.nano.utils.common import schedule_processors, compare_version
