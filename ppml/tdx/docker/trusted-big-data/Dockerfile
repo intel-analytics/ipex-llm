@@ -3,7 +3,8 @@ FROM intelanalytics/bigdl-k8s
 ADD ./download-bigdl-ppml.sh /opt/download-bigdl-ppml.sh
 RUN chmod a+x /opt/download-bigdl-ppml.sh
 
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+RUN apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
 # Install python3.8
@@ -19,4 +20,5 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 ENV PYTHONPATH  /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages
 
 ADD ./entrypoint.sh /opt/entrypoint.sh
+RUN chmod a+x /opt/entrypoint.sh
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
