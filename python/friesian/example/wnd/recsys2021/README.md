@@ -96,7 +96,7 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `train_files`: The part range for train data preprocessing, such as 0-269 for the full training dataset,
  0-1 for the first two parts, etc. Default to be 0-269.
-* `data_dir`: The path to the folder of parquet files,  either a local path or an HDFS path, where train/test/preprocessed parquets are stored under `train/`, `test/`, `preprocessed` respectively.
+* `data_dir`: The path to the folder of parquet files, either a local path or an HDFS path. Train and test parquet files should be stored under `train/` and `test/` respectively. Processed parquet files would be stored under `preprocessed/` after the program finishes.
 * `cross_sizes`: The bucket size for the cross column (`present_media_language`). Default to be 600.
 
 
