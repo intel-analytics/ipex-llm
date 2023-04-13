@@ -12,11 +12,11 @@ initialUserDataPath: ./mnt/user_ebd.parquet
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
 # userFeatureColumns must be provided
-userIDColumn: enaging_user_id
+userIDColumn: user_id
 userFeatureColumns: prediction
 
-# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
+# default: null, if loadInitialData=true and initialItemDataPath != null, itemIDColumn and
+# itemFeatureColumns must be provided
 # itemIDColumn:
 # itemFeatureColumns:
 
