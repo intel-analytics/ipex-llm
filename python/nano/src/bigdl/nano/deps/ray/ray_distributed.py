@@ -46,20 +46,28 @@ import pytorch_lightning as pl
 from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.utilities.apply_func import move_data_to_device
-from pytorch_lightning.strategies.launchers import _SpawnLauncher
-from pytorch_lightning.strategies import DDPSpawnStrategy
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
+from pytorch_lightning.core.optimizer import _validate_scheduler_api
 from pytorch_lightning.core.optimizer import LightningOptimizer
 
 from .ray_envbase import RayEnvironment
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
+if LIGHTNING_VERSION_GREATER_2_0:
+    from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
+    from pytorch_lightning.core.optimizer import _validate_optimizers_attached
+    from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
+    from pytorch_lightning.strategies import DDPStrategy as DDPSpawnStrategy
+    from lightning.fabric.utilities.apply_func import move_data_to_device
+else:
+    from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
+    from pytorch_lightning.strategies.launchers import _SpawnLauncher
+    from pytorch_lightning.strategies import DDPSpawnStrategy
+    from pytorch_lightning.utilities.apply_func import move_data_to_device
 
 # we must import torch_ccl to use ccl as backend
 try:
@@ -198,9 +206,15 @@ class RayStrategy(DDPSpawnStrategy):
         if not ray.is_initialized():    # type: ignore
             print(ray.init())   # type: ignore
 
-        super().__init__(parallel_devices=[],
-                         cluster_environment=RayEnvironment(world_size=num_processes),
-                         **ddp_kwargs)
+        if LIGHTNING_VERSION_GREATER_2_0:
+            super().__init__(parallel_devices=[],
+                             cluster_environment=RayEnvironment(world_size=num_processes),
+                             start_method='spawn',
+                             **ddp_kwargs)
+        else:
+            super().__init__(parallel_devices=[],
+                             cluster_environment=RayEnvironment(world_size=num_processes),
+                             **ddp_kwargs)
 
         self.num_workers = num_processes
         self.num_cpus_per_worker = num_cpus_per_worker
@@ -422,6 +436,10 @@ class RayStrategy(DDPSpawnStrategy):
                 if self.lightning_module.automatic_optimization
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
-            _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
+            if LIGHTNING_VERSION_GREATER_2_0:
+                _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
+                _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
+            else:
+                _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
             _validate_scheduler_api(lr_scheduler_configs, self.lightning_module)
             self.lr_scheduler_configs = lr_scheduler_configs

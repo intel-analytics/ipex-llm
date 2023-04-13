@@ -22,16 +22,20 @@ import pytest
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
-from pytorch_lightning.plugins.precision.native_amp import NativeMixedPrecisionPlugin
 from pytorch_lightning.plugins.precision.double import DoublePrecisionPlugin
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, LIGHTNING_VERSION_GREATER_2_0
 
 from test.pytorch.utils._train_torch_lightning import (create_data_loader,
                                                        create_test_data_loader,
                                                        data_transform)
+
+if LIGHTNING_VERSION_GREATER_2_0:
+    from pytorch_lightning.plugins import MixedPrecisionPlugin as NativeMixedPrecisionPlugin
+else:
+    from pytorch_lightning.plugins.precision.native_amp import NativeMixedPrecisionPlugin
 
 batch_size = 32
 dataset_size = 256
