@@ -86,5 +86,9 @@ runs:
 
         # required by NoteBook and Tutorial test
         pip install tensorflow-datasets==4.8.0 jinja2 jupyter nbconvert nbmake
+
+        # fix bug: last line will install protobuf >= 4.22
+        pip install protobuf==3.19.5
+
       env:
         OS: ${{ inputs.os }}
