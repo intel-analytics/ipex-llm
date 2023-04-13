@@ -40,9 +40,22 @@ class OpenVINOModel:
         self._model_exists_or_err()
         return inputs
 
-    def forward_step(self, *inputs):
+    def forward_step(self, *inputs, **kwargs):
         flattened_inputs = []
         _flatten(inputs, flattened_inputs)
+        args_length = len(inputs)
+        if kwargs is not None and len(kwargs) > 0:
+            # check kwargs first, to avoid user call model(t1, t2, b=t3, c=t4)
+            # when the signature is def forward(a, b, c)
+            for arg in kwargs:
+                if arg in self.forward_args[:args_length]:
+                    invalidInputError(False,
+                                      f"You shouldn't pass arguement {arg} as it has "
+                                      "been passed as a positional arguement.")
+            # add inputs based on original order
+            for arg in self.forward_args[args_length:]:
+                if arg in kwargs:
+                    flattened_inputs.append(kwargs[arg])
         if len(self._forward_args) != len(flattened_inputs):
             # formatting a Tensor will cost much time,
             # so we put it in this `if` statement
@@ -50,7 +63,7 @@ class OpenVINOModel:
                               "The length of inputs is "
                               "inconsistent with the length of OpenVINO's inputs, "
                               f"got model_forward_args: {self._forward_args}, "
-                              f"and flattened inputs: {flattened_inputs}")
+                              f"and flattened inputs's length: {len(flattened_inputs)}")
         return self._infer_request.infer(list(flattened_inputs))
 
     def on_forward_end(self, outputs):
@@ -59,7 +72,7 @@ class OpenVINOModel:
             arrays = arrays[0]
         return arrays
 
-    def forward(self, *inputs):
+    def forward(self, *inputs, **kwargs):
         inputs = self.on_forward_start(inputs)
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)

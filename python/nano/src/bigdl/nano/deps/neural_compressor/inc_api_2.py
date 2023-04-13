@@ -113,7 +113,8 @@ def _quantize(
 
             def wrap_collate_fn(func):
                 def new_collate_fn(batch):
-                    return [x.numpy() if isinstance(x, torch.Tensor) else x for x in func(batch)]
+                    return [x.detach().numpy() if isinstance(x, torch.Tensor) else x
+                            for x in func(batch)]
                 return new_collate_fn
 
             dataloader = DataLoader(framework, dataloader.dataset,

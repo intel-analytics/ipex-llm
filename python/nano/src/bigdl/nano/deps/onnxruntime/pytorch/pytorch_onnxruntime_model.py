@@ -105,6 +105,10 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
+    def on_forward_start_kwargs(self, **kwargs):
+        self.cope_with_keyword_arguments(kwargs)
+        return kwargs
+
     def on_forward_end(self, outputs):
         if self.output_tensors:
             outputs = self.numpy_to_tensors(outputs)

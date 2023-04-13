@@ -28,9 +28,10 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         self.model = model
         self.train(False)
 
-    def forward(self, *inputs):
+    def forward(self, *inputs, **kwargs):
         inputs = self.on_forward_start(inputs)
-        outputs = self.forward_step(*inputs)
+        kwargs = self.on_forward_start_kwargs(**kwargs)
+        outputs = self.forward_step(*inputs, **kwargs)
         return self.on_forward_end(outputs)
 
     def on_train_start(self) -> None:
@@ -41,8 +42,11 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
             invalidInputError(False, "This model is not trainable!")
         super().train(mode)
 
-    def forward_step(self, *inputs):
-        return self.model(*inputs)
+    def forward_step(self, *inputs, **kwargs):
+        return self.model(*inputs, **kwargs)
+
+    def on_forward_start_kwargs(self, **kwargs):
+        return kwargs
 
     @staticmethod
     def tensors_to_numpy(tensors):
@@ -51,11 +55,12 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
             result = []
             for x in ts:
                 if isinstance(x, torch.Tensor):
-                    result.append(x.cpu().numpy())
+                    result.append(x.cpu().detach().numpy())
                 elif isinstance(x, np.ndarray):
                     result.append(x)
                 elif np.isscalar(x):
-                    result.append(x)
+                    # convert scalar to numpy
+                    result.append(np.array(x))
                 elif isinstance(x, Sequence):
                     result.append(to_numpy(x))
                 else:
@@ -69,3 +74,14 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         if len(tensors) == 1:
             tensors = tensors[0]
         return tensors
+
+    @staticmethod
+    def cope_with_keyword_arguments(kwargs):
+        # inplace convert kwargs
+        for k in kwargs.keys():
+            if isinstance(kwargs[k], tuple):
+                kwargs[k] = numpy_to_tensors(kwargs[k])
+            if isinstance(kwargs[k], torch.Tensor):
+                kwargs[k] = kwargs[k].cpu().detach().numpy()
+            if np.isscalar(kwargs[k]):
+                kwargs[k] = np.array(kwargs[k])
