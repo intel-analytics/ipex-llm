@@ -842,9 +842,7 @@ class BasePytorchForecaster(Forecaster):
                                                   output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
-                    self.build_onnx()
-                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                         self.thread_num)
+                    self.build_onnx(self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
                                                   batch_size=batch_size,
@@ -1237,7 +1235,7 @@ class BasePytorchForecaster(Forecaster):
                                                   output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
-                    self.build_onnx()
+                    self.build_onnx(self.thread_num)
                 yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
                                                   batch_size=batch_size,
@@ -1677,7 +1675,7 @@ class BasePytorchForecaster(Forecaster):
                               "an up-to-date quantized model")
         if dirname:
             if self.accelerate_method != "onnxruntime_fp32":
-                self.build_onnx()
+                self.build_onnx(self.thread_num)
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
