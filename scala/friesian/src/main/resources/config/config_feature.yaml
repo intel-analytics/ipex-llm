@@ -19,7 +19,7 @@ redisKeyPrefix:
 # redisClusterItemSlotType: 2
 
 # default: null, if serviceType='kv,inference', userFeatureColumns must be provided
-# userFeatureColumns: enaging_user_follower_count, enaging_user_following_count, enaging_user_is_verified
+# userFeatureColumns: follower_count, following_count, is_verified
 
 # default: null, if serviceType='kv,inference', itemFeatureColumns must be provided
 # itemFeatureColumns: present_media, language, tweet_type, engaged_with_user_follower_count,engaged_with_user_following_count, len_hashtags, len_domains, len_links, present_media_language, engaged_with_user_is_verified
