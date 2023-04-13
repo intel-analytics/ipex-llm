@@ -130,13 +130,13 @@ class OpenVINOModel:
                   model shapes.")
         else:
             start_time = datetime.utcnow()
-            print('Reshaping model: {}'.format(', '.join("'{}': {}".format(k, str(v))
-                                                        for k, v in shapes.items())))
+            print('Reshaping model: {}'
+                  .format(', '.join("'{}': {}".format(k, str(v)) for k, v in shapes.items())))
             try:
                 self.ie_network.reshape(shapes)
                 duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
                 print(f"Reshape model took {duration_ms} ms")
-            except:
+            except Exception:
                 print(f"Failed to reshape this model, compile the original model instead.")
 
         self.create_infer_request()
