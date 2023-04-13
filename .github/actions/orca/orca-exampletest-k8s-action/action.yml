@@ -1,21 +1,13 @@
 name: 'ORCA-Spark-K8s-Example-Prvn'
 description: 'ORCA-Spark-K8s-Example-Prvn'
-inputs:
-  image:
-    description: 'image'
-    required: true
-    default: 'intelanalytics/bigdl-k8s'
-  image-tag:
-    description: 'image tag'
-    required: true
-    default: 'latest'
+
 runs:
   using: "composite"
   steps:
     - name: Env Prepare
       shell: bash
       run: |
-        source activate bigdl
+        source /root/anaconda3/bin/activate bigdl
         export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
 
     - name: TF1 Examples Test
