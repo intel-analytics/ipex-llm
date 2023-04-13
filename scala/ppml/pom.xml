@@ -278,7 +278,8 @@
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>azure-identity</artifactId>
+	    <artifactId>azure-identity</artifactId>
+	    <version>1.81</version>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
