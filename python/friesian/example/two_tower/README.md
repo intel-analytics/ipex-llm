@@ -59,11 +59,22 @@ __Options:__
 
 ## Predicting 2 tower model
 
-* Spark local, we can use some sample data to have a trial, example command:
+* Spark local mode, example command:
 ```bash
 python predict_2tower.py \
     --executor_cores 8 \
     --executor_memory 50g \
+    --data_dir /path/to/the/folder/of/preprocessed_data \
+    --model_dir /path/to/the/folder/to/load/trained_model 
+```
+
+* Spark yarn client mode, example command:
+```bash
+python train_2tower.py \
+    --cluster_mode yarn \
+    --num_executor 20 \
+    --executor_cores 8 \
+    --executor_memory 240g \
     --data_dir /path/to/the/folder/of/preprocessed_data \
     --model_dir /path/to/the/folder/to/load/trained_model 
 ```
