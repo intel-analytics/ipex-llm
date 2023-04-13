@@ -20,8 +20,6 @@ import warnings
 from typing import Dict
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import Callback
-from pytorch_lightning.plugins.training_type import SingleDevicePlugin, DDPSpawnPlugin
-from pytorch_lightning.accelerators.cpu import CPUAccelerator
 
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
 from bigdl.nano.utils.common import _avx512_checker
