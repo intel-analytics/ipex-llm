@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import operator
 
 from pytorch_lightning.strategies import DDPStrategy
 from typing import Any, List, Optional, Union, Dict
@@ -27,14 +28,17 @@ import pytorch_lightning as pl
 from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
-from pytorch_lightning.core.optimizer import _validate_optimizers_attached
 from pytorch_lightning.core.optimizer import _validate_scheduler_api
 from pytorch_lightning.plugins.environments import KubeflowEnvironment
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, compare_version
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
+if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+    from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
+    from pytorch_lightning.core.optimizer import _validate_optimizers_attached
+else:
+    from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
 
 # we must import torch_ccl to use ccl as backend
 try:
@@ -182,8 +186,11 @@ class DDPK8sStrategy(DDPStrategy):
                 if self.lightning_module.automatic_optimization
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
-            _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
-            _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
+            if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+                _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
+                _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
+            else:
+                _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
             _validate_scheduler_api(lr_scheduler_configs, self.lightning_module)
             self.lr_scheduler_configs = lr_scheduler_configs
 
