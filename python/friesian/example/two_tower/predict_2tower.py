@@ -58,17 +58,28 @@ config = {"inter_op_parallelism": 4,
 user_est = Estimator.from_keras(config=config, backend=args.backend)
 user_est.load(os.path.join(args.model_dir, "user-model"))
 
-full_tbl = FeatureTable.read_parquet(os.path.join(args.model_dir, "user_item_parquet"))
+full_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "user_item_parquet"))
 print("Data size: " + str(full_tbl.size()))
 
-user_embed = user_est.predict(data=full_tbl.df,
-                              feature_cols=['enaging_user_is_verified', 'enaging_user_id',
-                                            'user_numeric'])
-user_embed = FeatureTable(user_embed)
-user_embed = user_embed.select(['enaging_user_id', 'prediction']).drop_duplicates()
+enaging_user_df = full_tbl.select(['enaging_user_id', 'enaging_user_is_verified',
+                                   'user_numeric']).drop_duplicates()\
+                          .rename({'enaging_user_id': 'user_id',
+                                   'enaging_user_is_verified': 'is_verified'})
+# the last 3 columns of "item_numeric" are engaged users' numeric
+engaged_user_df = full_tbl.select(['engaged_with_user_id', 'engaged_with_user_is_verified',
+                                   'item_numeric']).drop_duplicates()\
+                          .apply("item_numeric", "user_numeric",
+                                 lambda item_numeric: item_numeric[-3:],
+                                 dtype="array<float>")\
+                          .rename({'engaged_with_user_id': 'user_id',
+                                   'engaged_with_user_is_verified': 'is_verified'})
+user_df = enaging_user_df.concat(engaged_user_df)
+
+user_embed = FeatureTable(user_est.predict(data=user_df.df, feature_cols=user_df.columns))\
+    .select(['user_id', 'prediction'])
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
-user_embed.write_parquet(os.path.join(args.model_dir, 'user_ebd.parquet'))
+user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
 
 item_est = Estimator.from_keras(config=config, backend=args.backend)
 item_est.load(os.path.join(args.model_dir, "item-model"))
@@ -81,6 +92,6 @@ item_embed = FeatureTable(item_embed)
 item_embed = item_embed.select(['tweet_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 items:")
 item_embed.show(5)
-item_embed.write_parquet(os.path.join(args.model_dir, 'item_ebd.parquet'))
+item_embed.write_parquet(os.path.join(args.data_dir, 'item_ebd.parquet'))
 
 stop_orca_context()
