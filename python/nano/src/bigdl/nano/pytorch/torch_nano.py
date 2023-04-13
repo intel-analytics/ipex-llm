@@ -45,6 +45,7 @@ else:
     from pytorch_lightning.lite.wrappers import _LiteModule, _LiteOptimizer
     from pytorch_lightning.utilities.apply_func import apply_to_collection
 
+
 class _TorchNanoModule(_LiteModule):
     def __init__(self, module, precision_plugin, channels_last) -> None:
         super().__init__(module, precision_plugin)
