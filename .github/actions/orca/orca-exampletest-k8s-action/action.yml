@@ -17,8 +17,13 @@ runs:
     - name: TF1 Examples Test
       shell: bash
       run: |
+        /root/anaconda3/bin/conda create -n orca-tf1 -y python==3.8
         source /root/anaconda3/bin/activate bigdl
         export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
+        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+
+        pip install tensorflow==1.15.0
+        pip install --pre --upgrade bigdl-spark3
         
         /opt/spark/bin/spark-submit \
         --master ${RUNTIME_SPARK_MASTER} \
