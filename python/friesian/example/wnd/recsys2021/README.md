@@ -56,9 +56,7 @@ python wnd_preprocess_recsys.py \
     --executor_cores 36 \
     --executor_memory 50g \
     --train_files 0-1 \
-    --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/of/parquet_files \
     --cross_sizes 600
 ```
 
@@ -71,9 +69,7 @@ python wnd_preprocess_recsys.py \
     --executor_memory 150g \
     --num_executor 8 \
     --train_files 0-269 \
-    --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/of/parquet_files \
     --cross_sizes 600
 ```
 
@@ -85,9 +81,7 @@ python wnd_preprocess_recsys.py \
     --executor_memory 150g \
     --num_nodes 8 \
     --train_files 0-269 \
-    --input_train_folder /path/to/the/folder/of/train/parquet_files \
-    --input_test_folder /path/to/the/folder/of/train/parquet_files \
-    --output_folder /path/to/the/folder/to/save/preprocessed/parquet_files \
+    --data_dir /path/to/the/folder/of/parquet_files \
     --cross_sizes 600
 ```
 
@@ -101,9 +95,7 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `train_files`: The part range for train data preprocessing, such as 0-269 for the full training dataset,
  0-1 for the first two parts, etc. Default to be 0-269.
-* `input_train_folder`: The path to the folder of train parquet files, either a local path or an HDFS path.
-* `input_test_folder`: The path to the folder of test parquet files, either a local path or an HDFS path.
-* `output_folder`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
+* `data_dir`: The path to the folder of parquet files,  either a local path or an HDFS path, where train/test/preprocessed parquets are stored under `train/`, `test/`, `preprocessed` respectively.
 * `cross_sizes`: The bucket size for the cross column (`present_media_language`). Default to be 600.
 
 

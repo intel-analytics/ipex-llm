@@ -18,7 +18,7 @@ You can download the full Twitter dataset from [here](http://www.recsyschallenge
 python train_2tower.py \
     --executor_cores 8 \
     --executor_memory 50g \
-    --data_dir /path/to/the/folder/of/sample_data \
+    --data_dir /path/to/the/folder/of/preprocessed_data \
     --model_dir /path/to/the/folder/to/save/trained_model 
 ```
 
@@ -30,7 +30,7 @@ python train_2tower.py \
     --executor_cores 8 \
     --executor_memory 240g \
     --num_executor 8 \
-    --data_dir /path/to/the/folder/of/sample_data \
+    --data_dir /path/to/the/folder/of/preprocessed_data \
     --model_dir /path/to/the/folder/to/save/trained_model 
 ```
 
@@ -41,7 +41,7 @@ python train_2tower.py \
     --num_executor 20 \
     --executor_cores 8 \
     --executor_memory 240g \
-    --data_dir /path/to/the/folder/of/sample_data \
+    --data_dir /path/to/the/folder/of/preprocessed_data \
     --model_dir /path/to/the/folder/to/save/trained_model 
 ```
 
