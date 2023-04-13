@@ -88,6 +88,7 @@ python wnd_preprocess_recsys.py \
 __Options:__
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn or standalone. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
+* `backend`: The backend of Orca Estimator, either ray or spark. Default to be ray.
 * `executor_cores`: The number of cores to use on each node. Default to be 44.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 130g.
 * `num_nodes`: The number of nodes to use in the cluster. Default to be 8.

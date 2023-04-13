@@ -48,6 +48,7 @@ python train_2tower.py \
 __Options:__
 * `cluster_mode`: The cluster mode to run the training, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
+* `backend`: The backend of Orca Estimator, either ray or spark. Default to be ray.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
 * `num_executors`: The number of executors to use in the cluster. Default to be 8.
@@ -55,3 +56,14 @@ __Options:__
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
 * `model_dir`: The path to save the trained model.
+
+## Predicting 2 tower model
+
+* Spark local, we can use some sample data to have a trial, example command:
+```bash
+python predict_2tower.py \
+    --executor_cores 8 \
+    --executor_memory 50g \
+    --data_dir /path/to/the/folder/of/preprocessed_data \
+    --model_dir /path/to/the/folder/to/load/trained_model 
+```
