@@ -153,7 +153,7 @@ def _parse_args():
                         help='The master url, only used when cluster mode is standalone.')
     parser.add_argument('--executor_cores', type=int, default=44,
                         help='The executor core number.')
-    parser.add_argument('--executor_memory', type=str, default="130",
+    parser.add_argument('--executor_memory', type=str, default="6g",
                         help='The executor memory.')
     parser.add_argument('--num_executor', type=int, default=8,
                         help='The number of executor.')
