@@ -15,7 +15,8 @@ runs:
     - name: Env Prepare
       shell: bash
       run: |
-        conda activate bigdl
+        source activate bigdl
+        export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
 
     - name: TF1 Examples Test
       shell: bash
