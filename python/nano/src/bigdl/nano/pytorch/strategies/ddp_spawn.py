@@ -48,9 +48,11 @@ from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.core.optimizer import LightningOptimizer
 from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx, _validate_scheduler_api
-from pytorch_lightning.strategies.launchers import _SpawnLauncher
-from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy
+from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
+from pytorch_lightning.core.optimizer import _validate_optimizers_attached
+from pytorch_lightning.core.optimizer import _validate_scheduler_api
+from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher
+from pytorch_lightning.strategies import DDPStrategy as _DDPStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
 from bigdl.nano.utils.common import schedule_processors
@@ -77,7 +79,7 @@ except Exception as _e:
 log = logging.getLogger(__name__)
 
 
-class _DDPSpawnLauncher(_SpawnLauncher):
+class _DDPSpawnLauncher(_MultiProcessingLauncher):
 
     def __init__(self, strategy: 'DDPSpawnStrategy') -> None:   # type: ignore[override]
         self._strategy: DDPSpawnStrategy = strategy
@@ -151,7 +153,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         _wrap(fn, i, args, error_queue)
 
 
-class DDPSpawnStrategy(_DDPSpawnStrategy):
+class DDPSpawnStrategy(_DDPStrategy):
     """Extending DDPSpawnStrategy to support launch subprocesses with optimized env variables."""
 
     strategy_name = "ddp_spawn"
@@ -174,10 +176,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             from bigdl.nano.pytorch.strategies import IPEXBF16Precision
             super().__init__(parallel_devices=parallel_devices,
                              cluster_environment=cluster_environment,
-                             precision_plugin=IPEXBF16Precision(), **kwargs)
+                             precision_plugin=IPEXBF16Precision(),
+                             start_method='spawn', **kwargs)
         else:
             super().__init__(parallel_devices=parallel_devices,
-                             cluster_environment=cluster_environment, **kwargs)
+                             cluster_environment=cluster_environment,
+                             start_method='spawn', **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
         self.is_distributed = True
         self.use_ipex = use_ipex
@@ -298,7 +302,8 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 if self.lightning_module.automatic_optimization
                 else _configure_schedulers_manual_opt(lr_schedulers)
             )
-            _set_scheduler_opt_idx(self.optimizers, lr_scheduler_configs)
+            _validate_multiple_optimizers_support(self.optimizers, self.lightning_module)
+            _validate_optimizers_attached(self.optimizers, lr_scheduler_configs)
             _validate_scheduler_api(lr_scheduler_configs, self.lightning_module)
             self.lr_scheduler_configs = lr_scheduler_configs
 
