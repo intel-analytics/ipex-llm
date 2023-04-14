@@ -54,7 +54,7 @@ __Options:__
 * `num_executors`: The number of executors to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
-* `batch_size`: The batch size used for training.
+* `batch_size`: The batch size used for training. Default to be 8000.
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
 * `model_dir`: The path to save the trained model.
 
