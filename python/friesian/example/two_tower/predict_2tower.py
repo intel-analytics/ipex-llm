@@ -32,6 +32,7 @@ parser.add_argument('--executor_cores', type=int, default=8,
                     help="The executor core number.")
 parser.add_argument('--executor_memory', type=str, default="2g",
                     help="The executor memory.")
+parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
 parser.add_argument('--model_dir', default='recsys_2tower', type=str,
                     help="model directory name (default: recsys_2tower)")
 parser.add_argument('--data_dir', type=str,
@@ -75,7 +76,9 @@ engaged_user_df = full_tbl.select(['engaged_with_user_id', 'engaged_with_user_is
                                    'engaged_with_user_is_verified': 'is_verified'})
 user_df = enaging_user_df.concat(engaged_user_df)
 
-user_embed = FeatureTable(user_est.predict(data=user_df.df, feature_cols=user_df.columns))\
+user_embed = FeatureTable(user_est.predict(data=user_df.df,
+                                           batch_size=args.batch_size,
+                                           feature_cols=user_df.columns))\
     .select(['user_id', 'prediction'])
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
@@ -84,6 +87,7 @@ user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
 item_est = Estimator.from_keras(config=config, backend=args.backend)
 item_est.load(os.path.join(args.model_dir, "item-model"))
 item_embed = item_est.predict(data=full_tbl.df,
+                              batch_size=args.batch_size,
                               feature_cols=['engaged_with_user_is_verified', 'present_media',
                                             'tweet_type', 'language', 'tweet_id',
                                             'engaged_with_user_id', 'hashtags',
