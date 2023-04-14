@@ -23,7 +23,6 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
-from pytorch_lightning.strategies import SingleDeviceStrategy
 from bigdl.nano.pytorch import InferenceOptimizer
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_11, check_ccl, \
     LIGHTNING_VERSION_GREATER_2_0
@@ -148,7 +147,7 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             if LIGHTNING_VERSION_GREATER_2_0:
                 kwargs["strategy"] = IPEXStrategy(dtype=dtype) \
-                    if self.use_ipex else SingleDeviceStrategy()
+                    if self.use_ipex else 'auto'
             else:
                 kwargs["strategy"] = IPEXStrategy(dtype=dtype) if self.use_ipex else None
             super().__init__(*args, **kwargs)
