@@ -197,7 +197,8 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 super().__init__(parallel_devices=parallel_devices,
                                  cluster_environment=cluster_environment, **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
-        self.is_distributed = True
+        if not LIGHTNING_VERSION_GREATER_2_0:
+            self.is_distributed = True
         self.use_ipex = use_ipex
         self.dtype = dtype
         self.auto_lr = auto_lr

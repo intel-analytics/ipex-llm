@@ -25,7 +25,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn.parallel.distributed import DistributedDataParallel
-from pytorch_lightning.strategies import Strategy
+from pytorch_lightning.strategies import Strategy, SingleDeviceStrategy
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
@@ -217,7 +217,10 @@ class TorchNano(LightningLite):
             if self.use_ipex:
                 strategy = IPEXStrategy(dtype=self.dtype)
             else:
-                strategy = None     # type: ignore
+                if LIGHTNING_VERSION_GREATER_2_0:
+                    strategy = SingleDeviceStrategy()
+                else:
+                    strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
             check_ccl(process_group_backend)
             cls = backends_class_map[distributed_backend]
