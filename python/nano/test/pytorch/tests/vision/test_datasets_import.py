@@ -20,9 +20,9 @@ from unittest import TestCase
 
 class TestDatasetsImport(TestCase):
     def test_datasets_replace(self):
-        from torchvision import datasets
-        origin_set = set(datasets.__all__)
-        del datasets
+        from torchvision import datasets as torchvision_datasets
+        origin_set = set(torchvision_datasets.__all__)
+        del torchvision_datasets
         from bigdl.nano.pytorch.vision import datasets
         new_set = set(dir(datasets))
         assert origin_set.issubset(new_set)
