@@ -520,7 +520,7 @@ class TorchRunner(BaseRunner):
                 if num_steps and batch_idx == num_steps:
                     break
                 output, target, loss = self.forward_batch(batch, callbacks)
-                num_samples = get_batchsize(target)
+                num_samples = get_batchsize(output)
                 total_samples += num_samples
                 losses.append(loss.item() * num_samples)
                 for metric in metrics.values():

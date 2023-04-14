@@ -50,6 +50,16 @@ class TupleInputModel(nn.Module):
         return self.layer_3(x) + x3
 
 
+class MultipleInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2):
+        return self.dense1(x1) + 2 * self.dense2(x2)
+
+
 class TestOpenVINO(TestCase):
     def test_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
@@ -447,3 +457,32 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(load_model):
             output2 = load_model(x1, x2, x3)
             np.testing.assert_almost_equal(target.numpy(), output2.numpy(), decimal=5)
+
+    def test_openvino_keyword_argument(self):
+        net = MultipleInputNet()
+        x1 = torch.randn(32, 10)
+        x2 = torch.randn(32, 10)
+
+        ov_model = InferenceOptimizer.trace(net,
+                                            accelerator="openvino",
+                                            input_sample=(x1,x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(x1, x2).numpy()
+            # test keyword argument
+            output2 = ov_model(x1, x2=x2).numpy()
+            output3 = ov_model(x1=x1, x2=x2).numpy()
+            np.testing.assert_allclose(output1, output2, atol=1e-5)
+            np.testing.assert_allclose(output1, output3, atol=1e-5)
+
+            # test some bad cases
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x2, x2=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x2, x1=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x2, x1=x2)
+
+            with pytest.raises(RuntimeError):
+                ov_model(x1, x1=x2)
