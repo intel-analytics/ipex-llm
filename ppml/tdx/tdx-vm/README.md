@@ -111,7 +111,7 @@ such as：  APPID： 984638161854
 Generate primarykey and datakey with appid and apikey. --primaryKeyPath specify where primarykey is stored.
 
 ```
-java -cp '/ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.3.0-SNAPSHOT/jars/*' \
+java -cp '/opt/spark/conf/:/opt/spark/jars/*:/opt/bigdl-2.3.0-SNAPSHOT/jars/*' \
 com.intel.analytics.bigdl.ppml.examples.GeneratePrimaryKey \
         --primaryKeyPath /mnt/data/simplekms/primaryKey \
         --kmsType SimpleKeyManagementService \
@@ -146,14 +146,14 @@ sc.write(csv_plain_df, CryptoMode.AES_CBC_PKCS5PADDING) \
 #### 2.4 Use appid, apikey, primarykey to encrypt people.csv, and the encrypted data is stored under output_path.
 ```
 java \
--cp '/ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.3.0-SNAPSHOT/jars/*' \
+-cp '/opt/spark/conf/:/opt/spark/jars/*:/opt/bigdl-2.3.0-SNAPSHOT/jars/*' \
 -Xmx1g org.apache.spark.deploy.SparkSubmit \
 --master 'local[4]' \
 --conf spark.network.timeout=10000000 \
 --conf spark.executor.heartbeatInterval=10000000 \
 --conf spark.python.use.daemon=false \
 --conf spark.python.worker.reuse=false \
---py-files /ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip \
+--py-files /opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip \
 /mnt/data/simplekms/encrypt.py
 ```
 
@@ -185,8 +185,8 @@ ${SPARK_HOME}/bin/spark-submit \
 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/mnt/data \
 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/mnt/data \
---jars local:///ppml/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
-local:///ppml/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
+--jars local:///opt/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
+local:///opt/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
 --inputPartitionNum 8 \
 --outputPartitionNum 8 \
 --inputEncryptModeValue AES/CBC/PKCS5Padding \
@@ -223,8 +223,8 @@ ${SPARK_HOME}/bin/spark-submit \
 --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/mnt/data \
 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
 --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/mnt/data \
---jars local:///ppml/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
-local:///ppml/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
+--jars local:///opt/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
+local:///opt/bigdl-2.3.0-SNAPSHOT/jars/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT.jar \
 --inputPartitionNum 8 \
 --outputPartitionNum 8 \
 --inputEncryptModeValue AES/CBC/PKCS5Padding \
@@ -266,14 +266,14 @@ sc.write(csv_plain_df, CryptoMode.PLAIN_TEXT) \
 #### 4.2 Use appid, apikey, primarykey to decrypt the data in the encrypted_csv_path directory, and the decrypted data is stored in output_path.
 ```
 java \
--cp '/ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.3.0-SNAPSHOT/jars/*' \
+-cp '/opt/spark/conf/:/opt/spark/jars/*:/opt/bigdl-2.3.0-SNAPSHOT/jars/*' \
 -Xmx1g org.apache.spark.deploy.SparkSubmit \
 --master 'local[4]' \
 --conf spark.network.timeout=10000000 \
 --conf spark.executor.heartbeatInterval=10000000 \
 --conf spark.python.use.daemon=false \
 --conf spark.python.worker.reuse=false \
---py-files /ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/ppml/bigdl-2.3.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip \
+--py-files /opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-ppml-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip,/opt/bigdl-2.3.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.3-2.3.0-SNAPSHOT-python-api.zip \
 /mnt/data/simplekms/decrypt.py
 ```
 
