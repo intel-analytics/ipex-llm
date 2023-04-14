@@ -39,7 +39,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
       - name: Run Chronos python test
-        uses: ./.github/actions/chronos/chronos-prvd-py38-spark24-action/part1
+        uses: ./.github/actions/chronos/chronos-prvd-py37-spark24-action/part1
       - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash
@@ -59,7 +59,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
       - name: Run Chronos python test
-        uses: ./.github/actions/chronos/chronos-prvd-py38-spark24-action/part2
+        uses: ./.github/actions/chronos/chronos-prvd-py37-spark24-action/part2
       - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash
@@ -79,7 +79,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
       - name: Run Chronos python test
-        uses: ./.github/actions/chronos/chronos-prvd-py38-spark24-action/part3
+        uses: ./.github/actions/chronos/chronos-prvd-py37-spark24-action/part3
       - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash
@@ -99,7 +99,7 @@ jobs:
       - name: Set up Python ${{ matrix.python-version }}
         uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
       - name: Run Chronos python test
-        uses: ./.github/actions/chronos/chronos-prvd-py38-spark24-action/part2
+        uses: ./.github/actions/chronos/chronos-prvd-py37-spark24-action/part4
       - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash
