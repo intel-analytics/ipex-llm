@@ -51,7 +51,7 @@ from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _validate_scheduler_api
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
-from bigdl.nano.utils.common import schedule_processors, compare_version
+from bigdl.nano.utils.common import schedule_processors
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.utils.common import invalidInputError
@@ -179,7 +179,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
         if use_ipex and dtype == torch.bfloat16 and 'precision_plugin' not in kwargs:
             from bigdl.nano.pytorch.strategies import IPEXBF16Precision
-            if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+            if LIGHTNING_VERSION_GREATER_2_0:
                 super().__init__(parallel_devices=parallel_devices,
                                  cluster_environment=cluster_environment,
                                  precision_plugin=IPEXBF16Precision(),
@@ -188,17 +188,17 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 super().__init__(parallel_devices=parallel_devices,
                                  cluster_environment=cluster_environment,
                                  precision_plugin=IPEXBF16Precision(), **kwargs)
+                self.is_distributed = True
         else:
-            if compare_version('pytorch_lightning', operator.ge, '2.0.0'):
+            if LIGHTNING_VERSION_GREATER_2_0:
                 super().__init__(parallel_devices=parallel_devices,
                                  cluster_environment=cluster_environment,
                                  start_method='spawn', **kwargs)
             else:
                 super().__init__(parallel_devices=parallel_devices,
                                  cluster_environment=cluster_environment, **kwargs)
+                self.is_distributed = True
         self.cpu_for_each_process = cpu_for_each_process
-        if not LIGHTNING_VERSION_GREATER_2_0:
-            self.is_distributed = True
         self.use_ipex = use_ipex
         self.dtype = dtype
         self.auto_lr = auto_lr

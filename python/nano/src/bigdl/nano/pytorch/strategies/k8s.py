@@ -30,7 +30,7 @@ from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
 from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
 from pytorch_lightning.core.optimizer import _validate_scheduler_api
 from pytorch_lightning.plugins.environments import KubeflowEnvironment
-from bigdl.nano.utils.common import invalidInputError, compare_version
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
