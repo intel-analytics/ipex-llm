@@ -264,7 +264,10 @@ class TorchNano(LightningLite):
         if move_to_device:
             model = self._move_model_to_device(model=model, optimizers=optimizers)
 
-        model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
+        if LIGHTNING_VERSION_GREATER_2_0:
+            model, optimizers = self._strategy.setup_module_and_optimizers(model, optimizers)
+        else:
+            model, optimizers = self._strategy._setup_model_and_optimizers(model, optimizers)
 
         # IPEX bfloat16 optimization will cast model parameters to `torch.bfloat16`
         # which is not supported by ddp currently,
