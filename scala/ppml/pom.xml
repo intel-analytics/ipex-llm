@@ -274,7 +274,13 @@
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>azure-identity</artifactId>
+	    <artifactId>azure-identity</artifactId>
+	     <exclusions>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
+	        </exclusion>
+	     </exclusions>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
@@ -305,6 +311,11 @@
                     <artifactId>reactor-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.10</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
