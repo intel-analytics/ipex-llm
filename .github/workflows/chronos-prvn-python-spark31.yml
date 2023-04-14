@@ -226,7 +226,7 @@ jobs:
         run: |
           source activate chronos-py38-env
       - name: Run Chronos python test
-        uses: ./.github/actions/chronos/chronos-prvd-py38-spark31-action/part4
+        uses: ./.github/actions/chronos/chronos-prvd-spark31-action/part4
       - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash

@@ -1,0 +1,406 @@
+name: Chronos NB Python Spark3.1
+
+# Controls when the action will run. 
+on:
+  schedule:
+    - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/chronos-nb-python-spark31.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  GIST_ID: bc8a699b455bced4a1aef138ad5df07e
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  chronos-NB-py37-pytorch-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py37-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py37-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py37-pytorch-test.json
+          type: job
+          job-name: chronos-NB-py37-pytorch-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py37-pytorch-inference-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py37-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py37-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py37-pytorch-inference-test.json
+          type: job
+          job-name: chronos-NB-py37-pytorch-inference-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py37-pytorch-inference-automl-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py37-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py37-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py37-pytorch-inference-automl-test.json
+          type: job
+          job-name: chronos-NB-py37-pytorch-inference-automl-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py37-pytorch-inference-automl-distributed-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py37-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl-distributed
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py37-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py37-pytorch-inference-automl-distributed-test.json
+          type: job
+          job-name: chronos-NB-py37-pytorch-inference-automl-distributed-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py37-tensorflow-inference-automl-distributed-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py37-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/tensorflow-inference-automl-distributed
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py37-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py37-tensorflow-inference-automl-distributed-test.json
+          type: job
+          job-name: chronos-NB-py37-tensorflow-inference-automl-distributed-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py38-pytorch-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python38
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py38-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py38-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py38-pytorch-test.json
+          type: job
+          job-name: chronos-NB-py38-pytorch-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py38-pytorch-inference-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python38
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py38-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py38-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py38-pytorch-inference-test.json
+          type: job
+          job-name: chronos-NB-py38-pytorch-inference-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py38-pytorch-inference-automl-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python38
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py38-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py38-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py38-pytorch-inference-automl-test.json
+          type: job
+          job-name: chronos-NB-py38-pytorch-inference-automl-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py38-pytorch-inference-automl-distributed-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python38
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py38-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl-distributed
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py38-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py38-pytorch-inference-automl-distributed-test.json
+          type: job
+          job-name: chronos-NB-py38-pytorch-inference-automl-distributed-test
+          runner-hosted-on: 'Shanghai'
+
+  chronos-NB-py38-tensorflow-inference-automl-distributed-test:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: ./.github/actions/jdk-setup-action
+      - name: Set up Maven
+        uses: ./.github/actions/maven-setup-action
+      - name: Set up Chronos Env
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python38
+      - name: Activate Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source activate chronos-py38-env
+      - name: Run Chronos python test
+        uses: ./.github/actions/chronos/chronos-nb-spark31-action/tensorflow-inference-automl-distributed
+      - name: Remove Chronos Env
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          source deactivate
+          conda remove -n chronos-py38-env -y --all
+
+      - name: Create Job Badge
+        uses: ./.github/actions/create-job-status-badge
+        if: ${{ always() }}
+        with:
+          secret: ${{ secrets.GIST_SECRET}}
+          gist-id: ${{env.GIST_ID}}
+          is-self-hosted-runner: true
+          file-name: chronos-NB-py38-tensorflow-inference-automl-distributed-test.json
+          type: job
+          job-name: chronos-NB-py38-tensorflow-inference-automl-distributed-test
+          runner-hosted-on: 'Shanghai'
+
+  create-workflow-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: create workflow badge
+      if: ${{ always() }}
+      uses: ./.github/actions/create-job-status-badge
+      with:
+        secret: ${{ secrets.GIST_SECRET }}
+        gist-id: ${{env.GIST_ID}}
+        file-name: chronos-nb-python-spark3.1.json
+        type: workflow

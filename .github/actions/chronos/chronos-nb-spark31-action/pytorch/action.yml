@@ -1,5 +1,5 @@
-name: 'Run Chronos NB Python Spark2.4 Pytorch'
-description: 'Run Chronos NB Python Spark2.4 Pytorch'
+name: 'Run Chronos NB Python Spark3.1 Pytorch'
+description: 'Run Chronos NB Python Spark3.1 Pytorch'
 runs:
   using: "composite"
   steps:
@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         pip install pytest==5.4.1
-        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos[pytorch]
+        pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-chronos-spark3[pytorch]
         source bigdl-nano-init
         bash python/chronos/dev/test/run-installation-options.sh "torch and not inference and not automl and not distributed and not diff_set_all"
       env:
