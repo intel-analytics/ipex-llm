@@ -64,8 +64,8 @@ import warnings
 if LIGHTNING_VERSION_GREATER_2_0:
     from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
     from pytorch_lightning.core.optimizer import _validate_optimizers_attached
-    from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
-    from pytorch_lightning.strategies import DDPStrategy as _DDPSpawnStrategy
+    from lightning.fabric.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
+    from lightning.fabric.strategies import DDPStrategy as _DDPSpawnStrategy
 else:
     from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
     from pytorch_lightning.strategies.launchers import _SpawnLauncher

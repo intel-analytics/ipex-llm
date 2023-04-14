@@ -60,8 +60,8 @@ from bigdl.nano.pytorch.dispatcher import _get_patch_status
 if LIGHTNING_VERSION_GREATER_2_0:
     from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
     from pytorch_lightning.core.optimizer import _validate_optimizers_attached
-    from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
-    from pytorch_lightning.strategies import DDPStrategy as DDPSpawnStrategy
+    from lightning.fabric.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
+    from lightning.fabric.strategies import DDPStrategy as DDPSpawnStrategy
     from lightning.fabric.utilities.apply_func import move_data_to_device
 else:
     from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx

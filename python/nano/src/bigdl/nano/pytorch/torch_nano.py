@@ -25,7 +25,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn.parallel.distributed import DistributedDataParallel
-from pytorch_lightning.strategies import Strategy, SingleDeviceStrategy
+from pytorch_lightning.strategies import Strategy
 from pytorch_lightning.strategies import DeepSpeedStrategy
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import invalidInputError
@@ -279,7 +279,10 @@ class TorchNano(LightningLite):
             else:
                 model = ret
 
-        model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
+        if LIGHTNING_VERSION_GREATER_2_0:
+            model = _TorchNanoModule(model, self._precision, self.channels_last)
+        else:
+            model = _TorchNanoModule(model, self._precision_plugin, self.channels_last)
         optimizers = [_TorchNanoOptimizer(optimizer, self._strategy,    # type: ignore
                                           self.auto_lr, self.num_processes)
                       for optimizer in optimizers]
