@@ -112,14 +112,14 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 json.dump(_get_patch_status(), f)
 
             processes = []
-            cwd_path = os.path.split(os.path.realpath(__file__))[0]
+            current_dir = os.path.dirname(__file__)
             for i in range(self._strategy.num_processes):
                 envs[i]["AUTHKEY"] = authkey
 
                 log.debug(f"[Process {i}]: using KMP_AFFINITY: {envs[i]['KMP_AFFINITY']}")
                 log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {envs[i]['OMP_NUM_THREADS']}")
 
-                processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
+                processes.append(subprocess.Popen([sys.executable, os.path.join(current_dir, "worker.py"),
                                                    temp_dir], env=envs[i]))
 
             for _, process in enumerate(processes):
