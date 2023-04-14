@@ -23,6 +23,11 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+	    </dependency>
+	    <dependency>
+              <groupId>com.fasterxml.jackson.core</groupId>
+              <artifactId>jackson-databind</artifactId>
+              <version>2.10.0</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
@@ -33,14 +38,18 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
+    
     <dependencies>
-        <dependency>
+	<dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-            <exclusions>
+	    <scope>${spark-scope}</scope>
+	    <exclusions>
+		<exclusion>
+	            <groupId>org.codehaus.jackson</groupId>
+		    <artifactId>jackson-mapper-asl</artifactId>
+		</exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
