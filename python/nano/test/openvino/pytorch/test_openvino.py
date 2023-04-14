@@ -347,6 +347,7 @@ class TestOpenVINO(TestCase):
 
     def test_openvino_trace_stable_diffusion_unet(self):
         from diffusers.models import UNet2DConditionModel
+        from datetime import datetime
         # reduce model size as action runner has limited memory
         unet = UNet2DConditionModel(sample_size=64,
                                     cross_attention_dim=10,
@@ -366,25 +367,94 @@ class TestOpenVINO(TestCase):
 
         unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
-        
-        dynamic_axes= {"sample": [0],
-                       "encoder_hidden_states": [0],
-                       "unet_output": [0]}
+
+        # Static shape
+        dynamic_axes= False
         nano_unet = InferenceOptimizer.trace(unet, accelerator="openvino",
-                                             input_sample=input_sample,
-                                             input_names=["sample", "timestep",
-                                                          "encoder_hidden_states", "return_dict"],
-                                             output_names=["unet_output"],
-                                             dynamic_axes=dynamic_axes,
-                                             device='CPU')
+                                            input_sample=input_sample,
+                                            input_names=["sample", "timestep",
+                                                        "encoder_hidden_states", "return_dict"],
+                                            output_names=["unet_output"],
+                                            dynamic_axes=dynamic_axes,
+                                            device='CPU',
+                                            )
+        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        # Inference with wrong batchsize
+        with pytest.raises(RuntimeError,
+                        match="The input blob size is not equal to the network input size"):
+            nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+        # Test save, load, reshape(fail) & cache
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(nano_unet, tmp_dir_name)
+
+            # Load without shapes
+            first_load_start = datetime.utcnow()
+            new_model = InferenceOptimizer.load(tmp_dir_name, cache_dir=tmp_dir_name)
+            first_load_end = datetime.utcnow()
+
+            # Reshape using same shape, should not recompile
+            new_model.reshape("sample[2,4,8,8],encoder_hidden_states[2,12,10]")
+            reshape_end = datetime.utcnow()
+            assert (reshape_end - first_load_end).total_seconds() * 1000 < 10
+
+            new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+            # Inference with wrong batchsize
+            with pytest.raises(RuntimeError,
+                            match="The input blob size is not equal to the network input size"):
+                new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+
+            # Load with caching
+            second_load_start = datetime.utcnow()
+            new_model = InferenceOptimizer.load(tmp_dir_name, cache_dir=tmp_dir_name)
+            second_load_end = datetime.utcnow()
+            assert (second_load_end - second_load_start) < (first_load_end - first_load_start)
+
+            # Reshape failed, should not recompile
+            new_model.reshape("sample[1,4,64,64],encoder_hidden_states[1,12,10]")
+            reshape_end = datetime.utcnow()
+            new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
+            assert list(new_model_inputs["sample"]) == [2, 4, 8, 8]
+            assert list(new_model_inputs["encoder_hidden_states"]) == [2, 12, 10]
+            assert (reshape_end - second_load_end).total_seconds() * 1000 < 30
+
+            # Load with wrong shape
+            new_model = InferenceOptimizer.load(tmp_dir_name, cache_dir=tmp_dir_name, 
+                                                shapes="sample[1,4,8,8],encoder_hidden_states[1,12,10]")
+            new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
+            assert list(new_model_inputs["sample"]) == [2, 4, 8, 8]
+            assert list(new_model_inputs["encoder_hidden_states"]) == [2, 12, 10]
+
+        # Dynamic shapes
+        dynamic_axes= {"sample": [0],
+                    "encoder_hidden_states": [0],
+                    "unet_output": [0]}
+        nano_unet = InferenceOptimizer.trace(unet, accelerator="openvino",
+                                            input_sample=input_sample,
+                                            input_names=["sample", "timestep",
+                                                        "encoder_hidden_states", "return_dict"],
+                                            output_names=["unet_output"],
+                                            dynamic_axes=dynamic_axes,
+                                            device='CPU',
+                                            input_shape="[-1,4,8,8],[1],[-1,12,10]",
+                                            input="sample,timestep,encoder_hidden_states"
+                                            )
         nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
+        nano_unet.reshape("sample[1,4,8,8],encoder_hidden_states[1,12,10]")
+        nano_unet_inputs = {i.any_name: i.shape for i in nano_unet.ov_model.ie_network.inputs}
+        assert list(nano_unet_inputs["sample"]) == [1, 4, 8, 8]
+        assert list(nano_unet_inputs["encoder_hidden_states"]) == [1, 12, 10]
+
+        # Test load with shapes
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(nano_unet, tmp_dir_name)
-            new_model = InferenceOptimizer.load(tmp_dir_name)
-        new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
-        new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+            new_model = InferenceOptimizer.load(tmp_dir_name, 
+                                                shapes="sample[1,4,8,8],encoder_hidden_states[1,12,10]")
+            new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
+            assert list(new_model_inputs["sample"]) == [1, 4, 8, 8]
+            assert list(new_model_inputs["encoder_hidden_states"]) == [1, 12, 10]
 
     def test_openvino_trace_output_tensors(self):
         model = mobilenet_v3_small(pretrained=True)
