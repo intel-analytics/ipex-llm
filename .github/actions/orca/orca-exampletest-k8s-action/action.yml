@@ -14,13 +14,12 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: TF1 Examples Test
+    - name: TF Examples Test
       shell: bash
       run: |
-        /root/anaconda3/bin/conda create -n orca-py38 -y python==3.8
         source /root/anaconda3/bin/activate bigdl
         export RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim
-        PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+        export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
         pip install tensorflow==2.6.0 keras==2.6.0
         pip install --pre --upgrade bigdl-spark3
@@ -42,9 +41,9 @@ runs:
         --conf spark.kubernetes.executorEnv.http_proxy=http://child-prc.intel.com:913 \
         --conf spark.kubernetes.executorEnv.https_proxy=http://child-prc.intel.com:913 \
         --conf spark.kubernetes.container.image.pullPolicy=Always \
-        --archives /opt/spark/work-dir/environment.tar.gz#environment \
+        --archives /opt/spark/work-dir/environment.tar.gz#env \
         --conf spark.pyspark.driver.python=python \
-        --conf spark.pyspark.python=environment/bin/python \
+        --conf spark.pyspark.python=./env/bin/python \
         --conf spark.executor.instances=4 \
         --executor-cores 16 \
         --executor-memory 50g \
