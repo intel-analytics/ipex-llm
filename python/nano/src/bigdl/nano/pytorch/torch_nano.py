@@ -218,7 +218,7 @@ class TorchNano(LightningLite):
                 strategy = IPEXStrategy(dtype=self.dtype)
             else:
                 if LIGHTNING_VERSION_GREATER_2_0:
-                    strategy = SingleDeviceStrategy()
+                    strategy = 'auto'
                 else:
                     strategy = None     # type: ignore
         elif distributed_backend in backends_class_map:
