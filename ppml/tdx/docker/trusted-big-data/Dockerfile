@@ -13,12 +13,9 @@ RUN apt-get update --fix-missing && \
     ln -s /usr/bin/python3.8 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip3 install setuptools && \
+    pip3 install numpy && \
     ln -s /usr/bin/python3 /usr/bin/python && \
 # Download BigDL PPML jar with dependency jar
     /opt/download-bigdl-ppml.sh
 
 ENV PYTHONPATH  /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages
-
-ADD ./entrypoint.sh /opt/entrypoint.sh
-RUN chmod a+x /opt/entrypoint.sh
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
