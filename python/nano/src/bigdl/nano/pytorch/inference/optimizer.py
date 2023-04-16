@@ -747,9 +747,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
         :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
-                                     passed to ``torch.jit.trace``. Default: None. Either this
-                                     argument or ``input_sample`` should be specified. The dict
-                                     will be unpacking by the arguments name of the traced
+                                     passed to ``torch.jit.trace``. Default: ``None``. Either
+                                     this argument or ``input_sample`` should be specified. The
+                                     dict will be unpacking by the arguments name of the traced
                                      function. Only valid when accelerator='jit' and torch>=2.0,
                                      otherwise will be ignored.
         :param **kwargs: Other extra advanced settings include:
@@ -1113,11 +1113,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              more models to be optimized while may bring some strange error
                              message. Default to ``True``.
         :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
-                                     passed to ``torch.jit.trace``. Default: None. Either this
-                                     argument or ``input_sample`` should be specified. The dict
-                                     will be unpacking by the arguments name of the traced function.
-                                     Only valid when accelerator='jit' and torch>=2.0, otherwise
-                                     will be ignored.
+                                     passed to ``torch.jit.trace``. Default: ``None``. Either
+                                     this argument or ``input_sample`` should be specified. The
+                                     dict will be unpacking by the arguments name of the traced
+                                     function. Only valid when accelerator='jit' and torch>=2.0,
+                                     otherwise will be ignored.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',

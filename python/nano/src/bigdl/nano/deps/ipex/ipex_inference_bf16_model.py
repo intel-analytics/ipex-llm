@@ -64,9 +64,9 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                to load the compressed file if compression is set other than "fp32".
                Currently, "bf16" and "fp32"(default) are supported.
         :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
-               to ``torch.jit.trace``. Default to None. Either this argument or input_sample
-               should be specified when use_jit is ``True`` and torch > 2.0,
-               otherwise will be ignored.
+               to ``torch.jit.trace``. Default to ``None``. Either this argument or
+               ``input_sample`` should be specified when ``use_jit`` is ``True`` and
+               torch > 2.0, otherwise will be ignored.
         '''
         if use_ipex:
             invalidInputError(
