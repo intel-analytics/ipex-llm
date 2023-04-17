@@ -26,7 +26,7 @@ permissions:
 jobs:
 
   ORCA-Spark-K8s-Example-Prvn:
-    runs-on: [self-hosted, K8S-TEST]
+    runs-on: [self-hosted, Almaren]
 
     steps:
       - uses: actions/checkout@v3
