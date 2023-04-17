@@ -89,9 +89,14 @@ class OpenVINOModel:
                 config = {"INFERENCE_NUM_THREADS": str(self.thread_num)}
         else:
             config = {}
-        if self.additional_config is not None and self._device == 'CPU':
-            # TODO: check addition config based on device
-            config.update(self.additional_config)
+        if self.additional_config is not None:
+            if self._device == 'CPU':
+                # TODO: check addition config based on device
+                config.update(self.additional_config)
+            else:
+                ov_cache_dir = self.additional_config.get("CACHE_DIR", None)
+                if ov_cache_dir:
+                    config["CACHE_DIR"] = ov_cache_dir
         self.final_config = config
 
         if self.shapes is None:
