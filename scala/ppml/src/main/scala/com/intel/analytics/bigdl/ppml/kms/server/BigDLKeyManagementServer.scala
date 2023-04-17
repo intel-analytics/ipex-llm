@@ -45,10 +45,10 @@ import javax.crypto.Cipher
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 
-object EasyKeyManagementServer extends Supportive {
+object BigDLKeyManagementServer extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
   Class.forName("org.sqlite.JDBC")
-  val name = "easy-key-management-server"
+  val name = "bigdl-key-management-server"
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
@@ -60,7 +60,7 @@ object EasyKeyManagementServer extends Supportive {
 
   def main(args: Array[String]): Unit = {
     val arguments = timing("parse arguments") {
-      argumentsParser.parse(args, EasyKeyManagementArguments()) match {
+      argumentsParser.parse(args, BigDLKeyManagementArguments()) match {
         case Some(arguments) => logger.info(s"starting with $arguments"); arguments
         case None => argumentsParser.failure("miss args, please see the usage info"); null
       }
@@ -195,7 +195,7 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   def insertDB(statement: String, url: String): Unit = {
-    logger.info(s"[INFO] insert statment: $statement")
+    logger.info(s"Insert statment: $statement")
     val connection = DriverManager.getConnection(url)
     connection.createStatement().executeUpdate(statement)
     if(connection != null) connection.close()
@@ -203,7 +203,7 @@ object EasyKeyManagementServer extends Supportive {
 
   def queryDB(statement: String, url: String,
     columnName: String): Option[String] = {
-      logger.info(s"[INFO] query statment: $statement")
+      logger.info(s"Query statment: $statement")
       val connection = DriverManager.getConnection(url)
       val rs = connection.createStatement().executeQuery(statement)
       val value = if (rs.next) rs.getString(columnName) else null
@@ -274,7 +274,7 @@ object EasyKeyManagementServer extends Supportive {
   }
 
   val argumentsParser =
-   new scopt.OptionParser[EasyKeyManagementArguments](name) {
+   new scopt.OptionParser[BigDLKeyManagementArguments](name) {
     head(name)
     opt[String]('i', "ip")
       .action((x, c) => c.copy(ip = x))
@@ -311,7 +311,7 @@ object EasyKeyManagementServer extends Supportive {
   }
 }
 
-case class EasyKeyManagementArguments(
+case class BigDLKeyManagementArguments(
   ip: String = "0.0.0.0",
   port: Int = 9875,
   dbFilePath: String = "/ppml/data/kms.db",
