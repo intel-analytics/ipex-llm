@@ -135,19 +135,21 @@ class _Nano_Customized_Training(object):
 
             # check necessary objects
             arg_instance = list(map(lambda x: x[0], new_args))
-            invalidInputError("model" in arg_instance, "Please check whether 'model' in the input "
+            invalidInputError("model" in arg_instance, "Please check if a model inherited from "
+                                                       "tensorflow.keras.Model or "
+                                                       "bigdl.nano.tf.keras.Model is inputted as "
                                                        "parameter in train function.")
-            invalidInputError("optimizer" in arg_instance, "Please check whether 'optimizer' in "
-                                                           "input parameter in train function.")
-            invalidInputError("loss" in arg_instance, "Please check whether 'loss' in the input "
+            invalidInputError("optimizer" in arg_instance, "Please check if optimizer is inputted"
+                                                           " as parameter in train function.")
+            invalidInputError("loss" in arg_instance, "Please check if loss is inputted as "
                                                       "parameter in train function. Moreover, if "
                                                       "you use a customized loss, please add "
                                                       "'nano_multiprocessing_loss' decorator.")
-            invalidInputError("dataset" in arg_instance, "Please check whether 'dataset' in the "
-                                                         "input parameter in train function. "
-                                                         "Moreover, if dataset is created by "
-                                                         "'from_generator', please initiate "
-                                                         "'_GeneratorState' of dataset first.")
+            invalidInputError("dataset" in arg_instance, "Please check if tensorflow.data.Dataset "
+                                                         "is inputted as parameter in train "
+                                                         "function. Moreover, if dataset is "
+                                                         "created by 'from_generator', please init"
+                                                         " '_GeneratorState' of dataset first.")
 
             target_path = os.path.join(temp_dir, "target.pkl")
             with open(target_path, 'wb') as f:
@@ -245,8 +247,8 @@ def _train_func(target_path, *args):
         try:
             res = target_func(*actrual_args)
         except TypeError:
-            invalidInputError(False, "Please check whether add 'nano_multiprocessing' decorator "
-                                     "to the train_step function.")
+            invalidInputError(False, "Please check if you have added 'nano_multiprocessing' "
+                                     "decorator to the train_step function.")
 
         task_id = mirrored_strategy.cluster_resolver.task_id
         if task_id == 0:
