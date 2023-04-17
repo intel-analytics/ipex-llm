@@ -52,7 +52,7 @@ runs:
         bash /tmp/Anaconda3-2020.02-Linux-x86_64.sh
         source ~/.bashrc
 
-        /root/anaconda3/bin/conda create -n orca-py38 -y python==3.8
+        /root/anaconda3/bin/conda create -n orca-py38 -y python==3.8 --yes
         source /root/anaconda3/bin/activate orca-py38
         export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
