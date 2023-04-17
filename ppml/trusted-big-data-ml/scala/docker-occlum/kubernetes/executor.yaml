@@ -24,9 +24,9 @@ spec:
     - name: NETTY_THREAD
       value: "32"
     - name: SGX_MEM_SIZE
-      value: "10GB"
+      value: "15GB"
     - name: SGX_THREAD
-      value: "512"
+      value: "1024"
     - name: SGX_HEAP
       value: "512MB"
     - name: SGX_KERNEL_HEAP
