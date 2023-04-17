@@ -505,7 +505,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params["data_creator"] = data
+            params["data_creator"] = data # type:ignore
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
 
         if reduce_results:

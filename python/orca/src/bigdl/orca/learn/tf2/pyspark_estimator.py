@@ -251,7 +251,7 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.rdd.barrier().mapPartitions(
+                res = data.rdd.barrier().mapPartitions(  # type:ignore
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -262,13 +262,14 @@ class SparkTFEstimator():
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
+                val_rdd = validation_data.rdd.mapPartitions(  # type:ignore
+                    lambda iter: [list(iter)])
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(  # type:ignore
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = data  # type:ignore
+            params["validation_data_creator"] = validation_data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
@@ -374,10 +375,10 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            res = data.rdd.barrier().mapPartitions(
+            res = data.rdd.barrier().mapPartitions(  # type:ignore
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).validate(**param)

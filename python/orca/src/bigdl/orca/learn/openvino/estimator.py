@@ -283,7 +283,7 @@ class OpenvinoEstimator(SparkEstimator):
                 for key, shape in self.output_dict.items():
                     struct_type = FloatType()
                     for _ in range(len(shape)):
-                        struct_type = ArrayType(struct_type)
+                        struct_type = ArrayType(struct_type) # type:ignore
                     result_struct.append(StructField(key, struct_type))
 
                 schema = StructType(schema.fields + result_struct)
