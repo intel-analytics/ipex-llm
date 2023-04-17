@@ -7,12 +7,13 @@ SGX_ENABLED="false"
 usage() {
     echo "Usage: $0 [-c <configfile>] [-b <core# for each backend worker>] [-f <core# for frontend worker>] [-x]"
 
+    echo "ATTENTION: Please allocate at least two dedicated cores for frontend to avoid lock contension in SGX environment"
     echo "The following example command will launch 2 backend workers (as specified in /ppml/torchserve_config)."
     echo "The first backend worker will be pinned to core 0 while the second backend worker will be pinned to core 1."
-    echo "The frontend worker will be pinned to core 5"
-    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f 5"
+    echo "The frontend worker will be pinned to core 5,6"
+    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f '5,6'"
     echo "To launch within SGX environment using gramine"
-    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f 5 -x"
+    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f '5,6' -x"
     exit 0
 }
 
@@ -51,6 +52,7 @@ if [ ! -f "${configFile}" ]; then
 fi
 
 declare -a cores=($(echo "$backend_core_list" | tr "," " "))
+declare -a fcores=($(echo "$frontend_core" | tr "," " "))
 
 # In case we change the path name in future
 cd /ppml || exit
@@ -61,6 +63,11 @@ sgx_flag=""
 if [[ $SGX_ENABLED == "true" ]]; then
     ./init.sh
     sgx_flag=" -x "
+    # Check we allocate at least two cores for frontend
+    if [ ${#fcores[@]} -lt "2" ]; then
+        echo "Please allocate at least two dedicate cores for frontend when exeuting in SGX env"
+        exit
+    fi
 fi
 
 
