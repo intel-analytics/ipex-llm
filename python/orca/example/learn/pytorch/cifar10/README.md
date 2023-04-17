@@ -1,5 +1,5 @@
 # PyTorch Cifar10 example
-We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in BigDL. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "spark", "ray" and "bigdl".
+We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in BigDL. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide two distributed PyTorch training backends for this example, namely "spark" and "ray".
 
 ## Prepare the environment
 
@@ -42,7 +42,7 @@ export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python cifar10.py --cluster_mode yarn-client
 ```
 
-The default backend is `spark`. You can also run with `ray` or `bigdl` by specifying the backend.
+The default backend is `spark`. You can also run with `ray` by specifying the backend.
 
 ## Results
 

@@ -1,5 +1,5 @@
 # PyTorch Fashion-MNIST example with Tensorboard visualization
-We demonstrate how to easily show the graphical results of running synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in BigDL. We use a simple convolutional nueral network model to train on fashion-MNIST dataset. See [here](https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "spark", "ray" and "bigdl".
+We demonstrate how to easily show the graphical results of running synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in BigDL. We use a simple convolutional nueral network model to train on fashion-MNIST dataset. See [here](https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide two distributed PyTorch training backends for this example, namely "spark" and "ray".
 
 ## Prepare the environment
 
@@ -54,7 +54,7 @@ python fashion_mnist.py --cluster_mode yarn
 
 Then open `https://localhost:6006` on the local client machine to see the result figures.
 
-The default backend is `spark`. You can also run with `ray` or `bigdl` by specifying the backend.
+The default backend is `spark`. You can also run with `ray` by specifying the backend.
 
 ## Results
 
