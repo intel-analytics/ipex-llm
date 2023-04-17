@@ -47,11 +47,6 @@ jobs:
         path: ~/.m2/repository
         key: maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: maven-
-
-    - name: Set up Maven
-      uses: stCarolas/setup-maven@v4.4
-      with:
-        maven-version: 3.8.2
           
     - name: Build with Maven
       run: |
@@ -130,19 +125,6 @@ jobs:
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
 
-
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        file-name: nightly-build.json
-        type: workflow
 
 
 
