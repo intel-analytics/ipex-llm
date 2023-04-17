@@ -283,10 +283,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     remote_worker_stats.append(worker.step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
             else:
-                if not isinstance(validation_data, ray.data.Dataset):
-                    invalidInputError(False,
-                                      "Validation data type should be the same as train data,"
-                                      " but got type: {}".format(type(validation_data)))
+                invalidInputError(isinstance(validation_data, ray.data.Dataset),
+                                  "Validation data type should be the same as train data,"
+                                  " but got type: {}".format(type(validation_data)))
 
                 val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)

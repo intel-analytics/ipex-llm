@@ -265,7 +265,7 @@ class SparkTFEstimator():
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
                 val_rdd = validation_data.rdd.mapPartitions(  # type:ignore
                     lambda iter: [list(iter)])
-                res = train_rdd.zip(val_rdd).barrier().mapPartitions(  # type:ignore
+                res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
             params["data_creator"] = data  # type:ignore
