@@ -138,7 +138,7 @@ class AutoEstimator:
                 Union[Callable, Tuple["ndarray", "ndarray"], "DataFrame"]]=None,
             metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
-            metric_threshold: Optional[Union["Function", "Float", "Integer"]]=None,
+            metric_threshold: Optional[Union["Function", "float", "int"]]=None,
             n_sampling: int=1,
             search_space: Optional[Dict]=None,
             search_alg: Optional[str]=None,
