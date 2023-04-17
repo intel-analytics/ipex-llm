@@ -48,7 +48,7 @@ jobs:
         maven-version: 3.8.2	
 
     - name: Set up Maven Settings	
-      uses: s4u/maven-settings-action@v2.6.0	
+      uses: s4u/maven-settings-action@v2.8.0	
       with:	
         sonatypeSnapshots: true	
         apacheSnapshots: true	
