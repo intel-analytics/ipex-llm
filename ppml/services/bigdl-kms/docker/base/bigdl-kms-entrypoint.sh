@@ -43,5 +43,5 @@ else
     -cp "/ppml/jars/*" \
     com.intel.analytics.bigdl.ppml.kms.EasyKeyManagementServer \
     --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
-    --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./easy-kms-server.log
+    --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee ./bigdl-kms-server.log
 fi

@@ -34,7 +34,7 @@ ENV BIGDL_VERSION               ${BIGDL_VERSION}
 ENV BIGDL_HOME                  /ppml/bigdl-${BIGDL_VERSION}
 ARG http_proxy
 ARG https_proxy
-ADD ./start-service.sh /ppml/start-service.sh
+ADD ./bigdl-kms-entrypoint.sh /ppml/bigdl-kms-entrypoint.sh
 RUN mkdir -p /ppml/keys && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
@@ -46,4 +46,4 @@ COPY --from=java /opt/jdk  /opt/jdk8
 # ppml
 COPY --from=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar /ppml/jars
 COPY --from=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar /ppml/jars
-ENTRYPOINT [ "/ppml/start-service.sh" ]
+ENTRYPOINT [ "/ppml/bigdl-kms-entrypoint.sh" ]

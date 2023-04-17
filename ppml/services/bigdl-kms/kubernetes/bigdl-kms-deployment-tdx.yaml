@@ -1,39 +1,39 @@
-# EasyKMS Service exposed to bigdl kms frontend
+# BigDL KMS Service exposed
 apiVersion: v1
 kind: Service
 metadata:
-  name: easy-key-management-service
+  name: bigdl-key-management-service
   labels:
-    app: easy-kms
+    app: bigdl-kms
 spec:
   type: LoadBalancer
   ports:
-    - name: easy-kms-port
-      port: 9875
-      targetPort: 9875
+    - name: bigdl-kms-port
+      port: 9876
+      targetPort: 9876
   selector:
-    app: easy-kms
+    app: bigdl-kms
   sessionAffinity: ClientIP
   externalIPs:
   - $serviceIP
 ---
-# EasyKMS StatefulSet
+# BigDL KMS Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: easy-key-management-server
+  name: bigdl-key-management-server
 spec:
   selector:
     matchLabels:
-      app: easy-kms
+      app: bigdl-kms
   replicas: 1
   template:
     metadata:
       labels:
-        app: easy-kms
+        app: bigdl-kms
     spec:
       containers:
-      - name: easy-key-management-server
+      - name: bigdl-key-management-server
         image: $imageName
         imagePullPolicy: IfNotPresent
         volumeMounts:
@@ -51,20 +51,14 @@ spec:
         - name: ROOT_KEY
           value: "$rootKey"
         - name: SGX_ENABLED
-          value: "$sgxEnabled"
+          value: "false"
         resources:
           requests:
             cpu: 8
             memory: 32Gi
-            sgx.intel.com/epc: 34359738368
-            sgx.intel.com/enclave: 1
-            sgx.intel.com/provision: 1
           limits:
             cpu: 10
             memory: 40Gi
-            sgx.intel.com/epc: 34359738368
-            sgx.intel.com/enclave: 1
-            sgx.intel.com/provision: 1
       volumes:
       - name: persisten-db-storage
         hostPath:
@@ -75,9 +69,3 @@ spec:
       - name: ssl-password
         secret:
           secretName: ssl-password
-      - name: device-plugin
-        hostPath:
-          path: /var/lib/kubelet/device-plugins
-      - name: aesm-socket
-        hostPath:
-          path: /var/run/aesmd/aesm.socket

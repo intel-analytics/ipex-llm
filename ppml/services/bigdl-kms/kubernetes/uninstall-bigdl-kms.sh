@@ -1,7 +1,8 @@
-kubectl delete svc keywhiz-service -n bigdl-kms
-kubectl delete svc bigdl-kms-frontend-service -n bigdl-kms
-kubectl delete deployment bigdl-kms-frontend -n bigdl-kms
-kubectl delete statefulsets keywhiz -n bigdl-kms
-kubectl delete pvc mysql-persitent-storage-keywhiz-0 -n bigdl-kms
-kubectl delete namespace bigdl-kms
-kubectl delete pv mysql-nfs-pv
+# delete service and deployment from k8s API server
+if [ "$teeMode" = "sgx" ]; then
+  kubectl delete -f bigdl-kms-deployment-sgx.yaml
+elif [ "$teeMode" = "tdx" ]; then
+  kubectl delete -f bigdl-kms-deployment-tdx.yaml
+else
+  echo "Wrong teeMode $teeMode! Expected sgx or tdx"
+fi

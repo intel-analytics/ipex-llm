@@ -32,4 +32,4 @@ RUN cd /ppml && \
 
 WORKDIR /ppml
 
-ENTRYPOINT [ "/ppml/start-service.sh" ]
+ENTRYPOINT [ "/ppml/bigdl-kms-entrypoint.sh" ]

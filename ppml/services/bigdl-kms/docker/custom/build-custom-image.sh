@@ -1,6 +1,6 @@
-export CUSTOM_IMAGE_NAME=custom-easy-key-management-server
+export CUSTOM_IMAGE_NAME=intelanalytics/bigdl-kms-reference
 export CUSTOM_IMAGE_TAG=2.3.0-SNAPSHOT
-export BASE_IMAGE_NAME=intelanalytics/easy-kms
+export BASE_IMAGE_NAME=intelanalytics/bigdl-kms-base
 export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
 export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
 export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
