@@ -58,14 +58,14 @@ jobs:
             "active": "true", 
             "protocol": "http", 
             "host": "${HTTP_PROXY_HOST}", 
-            "port": ${HTTP_PROXY_PORT}, 
+            "port": "913", 
             "nonProxyHosts": "${NO_PROXY}|localhost"
           },{
             "id": "cn-https", 
             "active": "true", 
             "protocol": "https", 
             "host": "${HTTP_PROXY_HOST}", 
-            "port": ${HTTP_PROXY_PORT}, 
+            "port": "913", 
             "nonProxyHosts": "${NO_PROXY}|localhost"
           }]
         servers: |	
@@ -91,6 +91,7 @@ jobs:
     - name: Build with Maven
       run: |
           ls
+          echo ${HTTP_PROXY_PORT}
           #spark3.1.3
           cp scala/pom.xml scala/pom.xml.origin
           cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
