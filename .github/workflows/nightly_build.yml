@@ -1,7 +1,7 @@
 name: Nightly Build
 
 on:
-  pull_request:
+  push:
   schedule:
     - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
@@ -54,16 +54,16 @@ jobs:
             "id": "cn-http", 
             "active": "true", 
             "protocol": "http", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
-            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
+            "host": "${HTTP_PROXY_HOST}", 
+            "port": "913", 
+            "nonProxyHosts": "${NO_PROXY}|localhost"
           },{
             "id": "cn-https", 
             "active": "true", 
             "protocol": "https", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
-            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
+            "host": "${HTTP_PROXY_HOST}", 
+            "port": "913", 
+            "nonProxyHosts": "${NO_PROXY}|localhost"
           }]
         servers: |
           [{
