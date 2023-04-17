@@ -1,10 +1,7 @@
 name: Nightly Build
 
 on:
-  # pull_request:
-  #   branches: [ main ]
-  #   paths:
-  #     - '.github/workflows/nightly_build.yml'
+  pull_request:
   schedule:
     - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
   workflow_dispatch:
@@ -34,8 +31,7 @@ permissions:
 jobs:
 
   scala-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'scala-build' || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Linux, Bree]
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -166,21 +162,9 @@ jobs:
           mv scala/ppml/pom.xml.origin scala/ppml/pom.xml
           mv scala/assembly/pom.xml.origin scala/assembly/pom.xml
 
-    - name: Create Job Badge
-      uses: ./.github/actions/create-job-status-badge
-      if: ${{ always() }}
-      with:
-        secret: ${{ secrets.GIST_SECRET}}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: nb-scala-build.json
-        type: job
-        job-name: scala-build
-        runner-hosted-on: 'America'
 
   docker-build-bigdl:
     needs: scala-build
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -293,22 +277,10 @@ jobs:
         docker push ${IMAGE}:${TAG_SNAPSHOT}
         docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
 
-    - name: Create Job Badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: nb-docker-build-bigdl.json
-        type: job
-        job-name: docker-build-bigdl
-        runner-hosted-on: 'America'
   
   python-build:
     # python build can only be published once a day, please do not publish it manually
-    if: ${{ github.event.schedule }} 
-    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -345,21 +317,10 @@ jobs:
         ## mac ##
         bash python/dev/release_default_mac.sh ${nb_version} true
 
-    - name: Create Job Badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: nb-python-build.json
-        type: job
-        job-name: python-build
-        runner-hosted-on: 'America'
+
 
   python-sourceforge-build:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -472,30 +433,9 @@ jobs:
         scp ./python/chronos/src/dist/bigdl_chronos*-py3-none-macosx_10_11_x86_64.whl \
         intelanalytics@frs.sourceforge.net:/home/frs/project/analytics-zoo/chronos-py-spark3
 
-    - name: Create Job Badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        is-self-hosted-runner: true
-        file-name: nb-python-sourceforge-build.json
-        type: job
-        job-name: python-build-sourceforge
-        runner-hosted-on: 'America'
 
-  create-workflow-badge:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: create workflow badge
-      if: ${{ always() }}
-      uses: ./.github/actions/create-job-status-badge
-      with:
-        secret: ${{ secrets.GIST_SECRET }}
-        gist-id: ${{env.GIST_ID}}
-        file-name: nightly-build.json
-        type: workflow
+
+
 
 
 
