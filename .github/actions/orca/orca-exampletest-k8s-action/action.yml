@@ -18,6 +18,7 @@ runs:
       shell: bash
       run: |
         set -x
+        export CONTAINER_NAME="orca-spark-k8s"
         docker pull ${IMAGE}
         docker rm -f ${CONTAINER_NAME}
         docker run -itd --net=host \
