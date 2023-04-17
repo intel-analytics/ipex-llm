@@ -1,3 +1,19 @@
+- [Gramine Machine Learning Toolkit](#gramine-machine-learning-toolkit)
+  - [Before Running Code](#before-running-code)
+    - [1. Build Docker Images](#1-build-docker-images)
+      - [1.1 Build Machine Learning Base Image](#11-build-machine-learning-base-image)
+      - [1.2 Build Machine Learning Custom Image](#12-build-machine-learning-custom-image)
+    - [2. Prepare SSL key and password](#2-prepare-ssl-key-and-password)
+- [Run machine learning example](#run-machine-learning-example)
+  - [1. Configure K8S Environment](#1-configure-k8s-environment)
+  - [2. Run Spark MLlib Application](#2-run-spark-mllib-application)
+    - [2.1 Start a client container](#21-start-a-client-container)
+    - [2.2 Submit local Spark Machine Learning job](#22-submit-local-spark-machine-learning-job)
+    - [2.3 Submit Spark Machine Learning job with Kubernetes](#23-submit-spark-machine-learning-job-with-kubernetes)
+  - [3. Run LightGBM Application](#3-run-lightgbm-application)
+    - [3.1 LightGBM Training on Kubernetes](#31-lightgbm-training-on-kubernetes)
+
+
 # Gramine Machine Learning Toolkit
 
 This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
@@ -13,7 +29,7 @@ Before building your own base image, please modify the paths in `build-base-imag
 ```bash
 ./build-machine-learning-base-image.sh
 ```
-#### 1.2 Build Custom Image
+#### 1.2 Build Machine Learning Custom Image
 
 Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-custom-image) to build a custom image with enclave signed by your private key.
 
