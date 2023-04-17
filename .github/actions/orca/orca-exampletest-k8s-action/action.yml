@@ -45,6 +45,7 @@ runs:
     - name: TF Examples Test
       shell: bash
       run: |
+        export CONTAINER_NAME="orca-spark-k8s"
         docker exec -i $CONTAINER_NAME bash
 
         wget -P /tmp https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
