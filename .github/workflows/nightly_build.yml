@@ -58,14 +58,14 @@ jobs:
             "active": "true", 
             "protocol": "http", 
             "host": "${HTTP_PROXY_HOST}", 
-            "port": "${HTTP_PROXY_PORT}", 
+            "port": ${HTTP_PROXY_PORT}, 
             "nonProxyHosts": "${NO_PROXY}|localhost"
           },{
             "id": "cn-https", 
             "active": "true", 
             "protocol": "https", 
             "host": "${HTTP_PROXY_HOST}", 
-            "port": "${HTTP_PROXY_PORT}", 
+            "port": ${HTTP_PROXY_PORT}, 
             "nonProxyHosts": "${NO_PROXY}|localhost"
           }]
         servers: |	
