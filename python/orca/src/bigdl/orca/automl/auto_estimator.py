@@ -282,8 +282,9 @@ class AutoEstimator:
     @staticmethod
     def _check_spark_dataframe_input(data: Union[Tuple["ndarray", "ndarray"],
                                                  Callable, "DataFrame"],
-                                     validation_data: Union[Tuple["ndarray", "ndarray"],
-                                                            Callable, "DataFrame"],
+                                     validation_data: Optional[Union[Callable,
+                                                                     Tuple["ndarray", "ndarray"],
+                                                                     "DataFrame"]],
                                      feature_cols: Optional[List[str]],
                                      label_cols: Optional[List[str]]
                                      ) -> Tuple[Optional[List[str]], Optional[List[str]]]:

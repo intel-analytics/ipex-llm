@@ -81,7 +81,7 @@ class AutoXGBClassifier(AutoEstimator):
                                       Tuple["ndarray", "ndarray"], "DataFrame"]]=None,
             metric: Optional[Union[Callable, str]]=None,
             metric_mode: Optional[str]=None,
-            metric_threshold: Optional[Union[int, float]]=None,
+            metric_threshold: Optional[Union[Integer, Float]]=None,
             n_sampling: int=1,
             search_space: Optional[Dict]=None,
             search_alg: Optional[str]=None,
@@ -275,8 +275,8 @@ class AutoXGBRegressor(AutoEstimator):
 
 
 def _merge_cols_for_spark_df(data: Union["DataFrame", Tuple["ndarray", "ndarray"], "partial"],
-                             validation_data: Union["DataFrame",
-                                                    Tuple["ndarray", "ndarray"], "partial"],
+                             validation_data: Optional[Union["partial",
+                                                Tuple["ndarray", "ndarray"], "DataFrame"]],
                              feature_cols: Optional[List[str]],
                              label_cols: Optional[List[str]]) -> Tuple:
     # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and

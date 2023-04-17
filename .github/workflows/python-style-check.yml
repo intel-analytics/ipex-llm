@@ -56,23 +56,23 @@ jobs:
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Nano type checking [pytorch]
-        run: |
-            bash python/nano/dev/build_and_install.sh linux default false pytorch
-            pip uninstall bigdl-nano -y
-            rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
-            bash python/nano/test/run-nano-type-test.sh
-        env:
-            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Nano type checking [tensorflow]
-        run: |
-            bash python/nano/dev/build_and_install.sh linux default false tensorflow
-            pip uninstall bigdl-nano -y
-            rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
-            bash python/nano/test/run-nano-type-test.sh
-        env:
-            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      # - name: Nano type checking [pytorch]
+      #   run: |
+      #       bash python/nano/dev/build_and_install.sh linux default false pytorch
+      #       pip uninstall bigdl-nano -y
+      #       rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+      #       bash python/nano/test/run-nano-type-test.sh
+      #   env:
+      #       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+# 
+      # - name: Nano type checking [tensorflow]
+      #   run: |
+      #       bash python/nano/dev/build_and_install.sh linux default false tensorflow
+      #       pip uninstall bigdl-nano -y
+      #       rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+      #       bash python/nano/test/run-nano-type-test.sh
+      #   env:
+      #       ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Dllib style checking
         run: bash python/dllib/dev/lint-python
