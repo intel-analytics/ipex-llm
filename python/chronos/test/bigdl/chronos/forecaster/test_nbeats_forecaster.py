@@ -782,8 +782,11 @@ class TestChronosNBeatsForecaster(TestCase):
             assert forecaster.context_enabled == True
             current_thread = torch.get_num_threads()
             assert current_thread == num
-            for x, y in test_loader:
-                yhat = forecaster.predict(x.numpy())
+            yhat = forecaster.predict(test_loader)
+            yhat = forecaster.predict_with_onnx(test_loader)
+            yhat = forecaster.predict_with_openvino(test_loader)
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
 
     @op_automl
     def test_nbeats_forecaster_tune(self):
