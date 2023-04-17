@@ -46,6 +46,9 @@ class DictMetaDataInfo(object):
         for k in self.keys:
             v = input_element[k]
             info = get_meta_info_from_input(v)
+            if isinstance(info, ListMetaDataInfo):
+                # list inside dict requires reconstruction
+                info.need_reconstruct = True
             self.infos.append(info)
         self.need_reconstruct = True
 
@@ -68,6 +71,9 @@ class ListMetaDataInfo(object):
         self.infos = []
         for ele in input_element:
             info = get_meta_info_from_input(ele)
+            if isinstance(info, ListMetaDataInfo):
+                # Nested list requires reconstruction
+                info.need_reconstruct = True
             self.infos.append(info)
             self.need_reconstruct |= info.need_reconstruct
 
@@ -93,24 +99,23 @@ class MetaData(object):
 
     @staticmethod
     def reconstruct_output(output, metadata):
-        # TODO: support more cases
         if not metadata.need_reconstruct:
             return output
         elif isinstance(metadata, DictMetaDataInfo):
-            # single dict
+            # Single dict
             if not isinstance(output, (tuple, list)):
                 output = [output]
             new_output = {}
-            elem_idx = 0
+            ind_out = 0
             for idx, k in enumerate(metadata.keys):
                 meta = metadata.infos[idx]
-                if meta not in (DictMetaDataInfo, ListMetaDataInfo):
-                    new_output[k] = output[elem_idx]
-                    elem_idx += 1
+                if not meta.need_reconstruct:
+                    new_output[k] = output[ind_out]
+                    ind_out += 1
                 else:
-                    # TODO: dict contain list
-                    # return original output as a workaround
-                    return output
+                    new_output[k] = MetaData.reconstruct_output(
+                        output[ind_out:], meta)
+                    ind_out += meta.length
             return new_output
         else:
             # ListMetaDataInfo
