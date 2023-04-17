@@ -38,7 +38,7 @@ from .metric import KerasOpenVINOMetric
 class KerasOpenVINOModel(KerasOptimizedModel):
     def __init__(self, model, input_spec=None, precision='fp32',
                  thread_num=None, device='CPU', config=None,
-                 logging=True, **kwargs):
+                 logging=True, shapes=None, **kwargs):
         """
         Create a OpenVINO model from Keras.
 
@@ -56,6 +56,10 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                        inference. default: None.
         :param logging: whether to log detailed information of model conversion.
                         default: True.
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+                       '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+                       dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
+                       Only valid for openvino model, otherwise will be ignored.
         :param **kwargs: will be passed to model optimizer function.
         """
         super().__init__()
@@ -80,7 +84,8 @@ class KerasOpenVINOModel(KerasOptimizedModel):
                                           device=device,
                                           precision=precision,
                                           thread_num=thread_num,
-                                          config=config)
+                                          config=config,
+                                          shapes=shapes)
 
     def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         self.ov_model._model_exists_or_err()
@@ -141,7 +146,7 @@ class KerasOpenVINOModel(KerasOptimizedModel):
         return q_model
 
     @staticmethod
-    def _load(path, device=None):
+    def _load(path, device=None, cache_dir=None, shapes=None):
         """
         Load an OpenVINO model for inference from directory.
 
@@ -163,12 +168,15 @@ class KerasOpenVINOModel(KerasOptimizedModel):
             thread_num = int(config["CPU_THREADS_NUM"])
         elif "INFERENCE_NUM_THREADS" in config:
             thread_num = int(config["INFERENCE_NUM_THREADS"])
+        if cache_dir is not None:
+            config["CACHE_DIR"] = cache_dir
         if device is None:
             device = status.get('device', 'CPU')
         model = KerasOpenVINOModel(xml_path,
                                    config=status['config'],
                                    thread_num=thread_num,
-                                   device=device)
+                                   device=device,
+                                   shapes=shapes)
         with open(Path(path) / status['attr_path'], "rb") as f:
             attrs = pickle.load(f)
         for attr_name, attr_value in attrs.items():

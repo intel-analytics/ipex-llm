@@ -740,8 +740,11 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             assert forecaster.context_enabled == True
             current_thread = torch.get_num_threads()
             assert current_thread == num
-            for x, y in test_loader:
-                yhat = forecaster.predict(x.numpy())
+            yhat = forecaster.predict(test_loader)
+            yhat = forecaster.predict_with_onnx(test_loader)
+            yhat = forecaster.predict_with_openvino(test_loader)
+            current_thread = torch.get_num_threads()
+            assert current_thread == num
 
     @op_inference
     def test_s2s_forecaster_numpy_inference(self):

@@ -1,4 +1,5 @@
 # Distributed Face Generation on Spark
+# Deprecated, please go to new API and example orca/example/learn/pytorch
 
 This example is migrated from [PROGRESSIVE GROWING OF GANS](https://pytorch.org/hub/facebookresearch_pytorch-gan-zoo_pgan/), and demonstrates how to run distributed inference using a pre-trained Pytorch Model.
 
