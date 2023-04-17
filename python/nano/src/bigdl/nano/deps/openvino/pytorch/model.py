@@ -15,7 +15,7 @@
 #
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import List, Union  # for typehint
+from typing import List, Union, Dict, Tuple  # for typehint
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
 from ..core.model import OpenVINOModel
@@ -80,6 +80,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
         with TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             if isinstance(model, torch.nn.Module):
+                input_sample = self.process_input_sample(model, input_sample)
                 # cope with dynamic axes for GPU
                 if device != 'CPU':
                     if dynamic_axes is True or (
@@ -120,8 +121,38 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             patch_attrs_from_model_to_object(model, self)
         self.output_tensors = output_tensors
 
+    def process_input_sample(self, model, input_sample):
+        self.input_meta_info = []
+        if not isinstance(input_sample, torch.Tensor):
+            tmp = {}
+            forward_args = get_forward_args(model)  # TODO: add exception capture (maybe??)
+            if isinstance(input_sample, List) or isinstance(input_sample, Tuple):
+                for i in range(len(input_sample)):
+                    self.input_meta_info.append(type(input_sample[i]))
+                    tmp[forward_args[i]] = input_sample[i]
+                input_sample = tmp
+            else:
+                self.input_meta_info.append(type(input_sample))
+                tmp[forward_args[0]] = input_sample
+                input_sample = tmp
+        else:
+            self.input_meta_info.append(torch.Tensor)
+
+        return input_sample
+
     def on_forward_start(self, inputs):
         self.ov_model._model_exists_or_err()
+        tmp = []
+        for elem in inputs:
+            if isinstance(elem, Dict):
+                for _, value in elem.items():
+                    tmp.append(value)
+            elif isinstance(elem, List) or isinstance(elem, Tuple):
+                tmp += elem
+            else:
+                tmp.append(elem)
+        inputs = tmp
+            
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
