@@ -51,6 +51,8 @@ jobs:
     - name: Build with Maven
       run: |
           ls
+          export M2_HOME=/opt/maven
+          export PATH=${M2_HOME}/bin:${PATH}
           #spark3.1.3
           cp scala/pom.xml scala/pom.xml.origin
           cp scala/common/spark-version/pom.xml scala/common/spark-version/pom.xml.origin
