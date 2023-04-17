@@ -42,12 +42,6 @@ jobs:
     - name: Set up JDK8	
       uses: ./.github/actions/jdk-setup-action	
 
-    - uses: actions/cache@v2	
-      with:	
-        path: ~/.m2/repository	
-        key: maven-${{ hashFiles('**/pom.xml') }}	
-        restore-keys: maven-	
-
     - name: Set up Maven	
       uses: stCarolas/setup-maven@v4.4	
       with:	
