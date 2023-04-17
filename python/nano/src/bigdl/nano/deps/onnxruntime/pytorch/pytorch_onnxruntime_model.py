@@ -78,7 +78,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         self.output_metadata = output_metadata
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, torch.nn.Module):
-                print("self output metadata: ", self.output_metadata)
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 # Typically, when model is fp32, we use this path
                 export_to_onnx(model, input_sample=input_sample, onnx_path=onnx_path,
@@ -99,7 +98,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                 else:
                     output = model(input_sample)
                 self.output_metadata = MetaData.construct_matadata(output)
-                print("self output metadata: ", self.output_metadata)
             else:
                 onnx_path = model
             AcceleratedLightningModule.__init__(self, None)

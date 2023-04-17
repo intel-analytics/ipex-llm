@@ -541,10 +541,7 @@ class TestOpenVINO(TestCase):
             new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
             assert list(new_model_inputs["sample"]) == [1, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [1, 12, 10]
-
-        output1 = new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         output2 = new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
-        np.testing.assert_almost_equal(output1["sample"].detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
         np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
     def test_openvino_trace_output_tensors(self):

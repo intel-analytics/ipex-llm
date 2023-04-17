@@ -18,12 +18,12 @@ import torch
 from ..common import invalidInputError
 
 
-class BaiscMetaDataInfo(object):
+class BasicMetaDataInfo(object):
     """Meta info class for basic type like int, float, str
     """
     def __init__(self, input_element):
         self.type = type(input_element)
-        self.reconstruct = False
+        self.need_reconstruct = False
 
 
 class TensorMetaDataInfo(object):
@@ -32,7 +32,7 @@ class TensorMetaDataInfo(object):
     def __init__(self, input_element):
         self.type = type(input_element)
         self.shape = input_element.shape
-        self.reconstruct = False
+        self.need_reconstruct = False
 
 
 class DictMetaDataInfo(object):
@@ -47,21 +47,29 @@ class DictMetaDataInfo(object):
             v = input_element[k]
             info = get_meta_info_from_input(v)
             self.infos.append(info)
-        self.reconstruct = True
+        self.need_reconstruct = True
 
 
 class ListMetaDataInfo(object):
-    """Meta info class for list
+    """Meta info class for list output
+
+    This is the main class for list output and its internal info instance can be
+    of various types, for example:
+    1. output is [Tensor, Tensor], then infos will contain two TensorMetaDataInfo instances.
+    2. output is [Tensor, [Tensor, ...]], then infos will contain a TensorMetaDataInfo instance
+       and a ListMetaDataInfo instance.
+    3. output is [Tensor, {"sample: Tensor, ...}], then infos will contain a TensorMetaDataInfo
+       instance and a DictMetaDataInfo instance.
     """
     def __init__(self, input_element):
         self.type = type(input_element)
         self.length = len(input_element)
-        self.reconstruct = False
+        self.need_reconstruct = False
         self.infos = []
         for ele in input_element:
             info = get_meta_info_from_input(ele)
             self.infos.append(info)
-            self.reconstruct |= info.reconstruct
+            self.need_reconstruct |= info.need_reconstruct
 
 
 def get_meta_info_from_input(input_element):
@@ -72,7 +80,7 @@ def get_meta_info_from_input(input_element):
     elif isinstance(input_element, dict):
         return DictMetaDataInfo(input_element)
     else:
-        return BaiscMetaDataInfo(input_element)
+        return BasicMetaDataInfo(input_element)
 
 
 class MetaData(object):
@@ -86,7 +94,7 @@ class MetaData(object):
     @staticmethod
     def reconstruct_output(output, metadata):
         # TODO: support more cases
-        if not metadata.reconstruct:
+        if not metadata.need_reconstruct:
             return output
         elif isinstance(metadata, DictMetaDataInfo):
             # single dict
@@ -101,16 +109,16 @@ class MetaData(object):
                     elem_idx += 1
                 else:
                     # TODO: dict contain list
-                    pass
+                    # return original output as a workaround
+                    return output
             return new_output
         else:
             # ListMetaDataInfo
             new_output = []
             ind_out = 0
-            ind_meta = 0
             for index in range(metadata.length):
                 meta = metadata.infos[index]
-                if not meta.reconstruct:
+                if not meta.need_reconstruct:
                     new_output.append(output[ind_out])
                     ind_out += 1
                 else:
