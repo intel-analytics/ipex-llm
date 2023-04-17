@@ -283,11 +283,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     remote_worker_stats.append(worker.step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
             else:
-                assert isinstance(validation_data, ray.data.Dataset), \
-                       "Validation data type should be the same as train data," \
-                       " but got type: {}".format(type(validation_data))
+                if not isinstance(validation_data, ray.data.Dataset):
+                    invalidInputError(False,
+                                      "Validation data type should be the same as train data,"
+                                      " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers,
+                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
 
                 for i in range(self.num_workers):
@@ -295,10 +296,11 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                       label_cols,
                                                                       feature_cols,
                                                                       data_config)
-                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
-                                                                                 label_cols,
-                                                                                 feature_cols,
-                                                                                 data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(
+                        val_shards[i],  # type:ignore
+                        label_cols,
+                        feature_cols,
+                        data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
         else:

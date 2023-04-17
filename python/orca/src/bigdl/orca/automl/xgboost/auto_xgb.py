@@ -276,7 +276,7 @@ class AutoXGBRegressor(AutoEstimator):
 
 def _merge_cols_for_spark_df(data: Union["DataFrame", Tuple["ndarray", "ndarray"], "partial"],
                              validation_data: Optional[Union["partial",
-                                                Tuple["ndarray", "ndarray"], "DataFrame"]],
+                                                       Tuple["ndarray", "ndarray"], "DataFrame"]],
                              feature_cols: Optional[List[str]],
                              label_cols: Optional[List[str]]) -> Tuple:
     # merge feature_cols/label_cols to one column, to adapt to the meanings of feature_cols and
