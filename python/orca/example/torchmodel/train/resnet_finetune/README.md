@@ -1,5 +1,7 @@
 # Summary
 
+# Deprecated, please go to new API and example orca/example/learn/pytorch
+
 In this example we use a pre-trained ResNet model, adding an extra layer to the end, to train
 a dog-vs-cat image classification model.
 
