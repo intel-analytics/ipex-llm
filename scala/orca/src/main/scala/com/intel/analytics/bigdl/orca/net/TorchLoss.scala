@@ -24,7 +24,7 @@ import jep.NDArray
 import org.apache.spark.TaskContext
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
-@deprecated("don't use this, will be remove in the future")
+@deprecated("don't use this, will be removed in the future")
 class TorchLoss(private val criterionHolder: Array[Byte])
   extends AbstractCriterion[Activity, Activity, Float]() {
   import TorchLoss._
