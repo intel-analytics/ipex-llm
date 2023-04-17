@@ -302,8 +302,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
         else:
-            params["data_creator"] = data # type:ignore
-            params["validation_data_creator"] = validation_data # type:ignore
+            params["data_creator"] = data  # type:ignore
+            params["validation_data_creator"] = validation_data  # type:ignore
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
