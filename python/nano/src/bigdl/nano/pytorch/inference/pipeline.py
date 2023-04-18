@@ -13,18 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import os
-import warnings
 import itertools
 import multiprocessing as mp
-from multiprocessing.connection import Connection
-from typing import List, Tuple, Dict, Callable
+import warnings
+from typing import List, Tuple, Callable
 
-from torch import nn
-
-from bigdl.nano.utils.common import schedule_workers
 from bigdl.nano.utils.common import EnvContext
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import schedule_workers
+from torch import nn
 
 
 class Pipeline():
@@ -40,6 +37,7 @@ class Pipeline():
         outputs = pipeline.run(inputs)
     ```
     """
+
     def __init__(self, stages: List[Tuple]):
         """
         Create a pipeline with given stages.
@@ -47,8 +45,8 @@ class Pipeline():
         For example,
         ```
             pipeline = Pipeline([
-                ("preprocess", preprocess, {"core_num": 4}),
-                ("inference", model, {"core_num": 8}),
+                ("preprocess", preprocess, {"core_num": 4, 'worker_num': 1}),
+                ("inference", model, {"core_num": 8, 'worker_num': 1}),
             ])
         ```
         will create a pipeline which has stage "preprocess" and "inference",
@@ -59,15 +57,13 @@ class Pipeline():
         :param stages: A list of configurations for each stage, each stage should consist of
             a 'name'(str), a 'function'(Callable), and a 'config'(dict).
         """
-        conns = [reversed(mp.Pipe(duplex=False)) for _i in range(len(stages) + 1)]
-        conns = list(itertools.chain(*conns))
-        self.send_ = conns[0]
-        self.recv_ = conns[-1]
+        queues = [mp.Queue() for _ in range(len(stages) + 1)]
+        self.send_ = queues[0]
+        self.recv_ = queues[-1]
         self.cores = schedule_workers(1)[0]
-        self.ps = [
-            self._launch_stage(stage, conns[i * 2 + 1], conns[i * 2 + 2])
-            for i, stage in enumerate(stages)
-        ]
+        self.ps = list(itertools.chain(
+            self._launch_stage(stage, queues[i], queues[i + 1])
+            for i, stage in enumerate(stages)))
 
     def run(self, inputs):
         """
@@ -88,46 +84,56 @@ class Pipeline():
         :return: A list of the result of inference.
         """
         outputs = []
-        for i in inputs:
-            self.send_.send(i)
+        for idx, value in enumerate(inputs):
+            self.send_.put((idx, value))
             outputs.append(None)
 
-        outputs = [self.recv_.recv() for _ in outputs]
+        outputs = [self.recv_.get() for _ in outputs]
+        outputs = list(map(lambda output: output[1],
+                           sorted(outputs, key=lambda output: output[0])))
         return outputs
 
-    def _launch_stage(self, stage: Tuple, recv_: Connection, send_: Connection):
+    def _launch_stage(self, stage: Tuple, recv_: mp.Queue, send_: mp.Queue):
         name, func, config = stage
 
         subprocess_env = {}
-        if isinstance(config.get("core_num", None), int):
-            core_num = config["core_num"]
-            cores = self.cores[:core_num]
-            self.cores = self.cores[core_num:]
-            if len(cores) < core_num:
-                warnings.warn(f"stage {name} requires {core_num} cores,"
-                              f" but there are only {len(cores)} cores left")
-            subprocess_env["KMP_AFFINITY"] = (f"granularity=fine,proclist"
-                                              f"=[{','.join([str(i) for i in cores])}],explicit")
-            subprocess_env["OMP_NUM_THREADS"] = str(len(cores))
+        worker_num = config.get("worker_num", 1)
+        invalidInputError(isinstance(worker_num, int),
+                          f'worker_num config should input an int value,'
+                          f' but get {type(worker_num)}')
+        process_list = []
 
-        with EnvContext(env=subprocess_env):
-            p = mp.Process(target=self._stage_wrapper,
-                           args=(func, recv_, send_),
-                           daemon=True)
-            p.start()
-        return p
+        core_num = config.get("core_num", None)
+        for _ in range(worker_num):
+            if isinstance(core_num, int):
+                cores = self.cores[:core_num]
+                self.cores = self.cores[core_num:]
+                if len(cores) < core_num:
+                    warnings.warn(f"stage {name} requires {core_num} cores,"
+                                  f" but there are only {len(cores)} cores left")
+                subprocess_env["KMP_AFFINITY"] = (f"granularity=fine,proclist"
+                                                  f"=[{','.join([str(i) for i in cores])}],explicit")
+                subprocess_env["OMP_NUM_THREADS"] = str(len(cores))
+
+            with EnvContext(env=subprocess_env):
+                p = mp.Process(target=self._stage_wrapper,
+                               args=(func, recv_, send_),
+                               daemon=True)
+                p.start()
+                process_list.append(p)
+        return process_list
 
     @staticmethod
-    def _stage_wrapper(func: Callable, recv_: Connection, send_: Connection):
+    def _stage_wrapper(func: Callable, recv_: mp.Queue, send_: mp.Queue):
         if isinstance(func, nn.Module):
             from bigdl.nano.pytorch import InferenceOptimizer
             with InferenceOptimizer.get_context(func):
                 while True:
-                    inputs = recv_.recv()
+                    idx, inputs = recv_.get()
                     outputs = func(inputs)
-                    send_.send(outputs)
+                    send_.put((idx, outputs))
         else:
             while True:
-                inputs = recv_.recv()
+                idx, inputs = recv_.get()
                 outputs = func(inputs)
-                send_.send(outputs)
+                send_.put((idx, outputs))
