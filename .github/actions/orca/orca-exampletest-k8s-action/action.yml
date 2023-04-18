@@ -58,7 +58,7 @@ runs:
         export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
         pip install tensorflow==2.6.0 keras==2.6.0
-        pip install --pre --upgrade bigdl-spark3[ray]
+        pip install --pre --upgrade bigdl-spark3[ray]"
 
         docker exec -i orca-spark-k8s bash -c "
         source /root/anaconda3/bin/activate orca-py38
