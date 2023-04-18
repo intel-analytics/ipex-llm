@@ -789,7 +789,7 @@ class SparkXShards(XShards):
                     os.mkdir(tmpFile)
 
                     arrow_types = [to_arrow_type(f.dataType) for f in sdf_schema.fields]
-                    arrow_data = [[(c, t) for (_, c), t in zip(pdf.iteritems(), arrow_types)]]
+                    arrow_data = [[(c, t) for (_, c), t in zip(pdf.items(), arrow_types)]]
                     col_by_name = True
                     safecheck = False
                     ser = ArrowStreamPandasSerializer(timezone, safecheck, col_by_name)
