@@ -23,7 +23,7 @@ from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.pytorch import export_to_onnx, get_input_example, \
     get_forward_args
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.context_manager import generate_context_manager, BaseContextManager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
     MetaData
 import pickle
@@ -91,13 +91,14 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                         pass
 
                 # test run to get output metadata
-                forward_args = get_forward_args(model)
-                input_sample = get_input_example(model, input_sample, forward_args)
-                if isinstance(input_sample, (tuple, list)):
-                    output = model(*input_sample)
-                else:
-                    output = model(input_sample)
-                self.output_metadata = MetaData.construct_matadata(output)
+                with BaseContextManager():
+                    forward_args = get_forward_args(model)
+                    input_sample = get_input_example(model, input_sample, forward_args)
+                    if isinstance(input_sample, (tuple, list)):
+                        output = model(*input_sample)
+                    else:
+                        output = model(input_sample)
+                    self.output_metadata = MetaData.construct_matadata(output)
             else:
                 onnx_path = model
             AcceleratedLightningModule.__init__(self, None)

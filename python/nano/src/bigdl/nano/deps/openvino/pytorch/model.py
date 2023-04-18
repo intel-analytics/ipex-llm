@@ -25,7 +25,7 @@ import torch
 from bigdl.nano.utils.common import invalidInputError
 from ..core.utils import save
 from torch.utils.data.dataloader import DataLoader
-from bigdl.nano.pytorch.context_manager import generate_context_manager
+from bigdl.nano.pytorch.context_manager import generate_context_manager, BaseContextManager
 from bigdl.nano.utils.pytorch import get_input_example, get_forward_args, \
     patch_attrs_from_model_to_object, MetaData
 import pickle
@@ -96,13 +96,14 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
                 ov_model_path = tmpdir / 'tmp.xml'
 
                 # test run to get output metadata
-                forward_args = get_forward_args(model)
-                input_sample = get_input_example(model, input_sample, forward_args)
-                if isinstance(input_sample, (list, tuple)):
-                    output = model(*input_sample)
-                else:
-                    output = model(input_sample)
-                self.output_metadata = MetaData.construct_matadata(output)
+                with BaseContextManager():
+                    forward_args = get_forward_args(model)
+                    input_sample = get_input_example(model, input_sample, forward_args)
+                    if isinstance(input_sample, (list, tuple)):
+                        output = model(*input_sample)
+                    else:
+                        output = model(input_sample)
+                    self.output_metadata = MetaData.construct_matadata(output)
 
             self.ov_model = OpenVINOModel(ov_model_path,
                                           device=device,
