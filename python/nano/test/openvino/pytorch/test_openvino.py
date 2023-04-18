@@ -60,6 +60,204 @@ class MultipleInputNet(nn.Module):
         return self.dense1(x1) + 2 * self.dense2(x2)
 
 
+class DictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2, "x3": x3}
+        return output
+
+
+class DictOutputModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x3": x3, "x1": x1, "x2": x2}
+        return output
+
+
+class DictTensorOutputModel1(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2}
+        return output, x3
+
+
+class MultiDictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output1 = {"x1": x1, "x2": x2, "x3": x3}
+        output2 = {"x3": x3, "x1": x1, "x2": x2}
+        return output1, output2
+
+
+class MultiDictTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output1 = {"x1": x1, "x2": x2, "x3": x3}
+        output2 = {"x3": x3, "x1": x1, "x2": x2}
+        return x3, output1, output2
+
+
+class ListOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1, x2, output]
+
+
+class TupleTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return output, (x1, x2, x)
+
+
+class MultiTupleOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2], (output, x)
+
+
+class MultiTupleTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return output, [x1,x2], (output, x)
+
+
+class TupleDictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2], {"x":x, "output":output}
+
+
+class TupleDictOutputModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2,{"x":x, "output":output}]
+
+class TupleDictOutputModel3(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return {"intermediate": [x1,x2], "x":x, "output":output}
+
+
 class TestOpenVINO(TestCase):
     def test_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
@@ -396,8 +594,8 @@ class TestOpenVINO(TestCase):
         image_latents2 = torch.randn(latent_shape2, device = "cpu", dtype=torch.float32)
         encoder_hidden_states2 = torch.randn((1, 12, 10), device = "cpu", dtype=torch.float32)
 
-        unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
-        unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        target_sample1 = unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        target_sample2 = unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
 
         # Static shape
         dynamic_axes= False
@@ -470,8 +668,12 @@ class TestOpenVINO(TestCase):
                                             input_shape="[-1,4,8,8],[1],[-1,12,10]",
                                             input="sample,timestep,encoder_hidden_states"
                                             )
-        nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
-        nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        output1 = nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
+        output2 = nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        # TODO: change output1["sample"] -> output1.sample
+        # we may need to support custom class output
+        np.testing.assert_almost_equal(output1["sample"].detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
         nano_unet.reshape("sample[1,4,8,8],encoder_hidden_states[1,12,10]")
         nano_unet_inputs = {i.any_name: i.shape for i in nano_unet.ov_model.ie_network.inputs}
@@ -486,6 +688,8 @@ class TestOpenVINO(TestCase):
             new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
             assert list(new_model_inputs["sample"]) == [1, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [1, 12, 10]
+        output2 = new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
+        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
     def test_openvino_trace_output_tensors(self):
         model = mobilenet_v3_small(pretrained=True)
@@ -505,6 +709,19 @@ class TestOpenVINO(TestCase):
         for x, y in dataloader:
             forward_model_tensor = openvino_model(x).numpy()
             forward_model_numpy = test_openvino_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_openvino_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in dataloader:
+            forward_model_tensor = load_model(x).numpy()
+            forward_model_numpy = test_load_model(x)
             assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
 
@@ -556,3 +773,254 @@ class TestOpenVINO(TestCase):
 
             with pytest.raises(RuntimeError):
                 ov_model(x1, x1=x2)
+
+    def test_openvino_dict_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: output is a single dict
+        for Model in [DictOutputModel, DictOutputModel2]:
+            model = Model()
+            output = model(x1, x2)
+            assert isinstance(output, dict)
+
+            ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+            with InferenceOptimizer.get_context(ov_model):
+                output1 = ov_model(x1, x2)
+
+            assert output.keys() == output1.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(ov_model, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name)
+
+            with InferenceOptimizer.get_context(load_model):
+                output2 = load_model(x1, x2)
+
+            assert output.keys() == output2.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output2[k].detach().numpy(), decimal=5)
+
+        # test2: output is a dict with other non-list items
+        model = DictTensorOutputModel1()
+        dic, out = model(x1, x2)
+        assert isinstance(dic, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            dic1, out1 = ov_model(x1, x2)
+        assert dic1.keys() == dic.keys()
+        np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            dic2, out2 = load_model(x1, x2)
+        assert dic2.keys() == dic1.keys()
+        np.testing.assert_almost_equal(out2.detach().numpy(), out1.detach().numpy(), decimal=5)
+
+        # test3: test multi dict, output are 2 dicts
+        model = MultiDictOutputModel()
+        dic1, dic2 = model(x1, x2)
+        assert isinstance(dic1, dict)
+        assert isinstance(dic2, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output_dic1, output_dic2 = ov_model(x1, x2)
+        assert dic1.keys() == output_dic1.keys()
+        assert dic2.keys() == output_dic2.keys()
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2_dic1, output2_dic2 = load_model(x1, x2)
+        assert dic1.keys() == output2_dic1.keys()
+        assert dic2.keys() == output2_dic2.keys()
+        
+        # test4: test multi dict with non-list item, output is a tensor with 2 dicts
+        model = MultiDictTensorOutputModel()
+        output, dic1, dic2 = model(x1, x2)
+        assert isinstance(dic1, dict)
+        assert isinstance(dic2, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1, output1_dic1, output1_dic2 = ov_model(x1, x2)
+        assert dic1.keys() == output_dic1.keys()
+        assert dic2.keys() == output_dic2.keys()
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2, output2_dic1, output2_dic2 = load_model(x1, x2)
+        assert dic1.keys() == output2_dic1.keys()
+        assert dic2.keys() == output2_dic2.keys()
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+    def test_openvino_list_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: output is a single list
+        model = ListOutputModel()
+        output = model(x1, x2)
+        assert isinstance(output, list)
+
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(x1, x2)
+        
+        assert len(output) == len(output1)
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model(x1, x2)
+
+        assert len(output) == len(output2)
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output2[k].detach().numpy(), decimal=5)
+
+        # test2: output is a tuple with other non-list items
+        model = TupleTensorOutputModel()
+        out, list_out = model(x1, x2)
+        assert isinstance(list_out, tuple)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            out1, list_out1 = ov_model(x1, x2)
+        assert len(list_out) == len(list_out1)
+        np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
+        for k in range(len(list_out)):
+            np.testing.assert_almost_equal(list_out[k].detach().numpy(), list_out1[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            out2, list_out2 = load_model(x1, x2)
+        assert len(list_out) == len(list_out2)
+        np.testing.assert_almost_equal(out2.detach().numpy(), out1.detach().numpy(), decimal=5)
+        for k in range(len(list_out1)):
+            np.testing.assert_almost_equal(list_out1[k].detach().numpy(), list_out2[k].detach().numpy(), decimal=5)
+
+        # test3: test multi list/tuple, output are 2 lists
+        model = MultiTupleOutputModel()
+        list1, list2 = model(x1, x2)
+        assert isinstance(list1, list)
+        assert isinstance(list2, tuple)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output_list1, output_list2 = ov_model(x1, x2)
+        assert len(output_list1) == len(list1)
+        assert len(output_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output_list2[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2_list1, output2_list2 = load_model(x1, x2)
+        assert len(output2_list1) == len(list1)
+        assert len(output2_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output2_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output2_list2[k].detach().numpy(), decimal=5)
+
+        # test4: test multi list/tuple with non-list item, output is a tensor with 2list/tuples
+        model = MultiTupleTensorOutputModel()
+        output, list1, list2 = model(x1, x2)
+        assert isinstance(list1, list)
+        assert isinstance(list2, tuple)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1, output1_list1, output1_list2 = ov_model(x1, x2)
+        assert len(output1_list1) == len(list1)
+        assert len(output1_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output1_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output1_list2[k].detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2, output2_list1, output2_list2 = load_model(x1, x2)
+        assert len(output2_list1) == len(list1)
+        assert len(output2_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output2_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output2_list2[k].detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+    def test_openvino_list_dict_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: test single dict and a single list
+        model = TupleDictOutputModel()
+        output, dic = model(x1, x2)
+        assert isinstance(output, list)
+        assert isinstance(dic, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1, dic1 = ov_model(x1, x2)
+        assert isinstance(output1, list)
+        assert isinstance(dic1, dict)
+        assert dic.keys() == dic1.keys()
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+        for k in dic.keys():
+            np.testing.assert_almost_equal(dic[k].detach().numpy(), dic1[k].detach().numpy(), decimal=5)
+
+        # test2: test list contains dict
+        model = TupleDictOutputModel2()
+        output = model(x1, x2)
+        assert isinstance(output, list)
+        assert isinstance(output[2], dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(x1, x2)
+        assert isinstance(output1, list)
+        assert isinstance(output1[2], dict)
+        assert len(output1) == len(output)
+        for i in range(2):
+            np.testing.assert_almost_equal(output[i].detach().numpy(), output1[i].detach().numpy(), decimal=5)
+        assert output[2].keys() == output1[2].keys()
+        for k in output[2].keys():
+            np.testing.assert_almost_equal(output[2][k].detach().numpy(), output1[2][k].detach().numpy(), decimal=5)
+
+        # test3: test dict contains list
+        model = TupleDictOutputModel3()
+        output = model(x1, x2)
+        assert isinstance(output, dict)
+        assert isinstance(output["intermediate"], list)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(x1, x2)
+        assert isinstance(output1, dict)
+        assert isinstance(output1["intermediate"], list)
+        assert output1.keys() == output.keys()
+        for k in output.keys():
+            if k != "intermediate":
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+            else:
+                for i in range(2):
+                    np.testing.assert_almost_equal(output["intermediate"][i].detach().numpy(), output1["intermediate"][i].detach().numpy(), decimal=5)

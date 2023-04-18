@@ -56,3 +56,5 @@ from .load import load_model
 from .xpu import apply_data_to_xpu, apply_data_to_half
 
 from .jit_method import jit_convert
+
+from .metadata import MetaData
