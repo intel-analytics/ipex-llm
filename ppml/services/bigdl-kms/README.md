@@ -78,7 +78,7 @@ replicaset.apps/bigdl-key-management-server-f4985d65f
 
 You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/client/BigDLKeyManagementService.scala), or simply verify through requesting REST API like below:
 
-#### 1. Test Service readiness
+### 1. Test Service readiness
 
 The default port number of bigdl kms is `9876`.
 
@@ -94,28 +94,28 @@ get a data key like: POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_
 get the data key like: GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token1
 ```
 
-#### 2. Enroll
+### 2. Enroll
 
 ```bash
 curl -X POST -k -v "https://<kmsIP>:<kmsPort>/user/<userName>?token=<userToken>"
 user [<userName>] is created successfully!
 ```
 
-#### 3. Generate Primary Key
+### 3. Generate Primary Key
 
 ```bash
 curl -X POST -k -v "https://<kmsIP>:<kmsPort>/primaryKey/<primaryKeyName>?user=<userName>&&token=<userToken>"
 primaryKey [<primaryKeyName>] is generated successfully!
 ```
 
-#### 4. Generate Data Key from the Primary Key
+### 4. Generate Data Key from the Primary Key
 
 ```bash
 curl -X POST -k -v "https://<kmsIP>:<kmsPort>/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
 dataKey [<dataKeyName>] is generated successfully!
 ```
 
-#### 5. Retrieve Plain Text of the Data Key
+### 5. Retrieve Plain Text of the Data Key
 
 ```bash
 curl -X GET -k -v "https://<kmsIP>:<kmsPort>/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
