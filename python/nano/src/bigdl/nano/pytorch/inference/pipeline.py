@@ -111,8 +111,9 @@ class Pipeline():
                 if len(cores) < core_num:
                     warnings.warn(f"stage {name} requires {core_num} cores,"
                                   f" but there are only {len(cores)} cores left")
-                subprocess_env["KMP_AFFINITY"] = (f"granularity=fine,proclist"
-                                                  f"=[{','.join([str(i) for i in cores])}],explicit")
+                subprocess_env["KMP_AFFINITY"] = (
+                    f"granularity=fine,proclist"
+                    f"=[{','.join([str(i) for i in cores])}],explicit")
                 subprocess_env["OMP_NUM_THREADS"] = str(len(cores))
 
             with EnvContext(env=subprocess_env):
