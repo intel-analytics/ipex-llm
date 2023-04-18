@@ -40,7 +40,11 @@
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
-            <exclusions>
+	    <exclusions>
+		<exclusion>
+	            <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+	        </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
@@ -78,6 +82,11 @@
                     <artifactId>ivy</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
