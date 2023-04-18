@@ -1,3 +1,19 @@
+- [Gramine Machine Learning Toolkit](#gramine-machine-learning-toolkit)
+  - [Before Running Code](#before-running-code)
+    - [1. Build Docker Images](#1-build-docker-images)
+      - [1.1 Build Machine Learning Base Image](#11-build-machine-learning-base-image)
+      - [1.2 Build Machine Learning Custom Image](#12-build-machine-learning-custom-image)
+    - [2. Prepare SSL key and password](#2-prepare-ssl-key-and-password)
+- [Run machine learning example](#run-machine-learning-example)
+  - [1. Configure K8S Environment](#1-configure-k8s-environment)
+  - [2. Run Spark MLlib Application](#2-run-spark-mllib-application)
+    - [2.1 Start a client container](#21-start-a-client-container)
+    - [2.2 Submit local Spark Machine Learning job](#22-submit-local-spark-machine-learning-job)
+    - [2.3 Submit Spark Machine Learning job with Kubernetes](#23-submit-spark-machine-learning-job-with-kubernetes)
+  - [3. Run LightGBM Application](#3-run-lightgbm-application)
+    - [3.1 LightGBM Training on Kubernetes](#31-lightgbm-training-on-kubernetes)
+
+
 # Gramine Machine Learning Toolkit
 
 This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
@@ -13,7 +29,7 @@ Before building your own base image, please modify the paths in `build-base-imag
 ```bash
 ./build-machine-learning-base-image.sh
 ```
-#### 1.2 Build Custom Image
+#### 1.2 Build Machine Learning Custom Image
 
 Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-bigdata#12-build-custom-image) to build a custom image with enclave signed by your private key.
 
@@ -33,41 +49,8 @@ Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepa
 
 #### 2.1 Start a client container
 
-Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
-```bash
-export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
-export NFS_INPUT_PATH=/YOUR_DIR/data
-export KEYS_PATH=/YOUR_DIR/keys
-export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
-export LOCAL_IP=YOUR_LOCAL_IP
-export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
-sudo docker run -itd \
-    --privileged \
-    --net=host \
-    --name=machine-learning-gramine \
-    --cpuset-cpus="20-24" \
-    --oom-kill-disable \
-    --device=/dev/sgx/enclave \
-    --device=/dev/sgx/provision \
-    -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-    -v $KEYS_PATH:/ppml/keys \
-    -v $SECURE_PASSWORD_PATH:/ppml/password \
-    -v $KUBECONFIG_PATH:/root/.kube/config \
-    -v $NFS_INPUT_PATH:/ppml/data \
-    -e RUNTIME_SPARK_MASTER=$K8S_MASTER \
-    -e RUNTIME_K8S_SPARK_IMAGE=$DOCKER_IMAGE \
-    -e RUNTIME_DRIVER_PORT=54321 \
-    -e RUNTIME_DRIVER_MEMORY=10g \
-    -e LOCAL_IP=$LOCAL_IP \
-    $DOCKER_IMAGE bash
-```
-run `docker exec -it machine-learning-graming bash` to enter the container.
-
-If you want to directyly execute a local application, run `init.sh` to init the SGX and make some necessary settings:
-```bash
-bash init.sh
-```
+Follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-machine-learning#21-start-a-client-container) to start a cleint container.\
+Configure the environment variables and the `DOCKER_IMAGE` should be the one built in [1.2 Build Machine Learning Custom Image](#12-build-machine-learning-custom-image)
 
 #### 2.2 Submit local Spark Machine Learning job 
 
@@ -77,7 +60,7 @@ MLlib toolkit in trusted-machine-learning porvides examples of some classic algo
 bash mllib/scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
 ```
 
-Or submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
+You can also submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
 
 ```bash
 bash bigdl-ppml-submit.sh \
@@ -95,7 +78,7 @@ bash bigdl-ppml-submit.sh \
      local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
-You can also run your own ML application with PPML CLI as below:
+Or can also run your own ML application with PPML CLI as below:
 ```bash 
 export your_applicaiton_jar_path=...
 export your_application_class_path=...
