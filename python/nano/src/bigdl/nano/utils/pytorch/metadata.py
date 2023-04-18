@@ -15,7 +15,16 @@
 #
 
 import torch
-from ..common import invalidInputError
+
+
+class CustomDict(dict):
+    """Custom Dict class for class with dataclass, esp. for BaseOutput in diffusers
+    """
+    def __getattr__(self, key):
+        if key in self.keys():
+            return self.__getitem__(key)
+        else:
+            super.__getattr__(key)
 
 
 class BasicMetaDataInfo(object):
@@ -37,6 +46,33 @@ class TensorMetaDataInfo(object):
 
 class DictMetaDataInfo(object):
     """Meta info class for dict
+    """
+    def __init__(self, input_element):
+        self.type = type(input_element)
+        # normal dict or custom class
+        random_key = list(input_element.keys())[0]
+        if hasattr(input_element, random_key):
+            # has attr, is custom class
+            # fake a dataclass
+            self.class_fn = CustomDict
+        else:
+            # normal dict
+            self.class_fn = dict
+        self.length = len(input_element)
+        self.keys = list(input_element.keys())
+        self.infos = []
+        for k in self.keys:
+            v = input_element[k]
+            info = get_meta_info_from_input(v)
+            if isinstance(info, ListMetaDataInfo):
+                # list inside dict requires reconstruction
+                info.need_reconstruct = True
+            self.infos.append(info)
+        self.need_reconstruct = True
+
+
+class CustomClassMetaDataInfo(object):
+    """Meta info class for custom class which is instance of dict
     """
     def __init__(self, input_element):
         self.type = type(input_element)
@@ -105,7 +141,7 @@ class MetaData(object):
             # Single dict
             if not isinstance(output, (tuple, list)):
                 output = [output]
-            new_output = {}
+            new_output = metadata.class_fn()
             ind_out = 0
             for idx, k in enumerate(metadata.keys):
                 meta = metadata.infos[idx]
