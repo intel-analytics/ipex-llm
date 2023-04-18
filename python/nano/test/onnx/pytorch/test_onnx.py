@@ -688,6 +688,10 @@ class TestOnnx(TestCase):
         assert dic1.keys() == dic.keys()
         np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
 
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
         with InferenceOptimizer.get_context(load_model):
             dic2, out2 = load_model(x1, x2)
         assert dic2.keys() == dic1.keys()
@@ -922,6 +926,8 @@ class TestOnnx(TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
             output2 = load_model({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
 
         np.testing.assert_almost_equal(output0.numpy(), output1.numpy(), decimal=5)
