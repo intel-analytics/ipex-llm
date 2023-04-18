@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   # pull_request:
-  #   branchs: [ main ]
+  #   branches: [ main ]
   #   paths:
   #     - '.github/workflows/nightly_build.yml'
   schedule:
@@ -35,7 +35,7 @@ jobs:
 
   scala-build:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'scala-build' || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }}
-    runs-on: [self-hosted, Linux, Bree]
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -43,22 +43,32 @@ jobs:
     - name: Set up JDK8
       uses: ./.github/actions/jdk-setup-action
 
-    - uses: actions/cache@v2
-      with:
-        path: ~/.m2/repository
-        key: maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: maven-
-
     - name: Set up Maven
       uses: stCarolas/setup-maven@v4.4
       with:
         maven-version: 3.8.2
 
-    - name: Set up Maven Settings
-      uses: s4u/maven-settings-action@v2.6.0
-      with:
-        sonatypeSnapshots: true
-        apacheSnapshots: true
+    - name: Set up Maven Settings	
+      uses: s4u/maven-settings-action@v2.8.0	
+      with:	
+        sonatypeSnapshots: true	
+        apacheSnapshots: true	
+        proxies: |
+          [{
+            "id": "cn-http", 
+            "active": "true", 
+            "protocol": "http", 
+            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
+          },{
+            "id": "cn-https", 
+            "active": "true", 
+            "protocol": "https", 
+            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
+          }]
         servers: |
           [{
             "id": "central",
@@ -166,7 +176,7 @@ jobs:
         file-name: nb-scala-build.json
         type: job
         job-name: scala-build
-        runner-hosted-on: 'America'
+        runner-hosted-on: 'Shanghai'
 
   docker-build-bigdl:
     needs: scala-build
@@ -293,12 +303,12 @@ jobs:
         file-name: nb-docker-build-bigdl.json
         type: job
         job-name: docker-build-bigdl
-        runner-hosted-on: 'America'
+        runner-hosted-on: 'Shanghai'
   
   python-build:
     # python build can only be published once a day, please do not publish it manually
-    if: ${{ github.event.schedule }} 
-    runs-on: [self-hosted, ubuntu-20.04-lts, Bree]
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -345,11 +355,11 @@ jobs:
         file-name: nb-python-build.json
         type: job
         job-name: python-build
-        runner-hosted-on: 'America'
+        runner-hosted-on: 'Shanghai'
 
   python-sourceforge-build:
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'python-sourceforge-build' || github.event.inputs.artifact == 'all' }} 
-    runs-on: [self-hosted,alpha,Bree,ubuntu-20.04-lts]
+    runs-on: [self-hosted, Bree]
 
     steps:
     - uses: actions/checkout@v3
@@ -472,7 +482,7 @@ jobs:
         file-name: nb-python-sourceforge-build.json
         type: job
         job-name: python-build-sourceforge
-        runner-hosted-on: 'America'
+        runner-hosted-on: 'Shanghai'
 
   create-workflow-badge:
     runs-on: ubuntu-latest

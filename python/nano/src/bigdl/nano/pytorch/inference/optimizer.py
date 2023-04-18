@@ -594,6 +594,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  enable_onednn: bool = True,
                  q_config=None,
                  output_tensors: bool = True,
+                 example_kwarg_inputs=None,
                  **kwargs):
         """
         Calibrate a torch.nn.Module for post-training quantization.
@@ -745,6 +746,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
+        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
+                                     passed to ``torch.jit.trace``. Default: ``None``. Either
+                                     this argument or ``input_sample`` should be specified. The
+                                     dict will be unpacking by the arguments name of the traced
+                                     function. Only valid when accelerator='jit' and torch>=2.0,
+                                     otherwise will be ignored.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to ``torch.onnx.export`` function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -794,7 +801,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                    jit_strict=jit_strict,
                                                    jit_method=jit_method,
                                                    weights_prepack=weights_prepack,
-                                                   enable_onednn=enable_onednn)
+                                                   enable_onednn=enable_onednn,
+                                                   example_kwarg_inputs=example_kwarg_inputs)
                 else:
                     bf16_model = BF16Model(model, channels_last=channels_last,
                                            input_sample=input_sample,
@@ -973,7 +981,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                            thread_num=thread_num,
                                            jit_strict=jit_strict,
                                            jit_method=jit_method,
-                                           enable_onednn=enable_onednn)
+                                           enable_onednn=enable_onednn,
+                                           example_kwarg_inputs=example_kwarg_inputs)
             else:
                 invalidInputError(False,
                                   "Accelerator {} is invalid.".format(accelerator))
@@ -1023,6 +1032,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               enable_onednn: bool = True,
               output_tensors: bool = True,
               strict_check: bool = True,
+              example_kwarg_inputs=None,
               **kwargs):
         """
         Trace a torch.nn.Module and convert it into an accelerated module for inference.
@@ -1093,7 +1103,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               ignored. For more details, please refer https://github.com/pytorch/
                               pytorch/tree/master/torch/csrc/jit/codegen/
                               onednn#pytorch---onednn-graph-api-bridge.
-        :param output_tensors: boolean, default to True and output of the model will be Tensors,
+        :param output_tensors: boolean, default to ``True`` and output of the model will be Tensors,
                                only valid when accelerator='onnxruntime' or accelerator='openvino',
                                otherwise will be ignored. If output_tensors=False, output of the
                                export model will be ndarray.
@@ -1101,7 +1111,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                              optimization (e.g., if the model is a nn.Module or its subclass). This
                              param helps to eliminate the not critical checking, which may enable
                              more models to be optimized while may bring some strange error
-                             message. Default to True.
+                             message. Default to ``True``.
+        :param example_kwarg_inputs: a pack of keyword arguments of example inputs that will be
+                                     passed to ``torch.jit.trace``. Default: ``None``. Either
+                                     this argument or ``input_sample`` should be specified. The
+                                     dict will be unpacking by the arguments name of the traced
+                                     function. Only valid when accelerator='jit' and torch>=2.0,
+                                     otherwise will be ignored.
         :param **kwargs: Other extra advanced settings include:
                          1. those be passed to torch.onnx.export function,
                          only valid when accelerator='onnxruntime'/'openvino',
@@ -1167,7 +1183,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if (accelerator == 'jit' or use_ipex is True or channels_last is True) and device == "CPU":
             if use_ipex:
                 invalidInputError(not TORCH_VERSION_LESS_1_10,
-                                  "torch version should >=1.10 to use ipex")
+                                  "torch version should >= 1.10 to use ipex")
             use_jit = (accelerator == "jit")
             if use_jit:
                 invalidInputError(jit_method in [None, 'trace', 'script'],
@@ -1177,7 +1193,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                        thread_num=thread_num, inplace=inplace,
                                        jit_strict=jit_strict, jit_method=jit_method,
                                        weights_prepack=weights_prepack,
-                                       enable_onednn=enable_onednn)
+                                       enable_onednn=enable_onednn,
+                                       example_kwarg_inputs=example_kwarg_inputs)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

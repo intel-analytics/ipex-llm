@@ -29,7 +29,7 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True,
-                 compression="fp32"):
+                 compression="fp32", example_kwarg_inputs=None):
         '''
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -63,6 +63,10 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                file sill be saved with some accuracy loss. Users always need to use nano
                to load the compressed file if compression is set other than "fp32".
                Currently, "bf16" and "fp32"(default) are supported.
+        :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+               to ``torch.jit.trace``. Default to ``None``. Either this argument or
+               ``input_sample`` should be specified when ``use_jit`` is ``True`` and
+               torch > 2.0, otherwise will be ignored.
         '''
         if use_ipex:
             invalidInputError(
@@ -77,7 +81,8 @@ class PytorchIPEXJITBF16Model(PytorchIPEXJITModel):
                                      channels_last_available=channels_last_available,
                                      from_load=from_load, inplace=inplace, jit_strict=jit_strict,
                                      jit_method=jit_method, weights_prepack=weights_prepack,
-                                     enable_onednn=enable_onednn, compression=compression)
+                                     enable_onednn=enable_onednn, compression=compression,
+                                     example_kwarg_inputs=example_kwarg_inputs)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="bf16",
