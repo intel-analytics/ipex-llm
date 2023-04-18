@@ -59,7 +59,7 @@ Then, deploy easy-kms on kubernetes by one command:
 bash install-bigdl-kms.sh
 ```
 
-### 3. Check Delopyment
+### 4. Check Delopyment
 
 Check the service whether it has successfully been running (it may take seconds).
 ```bash
