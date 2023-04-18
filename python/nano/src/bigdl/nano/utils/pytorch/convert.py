@@ -22,6 +22,7 @@ from bigdl.nano.utils.pytorch import get_forward_args, get_conditional_args,\
     get_input_example, complement_input_sample
 from typing import Sequence, Dict
 
+
 def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True, **kwargs):
     '''
     Internal function to export pytorch model as onnx.
@@ -44,11 +45,11 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     input_sample = get_input_example(model, input_sample, forward_args)
 
     if isinstance(input_sample, Sequence) and isinstance(input_sample[-1], Dict):
-        arg_idx = len(input_sample)-1
-        input_sample = input_sample[:-1]+ ({forward_args[arg_idx]: input_sample[-1]},)
+        arg_idx = len(input_sample) - 1
+        input_sample = input_sample[: -1]+ ({forward_args[arg_idx]: input_sample[-1]},)
     elif isinstance(input_sample, Dict):
         input_sample = {forward_args[0]: input_sample}
-    
+
     input_sample = complement_input_sample(model, input_sample)
 
     invalidInputError(input_sample is not None,

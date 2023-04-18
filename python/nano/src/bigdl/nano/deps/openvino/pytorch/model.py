@@ -132,7 +132,7 @@ class PytorchOpenVINOModel(AcceleratedLightningModule):
             else:
                 tmp.append(elem)
         inputs = tmp
-            
+
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
