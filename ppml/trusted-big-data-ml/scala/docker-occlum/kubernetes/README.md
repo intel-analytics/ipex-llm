@@ -418,7 +418,7 @@ Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/
     - name: SGX_MEM_SIZE
       value: "15GB"
     - name: SGX_THREAD
-      value: "512"
+      value: "1024"
     - name: SGX_HEAP
       value: "1GB"
     - name: SGX_KERNEL_HEAP
@@ -431,7 +431,7 @@ Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/
     - name: SGX_MEM_SIZE
       value: "15GB"
     - name: SGX_THREAD
-      value: "512"
+      value: "1024"
     - name: SGX_HEAP
       value: "1GB"
     - name: SGX_KERNEL_HEAP
