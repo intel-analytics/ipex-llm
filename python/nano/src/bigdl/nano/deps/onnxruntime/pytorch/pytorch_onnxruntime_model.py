@@ -79,7 +79,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         self.output_metadata = output_metadata
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, torch.nn.Module):
-                input_sample = self.process_input_sample(model, input_sample)
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 # Typically, when model is fp32, we use this path
                 export_to_onnx(model, input_sample=input_sample, onnx_path=onnx_path,
@@ -116,25 +115,6 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             # patch original model's attr to current new model
             patch_attrs_from_model_to_object(model, self)
         self.output_tensors = output_tensors
-
-    def process_input_sample(self, model, input_sample):
-        self.input_meta_info = []
-        if not isinstance(input_sample, torch.Tensor):
-            tmp = {}
-            forward_args = get_forward_args(model)  # TODO: add exception capture (maybe??)
-            if isinstance(input_sample, List) or isinstance(input_sample, Tuple):
-                for i in range(len(input_sample)):
-                    self.input_meta_info.append(type(input_sample[i]))
-                    tmp[forward_args[i]] = input_sample[i]
-                input_sample = tmp
-            else:
-                self.input_meta_info.append(type(input_sample))
-                tmp[forward_args[0]] = input_sample
-                input_sample = tmp
-        else:
-            self.input_meta_info.append(torch.Tensor)
-
-        return input_sample
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

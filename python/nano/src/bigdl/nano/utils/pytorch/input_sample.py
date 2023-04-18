@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Sequence, Dict
+from typing import Sequence
 
 from torch.utils.data import DataLoader
 from bigdl.nano.utils.common import invalidInputError
@@ -31,8 +31,6 @@ def complement_input_sample(model, input_sample):
     input_sample_length = 1
     if isinstance(input_sample, Sequence):
         input_sample_length = len(input_sample)
-    elif isinstance(input_sample, Dict):
-        input_sample_length = len(list(input_sample.keys()))
 
     # check if need complement
     if len(forward_args) == input_sample_length:
