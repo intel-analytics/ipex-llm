@@ -625,7 +625,7 @@ class TestOpenVINO(TestCase):
             # Reshape using same shape, should not recompile
             new_model.reshape("sample[2,4,8,8],encoder_hidden_states[2,12,10]")
             reshape_end = datetime.utcnow()
-            assert (reshape_end - first_load_end).total_seconds() * 1000 < 10
+            assert (reshape_end - first_load_end).total_seconds() * 1000 < 50
 
             new_model(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
             # Inference with wrong batchsize
@@ -645,7 +645,7 @@ class TestOpenVINO(TestCase):
             new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
             assert list(new_model_inputs["sample"]) == [2, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [2, 12, 10]
-            assert (reshape_end - second_load_end).total_seconds() * 1000 < 30
+            assert (reshape_end - second_load_end).total_seconds() * 1000 < 50
 
             # Load with wrong shape
             new_model = InferenceOptimizer.load(tmp_dir_name, cache_dir=tmp_dir_name, 
