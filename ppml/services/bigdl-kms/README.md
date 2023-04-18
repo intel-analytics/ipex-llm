@@ -3,7 +3,12 @@
 ## Architecture
 ![BigDLKMS](https://user-images.githubusercontent.com/60865256/229735029-b93f221a-7973-49fa-9474-a216121caf18.png)
 
-It highlights that a multi-level wrapping of encryption keys is implemented to mitigate the risk of wrapping key leakage. （1） The *rootK* , a global key which encrypts and decrypts all of *userK*s (keys generated as request to operate application data), is created and uploaded by user as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/) for fault tolerance, and we are working to apply other advanced mathematical tool like Secret Sharing to protect it. (2) An user send a request from his application to the KMS server in order to retrieve a *UserK*, e.g. primary key or data key. (3) KMS server generates the requested-specify key, encrypts the generation with *rootK*, and saves the insensitive ciphertext (and response the user if needed). The whole process above is executed in TEE-protected memory region. (4) When receiving retrieve request of plain-text data key, the server queries, decrypts and responses with the target, which is TEE-protected as well.
+It highlights that a multi-level wrapping of encryption keys is implemented to mitigate the risk of wrapping key leakage.
+
+1. The *rootK* , a global key which encrypts and decrypts all of *userK*s (keys generated as request to operate application data), is created and uploaded by user as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/) for fault tolerance, and we are working to apply other advanced mathematical tool like Secret Sharing to protect it.
+2. An user send a request from his application to the KMS server in order to retrieve a *UserK*, e.g. primary key or data key.
+3. KMS server generates the requested-specify key, encrypts the generation with *rootK*, and saves the insensitive ciphertext (and response the user if needed). The whole process above is executed in TEE-protected memory region.
+4. When receiving retrieve request of plain-text data key, the server queries, decrypts and responses with the target, which is TEE-protected as well.
 
 The encrypted keys are saved in persistent storage mounted as kubernetes volume, and this achieves both privacy preservation and fault tolerance.
 
@@ -18,9 +23,10 @@ BigDL KMS protects against the following potential attacks:
 
 BigDL KMS uses multiple security techniques e.g. Trusted Execution Environment (SGX/TDX), AES Crypto, TLS/SSL and Remote Attestation etc. to ensure end-to-end secure key management even in an untrusted environment with above various parts.
 
-For users who want to deploy BigDL KMS as a lightweight micro-service, we also provide a [docker version](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/bigdl-kms/docker/run-docker-container.sh), and the parameters are the same as ones in the following kubernetes version.
-
 ## Start on Kubernetes
+
+For users who want to deploy BigDL KMS as a lightweight micro-service, we also provide a [docker version](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/bigdl-kms/docker/run-docker-container.sh), and the parameters in the script are the same as the following.
+
 ### 1. Prerequests
 
 - Make sure you have a workable **Kubernetes cluster/machine**
