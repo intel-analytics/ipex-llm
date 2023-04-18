@@ -453,6 +453,19 @@ class TestOnnx(TestCase):
             forward_res_numpy = test_onnx_model(x)
             assert isinstance(forward_res_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_onnx_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in train_loader:
+            forward_res_tensor = load_model(x).numpy()
+            forward_res_numpy = test_load_model(x)
+            assert isinstance(forward_res_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
 
     def test_onnx_quantize_kwargs(self):
         model = MultiInputModel()
@@ -472,7 +485,7 @@ class TestOnnx(TestCase):
 
         dataset = CustomDataset()
         loader = DataLoader(dataset, batch_size=1, collate_fn=None)
-        
+
         # TODO: below code works after we solve wrong dataloader transform issue
         # onnx_model = InferenceOptimizer.quantize(model,
         #                                          accelerator='onnxruntime',

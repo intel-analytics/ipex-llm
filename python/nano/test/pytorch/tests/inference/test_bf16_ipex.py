@@ -26,6 +26,8 @@ import tempfile
 from typing import List
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
 from bigdl.nano.utils.common import compare_version, _avx512_checker, _avx2_checker
+import operator
+import numpy as np
 
 
 class CaseWithoutAVX512:
@@ -78,6 +80,19 @@ class MultipleInputWithKwargsNet(nn.Module):
 
     def forward(self, x1, x2, x3=10):
         return self.dense1(x1) + self.dense2(x2) + x3
+
+
+class JumpInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2=None, x3=None):
+        if x3 is not None:
+            return self.dense1(x1) + self.dense2(x3)
+        else:
+            return self.dense1(x1)
 
 
 class Pytorch1_11:
@@ -433,6 +448,51 @@ class Pytorch1_11:
             # test keyword argument
             model(x1=x1, x2=x2)
             # TODO: call two times will report error
+
+    @pytest.mark.skipif(compare_version("torch", operator.lt, "2.0"),
+                        reason="example_kwarg_inputs is only supported when torch>=2.0")
+    def test_bf16_jit_ipex_jump_input(self):
+        model = JumpInputNet()
+        x1 = torch.randn(1, 10)
+        x3 = torch.randn(1, 10)
+        target = model(x1, None, x3)
+        # test jit
+        with pytest.raises(RuntimeError):
+            opt_model = InferenceOptimizer.quantize(model,
+                                                    precision='bf16',
+                                                    accelerator="jit",
+                                                    input_sample=(x1, None, x3),
+                                                    jit_method='trace')
+
+        opt_model = InferenceOptimizer.quantize(model,
+                                                accelerator="jit",
+                                                precision='bf16',
+                                                input_sample=None,
+                                                example_kwarg_inputs={'x1':x1, 'x3':x3})
+        output1 = opt_model(x1, x3)
+        # TODO: accept opt_model(x1, None, x3)
+        np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-2)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(opt_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        output2 = loaded_model(x1, x3)
+        np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
+
+        # test jit ipex
+        opt_model = InferenceOptimizer.quantize(model,
+                                                accelerator="jit",
+                                                precision='bf16',
+                                                use_ipex=True,
+                                                input_sample=None,
+                                                example_kwarg_inputs={'x1':x1, 'x3':x3},
+                                                jit_method='trace')
+        output1 = opt_model(x1, x3)
+        np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-2)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(opt_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        output2 = loaded_model(x1, x3)
+        np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
 
 
 TORCH_VERSION_CLS = Pytorch1_11
