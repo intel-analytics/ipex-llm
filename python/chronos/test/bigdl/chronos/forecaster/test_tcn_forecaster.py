@@ -1483,6 +1483,7 @@ class TestChronosModelTCNForecaster(TestCase):
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
 
+    @op_inference
     def test_tcn_forecaster_ctx_manager(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = TCNForecaster(past_seq_len=24,
