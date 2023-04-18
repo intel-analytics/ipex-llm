@@ -6,16 +6,16 @@ TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 SPARK_LOCAL_IP=$LOCAL_IP && \
 export sgx_command="/opt/jdk8/bin/java \
   -cp /ppml/spark-${SPARK_VERSION}/conf/:/ppml/spark-${SPARK_VERSION}/jars/*:ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}/examples/jars/*:/ppml/spark-${SPARK_VERSION}/examples/jars/* \
-    -Xmx8g \
+    -Xmx1g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $mode \
     --name spark-pi-sgx \
     --conf spark.driver.host=$LOCAL_IP \
     --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=8g \
+    --conf spark.driver.memory=1g \
     --conf spark.executor.cores=8 \
-    --conf spark.executor.memory=8g \
+    --conf spark.executor.memory=1g \
     --conf spark.executor.instances=2 \
     --conf spark.cores.max=32 \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
@@ -28,10 +28,8 @@ export sgx_command="/opt/jdk8/bin/java \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
     --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.driver.mem=64g \
-    --conf spark.kubernetes.sgx.driver.jvm.mem=6g \
-    --conf spark.kubernetes.sgx.executor.mem=64g \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=6g \
+    --conf spark.kubernetes.sgx.driver.jvm.mem=1g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=3g \
     --conf spark.kubernetes.sgx.log.level=error \
     --conf spark.authenticate=true \
     --conf spark.authenticate.secret=$secure_password \

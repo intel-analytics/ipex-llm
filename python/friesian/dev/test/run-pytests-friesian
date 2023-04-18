@@ -16,9 +16,19 @@
 # limitations under the License.
 #
 
+export FTP_URI=$FTP_URI
 . `dirname $0`/../prepare_env.sh
 
 cd "`dirname $0`"
+
+# download model from ftp
+if [ -f ./distilbert-base-uncased ]
+then
+    echo "model distilbert-base-uncased already exists"
+else
+    wget $FTP_URI/analytics-zoo-models/distilbert-base-uncased.zip
+    unzip distilbert-base-uncased.zip
+fi
 
 echo "Running Friesian feature tests"
 python -m pytest -v ../../test/bigdl/friesian/feature/
@@ -27,3 +37,7 @@ if [ $exit_status -ne 0 ];
 then
     exit $exit_status
 fi
+
+# remove the model
+rm -rf ./distilbert-base-uncased
+rm -f ./distilbert-base-uncased.zip

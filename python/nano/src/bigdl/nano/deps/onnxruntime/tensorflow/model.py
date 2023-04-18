@@ -18,14 +18,11 @@
 import os
 import pickle
 from pathlib import Path
-from typing import Sequence, Any
+from typing import Sequence, Any, Union, Dict
 from tempfile import TemporaryDirectory
 import tensorflow as tf
-from bigdl.nano.utils.common import get_default_args
-from bigdl.nano.utils.tf import KERAS_VERSION_LESS_2_10
-from bigdl.nano.utils.tf import try_compute_output_shape
 from bigdl.nano.utils.tf import convert_all
-from bigdl.nano.tf.new_model import KerasOptimizedModel
+from bigdl.nano.tf.model import KerasOptimizedModel
 from bigdl.nano.utils.common import invalidInputError
 
 from ..core.onnxruntime_model import ONNXRuntimeModel
@@ -55,47 +52,50 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
         KerasOptimizedModel.__init__(self)
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, tf.keras.Model):
-                self._output_shape = try_compute_output_shape(model, input_spec,
-                                                              try_fake_inference=False)
-                if input_spec is None and hasattr(model, "input_shape"):
+                invalidInputError(hasattr(model, "input_shape") or input_spec is not None,
+                                  "Subclassed model must specify `input_spec` parameter.")
+                self._mode = "arg"
+                if input_spec is None:
                     input_spec = tf.TensorSpec(model.input_shape, model.dtype)
-                if not isinstance(input_spec, (tuple, list)):
-                    # ONNX requires that `input_spec` must be a tuple or list
+                elif isinstance(input_spec, dict):
+                    input_spec = [tf.TensorSpec.from_spec(spec, name=name)
+                                  for name, spec in input_spec.items()]
+                    self._mode = "kwarg"
+                if isinstance(input_spec, tf.TensorSpec):
                     input_spec = (input_spec, )
-                self._nesting_level = 0
-                while isinstance(self._output_shape, list) and len(self._output_shape) == 1:
-                    # A workaround, may be changed in the future
-                    self._nesting_level += 1
-                    self._output_shape = self._output_shape[0]
+
+                if self._mode == "arg":
+                    self._inputs_dtypes = [spec.dtype.as_numpy_dtype for spec in input_spec]
+                else:
+                    self._inputs_dtypes = {spec.name: spec.dtype.as_numpy_dtype
+                                           for spec in input_spec}
+
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
                 tf2onnx.convert.from_keras(model, input_signature=input_spec,
                                            output_path=onnx_path, **export_kwargs)
-                self._inputs_dtypes = [inp.dtype.as_numpy_dtype for inp in input_spec]
-                self._default_kwargs = get_default_args(model.call)
-                if KERAS_VERSION_LESS_2_10:
-                    self._call_fn_args_backup = model._call_fn_args
-                else:
-                    from keras.utils import tf_inspect
-                    self._call_fn_args_backup = tf_inspect.getargspec(model.call).args[1:]
+
             else:
                 onnx_path = model
             ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
 
-    def preprocess(self, inputs: Sequence[Any]):
+    def preprocess(self, args: Sequence[Any], kwargs: Dict[str, Any]):
         invalidInputError(self.ortsess is not None,
                           "Please create an instance by InferenceOptimizer.trace()")
+        # todo: add argument check
+        inputs = args if self._mode == "arg" else kwargs
         inputs = convert_all(inputs, "numpy", self._inputs_dtypes)
         return inputs
 
-    def forward(self, inputs: Sequence[Any]):
-        return self.forward_step(*inputs)
+    def forward(self, inputs: Union[Sequence[Any], Dict[str, Any]]):
+        if isinstance(inputs, Sequence):
+            return self.forward_step(*inputs)
+        else:
+            return self.ortsess.run(None, inputs)
 
     def postprocess(self, outputs: Sequence[Any]):
         outputs = convert_all(outputs, types="tf", dtypes=tf.float32)
-        if isinstance(outputs, list) and len(outputs) == 1:
+        if len(outputs) == 1:
             outputs = outputs[0]
-        for _i in range(self._nesting_level):
-            outputs = [outputs]
         return outputs
 
     @property
@@ -148,11 +148,8 @@ class KerasONNXRuntimeModel(ONNXRuntimeModel, KerasOptimizedModel):
 
         super()._save_model(path / self.status['onnx_path'])
 
-        attrs = {"_default_kwargs": self._default_kwargs,
-                 "_call_fn_args_backup": self._call_fn_args_backup,
-                 "_inputs_dtypes": self._inputs_dtypes,
-                 "_nesting_level": self._nesting_level,
-                 "_output_shape": self._output_shape}
+        attrs = {"_mode": self._mode,
+                 "_inputs_dtypes": self._inputs_dtypes}
         with open(path / self.status['attr_path'], "wb") as f:
             pickle.dump(attrs, f)
 

@@ -23,7 +23,7 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_2_0
 import pytorch_lightning as pl
 import torch
 from torch import nn
@@ -164,7 +164,7 @@ class CheckWarmupCallback(CheckLinearLRScaleCallback):
                 assert opt.param_groups[0]['lr'] == lr * self.world_size * diff
 
 
-class TestScaleLr(TestCase):
+class ScaleLr:
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
@@ -238,6 +238,24 @@ class TestScaleLr(TestCase):
                           callbacks=[CheckWarmupCallback(2, [0.01, 0.05], 4, 4)])
         trainer.fit(model, train_dataloaders=self.data_loader,
                     val_dataloaders=self.test_data_loader)
+
+
+TORCH_CLS = ScaleLr
+
+
+class CaseWithoutscheduler:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0:
+    # TODO: after we upgrade version of pytorch lightning, we can remove this part
+    print("scale lr for torch >= 2.0")
+    TORCH_CLS = CaseWithoutscheduler
+
+
+class TestScaleLr(TORCH_CLS, TestCase):
+    pass
 
 
 if __name__ == '__main__':

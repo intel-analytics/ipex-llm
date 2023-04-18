@@ -232,9 +232,9 @@ class TestOpenVINO(TestCase):
 
         try:
             optimized_model = InferenceOptimizer.quantize(model,
-                                                        accelerator='openvino',
-                                                        input_sample=x,
-                                                        precision='bf16')
+                                                          accelerator='openvino',
+                                                          input_sample=x,
+                                                          precision='bf16')
         except RuntimeError as e:
             assert e.__str__() == "Platform doesn't support BF16 format"
             return
@@ -253,20 +253,45 @@ class TestOpenVINO(TestCase):
             assert y_hat.shape == (3, 10)
             assert new_model.ov_model.additional_config["INFERENCE_PRECISION_HINT"] == "bf16"
 
-    def test_openvino_gpu_quatize(self):
+    def test_openvino_gpu_quantize(self):
         # test whether contains GPU
         from openvino.runtime import Core
         core = Core()
         devices = core.available_devices
         gpu_avaliable = any('GPU' in x for x in devices)
-        
-        if gpu_avaliable is False:
-            return
-
         model = mobilenet_v3_small(num_classes=10)
 
         x = torch.rand((1, 3, 256, 256))
         x2 = torch.rand((10, 3, 256, 256))
+
+        # test dynamic_shape
+        with pytest.raises(RuntimeError,
+                           match="For model has dynamic axes, if you want to inference on non-CPU device, must define "
+                                 "input_shape for model optimizer. For more details about model optimizer, you can see mo --help ."):
+            openvino_model = InferenceOptimizer.quantize(model,
+                                                         input_sample=x,
+                                                         accelerator='openvino',
+                                                         precision='fp16',
+                                                         device='GPU')
+        with pytest.raises(RuntimeError,
+                           match="For model has dynamic axes, if you want to inference on non-CPU device, must define "
+                                 "input_shape for model optimizer. For more details about model optimizer, you can see mo --help ."):
+            openvino_model = InferenceOptimizer.quantize(model,
+                                                         input_sample=x,
+                                                         accelerator='openvino',
+                                                         dynamic_axes={'x': [0]},
+                                                         precision='fp16',
+                                                         device='GPU')
+
+        if gpu_avaliable is False:
+            with pytest.raises(RuntimeError):
+                openvino_model = InferenceOptimizer.quantize(model,
+                                                             input_sample=x,
+                                                             accelerator='openvino',
+                                                             device='GPU',
+                                                             input_shape='[1,3,256,256]',
+                                                             precision='fp16')
+            return
 
         # test GPU fp16
         openvino_model = InferenceOptimizer.quantize(model,
@@ -281,11 +306,10 @@ class TestOpenVINO(TestCase):
 
         # test GPU int8
         openvino_model = InferenceOptimizer.quantize(model,
-                                                     input_sample=x,
+                                                     calib_data=x,
                                                      accelerator='openvino',
                                                      device='GPU',
-                                                     precision='int8',
-                                                     calib_data=x)
+                                                     precision='int8')
         result = openvino_model(x)
         # GPU don't support dynamic shape
         with pytest.raises(RuntimeError):
@@ -308,11 +332,11 @@ class TestOpenVINO(TestCase):
 
         # test VPU int8
         openvino_model = InferenceOptimizer.quantize(model,
+                                                     calib_data=x,
                                                      input_sample=x,
                                                      accelerator='openvino',
                                                      device='VPUX',
-                                                     precision='int8',
-                                                     calib_data=x)
+                                                     precision='int8')
         result = openvino_model(x)
         # VPU don't support dynamic shape
         with pytest.raises(RuntimeError):
@@ -405,3 +429,44 @@ class TestOpenVINO(TestCase):
             forward_model_numpy = test_openvino_model(x)
             assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_openvino_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in dataloader:
+            forward_model_tensor = load_model(x).numpy()
+            forward_model_numpy = test_load_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+
+    def test_openvino_quantize_keyword_argument(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        # quantize directly
+        optimized_model = InferenceOptimizer.quantize(model,
+                                                      accelerator='openvino',
+                                                      precision='int8',
+                                                      calib_data=dataloader)
+        y_hat = optimized_model(x=x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x=x)
+        assert y_hat.shape == (10, 10)
+
+        # trace and then quantize
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
+        optimized_model = InferenceOptimizer.quantize(openvino_model, accelerator='openvino',
+                                                      calib_data=dataloader)
+        y_hat = optimized_model(x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x)
+        assert y_hat.shape == (10, 10)

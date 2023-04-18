@@ -15,13 +15,13 @@
 #
 
 from bigdl.nano.utils.pytorch import generate_channels_last_available,\
-    apply_proper_channels_last, transform_state_dict_to_dtype
+    apply_proper_channels_last, transform_state_dict_to_dtype, \
+    patch_attrs_from_model_to_object, jit_convert
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
-from bigdl.nano.utils.pytorch import transform_state_dict_to_dtype
+from bigdl.nano.utils.common import invalidInputError, compare_version
+import operator
 import torch
 import copy
 
@@ -31,7 +31,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                  use_jit=False, channels_last=None, channels_last_available=[],
                  thread_num=None, from_load=False, inplace=False, jit_strict=True,
                  jit_method=None, weights_prepack=None, enable_onednn=True,
-                 compression="fp32"):
+                 compression="fp32", example_kwarg_inputs=None):
         """
         This is the accelerated model for pytorch and ipex/jit.
         All the external API is based on InferenceOptimizer, so what we have here is
@@ -71,6 +71,10 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                file sill be saved with some accuracy loss. Users always need to use nano
                to load the compressed file if compression is set other than "fp32".
                Currently, "bf16" and "fp32"(default) are supported.
+        :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+               to ``torch.jit.trace``. Default to ``None``. Either this argument or
+               ``input_sample`` should be specified when ``use_jit`` is ``True`` and
+               torch > 2.0, otherwise will be ignored.
         """
         super().__init__(model)
         if from_load:
@@ -120,40 +124,14 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                        weights_prepack=weights_prepack)
 
         if self.use_jit:
-            if dtype == torch.bfloat16:
-                with torch.no_grad():
-                    with torch.cpu.amp.autocast():
-                        if self.jit_method == 'trace':
-                            self.model = torch.jit.trace(self.model, input_sample,
-                                                         check_trace=False,
-                                                         strict=jit_strict)
-                        elif self.jit_method == 'script':
-                            self.model = torch.jit.script(self.model)
-                        else:
-                            try:
-                                self.model = torch.jit.trace(self.model, input_sample,
-                                                             check_trace=False,
-                                                             strict=jit_strict)
-                            except Exception:
-                                self.model = torch.jit.script(self.model)
-                        if self.use_ipex:
-                            self.model = torch.jit.freeze(self.model)
-            else:
-                with torch.no_grad():
-                    if self.jit_method == 'trace':
-                        self.model = torch.jit.trace(self.model, input_sample,
-                                                     check_trace=False,
-                                                     strict=jit_strict)
-                    elif self.jit_method == 'script':
-                        self.model = torch.jit.script(self.model)
-                    else:
-                        try:
-                            self.model = torch.jit.trace(self.model, input_sample,
-                                                         check_trace=False,
-                                                         strict=jit_strict)
-                        except Exception:
-                            self.model = torch.jit.script(self.model)
-                    self.model = torch.jit.freeze(self.model)
+            with torch.no_grad():
+                with torch.cpu.amp.autocast(enabled=dtype == torch.bfloat16):
+                    self.model = jit_convert(self.model, input_sample,
+                                             jit_method=jit_method,
+                                             jit_strict=jit_strict,
+                                             example_kwarg_inputs=example_kwarg_inputs)
+                    if dtype != torch.bfloat16 or self.use_ipex:
+                        self.model = torch.jit.freeze(self.model)
         _accelerator = "jit" if use_jit is True else None
         self._nano_context_manager = generate_context_manager(accelerator=_accelerator,
                                                               precision="fp32",
@@ -169,10 +147,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
         return [input_value.debugName() for input_value in self.model.graph.inputs()
                 if not input_value.debugName().startswith('self')]
 
-    def on_forward_start(self, inputs):
-        return inputs
-
-    def forward_step(self, *inputs):
+    def forward(self, *inputs, **kwargs):
         if self.channels_last:
             # generate channels_last_available list is possible
             # this won't affect inference latency much since it will only run 1 time
@@ -180,14 +155,13 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                 self.channels_last_available = generate_channels_last_available(inputs)
 
             # change the data to suitable mem format
-            inputs = tuple(map(lambda item: apply_proper_channels_last(
-                self.channels_last_available[item[0]], item[1]),
-                enumerate(inputs)))
+            converted_input_length = min(len(self.channels_last_available), len(inputs))
+            inputs = tuple(map(
+                lambda idx: apply_proper_channels_last(
+                    self.channels_last_available[idx], inputs[idx]),
+                range(converted_input_length))) + inputs[converted_input_length:]
 
-        return self.model(*inputs)
-
-    def on_forward_end(self, outputs):
-        return outputs
+        return self.model(*inputs, **kwargs)
 
     @property
     def status(self):

@@ -13,7 +13,6 @@
 
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
-        <parquet.version>1.12.2</parquet.version>
         <akka.http.version>10.1.15</akka.http.version>
         <akka.actor.version>2.5.31</akka.actor.version>
     </properties>
@@ -41,7 +40,11 @@
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
-            <exclusions>
+	    <exclusions>
+		<exclusion>
+	            <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+	        </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
@@ -82,6 +85,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
             <scope>${spark-scope}</scope>
@@ -89,20 +97,17 @@
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-column</artifactId>
-            <version>${parquet.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
@@ -156,7 +161,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220320</version>
+            <version>20230227</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -278,7 +283,13 @@
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>azure-identity</artifactId>
+	    <artifactId>azure-identity</artifactId>
+	     <exclusions>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
+	        </exclusion>
+	     </exclusions>
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
@@ -309,6 +320,11 @@
                     <artifactId>reactor-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.10</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

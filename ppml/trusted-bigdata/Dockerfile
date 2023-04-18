@@ -170,6 +170,7 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
 ENV BIGDL_HOME                          /ppml/bigdl-${BIGDL_VERSION}
+ENV PYSPARK_PYTHON                      /usr/bin/python
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
@@ -193,6 +194,8 @@ ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
 ADD ./zeppelin /ppml/zeppelin
+ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
+ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -218,6 +221,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install numpy pandas pyarrow&& \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+# zeppelin
+    chmod +x /ppml/zeppelin/deploy.sh && \
+    chmod +x /ppml/zeppelin/delete.sh && \
 # Azure support
     apt purge -y libsgx-dcap-default-qpl && \
     echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list && \
@@ -235,5 +241,6 @@ RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
     wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
+
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

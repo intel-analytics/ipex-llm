@@ -35,6 +35,7 @@ model_names = sorted(name for name in torchvision.models.__dict__
                      and callable(torchvision.models.__dict__[name]))
 
 
+# TODO(change to other engine in 2.2.0)
 def main():
     parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
     parser.add_argument('data', metavar='DIR',

@@ -1,7 +1,12 @@
 Blogs
 ---
+**2023**
+- [Large-scale Offline Book Recommendation with BigDL at Dangdang.com](https://www.intel.com/content/www/us/en/developer/articles/technical/dangdang-offline-recommendation-service-with-bigdl.html)
 
 **2022**
+- [Optimized Large-Scale Item Search with Intel BigDL at Yahoo! JAPAN Shopping](https://www.intel.com/content/www/us/en/developer/articles/technical/offline-item-search-with-bigdl-at-yahoo-japan.html)
+- [Tencent Trusted Computing Solution on SGX with Intel BigDL PPML](https://www.intel.com/content/www/us/en/developer/articles/technical/tencent-trusted-computing-solution-with-bigdl-ppml.html)
+- [BigDL Privacy Preserving Machine Learning with Occlum OSS on Azure Confidential Computing](https://techcommunity.microsoft.com/t5/azure-confidential-computing/bigdl-privacy-preserving-machine-learning-with-occlum-oss-on/ba-p/3658667)
 - ["AI at Scale" in Mastercard with BigDL](https://www.intel.com/content/www/us/en/developer/articles/technical/ai-at-scale-in-mastercard-with-bigdl.html)
 - [BigDL 2.0: Seamless Scaling of AI Pipelines from Laptops to Distributed Cluster](https://arxiv.org/abs/2204.01715)
 - [Project Bose: A smart way to enable sustainable 5G networks in Capgemini](https://www.capgemini.com/insights/expert-perspectives/project-bose-a-smart-way-to-enable-sustainable-5g-networks/)

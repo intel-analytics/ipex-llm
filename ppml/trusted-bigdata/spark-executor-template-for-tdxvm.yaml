@@ -6,8 +6,6 @@ spec:
     securityContext:
       privileged: true
     env:
-      - name: MALLOC_ARENA_MAX
-        value: ${MALLOC_ARENA_MAX}
       - name: ATTESTATION
         value: false
       # - name: ATTESTATION_URL
@@ -44,5 +42,5 @@ spec:
         path: /var/run/aesmd/aesm.socket
     - name: tdx-device
       hostPath:
-        path: /dev/tdx-attest
+        path: /dev/tdx-guest
 

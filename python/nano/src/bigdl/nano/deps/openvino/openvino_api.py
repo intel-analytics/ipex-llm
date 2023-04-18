@@ -67,21 +67,30 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 **kwargs)
 
 
-def load_openvino_model(path, framework='pytorch', device=None):
+def load_openvino_model(path, framework='pytorch', device=None, cache_dir=None, shapes=None):
     """
     Load an OpenVINO model for inference from directory.
 
     :param path: Path to model to be loaded.
     :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
+    :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
+    :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
+               Only valid for openvino model, otherwise will be ignored.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
+    if cache_dir is not None:
+        from pathlib import Path
+        Path(cache_dir).mkdir(exist_ok=True)
+
     if framework == 'pytorch':
         from .pytorch.model import PytorchOpenVINOModel
-        return PytorchOpenVINOModel._load(path, device=device)
+        return PytorchOpenVINOModel._load(path, device=device, cache_dir=cache_dir, shapes=shapes)
     elif framework == 'tensorflow':
         from .tf.model import KerasOpenVINOModel
-        return KerasOpenVINOModel._load(path, device=device)
+        return KerasOpenVINOModel._load(path, device=device, cache_dir=cache_dir, shapes=shapes)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."
@@ -109,7 +118,7 @@ def KerasOpenVINOModel(model, input_spec=None, precision='fp32',
     :param **kwargs: will be passed to model optimizer function.
     :return: KerasOpenVINOModel model for OpenVINO inference.
     """
-    from .tf.new_model import KerasOpenVINOModel
+    from .tf.model import KerasOpenVINOModel
     return KerasOpenVINOModel(model=model,
                               input_spec=input_spec,
                               precision=precision,

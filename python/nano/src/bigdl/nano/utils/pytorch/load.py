@@ -28,7 +28,7 @@ from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
 
 
 def load_model(path, model: nn.Module = None, input_sample=None,
-               inplace=False, device=None):
+               inplace=False, device=None, cache_dir=None, shapes=None):
     """
     Load a model from local.
 
@@ -45,6 +45,12 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param device: A string represents the device of the inference. Default to None.
                    Only valid for openvino model, otherwise will be ignored.
+    :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
+                      Only valid for openvino model, otherwise will be ignored.
+    :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
+               Only valid for openvino model, otherwise will be ignored.
     :return: Model with different acceleration(None/OpenVINO/ONNX Runtime/JIT) or
                 precision(FP32/FP16/BF16/INT8).
     """
@@ -53,7 +59,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     from bigdl.nano.pytorch.context_manager import generate_context_manager
     from bigdl.nano.deps.openvino.openvino_api import load_openvino_model
     from bigdl.nano.deps.ipex.ipex_api import load_ipexjit_model, load_ipexjitbf16_model,\
-        load_ipex_quantization_model
+        load_ipex_quantization_model, load_ipex_xpu_model
     from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
     from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 
@@ -68,7 +74,7 @@ def load_model(path, model: nn.Module = None, input_sample=None,
     model_type = metadata.get('ModelType', None)
     result = None
     if model_type == 'PytorchOpenVINOModel':
-        result = load_openvino_model(path, device=device)
+        result = load_openvino_model(path, device=device, cache_dir=cache_dir, shapes=shapes)
     if model_type == 'PytorchONNXRuntimeModel':
         result = load_onnxruntime_model(path)
     if model_type == 'PytorchQuantizedModel':
@@ -85,6 +91,8 @@ def load_model(path, model: nn.Module = None, input_sample=None,
         return load_bf16_model(path, model)
     if model_type == 'PytorchJITINT8Model':
         return load_pytorchjitint8_model(path)
+    if model_type == 'PytorchIPEXPUModel':
+        return load_ipex_xpu_model(path, model)
     if result is not None:
         if isinstance(model, torch.nn.Module):
             # patch attributes to accelerated model

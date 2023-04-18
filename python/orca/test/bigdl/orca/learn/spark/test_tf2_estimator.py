@@ -41,7 +41,7 @@ def compile_args(config):
     else:
         lr = 1e-3
     args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
+        "optimizer": tf.keras.optimizers.Adam(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }
@@ -371,7 +371,8 @@ class TestTF2Estimator(TestCase):
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
             assert np.array_equal(expect_res, pred_res)
-            assert np.array_equal(pre_opt_weights, after_opt_weights)
+            for i in range(len(pre_opt_weights)):
+                assert np.array_equal(pre_opt_weights[i], after_opt_weights[i])
 
             # test continuous training
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,

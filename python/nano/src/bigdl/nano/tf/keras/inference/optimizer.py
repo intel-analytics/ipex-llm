@@ -45,7 +45,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model
 from bigdl.nano.tf.keras.amp import BF16Model, load_bf16_model
 from bigdl.nano.utils.common import compare_version
-from bigdl.nano.utils.tf import try_compute_output_shape
+from bigdl.nano.utils.tf import try_fake_inference
 
 
 class TFAccelerationOption(AccelerationOption):
@@ -199,7 +199,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if isinstance(x, Dataset):
             batched_training_dataset = x.batch(batch_size)
             input_sample = next(iter(batched_training_dataset))
-            if isinstance(input_sample, (list, tuple)) and len(input_sample) > 1:
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
+            if isinstance(input_sample, (list, tuple)) and len(input_sample) == 2:
                 input_sample = input_sample[:-1]
         else:
             input_sample = tf.convert_to_tensor(x[:batch_size])
@@ -249,8 +251,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
 
                 result_map[method]["status"] = "successful"
 
-                def func_test(model, sample):
-                    model(sample)
+                def func_test(model, *args):
+                    model(*args)
                 try:
                     if method in ("original", "static_int8") and thread_num is not None:
                         _flag = True  # represent whether subprocess works
@@ -282,9 +284,14 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                             except Exception:
                                 _flag = False
                     if method != "original" or thread_num is None or _flag is False:
-                        result_map[method]["latency"], status =\
-                            latency_calculate_helper(latency_sample_num, baseline_time,
-                                                     func_test, acce_model, input_sample)
+                        if isinstance(input_sample, tf.Tensor):
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, input_sample)
+                        else:
+                            result_map[method]["latency"], status =\
+                                latency_calculate_helper(latency_sample_num, baseline_time,
+                                                         func_test, acce_model, *input_sample)
                         if status is False and method != "original":
                             result_map[method]["status"] = "early stopped"
                             continue
@@ -388,7 +395,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                               "Now we only support {} device when accelerator "
                               "is openvino.".format(device))
         if accelerator == 'openvino':
-            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device is 'CPU' else {}
+            final_openvino_option = {"INFERENCE_PRECISION_HINT": "f32"} if device == 'CPU' else {}
             if openvino_config is not None:
                 final_openvino_option.update(openvino_config)
             result = KerasOpenVINOModel(model,
@@ -430,6 +437,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  batch: Optional[int] = None,
                  thread_num: Optional[int] = None,
                  device: Optional[str] = 'CPU',
+                 custom_objects=None,
                  inputs: List[str] = None,
                  outputs: List[str] = None,
                  sample_size: int = 100,
@@ -512,6 +520,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param device: (optional) A string represents the device of the inference. Default to 'CPU',
                         only valid when accelerator='openvino', otherwise will be ignored.
                         'CPU', 'GPU' and 'VPUX' are supported for now.
+        :param custom_objects: Optional dictionary mapping names (strings) to custom classes
+                               or functions to be considered during deserialization.
+                               Only may be required when quantizing bf16 model and `accelerator`
+                               is None.
         :param inputs:      A list of input names.
                             Default: None, automatically get names from graph.
         :param outputs:     A list of output names.
@@ -575,7 +587,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   "VPUX device, you must specify mean_value for model optimizer "
                                   "function. For more details about model optimizer, you can "
                                   "see mo --help .")
-            from bigdl.nano.deps.openvino.tf.new_model import KerasOpenVINOModel    # type: ignore
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             result = KerasOpenVINOModel(model,
                                         input_spec=input_spec,
                                         precision=precision,
@@ -595,8 +607,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 final_openvino_option = {"INFERENCE_PRECISION_HINT": "bf16"}
                 if openvino_config is not None:
                     final_openvino_option.update(openvino_config)
-                from bigdl.nano.deps.openvino.tf.new_model \
-                    import KerasOpenVINOModel  # type: ignore
+                from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel  # type: ignore
                 result = KerasOpenVINOModel(model,
                                             input_spec=input_spec,
                                             precision=precision,
@@ -606,7 +617,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                             logging=logging,
                                             **kwargs)
             elif accelerator is None:
-                return BF16Model(model)
+                return BF16Model(model, custom_objects=custom_objects)
             return patch_compiled_and_attrs(result, original_model)
 
         invalidInputError(approach == 'static', "Only 'static' approach is supported now.")
@@ -616,8 +627,10 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             y = range(len(x))    # type: ignore
         if isinstance(x, tf.data.Dataset):
             batch_data = next(iter(x))
+            # todo: for now, if len(batch_data) == 2 we assume it is (x, y),
+            # otherwise, we assume it is x or (x1, x2, x3, ...)
             if isinstance(batch_data, tf.Tensor) or \
-                    isinstance(batch_data, tuple) and len(batch_data) == 1:
+                    isinstance(batch_data, tuple) and len(batch_data) != 2:
                 # fake label to make quantization work
                 y = range(len(x))    # type: ignore
                 y = tf.data.Dataset.from_tensor_slices(y)
@@ -631,8 +644,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             if batch:
                 calib_dataset = calib_dataset.batch(batch)
 
-            _output_shape = try_compute_output_shape(model, input_spec,
-                                                     try_fake_inference=not model.built)
+            try_fake_inference(model, input_spec)
             if model.inputs is None or model.outputs is None:
                 INC_LESS_14 = compare_version("neural_compressor", operator.lt, "1.14")
                 # oly works for inc version >= 1.14
@@ -659,9 +671,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   max_trials=max_trials,
                                   inputs=inputs,
                                   outputs=outputs)
-            result._output_shape = _output_shape
         elif accelerator == 'openvino':
-            from bigdl.nano.deps.openvino.tf.new_model import KerasOpenVINOModel    # type: ignore
+            from bigdl.nano.deps.openvino.tf.model import KerasOpenVINOModel    # type: ignore
             if isinstance(model, KerasOpenVINOModel):    # type: ignore
                 openvino_model = model
             else:
@@ -702,8 +713,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                         thread_num=thread_num)
         elif accelerator == 'onnxruntime':
             # convert tensorflow model to onnx model
-            from bigdl.nano.deps.onnxruntime.tensorflow.model \
-                import KerasONNXRuntimeModel
+            from bigdl.nano.deps.onnxruntime.tensorflow.model import KerasONNXRuntimeModel
             if isinstance(model, KerasONNXRuntimeModel):     # type: ignore
                 onnx_model = model
             else:
@@ -732,11 +742,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                   outputs=outputs,
                                   onnx_option='tensorflow',
                                   onnxruntime_session_options=onnxruntime_session_options)
-            result._nesting_level = onnx_model._nesting_level
             result._inputs_dtypes = onnx_model._inputs_dtypes
-            result._default_kwargs = onnx_model._default_kwargs
-            result._call_fn_args_backup = onnx_model._call_fn_args_backup
-            result._output_shape = onnx_model._output_shape
+            result._mode = "arg"    # todo
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
         return patch_compiled_and_attrs(result, original_model)
@@ -768,7 +775,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             model.save(checkpoint_path)
 
     @staticmethod
-    def load(path, model: Optional[Model] = None, device=None):
+    def load(path, model: Optional[Model] = None, device=None, custom_objects=None):
         """
         Load a model from local.
 
@@ -784,6 +791,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                3. you want to the loaded model contains the attributes of original model.
         :param device: A string represents the device of the inference. Default to None.
                Only valid for openvino model, otherwise will be ignored.
+        :param custom_objects: Same to `custom_objects` parameter of `tf.keras.models.load_model`,
+               only may be required when loading bf16 model.
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
@@ -805,13 +814,11 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         if model_type == 'KerasQuantizedModel':
             result = load_inc_model(path, model, framework='tensorflow')
             return patch_attrs(result, model)
-        if model_type == 'BF16Model':
-            result = load_bf16_model(path)
-            return patch_attrs(result, model)
+        # Arriving here means we are loading a bf16 model or normal keras model
         checkpoint_path = metadata.get('checkpoint', None)
         invalidInputError(checkpoint_path is not None, "Key 'checkpoint' must be specified.")
         checkpoint_path = path / metadata['checkpoint']
-        model = keras.models.load_model(checkpoint_path)
+        model = keras.models.load_model(checkpoint_path, custom_objects=custom_objects)
         return model
 
 

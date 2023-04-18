@@ -22,14 +22,21 @@ import org.apache.hadoop.io.compress.Compressor
 
 class BigDLEncryptCompressor(cryptoMode: CryptoMode,
   dataKeyPlainText: String,
-  dataKeyCipherText: String = "") extends Compressor {
-  val bigdlEncrypt = new BigDLEncrypt()
-  bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
+  dataKeyCipherText: String = "",
+  encrypterType: String = BigDLEncrypt.COMMON) extends Compressor {
+  val bigdlEncrypt = BigDLEncrypt(encrypterType)
+  var hasHeader = false
+  encrypterType match {
+    case BigDLEncrypt.COMMON =>
+      bigdlEncrypt.asInstanceOf[BigDLEncrypt]
+        .init(cryptoMode, ENCRYPT, dataKeyPlainText, dataKeyCipherText)
+    case BigDLEncrypt.NATIVE_AES_CBC =>
+      bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlainText)
+  }
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0
   var len = 0
-  var hasHeader = false
   var tryFinished = false
   private var bytesRead = 0L
   private var bytesWritten = 0L
@@ -78,10 +85,15 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
       val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
       bytesRead += this.lv2Len
       isFinished = true
-      o._1 ++ o._2
-      o._1.copyToArray(b, 0)
-      o._2.copyToArray(b, o._1.length)
-      o._1.length + o._2.length
+      if (o._2 != null) { // has Mac
+        o._1 ++ o._2
+        o._1.copyToArray(b, 0)
+        o._2.copyToArray(b, o._1.length)
+        o._1.length + o._2.length
+      } else {
+        o._1.copyToArray(b, 0)
+        o._1.length
+      }
     } else {
       val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
@@ -102,7 +114,6 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode,
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
-        bigdlEncrypt.setEncryptedDataKey(dataKeyCipherText)
         bigdlEncrypt.genHeader
       }
       o.copyToArray(b, 0)
@@ -139,12 +150,14 @@ object BigDLEncryptCompressor {
   }
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
-    val (dataKeyPlainText, dataKeyCipherText) = (
+    val (dataKeyPlainText, dataKeyCipherText, encrypterType) = (
       conf.get("bigdl.write.dataKey.plainText"),
-      conf.get("bigdl.write.dataKey.cipherText")
+      conf.get("bigdl.write.dataKey.cipherText"),
+      conf.get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON)
     )
     new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING,
-      dataKeyPlainText, dataKeyCipherText)
+      dataKeyPlainText, dataKeyCipherText, encrypterType)
   }
 }
+
 

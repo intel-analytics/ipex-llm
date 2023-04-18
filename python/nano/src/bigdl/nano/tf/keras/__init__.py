@@ -19,4 +19,5 @@ import tensorflow as tf
 from .Sequential import Sequential
 from .Model import V2Model as Model
 from .inference.optimizer import InferenceOptimizer
-from .customized_training_utils import nano_bf16, nano_multiprocessing, nano
+from .customized_training_utils import nano_bf16, nano_multiprocessing, nano, \
+    nano_multiprocessing_loss

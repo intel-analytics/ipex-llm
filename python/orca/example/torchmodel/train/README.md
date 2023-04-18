@@ -1,5 +1,7 @@
 # Distributed pytorch
 
+# Deprecated, please go to new API and example orca/example/learn/pytorch
+
 There are some examples to show you how to use analytics-zoo to distribute pytorch on Spark.
 1. [MNIST](./train/mnist)
 2. [Imagenet](./train/imagenet)

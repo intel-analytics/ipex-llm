@@ -126,7 +126,8 @@ class PytorchPysparkWorker(TorchRunner):
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
                      wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
-        self.load_state_dict(self.state_dict.value)
+        if self.state_dict:
+            self.load_state_dict(self.state_dict.value)
         stats_list = super().train_epochs(data_creator=data_creator,
                                           epochs=epochs,
                                           batch_size=batch_size,
@@ -134,19 +135,21 @@ class PytorchPysparkWorker(TorchRunner):
                                           wrap_dataloader=wrap_dataloader,
                                           callbacks=callbacks,
                                           validation_data_creator=validation_data_creator)
-        state_dict = self.get_state_dict()
 
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
-        if self.rank == 0:
-            if self.model_dir is not None:
-                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
-
         if self.model_dir is not None:
+            if self.rank == 0:
+                state_dict = self.get_state_dict()
+                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
             return [stats_list]
         else:
-            return [state_dict, stats_list]
+            if self.rank == 0:
+                state_dict = self.get_state_dict()
+                return [state_dict, stats_list]
+            else:
+                return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
                  wrap_dataloader=None, callbacks=None):

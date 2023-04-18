@@ -17,12 +17,11 @@
 import numpy as np
 import tensorflow as tf
 
-from bigdl.nano.deps.onnxruntime.tensorflow.model \
-    import KerasONNXRuntimeModel
+from bigdl.nano.utils.tf import tensors_to_numpy
+from bigdl.nano.deps.onnxruntime.tensorflow.model import KerasONNXRuntimeModel
 
 from ..quantization import BaseONNXRuntimeQuantization
 from .metric import KerasONNXRuntimeINCMetic
-from bigdl.nano.tf.model import AcceleratedKerasModel
 
 
 class KerasONNXRuntimeQuantization(BaseONNXRuntimeQuantization):
@@ -65,8 +64,8 @@ class KerasNumpyDataset():
     def __iter__(self):
         if isinstance(self.x, tf.data.Dataset):
             for batch in self.x.batch(1):
-                yield AcceleratedKerasModel.tensors_to_numpy(batch, self.dtype)
+                yield tensors_to_numpy(batch, self.dtype)
         else:
             for x, y in zip(self.x, self.y):
-                x, y = AcceleratedKerasModel.tensors_to_numpy((x, y), self.dtype)
+                x, y = tensors_to_numpy((x, y), self.dtype)
                 yield np.expand_dims(x, axis=0), np.expand_dims(y, axis=0)

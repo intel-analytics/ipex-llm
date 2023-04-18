@@ -312,14 +312,10 @@ class BasePytorchForecaster(Forecaster):
         """
         # input transform
         if isinstance(data, TSDataset):
-            _rolled = data.numpy_x is None
-            data = data.to_torch_data_loader(batch_size=batch_size,
-                                             roll=_rolled,
-                                             lookback=self.data_config['past_seq_len'],
-                                             horizon=self.data_config['future_seq_len'],
-                                             feature_col=data.roll_feature,
-                                             target_col=data.roll_target,
-                                             shuffle=True)
+            data = tsdataset_to_dataloader(data, batch_size=batch_size,
+                                           lookback=self.data_config['past_seq_len'],
+                                           horizon=self.data_config['future_seq_len'],
+                                           num_processes=self.num_processes)
         if isinstance(data, DataLoader) and self.distributed:
             data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
@@ -370,6 +366,10 @@ class BasePytorchForecaster(Forecaster):
             # data transformation
             if isinstance(data, tuple):
                 data = np_to_dataloader(data, batch_size, self.num_processes)
+
+            # dataloader change batch_size for multi-process
+            if isinstance(data, DataLoader) and self.num_processes:
+                data = dataloader_batch_resize(data, batch_size, self.num_processes)
 
             # training process
             # forecaster_log_dir is a temp directory for training log
@@ -842,9 +842,7 @@ class BasePytorchForecaster(Forecaster):
                                                   output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
-                    self.build_onnx()
-                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                         self.thread_num)
+                    self.build_onnx(self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
                                                   batch_size=batch_size,
@@ -922,9 +920,7 @@ class BasePytorchForecaster(Forecaster):
                                                   output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "openvino_fp32":
-                    self.build_openvino()
-                    self.thread_num = set_pytorch_thread(self.optimized_model_thread_num,
-                                                         self.thread_num)
+                    self.build_openvino(self.thread_num)
                 return _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=data,
                                                   batch_size=batch_size,
@@ -1237,7 +1233,7 @@ class BasePytorchForecaster(Forecaster):
                                                   output_tensor=self.optimized_model_output_tensor)
             else:
                 if self.accelerate_method != "onnxruntime_fp32":
-                    self.build_onnx()
+                    self.build_onnx(self.thread_num)
                 yhat = _pytorch_fashion_inference(model=self.accelerated_model,
                                                   input_data=input_data,
                                                   batch_size=batch_size,
@@ -1677,7 +1673,7 @@ class BasePytorchForecaster(Forecaster):
                               "an up-to-date quantized model")
         if dirname:
             if self.accelerate_method != "onnxruntime_fp32":
-                self.build_onnx()
+                self.build_onnx(self.thread_num)
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_openvino_file(self, dirname="fp32_openvino",
@@ -1702,7 +1698,7 @@ class BasePytorchForecaster(Forecaster):
                               "an up-to-date quantized model")
         if dirname:
             if self.accelerate_method != "openvino_fp32":
-                self.build_openvino()
+                self.build_openvino(self.thread_num)
             InferenceOptimizer.save(self.accelerated_model, dirname)
 
     def export_torchscript_file(self, dirname="fp32_torchscript",

@@ -10,8 +10,8 @@ sudo docker run -it \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd:/var/run/aesmd \
 	-v data:/opt/occlum_spark/data \
-	-e SGX_MEM_SIZE=24GB \
-	-e SGX_THREAD=512 \
+	-e SGX_MEM_SIZE=20GB \
+	-e SGX_THREAD=1024 \
 	-e SGX_HEAP=512MB \
 	-e SGX_KERNEL_HEAP=1GB \
         -e ATTESTATION=false \

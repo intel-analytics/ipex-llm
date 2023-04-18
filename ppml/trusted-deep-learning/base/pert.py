@@ -229,7 +229,7 @@ def main():
 
     model = NeuralNetwork().to(device)
     if (args.load_model):
-        model.load_state_dict('./pert.bin')
+        model.load_state_dict(torch.load('./pert.bin'))
 
     if is_distributed():
         Distributor = nn.parallel.DistributedDataParallel

@@ -25,7 +25,9 @@ from .attributes import patch_compiled_and_attrs
 
 from .backend import MultiprocessingBackend
 
-from .preprocess import try_compute_output_shape
+from .preprocess import try_fake_inference
 
 from .data import convert
 from .data import convert_all
+from .data import numpy_to_tensors
+from .data import tensors_to_numpy

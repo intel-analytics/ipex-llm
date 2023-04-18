@@ -31,3 +31,14 @@ if [ $exit_status_1 -ne 0 ];
 then
     exit $exit_status_1
 fi
+
+ray stop -f
+
+echo "Running orca mxnet tests"
+python -m pytest -v test/bigdl/orca/learn/ray/mxnet/
+exit_status_2=$?
+if [ $exit_status_2 -ne 0 ];then
+    exit $exit_status_2
+fi
+
+ray stop -f

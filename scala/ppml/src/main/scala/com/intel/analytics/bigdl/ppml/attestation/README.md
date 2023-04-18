@@ -1,4 +1,14 @@
-# General Attestation Interface
+- [AttestationCLI - General Attestation Interface](#attestationcli---general-attestation-interface)
+    - [How to use and configure attestation policy in Microsoft Azure Attestation (MAA) with AttestationCLI](#how-to-use-and-configure-attestation-policy-in-microsoft-azure-attestation-maa-with-attestationcli)
+- [VerificationCLI - Attestation Service Verification Interface](#verificationcli---attestation-service-verification-interface)
+- [TDX Quote Generation Interface](#tdx-quote-generation-interface)
+- [TDX Quote Verification Interface](#tdx-quote-verification-interface)
+- [BigDL Remote Attestation Service](#bigdl-remote-attestation-service)
+    - [How to deploy a BigDL Remote Attestation Service](#how-to-deploy-a-bigdl-remote-attestation-service)
+    - [How to attest with a BigDL Remote Attestation Service](#how-to-attest-with-a-bigdl-remote-attestation-service)
+
+
+# AttestationCLI - General Attestation Interface
 
 Support Gramine, Occlum and SGX SDK.
 ```mermaid
@@ -94,13 +104,44 @@ java -cp [dependent-jars] com.intel.analytics.bigdl.ppml.attestation.Attestation
 
 `-u` **asURL** URL of attestation service. Should match the format `<ip_address>:<port>`, default is `127.0.0.1:9000`
 
-`-t` **asType** Type of attestation service. Currently support `DummyAttestationService` and `EHSMAttestationService`, default is `EHSMAttestationService`.
+`-t` **asType** Type of attestation service. Currently support `DummyAttestationService`, `EHSMAttestationService`, `AzureAttestationService` and `BigDLRemoteAttestationService`, default is `EHSMAttestationService`.
 
 `-c` **challenge** Challenge to get quote of attestation service which will be verified by local SGX SDK. Used only for bi-attestation. Should be a BASE64 string, default is "" and will skip bi-attestation.
 
 `-p` **userReport** User report to generate quote and attested by attestation service. Default is `test`.
 
-# Attestation Service Verification Interface
+## How to use and configure attestation policy in Microsoft Azure Attestation (MAA) with AttestationCLI
+
+1. Create your attestation provider [here](https://portal.azure.com/#create/microsoft.Free).
+
+2. Configure policy in azure portal.
+
+```
+version= 1.1;
+configurationrules{
+	=> issueproperty(type="x-ms-sgx-tcbidentifier", value="azuredefault");
+};
+authorizationrules 
+{
+	[ type=="x-ms-sgx-mrenclave", value=="<your_sgx_mrenclave>"] => permit(); 
+};
+issuancerules{
+	c:[type=="x-ms-sgx-is-debuggable"] => issue(type="is-debuggable", value=c.value);
+	c:[type=="x-ms-sgx-mrsigner"] => issue(type="sgx-mrsigner", value=c.value);
+	c:[type=="x-ms-sgx-mrenclave"] => issue(type="sgx-mrenclave", value=c.value);
+	c:[type=="x-ms-sgx-product-id"] => issue(type="product-id", value=c.value);
+	c:[type=="x-ms-sgx-svn"] => issue(type="svn", value=c.value);
+	c:[type=="x-ms-attestation-type"] => issue(type="tee", value=c.value);
+};
+```
+Here is an example sgx-mrenclave policy. You can configure your `mrenclave` and `mrsigner` in authorizationrules part. More information can refer [here](https://learn.microsoft.com/en-us/azure/attestation/author-sign-policy).
+
+3. Use URL of the specified attestation provider during attestation.
+```bash
+java -Xmx1g -cp /ppml/spark-3.1.3/examples/jars/*:/ppml/spark-3.1.3/jars/*:/ppml/bigdl-2.3.0-SNAPSHOT/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -t AzureAttestationService -u <your_attestation_provider_url>
+```
+
+# VerificationCLI - Attestation Service Verification Interface
 
 You can verify Attestation Service (eHSM for example) with VerificationCLI. It will first get quote from Attestation Service and then verify the quote with SGX SDK.
 

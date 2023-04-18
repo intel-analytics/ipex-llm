@@ -46,15 +46,6 @@ class MyModel(tf.keras.Model):
         pass
 
 
-class MyModelReturnList(tf.keras.Model):
-    def __init__(self):
-        super().__init__()
-        self.dense1 = tf.keras.layers.Dense(4, activation=tf.nn.relu)
-
-    def call(self, inputs: tf.Tensor):
-        return [self.dense1(inputs)]
-
-
 class MyModelCannotComputeOutputShape(tf.keras.Model):
     def __init__(self):
         super().__init__()
@@ -72,6 +63,15 @@ class MyModelCannotComputeOutputShape(tf.keras.Model):
         so we manually throw this exception to simulate this behavior.
         """
         raise NotImplementedError()
+
+
+def ModelWithConv2DTranspose():
+    inputs = layers.Input(shape=(32, 32, 3))
+    x = layers.Conv2D(64, (3, 3), strides=(2, 2), padding="same")(inputs)
+    outputs = layers.Conv2DTranspose(3, (3, 3), strides=(2, 2), padding="same")(x)
+    model = Model(inputs=inputs, outputs=outputs)
+    return model
+
 
 class TestTraceAndQuantize(TestCase):
     def test_attribute_access_after_trace(self):
@@ -241,19 +241,6 @@ class TestTraceAndQuantize(TestCase):
                 new_model = InferenceOptimizer.load(tmp_dir_name, model)
                 new_model.evaluate(x=x, y=y)
 
-    def test_inference_output_shape(self):
-        model = MyModelReturnList()
-        x = np.random.random((100, 4))
-        traced_model = InferenceOptimizer.trace(model, accelerator="onnxruntime",
-                                                input_spec=tf.TensorSpec(shape=(None, 4), dtype=tf.float32))
-        outputs = traced_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
-
-        quantized_model = InferenceOptimizer.quantize(model, accelerator="onnxruntime",
-                                                      input_spec=tf.TensorSpec(shape=(None, 4)), x=x)
-        outputs = quantized_model(x)
-        assert isinstance(outputs, list) and isinstance(outputs[0], tf.Tensor)
-
     def test_quantize_bf16(self):
         # for custom model, quantized model still return fp32 output
         # test at the same time that the quantization does not
@@ -306,6 +293,18 @@ class TestTraceAndQuantize(TestCase):
         if _avx512_checker():
             output = load_model(x)
             assert output.dtype == tf.bfloat16
+
+        # test model with ModelWithConv2DTranspose layer, such model
+        # cannot be saved after modifying dtype policy
+        model = ModelWithConv2DTranspose()
+        bf16_model = InferenceOptimizer.quantize(model, precision="bf16")
+        inputs = tf.random.normal((1, 32, 32, 3))
+        if _avx512_checker():
+            output1 = model(inputs)
+            output2 = bf16_model(inputs)
+            assert output1.dtype == tf.float32
+            assert output2.dtype == tf.bfloat16
+            np.testing.assert_allclose(output1, tf.cast(output2, tf.float32), atol=1e-2)
 
     def test_model_cannot_compute_output_shape(self):
         model = MyModelCannotComputeOutputShape()
