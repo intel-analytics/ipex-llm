@@ -608,7 +608,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = data_rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)

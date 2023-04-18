@@ -16,6 +16,7 @@
 # limitations under the License.
 #
 
+# TODO: remove jep
 cd "`dirname $0`"
 
 echo "Running Jep tests"

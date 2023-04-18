@@ -163,28 +163,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     batch_size = args.batch_size
     epochs = args.epochs
-    if args.backend == "bigdl":
-        train_loader = train_data_creator(config={}, batch_size=4,
-                                          download=args.download, data_dir=args.data_dir)
-        test_loader = validation_data_creator(config={}, batch_size=4,
-                                              download=args.download, data_dir=args.data_dir)
-
-        net = model_creator(config={})
-        optimizer = optimizer_creator(model=net, config={"lr": 0.001})
-        orca_estimator = Estimator.from_torch(model=net,
-                                              optimizer=optimizer,
-                                              loss=criterion,
-                                              metrics=[Accuracy()],
-                                              backend="bigdl")
-
-        orca_estimator.set_tensorboard(tensorboard_dir, "bigdl")
-
-        orca_estimator.fit(data=train_loader, epochs=epochs, validation_data=test_loader,
-                           checkpoint_trigger=EveryEpoch())
-
-        res = orca_estimator.evaluate(data=test_loader)
-        print("Accuracy of the network on the test images: %s" % res)
-    elif args.backend in ["ray", "spark"]:
+    if args.backend in ["ray", "spark"]:
         orca_estimator = Estimator.from_torch(model=model_creator,
                                               optimizer=optimizer_creator,
                                               loss=criterion,
@@ -201,7 +180,7 @@ def main():
         print("Validation stats: {}".format(val_stats))
         orca_estimator.shutdown()
     else:
-        invalidInputError(False, "Only bigdl, ray, and spark are supported "
+        invalidInputError(False, "Only ray, and spark are supported "
                           "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()
