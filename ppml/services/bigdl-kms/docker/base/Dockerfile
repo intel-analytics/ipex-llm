@@ -39,7 +39,7 @@ RUN mkdir -p /ppml/keys && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
     cd /ppml && \
-    chmod a+x /ppml/start-service.sh && \
+    chmod a+x /ppml/bigdl-kms-entrypoint.sh && \
     gramine-argv-serializer bash -c '$sgx_command' > /ppml/secured_argvs && \
     apt-get install sqlite3
 COPY --from=java /opt/jdk  /opt/jdk8

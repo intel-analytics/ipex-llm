@@ -43,10 +43,6 @@ spec:
           mountPath: /ppml/keys
         - name: ssl-password
           mountPath: /ppml/password
-        - name: device-plugin
-          mountPath: /var/lib/kubelet/device-plugins
-        - name: aesm-socket
-          mountPath: /var/run/aesmd/aesm.socket
         env:
         - name: ROOT_KEY
           value: "$rootKey"

@@ -27,6 +27,13 @@ BigDL KMS uses multiple security techniques e.g. Trusted Execution Environment (
 Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#prepare-key-and-password) to generate keys and passwords for TLS encryption, and upload them to k8s as secrets.
 
 ### 3. Deploy Service
+
+Go to `kubernetes` directory:
+
+```bash
+cd kubernetes
+```
+
 Modify parameters in script `install-bigdl-kms.sh`:
 
 ```
@@ -117,6 +124,7 @@ XY********Yw==
 
 ## Stop Service
 ```
+export teeMode=... # sgx or tdx
 bash uninstall-bigdl-kms.sh
 ```
 

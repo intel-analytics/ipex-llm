@@ -54,7 +54,7 @@ object BigDLKeyManagementServer extends Supportive {
   implicit val executionContext = system.dispatcher
   val rootKey = sys.env("ROOT_KEY")
   Log4Error.invalidOperationError(rootKey != "",
-    "Excepted ROOTKEY but found it empty, please upload it as k8s secret")
+    "Excepted ROOT_KEY but found it empty, please upload it as k8s secret")
 
   val md = MessageDigest.getInstance("MD5")
 

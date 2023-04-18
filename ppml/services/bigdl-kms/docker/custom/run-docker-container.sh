@@ -4,7 +4,7 @@ export SSL_PASSWORD_PATH=path_of_your_ssl_password_folder
 export CUSTOM_IMAGE_NAME=intelanalytics/bigdl-kms-reference:2.3.0-SNAPSHOT
 export ROOT_KEY=your_256bit_base64_AES_key_string
 export DATA_STORAGE_PATH=a_host_path_for_persistent_stoarge
-export SGX_ENABLED=true
+export SGX_ENABLED=true # false for tdx docker user
 
 if [ "$SGX_ENABLED" = "true" ]; then
   sudo docker run -itd \
@@ -22,7 +22,7 @@ if [ "$SGX_ENABLED" = "true" ]; then
     -e ROOT_KEY=${ROOT_KEY} \
     -e SGX_ENABLED=true \
     --name=bigdl-key-management-server \
-    $IMAGE_NAME bash
+    $CUSTOM_IMAGE_NAME bash
 else
   sudo docker run -itd \
       --privileged \
@@ -34,5 +34,5 @@ else
       -v $DATA_STORAGE_PATH:/ppml/data \
       -e ROOT_KEY=${ROOT_KEY} \
       --name=bigdl-key-management-server \
-      $IMAGE_NAME bash
+      $CUSTOM_IMAGE_NAME bash
 fi
