@@ -63,12 +63,12 @@ full_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "user_item_parq
 print("Data size: " + str(full_tbl.size()))
 
 enaging_user_df = full_tbl.select(['enaging_user_id', 'enaging_user_is_verified',
-                                   'user_numeric']).drop_duplicates()\
+                                   'user_numeric'])\
                           .rename({'enaging_user_id': 'user_id',
                                    'enaging_user_is_verified': 'is_verified'})
 # the last 3 columns of "item_numeric" are engaged users' numeric features
 engaged_user_df = full_tbl.select(['engaged_with_user_id', 'engaged_with_user_is_verified',
-                                   'item_numeric']).drop_duplicates()\
+                                   'item_numeric'])\
                           .apply("item_numeric", "user_numeric",
                                  lambda item_numeric: item_numeric[-3:],
                                  dtype="array<float>")\
@@ -79,7 +79,7 @@ user_df = enaging_user_df.concat(engaged_user_df)
 user_embed = FeatureTable(user_est.predict(data=user_df.df,
                                            batch_size=args.batch_size,
                                            feature_cols=user_df.columns))\
-    .select(['user_id', 'prediction'])
+    .select(['user_id', 'prediction']).drop_duplicates()
 print("Embeddings of the first 5 users:")
 user_embed.show(5)
 user_embed.write_parquet(os.path.join(args.data_dir, 'user_ebd.parquet'))
