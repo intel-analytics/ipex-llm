@@ -59,7 +59,9 @@ statefulset.apps/keywhiz   1/1     4m56s
 
 You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BigDLManagementService.scala), or simply verify through requesting REST API like below:
 
-```
+#### 1. Test Service readiness
+
+```bash
 curl -k -v "https://<kmsIP>:9876/" # default port of bigdl-kms is 9876 and can be configured in bigdl-kms.yaml
 
 # you will get similar to below
@@ -68,24 +70,37 @@ welcome to BigDL KMS Frontend
 create a user like: POST /user/{userName}?token=a_token_string_for_the_user
 get a primary key like: POST /primaryKey/{primaryKeyName}?user=your_username&&token=your_token
 get a data key like: POST /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token
-get the data key like: GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token
+get the data key like: GET /dataKey/{dataKeyName}?primaryKeyName=the_primary_key_name&&user=your_username&&token=your_token1
+```
 
+#### 2. Enroll
+
+```bash
 curl -X POST -k -v "https://<kmsIP>:9876/user/<userName>?token=<userToken>"
 user [<userName>] is created successfully!
+```
 
+#### 3. Generate Primary Key
+
+```bash
 curl -X POST -k -v "https://<kmsIP>:9876/primaryKey/<primaryKeyName>?user=<userName>&&token=<userToken>"
 primaryKey [<primaryKeyName>] is generated successfully!
+```
 
+#### 4. Generate Data Key from the Primary Key
+
+```bash
 curl -X POST -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
 dataKey [<dataKeyName>] is generated successfully!
+```
 
+#### 5. Retrieve Plain Text of the Data Key
+
+```bash
 curl -X GET -k -v "https://<kmsIP>:9876/dataKey/<dataKeyName>?user=<userName>&&token=<userToken>&&primaryKeyName=<primaryKeyName>"
 XY********Yw==
-
 ```
 
 ## Test KMS with PPML end-to-end example
 
-[LocalCryptoExample](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples#localcryptoexample-with-bigdl-kms)
-
-[PPMLContext](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext)
+`BigDLKeyManagementService` is an allowed type in [SimpleQuery example](https://github.com/intel-analytics/BigDL/tree/main/ppml#32-bigdl-ppml-end-to-end-workflow).

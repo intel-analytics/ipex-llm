@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.feature.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.feature.labels }}
+    {{ toYaml .Values.feature.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.feature.annotations }}
+  annotations:
+    {{ toYaml .Values.feature.annotations | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |
+    {{- if .Values.redis.enabled }}
+      {{- if .Values.redis.sentinel.enabled }}
+    redisType: sentinel
+    redisSentinelMasterURL: {{ printf "%s-headless" (include "friesian-serving.redis.fullname" .) }}:26379
+    redisSentinelMasterName: {{ .Values.redis.sentinel.masterSet }}
+      {{- else }}
+    redisUrl: {{ include "friesian-serving.redis.fullname" . }}:6379
+      {{- end }}
+    {{- end }}
+    {{- if not .Values.feature.config.modelParallelism }}
+      {{- if .Values.feature.resources.limits.cpu }}
+    modelParallelism: {{ int .Values.feature.resources.limits.cpu }}
+      {{- else if .Values.feature.resources.requests.cpu }}
+    modelParallelism: {{ int .Values.feature.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.feature.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}

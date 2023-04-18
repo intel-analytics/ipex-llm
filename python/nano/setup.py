@@ -118,9 +118,19 @@ def setup_package():
     stock_tensorflow_210_requires += tensorflow_common_requires
 
     # ipex is only avaliable for linux now
+    pytorch_20_requires = ["torch==2.0.0",
+                           "torchvision==0.15.1",
+                           "intel_extension_for_pytorch==2.0.0;platform_system=='Linux'"]
+
     pytorch_113_requires = ["torch==1.13.1",
                             "torchvision==0.14.1",
                             "intel_extension_for_pytorch==1.13.100;platform_system=='Linux'"]
+
+    # This is for xpu support (currently we only support 1.13)
+    # should be installed with -f https://developer.intel.com/ipex-whl-stable-xpu
+    pytorch_113_xpu_requires = ["torch==1.13.0a0",
+                                "torchvision==0.14.1a0",
+                                "intel_extension_for_pytorch==1.13.10+xpu;platform_system=='Linux'"]
 
     pytorch_112_requires = ["torch==1.12.1",
                             "torchvision==0.13.1",
@@ -147,7 +157,9 @@ def setup_package():
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
+    pytorch_20_requires += pytorch_common_requires
     pytorch_113_requires += pytorch_common_requires
+    pytorch_113_xpu_requires += pytorch_common_requires
     pytorch_112_requires += pytorch_common_requires
     pytorch_111_requires += pytorch_common_requires
     pytorch_110_requires += pytorch_common_requires
@@ -207,10 +219,12 @@ def setup_package():
                         "stock_tensorflow_29": stock_tensorflow_29_requires,
                         "stock_tensorflow_210": stock_tensorflow_210_requires,
                         "pytorch": pytorch_requires,
+                        "pytorch_20": pytorch_20_requires,
                         "pytorch_113": pytorch_113_requires,
                         "pytorch_112": pytorch_112_requires,
                         "pytorch_111": pytorch_111_requires,
                         "pytorch_110": pytorch_110_requires,
+                        "pytorch_113_xpu": pytorch_113_xpu_requires,
                         "pytorch_nightly": pytorch_nightly_requires,
                         "inference": inference_requires},
         package_data={"bigdl.nano": package_data},

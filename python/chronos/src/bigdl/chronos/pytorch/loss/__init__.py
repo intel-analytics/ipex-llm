@@ -16,3 +16,4 @@
 
 
 from .linex import LinexLoss
+from .asym_weight import AsymWeightLoss

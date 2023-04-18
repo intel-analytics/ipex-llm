@@ -100,7 +100,29 @@ class TestSeq2SeqForecaster(TestCase):
         assert yhat.shape == (400, 2, 2)
         mse = self.forecaster.evaluate(test_data, multioutput="raw_values")
         assert mse[0].shape == test_data[-1].shape[1:]
-    
+
+    def test_seq2seq_forecaster_evaluate(self):
+        train_tsdata, _, test_tsdata = create_tsdataset()
+        forecaster = Seq2SeqForecaster.from_tsdataset(train_tsdata,
+                                                      past_seq_len=24,
+                                                      future_seq_len=2,
+                                                      lstm_hidden_dim=16,
+                                                      lstm_layer_num=2)
+        forecaster.fit(train_tsdata, epochs=1, batch_size=32)
+
+        # tf dataset
+        test = test_tsdata.to_tf_dataset(batch_size=32)
+        metrics = forecaster.evaluate(test, multioutput='uniform_average')
+
+        # TSDataset
+        metrics_tsdata = forecaster.evaluate(test_tsdata, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics, metrics_tsdata, decimal=5)
+
+        # numpy
+        test_data = test_tsdata.to_numpy()
+        metrics_data = forecaster.evaluate(test_data, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics_data, metrics_tsdata, decimal=5)
+
     def test_seq2seq_fit_tf_data(self):
         train_data, _, test_data = create_data(tf_data=True)
         self.forecaster.fit(train_data,

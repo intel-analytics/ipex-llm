@@ -165,21 +165,7 @@ images, labels = dataiter.next()
 imshow(torchvision.utils.make_grid(images), one_channel=False)
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
-if args.backend == "bigdl":
-    net = model_creator(config={})
-    optimizer = optim_creator(model=net, config={"lr": 0.001})
-    orca_estimator = Estimator.from_torch(model=net,
-                                          optimizer=optimizer,
-                                          loss=criterion,
-                                          metrics=[Accuracy()],
-                                          backend="bigdl")
-
-    orca_estimator.fit(data=train_loader, epochs=args.epochs, validation_data=test_loader,
-                       checkpoint_trigger=EveryEpoch())
-
-    res = orca_estimator.evaluate(data=test_loader)
-    print("Accuracy of the network on the test images: %s" % res)
-elif args.backend in ["ray", "spark"]:
+if args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=criterion,
@@ -202,7 +188,7 @@ elif args.backend in ["ray", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend,"
+    invalidInputError(False, "Only ray, and spark are supported as the backend,"
                       " but got {}".format(args.backend))
 
 stop_orca_context()

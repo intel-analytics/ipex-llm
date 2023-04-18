@@ -1,13 +1,11 @@
 # set -x
-export HTTP_PROXY=your_http_proxy
-export HTTPS_PROXY=your_https_proxy
+export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
+export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
 export IMAGE_NAME=intelanalytics/bigdl-attestation-service
-export IMAGE_VERSION=2.2.0-SNAPSHOT
-export JDK_URL=your_jdk_url
+export IMAGE_VERSION=2.3.0-SNAPSHOT
 
 sudo docker build \
     --no-cache=true \
-    --build-arg http_proxy=${HTTP_PROXY} \
-    --build-arg https_proxy=${HTTPS_PROXY} \
-    --build-arg JDK_URL=${JDK_URL} \
+    --build-arg BASE_IMAGE_NAME=${BASE_IMAGE_NAME} \
+    --build-arg BASE_IMAGE_TAG=${BASE_IMAGE_TAG} \
     -t $IMAGE_NAME:$IMAGE_VERSION -f ./Dockerfile .

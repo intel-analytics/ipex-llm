@@ -187,6 +187,7 @@
         <data-store-url>http://download.tensorflow.org</data-store-url>
         <lightgbm.scope>provided</lightgbm.scope>
         <grpc.version>1.48.1</grpc.version>
+        <parquet.version>1.12.2</parquet.version>
 
     </properties>
 
@@ -299,6 +300,22 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-services</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.parquet</groupId>
+                <artifactId>parquet-hadoop</artifactId>
+                <version>${parquet.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.parquet</groupId>
+                <artifactId>parquet-hadoop</artifactId>
+                <version>${parquet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.parquet</groupId>
+                <artifactId>parquet-column</artifactId>
+                <version>${parquet.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

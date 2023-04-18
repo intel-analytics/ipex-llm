@@ -17,7 +17,7 @@
 
 import os
 import sys
-
+import json
 import cloudpickle
 
 from pytorch_lightning.utilities.seed import reset_seed
@@ -25,8 +25,8 @@ from pytorch_lightning.utilities.seed import reset_seed
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
 
-    with open(os.path.join(temp_dir, "search_kwargs.pkl"), 'rb') as f:
-        kwargs = cloudpickle.load(f)
+    with open(os.path.join(temp_dir, "search_kwargs.json"), 'r') as f:
+        kwargs = json.load(f)
     with open(os.path.join(temp_dir, "search_func.pkl"), 'rb') as f:
         func = cloudpickle.load(f)
 

@@ -1,0 +1,33 @@
+name: 'Run Orca Python Py39 Spark3'
+description: 'Run Orca Python Py39 Spark3'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        dpkg --configure -a
+        apt-get update
+        apt-get install wget
+    - name: Setup env
+      shell: bash
+      run: |
+        if [ -d "/opt/conda/envs/py39" ];then
+          rm -rf /opt/conda/envs/py39
+        fi
+        conda create -n py39 -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+        conda info --env
+        source activate py39
+        pip uninstall -y bigdl-friesian bigdl-friesian-spark3 bigdl-dllib bigdl-dllib-spark3 bigdl-orca pyspark bigdl-orca-spark3 bigdl-chronos bigdl-chronos-spark3 bigdl-friesian bigdl-friesian-spark3
+        
+        wget https://raw.githubusercontent.com/analytics-zoo/gha-cicd-env/main/python-requirements/requirements-orca-python.txt -O ${{ github.workspace }}/requirements-orca-python.txt
+        pip uninstall -r ${{ github.workspace }}/requirements-orca-python.txt -y
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} -r ${{ github.workspace }}/requirements-orca-python.txt 
+        
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

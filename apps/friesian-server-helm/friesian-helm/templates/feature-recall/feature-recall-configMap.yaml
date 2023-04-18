@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "friesian-serving.feature-recall.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature-recall
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.featureRecall.labels }}
+    {{ toYaml .Values.featureRecall.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.featureRecall.annotations }}
+  annotations:
+    {{ toYaml .Values.featureRecall.annotations | nindent 4 }}
+  {{- end }}
+data:
+  config.yaml: |
+    {{- if .Values.redis.enabled }}
+      {{- if .Values.redis.sentinel.enabled }}
+    redisType: sentinel
+    redisSentinelMasterURL: {{ printf "%s-headless" (include "friesian-serving.redis.fullname" .) }}:26379
+    redisSentinelMasterName: {{ .Values.redis.sentinel.masterSet }}
+      {{- else }}
+    redisUrl: {{ include "friesian-serving.redis.fullname" . }}:6379
+      {{- end }}
+    {{- end }}
+    {{- if not .Values.featureRecall.config.modelParallelism }}
+      {{- if .Values.featureRecall.resources.limits.cpu }}
+    modelParallelism: {{ int .Values.featureRecall.resources.limits.cpu }}
+      {{- else if .Values.featureRecall.resources.requests.cpu }}
+    modelParallelism: {{ int .Values.featureRecall.resources.requests.cpu }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.featureRecall.config }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}

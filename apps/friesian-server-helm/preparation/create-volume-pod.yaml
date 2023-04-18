@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: /resources
+          name: resources
+  volumes:
+    - name: resources
+      persistentVolumeClaim:
+        claimName: friesian-serving-resources

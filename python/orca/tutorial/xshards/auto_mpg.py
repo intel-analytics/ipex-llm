@@ -16,10 +16,11 @@
 # This example is adapted from
 # https://github.com/tensorflow/docs/blob/master/site/en/r1/tutorials/keras/basic_regression.ipynb
 
+import math
 import bigdl.orca.data.pandas
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.transformer import *
-from bigdl.orca.learn.tf.estimator import Estimator
+from bigdl.orca.learn.tf2.estimator import Estimator
 
 import tensorflow.compat.v1 as tf
 from tensorflow.keras.models import Sequential
@@ -65,7 +66,7 @@ def split_train_test(df):
 shards_train, shards_val = data_shard.transform_shard(split_train_test).split()
 
 
-def build_model():
+def build_model(config):
     model = Sequential([
         Dense(64, activation=tf.nn.relu, input_shape=[9]),
         Dense(64, activation=tf.nn.relu),
@@ -79,12 +80,15 @@ def build_model():
                   metrics=['mean_absolute_error', 'mean_squared_error'])
     return model
 
-model = build_model()
-
 EPOCHS = 1000
-est = Estimator.from_keras(keras_model=model)
+batch_size = 16
+train_steps = math.ceil(len(shards_train) / batch_size)
+est = Estimator.from_keras(model_creator=build_model)
 
 est.fit(data=shards_train,
-        batch_size=16,
-        epochs=EPOCHS, feature_cols=['scaled_vec'], label_cols=['MPG'])
+        batch_size=batch_size,
+        epochs=EPOCHS,
+        steps_per_epoch=train_steps,
+        feature_cols=['scaled_vec'],
+        label_cols=['MPG'])
 stop_orca_context()

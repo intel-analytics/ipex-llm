@@ -46,7 +46,11 @@ curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v4/root
 ```
 to check if pccs service is available.
 
-## 4. Stop container:
+## 4. Register a machine to PCCS
+
+Please refer to [this](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/pccs/kubernetes#5-register-a-machine-to-pccs)
+
+## 5. Stop container:
 ```
 docker stop <your_pccs_container_name>
 ```

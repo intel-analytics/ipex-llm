@@ -203,19 +203,7 @@ train_loader = train_loader_creator(config=config, batch_size=batch_size)
 # plot some random training images.
 # You should use jupyter notebook to show the images.
 show_batch(train_loader)
-if args.backend == "bigdl":
-    net = model_creator()
-    optimizer = optim_creator(model=net, config={"lr": 0.001})
-    orca_estimator = Estimator.from_torch(model=net,
-                                          optimizer=optimizer,
-                                          loss=bce_dice_loss,
-                                          config=config,
-                                          backend=args.backend)
-
-    orca_estimator.fit(data=train_loader, epochs=args.epochs)
-
-
-elif args.backend in ["ray", "spark"]:
+if args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
@@ -232,7 +220,7 @@ elif args.backend in ["ray", "spark"]:
     for r, value in res.items():
         print(r, ":", value)
 else:
-    invalidInputError(False, "Only bigdl, ray, and spark are supported as the backend,"
+    invalidInputError(False, "Only ray, and spark are supported as the backend,"
                              " but got {}".format(args.backend))
 
 stop_orca_context()

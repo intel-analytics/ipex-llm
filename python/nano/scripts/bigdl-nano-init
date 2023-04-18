@@ -36,6 +36,14 @@ function enable-perf-var {
     PERF_VAR=1
 }
 
+function enable-dgpu-var {
+    echo "Option: Enable OneAPI vars"
+    ONEAPI_VAR=1
+    echo "Option: Disable jemalloc and tcmalloc and unset related variables"
+    unset ENABLE_JEMALLOC_VAR
+    unset ENABLE_TCMALLOC_VAR
+}
+
 function set-allocator {
     echo "Setting $1..."
     if [ $OS = "linux" ]; then
@@ -74,6 +82,7 @@ function display-var {
     echo "  DISABLE_OPENMP_VAR  = $DISABLE_OPENMP_VAR"
     echo "  OPENMP              = $OPENMP"
     echo "  PERF_VAR            = $PERF_VAR"
+    echo "  ONEAPI_VAR          = $ONEAPI_VAR"
     echo "  BIN_DIR             = $BIN_DIR"
     echo "  LIB_DIR             = $LIB_DIR"
     echo "  NANO_DIR            = $NANO_DIR"
@@ -104,6 +113,7 @@ function display-help {
         echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
+        echo "    -g, --gpu                Enable OneAPI and other settings for dGPU support"
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
@@ -130,13 +140,15 @@ ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
 unset DISABLE_OPENMP_VAR
 unset PERF_VAR
+unset ONEAPI_VAR
 
 # Init exported variables
 export TF_ENABLE_ONEDNN_OPTS=1
+export ONEAPI_VAR=0
 
 OPTIND=1
 
-while getopts "ojhtcpd-:" opt; do
+while getopts "ojhtcpgd-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -154,6 +166,9 @@ while getopts "ojhtcpd-:" opt; do
                     ;;
                 perf)
                     enable-perf-var
+                    ;;
+                gpu)
+                    enable-dgpu-var
                     ;;
                 help)
                     display-help
@@ -185,6 +200,9 @@ while getopts "ojhtcpd-:" opt; do
         p )
             enable-perf-var
             ;;
+        g )
+            enable-dgpu-var
+            ;;
         h )
             display-help
             return 0
@@ -205,6 +223,8 @@ shift $((OPTIND -1))
 LIB_DIR=`dirname ${BIN_DIR}`/lib
 NANO_DIR=$(dirname $(python3 -c "import bigdl; print(bigdl.__file__)"))/nano
 PYTHON_VERSION=`python3 --version | awk '{print $2}'`
+ONEAPI_ROOT="/opt/intel/oneapi"  # typically users oneapi home
+ONEAPI_USER="${HOME}/intel/oneapi"  # in case users install it w/o root
 
 uName=`uname -s`
 if [ ${uName: 0: 5} = "Linux" ]; then
@@ -214,6 +234,23 @@ elif [ ${uName: 0: 6} = "Darwin" ]; then
 else
     echo "Warning: Unsupported OS: ${uName}, bigdl-nano-init will do nothing"
     return 0
+fi
+
+# Detect OneAPI installation status
+export ONEAPI_HOME=""
+if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+    if [ -f "${ONEAPI_ROOT}/setvars.sh" ]; then
+        ONEAPI_HOME=${ONEAPI_ROOT}
+    elif [ -f "${ONEAPI_USER}/setvars.sh" ]; then
+        ONEAPI_HOME=${ONEAPI_USER}
+    else
+        echo "No OneAPI installation found"
+        ONEAPI_VAR=0
+    fi
+fi
+
+if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+    source ${ONEAPI_HOME}/setvars.sh
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD
@@ -277,7 +314,7 @@ fi
 if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
     echo "Not in a conda env"
 else
-    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
+    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ] && [[ "${ONEAPI_VAR}" -eq 0 ]];then
         echo "nano_vars.sh already exists"
     elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init ]; then
         echo "It seems that you are using bidl-nano installed by system's pip, "
@@ -292,7 +329,11 @@ else
 
         # bigdl-nano-init
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
-        echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init -g" >> $ACTIVATED_PATH/nano_vars.sh
+        else
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        fi
         echo "else" >> $ACTIVATED_PATH/nano_vars.sh
         echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $ACTIVATED_PATH/nano_vars.sh

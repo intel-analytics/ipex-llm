@@ -136,6 +136,25 @@ def auto_shard_model_creator(config):
     model.compile(**create_auto_shard_compile_args(config))
     return model
 
+
+def multi_output_model(config):
+    image_input_1 = tf.keras.Input(shape=(32, 32, 3), name="input_1")
+    image_input_2 = tf.keras.Input(shape=(32, 32, 3), name="input_2")
+
+    x1 = tf.keras.layers.Conv2D(3, 3)(image_input_1)
+    x1 = tf.keras.layers.GlobalMaxPooling2D()(x1)
+    x2 = tf.keras.layers.Conv2D(3, 3)(image_input_2)
+    x2 = tf.keras.layers.GlobalMaxPooling2D()(x2)
+    x = tf.keras.layers.concatenate([x1, x2])
+
+    score_output = tf.keras.layers.Dense(5, name="score_output")(x)
+    class_output = tf.keras.layers.Dense(5, name="class_output")(x)
+
+    model = tf.keras.Model(
+        inputs=[image_input_1, image_input_2], outputs=[score_output, class_output]
+    )
+    return model
+
 class SimpleModel(tf.keras.Model):
     def __init__(self):
         super().__init__()
@@ -736,6 +755,57 @@ class TestTF2EstimatorRayBackend(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
+    def test_optional_optimizer(self):   
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float32)),
+                                int(np.random.randint(0, 2, size=())))).toDF(["feature", "label"])
+
+        config = {"lr": 0.2}
+
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
+                        feature_cols=["feature"],
+                        label_cols=["label"],
+                        validation_data=df,
+                        validation_steps=1)
+
+            # save model as h5 format
+            trainer.save(os.path.join(temp_dir, "cifar10.h5"), include_optimizer=False)
+
+            after_res = trainer.predict(df, feature_cols=["feature"]).collect()
+            expect_res = np.concatenate([part["prediction"] for part in after_res])
+
+            trainer.shutdown()
+
+            est = Estimator.from_keras(
+                verbose=True,
+                config=config,
+                workers_per_node=3,
+                backend="ray")
+
+            est.load(os.path.join(temp_dir, "cifar10.h5"))
+
+            # continous predicting
+            after_res = est.predict(df, feature_cols=["feature"]).collect()
+            pred_res = np.concatenate([part["prediction"] for part in after_res])
+            assert np.array_equal(expect_res, pred_res)
+
+        finally:
+            shutil.rmtree(temp_dir)
+
     def test_save_load_model_savemodel(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 100)
@@ -1101,6 +1171,56 @@ class TestTF2EstimatorRayBackend(TestCase):
                 assert np.allclose(pre_tensor, after_tensor)
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_multi_output_predict(self):
+        from pyspark.sql.types import FloatType, ArrayType
+        from pyspark.sql.functions import udf
+
+        sc = OrcaContext.get_spark_context()
+        rdd = sc.range(0, 100)
+        spark = OrcaContext.get_spark_session()
+
+        df = rdd.map(lambda x:[x,
+                               np.random.rand(3072).tolist(),
+                               np.random.rand(3072).tolist()]).toDF(["index",
+                                                                     "input_1",
+                                                                     "input_2"])
+
+        def reshape(x):
+            return np.array(x).reshape([32, 32, 3]).tolist()
+
+        reshape_udf = udf(reshape, ArrayType(ArrayType(ArrayType(FloatType()))))
+
+        df = df.withColumn("input_1", reshape_udf(df.input_1))
+        df = df.withColumn("input_2", reshape_udf(df.input_2))
+
+        def model_creator(config):
+            model = multi_output_model(config)
+            model.compile(
+                optimizer=tf.keras.optimizers.RMSprop(config["lr"]),
+                loss=[tf.keras.losses.MeanSquaredError(),
+                      tf.keras.losses.CategoricalCrossentropy()],
+            )
+            return model
+
+        estimator = Estimator.from_keras(
+            model_creator=model_creator,
+            verbose=True,
+            config={"lr": 0.2},
+            workers_per_node=2,
+            backend="ray")
+
+        pred_res = estimator.predict(df,
+                                     feature_cols=["input_1", "input_2"],
+                                     output_cols=["score_output", "class_output"])
+        pred_res.collect()
+        assert "score_output" and "class_output" in pred_res.columns
+
+        # output_cols is None
+        pred_df = estimator.predict(df,
+                                    feature_cols=["input_1", "input_2"])
+        pred_df.collect()
+        assert "prediction" in pred_df.columns
 
 
 if __name__ == "__main__":
