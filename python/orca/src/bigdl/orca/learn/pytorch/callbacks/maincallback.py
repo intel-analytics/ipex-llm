@@ -100,6 +100,9 @@ class MainCallback(Callback):
         Called during prediction.
         Any behavior inconsistent with the default prediction behavior should be overridden here.
         """
+        print("in main call back------------")
+        print(*runner.batch)
+        print(len(runner.batch))
         output = runner.model(*runner.batch)
 
         if len(output.size()) > 1:

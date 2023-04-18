@@ -155,8 +155,10 @@ class PytorchPysparkWorker(TorchRunner):
                  wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         self.load_state_dict(self.state_dict.value)
+        print("in pyspark_worer validate---- ")
         validation_stats = super().validate(data_creator, batch_size, num_steps, profile,
                                             wrap_dataloader, callbacks)
+        print(data_creator)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
@@ -166,9 +168,11 @@ class PytorchPysparkWorker(TorchRunner):
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
-        partition = data_creator(config, batch_size)
+        # partition = data_creator(config, batch_size)
+        # print("in pytorch pyspark worker--------------------")
+        # print(partition)
         self.load_state_dict(self.state_dict.value)
-        result = super().predict(partition=partition, batch_size=batch_size,
+        result = super().predict(data_creator, batch_size=batch_size,
                                  profile=profile, callbacks=callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)

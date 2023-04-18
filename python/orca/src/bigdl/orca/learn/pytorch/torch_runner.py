@@ -603,6 +603,9 @@ class TorchRunner(BaseRunner):
                 params[arg] = config[arg]
 
         def predict_fn(shard):
+            print("---- in predict_fn")
+            print(shard)
+            print(type(partition))
             if isinstance(partition, IterableDataset):
                 y = self._predict(shard, callbacks=callbacks)
             else:
@@ -622,6 +625,8 @@ class TorchRunner(BaseRunner):
             else:
                 new_part = [predict_fn(shard) for shard in partition]
         self.call_hook(callbacks, "after_pred_epoch")
+        print("new part-----------")
+        print(new_part)
         return new_part
 
     def _predict(self, pred_iterator, callbacks=None):

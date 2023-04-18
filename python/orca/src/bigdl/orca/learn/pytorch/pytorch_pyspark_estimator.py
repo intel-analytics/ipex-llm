@@ -413,10 +413,22 @@ class PyTorchPySparkEstimator(BaseEstimator):
         return state_dict_b
 
     def _predict_spark_xshards(self, xshards, init_params, params):
+        # def transform_func(iter, init_params, param):
+        #     partition_data = list(iter)
+        #     param["data_creator"] = partition_to_creator(partition_data)
+        #     runner = PytorchPysparkWorker(**init_params)
+        #     result = runner.predict(**param)
+        #     runner.shutdown()
+        #     return result
+
         def transform_func(iter, init_param, param):
             partition_data = list(iter)
+            print("in _predict_spark_shards--------")
+            print(partition_data)
             # res = combine_in_partition(partition_data)
+
             param["data_creator"] = make_data_creator(partition_data)
+            print(param["data_creator"])
             return PytorchPysparkWorker(**init_param).predict(**params)
 
         pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
@@ -499,11 +511,26 @@ class PyTorchPySparkEstimator(BaseEstimator):
             else:
                 pred_shards = self._predict_spark_xshards(xshards, init_params, params)
                 result = update_predict_xshards(data, pred_shards)
+                print("pred_shards---------")
+                print(pred_shards.collect())
+
+                print("result-----")
+                print(result.collect())
             # Uncache the original data since it is already included in the result
             data.uncache()
         else:
-            invalidInputError(False,
-                              "Only XShards or Spark DataFrame are supported for predict")
+            if not isinstance(data, types.FunctionType):
+                invalidInputError(False,
+                                  "data should be either an instance of SparkXShards or a "
+                                  "callable  function, but got type: {}".format(type(data)))
+
+            params["data_creator"] = data
+
+            def transform_func(iter, init_param, param):  # type:ignore
+                return PytorchPysparkWorker(**init_param).predict(**param)
+
+            result = self.workerRDD.barrier().mapPartitions(
+                lambda iter: transform_func(iter, init_params, params))
 
         return result
 
@@ -601,7 +628,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
+                print("evaluate-------- estimator")
                 param["data_creator"] = partition_to_creator(partition_data)
+                print(param['data_creator'])
                 return PytorchPysparkWorker(**init_param).validate(**param)
 
             data_rdd = data.rdd  # type:ignore
