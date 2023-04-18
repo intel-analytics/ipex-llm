@@ -58,9 +58,8 @@ runs:
         export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
         pip install tensorflow==2.6.0 keras==2.6.0
-        pip install --pre --upgrade bigdl-spark3"
-        
-        docker exec -i $CONTAINER_NAME bash -c " 
+        pip install --pre --upgrade bigdl-spark3
+
         spark-submit \
         --master ${RUNTIME_SPARK_MASTER} \
         --deploy-mode client \
