@@ -26,14 +26,13 @@ def complement_input_sample(model, input_sample):
     Mainly using default value to complete.
     '''
     # forward_args = get_conditional_args(model, include="all", exclude=(bool, type(None)))
-    if isinstance(input_sample, Dict):  # TODO: not sure if this is the best way
-        return input_sample
-
     forward_args = get_forward_args(model)
     forward_defaults = get_forward_defaults(model)
     input_sample_length = 1
     if isinstance(input_sample, Sequence):
         input_sample_length = len(input_sample)
+    elif isinstance(input_sample, Dict):
+        input_sample_length = len(list(input_sample.keys()))
 
     # check if need complement
     if len(forward_args) == input_sample_length:

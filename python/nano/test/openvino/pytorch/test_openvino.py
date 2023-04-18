@@ -27,6 +27,7 @@ from torch.utils.data.dataloader import DataLoader
 import os
 import tempfile
 import pytest
+from typing import Dict, Tuple, List
 
 
 class TupleInputModel(nn.Module):
