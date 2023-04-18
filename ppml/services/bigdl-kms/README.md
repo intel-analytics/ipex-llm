@@ -69,7 +69,7 @@ replicaset.apps/bigdl-key-management-server-f4985d65f
 
 ## REST APIs
 
-You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BigDLManagementService.scala), or simply verify through requesting REST API like below:
+You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/client/BigDLKeyManagementService.scala), or simply verify through requesting REST API like below:
 
 #### 1. Test Service readiness
 
