@@ -723,6 +723,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         assert forecaster.thread_num == current_thread
         assert forecaster.optimized_model_thread_num == num
 
+    @op_inference
     def test_s2s_forecaster_ctx_manager(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = Seq2SeqForecaster(past_seq_len=24,
