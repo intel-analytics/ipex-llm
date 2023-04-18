@@ -58,12 +58,16 @@ runs:
         export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
         pip install tensorflow==2.6.0 keras==2.6.0
-        pip install --pre --upgrade bigdl-spark3
+        pip install --pre --upgrade bigdl-spark3[ray]
 
+        docker exec -i orca-spark-k8s bash -c "
+        source /root/anaconda3/bin/activate orca-py38
+        pip install setuptools==66.0.0
+        /root/anaconda3/bin/conda pack -o /opt/spark/work-dir/environment.tar.gz
         spark-submit \
-        --master ${RUNTIME_SPARK_MASTER} \
+        --master k8s://https://172.16.0.117:6443 \
         --deploy-mode client \
-        --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+        --conf spark.driver.host=172.16.0.117 \
         --conf spark.driver.port=54321 \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
         --name orca-k8s-application \
@@ -93,4 +97,4 @@ runs:
         --conf spark.driver.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
         --conf spark.executor.extraClassPath=local:///opt/bigdl-2.3.0-SNAPSHOT/jars/* \
         local:///opt/bigdl-2.3.0-SNAPSHOT/examples/friesian/ncf/ncf_train.py \
-        --cluster_mode 'spark-submit'"
+        --cluster_mode 'spark-submit' --backend 'spark'"
