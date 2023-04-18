@@ -484,29 +484,28 @@ class TestOnnx(TestCase):
                 return (self.x1[idx], self.x2[idx]), target
 
         dataset = CustomDataset()
-        loader = DataLoader(dataset, batch_size=1, collate_fn=None)
+        loader = DataLoader(dataset, batch_size=1)
 
-        # TODO: below code works after we solve wrong dataloader transform issue
-        # onnx_model = InferenceOptimizer.quantize(model,
-        #                                          accelerator='onnxruntime',
-        #                                          precision='int8',
-        #                                          input_sample=(x1, x2),
-        #                                          calib_data=loader)
-        # with InferenceOptimizer.get_context(onnx_model):
-        #     output1 = onnx_model(x1, x2)
-        #     np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=1)
-        #     output2 = onnx_model(x1, x2=x2)
-        #     np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
-        #     output3 = onnx_model(x1=x1, x2=x2)
-        #     np.testing.assert_almost_equal(output1.numpy(), output3.numpy(), decimal=5)
+        onnx_model = InferenceOptimizer.quantize(model,
+                                                 accelerator='onnxruntime',
+                                                 precision='int8',
+                                                 input_sample=(x1, x2),
+                                                 calib_data=loader)
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=1)
+            output2 = onnx_model(x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+            output3 = onnx_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output3.numpy(), decimal=5)
 
-        # with tempfile.TemporaryDirectory() as tmp_dir_name:
-        #     InferenceOptimizer.save(onnx_model, tmp_dir_name)
-        #     load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
         
-        # with InferenceOptimizer.get_context(load_model):
-        #     output4 = load_model(x1=x1, x2=x2)
-        #     np.testing.assert_almost_equal(output4.numpy(), output4.numpy(), decimal=5)
+        with InferenceOptimizer.get_context(load_model):
+            output4 = load_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output4.numpy(), output4.numpy(), decimal=5)
 
 
 if __name__ == '__main__':

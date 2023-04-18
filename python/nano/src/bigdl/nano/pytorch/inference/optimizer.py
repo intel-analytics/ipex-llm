@@ -846,7 +846,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 calib_dataloader = automatic_add_label_in_dataloader(model,
                                                                      calib_dataloader,
                                                                      input_sample)
-
             # transform the dataloader to inc mode
             inc_calib_dataloader =\
                 transform_multiple_input_dataloader_to_inc_mode(model,
