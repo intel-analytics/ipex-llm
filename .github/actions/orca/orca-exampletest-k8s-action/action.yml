@@ -63,6 +63,8 @@ runs:
         docker exec -i orca-spark-k8s bash -c "
         source /root/anaconda3/bin/activate orca-py38
         pip install setuptools==66.0.0
+        /root/anaconda3/bin/conda list
+
         /root/anaconda3/bin/conda pack -o /opt/spark/work-dir/environment.tar.gz
         spark-submit \
         --master k8s://https://172.16.0.117:6443 \
