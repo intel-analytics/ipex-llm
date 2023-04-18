@@ -1,20 +1,32 @@
-# Deploy BigDL KMS (Key Management Service) on Kubernetes
+# BigDL KMS (Key Management Service) on Kubernetes
 
-## BigDL KMS Architecture
+## Architecture
 ![BigDLKMS](https://user-images.githubusercontent.com/60865256/229735029-b93f221a-7973-49fa-9474-a216121caf18.png)
 
-BigDL KMS applies multiple security techniques e.g. trusted execution environment (SGX/TDX), AES and TLS/SSL to ensure end-to-end secure key management.
+It highlights that a multi-level wrapping of encryption keys is implemented to mitigate the risk of wrapping key leakage. The *rootK* is uploaded by user as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/), and we are working to apply other advanced mathematical tool like Secret Sharing to protect it.
 
-## Prerequests
+## Threat Model
+
+BigDL KMS protects against the following potential attacks:
+
+1. Secretly listen to any communication among KMS clients, server and storage.
+2. Access to any data in transit (over network) or at rest (server backend e.g. cloud storage).
+3. Access to unauthenticated data belong to the other parties.
+4. Hack to memory or runtime of the KMS server.
+
+BigDL KMS uses multiple security techniques e.g. Trusted Execution Environment (SGX/TDX), AES Crypto, TLS/SSL and Remote Attestation etc. to ensure end-to-end secure key management even in an untrusted environment with above various parts.
+
+## Start on Kubernetes
+### 1. Prerequests
 
 - Make sure you have a workable **Kubernetes cluster/machine**
 - Prepare [base bigdl-kms docker image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/easy-kms/docker#1-pullbuild-container-image). **Note** that if enable SGX, please build a custom-signed image by yourself, or pull our reference image (signed by open key of BigDL and do not use it in production).
 
-## Start BigDL KMS on Kubernetes
-### 1. Prepare SSL Key and Password
+### 2. Prepare SSL Key and Password
+
 Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#prepare-key-and-password) to generate keys and passwords for TLS encryption, and upload them to k8s as secrets.
 
-### 2. Run Install Script
+### 3. Deploy Service
 Modify parameters in script `install-bigdl-kms.sh`:
 
 ```
@@ -55,7 +67,7 @@ deployment.apps/bigdl-key-management-server        1/1            1             
 replicaset.apps/bigdl-key-management-server-f4985d65f
 ```
 
-## REST APIs of Key Management
+## REST APIs
 
 You can communicate with BigDL KMS using client [BigDLKeyManagementService](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/kms/BigDLManagementService.scala), or simply verify through requesting REST API like below:
 
@@ -103,7 +115,8 @@ curl -X GET -k -v "https://<kmsIP>:<kmsPort>/dataKey/<dataKeyName>?user=<userNam
 XY********Yw==
 ```
 
-## Stop BigDL KMS
+## Stop Service
 ```
 bash uninstall-bigdl-kms.sh
 ```
+
