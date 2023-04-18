@@ -11,9 +11,9 @@ usage() {
     echo "The following example command will launch 2 backend workers (as specified in /ppml/torchserve_config)."
     echo "The first backend worker will be pinned to core 0 while the second backend worker will be pinned to core 1."
     echo "The frontend worker will be pinned to core 5,6"
-    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f '5,6'"
+    echo "Example: $0 -c /ppml/torchserve_config -b '0,1' -f '5,6'"
     echo "To launch within SGX environment using gramine"
-    echo "Example: $0 -c /ppml/torchserve_config -t '0,1' -f '5,6' -x"
+    echo "Example: $0 -c /ppml/torchserve_config -b '0,1' -f '5,6' -x"
     exit 0
 }
 
