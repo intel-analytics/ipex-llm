@@ -59,7 +59,7 @@ runs:
         pip install tensorflow==2.6.0 keras==2.6.0
         pip install --pre --upgrade bigdl-spark3
         
-        /opt/spark/bin/spark-submit \
+        spark-submit \
         --master ${RUNTIME_SPARK_MASTER} \
         --deploy-mode client \
         --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
