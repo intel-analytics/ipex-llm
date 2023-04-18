@@ -7,7 +7,7 @@ SGX_ENABLED="false"
 usage() {
     echo "Usage: $0 [-c <configfile>] [-b <core# for each backend worker>] [-f <core# for frontend worker>] [-x]"
 
-    echo "ATTENTION: Please allocate at least two dedicated cores for frontend to avoid lock contension in SGX environment"
+    echo "ATTENTION: Please allocate at least two dedicated cores for frontend to avoid lock contention in SGX environment"
     echo "The following example command will launch 2 backend workers (as specified in /ppml/torchserve_config)."
     echo "The first backend worker will be pinned to core 0 while the second backend worker will be pinned to core 1."
     echo "The frontend worker will be pinned to core 5,6"
