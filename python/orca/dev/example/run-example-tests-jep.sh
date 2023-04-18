@@ -1,5 +1,4 @@
 #!/bin/bash
-# TODO: remove jep
 set -e
 
 echo "#1 start example for MNIST"
@@ -19,7 +18,7 @@ python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir tm
 now=$(date "+%s")
 time1=$((now - start))
 
-echo "#5 start test for orca bigdl resnet-finetune"
+echo "#2 start test for orca bigdl resnet-finetune"
 #timer
 start=$(date "+%s")
 #prepare dataset
@@ -46,11 +45,7 @@ if [ $exit_status -ne 0 ]; then
   exit $exit_status
 fi
 now=$(date "+%s")
-time5=$((now - start))
+time2=$((now - start))
 
 echo "#1 MNIST example time used:$time1 seconds"
-echo "#2 orca Cifar10 example time used:$time2 seconds"
-echo "#3 orca Fashion-MNIST example time used:$time3 seconds"
-echo "#4 orca Super Resolution example time used:$time4 seconds"
-echo "#5 torchmodel resnet-finetune time used:$time5 seconds"
-echo "#6 orca brainMRI example time used:$time6 seconds"
+echo "#2 torchmodel resnet-finetune time used:$time2 seconds"
