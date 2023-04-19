@@ -28,6 +28,7 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 
 from bigdl.nano.pytorch import TorchNano
 from bigdl.nano.pytorch.vision.models import vision
+from bigdl.nano.utils.pytorch import LIGHTNING_VERSION_GREATER_2_0
 
 batch_size = 256
 num_workers = 0
@@ -168,6 +169,7 @@ class MyNanoLoadStateDict(TorchNano):
                 self.backward(loss)
                 optimizer.step()
 
+        raw_train_loader = train_loader
         model, optimizer, train_loader = self.setup(origin_model, origin_optimizer, train_loader)
         model.train()
         train_one_epoch(model, optimizer, loss_func, train_loader)
@@ -176,7 +178,10 @@ class MyNanoLoadStateDict(TorchNano):
         origin_model.load_state_dict(model.state_dict())
         origin_optimizer.load_state_dict(optimizer.state_dict())
 
-        model, optimizer = self.setup(origin_model, origin_optimizer)
+        if LIGHTNING_VERSION_GREATER_2_0:
+            model, optimizer, _ = self.setup(origin_model, origin_optimizer, raw_train_loader)
+        else:
+            model, optimizer = self.setup(origin_model, origin_optimizer)
         model.train()
         train_one_epoch(model, optimizer, loss_func, train_loader)
 
