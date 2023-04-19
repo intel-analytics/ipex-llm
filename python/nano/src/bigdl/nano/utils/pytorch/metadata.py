@@ -24,7 +24,7 @@ class CustomDict(dict):
         if key in self.keys():
             return self.__getitem__(key)
         else:
-            super.__getattr__(key)
+            super().__getattr__(key)
 
 
 class BasicMetaDataInfo(object):
