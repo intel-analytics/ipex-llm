@@ -16,7 +16,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  chronos-NB-py37-pytorch-test:
+  chronos-NB-py39-pytorch-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -27,12 +27,12 @@ jobs:
       - name: Set up Maven
         uses: ./.github/actions/maven-setup-action
       - name: Set up Chronos Env
-        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python39
       - name: Activate Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
-          source activate chronos-py37-env
+          source activate chronos-py39-env
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch
       - name: Remove Chronos Env
@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           source deactivate
-          conda remove -n chronos-py37-env -y --all
+          conda remove -n chronos-py39-env -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -49,12 +49,12 @@ jobs:
           secret: ${{ secrets.GIST_SECRET}}
           gist-id: ${{env.GIST_ID}}
           is-self-hosted-runner: true
-          file-name: chronos-NB-py37-pytorch-test.json
+          file-name: chronos-NB-py39-pytorch-test.json
           type: job
-          job-name: chronos-NB-py37-pytorch-test
+          job-name: chronos-NB-py39-pytorch-test
           runner-hosted-on: 'Shanghai'
 
-  chronos-NB-py37-pytorch-inference-test:
+  chronos-NB-py39-pytorch-inference-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -63,12 +63,12 @@ jobs:
       - name: Set up JDK 8
         uses: ./.github/actions/jdk-setup-action
       - name: Set up Chronos Env
-        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python39
       - name: Activate Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
-          source activate chronos-py37-env
+          source activate chronos-py39-env
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference
       - name: Remove Chronos Env
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           source deactivate
-          conda remove -n chronos-py37-env -y --all
+          conda remove -n chronos-py39-env -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -85,12 +85,12 @@ jobs:
           secret: ${{ secrets.GIST_SECRET}}
           gist-id: ${{env.GIST_ID}}
           is-self-hosted-runner: true
-          file-name: chronos-NB-py37-pytorch-inference-test.json
+          file-name: chronos-NB-py39-pytorch-inference-test.json
           type: job
-          job-name: chronos-NB-py37-pytorch-inference-test
+          job-name: chronos-NB-py39-pytorch-inference-test
           runner-hosted-on: 'Shanghai'
 
-  chronos-NB-py37-pytorch-inference-automl-test:
+  chronos-NB-py39-pytorch-inference-automl-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -101,12 +101,12 @@ jobs:
       - name: Set up Maven
         uses: ./.github/actions/maven-setup-action
       - name: Set up Chronos Env
-        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python39
       - name: Activate Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
-          source activate chronos-py37-env
+          source activate chronos-py39-env
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl
       - name: Remove Chronos Env
@@ -114,7 +114,7 @@ jobs:
         shell: bash
         run: |
           source deactivate
-          conda remove -n chronos-py37-env -y --all
+          conda remove -n chronos-py39-env -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -123,12 +123,12 @@ jobs:
           secret: ${{ secrets.GIST_SECRET}}
           gist-id: ${{env.GIST_ID}}
           is-self-hosted-runner: true
-          file-name: chronos-NB-py37-pytorch-inference-automl-test.json
+          file-name: chronos-NB-py39-pytorch-inference-automl-test.json
           type: job
-          job-name: chronos-NB-py37-pytorch-inference-automl-test
+          job-name: chronos-NB-py39-pytorch-inference-automl-test
           runner-hosted-on: 'Shanghai'
 
-  chronos-NB-py37-pytorch-inference-automl-distributed-test:
+  chronos-NB-py39-pytorch-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -139,12 +139,13 @@ jobs:
       - name: Set up Maven
         uses: ./.github/actions/maven-setup-action
       - name: Set up Chronos Env
-        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python39
       - name: Activate Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
-          source activate chronos-py37-env
+          source activate chronos-py39-env
+          pip install pyarrow
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl-distributed
       - name: Remove Chronos Env
@@ -152,7 +153,7 @@ jobs:
         shell: bash
         run: |
           source deactivate
-          conda remove -n chronos-py37-env -y --all
+          conda remove -n chronos-py39-env -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -161,12 +162,12 @@ jobs:
           secret: ${{ secrets.GIST_SECRET}}
           gist-id: ${{env.GIST_ID}}
           is-self-hosted-runner: true
-          file-name: chronos-NB-py37-pytorch-inference-automl-distributed-test.json
+          file-name: chronos-NB-py39-pytorch-inference-automl-distributed-test.json
           type: job
-          job-name: chronos-NB-py37-pytorch-inference-automl-distributed-test
+          job-name: chronos-NB-py39-pytorch-inference-automl-distributed-test
           runner-hosted-on: 'Shanghai'
 
-  chronos-NB-py37-tensorflow-inference-automl-distributed-test:
+  chronos-NB-py39-tensorflow-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -177,12 +178,12 @@ jobs:
       - name: Set up Maven
         uses: ./.github/actions/maven-setup-action
       - name: Set up Chronos Env
-        uses: ./.github/actions/chronos/setup-env/setup-chronos-python37
+        uses: ./.github/actions/chronos/setup-env/setup-chronos-python39
       - name: Activate Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
-          source activate chronos-py37-env
+          source activate chronos-py39-env
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/tensorflow-inference-automl-distributed
       - name: Remove Chronos Env
@@ -190,7 +191,7 @@ jobs:
         shell: bash
         run: |
           source deactivate
-          conda remove -n chronos-py37-env -y --all
+          conda remove -n chronos-py39-env -y --all
 
       - name: Create Job Badge
         uses: ./.github/actions/create-job-status-badge
@@ -199,9 +200,9 @@ jobs:
           secret: ${{ secrets.GIST_SECRET}}
           gist-id: ${{env.GIST_ID}}
           is-self-hosted-runner: true
-          file-name: chronos-NB-py37-tensorflow-inference-automl-distributed-test.json
+          file-name: chronos-NB-py39-tensorflow-inference-automl-distributed-test.json
           type: job
-          job-name: chronos-NB-py37-tensorflow-inference-automl-distributed-test
+          job-name: chronos-NB-py39-tensorflow-inference-automl-distributed-test
           runner-hosted-on: 'Shanghai'
 
   chronos-NB-py38-pytorch-test:
@@ -333,6 +334,7 @@ jobs:
         shell: bash
         run: |
           source activate chronos-py38-env
+          pip install pyarrow
       - name: Run Chronos python test
         uses: ./.github/actions/chronos/chronos-nb-spark31-action/pytorch-inference-automl-distributed
       - name: Remove Chronos Env
