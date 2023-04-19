@@ -68,7 +68,7 @@ class CheckBatchSize(Callback):
 
     def on_train_batch_end(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule",
                            outputs: STEP_OUTPUT, batch: Any, batch_idx: int,
-                           dataloader_idx: int) -> None:
+                           dataloader_idx: int = 0) -> None:
         elapsed_duration = float(trainer.current_epoch) / \
             float(trainer.max_epochs)
         if self.__should_selective_backprop(elapsed_duration, batch_idx, self.start, self.end,
