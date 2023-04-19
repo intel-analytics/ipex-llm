@@ -1078,15 +1078,15 @@ class TestOpenVINO(TestCase):
             output0 = model_ft({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
 
         sample = ({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
-        onnx_model = InferenceOptimizer.trace(model_ft,
+        ov_model = InferenceOptimizer.trace(model_ft,
                                             accelerator='openvino',
                                             input_sample=sample)
 
-        with InferenceOptimizer.get_context(onnx_model):
-            output1 = onnx_model({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model({'x1':x1_t, 'x2':x2_t}, (x3_t, x4_t), [x5_t, x6_t], bbox)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(load_model):
@@ -1105,15 +1105,15 @@ class TestOpenVINO(TestCase):
             output0 = model_ft({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
 
         sample = {'x1':x1_t, 'x2':x2_t, 'x3':x3_t}
-        onnx_model = InferenceOptimizer.trace(model_ft,
+        ov_model = InferenceOptimizer.trace(model_ft,
                                             accelerator='openvino',
                                             input_sample=sample)
 
-        with InferenceOptimizer.get_context(onnx_model):
-            output1 = onnx_model({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model({'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(load_model):
@@ -1133,15 +1133,15 @@ class TestOpenVINO(TestCase):
             output0 = model_ft(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
 
         sample = (bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
-        onnx_model = InferenceOptimizer.trace(model_ft,
+        ov_model = InferenceOptimizer.trace(model_ft,
                                             accelerator='openvino',
                                             input_sample=sample)
 
-        with InferenceOptimizer.get_context(onnx_model):
-            output1 = onnx_model(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
+        with InferenceOptimizer.get_context(ov_model):
+            output1 = ov_model(bbox, {'x1':x1_t, 'x2':x2_t, 'x3':x3_t})
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
 
         with InferenceOptimizer.get_context(load_model):
