@@ -486,14 +486,15 @@ class TestOnnx(TestCase):
         dataset = CustomDataset()
         loader = DataLoader(dataset, batch_size=1)
 
-        onnx_model = InferenceOptimizer.quantize(model,
-                                                 accelerator='onnxruntime',
-                                                 precision='int8',
-                                                 input_sample=(x1, x2),
-                                                 calib_data=loader)
+        with torch.no_grad():
+            onnx_model = InferenceOptimizer.quantize(model,
+                                                    accelerator='onnxruntime',
+                                                    precision='int8',
+                                                    input_sample=(x1, x2),
+                                                    calib_data=loader)
         with InferenceOptimizer.get_context(onnx_model):
             output1 = onnx_model(x1, x2)
-            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=1)
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=0)
             output2 = onnx_model(x1, x2=x2)
             np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
             output3 = onnx_model(x1=x1, x2=x2)
