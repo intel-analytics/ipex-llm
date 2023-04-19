@@ -1,5 +1,20 @@
 # BigDL KMS (Key Management Service) on Kubernetes
 
+- [Architecture](#architecture)
+- [Thread Model](#threat-model)
+- [Start on Kubernetes](#start-on-kubernetes)
+  - [1. Prerequests](#1-prerequests)
+  - [2. Prepare SSL Key and Password](#2-prepare-ssl-key-and-password)
+  - [3. Deploy Service](#3-deploy-service)
+  - [4. Check Delopyment](#4-check-delopyment)
+- [REST APIs](#rest-apis)
+  - [1. Test Service readiness](#1-test-service-readiness)
+  - [2. Enroll](#2-enroll)
+  - [3. Generate Primary Key](#3-generate-primary-key)
+  - [4. Generate Data Key from the Primary Key](#4-generate-data-key-from-the-primary-key)
+  - [5. Retrieve Plain Text of the Data Key](#5-retrieve-plain-text-of-the-data-key)
+- [Stop Service](#stop-service)
+    
 ## Architecture
 ![BigDLKMS](https://user-images.githubusercontent.com/60865256/229735029-b93f221a-7973-49fa-9474-a216121caf18.png)
 
@@ -52,7 +67,7 @@ imageName       ---> if enable SGX, replace with custom image
 dataStoragePath ---> a host path for persistent stoarge
 serviceIP       ---> your key management service ip to expose
 rootKey         ---> your 256bit base64 AES key string
-teeMode         ---> Mode of TEE server runs in, sgx or tdx
+teeMode         ---> Mode of TEE the server is going to run in, sgx or tdx
 ......
 ```
 
