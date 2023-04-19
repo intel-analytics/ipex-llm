@@ -60,7 +60,7 @@ MLlib toolkit in trusted-machine-learning porvides examples of some classic algo
 bash mllib/scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
 ```
 
-You can also submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
+You can also submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/submit_job.md#ppml-cli):
 
 ```bash
 bash bigdl-ppml-submit.sh \
@@ -78,7 +78,7 @@ bash bigdl-ppml-submit.sh \
      local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 3000
 ```
 
-Or can also run your own ML application with PPML CLI as below:
+Or run your own ML application with PPML CLI as below:
 ```bash 
 export your_applicaiton_jar_path=...
 export your_application_class_path=...
