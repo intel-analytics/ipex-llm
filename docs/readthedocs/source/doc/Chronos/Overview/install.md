@@ -21,9 +21,9 @@
 
     **Supported Python Version**:
 
-    Chronos supports all installation options on Python 3.7.2 ~ latest 3.7.x. For details about different installation options, refer to `here <#install-using-conda>`_.
+    Chronos supports all installation options on Python 3.7 ~ 3.9. For details about different installation options, refer to `here <#install-using-conda>`_.
 
-    Moreover, ``bigdl-chronos[pytorch]``, ``bigdl-chronos[tensorflow]``, ``bigdl-chronos[automl]`` and ``bigdl-chronos[inference]`` are supported on Python 3.8.
+    But if you need to use Chronos with Python >= 3.8 in cluster, you must install `bigdl-chronos-spark3`.
 ```
 
 
@@ -120,7 +120,7 @@ Select your preferences in the panel below to find the proper install command. T
 
 ```bash
 # create a conda environment for chronos
-conda create -n my_env python=3.7 setuptools=58.0.4
+conda create -n my_env python=3.8 setuptools=58.0.4
 conda activate my_env
 
 # select your preference in above panel to find the proper command to replace the below command, e.g.
