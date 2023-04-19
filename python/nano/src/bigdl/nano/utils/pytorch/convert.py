@@ -52,7 +52,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     elif isinstance(input_sample, Dict):
         keys = list(input_sample.keys())
         if len(keys) == 0 or keys[0] not in forward_args:
-            input_sample = {forward_args[0]: input_sample}
+            input_sample = ({forward_args[0]: input_sample},)
 
     input_sample = complement_input_sample(model, input_sample)
 
