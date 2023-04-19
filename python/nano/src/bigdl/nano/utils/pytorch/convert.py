@@ -47,8 +47,8 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     if isinstance(input_sample, Sequence) and isinstance(input_sample[-1], Dict):
         keys = list(input_sample[-1].keys())
         if len(keys) == 0 or keys[0] not in forward_args:
-            arg_idx = len(input_sample)-1
-            input_sample = input_sample[:-1]+ ({forward_args[arg_idx]: input_sample[-1]},)
+            arg_idx = len(input_sample) - 1
+            input_sample = input_sample[:-1] + ({forward_args[arg_idx]: input_sample[-1]},)
     elif isinstance(input_sample, Dict):
         keys = list(input_sample.keys())
         if len(keys) == 0 or keys[0] not in forward_args:
