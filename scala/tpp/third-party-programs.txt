@@ -734,6 +734,9 @@ terms are listed below.
 	Licensed under Apache Software License 2.0
 	Sponsored by Vmware
 
+   reload4j
+	Copyright (c) 1995-1999 The Apache Group
+
    scala-java8-compat
 	Copyright (c) 2002-2022 EPFL
 	Copyright (c) 2011-2022 Lightbend, Inc.
@@ -3494,6 +3497,9 @@ terms are listed below.
 	Copyright (c) 2015 Microsoft
 
    azure-identity
+	Copyright (c) 2015 Microsoft
+
+   azure-security-attestation
 	Copyright (c) 2015 Microsoft
 
    azure-security-keyvault-keys
