@@ -79,6 +79,8 @@ echo "[INFO] finished the construction of trainer network topology, start to tra
 
 # start to train
 if [ "$SGX_ENABLED" = "true" ]; then
+  echo "[INFO] SGX is enabled..."
+  bash init.sh
   export sgx_command="$LGBM_HOME/lightgbm config=/ppml/train.conf"
   gramine-sgx bash
 else
