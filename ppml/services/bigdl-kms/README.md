@@ -1,7 +1,7 @@
 # BigDL KMS (Key Management Service) on Kubernetes
 
 - [Architecture](#architecture)
-- [Thread Model](#threat-model)
+- [Threat Model](#threat-model)
 - [Start on Kubernetes](#start-on-kubernetes)
   - [1. Prerequests](#1-prerequests)
   - [2. Prepare SSL Key and Password](#2-prepare-ssl-key-and-password)
