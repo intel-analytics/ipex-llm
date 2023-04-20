@@ -1,8 +1,8 @@
 name: BigDL Core Release Pypi
 
 on:
-  pull_request:
-    branchs: [ main ] 
+#  pull_request:
+#    branchs: [ main ] 
   workflow_dispatch:
     inputs:
       branch:
@@ -23,8 +23,6 @@ on:
 
 env:
   Branch: ${{ github.event.inputs.branch }}
-  #PYPI_VERSION: ${{ github.event.inputs.version }}
-  #JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
   contents: read
