@@ -2060,7 +2060,110 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-5. llvm
+5. akka-http-spray-json
+      Copyright (C) 2020-2023 Lightbend Inc.
+
+	Business Source License 1.1
+
+	Parameters
+
+	Licensor:             Lightbend, Inc.
+	Licensed Work:        Akka HTTP 10.5.0
+	                      The Licensed Work is (c) 2022 Lightbend Inc.
+	Additional Use Grant:
+	    If you develop an application using a version of Play Framework that
+	    utilizes binary versions of akka-streams and its dependencies, you may
+	    use such binary versions of akka-streams and its dependencies in the
+	    development of your application only as they are incorporated into
+	    Play Framework and solely to implement the functionality provided by
+	    Play Framework; provided that, they are only used in the following way:
+	    Connecting to a Play Framework websocket and/or Play Framework
+	    request/response bodies for server and play-ws client.
+
+	Change Date:          2026-02-21
+
+	Change License:       Apache License, Version 2.0
+
+	For information about alternative licensing arrangements for the Software,
+	please visit: https://lightbend.com/
+
+	-----------------------------------------------------------------------------
+
+	Business Source License 1.1
+
+	License text copyright (c) 2017 MariaDB Corporation Ab, All Rights Reserved.
+	“Business Source License” is a trademark of MariaDB Corporation Ab.
+
+	Terms
+
+	The Licensor hereby grants you the right to copy, modify, create derivative
+	works, redistribute, and make non-production use of the Licensed Work. The
+	Licensor may make an Additional Use Grant, above, permitting limited
+	production use.
+
+	Effective on the Change Date, or the fourth anniversary of the first publicly
+	available distribution of a specific version of the Licensed Work under this
+	License, whichever comes first, the Licensor hereby grants you rights under
+	the terms of the Change License, and the rights granted in the paragraph
+	above terminate.
+
+	If your use of the Licensed Work does not comply with the requirements
+	currently in effect as described in this License, you must purchase a
+	commercial license from the Licensor, its affiliated entities, or authorized
+	resellers, or you must refrain from using the Licensed Work.
+
+	All copies of the original and modified Licensed Work, and derivative works
+	of the Licensed Work, are subject to this License. This License applies
+	separately for each version of the Licensed Work and the Change Date may vary
+	for each version of the Licensed Work released by Licensor.
+
+	You must conspicuously display this License on each original or modified copy
+	of the Licensed Work. If you receive the Licensed Work in original or
+	modified form from a third party, the terms and conditions set forth in this
+	License apply to your use of that work.
+
+	Any use of the Licensed Work in violation of this License will automatically
+	terminate your rights under this License for the current and all other
+	versions of the Licensed Work.
+
+	This License does not grant you any right in any trademark or logo of
+	Licensor or its affiliates (provided that you may use a trademark or logo of
+	Licensor as expressly required by this License).
+
+	TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED ON
+	AN “AS IS” BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS,
+	EXPRESS OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND
+	TITLE.
+
+	MariaDB hereby grants you permission to use this License’s text to license
+	your works, and to refer to it using the trademark “Business Source License”,
+	as long as you comply with the Covenants of Licensor below.
+
+	Covenants of Licensor
+
+	In consideration of the right to use this License’s text and the “Business
+	Source License” name and trademark, Licensor covenants to MariaDB, and to all
+	other recipients of the licensed work to be provided by Licensor:
+
+	1. To specify as the Change License the GPL Version 2.0 or any later version,
+	   or a license that is compatible with GPL Version 2.0 or a later version,
+	   where “compatible” means that software provided under the Change License can
+	   be included in a program with software provided under GPL Version 2.0 or a
+	   later version. Licensor may specify additional Change Licenses without
+	   limitation.
+
+	2. To either: (a) specify an additional grant of rights to use that does not
+	   impose any additional restriction on the right granted in this License, as
+	   the Additional Use Grant; or (b) insert the text “None”.
+
+	3. To specify a Change Date.
+
+	4. Not to modify this License in any other way.
+
+
+-------------------------------------------------------------
+6. llvm
 	University of Illinois/NCSA
 	Open Source License
 	
@@ -2295,7 +2398,7 @@ terms are listed below.
     Software.
 
 -------------------------------------------------------------
-6. opennlp-tools
+7. opennlp-tools
 	Copyright © 2017 The Apache Software Foundation. All rights reserved.
 
 
@@ -2579,7 +2682,7 @@ terms are listed below.
     SOFTWARE.
 
 -------------------------------------------------------------
-7. apr
+8. apr
 
                                  Apache License
                            Version 2.0, January 2004
@@ -3072,7 +3175,7 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-8. LatencyUtils
+9. LatencyUtils
 	LatencyUtils was authored by Gil Tene (@giltene)
 
    jemalloc
@@ -3090,7 +3193,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-9. arpack_combined_all
+10. arpack_combined_all
 	Copyright © 2022 The University of Tennessee. All rights reserved.
 
    asm
@@ -3149,7 +3252,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-10. kryo
+11. kryo
 	Copyright (c) 2008-2022, Nathan Sweet All rights reserved.
 
    minlog
@@ -3169,7 +3272,7 @@ terms are listed below.
 
 
 -------------------------------------------------------------
-11. libwebp
+12. libwebp
 	Copyright (c) 2010, Google Inc. All rights reserved.
 
    protobuf
@@ -3209,7 +3312,7 @@ terms are listed below.
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-12. hamcrest
+13. hamcrest
 	Copyright (c) 2000-2015 www.hamcrest.org
 	All rights reserved.
 
@@ -3237,7 +3340,7 @@ terms are listed below.
     DAMAGE.
 
 -------------------------------------------------------------
-13. xsdlib
+14. xsdlib
 	Copyright (c) 2010 xsdlib, All rights reserved.
 
     Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -3248,7 +3351,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-14. hdrhistogram
+15. hdrhistogram
 	HdrHistogram was originally authored by Gil Tene (@giltene) and placed in the public domain, as explained at http://creativecommons.org/publicdomain/zero/1.0/, with ports by Mike Barker (@mikeb01) (C), Matt Warren (@mattwarren) (C#), Darach Ennis (@darach) (Erlang), Alec Hothan (@ahothan) (Python), Coda Hale (@codahale) (Go), Jon Gjengset (@jonhoo) (Rust), and Alexandre Victoor (@alexvictoor) (JavaScript)
 
    reactive-streams
@@ -3282,7 +3385,7 @@ terms are listed below.
         d. Affirmer understands and acknowledges that Creative 
 
 -------------------------------------------------------------
-15. classworlds
+16. classworlds
 	Copyright 2002 (C) The Codehaus. All Rights Reserved.
 
     Redistribution and use of this software and associated documentation ("Software"), with or without modification, are permitted provided that the following conditions are met:
@@ -3295,7 +3398,7 @@ terms are listed below.
     THIS SOFTWARE IS PROVIDED BY THE CODEHAUS AND CONTRIBUTORS ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE CODEHAUS OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-16. curl
+17. curl
 	Copyright (c) 1996 - 2022, Daniel Stenberg, daniel@haxx.se, and many contributors, see the THANKS file.
 	
 	All rights reserved.
@@ -3307,7 +3410,7 @@ terms are listed below.
     Except as contained in this notice, the name of a copyright holder shall not be used in advertising or otherwise to promote the sale, use or other dealings in this Software without prior written authorization of the copyright holder.
 
 -------------------------------------------------------------
-17. junit
+18. junit
 	Copyright © 2022 The JUnit Team
 
     THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
@@ -3397,7 +3500,7 @@ terms are listed below.
     This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
 
 -------------------------------------------------------------
-18. intel-openmp
+19. intel-openmp
 
    oneMKL
 
@@ -3425,7 +3528,7 @@ terms are listed below.
     Governing law.  All disputes will be governed by the laws of the United States of America and the State of Delaware without reference to conflict of law principles and subject to the exclusive jurisdiction of the state or federal courts sitting in the State of Delaware, and each party agrees that it submits to the personal jurisdiction and venue of those courts and waives any objections. The United Nations Convention on Contracts for the International Sale of Goods (1980) is specifically excluded and will not apply to the Software.
 
 -------------------------------------------------------------
-19. xpp3
+20. xpp3
 	Indiana University Extreme! Lab Software License
 	
 	Version 1.1.1
@@ -3474,7 +3577,7 @@ terms are listed below.
       ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 -------------------------------------------------------------
-20. libtiff
+21. libtiff
 	Copyright © 1988-1997 Sam Leffler
 	Copyright © 1991-1997 Silicon Graphics, Inc.
 
@@ -3485,7 +3588,7 @@ terms are listed below.
     IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 -------------------------------------------------------------
-21. Microsoft SEAL
+22. Microsoft SEAL
 	Copyright (c) Microsoft Corporation. All rights reserved.
 
    animal-sniffer-annotations
@@ -3560,7 +3663,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------
-22. safestring
+23. safestring
 	Copyright (c) 2014-2018 Intel Corporation
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -3608,7 +3711,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     OTHER DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------
-23. fmt
+24. fmt
 	Copyright (c) 2012 - present, Victor Zverovich
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -3622,7 +3725,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 As an exception, if, as a result of your compiling your source code, portions of this Software are embedded into a machine-executable object form of such source code, you may redistribute such embedded portions in such object form without including the above copyright and permission notices.
 
 -------------------------------------------------------------
-24. icu
+25. icu
 	Copyright © 1991-2022 Unicode, Inc. All rights reserved.
 
     UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
@@ -4146,7 +4249,7 @@ As an exception, if, as a result of your compiling your source code, portions of
     without express or implied warranty.
 
 -------------------------------------------------------------
-25. libjpeg-turbo
+26. libjpeg-turbo
 	Copyright (C)2009-2022 D. R. Commander. All Rights Reserved.
 	Copyright (C)2015 Viktor Szathmáry. All Rights Reserved.
 
@@ -4444,7 +4547,7 @@ As an exception, if, as a result of your compiling your source code, portions of
     3. This notice may not be removed or altered from any source distribution.
 
 -------------------------------------------------------------
-26. libpng
+27. libpng
 	* Copyright (c) 1995-2020 The PNG Reference Library Authors.
 	 * Copyright (c) 2018-2020 Cosmin Truta.
 	 * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
@@ -4575,7 +4678,7 @@ As an exception, if, as a result of your compiling your source code, portions of
     be appreciated.
 
 -------------------------------------------------------------
-27. netty
+28. netty
 
    netty-codec
 
@@ -4963,7 +5066,7 @@ As an exception, if, as a result of your compiling your source code, portions of
    limitations under the License. 
 
 -------------------------------------------------------------
-28. boringssl
+29. boringssl
 	Copyright (c) 1998-2011 The OpenSSL Project.  All rights reserved.
 
     BoringSSL is a fork of OpenSSL. As such, large parts of it fall under OpenSSL
@@ -5220,7 +5323,7 @@ As an exception, if, as a result of your compiling your source code, portions of
 
 
 -------------------------------------------------------------
-29. jep
+30. jep
 	Copyright (c) 2004 - 2020 JEP AUTHORS.
 
    tinyxml2
