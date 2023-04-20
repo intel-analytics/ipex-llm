@@ -13,7 +13,7 @@ cd base
 ./build-docker-image.sh
 ```
 
-### 2. Pull/Build Custom Image
+## 2. Pull/Build Custom Image
 
 In consider of security, SGX user needs to build his own custom-signed image, and thus the compiling and execution of in-enclave application are verifiable. This can be achived by the following:
 
