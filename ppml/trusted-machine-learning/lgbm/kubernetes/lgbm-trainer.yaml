@@ -32,6 +32,8 @@ spec:
         image: "$imageName"
         command: ['sh' , '-c', 'bash /ppml/start-lgbm-training.sh']
         env:
+        - name: SGX_ENABLED
+          value: "$sgxEnabled"
         - name: TOTAL_TRAINER_COUNT
           value: "$totalTrainerCount"
         - name: TRAINER_PORT
