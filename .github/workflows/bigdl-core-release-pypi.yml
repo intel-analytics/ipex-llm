@@ -1,7 +1,7 @@
 name: BigDL Core Release Pypi
 
 on:
-  #pull_request:
+  pull_request:
   
   workflow_dispatch:
     inputs:
@@ -9,6 +9,11 @@ on:
         description: 'bigdl core branch (e.g. master, branch-2.1)'
         required: true
         default: 'master'
+        type: string
+      version:
+        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
+        required: true
+        default: '2.2.0b20221205'
         type: string
       jarurl:
         description: 'jar url (e.g. https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar)'
@@ -18,6 +23,7 @@ on:
 
 env:
   Branch: ${{ github.event.inputs.branch }}
+  PYPI_VERSION: ${{ github.event.inputs.version }}
   JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
@@ -82,9 +88,7 @@ jobs:
     - name: Build package
       run: |
         set -x
-        export TIMESTAMP=`date '+%Y%m%d'`
-        export PYPI_VERSION=$(cat ./python/version.txt | head -1)
-        echo ${PYPI_VERSION}
+        echo ${{ env.PYPI_VERSION }}
         export ORIGINAL_PATH=$PATH
         
         echo ${{ env.JAR_URL }}
@@ -92,8 +96,8 @@ jobs:
         #export PYPI_VERSION=2.2.0b20221205
         cd python/dev/
         ## linux ##
-        bash release_default_linux.sh ${{ env.JAR_URL }} ${PYPI_VERSION} true
+        bash release_default_linux.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
         
         ## mac ##
-        bash release_default_mac.sh ${{ env.JAR_URL }} ${PYPI_VERSION} true
+        bash release_default_mac.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
         
