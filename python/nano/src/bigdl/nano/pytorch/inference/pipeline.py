@@ -45,8 +45,8 @@ class Pipeline():
         For example,
         ```
             pipeline = Pipeline([
-                ("preprocess", preprocess, {"core_num": 4, 'worker_num': 1}),
-                ("inference", model, {"core_num": 8, 'worker_num': 1}),
+                ("preprocess", preprocess, {"cores_per_worker": 4, 'worker_num': 1}),
+                ("inference", model, {"cores_per_worker": 8, 'worker_num': 1}),
             ])
         ```
         will create a pipeline which has stage "preprocess" and "inference",
@@ -103,13 +103,13 @@ class Pipeline():
                           f' but get {type(worker_num)}')
         process_list = []
 
-        core_num = config.get("core_num", None)
+        cores_per_worker = config.get("cores_per_worker", None)
         for _ in range(worker_num):
-            if isinstance(core_num, int):
-                cores = self.cores[:core_num]
-                self.cores = self.cores[core_num:]
-                if len(cores) < core_num:
-                    warnings.warn(f"stage {name} requires {core_num} cores,"
+            if isinstance(cores_per_worker, int):
+                cores = self.cores[:cores_per_worker]
+                self.cores = self.cores[cores_per_worker:]
+                if len(cores) < cores_per_worker:
+                    warnings.warn(f"stage {name} requires {cores_per_worker} cores,"
                                   f" but there are only {len(cores)} cores left")
                 subprocess_env["KMP_AFFINITY"] = (
                     f"granularity=fine,proclist"
