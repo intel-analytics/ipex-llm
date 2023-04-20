@@ -1,0 +1,67 @@
+# BigDL KMS Service exposed
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-key-management-service
+  labels:
+    app: bigdl-kms
+spec:
+  type: LoadBalancer
+  ports:
+    - name: bigdl-kms-port
+      port: 9876
+      targetPort: 9876
+  selector:
+    app: bigdl-kms
+  sessionAffinity: ClientIP
+  externalIPs:
+  - $serviceIP
+---
+# BigDL KMS Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-key-management-server
+spec:
+  selector:
+    matchLabels:
+      app: bigdl-kms
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bigdl-kms
+    spec:
+      containers:
+      - name: bigdl-key-management-server
+        image: $imageName
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /ppml/data
+          name: persisten-db-storage
+        - name: ssl-keys
+          mountPath: /ppml/keys
+        - name: ssl-password
+          mountPath: /ppml/password
+        env:
+        - name: ROOT_KEY
+          value: "$rootKey"
+        - name: SGX_ENABLED
+          value: "false"
+        resources:
+          requests:
+            cpu: 8
+            memory: 32Gi
+          limits:
+            cpu: 10
+            memory: 40Gi
+      volumes:
+      - name: persisten-db-storage
+        hostPath:
+          path: $dataStoragePath
+      - name: ssl-keys
+        secret:
+          secretName: ssl-keys
+      - name: ssl-password
+        secret:
+          secretName: ssl-password

@@ -104,12 +104,18 @@ class BigDLKeyManagementService(
     logger.info("BigDLKMS retrieveDataKey API create a data key at KMS server" +
                 " and do not save locally.")
     val action = BIGDLKMS_ACTION.CREATE_DATA_KEY
-    val url = constructBaseUrl(action, dataKeyName) +
-              s"&user=$userName&primaryKeyName=$primaryKeyName"
+    val dkn = if (dataKeyName != null && dataKeyName != "") {
+      dataKeyName
+    } else {
+      // random and unique string as data key name
+      java.util.UUID.randomUUID.toString
+    }
+    val url = constructBaseUrl(action, dkn) +
+      s"&user=$userName&primaryKeyName=$primaryKeyName"
     val response = timing("BKeyManagementService request for creating dataKey") {
       sendRequest(BIGDLKMS_ACTION.POST_REQUEST, url)
     }
-    Some(dataKeyName)
+    Some(dkn)
   }
 
 
@@ -118,11 +124,16 @@ class BigDLKeyManagementService(
                                encryptedDataKeyString: String = ""): String = {
     Log4Error.invalidInputError(primaryKeyName != null && primaryKeyName != "",
       "primaryKeyName should be specified")
-    Log4Error.invalidInputError(dataKeyName != null && dataKeyName != "",
-      "dataKeyName should be specified")
+    val dkn: String = if (dataKeyName != null && dataKeyName != "") {
+      dataKeyName
+    } else if (encryptedDataKeyString != null && encryptedDataKeyString!= "") {
+      encryptedDataKeyString
+    } else {
+      Log4Error.invalidInputError(false, "dataKeyName should be specified"); ""
+    }
     logger.info("BigDLKMS retrieveDataKeyPlaintext API get the specific data key from KMS server")
     val action = BIGDLKMS_ACTION.GET_DATA_KEY
-    val url = constructBaseUrl(action, dataKeyName) +
+    val url = constructBaseUrl(action, dkn) +
               s"&user=$userName&primaryKeyName=$primaryKeyName"
     val response = timing("BigDLKeyManagementService request for getting dataKey") {
       sendRequest(BIGDLKMS_ACTION.GET_REQUEST, url)
