@@ -4,6 +4,7 @@ export imageName=intelanalytics/bigdl-ppml-trusted-machine-learning-gramine-refe
 export totalTrainerCount=2
 export trainerPort=12400
 export nfsMountPath=a_host_path_mounted_by_nfs_to_upload_data_before_training
+export sgxEnabled=true
 
 bash upload-data.sh
 envsubst < lgbm-trainer.yaml | kubectl apply -f -
