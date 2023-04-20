@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning", "keras", "cpuinfo", "sigfig", "prophet"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
@@ -62,7 +62,7 @@ html_context = {
 html_logo = "../image/bigdl_logo.png"
 
 # hard code it for now, may change it to read from installed bigdl
-release = "latest"
+release = "v2.3.0"
 
 # The suffix of source filenames.
 from recommonmark.parser import CommonMarkParser
