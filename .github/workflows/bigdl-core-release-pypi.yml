@@ -2,7 +2,7 @@ name: BigDL Core Release Pypi
 
 on:
   pull_request:
-  
+    branchs: [ main ] 
   workflow_dispatch:
     inputs:
       branch:
