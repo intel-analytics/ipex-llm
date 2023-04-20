@@ -67,7 +67,7 @@ def setup_package():
                         'tensorflow': ['bigdl-nano[tensorflow_27]=='+VERSION],
                         'automl': ['optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27'],
                         'distributed:platform_system!="Windows"': ['bigdl-orca[automl]=='+VERSION,
-                                                                   'grpcio<=1.51.1', 'pyarrow'],
+                                                                   'grpcio<=1.51.1'],
                         'inference': ['bigdl-nano[inference]==' + VERSION],
                         'all': ['bigdl-nano[pytorch]==' + VERSION,
                                 'bigdl-nano[tensorflow_27]=='+VERSION,
