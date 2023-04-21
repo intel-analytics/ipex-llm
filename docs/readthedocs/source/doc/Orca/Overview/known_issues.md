@@ -195,7 +195,7 @@ Full error log example:
 ```shell
 tensorflow.python.framework.errors_impl.FailedPreconditionError: Collective ops is aborted by: Device /job:worker/replica:0/task:14/device:CPU:0 current incarnation doesn't match with one in the group. This usually means this worker has restarted but the collective leader hasn't, or this worker connects to a wrong cluster. Additional GRPC error information from remote target /job:worker/replica:0/task:0: :{"created":"@1681905587.420462284","description":"Error received from peer ipv4:172.16.0.150:47999","file":"external/com_github_grpc_grpc/src/core/lib/surface/call.cc","file_line":1056,"grpc_message":"Device /job:worker/replica:0/task:14/device:CPU:0 current incarnation doesn't match with one in the group. This usually means this worker has restarted but the collective leader hasn't, or this worker connects to a wrong cluster.","grpc_status":9} The error could be from a previous operation. Restart your program to reset. [Op:CollectiveReduceV2]
 ```
-This error may happen when Spark reduce locality shuffle is enabled. You can disable it by setting `spark.shuffle.reduceLocality.enabled` to false, or load property file named `spark-bigdl.conf` from bigdl release package.
+This error may happen when Spark reduce locality shuffle is enabled. To eliminate this issue, you can disable it by setting `spark.shuffle.reduceLocality.enabled` to false, or load property file named `spark-bigdl.conf` from bigdl release package.
 
 ```shell
 # set spark.shuffle.reduceLocality.enabled to false
@@ -211,7 +211,7 @@ spark-submit \
 
 ### Start Spark task before all executor is scheduled.
 
-This issue may leads to slower data processing. To avoid this, you can set `spark.scheduler.maxRegisteredResourcesWaitingTime` to a larger number, the default value is `30s`. Or you can load property file named `spark-bigdl.conf` from bigdl release package.
+This issue may lead to slower data processing. To avoid this, you can set `spark.scheduler.maxRegisteredResourcesWaitingTime` to a larger number, the default value is `30s`. Or you can load property file named `spark-bigdl.conf` from bigdl release package.
 
 ```shell
 # set spark.scheduler.maxRegisteredResourcesWaitingTime
