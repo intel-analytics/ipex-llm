@@ -459,8 +459,9 @@ jobs:
             --build-arg no_proxy=${NO_PROXY} \
             --build-arg SPARK_JAR_REPO_URL=${SPARK_JAR_REPO_URL} \
             -t ${image}:${TAG} -f ./production/Dockerfile .
-          pwd
-          cd /home/arda/github-action-runner/actions-runner/_work/BigDL/BigDL/ppml/trusted-big-data-ml/scala/docker-occlum
+          dir_path=$(pwd)
+          echo $dir_path
+          cd $dir_path
           export image_name=${image}:${TAG}
           export final_name=${image_name}-build
           export container_name=${TAG}-container
