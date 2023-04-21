@@ -46,6 +46,7 @@ COPY --from=bigdata  /ppml/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata  /ppml/examples/src/main/resources /ppml/examples/src/main/resources
 COPY --from=bigdata  /usr/local/bin/gosu /usr/local/bin/gosu
 
+ADD ./bash.manifest.template /ppml
 ADD ./SparkML/bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./SparkML/scripts /ppml/scripts
 ADD ./SparkML/spark-executor-template.yaml /ppml/spark-executor-template.yaml
