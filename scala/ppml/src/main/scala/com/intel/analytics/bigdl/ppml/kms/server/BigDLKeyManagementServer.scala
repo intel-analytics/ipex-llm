@@ -31,18 +31,21 @@ import sys.process._
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 
-import com.intel.analytics.bigdl.ppml.kms.common.BigDLKMServerUtil
+import com.intel.analytics.bigdl.ppml.kms.common.{BigDLKMServerUtil, SecretStore}
+
+import java.nio.charset.StandardCharsets
 
 object BigDLKeyManagementServer extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
-  Class.forName("org.sqlite.JDBC")
   val name = "bigdl-key-management-server"
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
-  val rootKey = sys.env("ROOT_KEY")
-  Log4Error.invalidOperationError(rootKey != "",
-    "Excepted ROOT_KEY but found it empty, please upload it as k8s secret")
+  implicit val secretStore = new SecretStore
+  implicit val secretThreshold = 3
+  // if obtained is not "", use k8s secret from env as root key
+  // else use secret sharing schema
+  implicit var rootKey: String = sys.env("ROOT_KEY")
 
   def main(args: Array[String]): Unit = {
     val arguments = timing("parse arguments") {
@@ -165,14 +168,71 @@ object BigDLKeyManagementServer extends Supportive {
             }
           }
         }
+      } ~ path("rootKey/rotate") {
+        get {
+          timing("rotate root key") {
+            try {
+              rootKey = BigDLKMServerUtil.generateAESKey(256)
+              import scala.collection.JavaConverters._
+              val secrets: String = BigDLKMServerUtil
+                .splitRootKey(rootKey, secretThreshold).asScala.values
+                .map(new String(_, StandardCharsets.UTF_16)).mkString("\n")
+              complete(s"root key is updated! \n" +
+                "please save secrets: " + secrets +
+                s"\n need $secretThreshold of 5 secrets to recover root key.")
+            } catch {
+              case e: Exception =>
+                e.printStackTrace()
+                complete(500, e.getMessage + "\n please create a root key like: " +
+                  "POST /rootKey")
+            }
+          }
+        }
+      } ~ path("rootKey/recover") {
+        post {
+          parameters("secret") {
+            (secret) => {
+              //need at least $secretThreshold of 5 secrets to restore the root key
+              timing("recover root key from secrets: " +
+                s"${secretStore.count}/$secretThreshold") {
+                  try {
+                    Log4Error.invalidOperationError(rootKey == "",
+                      "Root Key exists and cannot repeat initialization")
+                    secretStore.addSecret(secret)
+                    if (secretStore.count > secretThreshold) {
+                      try {
+                        rootKey = BigDLKMServerUtil
+                          .recoverRootKey(secretStore.getSecrets, secretThreshold)
+                        complete(s"recover root key and initialize server successfully!")
+                      } catch {
+                        case e: Exception =>
+                          e.printStackTrace()
+                          complete(500, e.getMessage + "\n join splits failure!" +
+                            s"secrets may be wrong! please resend them 0/$secretThreshold")
+                      } finally {
+                        secretStore.clear
+                      }
+                    } else {
+                      complete(s"received ${secretStore.count}/$secretThreshold shares")
+                    }
+                  } catch {
+                    case e: Exception =>
+                      e.printStackTrace()
+                      complete(500, e.getMessage + "\n please recover a root key like: " +
+                        "PUT /rootKey?secret=a_secret_string_of_the_splited_root_key")
+                  }
+              }
+            }
+          }
+        }
       }
     }
 
-      val serverContext = BigDLKMServerUtil.defineServerContext(
-        arguments.httpsKeyStoreToken, arguments.httpsKeyStorePath)
-      Http().bindAndHandle(route, arguments.ip, port = arguments.port,
-        connectionContext = serverContext)
-      logger.info(s"$name started at https://${arguments.ip}:${arguments.port}")
+    val serverContext = BigDLKMServerUtil.defineServerContext(
+      arguments.httpsKeyStoreToken, arguments.httpsKeyStorePath)
+    Http().bindAndHandle(route, arguments.ip, port = arguments.port,
+      connectionContext = serverContext)
+    logger.info(s"$name started at https://${arguments.ip}:${arguments.port}")
   }
 
   val argumentsParser =

@@ -102,6 +102,11 @@
             <version>1.21</version>
             <scope>${spark-scope}</scope>
         </dependency>
+        <dependency>
+	    <groupId>com.codahale</groupId>
+            <artifactId>shamir</artifactId>
+            <version>0.7.0</version>
+        </dependency>
 	<dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
