@@ -23,13 +23,13 @@ Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepa
 
 ## Run machine learning example
 
-The following shows how to run ML applications with [Spark MLlib](#2-run-spark-mllib-application) or [LightGBM](#3-run-lightgbm-application) locally or on distributed kubernetes.
+The following shows how to run ML applications built on [SparkML](#2-run-spark-ml-application) or [LightGBM](#3-run-lightgbm-application) in a local or distributed (kubernetes/spark-on-kubernetes) fashion.
 
 ### 1. Configure K8S Environment
 
 Follow [here](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/prepare_environment.md#configure-the-environment) to create and configure K8S RBAC and secrets.
 
-### 2. Run Spark MLlib Application
+### 2. Run SparkML Application
 
 #### 2.1 Start a client container
 
@@ -62,19 +62,19 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-run `docker exec -it machine-learning-graming bash` to enter the container.
+run `docker exec -it machine-learning-gramine bash` to enter the container.
 
 If you want to directyly execute a local application, run `init.sh` to init the SGX and make some necessary settings:
 ```bash
 bash init.sh
 ```
 
-#### 2.2 Submit local Spark Machine Learning job 
+#### 2.2 Submit local SparkML job 
 
-MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/mllib/scripts` and execute one of them like this:
+MLlib toolkit in trusted-machine-learning porvides examples of some classic algorithms, like random forest, linear regression, gbt, K-Means etc. You can check the scripts in `/ppml/scripts` and execute one of them like this:
 
 ```bash 
-bash mllib/scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
+bash scripts/classification/sgx/start-random-forest-classifier-on-local-sgx.sh
 ```
 
 Or submit a ML workload through [PPML CLI](https://github.com/intel-analytics/BigDL/blob/ecd8d96f2d4a1d2421d5edd3a566c93c7797ff03/ppml/docs/submit_job.md#ppml-cli):
@@ -115,25 +115,25 @@ export your_application_arguments=...
 ```
 
 #### 2.3 Submit Spark Machine Learning job with Kubernetes
-The MLlib toolkit also provides machine learning examples that use Kubernetes, and you can distinguish whether they use Kubernetes and what deploy mode they use by the script name. You can run one of the Kubernetes examples like this:
+The SparkML toolkit also provides machine learning examples that use Kubernetes, and you can distinguish whether they use Kubernetes and what deploy mode they use by the script name. You can run one of the Kubernetes examples like this:
 
 ```bash
-bash mllib/scripts/classification/native/start-random-forest-classifier-on-k8s-client-native.sh
+bash scripts/classification/native/start-random-forest-classifier-on-k8s-client-native.sh
 ```
 
 ### 3. Run LightGBM Application
 
 #### 3.1 LightGBM Training on Kubernetes
 
-The below illustrates how to run official example of [parallel learning](https://github.com/microsoft/LightGBM/tree/master/examples/parallel_learning#distributed-learning-example) as a reference, while user are allowed to run your custom applications (feature/data/voting parallel, or training/inference) by operating `lgbm/train.conf` (then rebuild the image) and `lgbm/kubernetes/upload-data.sh` (to specify your own data and data shards).
+The below illustrates how to run official example of [parallel learning](https://github.com/microsoft/LightGBM/tree/master/examples/parallel_learning#distributed-learning-example) as a reference, while user are allowed to run your custom applications (feature/data/voting parallel, or training/inference) by operating `LightGBM/trainer.conf` (then rebuild the image) and `LightGBM/kubernetes/upload-data.sh` (to specify your own data and data shards).
 
 Go to the work directory:
 
 ```bash
-cd lgbm/kubernetes
+cd LightGBM/kubernetes
 ```
 
-Modify parameters in `install-lgbm-trainer.sh`:
+Modify parameters in `start-lgbm-training.sh`:
 
 ```bash
 export imageName=intelanalytics/bigdl-ppml-trusted-machine-learning-gramine-reference:2.3.0-SNAPSHOT # You custom image name if needed
@@ -145,20 +145,23 @@ export nfsMountPath=a_host_path_mounted_by_nfs_to_upload_data_before_training # 
 Then, start training by one command:
 
 ```bash
-bash install-lgbm-trainer.sh
+bash start-lgbm-training.sh
 ```
 
 Then, you will find multiple models trained and saved by different trainers at `nfsMountPath` like the following:
 ```bash
 ls $nfsMountPath/lgbm/lgbm-trainer-0/model.text
+# you will see below:
 model.text
+
 ls $nfsMountPath/lgbm/lgbm-trainer-1/model.text
+# you will see below:
 model.text
 ```
 The models are similar to each other because they have convergenced through Allreduce.
 
 Finally, stop the trainer pods in consider of security:
 ```bash
-bash uninstall-lgbm-trainer.sh
+bash uninstall-lgbm-trainer-from-k8s.sh
 ```
 

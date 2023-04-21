@@ -30,7 +30,7 @@ spec:
       containers:
       - name: lgbm-trainer
         image: "$imageName"
-        command: ['sh' , '-c', 'bash /ppml/start-lgbm-training.sh']
+        command: ['sh' , '-c', 'bash /ppml/lgbm-training-entrypoint.sh']
         env:
         - name: TOTAL_TRAINER_COUNT
           value: "$totalTrainerCount"
