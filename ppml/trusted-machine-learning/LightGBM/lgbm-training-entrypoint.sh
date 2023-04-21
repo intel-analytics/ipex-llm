@@ -6,7 +6,7 @@ SNAPSHOT_MLIST_PATH="/ppml/data/lgbm/$TRAINER_POD_NAME/mlist.snapshot"
 # convergenced machine list file is read and written by self
 CONVERGENCED_MLIST_PATH="/ppml/mlist.convergenced"
 MODEL_SAVE_PATH="/ppml/data/lgbm/$TRAINER_POD_NAME/model.text"
-TRAIN_CONF_PAHT="/ppml/train.conf"
+TRAIN_CONF_PAHT="/ppml/trainer.conf"
 TRAINER_INDEX="${TRAINER_POD_NAME: -1}"
 
 export TRAINER_PORT=$[TRAINER_PORT+TRAINER_INDEX]
