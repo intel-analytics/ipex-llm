@@ -10,15 +10,15 @@ Besides, some demos and performance benchmark results will also be included in t
 ## Before Running code
 ### 1. Build Docker Images
 
-**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0-SNAPSHOT` for a quick start, which is provided for a demo purpose. Do not use it for production.
+**Tip:** if you want to skip building the custom image, you can use our public image `intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0` for a quick start, which is provided for a demo purpose. Do not use it for production.
 
 ### 1.1 Build BigDL Base Image
 
 The bigdl base image is a public one that does not contain any secrets. You will use the base image to get your own custom image in the following steps. 
 
-Please be noted that the `intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base:2.3.0-SNAPSHOT` image relies on the `intelanalytics/bigdl-ppml-gramine-base:2.3.0-SNAPSHOT` image.  
+Please be noted that the `intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base:2.3.0` image relies on the `intelanalytics/bigdl-ppml-gramine-base:2.3.0` image.  
 
-For the instructions on how to build the `gramine-base` image, check `ppml/base/README.md` in our repository.  Another option is to use our public image `intelanalytics/bigdl-ppml-gramine-base:2.3.0-SNAPSHOT` for a quick start.
+For the instructions on how to build the `gramine-base` image, check `ppml/base/README.md` in our repository.  Another option is to use our public image `intelanalytics/bigdl-ppml-gramine-base:2.3.0` for a quick start.
 
 Before running the following command, please modify the paths in `../base/build-docker-image.sh`. Then build the docker image with the following command.
 
@@ -38,7 +38,7 @@ It will generate a file `enclave-key.pem` in `ppml/trusted-deep-learning/ref` di
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then, use the `enclave-key.pem` and the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.3.0-SNAPSHOT` image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive enclave key inside the final image, which is safer.
+Then, use the `enclave-key.pem` and the `intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-base:2.3.0` image to build your own custom image. In the process, SGX MREnclave will be made and signed without saving the sensitive enclave key inside the final image, which is safer.
 
 
 Before running the following command, please modify the paths in `./build-custom-image.sh`. Then build the docker image with the following command.

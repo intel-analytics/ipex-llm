@@ -1,5 +1,5 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
-ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
+ARG BASE_IMAGE_TAG=2.3.0
 
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as attestation-service-base
 

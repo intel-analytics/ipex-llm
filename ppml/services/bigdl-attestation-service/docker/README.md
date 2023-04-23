@@ -1,7 +1,7 @@
 ## 1. Build image
 You can pull the BigDL Remote Attestation Service image from dockerhub.
 ``` bash
-docker pull intelanalytics/bigdl-attestation-service:2.3.0-SNAPSHOT
+docker pull intelanalytics/bigdl-attestation-service:2.3.0
 ```
 Or you can clone BigDL repository and build the image with `build-docker-image.sh`.
 First you need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
@@ -20,7 +20,7 @@ export DATA_PATH=
 export KEYS_PATH=
 export NFS_INPUT_PATH=
 export LOCAL_IP=
-export DOCKER_IMAGE=intelanalytics/bigdl-attestation-service:2.3.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-attestation-service:2.3.0
 
 export PCCS_URL=
 export HTTPS_KEY_STORE_TOKEN=
