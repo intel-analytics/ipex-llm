@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets
 object BigDLKeyManagementServer extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
   val name = "bigdl-key-management-server"
+  Class.forName("org.sqlite.JDBC")
   implicit val system = ActorSystem(name)
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
@@ -45,7 +46,7 @@ object BigDLKeyManagementServer extends Supportive {
   implicit val secretThreshold = 3
   // if obtained is not "", use k8s secret from env as root key
   // else use secret sharing schema
-  implicit var rootKey: String = sys.env("ROOT_KEY")
+  implicit var rootKey: String = sys.env.getOrElse("ROOT_KEY", "")
 
   def main(args: Array[String]): Unit = {
     val arguments = timing("parse arguments") {
@@ -59,6 +60,9 @@ object BigDLKeyManagementServer extends Supportive {
       path("") {
         timing("welcome") {
           val response = s"welcome to $name \n \n" +
+          "please request/recover root key before using other APIs: \n" +
+          "rotate (or generate) a root key: GET /rootKey/rotate \n" +
+          "recover root key: PUT /rootKey?secret=a_secret_string_of_the_splited_root_key \n" +
           "create a user like: " +
           "POST /user/{userName}?token=a_token_string_for_the_user \n" +
           "create a primary key like: " +
@@ -127,6 +131,8 @@ object BigDLKeyManagementServer extends Supportive {
           parameters("token") {
             (token) => { timing("enroll") {
               try {
+                Log4Error.invalidOperationError(rootKey != "",
+                  "empty root key! Need initilization first")
                 BigDLKMServerUtil.saveUser2DB(userName, token, url)
                 complete(s"user [$userName] is created successfully!")
               } catch {
@@ -168,33 +174,30 @@ object BigDLKeyManagementServer extends Supportive {
             }
           }
         }
-      } ~ path("rootKey/rotate") {
+      } ~ path("rootKey" / "rotate") {
         get {
           timing("rotate root key") {
             try {
               rootKey = BigDLKMServerUtil.generateAESKey(256)
-              import scala.collection.JavaConverters._
               val secrets: String = BigDLKMServerUtil
-                .splitRootKey(rootKey, secretThreshold).asScala.values
-                .map(new String(_, StandardCharsets.UTF_16)).mkString("\n")
-              complete(s"root key is updated! \n" +
+                .splitRootKey(rootKey, secretThreshold)
+              complete(s"root key is rotated! \n" +
                 "please save secrets: " + secrets +
-                s"\n need $secretThreshold of 5 secrets to recover root key.")
+                s"need $secretThreshold of 5 secrets to recover root key.")
             } catch {
               case e: Exception =>
                 e.printStackTrace()
-                complete(500, e.getMessage + "\n please create a root key like: " +
-                  "POST /rootKey")
+                complete(500, e.getMessage + "\n please rotate a root key like: " +
+                  "GET /rootKey/rotate")
             }
           }
         }
-      } ~ path("rootKey/recover") {
-        post {
-          parameters("secret") {
-            (secret) => {
+      } ~ path("rootKey" / "recover") {
+        put {
+          entity(as[String]) { secret =>
               //need at least $secretThreshold of 5 secrets to restore the root key
               timing("recover root key from secrets: " +
-                s"${secretStore.count}/$secretThreshold") {
+                s"${secretStore.count + 1}/$secretThreshold") {
                   try {
                     Log4Error.invalidOperationError(rootKey == "",
                       "Root Key exists and cannot repeat initialization")
@@ -203,6 +206,9 @@ object BigDLKeyManagementServer extends Supportive {
                       try {
                         rootKey = BigDLKMServerUtil
                           .recoverRootKey(secretStore.getSecrets, secretThreshold)
+                        Log4Error.invalidOperationError(BigDLKMServerUtil
+                          .isBase64(rootKey),
+                          "recover failure! wrong secret or try other ones")
                         complete(s"recover root key and initialize server successfully!")
                       } catch {
                         case e: Exception =>
@@ -225,7 +231,6 @@ object BigDLKeyManagementServer extends Supportive {
             }
           }
         }
-      }
     }
 
     val serverContext = BigDLKMServerUtil.defineServerContext(
