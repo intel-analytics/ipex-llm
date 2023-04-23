@@ -1039,7 +1039,7 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-kms-base
+    - name: bigdl-kms-reference
       run: |
         echo "############################################"
         echo "########## bigdl-kms-reference #############"
