@@ -29,6 +29,8 @@ on:
         - bigdl-ppml-trusted-python-toolkit-ref
         - bigdl-ppml-trusted-bigdata-gramine
         - bigdl-kms
+        - bigdl-kms-base
+        - bigdl-kms-reference
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -997,3 +999,61 @@ jobs:
 
         sudo docker rmi -f ${base_image}:${TAG}
         sudo docker rmi -f ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
+
+  bigdl-kms-base:
+    if: ${{ github.event.inputs.artifact == 'bigdl-kms-base' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-kms-base
+      run: |
+        echo "#######################################"
+        echo "########## bigdl-kms-base #############"
+        echo "#######################################"
+        export image=intelanalytics/bigdl-kms-base
+        cd ppml/services/bigdl-kms/docker/base
+        sudo docker build \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg JDK_VERSION=8u192 \
+          --build-arg JDK_URL=${JDK_URL} \
+          --build-arg no_proxy=${LOCAL_IP} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-kms-reference:
+    if: ${{ github.event.inputs.artifact == 'bigdl-kms-reference' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-kms-base
+      run: |
+        echo "############################################"
+        echo "########## bigdl-kms-reference #############"
+        echo "############################################"
+        export base_image=intelanalytics/bigdl-kms-base
+        export image=intelanalytics/bigdl-kms-reference
+        cd ppml/services/bigdl-kms/docker/custom
+        sudo docker build \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+	        --build-arg SGX_MEM_SIZE=16G \
+	        --build-arg SGX_LOG_LEVEL=error \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
