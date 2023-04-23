@@ -316,7 +316,7 @@ run `docker exec -it spark-local-k8s-client bash` to enter the container.
 
 #### 3 run Spark applications
 
-If you run SGX applications in local or client, remeber to run `init.sh` first.
+**Attention:** If you run SGX applications in local or client, remeber to run `init.sh` first.
 
 We use Spark pi as an example. The result should look something like this:
 
@@ -356,7 +356,9 @@ gramine-sgx bash 2>&1 | tee spark-pi-local-sgx.log
 `bigdl-ppml-submit.sh` is in `/ppml`.
 
 **3.1 Spark-Pi on local mode**
+
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
+
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
@@ -374,7 +376,9 @@ bash bigdl-ppml-submit.sh \
 ```
 
 **3.2 Spark-Pi on local sgx mode**
+
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
+
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
@@ -395,6 +399,7 @@ bash bigdl-ppml-submit.sh \
 
 ```
 **3.3 Spark-Pi on client mode**
+
 ![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
 
 ```
@@ -420,6 +425,7 @@ bash bigdl-ppml-submit.sh \
 ```
 
 **3.4 Spark-Pi on cluster mode**
+
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 
 ```
@@ -444,7 +450,7 @@ bash bigdl-ppml-submit.sh \
         local://${SPARK_HOME}/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar 100
 ```
 
-If you need a distributed file system, you can use HDFS of Network File System (NFS) configured for the Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
+If you need a distributed file system, you can use HDFS or Network File System (NFS) configured for the Kubernetes cluster. To mount NFS, you should change the `nfsvolumeclaim` in `spark-driver-template.yaml` and `spark-executor-template.yaml` to the name of the Persistent Volume Claim (PVC) of your NFS.
 #### 4 bigdl-ppml-submit.sh explanations
 
 1. To use bigdl-ppml-submit.sh, set the following required arguments:
