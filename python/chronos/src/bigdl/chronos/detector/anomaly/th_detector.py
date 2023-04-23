@@ -250,7 +250,7 @@ class ThresholdDetector(AnomalyDetector):
             default to be None.
         """
         if not isinstance(self.trend_th[0], np.ndarray) and self.trend_th[0] == -math.inf and \
-            not isinstance(self.trend_th[1], np.ndarray) and self.trend_th[1] == math.inf:
+                not isinstance(self.trend_th[1], np.ndarray) and self.trend_th[1] == math.inf:
             self.trend_th = estimate_trend_th(y,
                                               mode=self.mode,
                                               ratio=self.ratio)
