@@ -13,11 +13,11 @@ Proxy_Modified="sudo docker build \
     --build-arg SGX_MEM_SIZE=MEM_SIZE_OF_SGX \
     --build-arg SGX_LOG_LEVEL=LOG_LEVEL_OF_SGX \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0 -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.3.0 -f ./Dockerfile ."
 
 if [[ "$HTTP_PROXY_HOST" == "your_http_proxy_host" ]] || [[ "$HTTP_PROXY_PORT" == "your_http_proxy_port" ]] || [[ "$HTTPS_PROXY_HOST" == "your_https_proxy_host" ]] || [[ "$HTTPS_PROXY_PORT" == "your_https_proxy_port" ]]
 then

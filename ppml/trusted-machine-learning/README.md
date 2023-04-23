@@ -136,7 +136,7 @@ cd lgbm/kubernetes
 Modify parameters in `install-lgbm-trainer.sh`:
 
 ```bash
-export imageName=intelanalytics/bigdl-ppml-trusted-machine-learning-gramine-reference:2.3.0-SNAPSHOT # You custom image name if needed
+export imageName=intelanalytics/bigdl-ppml-trusted-machine-learning-gramine-reference:2.3.0 # You custom image name if needed
 export totalTrainerCount=2 # count of trainers as well as kubernetes pods
 export trainerPort=12400 # base port number, while the real port can be adapted
 export nfsMountPath=a_host_path_mounted_by_nfs_to_upload_data_before_training # the path you used to create kubernetes nfsvolumeclaim

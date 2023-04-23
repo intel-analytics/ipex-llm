@@ -8,9 +8,9 @@ export LOCAL_IP=your_local_ip
 export LGBM_NETWORK_MODE_BUILD=SSL_OR_PLAIN
 
 export BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
-export BASE_IMAGE_TAG=2.3.0-SNAPSHOT
+export BASE_IMAGE_TAG=2.3.0
 export MACHINE_LEARNING_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-base
-export MACHINE_LEARNING_IMAGE_TAG=2.3.0-SNAPSHOT
+export MACHINE_LEARNING_IMAGE_TAG=2.3.0
 
 Proxy_Modified="sudo docker build \
     --build-arg http_proxy=http://${HTTP_PROXY_HOST}:${HTTP_PROXY_PORT} \

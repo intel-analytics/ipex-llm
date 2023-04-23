@@ -27,7 +27,7 @@ After our many tests, Using MALLOC_ARENA_MAX=1 is fine in most cases. Hadoop rec
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0
 ```
 
 ## Before running the example
