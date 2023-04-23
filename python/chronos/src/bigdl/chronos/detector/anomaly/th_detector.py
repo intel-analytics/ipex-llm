@@ -166,15 +166,15 @@ def detect_anomaly(y,
     if (isinstance(trend_th[0], int) or isinstance(trend_th[0], float)) \
             and (isinstance(trend_th[1], int) or isinstance(trend_th[1], float)):
         # min / max values are scalars
-        invalidInputError(trend_th[0] < trend_th[1],
-                          "Trend threshold is composed of (min, max), max should be larger.")
+        invalidInputError(trend_th[0] <= trend_th[1],
+                          "Trend threshold is composed of (min, max), max should not be smaller.")
         index = detect_trend_anomaly(y, trend_th)
         anomaly_indexes = list(set(anomaly_indexes + index))
     elif trend_th[0].shape == y.shape and trend_th[1].shape == y.shape:
         # min max values are arrays
-        invalidInputError(np.all((trend_th[1] - trend_th[0]) > 0),
+        invalidInputError(np.all((trend_th[1] - trend_th[0]) >= 0),
                           "In trend threshold (min, max), each data point in max tensor"
-                          " should be larger.")
+                          " should not be smaller.")
         index = detect_trend_anomaly_arr(y, trend_th)
         anomaly_indexes = list(set(anomaly_indexes + index))
     else:
@@ -236,6 +236,8 @@ class ThresholdDetector(AnomalyDetector):
         self.dist_measure = dist_measure
         self.mode = mode
         self.pattern_th = pattern_threshold
+        invalidInputError(isinstance(trend_threshold, tuple) and len(trend_threshold) == 2,
+                          "Trend threshold is supposed to be a tuple of two elements.")
         self.trend_th = trend_threshold
 
     def fit(self, y, y_pred=None):
@@ -247,7 +249,8 @@ class ThresholdDetector(AnomalyDetector):
         :param y_pred: the predicted values, a tensor with same shape as y,
             default to be None.
         """
-        if self.trend_th is (-math.inf, math.inf):
+        if not isinstance(self.trend_th[0], np.ndarray) and self.trend_th[0] == -math.inf and \
+            not isinstance(self.trend_th[1], np.ndarray) and self.trend_th[1] == math.inf:
             self.trend_th = estimate_trend_th(y,
                                               mode=self.mode,
                                               ratio=self.ratio)
