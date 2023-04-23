@@ -283,7 +283,7 @@ class ThresholdDetector(AnomalyDetector):
             Moreover, if both y and y_hat are None, returns anomalies in the fit input.
         :param y_pred: predicted values corresponding to y
 
-        :return: dict, anomaly score for each sample composed of pattern and trend type, 
+        :return: dict, anomaly score for each sample composed of pattern and trend type,
             in an array format with the same size as input
         """
         if self.anomaly_scores_ is None:
