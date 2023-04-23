@@ -85,7 +85,7 @@ class TestThresholdDetector(TestCase):
 
         # find anomaly using a manual set threshold
         td = ThresholdDetector()
-        td.set_params(threshold=10)
+        td.set_params(pattern_threshold=10)
         td.fit(y_test, y_predict)
         anomaly_scores = td.score()
         assert len(list(np.where(anomaly_scores > 0)[0])) == 0
@@ -114,7 +114,7 @@ class TestThresholdDetector(TestCase):
         y_test = y_test.reshape((sample_num, feature_dim))
 
         td = ThresholdDetector()
-        td.set_params(threshold=3)
+        td.set_params(pattern_threshold=3)
         td.fit(y_test, y_pred)
         anomaly_scores = td.score()
         assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
@@ -133,7 +133,7 @@ class TestThresholdDetector(TestCase):
         y_test = y_test.reshape((sample_num, feature_dim))
 
         td = ThresholdDetector()
-        td.set_params(threshold=(-1, 1))
+        td.set_params(trend_threshold=(-1, 1))
         td.fit(y_test)
         anomaly_scores = td.score()
         assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
@@ -153,7 +153,7 @@ class TestThresholdDetector(TestCase):
         td.fit(y_test, y_pred)
         # check estimated threshold
         from scipy.stats import norm
-        assert abs(td.th - (norm.ppf(1 - ratio) * sigma + mu)) < 0.04
+        assert abs(td.pattern_th - (norm.ppf(1 - ratio) * sigma + mu)) < 0.04
 
     def test_corner_cases(self):
         td = ThresholdDetector()
@@ -167,20 +167,29 @@ class TestThresholdDetector(TestCase):
         td.set_params(mode="dummy")
         with pytest.raises(RuntimeError):
             td.fit(y, y)
-        td.set_params(mode="gaussian")
         with pytest.raises(RuntimeError):
+            td.set_params(pattern_threshold="1")
+            td.fit(y, y)
+        with pytest.raises(RuntimeError):
+            td.set_params(pattern_threshold=(1, -1))
+            td.fit(y, y)
+        with pytest.raises(RuntimeError):
+            td.set_params(pattern_threshold=(np.array([-1]), np.array([-1])))
+            td.fit(y, y)
+        with pytest.raises(RuntimeError):
+            td.set_params(pattern_threshold=(np.array([1, 1]), np.array([-1, -1])))
+            td.fit(y, y)
+        with pytest.raises(RuntimeError):
+            td.set_params(trend_threshold="1")
             td.fit(y)
-        td.set_params(threshold="1")
         with pytest.raises(RuntimeError):
+            td.set_params(trend_threshold=(1, -1))
             td.fit(y)
-        td.set_params(threshold=(1, -1))
         with pytest.raises(RuntimeError):
+            td.set_params(trend_threshold=(np.array([-1]), np.array([-1])))
             td.fit(y)
-        td.set_params(threshold=(np.array([-1]), np.array([-1])))
         with pytest.raises(RuntimeError):
-            td.fit(y)
-        td.set_params(threshold=(np.array([1, 1]), np.array([-1, -1])))
-        with pytest.raises(RuntimeError):
+            td.set_params(trend_threshold=(np.array([1, 1]), np.array([-1, -1])))
             td.fit(y)
 
 if __name__ == "__main__":

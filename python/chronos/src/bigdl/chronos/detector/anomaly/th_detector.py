@@ -164,7 +164,7 @@ def detect_anomaly(y,
     invalidInputError(isinstance(trend_th, tuple) and len(trend_th) == 2,
                       "Trend threshold is supposed to be a tuple of two elements.")
     if (isinstance(trend_th[0], int) or isinstance(trend_th[0], float)) \
-        and (isinstance(trend_th[1], int) or isinstance(trend_th[1], float)):
+            and (isinstance(trend_th[1], int) or isinstance(trend_th[1], float)):
         # min / max values are scalars
         invalidInputError(trend_th[0] < trend_th[1],
                           "Trend threshold is composed of (min, max), max should be larger.")
@@ -217,7 +217,7 @@ class ThresholdDetector(AnomalyDetector):
                    mode="default",
                    ratio=0.01,
                    pattern_threshold=math.inf,
-                   trend_threshold=(-math.inf,math.inf),
+                   trend_threshold=(-math.inf, math.inf),
                    dist_measure=EuclideanDistance()):
         """
         Set parameters for ThresholdDetector
@@ -247,7 +247,7 @@ class ThresholdDetector(AnomalyDetector):
         :param y_pred: the predicted values, a tensor with same shape as y,
             default to be None.
         """
-        if self.trend_th == (-math.inf, math.inf):
+        if self.trend_th is (-math.inf, math.inf):
             self.trend_th = estimate_trend_th(y,
                                               mode=self.mode,
                                               ratio=self.ratio)
@@ -276,7 +276,7 @@ class ThresholdDetector(AnomalyDetector):
         if self.anomaly_scores_ is None:
             invalidInputError(False, "please call fit before calling score")
 
-        if y is None and y_pred is None: 
+        if y is None and y_pred is None:
             return self.anomaly_scores_
         elif y is None:
             # trend anomaly
@@ -319,7 +319,7 @@ class ThresholdDetector(AnomalyDetector):
         if self.anomaly_indexes_ is None:
             invalidInputError(False, "please call fit before calling score")
 
-        if y is None and y_pred is None: 
+        if y is None and y_pred is None:
             return self.anomaly_indexes_
         elif y is None:
             # trend anomaly
