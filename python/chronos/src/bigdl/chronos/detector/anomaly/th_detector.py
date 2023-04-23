@@ -17,6 +17,7 @@
 import math
 import numpy as np
 from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
+from bigdl.nano.utils.common import invalidInputError
 
 from abc import ABC, abstractmethod
 
@@ -50,13 +51,13 @@ class EuclideanDistance(Distance):
         return np.linalg.norm(x - y)
 
 
-def estimate_th(y,
-                yhat,
-                mode="default",
-                ratio=0.01,
-                dist_measure=EuclideanDistance()):
+def estimate_pattern_th(y,
+                        yhat,
+                        mode="default",
+                        ratio=0.01,
+                        dist_measure=EuclideanDistance()):
     """
-    Estimate the threshold based on y and yhat
+    Estimate the absolute distance threshold based on y and y_hat.
 
     :param y: actual values
     :param yhat: predicted values
@@ -67,7 +68,6 @@ def estimate_th(y,
     :param dist_measure: measure of distance
     :return: the threshold
     """
-    from bigdl.nano.utils.common import invalidInputError
     invalidInputError(y.shape == yhat.shape, "y shape doesn't match yhat shape")
     diff = [dist_measure.abs_dist(m, n) for m, n in zip(y, yhat)]
     if mode == "default":
@@ -82,80 +82,108 @@ def estimate_th(y,
         invalidInputError(False, f"Does not support ${mode}")
 
 
-def detect_all(y, yhat, th, dist_measure):
-    anomaly_scores = np.zeros_like(y)
+def estimate_trend_th(y,
+                      mode="default",
+                      ratio=0.01):
+    """
+    Estimate the min and max threshold based on y.
+
+    :param y: actual values
+    :param mode: types of ways to find threshold
+        "default" : fit data to a uniform distribution (the percentile way)
+        "gaussian": fit data to a gaussian distribution
+    :param ratio: the ratio of anomaly to consider as anomaly.
+    :return: tuple, the threshold (min, max)
+    """
+    if mode == "default":
+        max_threshold = np.percentile(y, (1 - ratio) * 100)
+        min_threshold = np.percentile(y, ratio * 100)
+        return (min_threshold, max_threshold)
+    elif mode == "gaussian":
+        from scipy.stats import norm
+        mu, sigma = norm.fit(y)
+        max_t = norm.ppf(1 - ratio)
+        min_t = norm.ppf(ratio)
+        return (min_t * sigma + mu, max_t * sigma + mu)
+    else:
+        invalidInputError(False, f"Does not support ${mode}")
+
+
+def detect_pattern_anomaly(y, yhat, th, dist_measure):
     anomaly_indexes = []
     for i, (y_i, yhat_i) in enumerate(zip(y, yhat)):
         if dist_measure.abs_dist(y_i, yhat_i) > th:
             anomaly_indexes.append(i)
-            anomaly_scores[i] = 1
-    return anomaly_indexes, anomaly_scores
+    return anomaly_indexes
 
 
-def detect_range(y, th):
-    # use threshold (-1, 1) for each dimension
+def detect_trend_anomaly(y, th):
     threshold_min = np.full_like(y, fill_value=th[0])
     threshold_max = np.full_like(y, fill_value=th[1])
-    return detect_range_arr(y, (threshold_min, threshold_max))
+    return detect_trend_anomaly_arr(y, (threshold_min, threshold_max))
 
 
-def detect_range_arr(y, th_arr):
+def detect_trend_anomaly_arr(y, th_arr):
     min_diff = y - th_arr[0]
     max_diff = y - th_arr[1]
     anomaly_indexes = np.logical_or(min_diff < 0, max_diff > 0)
     anomaly_scores = np.zeros_like(y)
     anomaly_scores[anomaly_indexes] = 1
-    # anomaly_index.update(np.where(max_diff > 0)[0])
-    return list(set(np.where(anomaly_scores > 0)[0])), anomaly_scores
+    return list(set(np.where(anomaly_scores > 0)[0]))
 
 
 def detect_anomaly(y,
                    yhat=None,
-                   th=math.inf,
+                   pattern_th=math.inf,
+                   trend_th=(-math.inf, math.inf),
                    dist_measure=EuclideanDistance()):
     """
     Detect anomalies. Each sample can have 1 or more dimensions.
 
     :param y: the values to detect. shape could be 1-D (num_samples,)
         or 2-D array (num_samples, features)
-    :param yhat: the estimated values, a tensor with same shape as y,
-        could be None when threshold is a tuple
-    :param th: threshold, could be
-
-        1. a single value - absolute distance threshold, same for all samples
-
-        2. a tuple (min, max) - min and max are either int/float or tensors in same shape as y,
-        yhat is ignored in this case
+    :param yhat: the predicted values, a tensor with same shape as y,
+        default to be None
+    :param pattern_th: a single value, specify absolute distance threshold
+                       between y and yhat
+    :param trend_th: a tuple composed of min_threshold and max_threshold,
+                     specify min and max threshold for y
     :param dist_measure: measure of distance
     :return: the anomaly values indexes in the samples, i.e. num_samples dimension.
     """
-    from bigdl.nano.utils.common import invalidInputError
-    if isinstance(th, int) or isinstance(th, float):
-        if yhat is None:
-            invalidInputError(False,
-                              "Please specify a threshold range (min,max) "
-                              "if forecast values are not available")
-        return detect_all(y, yhat, th, dist_measure)
-    elif isinstance(th, tuple) and len(th) == 2:
-        # min max values are scalars
-        if (isinstance(th[0], int) or isinstance(th[0], float)) \
-                and (isinstance(th[1], int) or isinstance(th[1], float)):
-            if th[0] > th[1]:
-                invalidInputError(False,
-                                  "In threshold (min,max), max should be larger than min")
-            return detect_range(y, th)
+    anomaly_indexes = []
+
+    # Detect pattern anomaly
+    if yhat is not None:
+        invalidInputError(isinstance(pattern_th, int) or isinstance(pattern_th, float),
+                          f"Pattern threshold format {type(pattern_th)} is not supported, "
+                          "please specify int or float value.")
+        anomaly_indexes = detect_pattern_anomaly(y, yhat, pattern_th, dist_measure)
+
+    # Detect trend anomaly
+    invalidInputError(isinstance(trend_th, tuple) and len(trend_th) == 2,
+                      "Trend threshold is supposed to be a tuple of two elements.")
+    if (isinstance(trend_th[0], int) or isinstance(trend_th[0], float)) \
+        and (isinstance(trend_th[1], int) or isinstance(trend_th[1], float)):
+        # min / max values are scalars
+        invalidInputError(trend_th[0] < trend_th[1],
+                          "Trend threshold is composed of (min, max), max should be larger.")
+        index = detect_trend_anomaly(y, trend_th)
+        anomaly_indexes = list(set(anomaly_indexes + index))
+    elif trend_th[0].shape == y.shape and trend_th[1].shape == y.shape:
         # min max values are arrays
-        elif th[0].shape == y.shape and th[-1].shape == y.shape:
-            if np.any((th[1] - th[0]) < 0):
-                invalidInputError(False,
-                                  "In threshold (min,max) each data point in max tensor"
-                                  " should be larger than min")
-            return detect_range_arr(y, th)
-        else:
-            invalidInputError(False, f"Threshold format ${str(th)} is not supported")
+        invalidInputError(np.all((trend_th[1] - trend_th[0]) > 0),
+                          "In trend threshold (min, max), each data point in max tensor"
+                          " should be larger.")
+        index = detect_trend_anomaly_arr(y, trend_th)
+        anomaly_indexes = list(set(anomaly_indexes + index))
     else:
-        invalidInputError(False,
-                          f"Threshold format ${str(th)} is not supported")
+        invalidInputError(False, f"Threshold format ${str(trend_th)} is not supported")
+
+    anomaly_scores = np.zeros_like(y)
+    anomaly_scores[anomaly_indexes] = 1
+
+    return anomaly_indexes, anomaly_scores
 
 
 class ThresholdDetector(AnomalyDetector):
@@ -166,7 +194,6 @@ class ThresholdDetector(AnomalyDetector):
             >>> forecaster.fit(x=x_train, y=y_train, ...)
             >>> y_pred = forecaster.predict(x_test)
             >>> td = ThresholdDetector()
-            >>> td.set_params(threshold=10)
             >>> td.fit(y_test, y_pred)
             >>> anomaly_scores = td.score()
             >>> anomaly_indexes = td.anomaly_indexes()
@@ -176,7 +203,10 @@ class ThresholdDetector(AnomalyDetector):
         """
         Initialize a ThresholdDetector.
         """
-        self.th = math.inf
+        # to detect pattern anomaly, specify absolute distance threshold between y_true and y_pred
+        self.pattern_th = math.inf
+        # to detect trend anomaly, specify min and max threshold for y_true
+        self.trend_th = (-math.inf, math.inf)
         self.ratio = 0.01
         self.dist_measure = EuclideanDistance()
         self.mode = "default"
@@ -186,7 +216,8 @@ class ThresholdDetector(AnomalyDetector):
     def set_params(self,
                    mode="default",
                    ratio=0.01,
-                   threshold=math.inf,
+                   pattern_threshold=math.inf,
+                   trend_threshold=(-math.inf,math.inf),
                    dist_measure=EuclideanDistance()):
         """
         Set parameters for ThresholdDetector
@@ -195,18 +226,17 @@ class ThresholdDetector(AnomalyDetector):
             "default" : fit data according to a uniform distribution
             "gaussian": fit data according to a gaussian distribution
         :param ratio: the ratio of anomaly to consider as anomaly.
-        :param threshold: threshold, could be
-
-            1. a single value - absolute distance threshold, same for all samples
-
-            2. a tuple (min, max) - min and max are either int/float or tensors in same shape as y,
-            yhat is ignored in this case
+        :param pattern_threshold: a single value, specify absolute distance threshold between real
+            data and predicted data to detect pattern anomaly.
+        :param trend_threshold: a tuple composed of min_threshold and max_threshold, specify min
+            and max threshold for real data to detect trend anomaly.
         :param dist_measure: measure of distance
         """
         self.ratio = ratio
         self.dist_measure = dist_measure
         self.mode = mode
-        self.th = threshold
+        self.pattern_th = pattern_threshold
+        self.trend_th = trend_threshold
 
     def fit(self, y, y_pred=None):
         """
@@ -214,17 +244,21 @@ class ThresholdDetector(AnomalyDetector):
 
         :param y: the values to detect. shape could be 1-D (num_samples,)
             or 2-D array (num_samples, features)
-        :param y_pred: the estimated values, a tensor with same shape as y
-            could be None when threshold is a tuple
+        :param y_pred: the predicted values, a tensor with same shape as y,
+            default to be None.
         """
-        if y_pred is not None and self.th == math.inf:
-            self.th = estimate_th(y,
-                                  y_pred,
-                                  mode=self.mode,
-                                  ratio=self.ratio,
-                                  dist_measure=self.dist_measure)
+        if self.trend_th == (-math.inf, math.inf):
+            self.trend_th = estimate_trend_th(y,
+                                              mode=self.mode,
+                                              ratio=self.ratio)
+        if y_pred is not None and self.pattern_th == math.inf:
+            self.pattern_th = estimate_pattern_th(y,
+                                                  y_pred,
+                                                  mode=self.mode,
+                                                  ratio=self.ratio,
+                                                  dist_measure=self.dist_measure)
         # calculate anomalies in advance in case score does not specify input
-        anomalies = detect_anomaly(y, y_pred, self.th, self.dist_measure)
+        anomalies = detect_anomaly(y, y_pred, self.pattern_th, self.trend_th, self.dist_measure)
         self.anomaly_indexes_ = anomalies[0]
         self.anomaly_scores_ = anomalies[1]
 
@@ -233,40 +267,82 @@ class ThresholdDetector(AnomalyDetector):
         Gets the anomaly scores for each sample. Each anomaly score is either 0 or 1,
         where 1 indicates an anomaly.
 
-        :param y: new time series to detect anomaly. if y is None, returns anomalies
-            in the fit input, y_pred is ignored in this case
-        :param y_pred: forecasts corresponding to y
+        :param y: new time series to detect anomaly. If y is None, returns anomalies in y_pred.
+            Moreover, if both y and y_hat are None, returns anomalies in the fit input.
+        :param y_pred: predicted values corresponding to y
 
         :return: anomaly score for each sample, in an array format with the same size as input
         """
-        from bigdl.nano.utils.common import invalidInputError
-        if y is None:
-            if self.anomaly_scores_ is None:
-                invalidInputError(False, "please call fit before calling score")
+        if self.anomaly_scores_ is None:
+            invalidInputError(False, "please call fit before calling score")
+
+        if y is None and y_pred is None: 
             return self.anomaly_scores_
+        elif y is None:
+            # trend anomaly
+            _, trend_scores = detect_anomaly(y=y_pred,
+                                             trend_th=self.trend_th,
+                                             dist_measure=self.dist_measure)
+            # spike anomaly
+            spike_th = estimate_trend_th(y_pred, mode=self.mode, ratio=self.ratio)
+            _, spike_scores = detect_anomaly(y=y_pred,
+                                             trend_th=spike_th,
+                                             dist_measure=self.dist_measure)
+            scores = trend_scores + spike_scores
+            scores[scores > 1] = 1
+            return scores
         else:
-            return detect_anomaly(y,
-                                  y_pred,
-                                  self.th,
-                                  self.dist_measure)[1]
+            # pattern and trend anomaly
+            _, pattern_trend_scores = detect_anomaly(y, yhat=y_pred,
+                                                     pattern_th=self.pattern_th,
+                                                     trend_th=self.trend_th,
+                                                     dist_measure=self.dist_measure)
+            # spike anomaly
+            spike_th = estimate_trend_th(y, mode=self.mode, ratio=self.ratio)
+            _, spike_scores = detect_anomaly(y,
+                                             trend_th=spike_th,
+                                             dist_measure=self.dist_measure)
+            scores = pattern_trend_scores + spike_scores
+            scores[scores > 1] = 1
+            return scores
 
     def anomaly_indexes(self, y=None, y_pred=None):
         """
         Gets the indexes of the anomalies.
 
-        :param y: new time series to detect anomaly. if y is None, returns anomalies
-            in the fit input, y_pred is ignored in this case
-        :param y_pred: forecasts corresponding to y
+        :param y: new time series to detect anomaly. If y is None, returns anomalies in y_pred.
+            Moreover, if both y and y_hat are None, returns anomalies in the fit input.
+        :param y_pred: predicted values corresponding to y
 
         :return: the indexes of the anomalies.
         """
-        from bigdl.nano.utils.common import invalidInputError
-        if y is None:
-            if self.anomaly_indexes_ is None:
-                invalidInputError(False, "please call fit before calling score")
+        if self.anomaly_indexes_ is None:
+            invalidInputError(False, "please call fit before calling score")
+
+        if y is None and y_pred is None: 
             return self.anomaly_indexes_
+        elif y is None:
+            # trend anomaly
+            trend_indexes, _ = detect_anomaly(y=y_pred,
+                                              trend_th=self.trend_th,
+                                              dist_measure=self.dist_measure)
+            # spike anomaly
+            spike_th = estimate_trend_th(y_pred, mode=self.mode, ratio=self.ratio)
+            spike_indexes, _ = detect_anomaly(y=y_pred,
+                                              trend_th=spike_th,
+                                              dist_measure=self.dist_measure)
+            indexes = list(set(trend_indexes + spike_indexes))
+            return indexes
         else:
-            return detect_anomaly(y,
-                                  y_pred,
-                                  self.th,
-                                  self.dist_measure)[0]
+            # pattern and trend anomaly
+            pattern_trend_indexes, _ = detect_anomaly(y, yhat=y_pred,
+                                                      pattern_th=self.pattern_th,
+                                                      trend_th=self.trend_th,
+                                                      dist_measure=self.dist_measure)
+            # spike anomaly
+            spike_th = estimate_trend_th(y, mode=self.mode, ratio=self.ratio)
+            spike_indexes, _ = detect_anomaly(y,
+                                              trend_th=spike_th,
+                                              dist_measure=self.dist_measure)
+            indexes = list(set(pattern_trend_indexes + spike_indexes))
+            return indexes
