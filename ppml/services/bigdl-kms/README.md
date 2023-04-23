@@ -45,7 +45,7 @@ For users who want to deploy BigDL KMS as a lightweight micro-service, we also p
 ### 1. Prerequests
 
 - Make sure you have a workable **Kubernetes cluster/machine**
-- Prepare [base bigdl-kms docker image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/easy-kms/docker#1-pullbuild-container-image). **Note** that if enable SGX, please build a custom-signed image by yourself, or pull our reference image (signed by open key of BigDL and do not use it in production).
+- Prepare [base bigdl-kms docker image](https://github.com/intel-analytics/BigDL/tree/main/ppml/services/bigdl-kms/docker#1-pullbuild-base-image). **Note** that if enable SGX, please build a custom-signed image by yourself, or pull our reference image (signed by open key of BigDL and do not use it in production).
 
 ### 2. Prepare SSL Key and Password
 
@@ -78,7 +78,7 @@ openssl enc -aes-256-cbc -k secret -P -md sha1
 echo <key_generated_above> | base64
 ```
 
-Then, deploy easy-kms on kubernetes by one command:
+Then, deploy bigdl-kms on kubernetes by one command:
 
 ```bash
 bash install-bigdl-kms.sh
