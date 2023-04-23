@@ -1047,6 +1047,7 @@ jobs:
         export base_image=intelanalytics/bigdl-kms-base
         export image=intelanalytics/bigdl-kms-reference
         cd ppml/services/bigdl-kms/docker/custom
+        openssl genrsa -3 -out enclave-key.pem 3072
         sudo docker build \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
