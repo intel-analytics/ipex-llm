@@ -37,6 +37,7 @@ import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import akka.http.scaladsl.ConnectionContext
 import com.codahale.shamir.Scheme
 import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.attestation.utils.JsonUtil
 
 object BigDLKMServerUtil extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
@@ -156,8 +157,8 @@ object BigDLKMServerUtil extends Supportive {
       "{" + scheme.split(rootKey.getBytes(StandardCharsets.UTF_8))
         .asScala
         .map {
-          case (k, v) => "{\"secret" + k + "\" : \"" +
-            Base64.getEncoder.encodeToString(v) + "\"}"
+          case (k, v) => JsonUtil.toJson(SecretFormat(k,
+            Base64.getEncoder.encodeToString(v)))
         }.mkString(",") + "}"
   }
 
@@ -175,10 +176,14 @@ object BigDLKMServerUtil extends Supportive {
 
 class SecretStore {
   val secretStoreMap = new java.util.HashMap[Integer, Array[Byte]]
-  def addSecret(secret: String): Unit = {
-    secretStoreMap.put(secretStoreMap.size + 1, Base64.getDecoder.decode(secret))
+  def addSecret(secretJsonStr: String): Unit = {
+    val secret = JsonUtil.fromJson(classOf[SecretFormat], secretJsonStr)
+    secretStoreMap.put(secret.index,
+      Base64.getDecoder.decode(secret.content))
   }
   def getSecrets() = secretStoreMap
   def count() = secretStoreMap.size
   def clear() = secretStoreMap.clear
 }
+
+case class SecretFormat(index: Integer, content: String)

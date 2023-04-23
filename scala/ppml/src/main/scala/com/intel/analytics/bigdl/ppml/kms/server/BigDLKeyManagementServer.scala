@@ -202,7 +202,7 @@ object BigDLKeyManagementServer extends Supportive {
                     Log4Error.invalidOperationError(rootKey == "",
                       "Root Key exists and cannot repeat initialization")
                     secretStore.addSecret(secret)
-                    if (secretStore.count > secretThreshold) {
+                    if (secretStore.count >= secretThreshold) {
                       try {
                         rootKey = BigDLKMServerUtil
                           .recoverRootKey(secretStore.getSecrets, secretThreshold)
@@ -223,6 +223,7 @@ object BigDLKeyManagementServer extends Supportive {
                     }
                   } catch {
                     case e: Exception =>
+                      rootKey = ""
                       e.printStackTrace()
                       complete(500, e.getMessage + "\n please recover a root key like: " +
                         "PUT /rootKey?secret=a_secret_string_of_the_splited_root_key")
