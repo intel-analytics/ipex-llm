@@ -113,7 +113,8 @@ function display-help {
         echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
-        echo "    -g, --gpu                Enable OneAPI and other settings for dGPU support"
+        echo "    -g, --gpu                 Enable OneAPI and other settings for dGPU support"
+        echo "    -r <num_cores>,           Force computing resource to <num_cores> CPU"
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
@@ -141,6 +142,7 @@ unset ENABLE_TCMALLOC_VAR
 unset DISABLE_OPENMP_VAR
 unset PERF_VAR
 unset ONEAPI_VAR
+unset FORCED_CORE_NUM
 
 # Init exported variables
 export TF_ENABLE_ONEDNN_OPTS=1
@@ -148,7 +150,7 @@ export ONEAPI_VAR=0
 
 OPTIND=1
 
-while getopts "ojhtcpgd-:" opt; do
+while getopts "ojhtcpgdr:-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -210,6 +212,9 @@ while getopts "ojhtcpgd-:" opt; do
         d )
             display-var
             return 0
+            ;;
+        r )
+            FORCED_CORE_NUM=${OPTARG}
             ;;
         \? )
             display-error $OPTARG
@@ -282,6 +287,8 @@ if [ "${OPENMP}" -eq 1 ]; then
         let threads_per_core=$cpu_/$core_
         let cores_per_socket=$core_/$sockets_
         export OMP_NUM_THREADS=$core_
+        export OMP_PRC_BIND="close"
+        export OMP_SCHEDULE="STATIC"
     elif [ $OS = "macos" ]; then
         export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
     else
@@ -298,6 +305,12 @@ if [ "${OPENMP}" -eq 1 ]; then
 
     echo "Setting KMP_BLOCKTIME..."
     export KMP_BLOCKTIME=1
+fi
+
+# Set forced core num
+if [[ ! -z "${FORCED_CORE_NUM:-}" ]]; then
+    export OMP_NUM_THREADS=$FORCED_CORE_NUM
+    export MKL_NUM_THREADS=$FORCED_CORE_NUM
 fi
 
 # Set allocator
@@ -358,6 +371,8 @@ elif [ $OS = "macos" ]; then
 fi
 echo "MALLOC_CONF           = ${MALLOC_CONF}"
 echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
+echo "OMP_PRC_BIND          = ${OMP_PRC_BIND}"
+echo "OMP_SCHEDULE          = ${OMP_SCHEDULE}"
 echo "KMP_AFFINITY          = ${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME         = ${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS = ${TF_ENABLE_ONEDNN_OPTS}"
