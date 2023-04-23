@@ -149,16 +149,16 @@ def detect_anomaly(y,
     :param trend_th: a tuple composed of min_threshold and max_threshold,
                      specify min and max threshold for y
     :param dist_measure: measure of distance
-    :return: the anomaly values indexes in the samples, i.e. num_samples dimension.
+    :return: dict, the anomaly values indexes in the samples, including pattern and trend type
     """
-    anomaly_indexes = []
-
+    pattern_anomaly_indexes, trend_anomaly_indexes = [], []
+    pattern_anomaly_scores, trend_anomaly_scores = np.zeros_like(y), np.zeros_like(y)
     # Detect pattern anomaly
     if yhat is not None:
         invalidInputError(isinstance(pattern_th, int) or isinstance(pattern_th, float),
                           f"Pattern threshold format {type(pattern_th)} is not supported, "
                           "please specify int or float value.")
-        anomaly_indexes = detect_pattern_anomaly(y, yhat, pattern_th, dist_measure)
+        pattern_anomaly_indexes = detect_pattern_anomaly(y, yhat, pattern_th, dist_measure)
 
     # Detect trend anomaly
     invalidInputError(isinstance(trend_th, tuple) and len(trend_th) == 2,
@@ -168,22 +168,31 @@ def detect_anomaly(y,
         # min / max values are scalars
         invalidInputError(trend_th[0] <= trend_th[1],
                           "Trend threshold is composed of (min, max), max should not be smaller.")
-        index = detect_trend_anomaly(y, trend_th)
-        anomaly_indexes = list(set(anomaly_indexes + index))
+        trend_anomaly_indexes = detect_trend_anomaly(y, trend_th)
     elif trend_th[0].shape == y.shape and trend_th[1].shape == y.shape:
         # min max values are arrays
         invalidInputError(np.all((trend_th[1] - trend_th[0]) >= 0),
                           "In trend threshold (min, max), each data point in max tensor"
                           " should not be smaller.")
-        index = detect_trend_anomaly_arr(y, trend_th)
-        anomaly_indexes = list(set(anomaly_indexes + index))
+        trend_anomaly_indexes = detect_trend_anomaly_arr(y, trend_th)
     else:
         invalidInputError(False, f"Threshold format ${str(trend_th)} is not supported")
 
+    pattern_anomaly_scores[pattern_anomaly_indexes] = 1
+    trend_anomaly_scores[trend_anomaly_indexes] = 1
+
+    anomaly_indexes = list(set(pattern_anomaly_indexes + trend_anomaly_indexes))
     anomaly_scores = np.zeros_like(y)
     anomaly_scores[anomaly_indexes] = 1
 
-    return anomaly_indexes, anomaly_scores
+    index_dict = {'pattern anomaly index': pattern_anomaly_indexes,
+                  'trend anomaly index': trend_anomaly_indexes,
+                  'anomaly index': anomaly_indexes}
+    score_dict = {'pattern anomaly score': pattern_anomaly_scores,
+                  'trend anomaly score': trend_anomaly_scores,
+                  'anomaly score': anomaly_scores}
+
+    return index_dict, score_dict
 
 
 class ThresholdDetector(AnomalyDetector):
@@ -274,7 +283,8 @@ class ThresholdDetector(AnomalyDetector):
             Moreover, if both y and y_hat are None, returns anomalies in the fit input.
         :param y_pred: predicted values corresponding to y
 
-        :return: anomaly score for each sample, in an array format with the same size as input
+        :return: dict, anomaly score for each sample composed of pattern and trend type, 
+            in an array format with the same size as input
         """
         if self.anomaly_scores_ is None:
             invalidInputError(False, "please call fit before calling score")
@@ -282,32 +292,16 @@ class ThresholdDetector(AnomalyDetector):
         if y is None and y_pred is None:
             return self.anomaly_scores_
         elif y is None:
-            # trend anomaly
-            _, trend_scores = detect_anomaly(y=y_pred,
-                                             trend_th=self.trend_th,
-                                             dist_measure=self.dist_measure)
-            # spike anomaly
-            spike_th = estimate_trend_th(y_pred, mode=self.mode, ratio=self.ratio)
-            _, spike_scores = detect_anomaly(y=y_pred,
-                                             trend_th=spike_th,
-                                             dist_measure=self.dist_measure)
-            scores = trend_scores + spike_scores
-            scores[scores > 1] = 1
-            return scores
+            _, score_dict = detect_anomaly(y=y_pred,
+                                           trend_th=self.trend_th,
+                                           dist_measure=self.dist_measure)
+            return score_dict
         else:
-            # pattern and trend anomaly
-            _, pattern_trend_scores = detect_anomaly(y, yhat=y_pred,
-                                                     pattern_th=self.pattern_th,
-                                                     trend_th=self.trend_th,
-                                                     dist_measure=self.dist_measure)
-            # spike anomaly
-            spike_th = estimate_trend_th(y, mode=self.mode, ratio=self.ratio)
-            _, spike_scores = detect_anomaly(y,
-                                             trend_th=spike_th,
-                                             dist_measure=self.dist_measure)
-            scores = pattern_trend_scores + spike_scores
-            scores[scores > 1] = 1
-            return scores
+            _, score_dict = detect_anomaly(y, yhat=y_pred,
+                                           pattern_th=self.pattern_th,
+                                           trend_th=self.trend_th,
+                                           dist_measure=self.dist_measure)
+            return score_dict
 
     def anomaly_indexes(self, y=None, y_pred=None):
         """
@@ -317,7 +311,7 @@ class ThresholdDetector(AnomalyDetector):
             Moreover, if both y and y_hat are None, returns anomalies in the fit input.
         :param y_pred: predicted values corresponding to y
 
-        :return: the indexes of the anomalies.
+        :return: dict, anomaly indexes composed of pattern and trend type
         """
         if self.anomaly_indexes_ is None:
             invalidInputError(False, "please call fit before calling score")
@@ -325,27 +319,13 @@ class ThresholdDetector(AnomalyDetector):
         if y is None and y_pred is None:
             return self.anomaly_indexes_
         elif y is None:
-            # trend anomaly
-            trend_indexes, _ = detect_anomaly(y=y_pred,
-                                              trend_th=self.trend_th,
-                                              dist_measure=self.dist_measure)
-            # spike anomaly
-            spike_th = estimate_trend_th(y_pred, mode=self.mode, ratio=self.ratio)
-            spike_indexes, _ = detect_anomaly(y=y_pred,
-                                              trend_th=spike_th,
-                                              dist_measure=self.dist_measure)
-            indexes = list(set(trend_indexes + spike_indexes))
-            return indexes
+            index_dict, _ = detect_anomaly(y=y_pred,
+                                           trend_th=self.trend_th,
+                                           dist_measure=self.dist_measure)
+            return index_dict
         else:
-            # pattern and trend anomaly
-            pattern_trend_indexes, _ = detect_anomaly(y, yhat=y_pred,
-                                                      pattern_th=self.pattern_th,
-                                                      trend_th=self.trend_th,
-                                                      dist_measure=self.dist_measure)
-            # spike anomaly
-            spike_th = estimate_trend_th(y, mode=self.mode, ratio=self.ratio)
-            spike_indexes, _ = detect_anomaly(y,
-                                              trend_th=spike_th,
-                                              dist_measure=self.dist_measure)
-            indexes = list(set(pattern_trend_indexes + spike_indexes))
-            return indexes
+            index_dict, _ = detect_anomaly(y, yhat=y_pred,
+                                           pattern_th=self.pattern_th,
+                                           trend_th=self.trend_th,
+                                           dist_measure=self.dist_measure)
+            return index_dict

@@ -67,9 +67,9 @@ class TestThresholdDetector(TestCase):
         td = ThresholdDetector()
         td.set_params(pattern_threshold=10, trend_threshold=(-3,3))
         td.fit(y_test, y_test_pred)
-        anomaly_scores = td.score()
+        anomaly_scores = td.score()['anomaly score']
         assert len(list(np.where(anomaly_scores > 0)[0])) == 0
-        anomaly_indexes = td.anomaly_indexes()
+        anomaly_indexes = td.anomaly_indexes()['anomaly index']
         assert len(anomaly_indexes) == 0
 
     def test_threshold_single(self):
@@ -88,9 +88,9 @@ class TestThresholdDetector(TestCase):
         td = ThresholdDetector()
         td.set_params(pattern_threshold=3)
         td.fit(y_test, y_pred)
-        anomaly_scores = td.score()
+        anomaly_scores = td.score()['anomaly score']
         assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
-        anomaly_indexes = td.anomaly_indexes()
+        anomaly_indexes = td.anomaly_indexes()['anomaly index']
         assert len(anomaly_indexes) == num_anomaly
 
     def test_threshold_minmax(self):
@@ -107,9 +107,9 @@ class TestThresholdDetector(TestCase):
         td = ThresholdDetector()
         td.set_params(trend_threshold=(-1, 1))
         td.fit(y_test)
-        anomaly_scores = td.score()
+        anomaly_scores = td.score()['anomaly score']
         assert len(set(np.where(anomaly_scores > 0)[0])) == num_anomaly
-        anomaly_indexes = td.anomaly_indexes()
+        anomaly_indexes = td.anomaly_indexes()['anomaly index']
         assert len(anomaly_indexes) == num_anomaly
 
     def test_mode_gaussian(self):
