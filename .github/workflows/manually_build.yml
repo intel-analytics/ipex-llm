@@ -1050,8 +1050,8 @@ jobs:
         sudo docker build \
           --build-arg BASE_IMAGE_NAME=${base_image} \
           --build-arg BASE_IMAGE_TAG=${TAG} \
-	  --build-arg SGX_MEM_SIZE=16G \
-	  --build-arg SGX_LOG_LEVEL=error \
+          --build-arg SGX_MEM_SIZE=16G \
+          --build-arg SGX_LOG_LEVEL=error \
           -t ${image}:${TAG} -f ./Dockerfile .
         sudo docker push ${image}:${TAG}
         sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
