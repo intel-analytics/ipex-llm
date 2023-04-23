@@ -195,7 +195,7 @@ object BigDLKeyManagementServer extends Supportive {
       } ~ path("rootKey" / "recover") {
         put {
           entity(as[String]) { secret =>
-              //need at least $secretThreshold of 5 secrets to restore the root key
+              // need at least $secretThreshold of 5 secrets to restore the root key
               timing("recover root key from secrets: " +
                 s"${secretStore.count + 1}/$secretThreshold") {
                   try {

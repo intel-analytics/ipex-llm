@@ -151,7 +151,7 @@ object BigDLKMServerUtil extends Supportive {
     threshold: Int): String = {
       Log4Error.invalidOperationError(rootKey != null && rootKey != "",
         "try to split an empty root key string!")
-      //need at least $threshold of 5 secrets to restore the root key
+      // need at least $threshold of 5 secrets to restore the root key
       val scheme = new Scheme(new SecureRandom(), 5, threshold)
       import scala.collection.JavaConverters._
       "{" + scheme.split(rootKey.getBytes(StandardCharsets.UTF_8))
@@ -164,7 +164,7 @@ object BigDLKMServerUtil extends Supportive {
 
   def recoverRootKey(secretStore: java.util.Map[Integer, Array[Byte]],
     threshold: Int): String = {
-      //need at least $threshold of 5 secret to restore the root key
+      // need at least $threshold of 5 secret to restore the root key
       val scheme = new Scheme(new SecureRandom(), 5, threshold)
       new String(scheme.join(secretStore), StandardCharsets.UTF_8)
   }
@@ -181,9 +181,9 @@ class SecretStore {
     secretStoreMap.put(secret.index,
       Base64.getDecoder.decode(secret.content))
   }
-  def getSecrets() = secretStoreMap
-  def count() = secretStoreMap.size
-  def clear() = secretStoreMap.clear
+  def getSecrets(): java.util.HashMap[Integer, Array[Byte]] = secretStoreMap
+  def count(): Int = secretStoreMap.size
+  def clear(): Unit = secretStoreMap.clear
 }
 
 case class SecretFormat(index: Integer, content: String)
