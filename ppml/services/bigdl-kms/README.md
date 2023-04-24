@@ -2,17 +2,22 @@
 
 - [Architecture](#architecture)
 - [Threat Model](#threat-model)
+- [Root Key Generation and Protection](#root-key-generation-and-protection)
+  - [1. Root Key as Kubernetes Secret](#1-root-key-as-kubernetes-secret)
+  - [2. Root Key with Secret Sharing](#2-root-key-with-secret-sharing)
 - [Start on Kubernetes](#start-on-kubernetes)
   - [1. Pre-requests](#1-pre-requests)
   - [2. Prepare SSL Key and Password](#2-prepare-ssl-key-and-password)
   - [3. Deploy Service](#3-deploy-service)
   - [4. Check Deployment](#4-check-deployment)
 - [REST APIs](#rest-apis)
-  - [1. Test Service Readiness](#1-test-service-readiness)
-  - [2. Enroll](#2-enroll)
-  - [3. Generate Primary Key](#3-generate-primary-key)
-  - [4. Generate Data Key from the Primary Key](#4-generate-data-key-from-the-primary-key)
-  - [5. Retrieve Plain Text of the Data Key](#5-retrieve-plain-text-of-the-data-key)
+  - [1. Rotate Root Key](#1-rotate-root-key)
+  - [2. Test Service Readiness](#2-test-service-readiness)
+  - [3. Enroll](#3-enroll)
+  - [4. Generate Primary Key](#4-generate-primary-key)
+  - [5. Generate Data Key from the Primary Key](#5-generate-data-key-from-the-primary-key)
+  - [6. Retrieve Plain Text of the Data Key](#6-retrieve-plain-text-of-the-data-key)
+  - [7. Recover Root Key](#7-recover-root-key)
 - [Stop Service](#stop-service)
 
 ## Architecture
@@ -52,9 +57,9 @@ This require user to directly specify a root key string when [deploying the serv
 
 ### 2. Root Key with Secret Sharing
 
-User calls [rotate API firstly, which lets the KMS server to generate the root key in its safe memory. Next, the KMS server will apply [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Secret_sharing) to split the root key into shares, and send them to end user. 
+User calls [rotate](#1-rotate-root-key) API firstly, which lets the KMS server to generate the root key in its safe memory. Next, the KMS server will apply [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Secret_sharing) to split the root key into shares, and send them to end user. 
 
-Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover][#5-initliz] API, and send 3/5 of the shares he received previously, and this will recover the original key at server.
+Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover][#7-recover-root-key] API, and send 3/5 of the shares he received previously, and this will recover the original key at server.
 
 ## Start on Kubernetes
 
