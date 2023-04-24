@@ -17,7 +17,6 @@
 
 import torch
 from copy import deepcopy
-import pytorch_lightning as pl
 
 import torchvision.transforms as transforms
 from torchvision.datasets import CIFAR10
