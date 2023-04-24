@@ -36,6 +36,11 @@ function enable-perf-var {
     PERF_VAR=1
 }
 
+function enable-sgx-var {
+    echo "Option: Enable sgx specific performance variables"
+    SGX_ENABLED=1
+}
+
 function enable-dgpu-var {
     echo "Option: Enable OneAPI vars"
     ONEAPI_VAR=1
@@ -114,6 +119,7 @@ function display-help {
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
         echo "    -g, --gpu                 Enable OneAPI and other settings for dGPU support"
+        echo "    -s, --sgx                 Enable SGX specific performance variables"
         echo "    -r <num_cores>,           Force computing resource to <num_cores> CPU"
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
@@ -143,6 +149,7 @@ unset DISABLE_OPENMP_VAR
 unset PERF_VAR
 unset ONEAPI_VAR
 unset FORCED_CORE_NUM
+unset SGX_ENABLED
 
 # Init exported variables
 export TF_ENABLE_ONEDNN_OPTS=1
@@ -150,7 +157,7 @@ export ONEAPI_VAR=0
 
 OPTIND=1
 
-while getopts "ojhtcpgdr:-:" opt; do
+while getopts "ojhtcpgdsr:-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -171,6 +178,9 @@ while getopts "ojhtcpgdr:-:" opt; do
                     ;;
                 gpu)
                     enable-dgpu-var
+                    ;;
+                sgx)
+                    enable-sgx-var
                     ;;
                 help)
                     display-help
@@ -204,6 +214,9 @@ while getopts "ojhtcpgdr:-:" opt; do
             ;;
         g )
             enable-dgpu-var
+            ;;
+        s )
+            enable-sgx-var
             ;;
         h )
             display-help
@@ -288,8 +301,12 @@ if [ "${OPENMP}" -eq 1 ]; then
         let cores_per_socket=$core_/$sockets_
         export OMP_NUM_THREADS=$core_
         export MKL_NUM_THREADS=$core_
-        export OMP_PROC_BIND="close"
-        export OMP_SCHEDULE="STATIC"
+        unset OMP_PROC_BIND  # to avoid affinity issue
+        unset OMP_SCHEDULE  # to avoid affinity issue
+        if [[ ! -z "${SGX_ENABLED:-}" ]]; then
+            export OMP_PROC_BIND="close"
+            export OMP_SCHEDULE="STATIC"
+        fi
     elif [ $OS = "macos" ]; then
         export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
     else
