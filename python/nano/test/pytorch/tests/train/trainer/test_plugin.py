@@ -67,9 +67,6 @@ class TestPlugin(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
-                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
@@ -81,9 +78,6 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
-                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_sys_path(self):
         """test whether child process can inherit parent process's sys.path"""
         # add current directory to sys.path and
@@ -156,9 +150,6 @@ class TestPlugin(TestCase):
         return
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
-                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_with_ccl(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
@@ -171,15 +162,21 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
-                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_spawn_with_ccl(self):
         pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
                      torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
+
+        import lightning.pytorch as pl
+        from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
+        test_trainer = pl.Trainer(max_epochs=1)
+        test_trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+
+        test_trainer = pl.Trainer(max_epochs=1, strategy=DDPSpawnStrategy(num_processes=2))
+        test_trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+
         trainer = Trainer(num_processes=2, distributed_backend="spawn",
                           process_group_backend='ccl', max_epochs=4)
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)

@@ -27,4 +27,4 @@ TORCH_VERSION_LESS_2_0 = compare_version("torch", operator.lt, "2.0")
 TORCHVISION_VERSION_LESS_1_12 = compare_version("torchvision", operator.lt, "0.12.0")
 TORCHVISION_VERSION_LESS_1_14 = compare_version("torchvision", operator.lt, "0.14.0")
 
-LIGHTNING_VERSION_GREATER_2_0 = compare_version('pytorch_lightning', operator.ge, '2.0.0')
+LIGHTNING_VERSION_GREATER_2_0 = compare_version('lightning', operator.ge, '2.0.0')

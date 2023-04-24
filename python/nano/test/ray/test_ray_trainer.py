@@ -80,8 +80,6 @@ class TestTrainer(TestCase):
         train_with_linear_top_layer(
             resnet18, batch_size, num_workers, data_dir)
 
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_ray_compile(self):
         trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray")
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
@@ -89,8 +87,6 @@ class TestTrainer(TestCase):
 
     @pytest.mark.skipif(platform.system() != "Linux",
                         reason="torch_ccl is only avaiable on Linux")
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
-                        reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_ray_with_ccl(self):
         trainer = Trainer(max_epochs=1, num_processes=2, distributed_backend="ray",
                           process_group_backend='ccl')
