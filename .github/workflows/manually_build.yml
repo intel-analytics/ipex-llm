@@ -978,8 +978,8 @@ jobs:
         sudo docker rmi -f ${base_image}:${TAG}
         sudo docker rmi -f ${bigdata_base_image}:${TAG} 10.239.45.10/arda/${bigdata_base_image}:${TAG}
 
-  bigdl-trusted-machine-learning-base:
-    if: ${{ github.event.inputs.artifact == 'bigdl-trusted-machine-learning-base' || github.event.inputs.artifact == 'all' }}
+  bigdl-ppml-trusted-machine-learning-base:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-machine-learning-base' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
@@ -988,12 +988,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-trusted-machine-learning-base
+    - name: bigdl-ppml-trusted-machine-learning-base
       run: |
-        echo "############################################################"
-        echo "########## bigdl-trusted-machine-learning-base #############"
-        echo "############################################################"
-        export image=intelanalytics/bigdl-trusted-machine-learning-base
+        echo "#################################################################"
+        echo "########## bigdl-ppml-trusted-machine-learning-base #############"
+        echo "#################################################################"
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-base
         export base_image=intelanalytics/bigdl-ppml-gramine-base
         cd ppml/trusted-machine-learning
         sudo docker build \
@@ -1016,8 +1016,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-trusted-machine-learning-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-trusted-machine-learning-ref' || github.event.inputs.artifact == 'all' }}
+  bigdl-ppml-trusted-machine-learning-ref:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-machine-learning-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
@@ -1026,15 +1026,15 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-trusted-machine-learning-ref
+    - name: bigdl-ppml-trusted-machine-learning-ref
       run: |
-        echo "###########################################################"
-        echo "########## bigdl-trusted-machine-learning-ref #############"
-        echo "###########################################################"
+        echo "################################################################"
+        echo "########## bigdl-ppml-trusted-machine-learning-ref #############"
+        echo "################################################################"
         cd ppml/trusted-machine-learning/custom-image
         openssl genrsa -3 -out enclave-key.pem 3072
-        export base_image=intelanalytics/bigdl-trusted-machine-learning-base
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-16g
+        export base_image=intelanalytics/bigdl-ppml-trusted-machine-learning-base
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-16g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1047,7 +1047,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-8g
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-8g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1060,7 +1060,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-4g
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-4g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1073,7 +1073,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-16g-all
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-16g-all
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1086,7 +1086,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-8g-all
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-8g-all
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1099,7 +1099,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-4g-all
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-4g-all
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1112,7 +1112,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-noattest-16g
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-noattest-16g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1126,7 +1126,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-noattest-8g
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-noattest-8g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
@@ -1140,7 +1140,7 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-        export image=intelanalytics/bigdl-trusted-machine-learning-reference-noattest-4g
+        export image=intelanalytics/bigdl-ppml-trusted-machine-learning-reference-noattest-4g
         sudo docker build \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_NAME=${base_image} \
           --build-arg MACHINE_LEARNING_BASE_IMAGE_TAG=${TAG} \
