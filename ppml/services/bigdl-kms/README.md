@@ -53,13 +53,19 @@ BigDL KMS is able to create root key in two ways, which are trade-off between de
 
 User creates at client and uploads the root key as a [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/):
 
+![image](https://user-images.githubusercontent.com/60865256/233924015-bd73af7b-59b8-48ca-a730-f76333250730.png)
+
 This require user to directly specify a root key string when [deploying the service in the following section](#3-deploy-service).
 
 ### 2. Root Key with Secret Sharing
 
-User calls [rotate](#1-rotate-root-key) API firstly, which lets the KMS server to generate the root key in its safe memory. Next, the KMS server will apply [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Secret_sharing) to split the root key into shares, and send them to end user. 
+User calls [rotate](#1-rotate-root-key) API firstly, which lets the KMS server to generate the root key in its safe memory. Next, the KMS server will apply [Shamir Secret Sharing](https://en.wikipedia.org/wiki/Secret_sharing) to split the root key into shares, and send them to end user：
 
-Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover][#7-recover-root-key] API, and send 3/5 of the shares he received previously, and this will recover the original key at server.
+![image](https://user-images.githubusercontent.com/60865256/233924093-e816bac9-0941-453d-b649-afb2234a6218.png)
+
+Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover][#7-recover-root-key] API, and send 3/5 of the shares he received previously, and this will recover the original key at server：
+
+![image](https://user-images.githubusercontent.com/60865256/233924150-3a257ae0-12c8-4310-97f2-e019a2502ad5.png)
 
 ## Start on Kubernetes
 
