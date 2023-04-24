@@ -58,7 +58,7 @@ class TestPipeline(TestCase):
 
         def inference(i):
             import os
-            return (i, os.sched_getaffinity(0))
+            return i, os.sched_getaffinity(0)
 
         model = resnet18(num_classes=10)
         pipeline = Pipeline([
@@ -67,4 +67,4 @@ class TestPipeline(TestCase):
         ])
         output = pipeline.run([None])[0]
         # The first stage's affinity should be {0}, and the second stage's affinity should be {1}
-        assert output == (set([0]), set([1]))
+        assert output == ({0}, {1})
