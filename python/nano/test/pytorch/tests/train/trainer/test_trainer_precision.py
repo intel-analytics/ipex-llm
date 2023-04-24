@@ -22,9 +22,8 @@ import torch
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, LIGHTNING_VERSION_GREATER_2_0
-from test.pytorch.utils._train_torch_lightning import (create_data_loader,
-                                                       create_test_data_loader,
-                                                       data_transform)
+from test.pytorch.utils._train_torch_lightning import create_data_loader, \
+    create_test_data_loader, data_transform
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
