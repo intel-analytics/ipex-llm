@@ -1060,6 +1060,7 @@ jobs:
         sudo docker push ${base_image}:${TAG}
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-deep-learning:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-deep-learning' || github.event.inputs.artifact == 'all' }}
@@ -1086,3 +1087,4 @@ jobs:
         sudo docker push ${base_image}:${TAG}
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
