@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import operator
 # This file is adapted from https://github.com/PyTorchLightning
 # /pytorch-lightning/blob/master/pytorch_lightning/plugins/training_type/ddp_spawn.py
 #
@@ -32,41 +31,43 @@ import operator
 # limitations under the License.
 
 
-import os
 import copy
+import logging
 import multiprocessing
+import os
+import warnings
 from typing import Any, List, Optional, Callable
 
 import torch
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+from bigdl.nano.pytorch.dispatcher import _get_patch_status
+from bigdl.nano.utils.common import EnvContext
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 from torch import nn
 from torch.multiprocessing.spawn import ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import _LRScheduler
 
-import pytorch_lightning as pl
-from pytorch_lightning.trainer.states import TrainerFn
-from pytorch_lightning.core.optimizer import LightningOptimizer
-from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
-from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _validate_scheduler_api
-from pytorch_lightning.plugins.environments import LightningEnvironment
-
-from bigdl.nano.utils.common import schedule_processors
-from bigdl.nano.pytorch.dispatcher import _get_patch_status
-from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
-from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.utils.common import EnvContext
-from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
-
-import logging
-import warnings
-
 if LIGHTNING_VERSION_GREATER_2_0:
-    from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
-    from pytorch_lightning.core.optimizer import _validate_optimizers_attached
-    from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
-    from pytorch_lightning.strategies import DDPStrategy as _DDPSpawnStrategy
+    import lightning.pytorch as pl
+    from lightning.pytorch.core.optimizer import LightningOptimizer
+    from lightning.pytorch.core.optimizer import _configure_schedulers_automatic_opt
+    from lightning.pytorch.core.optimizer import _configure_schedulers_manual_opt
+    from lightning.pytorch.core.optimizer import _validate_scheduler_api
+    from lightning.pytorch.plugins.environments import LightningEnvironment
+    from lightning.pytorch.core.optimizer import _validate_multiple_optimizers_support
+    from lightning.pytorch.core.optimizer import _validate_optimizers_attached
+    from lightning.pytorch.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
+    from lightning.pytorch.strategies import DDPStrategy as _DDPSpawnStrategy
 else:
+    import pytorch_lightning as pl
+    from pytorch_lightning.core.optimizer import LightningOptimizer
+    from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
+    from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
+    from pytorch_lightning.core.optimizer import _validate_scheduler_api
+    from pytorch_lightning.plugins.environments import LightningEnvironment
     from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
     from pytorch_lightning.strategies.launchers import _SpawnLauncher
     from pytorch_lightning.strategies import DDPSpawnStrategy as _DDPSpawnStrategy

@@ -42,8 +42,6 @@ if LIGHTNING_VERSION_GREATER_2_0:
 else:
     import pytorch_lightning as pl
 
-
-
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
 backends_class_map = {

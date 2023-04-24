@@ -31,24 +31,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import cloudpickle
-import os
+import json
+import logging
 import multiprocessing
+import os
 import subprocess
 import sys
 import uuid
-import json
-from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
+from typing import Any, Optional, Callable
 
-import pytorch_lightning as pl
-
-from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
-from bigdl.nano.utils.common import schedule_processors
-from bigdl.nano.utils.common import invalidInputError
+import cloudpickle
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
+from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.pytorch import LIGHTNING_VERSION_GREATER_2_0
 
-import logging
+if LIGHTNING_VERSION_GREATER_2_0:
+    import lightning.pytorch as pl
+else:
+    import pytorch_lightning as pl
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +78,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
         if cpu_procs is not None:
             for i in range(len(cpu_procs)):
                 envs[i]["KMP_AFFINITY"] = f"granularity=fine,proclist" + \
-                    f"=[{','.join(map(str, cpu_procs[i]))}],explicit"
+                                          f"=[{','.join(map(str, cpu_procs[i]))}],explicit"
                 envs[i]["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
 
         # the `return_queue` is necessary for recovering child process's state, we need
