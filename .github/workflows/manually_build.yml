@@ -28,7 +28,7 @@ on:
         - bigdl-ppml-trusted-python-toolkit-base
         - bigdl-ppml-trusted-python-toolkit-ref
         - bigdl-ppml-trusted-bigdata-gramine
-        - bigdl-ppml-trusted-bigd-data
+        - bigdl-ppml-trusted-big-data
         - bigdl-ppml-trusted-deep-learning
         - bigdl-kms-base
         - bigdl-kms-reference
@@ -1035,8 +1035,8 @@ jobs:
         sudo docker push 10.239.45.10/arda/${image}:${TAG}
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
-  bigdl-ppml-trusted-bigd-data:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigd-data' || github.event.inputs.artifact == 'all' }}
+  bigdl-ppml-trusted-big-data:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-big-data' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
 
     steps:
@@ -1044,12 +1044,12 @@ jobs:
     - name: docker login
       run: |
         docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-    - name: bigdl-ppml-trusted-bigd-data
+    - name: bigdl-ppml-trusted-big-data
       run: |
         echo "########################################"
-        echo "####### bigdl-ppml-trusted-bigd-data ########"
+        echo "####### bigdl-ppml-trusted-big-data ########"
         echo "########################################"
-        export base_image=intelanalytics/bigdl-ppml-trusted-bigd-data
+        export base_image=intelanalytics/bigdl-ppml-trusted-big-data
         cd ppml/tdx/docker/trusted-big-data
         sudo docker build \
           --no-cache=true \
