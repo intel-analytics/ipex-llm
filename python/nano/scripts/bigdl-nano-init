@@ -287,7 +287,8 @@ if [ "${OPENMP}" -eq 1 ]; then
         let threads_per_core=$cpu_/$core_
         let cores_per_socket=$core_/$sockets_
         export OMP_NUM_THREADS=$core_
-        export OMP_PRC_BIND="close"
+        export MKL_NUM_THREADS=$core_
+        export OMP_PROC_BIND="close"
         export OMP_SCHEDULE="STATIC"
     elif [ $OS = "macos" ]; then
         export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
@@ -331,7 +332,7 @@ else
         echo "nano_vars.sh already exists"
     elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init ]; then
         echo "It seems that you are using bidl-nano installed by system's pip, "
-        echo "you may need to 'source bgidl-nano-init' before using bigdl-nano "
+        echo "you may need to 'source bigdl-nano-init' before using bigdl-nano "
         echo "and 'source bigdl-nano-unset-env' after using bigdl-nano yourself"
     else
         echo "Setting environment variables in current conda env"
@@ -371,8 +372,9 @@ elif [ $OS = "macos" ]; then
 fi
 echo "MALLOC_CONF           = ${MALLOC_CONF}"
 echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
-echo "OMP_PRC_BIND          = ${OMP_PRC_BIND}"
+echo "OMP_PROC_BIND         = ${OMP_PROC_BIND}"
 echo "OMP_SCHEDULE          = ${OMP_SCHEDULE}"
+echo "MKL_NUM_THREADS       = ${MKL_NUM_THREADS}"
 echo "KMP_AFFINITY          = ${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME         = ${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS = ${TF_ENABLE_ONEDNN_OPTS}"
