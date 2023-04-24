@@ -42,15 +42,6 @@ import torch
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.nn.parallel.distributed import DistributedDataParallel
 
-import pytorch_lightning as pl
-from pytorch_lightning.core.datamodule import LightningDataModule
-from pytorch_lightning.trainer.states import TrainerFn
-from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
-from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _validate_scheduler_api
-from pytorch_lightning.core.optimizer import LightningOptimizer
-
 from .ray_envbase import RayEnvironment
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
@@ -58,12 +49,26 @@ from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 if LIGHTNING_VERSION_GREATER_2_0:
-    from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
-    from pytorch_lightning.core.optimizer import _validate_optimizers_attached
-    from pytorch_lightning.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
-    from pytorch_lightning.strategies import DDPStrategy as DDPSpawnStrategy
+    import lightning.pytorch as pl
+    from lightning.pytorch.trainer.states import TrainerFn
+    from lightning.pytorch.utilities import rank_zero_only
+    from lightning.pytorch.core.optimizer import _configure_schedulers_automatic_opt
+    from lightning.pytorch.core.optimizer import _configure_schedulers_manual_opt
+    from lightning.pytorch.core.optimizer import _validate_scheduler_api
+    from lightning.pytorch.core.optimizer import LightningOptimizer
+    from lightning.pytorch.core.optimizer import _validate_multiple_optimizers_support
+    from lightning.pytorch.core.optimizer import _validate_optimizers_attached
+    from lightning.pytorch.strategies.launchers import _MultiProcessingLauncher as _SpawnLauncher
+    from lightning.pytorch.strategies import DDPStrategy as DDPSpawnStrategy
     from lightning.fabric.utilities.apply_func import move_data_to_device
 else:
+    import pytorch_lightning as pl
+    from pytorch_lightning.trainer.states import TrainerFn
+    from pytorch_lightning.utilities import rank_zero_only
+    from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
+    from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
+    from pytorch_lightning.core.optimizer import _validate_scheduler_api
+    from pytorch_lightning.core.optimizer import LightningOptimizer
     from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
     from pytorch_lightning.strategies.launchers import _SpawnLauncher
     from pytorch_lightning.strategies import DDPSpawnStrategy

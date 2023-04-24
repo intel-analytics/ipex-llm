@@ -18,12 +18,17 @@ import inspect
 from typing import List
 
 from torchmetrics.metric import Metric
-import pytorch_lightning as pl
 from torch import nn, Tensor, fx
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import LIGHTNING_VERSION_GREATER_2_0
+
+if LIGHTNING_VERSION_GREATER_2_0:
+    import lightning.pytorch as pl
+else:
+    import pytorch_lightning as pl
 
 
 class LightningModule(pl.LightningModule):

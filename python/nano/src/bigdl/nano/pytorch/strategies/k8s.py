@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import operator
 
-from pytorch_lightning.strategies import DDPStrategy
 from typing import Any, List, Optional, Union, Dict
 import torch
 import os
@@ -24,20 +22,28 @@ from torch import nn
 from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.optim.lr_scheduler import _LRScheduler
 
-import pytorch_lightning as pl
-from pytorch_lightning.core.optimizer import LightningOptimizer
-from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
-from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
-from pytorch_lightning.core.optimizer import _validate_scheduler_api
-from pytorch_lightning.plugins.environments import KubeflowEnvironment
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, LIGHTNING_VERSION_GREATER_2_0
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
 
 if LIGHTNING_VERSION_GREATER_2_0:
-    from pytorch_lightning.core.optimizer import _validate_multiple_optimizers_support
-    from pytorch_lightning.core.optimizer import _validate_optimizers_attached
+    import lightning.pytorch as pl
+    from lightning.pytorch.strategies import DDPStrategy
+    from lightning.pytorch.core.optimizer import LightningOptimizer
+    from lightning.pytorch.core.optimizer import _configure_schedulers_automatic_opt
+    from lightning.pytorch.core.optimizer import _configure_schedulers_manual_opt
+    from lightning.pytorch.core.optimizer import _validate_scheduler_api
+    from lightning.pytorch.plugins.environments import KubeflowEnvironment
+    from lightning.pytorch.core.optimizer import _validate_multiple_optimizers_support
+    from lightning.pytorch.core.optimizer import _validate_optimizers_attached
 else:
+    import pytorch_lightning as pl
+    from pytorch_lightning.strategies import DDPStrategy
+    from pytorch_lightning.core.optimizer import LightningOptimizer
+    from pytorch_lightning.core.optimizer import _configure_schedulers_automatic_opt
+    from pytorch_lightning.core.optimizer import _configure_schedulers_manual_opt
+    from pytorch_lightning.core.optimizer import _validate_scheduler_api
+    from pytorch_lightning.plugins.environments import KubeflowEnvironment
     from pytorch_lightning.core.optimizer import _set_scheduler_opt_idx
 
 # we must import torch_ccl to use ccl as backend

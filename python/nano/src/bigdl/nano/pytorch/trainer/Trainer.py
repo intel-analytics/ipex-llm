@@ -16,7 +16,6 @@
 import copy
 from logging import warning
 from typing import Any, List, Optional, Union
-import pytorch_lightning as pl
 import torch
 from torch import nn
 from torch.nn.modules.loss import _Loss
@@ -37,6 +36,13 @@ from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.utils.common import _avx512_checker
 from bigdl.nano.utils.common import deprecated
+
+if LIGHTNING_VERSION_GREATER_2_0:
+    import lightning.pytorch as pl
+else:
+    import pytorch_lightning as pl
+
+
 
 distributed_backends = ["spawn", "ray", "subprocess", "k8s"]
 
