@@ -21,17 +21,23 @@ from logging import warning
 from typing import Any, Union, Callable
 
 import torch
+from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+from bigdl.nano.utils.common import compare_version
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.pytorch import LIGHTNING_VERSION_GREATER_2_0
 from torch.nn import Module
 from torch.optim import Optimizer, LBFGS
 
-import pytorch_lightning as pl
-from pytorch_lightning.strategies import SingleDeviceStrategy
-from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.precision import PrecisionPlugin
-
-from bigdl.nano.utils.common import compare_version
-from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
+if LIGHTNING_VERSION_GREATER_2_0:
+    import lightning.pytorch as pl
+    from lightning.pytorch.strategies import SingleDeviceStrategy
+    from lightning.pytorch.accelerators.accelerator import Accelerator
+    from lightning.pytorch.plugins.precision import PrecisionPlugin
+else:
+    import pytorch_lightning as pl
+    from pytorch_lightning.strategies import SingleDeviceStrategy
+    from pytorch_lightning.accelerators.accelerator import Accelerator
+    from pytorch_lightning.plugins.precision import PrecisionPlugin
 
 
 class IPEXStrategy(SingleDeviceStrategy):
