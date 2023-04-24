@@ -378,8 +378,8 @@ class _DecoratedTorchNano(TorchNano):
         _dataloaders = [opt[0] for opt in _data_loader_pos]
 
         # call setup, the purpose of the decorator
-        _setup_model, _setup_optimizers = self.setup(_model, _optimizers)
-        _setup_dataloaders = self.setup_dataloaders(*_dataloaders)
+        _setup_model, _setup_optimizers, _setup_dataloaders = \
+            self.setup(_model, _optimizers, *_dataloaders)
         if len(_dataloaders) == 1:
             _setup_dataloaders = [_setup_dataloaders]
 
