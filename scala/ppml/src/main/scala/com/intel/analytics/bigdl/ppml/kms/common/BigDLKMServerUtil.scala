@@ -28,7 +28,6 @@ import java.security.MessageDigest
 
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Cipher
-import java.security.SecureRandom
 import javax.crypto.{KeyGenerator, SecretKey}
 
 import java.io.File
@@ -36,8 +35,9 @@ import java.security.{KeyStore, SecureRandom}
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import akka.http.scaladsl.ConnectionContext
-
+import com.codahale.shamir.Scheme
 import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.attestation.utils.JsonUtil
 
 object BigDLKMServerUtil extends Supportive {
   val logger = LoggerFactory.getLogger(getClass)
@@ -100,6 +100,8 @@ object BigDLKMServerUtil extends Supportive {
 
   def keyCryptoCodec(base64WrappingKeyPlainText: String,
     base64ChildKey: String, om: Int): String = {
+      Log4Error.invalidOperationError(base64WrappingKeyPlainText != null &&
+        base64WrappingKeyPlainText != "", "empty encryption key!")
       val wrappingKeyBytes = Base64.getDecoder().decode(base64WrappingKeyPlainText)
       val encryptionKeySpec = new SecretKeySpec(wrappingKeyBytes, "AES")
       val cipher = Cipher.getInstance("AES")
@@ -144,4 +146,44 @@ object BigDLKMServerUtil extends Supportive {
       trustManagerFactory.getTrustManagers, new SecureRandom)
     ConnectionContext.https(sslContext)
   }
+
+  def splitRootKey(rootKey: String,
+    threshold: Int): String = {
+      Log4Error.invalidOperationError(rootKey != null && rootKey != "",
+        "try to split an empty root key string!")
+      // need at least $threshold of 5 secrets to restore the root key
+      val scheme = new Scheme(new SecureRandom(), 5, threshold)
+      import scala.collection.JavaConverters._
+      "{" + scheme.split(rootKey.getBytes(StandardCharsets.UTF_8))
+        .asScala
+        .map {
+          case (k, v) => JsonUtil.toJson(SecretFormat(k,
+            Base64.getEncoder.encodeToString(v)))
+        }.mkString(",") + "}"
+  }
+
+  def recoverRootKey(secretStore: java.util.Map[Integer, Array[Byte]],
+    threshold: Int): String = {
+      // need at least $threshold of 5 secret to restore the root key
+      val scheme = new Scheme(new SecureRandom(), 5, threshold)
+      new String(scheme.join(secretStore), StandardCharsets.UTF_8)
+  }
+
+  def isBase64(s: String): Boolean = {
+    org.apache.commons.codec.binary.Base64.isBase64(s)
+  }
 }
+
+class SecretStore {
+  val secretStoreMap = new java.util.HashMap[Integer, Array[Byte]]
+  def addSecret(secretJsonStr: String): Unit = {
+    val secret = JsonUtil.fromJson(classOf[SecretFormat], secretJsonStr)
+    secretStoreMap.put(secret.index,
+      Base64.getDecoder.decode(secret.content))
+  }
+  def getSecrets(): java.util.HashMap[Integer, Array[Byte]] = secretStoreMap
+  def count(): Int = secretStoreMap.size
+  def clear(): Unit = secretStoreMap.clear
+}
+
+case class SecretFormat(index: Integer, content: String)
