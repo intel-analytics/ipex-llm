@@ -59,6 +59,12 @@ object BigDLKeyManagementServer extends Supportive {
     val route = timing("initialize https route") {
       path("") {
         timing("welcome") {
+          if (rootKey == "") {
+            complete(500, "empty root key! please initialize it first. \n" +
+              "rotate (or generate) a root key: GET /rootKey/rotate \n" +
+              "recover root key: " +
+              "PUT /rootKey?secret=a_secret_string_of_the_splited_root_key")
+          }
           val response = s"welcome to $name \n \n" +
           "please request/recover root key before using other APIs: \n" +
           "rotate (or generate) a root key: GET /rootKey/rotate \n" +
