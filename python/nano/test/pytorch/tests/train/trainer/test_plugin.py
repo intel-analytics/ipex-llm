@@ -14,26 +14,22 @@
 # limitations under the License.
 #
 
+import operator
 import os
 import platform
-import pytest
 from unittest import TestCase
 
+import pytest
 import torch
 import torchmetrics
-from torch.utils.data import DataLoader, TensorDataset
-from torch import nn
-
-from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
-
+from bigdl.nano.pytorch.lightning import LightningModule
+from bigdl.nano.utils.common import compare_version
+from test.pytorch.tests.train.trainer.test_lightning import ResNet18
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
-from test.pytorch.tests.train.trainer.test_lightning import ResNet18
-from bigdl.nano.utils.common import compare_version
-import operator
-
-import copy
+from torch import nn
+from torch.utils.data import DataLoader, TensorDataset
 
 num_classes = 10
 batch_size = 32
@@ -53,6 +49,7 @@ class LinearModel(nn.Module):
     def forward(self, input_):
         return self.fc1(input_)
 
+
 class TestPlugin(TestCase):
     model = ResNet18(pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
@@ -70,7 +67,8 @@ class TestPlugin(TestCase):
         )
         os.environ['PYTHONPATH'] = project_test_dir
 
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
+                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
                         reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModule(
@@ -83,7 +81,8 @@ class TestPlugin(TestCase):
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
+                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
                         reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_sys_path(self):
         """test whether child process can inherit parent process's sys.path"""
@@ -118,17 +117,17 @@ class TestPlugin(TestCase):
 
         linear = LinearModel()
         pl_model = LightningModule(
-            model = linear,
-            optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
+            model=linear,
+            optimizer=torch.optim.SGD(linear.parameters(), lr=0.5),
             loss=torch.nn.MSELoss(),
             metrics=[torchmetrics.MeanSquaredError()]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2,
                           auto_lr=False)
-        features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
-        labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
+        features = torch.tensor([[0.0], [0.0], [1.0], [1.0]])
+        labels = torch.tensor([[0.0], [0.0], [0.0], [0.0]])
 
-        dataset = TensorDataset(features,labels)
+        dataset = TensorDataset(features, labels)
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
         trainer.fit(pl_model, train_loader, train_loader)
 
@@ -140,16 +139,16 @@ class TestPlugin(TestCase):
 
         linear = LinearModel()
         pl_model = LightningModule(
-            model = linear,
-            optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
+            model=linear,
+            optimizer=torch.optim.SGD(linear.parameters(), lr=0.5),
             loss=torch.nn.MSELoss(),
             metrics=[torchmetrics.MeanSquaredError()]
         )
         trainer = Trainer(num_processes=2, distributed_backend="spawn", max_epochs=2, auto_lr=False)
-        features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
-        labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
+        features = torch.tensor([[0.0], [0.0], [1.0], [1.0]])
+        labels = torch.tensor([[0.0], [0.0], [0.0], [0.0]])
 
-        dataset = TensorDataset(features,labels)
+        dataset = TensorDataset(features, labels)
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
         trainer.fit(pl_model, train_loader, train_loader)
 
@@ -157,7 +156,8 @@ class TestPlugin(TestCase):
         return
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
+                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
                         reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_subprocess_with_ccl(self):
         pl_model = LightningModule(
@@ -171,7 +171,8 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     @pytest.mark.skipif(platform.system() != "Linux", reason="torch_ccl is only avaiable on Linux")
-    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0") and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
+    @pytest.mark.skipif(compare_version("torch", operator.ge, "2.0.0")
+                        and compare_version("pytorch_lightning", operator.lt, '2.0.0'),
                         reason="We have not upgraded version of pytorch_lightning.")
     def test_trainer_spawn_with_ccl(self):
         pl_model = LightningModule(
