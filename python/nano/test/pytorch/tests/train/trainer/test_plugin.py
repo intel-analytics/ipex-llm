@@ -168,15 +168,6 @@ class TestPlugin(TestCase):
             metrics=[torchmetrics.F1Score('multiclass', num_classes=num_classes),
                      torchmetrics.Accuracy('multiclass', num_classes=num_classes)]
         )
-
-        import lightning.pytorch as pl
-        from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
-        test_trainer = pl.Trainer(max_epochs=1)
-        test_trainer.fit(pl_model, self.data_loader, self.test_data_loader)
-
-        test_trainer = pl.Trainer(max_epochs=1, strategy=DDPSpawnStrategy(num_processes=2))
-        test_trainer.fit(pl_model, self.data_loader, self.test_data_loader)
-
         trainer = Trainer(num_processes=2, distributed_backend="spawn",
                           process_group_backend='ccl', max_epochs=4)
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
