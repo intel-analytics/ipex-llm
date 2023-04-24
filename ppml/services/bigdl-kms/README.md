@@ -63,7 +63,7 @@ User calls [rotate](#1-rotate-root-key) API firstly, which lets the KMS server t
 
 ![image](https://user-images.githubusercontent.com/60865256/233924093-e816bac9-0941-453d-b649-afb2234a6218.png)
 
-Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover][#7-recover-root-key] API, and send 3/5 of the shares he received previously, and this will recover the original key at server：
+Here, the original root key will never goes of TEE. If the server crashed, user is allowed to call [recover](#7-recover-root-key) API, and send 3/5 of the shares he received previously, and this will recover the original key at server：
 
 <p align="center"><img src="https://user-images.githubusercontent.com/60865256/233924150-3a257ae0-12c8-4310-97f2-e019a2502ad5.png" height="300px"><br></p>
 
