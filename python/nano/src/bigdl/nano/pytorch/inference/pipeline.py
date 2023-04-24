@@ -88,9 +88,9 @@ class Pipeline():
             self.send_.put((idx, value))
             outputs.append(None)
 
-        outputs = [self.recv_.get() for _ in outputs]
-        outputs = list(map(lambda output: output[1],
-                           sorted(outputs, key=lambda output: output[0])))
+        for _ in range(len(outputs)):
+            idx, output = self.recv_.get()
+            outputs[idx] = output
         return outputs
 
     def _launch_stage(self, stage: Tuple, recv_: mp.Queue, send_: mp.Queue):
