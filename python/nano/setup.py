@@ -42,7 +42,7 @@ lib_urls = [
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.dylib",
     "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
-    "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v2.10/libtcmalloc.so"
 ]
 
 
