@@ -162,11 +162,12 @@ object BigDLKMServerUtil extends Supportive {
         }.mkString(",") + "}"
   }
 
-  def recoverRootKey(secretStore: java.util.Map[Integer, Array[Byte]],
+  def recoverRootKey(secretStore: SecretStore,
     threshold: Int): String = {
       // need at least $threshold of 5 secret to restore the root key
       val scheme = new Scheme(new SecureRandom(), 5, threshold)
-      new String(scheme.join(secretStore), StandardCharsets.UTF_8)
+      new String(scheme.join(secretStore.secretStoreMap),
+        StandardCharsets.UTF_8)
   }
 
   def isBase64(s: String): Boolean = {
@@ -181,7 +182,6 @@ class SecretStore {
     secretStoreMap.put(secret.index,
       Base64.getDecoder.decode(secret.content))
   }
-  def getSecrets(): java.util.HashMap[Integer, Array[Byte]] = secretStoreMap
   def count(): Int = secretStoreMap.size
   def clear(): Unit = secretStoreMap.clear
 }
