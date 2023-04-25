@@ -83,6 +83,20 @@ echo "Successfully got dataset ml-1m & ml-100k from ftp"
 stop_ray $backend
 
 echo "#1 Running pytorch dataloader"
+
+start=$(date "+%s")
+python ./pytorch_train_dataloader.py --backend spark --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-3 Running pytorch spark train dataloader time used: $time1 seconds"
+
+start=$(date "+%s")
+python ./pytorch_resume_train_dataloader.py --backend spark --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-4 Running pytorch spark resume train dataloader time used: $time1 seconds"
+clean
+
 #timer
 start=$(date "+%s")
 
@@ -99,18 +113,6 @@ time1=$((now - start))
 echo "#1-2 Running pytorch ray resume train dataloader time used: $time1 seconds"
 stop_ray $backend
 clean
-
-start=$(date "+%s")
-python ./pytorch_train_dataloader.py --backend spark --dataset $dataset
-now=$(date "+%s")
-time1=$((now - start))
-echo "#1-3 Running pytorch spark train dataloader time used: $time1 seconds"
-
-start=$(date "+%s")
-python ./pytorch_resume_train_dataloader.py --backend spark --dataset $dataset
-now=$(date "+%s")
-time1=$((now - start))
-echo "#1-4 Running pytorch spark resume train dataloader time used: $time1 seconds"
 
 now=$(date "+%s")
 time1=$((now - start))
