@@ -29,6 +29,7 @@ on:
         - bigdl-ppml-trusted-python-toolkit-ref
         - bigdl-ppml-trusted-bigdata-gramine
         - bigdl-kms
+        - bigdl-attestation-service
       tag:
         description: 'docker image tag (e.g. 2.1.0-SNAPSHOT)'
         required: true
@@ -729,6 +730,54 @@ jobs:
         docker tag ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         docker push 10.239.45.10/arda/${IMAGE}:${TAG}
         docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
+
+  bigdl-attestation-service:
+    if: ${{ github.event.inputs.artifact == 'bigdl-attestation-service' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: docker deploy bigdl-attestation-service
+      run: |
+        export BASE_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
+        export AS_BASE_IMAGE=intelanalytics/bigdl-attestation-service-base
+        export AS_REF_IMAGE=intelanalytics/bigdl-attestation-service-reference
+        cd ppml/services/bigdl-attestation-service/docker
+        echo "########################################"
+        echo "#### bigdl-attestation-service-base ####"
+        echo "########################################"
+        cd base
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${BASE_IMAGE} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          --build-arg no_proxy=${NO_PROXY} \
+          -t $AS_BASE_IMAGE:$TAG -f ./Dockerfile .
+        echo "########################################"
+        echo "#### bigdl-attestation-service-ref #####"
+        echo "########################################"
+        cd ../custom
+        openssl genrsa -3 -out enclave-key.pem 3072
+        sudo docker build \
+          --no-cache=true \
+          --build-arg BASE_IMAGE_NAME=${AS_BASE_IMAGE} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t $AS_REF_IMAGE:$TAG -f ./Dockerfile .
+
+        sudo docker push ${AS_BASE_IMAGE}:${TAG}
+        sudo docker tag ${AS_BASE_IMAGE}:${TAG} 10.239.45.10/arda/${AS_BASE_IMAGE}:${TAG}
+        sudo docker push 10.239.45.10/arda/${AS_BASE_IMAGE}:${TAG}
+        sudo docker rmi -f ${AS_BASE_IMAGE}:${TAG} 10.239.45.10/arda/${AS_BASE_IMAGE}:${TAG}
+
+        sudo docker push ${AS_REF_IMAGE}:${TAG}
+        sudo docker tag ${AS_REF_IMAGE}:${TAG} 10.239.45.10/arda/${AS_REF_IMAGE}:${TAG}
+        sudo docker push 10.239.45.10/arda/${AS_REF_IMAGE}:${TAG}
+        sudo docker rmi -f ${AS_REF_IMAGE}:${TAG} 10.239.45.10/arda/${AS_REF_IMAGE}:${TAG}
 
   bigdl-ppml-pccs:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-pccs' || github.event.inputs.artifact == 'all' }}
