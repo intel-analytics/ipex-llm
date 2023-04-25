@@ -300,10 +300,11 @@ if [ "${OPENMP}" -eq 1 ]; then
         let threads_per_core=$cpu_/$core_
         let cores_per_socket=$core_/$sockets_
         export OMP_NUM_THREADS=$core_
-        export MKL_NUM_THREADS=$core_
+        unset MKL_NUM_THREADS  # to avoid inc issue when this var is set diff with OMP_NUM_THREADS
         unset OMP_PROC_BIND  # to avoid affinity issue
         unset OMP_SCHEDULE  # to avoid affinity issue
         if [[ ! -z "${SGX_ENABLED:-}" ]]; then
+            export MKL_NUM_THREADS=$core_
             export OMP_PROC_BIND="close"
             export OMP_SCHEDULE="STATIC"
         fi
@@ -328,7 +329,9 @@ fi
 # Set forced core num
 if [[ ! -z "${FORCED_CORE_NUM:-}" ]]; then
     export OMP_NUM_THREADS=$FORCED_CORE_NUM
-    export MKL_NUM_THREADS=$FORCED_CORE_NUM
+    if [[ ! -z "${SGX_ENABLED:-}" ]]; then
+        export MKL_NUM_THREADS=$FORCED_CORE_NUM
+    fi
 fi
 
 # Set allocator
