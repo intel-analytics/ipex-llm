@@ -217,7 +217,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             # in pl 1.6, a trainer holds a strategy holds a model, a model holds a trainer,
             # `trainer.model` equals to `trainer.strategy.model`, so after assigning to
             # `self.model`, the trainer's model will refer to new model automatically
-            # self.model = copy.deepcopy(self.model)
+            self.model = copy.deepcopy(self.model)
             # `copy.deepcopy(self.model)` can't copy `self.model.trainer` correctly sometimes,
             # so we reuse the original trainer
             self.model.trainer = trainer    # type: ignore
