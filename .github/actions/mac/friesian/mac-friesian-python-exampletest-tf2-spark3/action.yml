@@ -22,7 +22,7 @@ runs:
         gsed -i "s/sed/gsed/g" run-example-tests-tf2.6.0.sh
         bash run-example-tests-tf2.6.0.sh
 
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
