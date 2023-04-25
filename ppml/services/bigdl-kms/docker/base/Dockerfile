@@ -44,6 +44,6 @@ RUN mkdir -p /ppml/keys && \
     apt-get install sqlite3
 COPY --from=java /opt/jdk  /opt/jdk8
 # ppml
-COPY --from=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar /ppml/jars
-COPY --from=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.3.0-SNAPSHOT ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar /ppml/jars
+RUN wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_${SPARK_VERSION}/2.3.0/bigdl-ppml-spark_${SPARK_VERSION}-2.3.0.jar --directory-prefix /ppml/jars/ && \
+    wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_${SPARK_VERSION}/2.3.0/bigdl-dllib-spark_${SPARK_VERSION}-2.3.0.jar --directory-prefix /ppml/jars/
 ENTRYPOINT [ "/ppml/bigdl-kms-entrypoint.sh" ]
