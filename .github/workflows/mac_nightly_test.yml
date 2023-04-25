@@ -42,7 +42,7 @@ permissions:
 
 jobs:
   Mac-Python-AppTest-Part1:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Python-AppTest-Part1' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Python-AppTest-Part1' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -63,7 +63,7 @@ jobs:
 
 
   Mac-Dllib-ScalaTest-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-ScalaTest-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -83,7 +83,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Dllib-Python-ExampleTest-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Dllib-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -103,7 +103,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
   
   Mac-Friesian-Python-UT-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -123,7 +123,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Friesian-Python-UT-Pip-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-UT-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -143,7 +143,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
   
   Mac-Friesian-Python-ExampleTest-Tf2-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -163,7 +163,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-Tf2-Pip-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -183,7 +183,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -203,7 +203,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Friesian-Python-ExampleTest-feature-tf1-pip-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -223,7 +223,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-UT-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -243,7 +243,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-UT-Ray-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-UT-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -263,7 +263,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-ExampleTest-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
@@ -283,7 +283,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-ExampleTest-Ray-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
