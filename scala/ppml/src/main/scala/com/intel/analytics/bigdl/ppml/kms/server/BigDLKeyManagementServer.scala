@@ -211,7 +211,7 @@ object BigDLKeyManagementServer extends Supportive {
                     if (secretStore.count >= secretThreshold) {
                       try {
                         rootKey = BigDLKMServerUtil
-                          .recoverRootKey(secretStore.getSecrets, secretThreshold)
+                          .recoverRootKey(secretStore, secretThreshold)
                         Log4Error.invalidOperationError(BigDLKMServerUtil
                           .isBase64(rootKey),
                           "recover failure! wrong secret or try other ones")
