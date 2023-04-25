@@ -8,7 +8,7 @@ inputs:
   image-tag:
     description: 'image tag'
     required: true
-    default: '2.3.0-SNAPSHOT'
+    default: '2.4.0-SNAPSHOT'
 runs:
   using: "composite"
   steps:
@@ -19,7 +19,7 @@ runs:
       run: |
         export IMAGE=${{ env.DEFAULT_IMAGE }}
         docker pull $IMAGE
-        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT
+        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT
         export NO_PROXY=10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.205
         export kubernetes_master_url=172.168.0.205
 
@@ -34,6 +34,7 @@ runs:
         status_7_pyspark_sklearn=1
         status_8_pyspark_sql=1
         status_9_pyspark_tpch=1
+        status_10_spark_lgbm=1
 
         if [ $status_1_spark_pi -ne 0 ]; then
           echo "################## start spark pi"
@@ -149,7 +150,7 @@ runs:
         
         if [ $status_9_pyspark_tpch -ne 0 ]; then
           echo "################## start pyspark tpch"
-          echo "example.9 spark tpch"
+          echo "example.9 pyspark tpch"
           bash run_pyspark_tpch.sh $IMAGE
           if [ "`kubectl get pods | grep pyspark-tpch-test | awk '{print $1}'`" != "" ]; then
             pytpch_driver=`kubectl get pods | grep pyspark-tpch-test | awk '{print $1}' | grep driver`
@@ -158,6 +159,20 @@ runs:
           status_9_pyspark_tpch=$(echo $?)
           if [ "`kubectl get pods | grep pyspark-tpch-test | awk '{print $1}'`" != "" ]; then
             kubectl delete pods `kubectl get pods | grep pyspark-tpch-test | awk '{print $1}'`
+          fi
+        fi
+        
+        if [ $status_10_spark_lgbm -ne 0 ]; then
+          echo "################## start spark lgbm"
+          echo "example.10 spark lgbm"
+          bash run_spark_lgbm.sh $IMAGE
+          if [ "`kubectl get pods | grep spark-lgbm-test | awk '{print $1}'`" != "" ]; then
+            lgbm_driver=`kubectl get pods | grep spark-lgbm-test | awk '{print $1}' | grep driver`
+          fi
+          kubectl logs $lgbm_driver | egrep 'acc:'
+          status_10_spark_lgbm=$(echo $?)
+          if [ "`kubectl get pods | grep spark-lgbm-test | awk '{print $1}'`" != "" ]; then
+            kubectl delete pods `kubectl get pods | grep spark-lgbm-test | awk '{print $1}'`
           fi
         fi
 
@@ -170,4 +185,5 @@ runs:
         echo "status_7_pyspark_sklearn $status_7_pyspark_sklearn"
         echo "status_8_pyspark_sql $status_8_pyspark_sql"
         echo "status_9_pyspark_tpch $status_9_pyspark_tpch"
+        echo "status_10_spark_lgbm $status_10_spark_lgbm"
 

@@ -56,11 +56,11 @@ def run(args):
             if args.option in sub_options:
                 model = opt.load(os.path.join(save_dir, args.option))
             elif args.option in special_options:
-                model = ResNet18(10)
+                model = ResNet18(10, pretrained=False)
                 model = opt.load(os.path.join(save_dir, args.option), model,
                                  input_sample=torch.ones((1, 3, 128, 128)))
             else:
-                model = ResNet18(10)
+                model = ResNet18(10, pretrained=False)
                 model = opt.load(os.path.join(save_dir, args.option), model)
             with InferenceOptimizer.get_context(model):
                 # warmup

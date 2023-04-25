@@ -17,16 +17,17 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Union  # for typehint
 from openvino.runtime import Core
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, _flatten
 from openvino.runtime import Model
 from openvino.runtime import AsyncInferQueue
 import numpy as np
+from datetime import datetime
 from .utils import save, OpenVINO_LESS_2022_3
 
 
 class OpenVINOModel:
     def __init__(self, ie_network: str, device='CPU', precision='fp32',
-                 thread_num=None, config=None):
+                 thread_num=None, config=None, shapes=None):
         self._ie = Core()
         # check device
         self._check_device(self._ie, device)
@@ -34,14 +35,38 @@ class OpenVINOModel:
         self._precision = precision
         self.thread_num = thread_num
         self.additional_config = config
+        self.shapes = shapes
         self.ie_network = ie_network
 
     def on_forward_start(self, inputs):
         self._model_exists_or_err()
         return inputs
 
-    def forward_step(self, *inputs):
-        return self._infer_request.infer(list(inputs))
+    def forward_step(self, *inputs, **kwargs):
+        flattened_inputs = []
+        _flatten(inputs, flattened_inputs)
+        args_length = len(inputs)
+        if kwargs is not None and len(kwargs) > 0:
+            # check kwargs first, to avoid user call model(t1, t2, b=t3, c=t4)
+            # when the signature is def forward(a, b, c)
+            for arg in kwargs:
+                if arg in self.forward_args[:args_length]:
+                    invalidInputError(False,
+                                      f"You shouldn't pass arguement {arg} as it has "
+                                      "been passed as a positional arguement.")
+            # add inputs based on original order
+            for arg in self.forward_args[args_length:]:
+                if arg in kwargs:
+                    flattened_inputs.append(kwargs[arg])
+        if len(self._forward_args) != len(flattened_inputs):
+            # formatting a Tensor will cost much time,
+            # so we put it in this `if` statement
+            invalidInputError(False,
+                              "The length of inputs is "
+                              "inconsistent with the length of OpenVINO's inputs, "
+                              f"got model_forward_args: {self._forward_args}, "
+                              f"and flattened inputs's length: {len(flattened_inputs)}")
+        return self._infer_request.infer(list(flattened_inputs))
 
     def on_forward_end(self, outputs):
         arrays = tuple(outputs.values())
@@ -49,7 +74,7 @@ class OpenVINOModel:
             arrays = arrays[0]
         return arrays
 
-    def forward(self, *inputs):
+    def forward(self, *inputs, **kwargs):
         inputs = self.on_forward_start(inputs)
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
@@ -87,16 +112,98 @@ class OpenVINOModel:
                 config = {"INFERENCE_NUM_THREADS": str(self.thread_num)}
         else:
             config = {}
-        if self.additional_config is not None and self._device == 'CPU':
-            # TODO: check addition config based on device
-            config.update(self.additional_config)
-        self._compiled_model = self._ie.compile_model(model=self.ie_network,
-                                                      device_name=self._device,
-                                                      config=config)
-        self._infer_request = self._compiled_model.create_infer_request()
+        if self.additional_config is not None:
+            if self._device == 'CPU':
+                # TODO: check addition config based on device
+                config.update(self.additional_config)
+            else:
+                ov_cache_dir = self.additional_config.get("CACHE_DIR", None)
+                if ov_cache_dir:
+                    config["CACHE_DIR"] = ov_cache_dir
         self.final_config = config
+
+        if self.shapes is None:
+            self.create_infer_request()
+        else:
+            self._infer_request = None
+            self.reshape(self.shapes)
+
         input_names = [t.any_name for t in self._ie_network.inputs]
         self._forward_args = input_names
+
+    def create_infer_request(self):
+        start_time = datetime.utcnow()
+        self._compiled_model = self._ie.compile_model(model=self.ie_network,
+                                                      device_name=self._device,
+                                                      config=self.final_config)
+        self._infer_request = self._compiled_model.create_infer_request()
+        duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
+        print(f"Compile model and create infer request took {duration_ms} ms")
+
+    def reshape(self, shapes):
+        """
+        Reshape the model to fit the inputs.Be aware that not all models support reshaping,
+        and models that do, may not support all input shapes. The model accuracy may also
+        suffer if you reshape the model.
+        :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]'.
+               This parameter affect model Parameter shape, can be dynamic. For dynamic dimesions
+               use symbol `?`, `-1` or range `low.. up`.'
+        """
+        invalidInputError(isinstance(shapes, str), "Shapes only supports string inputs "
+                          "like 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]' but got "
+                          f"{shapes.__class__.__name__}.")
+
+        shapes, reshape = self._get_reshape_info(shapes)
+        if not reshape:
+            print("Skip the reshape process since the input shapes are same as the current "
+                  "model shapes.")
+            if self._infer_request:
+                print("Skip compiling model.")
+                return
+        else:
+            start_time = datetime.utcnow()
+            print('Reshaping model: {}'
+                  .format(', '.join("'{}': {}".format(k, str(v)) for k, v in shapes.items())))
+            try:
+                self.ie_network.reshape(shapes)
+                duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
+                print(f"Reshape model took {duration_ms} ms")
+            except Exception as e:
+                print(f"Failed to reshape this model. Error message: {str(e)}")
+                if self._infer_request:
+                    return
+                else:
+                    print("Compile the original model instead.")
+
+        self.create_infer_request()
+
+    def _get_reshape_info(self, shapes):
+        invalidInputError(isinstance(shapes, str),
+                          "`_get_reshape_info` only supports string input.")
+        from openvino.tools.benchmark.utils.utils import parse_input_parameters
+        from openvino.runtime import PartialShape
+
+        inputs = self.ie_network.inputs
+        input_names = [port.any_name for port in inputs]
+        inputs_info = [(i.any_name, i.node.friendly_name, i.partial_shape) for i in inputs]
+        shape_map = parse_input_parameters(shapes, input_names=input_names)
+        reshape = False
+        input_shapes = {}
+        for name, node_name, shape in inputs_info:
+            new_shape = None
+            if name in shape_map:
+                new_shape = PartialShape(shape_map[name])
+            elif node_name in shape_map:
+                new_shape = PartialShape(shape_map[node_name])
+
+            if new_shape is None:
+                input_shapes[name] = shape
+            else:
+                if new_shape != shape:
+                    reshape = True
+                input_shapes[name] = new_shape
+
+        return input_shapes, reshape
 
     def _save(self, path):
         """

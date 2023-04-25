@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
@@ -67,7 +67,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ninja -C build/ install && \
     cd /ppml/ && \
     mkdir -p /ppml/lib/ && \
-    mv /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
+    cp /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
 # meson will copy the original file instead of the symlink, which enable us to delete the gramine directory entirely
     rm -rf /gramine && \
     apt-get update --fix-missing && \
@@ -86,12 +86,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Install sgxsdk and dcap, which is used for remote attestation
     mkdir -p /opt/intel/ && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.18.100.3.bin && \
-    chmod a+x ./sgx_linux_x64_sdk_2.18.100.3.bin && \
-    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.18.100.3.bin && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.19.100.3.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.19.100.3.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.19.100.3.bin && \
     . /opt/intel/sgxsdk/environment && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
     tar xzf sgx_debian_local_repo.tgz && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \

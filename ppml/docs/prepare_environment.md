@@ -5,8 +5,8 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
 * [Prepare Key and Password](#prepare-key-and-password)
 * [Configure K8S Environment](#configure-k8s-environment)
-* [Key Management Service (KMS) Setup](#key-management-service-kms-setup)
-* [Attestation Service (AS) Setup](#attestation-service-as-setup)
+* [Key Management Service (KMS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
+* [Attestation Service (AS) Setup](#key-management-service-kms-and-attestation-service-as-setup)
 * [BigDL PPML Client Container](#start-bigdl-ppml-client-container)
 * (Optional) [K8s Monitoring](#optional-k8s-monitioring-setup)
 
@@ -90,10 +90,10 @@ Key Management Service (KMS) helps you manage cryptographic keys for your servic
 
 Pull Docker image from Dockerhub
     ```
-    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT
     ```
 
-**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
+**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
 ### (Optional) K8s Monitoring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md

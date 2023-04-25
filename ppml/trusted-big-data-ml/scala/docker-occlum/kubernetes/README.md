@@ -16,12 +16,12 @@ After our many tests, Using MALLOC_ARENA_MAX=1 is fine in most cases. Hadoop rec
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT
 ```
 
 If Dockerhub is not accessible, we can build a docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
@@ -135,7 +135,91 @@ Parameters:
 We recommend using hdfs to read input-data and write output-result instead of mouting data.
 
 #### Source code
-You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset).
+You can find the source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/gbt/gbtClassifierTrainingExampleOnCriteoClickLogsDataset.scala).
+
+## BigDL LGBM Example
+
+### Download data
+You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).
+Put it into folder `/tmp/iris.data`. You can change the path to data via change mount path `data-exchange` in `executor.yaml` and `driver.yaml`.
+We recommend using hdfs to read input-data and write output-result instead of mouting data.
+And you can find the source code [here](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/lightGBM/LgbmClassifierTrain.scala) and use more configs.for example:
+```
+--inputPath hdfs://IP/input/iris/iris.data \
+--numIterations 100 \
+--partition 8 \
+--modelSavePath hdfs://IP/input/output/iris
+```
+
+### Generate SSL keys and ertificate
+You can get bash from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate-ssl.sh).
+Then generate your ssl key and certificate in /ppml/keys, and mount it to `/opt/occlum_spark/image/ppml` in pods.
+If you run this examples in local node, you can mount like the `data-exchange`.
+Or you can use nfs server to mount:
+```
+#driver.yaml  and executor.yaml
+volumeMounts:
+- name: nfs-data
+  mountPath: /opt/occlum_spark/image/ppml
+volumes:
+  - name: nfs-data
+    nfs:
+      server: your_IP
+      path: /ppml
+```
+
+Then:
+```bash
+./run_spark_lgbm.sh
+```
+Note that if you do not have ssl key and certificate in `/ppml/keys`, the distributed lgbm training will failed like this:
+```
+[LightGBM] [Warning] Unable to set TLSV2 cipher, ignored and try to set TLSV3...
+error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
+error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
+```
+
+## Run Spark LightGBMClassifier example using CriteoClickLogsDataset
+
+### Download data
+You can download the CriteoClickLogsDataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/).
+Put it into folder `/tmp/1g_data`. You can change the path to data via change mount path `data-exchange` in `executor.yaml` and `driver.yaml`.
+We recommend using hdfs to read input-data and write output-result instead of mouting data.
+And you can find the source code [here](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/lightGBM/lgbmClassifierTrainingExampleOnCriteoClickLogsDataset.scala) and use more configs.for example:
+```
+-i /host/data/1g_data   # data input_path
+-s /host/data/save_path # model save_path
+-I 50                   # training iter
+-d 10                   # max_depth
+```
+
+### Generate SSL keys and ertificate
+You can get bash from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate-ssl.sh).
+Then generate your ssl key and certificate in /ppml/keys, and mount it to `/opt/occlum_spark/image/ppml` in pods.
+If you run this examples in local node, you can mount like the `data-exchange`.
+Or you can use nfs server to mount:
+```
+#driver.yaml  and executor.yaml
+volumeMounts:
+- name: nfs-data
+  mountPath: /opt/occlum_spark/image/ppml
+volumes:
+  - name: nfs-data
+    nfs:
+      server: your_IP
+      path: /ppml
+```
+
+Then:
+```bash
+./run_spark_lgbm_criteo.sh
+```
+Note that if you do not have ssl key and certificate in `/ppml/keys`, the distributed lgbm training will failed like this:
+```
+[LightGBM] [Warning] Unable to set TLSV2 cipher, ignored and try to set TLSV3...
+error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
+error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
+```
 
 ### Run Spark TPC-H example
 
@@ -334,7 +418,7 @@ Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/
     - name: SGX_MEM_SIZE
       value: "15GB"
     - name: SGX_THREAD
-      value: "512"
+      value: "1024"
     - name: SGX_HEAP
       value: "1GB"
     - name: SGX_KERNEL_HEAP
@@ -347,7 +431,7 @@ Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/
     - name: SGX_MEM_SIZE
       value: "15GB"
     - name: SGX_THREAD
-      value: "512"
+      value: "1024"
     - name: SGX_HEAP
       value: "1GB"
     - name: SGX_KERNEL_HEAP

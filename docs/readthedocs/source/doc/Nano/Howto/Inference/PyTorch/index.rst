@@ -13,3 +13,4 @@ Inference Optimization: For PyTorch Users
 * `How to save and load optimized JIT model <pytorch_save_and_load_jit.html>`_
 * `How to save and load optimized IPEX model <pytorch_save_and_load_ipex.html>`_
 * `How to accelerate a PyTorch inference pipeline through multiple instances <multi_instance_pytorch_inference.html>`_
+* `How to accelerate a PyTorch inference pipeline using Intel ARC series dGPU <accelerate_pytorch_inference_gpu.html>`_

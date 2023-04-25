@@ -89,18 +89,26 @@ class TestLSTMForecaster(TestCase):
     def tearDown(self):
         del self.forecaster
 
-    def test_lstm_forecaster_fit_predict_evaluate(self):
-        train_data, _, test_data = create_data()
-        self.forecaster.fit(train_data,
-                            epochs=2,
-                            batch_size=32)
-        yhat = self.forecaster.predict(test_data[0],
-                                       batch_size=32)
-        assert yhat.shape == (400, 1, 2)
-        mse = self.forecaster.evaluate(test_data,
-                                       batch_size=32,
-                                       multioutput="raw_values")
-        assert mse[0].shape == test_data[1].shape[1:]
+    def test_lstm_forecaster_evaluate(self):
+        train_tsdata, _, test_tsdata = create_tsdataset()
+        forecaster = LSTMForecaster.from_tsdataset(train_tsdata,
+                                                   past_seq_len=24,
+                                                   hidden_dim=16,
+                                                   layer_num=2)
+        forecaster.fit(train_tsdata, epochs=1, batch_size=32)
+
+        # tf dataset
+        test = test_tsdata.to_tf_dataset(batch_size=32)
+        metrics = forecaster.evaluate(test, multioutput='uniform_average')
+
+        # TSDataset
+        metrics_tsdata = forecaster.evaluate(test_tsdata, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics, metrics_tsdata, decimal=5)
+
+        # numpy
+        test_data = test_tsdata.to_numpy()
+        metrics_data = forecaster.evaluate(test_data, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics_data, metrics_tsdata, decimal=5)
 
     def test_lstm_forecaster_fit_tf_data(self):
         train_data, _, test_data = create_data(tf_data=True)

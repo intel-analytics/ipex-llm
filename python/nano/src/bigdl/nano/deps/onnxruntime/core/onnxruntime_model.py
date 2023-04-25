@@ -16,16 +16,8 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, _flatten
 import numpy as np
-
-
-def _flatten(inputs, result):
-    for x in inputs:
-        if isinstance(x, np.ndarray) or np.isscalar(x):
-            result.append(x)
-        else:
-            _flatten(x, result)
 
 
 class ONNXRuntimeModel:
@@ -36,13 +28,17 @@ class ONNXRuntimeModel:
         self.session_options = session_options
         self._build_ortsess(session_options)
 
-    def forward_step(self, *inputs):
+    def forward_step(self, *inputs, **kwargs):
         '''
         This function run through the onnxruntime forwarding step
         '''
         flattened_inputs = []
         _flatten(inputs, flattened_inputs)
-        if len(self._forward_args) != len(flattened_inputs):
+        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
+        if kwargs is not None and len(kwargs) > 0:
+            zipped_inputs.update(kwargs)
+        # TODO: kwargs has tuple or dict?
+        if len(self._forward_args) != len(zipped_inputs):
             # formatting a Tensor will cost much time,
             # so we put it in this `if` statement
             invalidInputError(False,
@@ -50,7 +46,6 @@ class ONNXRuntimeModel:
                               "inconsistent with the length of ONNX Runtime session's inputs, "
                               f"got model_forward_args: {self._forward_args}, "
                               f"and flattened inputs: {flattened_inputs}")
-        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
         ort_outs = self.ortsess.run(None, zipped_inputs)
         return ort_outs
 

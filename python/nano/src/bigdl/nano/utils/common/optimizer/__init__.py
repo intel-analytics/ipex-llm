@@ -15,7 +15,7 @@
 #
 
 
-from .latency import latency_calculate_helper
+from .latency import latency_calculate_helper, torch_loader_latency_calculate_helper
 
 from .acceleration_option import AccelerationOption
 from .acceleration_option import available_acceleration_combination

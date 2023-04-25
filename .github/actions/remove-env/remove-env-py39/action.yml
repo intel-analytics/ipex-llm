@@ -1,0 +1,15 @@
+name: 'Remove Env'
+description: 'Remove Env'
+runs:
+  using: "composite"
+  steps:
+    - name: Remove Env
+      shell: bash
+      run: |
+        unset PYTHONHOME 
+        source activate py39
+        pip uninstall -y pyspark bigdl-friesian bigdl bigdl-dllib-spark3 bigdl-orca-spark3 bigdl-tf bigdl-math bigdl-orca  bigdl-dllib bigdl-tf bigdl-chronos bigdl-nano
+        source deactivate
+        conda remove -n py39 -y --all
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}

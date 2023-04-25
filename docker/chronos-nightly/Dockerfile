@@ -39,6 +39,7 @@ ARG extra_dep=n
 
 ADD ./docker/chronos-nightly/install-python-env.sh /opt
 ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
+ADD ./python/chronos/use-case/AIOps /opt/work/use-case/AIOps
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update && \

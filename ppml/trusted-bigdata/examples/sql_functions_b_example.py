@@ -1,48 +1,66 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
+from pyspark.sql.types import *
 
-def sql_functions_b_example(spark):
+def sql_functions_f_example(spark):
+
+    # factorial
+    df = spark.createDataFrame([(5,)], ['n'])
+    df.select(factorial(df.n).alias('f')).show()
+    print("factorial API finished")
+
+    # first
+    df = spark.createDataFrame([(None,), (5,), (6,)], ['n'])
+    df.select(first(df.n)).show()
+    print("first API finished")
+
+    # flatten
+    #the result is null if there has 'None' in arrays
+    df = spark.createDataFrame([([[1, 2, 3], [4, 5], [6]],), ([None, [4, 5]],)], ['data'])
+    df.select(flatten(df.data).alias('r')).show()
+    print("flatten API finished")
+
+    # floor
+    df = spark.createDataFrame([(1.2,), (5.9,), (6.3,)], ['n'])
+    df.select(floor(df.n)).show()
+    print("floor API finished")
+
+    # format_number
+    spark.createDataFrame([(5,)], ['a']).select(format_number('a', 4).alias('v')).show()
+    print("format_number API finished")
     
-    # base64
-    #encoding a binary column
-    df = spark.createDataFrame([('1',), ('2',), ('10',)], ["n1"])
-    df.withColumn("base64_n1", base64(df.n1)).show()
-    print("base64 API finished")
+    # format_string
+    df = spark.createDataFrame([(5, "hello")], ['a', 'b'])
+    df.select(format_string('%d %s', df.a, df.b).alias('v')).show()
+    print("format_string API finished")
 
-    # bin
-    #arg type: bigint type
-    #return: the string representation of the binary
-    df = spark.createDataFrame([(1,), (2,), (3,)], ["n1"])
-    df.select(bin(df.n1).alias("binary_number")).show()
-    print("bin API finished")
+    # from_json
+    data = [(1, '''{"a": 1}''')]
+    schema = StructType([StructField("a", IntegerType())])
+    df = spark.createDataFrame(data, ("key", "value"))
+    df.select(from_json(df.value, schema).alias("json")).show()
+    df.select(from_json(df.value, "MAP<STRING,INT>").alias("json")).show()
+    print("from_json API finished")
 
-    # bitwiseNOT
-    #arg type: integral type
-    #return: bitwise not value
-    df = spark.createDataFrame([(1,), (2,), (3,)], ["n1"])
-    df.select(bitwiseNOT(df.n1).alias("bitwise_not_value")).show()
-    print("bitwiseNOT API finished")
+    # from_unixtime
+    time_df = spark.createDataFrame([(1428476400,)], ['unix_time'])
+    time_df.select(from_unixtime('unix_time').alias('ts')).show()
+    print("from_unixtime API finished")
 
-    # broadcast
-    #assume df1 (few KB) << df2 (10s of GB)
-    df1 = spark.createDataFrame([(1, 'aa'), (4, 'dd')], ["n1", "s1"])
-    df2 = spark.createDataFrame([(1, 'a'), (2, 'b'), (3, 'c'), (5, 'e'), (6, 'f')], ["n2", "s2"])
-    df1.join(broadcast(df2), df1.n1 == df2.n2).show()
-    print("broadcast API finished")
-
-    # bround
-    spark.createDataFrame([(2.5,)], ['a']).select(bround('a', 0).alias('r')).collect()
-    print("bround API finished")
-
-    print("Finish running function_b API")
+    # from_utc_timestamp
+    df = spark.createDataFrame([('1997-02-28 10:30:00', 'JST')], ['ts', 'tz'])
+    df.select(from_utc_timestamp(df.ts, "PST").alias('local_time')).show()
+    df.select(from_utc_timestamp(df.ts, df.tz).alias('local_time')).show()
+    print("from_utc_timestamp API finished")
+    
+    print("Finish running function_f API")
 
 if __name__ == "__main__":
 
     spark = SparkSession \
         .builder \
-        .appName("Python Spark SQL functions_b API example") \
+        .appName("Python Spark SQL functions_f API example") \
         .config("spark.some.config.option", "some-value") \
         .getOrCreate()
-
-    sql_functions_b_example(spark)
+    sql_functions_f_example(spark)
     spark.stop()

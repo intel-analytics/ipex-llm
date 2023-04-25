@@ -1,93 +1,48 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 
-def sql_functions_d_example(spark):
+def sql_functions_b_example(spark):
     
-    # date_add
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(date_add(df.dt,1).alias("next_day")).show()
-    print("date_add API finished")
+    # base64
+    #encoding a binary column
+    df = spark.createDataFrame([('1',), ('2',), ('10',)], ["n1"])
+    df.withColumn("base64_n1", base64(df.n1)).show()
+    print("base64 API finished")
 
-    # date_format
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(date_format('dt', 'MM/dd/yyy').alias('date')).show()
-    print("date_format API finished")
+    # bin
+    #arg type: bigint type
+    #return: the string representation of the binary
+    df = spark.createDataFrame([(1,), (2,), (3,)], ["n1"])
+    df.select(bin(df.n1).alias("binary_number")).show()
+    print("bin API finished")
 
-    # date_sub
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(date_sub(df.dt, 1).alias('prev_date')).show()
-    print("date_sub API finished")
+    # bitwiseNOT
+    #arg type: integral type
+    #return: bitwise not value
+    df = spark.createDataFrame([(1,), (2,), (3,)], ["n1"])
+    df.select(bitwiseNOT(df.n1).alias("bitwise_not_value")).show()
+    print("bitwiseNOT API finished")
 
-    # date_trunc
-    df = spark.createDataFrame([('1997-02-28 05:02:11',)], ['t'])
-    df.select(date_trunc('year', df.t).alias('year')).show()
-    df.select(date_trunc('mon', df.t).alias('month')).show()
-    print("date_trunc API finished")
+    # broadcast
+    #assume df1 (few KB) << df2 (10s of GB)
+    df1 = spark.createDataFrame([(1, 'aa'), (4, 'dd')], ["n1", "s1"])
+    df2 = spark.createDataFrame([(1, 'a'), (2, 'b'), (3, 'c'), (5, 'e'), (6, 'f')], ["n2", "s2"])
+    df1.join(broadcast(df2), df1.n1 == df2.n2).show()
+    print("broadcast API finished")
 
-    # datediff
-    #arg1:end time / arg2:start time
-    #Returns the number of days from start to end
-    df = spark.createDataFrame([('2015-04-08','2015-05-10')], ['d1', 'd2'])
-    df.select(datediff(df.d2, df.d1).alias('diff')).show()
-    print("datediff API finished")
+    # bround
+    spark.createDataFrame([(2.5,)], ['a']).select(bround('a', 0).alias('r')).collect()
+    print("bround API finished")
 
-    # dayofmonth
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(dayofmonth('dt').alias('day')).show()
-    print("dayofmonth API finished")
-
-    # dayofweek
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(dayofweek('dt').alias('day')).show()
-    print("dayofweek API finished")
-
-    # dayofyear
-    df = spark.createDataFrame([('2015-04-08',)], ['dt'])
-    df.select(dayofyear('dt').alias('day')).show()
-    print("dayofyear API finished")
-
-    # decode
-    df = spark.createDataFrame([(1, 'a'), (2, 'b'), (3, 'c')], ["n1", "s1"])
-    df.withColumn("encode", encode(df.s1, "utf-8")).withColumn("decode", decode("encode", "utf-8")).show()
-    print("decode API finished")
-
-    # degrees
-    import math
-    df = spark.createDataFrame([(math.pi,), (math.pi / 6,)], ["radians"])
-    df.select(degrees(df.radians)).show()
-    print("degrees API finished")
-
-    # dense_rank
-    from pyspark.sql import Window
-    window = Window.orderBy("score")
-    df = spark.createDataFrame([('Bob', 90), ('Alice', 95), ('Coris', 90), ('David', 89)], ["name", "score"])
-    df.withColumn("dense_rank", dense_rank().over(window)).show()
-    df.withColumn("rank", rank().over(window)).show()
-    print("dense_rank API finished")
-
-    # desc
-    df = spark.createDataFrame([(1, None), (10, 12), (8, 3), (None, 9), (9, 6)], ["n1", "n2"])
-    df.sort(df.n1.desc()).show()
-    print("desc API finished")
-
-    # desc_nulls_first
-    df = spark.createDataFrame([(1, None), (10, 12), (8, 3), (None, 9), (9, 6)], ["n1", "n2"])
-    df.sort(df.n1.desc_nulls_first()).show()
-    print("desc_nulls_first API finished")
-
-    # desc_nulls_last
-    df = spark.createDataFrame([(1, None), (10, 12), (8, 3), (None, 9), (9, 6)], ["n1", "n2"])
-    df.sort(df.n1.desc_nulls_last()).show()
-    print("desc_nulls_last API finished")
-    
-    print("Finish running function_d API")
+    print("Finish running function_b API")
 
 if __name__ == "__main__":
 
     spark = SparkSession \
         .builder \
-        .appName("Python Spark SQL functions_d API example") \
+        .appName("Python Spark SQL functions_b API example") \
         .config("spark.some.config.option", "some-value") \
         .getOrCreate()
-    sql_functions_d_example(spark)
+
+    sql_functions_b_example(spark)
     spark.stop()

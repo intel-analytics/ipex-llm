@@ -59,8 +59,13 @@ class MultiprocessingBackend(Backend):
                 for key, val in os.environ.items():
                     if key not in envs[i]:
                         envs[i][key] = val
+                if 'OMP_NUM_THREADS' in envs[i]:
+                    set_op_thread = envs[i]['OMP_NUM_THREADS']
+                else:
+                    # 0 means the system picks an appropriate number
+                    set_op_thread = '0'
                 ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/subprocess_worker.py",
-                                                 temp_dir], env=envs[i]))
+                                                 temp_dir, set_op_thread], env=envs[i]))
             for _, ex in enumerate(ex_list):
                 ex.wait()
 

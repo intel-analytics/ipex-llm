@@ -42,6 +42,7 @@ TensorFlow
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 * |tensorflow_training_embedding_sparseadam_link|_
 * `How to conduct BFloat16 Mixed Precision training in your TensorFlow Keras application <Training/TensorFlow/tensorflow_training_bf16.html>`_
+* `How to accelerate TensorFlow Keras customized training loop through multiple instances <Training/TensorFlow/tensorflow_custom_training_multi_instance.html>`_
 
 .. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
 .. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
@@ -75,6 +76,7 @@ PyTorch
 * `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
 * `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
 * `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
+* `How to accelerate a PyTorch inference pipeline using Intel ARC series dGPU <Inference/PyTorch/accelerate_pytorch_inference_gpu.html>`_
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~

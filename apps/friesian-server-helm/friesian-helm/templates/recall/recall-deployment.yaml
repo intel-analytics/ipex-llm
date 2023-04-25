@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "friesian-serving.recall.fullname" . }}
+  namespace: {{ template "friesian-serving.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-recall
+    {{- include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.recall.labels }}
+    {{ toYaml .Values.recall.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.recall.annotations }}
+  annotations:
+    {{ toYaml .Values.recall.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.recall.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-recall
+  template:
+    metadata:
+      labels:
+        app: {{ template "friesian-serving.name" . }}-recall
+        {{- include "friesian-serving.labels" . | nindent 8 }}
+        {{- if .Values.recall.labels }}
+        {{ toYaml .Values.recall.labels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.recall.annotations }}
+      annotations:
+        {{ toYaml .Values.recall.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "friesian-serving.recall.fullname" . }}
+          image: "{{ .Values.recall.image.repository }}:{{ .Values.recall.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.recall.image.pullPolicy }}
+          args: ["recall", "-c", "mnt/config.yaml"]
+          env:
+            - name: OMP_NUM_THREADS
+              value: "1"
+          ports:
+            - name: service
+              containerPort: {{ .Values.recall.config.servicePort }}
+              protocol: TCP
+            - name: monitor
+              containerPort: {{ .Values.recall.config.monitorPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /opt/work/mnt
+            - name: resources
+              mountPath: /resources
+          # livenessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.recall.config.servicePort }}
+          # readinessProbe:
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   grpc:
+          #     port: {{ .Values.recall.config.servicePort }}
+          {{- with .Values.recall.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "friesian-serving.recall.fullname" . }}
+        - name: resources
+          persistentVolumeClaim:
+            claimName: {{ .Values.resourcePVCName }}
+      {{- if .Values.recall.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.recall.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.recall.affinity }}
+      affinity:
+        {{- toYaml .Values.recall.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.recall.tolerations }}
+      tolerations:
+        {{- toYaml .Values.recall.tolerations | nindent 8 }}
+      {{- end }}
