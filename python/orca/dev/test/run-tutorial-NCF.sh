@@ -87,8 +87,30 @@ echo "#1 Running pytorch dataloader"
 start=$(date "+%s")
 
 python ./pytorch_train_dataloader.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-1 Running pytorch ray train dataloader time used: $time1 seconds"
+stop_ray $backend
+start=$(date "+%s")
 # pytorch dataloader does not have predict
 python ./pytorch_resume_train_dataloader.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-2 Running pytorch ray resume train dataloader time used: $time1 seconds"
+stop_ray $backend
+clean
+
+start=$(date "+%s")
+python ./pytorch_train_dataloader.py --backend spark --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-3 Running pytorch spark train dataloader time used: $time1 seconds"
+
+start=$(date "+%s")
+python ./pytorch_resume_train_dataloader.py --backend spark --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#1-4 Running pytorch spark resume train dataloader time used: $time1 seconds"
 
 now=$(date "+%s")
 time1=$((now - start))
@@ -101,62 +123,47 @@ echo "#2 Running pytorch spark dataframe"
 start=$(date "+%s")
 
 python ./pytorch_train_spark_dataframe.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-1 Running pytorch ray train spark df time used: $time1 seconds"
+stop_ray $backend
+
+start=$(date "+%s")
 python ./pytorch_predict_spark_dataframe.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-2 Running pytorch ray predict spark df time used: $time1 seconds"
+stop_ray $backend
+
+start=$(date "+%s")
 python ./pytorch_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-3 Running pytorch ray resume train spark df time used: $time1 seconds"
+stop_ray $backend
+clean
+
+start=$(date "+%s")
+python ./pytorch_train_spark_dataframe.py --backend spark --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-4 Running pytorch spark train spark df time used: $time1 seconds"
+
+start=$(date "+%s")
+python ./pytorch_predict_spark_dataframe.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-5 Running pytorch spark predict spark df time used: $time1 seconds"
+
+start=$(date "+%s")
+python ./pytorch_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
+now=$(date "+%s")
+time1=$((now - start))
+echo "#2-6 Running pytorch spark resume train spark df time used: $time1 seconds"
+clean
 
 now=$(date "+%s")
 time2=$((now - start))
-
-clean
-stop_ray $backend
-
-echo "#3 Running pytorch xshards"
-#timer
-start=$(date "+%s")
-
-python ./pytorch_train_xshards.py --backend $backend --dataset $dataset
-python ./pytorch_predict_xshards.py --backend $backend --dataset $dataset
-python ./pytorch_resume_train_xshards.py --backend $backend --dataset $dataset
-
-now=$(date "+%s")
-time3=$((now - start))
-
-clean
-stop_ray $backend
-
-echo "#4 Running tensorflow spark dataframe"
-#timer
-start=$(date "+%s")
-
-python ./tf_train_spark_dataframe.py --backend $backend --dataset $dataset
-python ./tf_predict_spark_dataframe.py --backend $backend --dataset $dataset
-python ./tf_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
-
-now=$(date "+%s")
-time4=$((now - start))
-
-clean
-stop_ray $backend
-
-echo "#5 Running tensorflow xshards"
-#timer
-start=$(date "+%s")
-
-python ./tf_train_xshards.py --backend $backend --dataset $dataset
-python ./tf_predict_xshards.py --backend $backend --dataset $dataset
-python ./tf_resume_train_xshards.py --backend $backend --dataset $dataset
-
-now=$(date "+%s")
-time5=$((now - start))
-
-clean
-stop_ray $backend
-
-echo "#1 Running pytorch dataloader time used: $time1 seconds"
-echo "#2 Running pytorch spark dataframe time used: $time2 seconds"
-echo "#3 Running pytorch xshards time used: $time3 seconds"
-echo "#4 Running tensorflow spark dataframe time used: $time4 seconds"
-echo "#5 Running tensorflow xshards time used: $time5 seconds"
 
 #clean dataset
 rm -rf ml-1m
