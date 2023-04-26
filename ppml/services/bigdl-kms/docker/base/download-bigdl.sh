@@ -26,13 +26,13 @@ if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
   NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
   echo $NIGHTLY_VERSION
   wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip
-  unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d $BIGDL_HOME
-  unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d $BIGDL_HOME
+  unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d /ppml/jars
+  unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d /ppml/jars
   rm bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip
 else
   wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip
-  unzip bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d $BIGDL_HOME
-  unzip bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d $BIGDL_HOME
+  unzip bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d /ppml/jars
+  unzip bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip jars/bigdl-dllib-spark_$SPARK_VERSION-$BIGDL_VERSION.jar -d /ppml/jars
   rm bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip
 fi
 
