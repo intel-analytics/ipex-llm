@@ -152,13 +152,13 @@ time1=$((now - start))
 echo "#2-4 Running pytorch spark train spark df time used: $time1 seconds"
 
 start=$(date "+%s")
-python ./pytorch_predict_spark_dataframe.py --backend $backend --dataset $dataset
+python ./pytorch_predict_spark_dataframe.py --backend spark --dataset $dataset
 now=$(date "+%s")
 time1=$((now - start))
 echo "#2-5 Running pytorch spark predict spark df time used: $time1 seconds"
 
 start=$(date "+%s")
-python ./pytorch_resume_train_spark_dataframe.py --backend $backend --dataset $dataset
+python ./pytorch_resume_train_spark_dataframe.py --backend spark --dataset $dataset
 now=$(date "+%s")
 time1=$((now - start))
 echo "#2-6 Running pytorch spark resume train spark df time used: $time1 seconds"
