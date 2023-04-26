@@ -17,6 +17,7 @@
 
 from bigdl.nano.pytorch.context_manager import generate_context_manager
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.pytorch import jit_convert
 from bigdl.nano.utils.common import compare_version
 import torch
 from torch.ao.quantization import QConfig, get_default_qconfig_mapping
@@ -143,39 +144,12 @@ class PytorchJITINT8Model(AcceleratedLightningModule):
         self.model = convert_fx(self.model)
 
         with torch.no_grad():
-            if self.jit_method == 'trace':
-                if compare_version("torch", operator.ge, "2.0"):
-                    if example_kwarg_inputs is not None:
-                        input_sample = None
-                    self.model = torch.jit.trace(
-                        self.model,
-                        example_inputs=input_sample,
-                        check_trace=False,
-                        strict=jit_strict,
-                        example_kwarg_inputs=example_kwarg_inputs)
-                else:
-                    self.model = torch.jit.trace(
-                        self.model, input_sample,
-                        check_trace=False,
-                        strict=jit_strict)
-            elif self.jit_method == 'script':
-                self.model = torch.jit.script(self.model)
-            else:
-                try:
-                    if compare_version("torch", operator.ge, "2.0"):
-                        self.model = torch.jit.trace(
-                            self.model,
-                            example_inputs=input_sample,
-                            check_trace=False,
-                            strict=jit_strict,
-                            example_kwarg_inputs=example_kwarg_inputs)
-                    else:
-                        self.model = torch.jit.trace(
-                            self.model, input_sample,
-                            check_trace=False,
-                            strict=jit_strict)
-                except Exception:
-                    self.model = torch.jit.script(self.model)
+            if example_kwarg_inputs is not None:
+                input_sample = None
+            self.model = jit_convert(self.model, input_sample,
+                                     jit_method=jit_method,
+                                     jit_strict=jit_strict,
+                                     example_kwarg_inputs=example_kwarg_inputs)
             self.model = torch.jit.freeze(self.model)
 
     def on_forward_start(self, inputs):

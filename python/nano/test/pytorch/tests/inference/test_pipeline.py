@@ -15,11 +15,12 @@
 #
 
 import platform
+from unittest import TestCase
+
 import pytest
 import torch
-from unittest import TestCase
-from torchvision.models import resnet18
 from bigdl.nano.pytorch import Pipeline
+from torchvision.models import resnet18
 
 
 def empty_stage():
@@ -54,15 +55,16 @@ class TestPipeline(TestCase):
         def preprocess(_i):
             import os
             return os.sched_getaffinity(0)
+
         def inference(i):
             import os
             return (i, os.sched_getaffinity(0))
+
         model = resnet18(num_classes=10)
         pipeline = Pipeline([
-            ("preprocess", preprocess, {"core_num": 1}),
-            ("inference", inference, {"core_num": 1}),
+            ("preprocess", preprocess, {"cores_per_worker": 1, 'worker_num': 1}),
+            ("inference", inference, {"cores_per_worker": 1, 'worker_num': 1}),
         ])
         output = pipeline.run([None])[0]
         # The first stage's affinity should be {0}, and the second stage's affinity should be {1}
         assert output == (set([0]), set([1]))
-

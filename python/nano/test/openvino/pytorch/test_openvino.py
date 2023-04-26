@@ -656,8 +656,8 @@ class TestOpenVINO(TestCase):
 
         # Dynamic shapes
         dynamic_axes= {"sample": [0],
-                    "encoder_hidden_states": [0],
-                    "unet_output": [0]}
+                       "encoder_hidden_states": [0],
+                       "unet_output": [0]}
         nano_unet = InferenceOptimizer.trace(unet, accelerator="openvino",
                                             input_sample=input_sample,
                                             input_names=["sample", "timestep",
@@ -670,10 +670,8 @@ class TestOpenVINO(TestCase):
                                             )
         output1 = nano_unet(image_latents, torch.Tensor([980]).long(), encoder_hidden_states)
         output2 = nano_unet(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
-        # TODO: change output1["sample"] -> output1.sample
-        # we may need to support custom class output
-        np.testing.assert_almost_equal(output1["sample"].detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
-        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output1.sample.detach().numpy(), target_sample1.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2.sample.detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
         nano_unet.reshape("sample[1,4,8,8],encoder_hidden_states[1,12,10]")
         nano_unet_inputs = {i.any_name: i.shape for i in nano_unet.ov_model.ie_network.inputs}
@@ -689,7 +687,7 @@ class TestOpenVINO(TestCase):
             assert list(new_model_inputs["sample"]) == [1, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [1, 12, 10]
         output2 = new_model(image_latents2, torch.Tensor([980]).long(), encoder_hidden_states2)
-        np.testing.assert_almost_equal(output2["sample"].detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2.sample.detach().numpy(), target_sample2.sample.detach().numpy(), decimal=5)
 
     def test_openvino_trace_output_tensors(self):
         model = mobilenet_v3_small(pretrained=True)

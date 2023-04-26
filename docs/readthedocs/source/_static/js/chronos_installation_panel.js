@@ -109,9 +109,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[pytorch,distributed]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[pytorch,distributed]";
+                                    cmd="pip install bigdl-chronos-spark3[pytorch,distributed]";
                                 }
                             }
                         }
@@ -128,9 +128,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[pytorch,distributed,automl]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[pytorch,distributed,automl]";
+                                    cmd="pip install bigdl-chronos-spark3[pytorch,distributed,automl]";
                                 }
                             }
                         }
@@ -149,9 +149,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,inference]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[pytorch,distributed,inference]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[pytorch,distributed,inference]";
+                                    cmd="pip install bigdl-chronos-spark3[pytorch,distributed,inference]";
                                 }
                             }
                         }
@@ -168,9 +168,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[pytorch,distributed,automl,inference]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[pytorch,distributed,automl,inference]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[pytorch,distributed,automl,inference]";
+                                    cmd="pip install bigdl-chronos-spark3[pytorch,distributed,automl,inference]";
                                 }
                             }
                         }
@@ -191,9 +191,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[tensorflow,distributed]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[tensorflow,distributed]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[tensorflow,distributed]";
+                                    cmd="pip install bigdl-chronos-spark3[tensorflow,distributed]";
                                 }
                             }
                         }
@@ -210,9 +210,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[tensorflow,distributed,automl]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[tensorflow,distributed,automl]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[tensorflow,distributed,automl]";
+                                    cmd="pip install bigdl-chronos-spark3[tensorflow,distributed,automl]";
                                 }
                             }
                         }
@@ -231,9 +231,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[tensorflow,distributed,inference]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[tensorflow,distributed,inference]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[tensorflow,distributed,inference]";
+                                    cmd="pip install bigdl-chronos-spark3[tensorflow,distributed,inference]";
                                 }
                             }
                         }
@@ -250,9 +250,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[tensorflow,distributed,automl,inference]";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[tensorflow,distributed,automl,inference]";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[tensorflow,distributed,automl,inference]";
+                                    cmd="pip install bigdl-chronos-spark3[tensorflow,distributed,automl,inference]";
                                 }
                             }
                         }
@@ -282,9 +282,9 @@ function refresh_cmd(){
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }
                         }
                     }
@@ -295,9 +295,9 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }
                         }else if(hardware=="cluster"){
                             if(os=="win"){
@@ -305,9 +305,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                                 }
                             }
                         }
@@ -335,9 +335,9 @@ function refresh_cmd(){
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }
                         }
                     }
@@ -348,9 +348,9 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                             }
                         }else if(hardware=="cluster"){
                             if(os=="win"){
@@ -358,9 +358,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install bigdl-chronos-spark3[distributed]; pip install prophet==1.1.0";
                                 }
                             }
                         }
@@ -382,9 +382,9 @@ function refresh_cmd(){
                         }
                         else{
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }
                     }
@@ -395,15 +395,15 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }
                     } 
@@ -422,9 +422,9 @@ function refresh_cmd(){
                         }
                         else{
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }
                     }
@@ -435,15 +435,15 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install --pre --upgrade bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install pmdarima==1.8.5";
+                                cmd="pip install bigdl-chronos-spark3[distributed]; pip install pmdarima==1.8.5";
                             }
                         }
                     } 

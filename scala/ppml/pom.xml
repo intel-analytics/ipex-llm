@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>2.3.0-SNAPSHOT</version>
+        <version>2.4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>bigdl-ppml-spark_${spark.version}</artifactId>
@@ -23,7 +23,7 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
-            </dependency>
+	    </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
@@ -41,6 +41,14 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
 	    <exclusions>
+	       <exclusion>
+		    <groupId>org.codehaus.jackson</groupId>
+		    <artifactId>jackson-core-asl</artifactId>
+	       </exclusion>
+	       <exclusion>
+		     <groupId>org.codehaus.jackson</groupId>
+		     <artifactId>jackson-mapper-asl</artifactId>
+	       </exclusion>
 		<exclusion>
 	            <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-text</artifactId>
@@ -95,19 +103,32 @@
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
+	    <groupId>com.codahale</groupId>
+            <artifactId>shamir</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+	<dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-hadoop</artifactId>
+	    <artifactId>parquet-hadoop</artifactId>
+	    <version>1.13.0</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-hadoop</artifactId>
+	    <artifactId>parquet-hadoop</artifactId>
+	    <version>1.13.0</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-column</artifactId>
+	    <artifactId>parquet-column</artifactId>
+	    <version>1.13.0</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
@@ -199,18 +220,18 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.core.dist</groupId>
             <artifactId>all</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
             <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>

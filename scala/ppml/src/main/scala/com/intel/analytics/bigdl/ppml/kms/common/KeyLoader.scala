@@ -135,7 +135,7 @@ case class KeyLoader(val fromKms: Boolean,
 
 class KeyLoaderManagement extends Serializable {
     // map from primaryKeyName to KeyLoader
-    var multiKeyLoaders = new HashMap[String, KeyLoader]
+    val multiKeyLoaders = new HashMap[String, KeyLoader]
     def addKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
         Log4Error.invalidInputError(!(multiKeyLoaders.contains(primaryKeyName)),
                                     s"keyLoaders with name $primaryKeyName are replicated.")

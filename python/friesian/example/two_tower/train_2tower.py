@@ -16,6 +16,7 @@
 
 import pickle
 import argparse
+import math
 from model import *
 from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -249,8 +250,8 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
+    train_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "train_parquet"))
+    test_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "test_parquet"))
     reindex_tbls = None
     if args.frequency_limit > 1:
         reindex_tbls = train_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
