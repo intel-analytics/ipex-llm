@@ -35,6 +35,7 @@ ENV BIGDL_HOME                  /ppml/bigdl-${BIGDL_VERSION}
 ARG http_proxy
 ARG https_proxy
 ADD ./bigdl-kms-entrypoint.sh /ppml/bigdl-kms-entrypoint.sh
+ADD ./download-bigdl.sh /ppml/download-bigdl.sh
 RUN mkdir -p /ppml/keys && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
@@ -44,6 +45,6 @@ RUN mkdir -p /ppml/keys && \
     apt-get install sqlite3
 COPY --from=java /opt/jdk  /opt/jdk8
 # ppml
-RUN wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_${SPARK_VERSION}/2.3.0/bigdl-ppml-spark_${SPARK_VERSION}-2.3.0.jar --directory-prefix /ppml/jars/ && \
-    wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_${SPARK_VERSION}/2.3.0/bigdl-dllib-spark_${SPARK_VERSION}-2.3.0.jar --directory-prefix /ppml/jars/
+RUN chmod a+x /ppml/download-bigdl.sh && \
+    /ppml/download-bigdl.sh
 ENTRYPOINT [ "/ppml/bigdl-kms-entrypoint.sh" ]
