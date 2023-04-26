@@ -313,16 +313,17 @@ class SparkRunner:
         """
         Sets up TensorFLow distributed environment and initializes the model.
         """
-        self.rank = get_rank(cluster)
-        logger.info("cluster is: {}".format(cluster))
+        worker_cluster, node_cluster = cluster
+        self.rank = get_rank(node_cluster)
+        logger.info("cluster is: {}".format(node_cluster))
 
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
-                'worker': cluster
+                'worker': worker_cluster
             },
             'task': {'type': 'worker', 'index': self.rank}
         })
-        ips = set([node.split(":")[0] for node in cluster])
+        ips = set([node.split(":")[0] for node in worker_cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
         self.strategy = tf.distribute.MultiWorkerMirroredStrategy()

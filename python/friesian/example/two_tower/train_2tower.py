@@ -16,14 +16,49 @@
 
 import pickle
 import argparse
+import math
+from model import *
 from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.data.file import exists, makedirs
+from bigdl.orca.data.file import get_remote_file_to_local
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2.estimator import Estimator
-from model import *
 from bigdl.dllib.utils.log4Error import *
 
+numeric_cols = [
+    "enaging_user_follower_count",
+    "enaging_user_following_count",
+    "engaged_with_user_follower_count",
+    "engaged_with_user_following_count",
+    "len_hashtags",
+    "len_domains",
+    "len_links"
+]
+
+cat_cols = [
+    "engaged_with_user_is_verified",
+    "enaging_user_is_verified",
+    "present_media",
+    "tweet_type",
+    "language"
+]
+
+ratio_cols = [
+    "engaged_with_user_follower_following_ratio",
+    "enaging_user_follower_following_ratio"
+]
+
+embed_cols = [
+    "hashtags",
+    "present_links",
+    "present_domains"
+]
+
+id_cols = [
+    "enaging_user_id",
+    "tweet_id",
+    "engaged_with_user_id"
+]
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -47,7 +82,7 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
 
     def model_creator(config):
         model = two_tower.build_model()
-        print(model.summary())
+        # print(model.summary())
         optimizer = tf.keras.optimizers.Adam(config["lr"])
         model.compile(optimizer=optimizer,
                       loss='binary_crossentropy',
@@ -82,9 +117,9 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.', 
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
+    tf.keras.models.save_model(model, os.path.join(model_dir, "twotower-model"))
+    tf.keras.models.save_model(user_model, os.path.join(model_dir, "user-model"))
+    tf.keras.models.save_model(item_model, os.path.join(model_dir, "item-model"))
     estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
     print("saved models")
     return estimator
@@ -102,54 +137,58 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
 
     def organize_cols(tbl):
         tbl = tbl.select(array("enaging_user_follower_count", "enaging_user_following_count",
-                               "enaging_user_follower_following_ratio").alias("user_num"),
+                               "enaging_user_follower_following_ratio").alias("user_numeric"),
                          array("len_hashtags", "len_domains", "len_links",
                                "engaged_with_user_follower_count",
                                "engaged_with_user_following_count",
-                               "engaged_with_user_follower_following_ratio").alias("item_num"),
-                         *cat_cols, *embed_cols, "label")
+                               "engaged_with_user_follower_following_ratio").alias("item_numeric"),
+                         *cat_cols, *embed_cols, *id_cols, "label")
         return tbl
 
-    print("reindexing embedding cols")
-    train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
-    test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
     embed_in_dims = {}
-    for i, c, in enumerate(embed_cols):
-        embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
+    if reindex_tbls:
+        print("reindexing embedding cols")
+        train_tbl = train_tbl.reindex(embed_cols, reindex_tbls)
+        test_tbl = test_tbl.reindex(embed_cols, reindex_tbls)
+        for i, c, in enumerate(embed_cols):
+            embed_in_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0])
+
+    with tempfile.TemporaryDirectory() as local_path:
+        get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
+                                 local_path)
+        with open(os.path.join(local_path, "categorical_sizes.pkl"), 'rb') as f:
+            cat_sizes_dict = pickle.load(f)
+            for col in id_cols:
+                if col not in embed_in_dims:
+                    embed_in_dims[col] = cat_sizes_dict[col]
 
     print("add ratio features")
     train_tbl = add_ratio_features(train_tbl)
     test_tbl = add_ratio_features(test_tbl)
 
     print("scale numerical features")
-    train_tbl, min_max_dic = train_tbl.min_max_scale(num_cols + ratio_cols)
-    test_tbl = test_tbl.transform_min_max_scale(num_cols + ratio_cols, min_max_dic)
-
-    stats_dir = os.path.join(args.model_dir, 'stats')
-    if not exists(stats_dir):
-        makedirs(stats_dir)
-    with open(os.path.join(stats_dir, "min_max.pkl"), 'wb') as f:
-        pickle.dump(min_max_dic, f)
+    train_tbl, min_max_dict = train_tbl.min_max_scale(numeric_cols + ratio_cols)
+    test_tbl = test_tbl.transform_min_max_scale(numeric_cols + ratio_cols, min_max_dict)
 
     user_col_info = ColumnInfoTower(indicator_cols=["enaging_user_is_verified"],
                                     indicator_dims=[2],
                                     embed_cols=["enaging_user_id"],
                                     embed_in_dims=[embed_in_dims["enaging_user_id"]],
                                     embed_out_dims=[16],
-                                    numerical_cols=["user_num"],
+                                    numerical_cols=["user_numeric"],
                                     numerical_dims=[3],
                                     name="user")
     item_col_info = ColumnInfoTower(indicator_cols=["engaged_with_user_is_verified",
                                                     "present_media", "tweet_type", "language"],
                                     indicator_dims=[2, 13, 3, 67],  # max + 1
-                                    embed_cols=["engaged_with_user_id", "hashtags",
-                                                "present_links", "present_domains"],
-                                    embed_in_dims=[embed_in_dims["engaged_with_user_id"],
+                                    embed_cols=["tweet_id", "engaged_with_user_id"] + embed_cols,
+                                    embed_in_dims=[embed_in_dims["tweet_id"],
+                                                   embed_in_dims["engaged_with_user_id"],
                                                    embed_in_dims["hashtags"],
                                                    embed_in_dims["present_links"],
                                                    embed_in_dims["present_domains"]],
-                                    embed_out_dims=[16, 16, 16, 16],
-                                    numerical_cols=["item_num"],
+                                    embed_out_dims=[16, 16, 16, 16, 16],
+                                    numerical_cols=["item_numeric"],
                                     numerical_dims=[6],
                                     name="item")
 
@@ -181,15 +220,17 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: snapshot)')
-    parser.add_argument('--data_dir', type=str, help='data directory')
+    parser.add_argument('--model_dir', default='recsys_2tower', type=str,
+                        help='model directory name (default: recsys_2tower)')
+    parser.add_argument('--data_dir', type=str,
+                        help='data directory of processed features for the two tower model')
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
 
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local")
+        sc = init_orca_context("local", cores=args.executor_cores,
+                               memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
@@ -209,26 +250,17 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
-    num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
-                "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links", "hashtags", "present_links",
-                "present_domains"]
-    cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
-                "present_media", "tweet_type", "language"]
-    ratio_cols = ["engaged_with_user_follower_following_ratio",
-                  "enaging_user_follower_following_ratio"]
-    embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
-                  "present_domains"]
-    useful_cols = num_cols + cat_cols + embed_cols
-    train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
-    test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
-    full_tbl = train_tbl.concat(test_tbl, "outer")
-    reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+    train_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "train_parquet"))
+    test_tbl = FeatureTable.read_parquet(os.path.join(args.data_dir, "test_parquet"))
+    reindex_tbls = None
+    if args.frequency_limit > 1:
+        reindex_tbls = train_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
 
-    output_dir = args.data_dir + "/embed_reindex/"
-    for i, c in enumerate(embed_cols):
-        reindex_tbls[i].write_parquet(output_dir + "_" + c)
+    if reindex_tbls:
+        output_dir = os.path.join(args.data_dir, "embed_reindex")
+        for i, c in enumerate(embed_cols):
+            reindex_tbls[i].write_parquet(output_dir + "_" + c)
 
     train_config = {"lr": 1e-3,
                     "user_col_info": user_info,
@@ -238,5 +270,8 @@ if __name__ == '__main__':
 
     train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
           model_dir=args.model_dir, backend=args.backend)
+
+    full_tbl = train_tbl.concat(test_tbl)
+    full_tbl.write_parquet(os.path.join(args.data_dir, "user_item_parquet"))
 
     stop_orca_context()

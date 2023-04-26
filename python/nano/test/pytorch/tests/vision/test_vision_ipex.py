@@ -20,6 +20,8 @@ import os
 from unittest import TestCase
 from bigdl.nano.pytorch.vision.models import vision
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import _avx2_checker
 
 
 batch_size = 256
@@ -27,7 +29,7 @@ num_workers = 0
 data_dir = "/tmp/data"
 
 
-class TestVisionIPEX(TestCase):
+class VisionIPEX:
 
     def test_resnet18_ipex(self):
         resnet18 = vision.resnet18(
@@ -77,6 +79,24 @@ class TestVisionIPEX(TestCase):
         train_with_linear_top_layer(
             shufflenet, batch_size, num_workers, data_dir,
             use_ipex=True)
+
+
+TORCH_CLS = VisionIPEX
+
+
+class CaseWithoutAVX2:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("Vision IPEX Without AVX2")
+    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
+    TORCH_CLS = CaseWithoutAVX2
+
+
+class TestVisionIPEX(TORCH_CLS, TestCase):
+    pass
 
 
 if __name__ == '__main__':

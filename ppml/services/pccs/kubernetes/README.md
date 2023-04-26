@@ -151,15 +151,26 @@ namespace "bigdl-pccs" deleted
 
 ## 5. Register a machine to PCCS
 1. According to your system version, download PCKIDRetrievalTool from [here](https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/)
-2. If you set proxy in PCCS, export no_proxy=your_host_ip
-3. modify PCKIDRetrievalTool_v1.15.100.3/network_setting.conf
+2. (Optional)If you set proxy in PCCS, then:
+```bash
+export no_proxy=your_host_ip
 ```
-PCCS_URL=https://pccs_ip:pccs_port/sgx/certification/interface_version(v3, v4, etc.)/platforms
+3. modify PCKIDRetrievalTool_v1.15.100.3/network_setting.conf
+```conf
+# support V4 version PCCS
+PCCS_URL=https://your_pccs_ip:your_pccs_port/sgx/certification/v4/platforms
+# To accept insecure HTTPS cert, set this option to FALSE
 USE_SECURE_CERT=FALSE
 ```
 4. modify /etc/sgx_default_qcnl.conf
+```conf
+//PCCS server address
+"pccs_url": "https://your_pccs_ip:your_pccs_port/sgx/certification/v4/",
+
+// To accept insecure HTTPS certificate, set this option to false
+"use_secure_cert": false,
 ```
-    PCCS_URL=https://pccs_ip:pccs_port/sgx/certification/interface_version(v3, v4, etc.)/platforms
-    USE_SECURE_CERT=FALSE
+5. use PCKIDRetrievalTool
+```bash
+./PCKIDRetrievalTool -user_token your_user_password
 ```
-5. ./PCKIDRetrievalTool -user_token your_user_password

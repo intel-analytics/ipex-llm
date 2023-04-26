@@ -16,6 +16,7 @@
 
 import os
 import sys
+import json
 
 import cloudpickle
 import multiprocessing
@@ -34,11 +35,11 @@ if __name__ == '__main__':
 
     # restore main process's sys.path to avoid potential bugs when loading `args.pkl`
     # i.e. cannot find some modules located in main process's sys.path
-    with open(os.path.join(temp_dir, "sys_path.pkl"), "rb") as f:
-        sys.path = cloudpickle.load(f)
+    with open(os.path.join(temp_dir, "sys_path.json"), "r") as f:
+        sys.path = json.load(f)
 
-    with open(os.path.join(temp_dir, "patch_status.pkl"), "rb") as f:
-        patch_status = cloudpickle.load(f)
+    with open(os.path.join(temp_dir, "patch_status.json"), "r") as f:
+        patch_status = json.load(f)
         if patch_status['patch_torch']:
             patch_torch(cuda_to_cpu=patch_status['patch_cuda'])
 

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.example.nnframes.gbt
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import org.apache.spark.ml.classification.GBTClassifier
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.sql.types.{LongType, StructField, StructType}
 import org.apache.spark.sql.{Row, SQLContext}
@@ -115,11 +116,10 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
 
     val gbtInput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
     // randomly split dataset to (train, eval1, eval2, test) in proportion 6:2:1:1
-    val Array(train, eval1, eval2, test) = gbtInput.randomSplit(Array(0.6, 0.2, 0.1, 0.1))
+    val Array(train, test) = gbtInput.randomSplit(Array(0.8, 0.2))
 
     train.cache().count()
-    eval1.cache().count()
-    eval2.cache().count()
+
 
     val tBeforeTraining = System.nanoTime()
     elapsed = (tBeforeTraining - tBeforePreprocess) / 1000000000.0f // second
@@ -148,6 +148,18 @@ object gbtClassifierTrainingExampleOnCriteoClickLogsDataset {
     val tAfterSave = System.nanoTime()
     elapsed = (tAfterSave - tAfterTraining) / 1000000000.0f // second
     log.info("--model save time is " + elapsed + " s")
+
+    val predictions = gbtClassificationModel.transform(test);
+    val evaluatorMulti = new MulticlassClassificationEvaluator()
+      .setLabelCol("classIndex")
+      .setMetricName("accuracy")
+
+    val acc = evaluatorMulti.evaluate(predictions)
+    println("acc:", acc)
+    val tAfterTransform = System.nanoTime()
+    elapsed = (tAfterTransform - tAfterSave) / 1000000000.0f // second
+    log.info("--test data transform and evaluate time is " + elapsed + " s")
+
     elapsed = (tAfterSave - tStart) / 1000000000.0f // second
     log.info("--end-to-end time is " + elapsed + " s")
     sc.stop()

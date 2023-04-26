@@ -36,6 +36,19 @@ function enable-perf-var {
     PERF_VAR=1
 }
 
+function enable-sgx-var {
+    echo "Option: Enable sgx specific performance variables"
+    SGX_ENABLED=1
+}
+
+function enable-dgpu-var {
+    echo "Option: Enable OneAPI vars"
+    ONEAPI_VAR=1
+    echo "Option: Disable jemalloc and tcmalloc and unset related variables"
+    unset ENABLE_JEMALLOC_VAR
+    unset ENABLE_TCMALLOC_VAR
+}
+
 function set-allocator {
     echo "Setting $1..."
     if [ $OS = "linux" ]; then
@@ -74,6 +87,7 @@ function display-var {
     echo "  DISABLE_OPENMP_VAR  = $DISABLE_OPENMP_VAR"
     echo "  OPENMP              = $OPENMP"
     echo "  PERF_VAR            = $PERF_VAR"
+    echo "  ONEAPI_VAR          = $ONEAPI_VAR"
     echo "  BIN_DIR             = $BIN_DIR"
     echo "  LIB_DIR             = $LIB_DIR"
     echo "  NANO_DIR            = $NANO_DIR"
@@ -104,6 +118,9 @@ function display-help {
         echo "    -t, --enable-tcmalloc     Enable tcmalloc and set related variables"
         echo "    -c, --disable-allocator   Use the system default allocator"
         echo "    -p, --perf                Use performance mode"
+        echo "    -g, --gpu                 Enable OneAPI and other settings for dGPU support"
+        echo "    -s, --sgx                 Enable SGX specific performance variables"
+        echo "    -r <num_cores>,           Force computing resource to <num_cores> CPU"
         echo "    -d, --debug               Print all internal and exported variables (for debug)"
 }
 
@@ -130,13 +147,17 @@ ENABLE_JEMALLOC_VAR=1
 unset ENABLE_TCMALLOC_VAR
 unset DISABLE_OPENMP_VAR
 unset PERF_VAR
+unset ONEAPI_VAR
+unset FORCED_CORE_NUM
+unset SGX_ENABLED
 
 # Init exported variables
 export TF_ENABLE_ONEDNN_OPTS=1
+export ONEAPI_VAR=0
 
 OPTIND=1
 
-while getopts "ojhtcpd-:" opt; do
+while getopts "ojhtcpgdsr:-:" opt; do
     case ${opt} in
         - )
             case "${OPTARG}" in
@@ -154,6 +175,12 @@ while getopts "ojhtcpd-:" opt; do
                     ;;
                 perf)
                     enable-perf-var
+                    ;;
+                gpu)
+                    enable-dgpu-var
+                    ;;
+                sgx)
+                    enable-sgx-var
                     ;;
                 help)
                     display-help
@@ -185,6 +212,12 @@ while getopts "ojhtcpd-:" opt; do
         p )
             enable-perf-var
             ;;
+        g )
+            enable-dgpu-var
+            ;;
+        s )
+            enable-sgx-var
+            ;;
         h )
             display-help
             return 0
@@ -192,6 +225,9 @@ while getopts "ojhtcpd-:" opt; do
         d )
             display-var
             return 0
+            ;;
+        r )
+            FORCED_CORE_NUM=${OPTARG}
             ;;
         \? )
             display-error $OPTARG
@@ -205,6 +241,8 @@ shift $((OPTIND -1))
 LIB_DIR=`dirname ${BIN_DIR}`/lib
 NANO_DIR=$(dirname $(python3 -c "import bigdl; print(bigdl.__file__)"))/nano
 PYTHON_VERSION=`python3 --version | awk '{print $2}'`
+ONEAPI_ROOT="/opt/intel/oneapi"  # typically users oneapi home
+ONEAPI_USER="${HOME}/intel/oneapi"  # in case users install it w/o root
 
 uName=`uname -s`
 if [ ${uName: 0: 5} = "Linux" ]; then
@@ -214,6 +252,23 @@ elif [ ${uName: 0: 6} = "Darwin" ]; then
 else
     echo "Warning: Unsupported OS: ${uName}, bigdl-nano-init will do nothing"
     return 0
+fi
+
+# Detect OneAPI installation status
+export ONEAPI_HOME=""
+if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+    if [ -f "${ONEAPI_ROOT}/setvars.sh" ]; then
+        ONEAPI_HOME=${ONEAPI_ROOT}
+    elif [ -f "${ONEAPI_USER}/setvars.sh" ]; then
+        ONEAPI_HOME=${ONEAPI_USER}
+    else
+        echo "No OneAPI installation found"
+        ONEAPI_VAR=0
+    fi
+fi
+
+if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+    source ${ONEAPI_HOME}/setvars.sh
 fi
 
 # Detect Intel openMP library and init LD_PRELOAD
@@ -245,6 +300,14 @@ if [ "${OPENMP}" -eq 1 ]; then
         let threads_per_core=$cpu_/$core_
         let cores_per_socket=$core_/$sockets_
         export OMP_NUM_THREADS=$core_
+        unset MKL_NUM_THREADS  # to avoid inc issue when this var is set diff with OMP_NUM_THREADS
+        unset OMP_PROC_BIND  # to avoid affinity issue
+        unset OMP_SCHEDULE  # to avoid affinity issue
+        if [[ ! -z "${SGX_ENABLED:-}" ]]; then
+            export MKL_NUM_THREADS=$core_
+            export OMP_PROC_BIND="close"
+            export OMP_SCHEDULE="STATIC"
+        fi
     elif [ $OS = "macos" ]; then
         export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
     else
@@ -263,6 +326,14 @@ if [ "${OPENMP}" -eq 1 ]; then
     export KMP_BLOCKTIME=1
 fi
 
+# Set forced core num
+if [[ ! -z "${FORCED_CORE_NUM:-}" ]]; then
+    export OMP_NUM_THREADS=$FORCED_CORE_NUM
+    if [[ ! -z "${SGX_ENABLED:-}" ]]; then
+        export MKL_NUM_THREADS=$FORCED_CORE_NUM
+    fi
+fi
+
 # Set allocator
 if [[ ! -z "${ENABLE_JEMALLOC_VAR:-}" ]]; then
     set-allocator jemalloc
@@ -277,11 +348,11 @@ fi
 if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
     echo "Not in a conda env"
 else
-    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
+    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ] && [[ "${ONEAPI_VAR}" -eq 0 ]];then
         echo "nano_vars.sh already exists"
     elif [ ! -f $CONDA_PREFIX/bin/bigdl-nano-init ]; then
         echo "It seems that you are using bidl-nano installed by system's pip, "
-        echo "you may need to 'source bgidl-nano-init' before using bigdl-nano "
+        echo "you may need to 'source bigdl-nano-init' before using bigdl-nano "
         echo "and 'source bigdl-nano-unset-env' after using bigdl-nano yourself"
     else
         echo "Setting environment variables in current conda env"
@@ -292,7 +363,11 @@ else
 
         # bigdl-nano-init
         echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
-        echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        if [[ "${ONEAPI_VAR}" -eq 1 ]]; then
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init -g" >> $ACTIVATED_PATH/nano_vars.sh
+        else
+            echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        fi
         echo "else" >> $ACTIVATED_PATH/nano_vars.sh
         echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $ACTIVATED_PATH/nano_vars.sh
@@ -317,6 +392,9 @@ elif [ $OS = "macos" ]; then
 fi
 echo "MALLOC_CONF           = ${MALLOC_CONF}"
 echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
+echo "OMP_PROC_BIND         = ${OMP_PROC_BIND}"
+echo "OMP_SCHEDULE          = ${OMP_SCHEDULE}"
+echo "MKL_NUM_THREADS       = ${MKL_NUM_THREADS}"
 echo "KMP_AFFINITY          = ${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME         = ${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS = ${TF_ENABLE_ONEDNN_OPTS}"

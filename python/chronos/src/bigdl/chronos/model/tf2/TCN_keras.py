@@ -45,6 +45,7 @@ import tensorflow as tf
 from bigdl.nano.tf.keras import Model
 from tensorflow.keras.layers import Conv1D, BatchNormalization,\
     Activation, Dropout, Input, Layer
+from bigdl.chronos.model.tf2.keras_model_wrapper import NormalizeTSModel
 
 
 class TemporalBlock(Layer):
@@ -144,23 +145,22 @@ class TemporalConvNet(Model):
             init = tf.keras.initializers.HeUniform()
 
         # initialize model
-        self.network = []
+        self.network = tf.keras.Sequential()
 
         # The model contains "num_levels" TemporalBlock
         num_levels = len(num_channels)
         for i in range(num_levels):
             dilation_rate = 2 ** i
-            self.network.append(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
-                                              padding='causal', dropout_rate=dropout))
-        self.network.append(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
-                                          padding='causal', dropout_rate=dropout))
+            self.network.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
+                                           padding='causal', dropout_rate=dropout))
+        self.network.add(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
+                                       padding='causal', dropout_rate=dropout))
 
         self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
         self.permute = tf.keras.layers.Permute((2, 1))
 
     def call(self, x, training=False):
-        for layer in self.network:
-            y = layer(x, training=training)
+        y = self.network(x, training=training)
         y = self.permute(y)
         y = self.linear(y)
         y = self.permute(y)
@@ -197,6 +197,8 @@ def model_creator(config):
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True))
+    if config.get("normalization", False):
+        model = NormalizeTSModel(model, config["output_feature_num"])
     inputs = np.zeros(shape=(1, config["past_seq_len"], config["input_feature_num"]))
     # init weights matrix
     model(inputs)

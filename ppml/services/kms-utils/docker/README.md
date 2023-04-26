@@ -49,43 +49,59 @@ sudo docker run -itd \
     -e KMS_TYPE=$KMS_TYPE \
     -e PCCS_URL=$PCCS_URL \
     $ENROLL_IMAGE_NAME bash
-    
-
-
 ```
-## 3. enroll, generate key, encrypt and decrypt
-```
-# Enroll
-curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+## 3. Key Management and Data Crypto APIs
 
-......
+1. **Enroll:**
 
-{"code":200,"message":"successful","result":{"apikey":"E8QKpBBapaknprx44FaaTY20rptg54Sg","appid":"8d5dd3b8-3996-40f5-9785-dcb8265981ba"}}
+   ```bash
+   curl -v -k -G "https://<kms_ip>:9000/ehsm?Action=Enroll"
+   ```
 
+   You are expected to receive response like:
 
-export appid=your_appid
-export apikey=your_apikey
-export container_input_file_path=mounted_address_of_host_input_file_path
-export container_input_folder_path=mounted_address_of_host_input_folder_path
+   ```bash
+   {"code":200,"message":"successful","result":{"apikey":"E8QKp******Sg","appid":"8d5dd******dcb8265981ba"}}
+   ```
 
+   Then set `appid`, `apikey` and other environment variables:
 
-# Generatekeys
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
+   ```bash
+   export appid=your_appid
+   export apikey=your_apikey
+   export container_input_file_path=mounted_address_of_host_input_file_path
+   export container_input_folder_path=mounted_address_of_host_input_folder_path
+   export data_source_type=your_data_source_type # The data_source_type can be any one of csv, json, parquet, or textfile.
+   # If you do not specify data_source_type, it will be set to csv by default
+   ```
 
-# Encrypt a single data file
-# encrpted data is next to $container_input_file_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $container_input_file_path"
+2.  **Generatekeys:**
 
+    ```bash
+    docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh generatekeys $appid $apikey"
+    ```
 
-# Decrypt a single data file
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $container_input_file_path"
+3. **Encrypt File:**
 
-# SplitAndEncrypt
-# encrpted data is in a directory next to $container_input_folder_path
-docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $apikey $container_input_folder_path"
-```
+   ```bash
+   # encrpted data is next to $container_input_file_path
+   docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encrypt $appid $apikey $container_input_file_path" $data_source_type
+   ```
+
+4. **Decrypt File:**
+
+   ```bash
+   docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh decrypt $appid $apikey $container_input_file_path" $data_source_type
+   ```
+
+5. **Split a Large File and Encrypt:**
+
+   ```bash
+   # encrpted data is in a directory next to $container_input_folder_path
+   docker exec -i $ENROLL_CONTAINER_NAME bash -c "bash /home/entrypoint.sh encryptwithrepartition $appid $apikey $container_input_folder_path"
+   ```
+
 ## 4. Stop container:
-```
+```bash
 docker stop $ENROLL_CONTAINER_NAME
 ```
-

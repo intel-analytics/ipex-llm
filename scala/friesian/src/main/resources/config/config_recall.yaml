@@ -1,17 +1,17 @@
 ######## Recall Service
 
 # Default: 8084, which port to create the server
-servicePort: 8084
+# servicePort: 8084
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
-monitorPort: 1238
+# monitorPort: 1238
 
 # default: 128, the dimensionality of the embedding vectors
-indexDim: 50
+# indexDim: 128
 
 # default: null, path to saved index path, must be provided
-indexPath: ./item_50.idx
+indexPath: ./mnt/item_128.idx
 
 # default: localhost:8980, feature service target
 featureServiceURL: localhost:8085

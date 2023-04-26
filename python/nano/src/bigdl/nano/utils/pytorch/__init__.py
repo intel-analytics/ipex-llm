@@ -21,6 +21,7 @@ from .version import TORCH_VERSION_LESS_1_12
 from .version import TORCH_VERSION_LESS_1_13
 from .version import TORCHVISION_VERSION_LESS_1_12
 from .version import TORCHVISION_VERSION_LESS_1_14
+from .version import TORCH_VERSION_LESS_2_0
 
 from .attributes import patch_attrs_from_model_to_object
 
@@ -51,3 +52,9 @@ from .convert import export_to_onnx
 from .save import save_model
 from .save import transform_state_dict_to_dtype
 from .load import load_model
+
+from .xpu import apply_data_to_xpu, apply_data_to_half
+
+from .jit_method import jit_convert
+
+from .metadata import MetaData

@@ -73,8 +73,11 @@ class EncryptedDataFrameWriter(
           .retrieveKeyLoader(primaryKeyName).generateDataKeyPlainText
         sparkSession.sparkContext.hadoopConfiguration
                     .set("bigdl.write.dataKey.plainText", dataKeyPlainText)
-        sparkSession.sparkContext.hadoopConfiguration
-                    .set("bigdl.write.dataKey.cipherText", dataKeyCipherText)
+        if (dataKeyCipherText != null) {
+          // native AES CBC does not need dataKeyCipherText
+          sparkSession.sparkContext.hadoopConfiguration
+            .set("bigdl.write.dataKey.cipherText", dataKeyCipherText)
+        }
         sparkSession.sparkContext.hadoopConfiguration
                     .set("bigdl.cryptoMode", encryptMode.encryptionAlgorithm)
         option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")

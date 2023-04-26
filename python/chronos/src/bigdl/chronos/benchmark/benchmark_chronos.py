@@ -195,8 +195,11 @@ def accuracy(args, records, forecaster, train_loader, val_loader, test_loader):
     evaluate stage will record model accuracy.
     """
 
-    forecaster.fit(train_loader, validation_data=val_loader,
-                   epochs=args.training_epochs, validation_mode="best_epoch")
+    if args.framework == 'torch':
+        forecaster.fit(train_loader, validation_data=val_loader,
+                       epochs=args.training_epochs, validation_mode="best_epoch")
+    else:
+        forecaster.fit(train_loader, epochs=args.training_epochs)
 
     metrics = forecaster.evaluate(test_loader, multioutput='uniform_average')
 

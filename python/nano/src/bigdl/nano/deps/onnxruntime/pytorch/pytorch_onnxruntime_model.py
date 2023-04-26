@@ -20,10 +20,13 @@ from tempfile import TemporaryDirectory
 from ..core.onnxruntime_model import ONNXRuntimeModel
 import onnxruntime  # should be put behind core's import
 from bigdl.nano.pytorch.model import AcceleratedLightningModule
-from bigdl.nano.utils.pytorch import export_to_onnx
+from bigdl.nano.utils.pytorch import export_to_onnx, get_input_example, \
+    get_forward_args
 from bigdl.nano.utils.common import invalidInputError
-from bigdl.nano.pytorch.context_manager import generate_context_manager
-from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
+from bigdl.nano.pytorch.context_manager import generate_context_manager, BaseContextManager
+from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
+    MetaData
+import pickle
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -36,7 +39,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 simplification=True, dynamic_axes=True, output_tensors=True, **export_kwargs):
+                 simplification=True, dynamic_axes=True, output_tensors=True,
+                 output_metadata=None,
+                 **export_kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -65,10 +70,12 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                              If accelerator != 'openvino'/'onnxruntime', it will be ignored.
         :param output_tensors: boolean, default to True and output of the model will be Tensors.
                                If output_tensors=False, output of the ONNX model will be ndarray.
+        :param output_metadata: metadata of model output, defaults to None.
         :param **export_kwargs: will be passed to torch.onnx.export function.
         """
         # Typically, when model is int8, we use this path
         # TODO: self._forward_args should be set externally
+        self.output_metadata = output_metadata
         with TemporaryDirectory() as tmpdir:
             if isinstance(model, torch.nn.Module):
                 onnx_path = os.path.join(tmpdir, "tmp.onnx")
@@ -82,6 +89,16 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                         onnx_simplify(onnx_path)
                     except Exception:
                         pass
+
+                # test run to get output metadata
+                with BaseContextManager():
+                    forward_args = get_forward_args(model)
+                    input_sample = get_input_example(model, input_sample, forward_args)
+                    if isinstance(input_sample, (tuple, list)):
+                        output = model(*input_sample)
+                    else:
+                        output = model(input_sample)
+                    self.output_metadata = MetaData.construct_matadata(output)
             else:
                 onnx_path = model
             AcceleratedLightningModule.__init__(self, None)
@@ -105,19 +122,27 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
+    def on_forward_start_kwargs(self, **kwargs):
+        self.cope_with_keyword_arguments(kwargs)
+        return kwargs
+
     def on_forward_end(self, outputs):
         if self.output_tensors:
             outputs = self.numpy_to_tensors(outputs)
         elif len(outputs) == 1:
             outputs = outputs[0]
+        if self.output_metadata is not None:
+            outputs = MetaData.reconstruct_output(outputs, self.output_metadata)
         return outputs
 
     @property
     def status(self):
         status = super().status
         status.update({"onnx_path": 'onnx_saved_model.onnx',
+                       "metadata_path": 'matadata.pkl',
                        "intra_op_num_threads": self.session_options.intra_op_num_threads,
-                       "inter_op_num_threads": self.session_options.inter_op_num_threads})
+                       "inter_op_num_threads": self.session_options.inter_op_num_threads,
+                       "output_tensors": self.output_tensors})
         return status
 
     @staticmethod
@@ -144,9 +169,22 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         if status.get('inter_op_num_threads', None):
             onnxruntime_session_options.inter_op_num_threads = \
                 status.get('inter_op_num_threads', None)
+        output_tensors = status.get('output_tensors', True)
+        # load meatdata
+        metadata_path = status.get('metadata_path', None)
+        if metadata_path is None or not metadata_path:
+            output_metadata = None
+        else:
+            with open(path / status['metadata_path'], "rb") as f:
+                output_metadata = pickle.load(f)
         return PytorchONNXRuntimeModel(str(onnx_path),
-                                       onnxruntime_session_options=onnxruntime_session_options)
+                                       onnxruntime_session_options=onnxruntime_session_options,
+                                       output_tensors=output_tensors,
+                                       output_metadata=output_metadata)
 
     def _save_model(self, path, compression="fp32"):
         onnx_path = Path(path) / self.status['onnx_path']
         super()._save_model(onnx_path)
+        # save metadata
+        with open(path / self.status['metadata_path'], "wb") as f:
+            pickle.dump(self.output_metadata, f)

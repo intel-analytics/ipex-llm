@@ -16,6 +16,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras import backend
 from bigdl.nano.tf.keras import Sequential, nano_bf16
 
 
@@ -60,6 +61,50 @@ def test_tf_nano_multiprocessing_customized_loop():
         global_batch_size)
 
     loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
+    @nano_multiprocessing
+    @tf.function
+    def train_step(inputs, model, loss_object, optimizer):
+        features, labels = inputs
+
+        with tf.GradientTape() as tape:
+            predictions = model(features, training=True)
+            loss = loss_object(labels, predictions)
+
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+        return loss
+
+    @nano(num_processes=2)
+    def train_whole_data(model, dataset, loss_object, optimizer, train_step):
+        for inputs in dataset:
+            print(train_step(inputs, model, loss_object, optimizer))
+
+    train_whole_data(model, dataset, loss_object, optimizer, train_step)
+
+
+def test_tf_nano_multiprocessing_customized_loss_datagenerator():
+    # Test use cases of nano_multiprocessing_loss and dataset created by `from_generator`
+    from bigdl.nano.tf.keras import nano_multiprocessing, nano, nano_multiprocessing_loss
+
+    global_batch_size = 32
+    model = tf.keras.Sequential([tf.keras.layers.Dense(1, input_shape=(1,))])
+    optimizer = tf.keras.optimizers.SGD()
+
+    def dummy_data_generator():
+        for i in range(128):
+            yield tf.constant([i]), tf.constant([i])
+
+    dataset = tf.data.Dataset.from_generator(dummy_data_generator,
+                                             output_signature=(tf.TensorSpec(shape=(1,), dtype=tf.float32),
+                                                               tf.TensorSpec(shape=(1,), dtype=tf.float32)))
+    # necessary to initiate dataset._GeneratorState
+    dataset._GeneratorState = dataset._GeneratorState(dummy_data_generator)
+
+    @nano_multiprocessing_loss()
+    def loss_object(x, pred):
+        res = backend.mean(tf.math.squared_difference(x, pred), axis=-1)
+        return res
 
     @nano_multiprocessing
     @tf.function

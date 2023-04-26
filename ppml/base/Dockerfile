@@ -1,6 +1,6 @@
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
-ARG GRAMINE_BRANCH=devel-v1.3.1-2023-03-17
+ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
 FROM ubuntu:20.04
 ARG http_proxy
@@ -67,7 +67,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ninja -C build/ install && \
     cd /ppml/ && \
     mkdir -p /ppml/lib/ && \
-    mv /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
+    cp /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
 # meson will copy the original file instead of the symlink, which enable us to delete the gramine directory entirely
     rm -rf /gramine && \
     apt-get update --fix-missing && \
