@@ -120,6 +120,7 @@ class TestTFEstimatorBasic(TestCase):
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             assert isinstance(res, dict), "evaluate should return a dict"
@@ -217,6 +218,8 @@ class TestTFEstimatorBasic(TestCase):
             workers_per_node=2,
             backend="spark")
 
+        df = spark.createDataFrame(data=data, schema=["feature", "label"])
+        val_df = spark.createDataFrame(data=val_data, schema=["feature", "label"])
         res = trainer.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                             feature_cols=["feature"],
                             label_cols=["label"])

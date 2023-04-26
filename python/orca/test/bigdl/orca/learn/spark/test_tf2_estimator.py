@@ -91,6 +91,7 @@ class TestTF2Estimator(TestCase):
             print("start saving")
             trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
             trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             res = trainer.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
                                    label_cols=["label"])
             print("validation result: ", res)
@@ -378,6 +379,7 @@ class TestTF2Estimator(TestCase):
                 assert np.array_equal(pre_opt_weights[i], after_opt_weights[i])
 
             # test continuous training
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"],
@@ -440,6 +442,7 @@ class TestTF2Estimator(TestCase):
             assert np.array_equal(expect_res, pred_res)
 
             # test continuous training
+            df = spark.createDataFrame(data=data, schema=["feature", "label"])
             est.fit(df, epochs=5, batch_size=4, steps_per_epoch=25,
                     feature_cols=["feature"],
                     label_cols=["label"],
