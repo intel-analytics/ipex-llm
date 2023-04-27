@@ -211,6 +211,29 @@ sudo docker pull intelanalytics/bigdl-k8s:version
 sudo docker pull intelanalytics/bigdl-k8s:latest
 ```
 
+Create the client container
+```bash
+export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' )
+
+sudo docker run -itd --net=host \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube:/root/.kube \
+    -v /path/to/nfsdata:/bigdl/nfsdata \
+    -e http_proxy=http://your-proxy-host:your-proxy-port \
+    -e https_proxy=https://your-proxy-host:your-proxy-port \
+    -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
+    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:version \
+    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+    -e RUNTIME_DRIVER_HOST=${RUNTIME_DRIVER_HOST} \
+    intelanalytics/bigdl-k8s:version bash
+```
+
+Launch the k8s client container
+```bash
+sudo docker exec -it <containerID> bash
+```
+
 ### Run Command
 For `k8s-client` mode
 ```bash
