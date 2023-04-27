@@ -12,6 +12,9 @@ unzip ./ml-1m.zip
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
+
+# Upload the dataset to NFS if you run on k8s:
+cp -r ml-1m /bigdl/nfsdata
 ```
  
 ## Arguments
@@ -20,7 +23,7 @@ hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
 + `--model_dir`: The path to save model and logs (default to be `./`). You should input an HDFS path if you run on yarn.
 + `--cluster_mode`: The cluster mode, one of `local`, `yarn-client`, `yarn-cluster`, `k8s-client`, `k8s-cluster`, `spark-submit` or `bigdl-submit` (default to be `local`).
 + `--backend`: The backend of Orca Estimator, either ray or spark (default to be `spark`).
-+ `--workers_per_node`: The number of workers on each node (default to be `1`).
++ `--workers_per_node`: The number of workers on each node (default to be `1` in `local` mode, `2` on yarn/k8s cluster mode).
 + `--tensorboard`: Whether to use TensorBoard as the train callback.
 + `--lr_scheduler`: Whether to use learning rate scheduler for training.
 
@@ -96,7 +99,7 @@ val_loss: 0.26760029486236536
 
 </details>
 
-## 2-1 Run on YARN with python command
+## 2.1 Run on YARN with python command
 
 ### Run Command
 ```bash
@@ -104,7 +107,7 @@ python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --clu
 python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --cluster_mode yarn-cluster
 ```
 
-## 2-2 Run on YARN with bigdl-submit
+## 2.2 Run on YARN with bigdl-submit
 ```bash
 conda pack -o environment.tar.gz
 ```
@@ -147,7 +150,7 @@ bigdl-submit \
    --data_dir hdfs://ip:port/data/NCF
 ```
 
-## 2-3 Run on YARN with spark-submit
+## 2.3 Run on YARN with spark-submit
 
 ### Prepare the Environment
 - **Do not** install bigdl-orca-spark3 in the conda environment.
@@ -193,4 +196,22 @@ ${SPARK_HOME}/bin/spark-submit \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,process_spark_dataframe.py,pytorch_model.py,utils.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
+```
+
+## 3.1 Run on K8s with python command
+You need to run the python command inside a docker container.
+
+### Prepare the Environment
+Pull the BigDL bigdl-k8s image
+```bash
+# For the release version, e.g. 2.3.0
+sudo docker pull intelanalytics/bigdl-k8s:version
+
+# For the latest nightly build version
+sudo docker pull intelanalytics/bigdl-k8s:latest
+```
+
+### Run Command
+```bash
+python pytorch_train_spark_dataframe.py --data_dir /bigdl/nfsdata/ --cluster_mode k8s-client
 ```
