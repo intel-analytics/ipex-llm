@@ -55,7 +55,7 @@ jobs:
           BIGDL_ROOT: ${{ github.workspace }}
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run Chronos Env
+      - name: Remove Chronos Env
         if: ${{ always() }}
         shell: bash
         run: |
@@ -216,7 +216,7 @@ jobs:
           export SPARK_LOCAL_HOSTNAME=localhost
           export KERAS_BACKEND=tensorflow
           source bigdl-nano-init
-          bash python/chronos/dev/test/run-installation-options.sh "torch and not automl and not diff_set_all"
+          bash python/chronos/dev/test/run-installation-options.sh "torch and not diff_set_all"
           source deactivate
           conda remove -n chronos-nb-env -y --all
         env:
