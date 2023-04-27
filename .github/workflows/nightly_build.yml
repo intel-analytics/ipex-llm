@@ -6,7 +6,7 @@ on:
   #   paths:
   #     - '.github/workflows/nightly_build.yml'
   schedule:
-    - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
+    - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
   workflow_dispatch:
     inputs:
       artifact:
