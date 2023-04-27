@@ -7,16 +7,16 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 ### BigDL PPML on TDX-CC
 ![image](https://user-images.githubusercontent.com/30695225/190289025-dfcb3d01-9eed-4676-9df5-8412bd845894.png)
 
-## Prepare TDX CC Environment
-[`Confidential Containers`](https://github.com/confidential-containers/documentation/blob/main/Overview.md) (CC) is an open source community working to enable cloud native confidential computing by leveraging [`Trusted Execution Environments`](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEE) to protect containers and data.
+## Prepare TDX CoCo Environment
+[`Confidential Containers`](https://github.com/confidential-containers/documentation/blob/main/overview.md) (CC) is an open source community working to enable cloud native confidential computing by leveraging [`Trusted Execution Environments`](https://en.wikipedia.org/wiki/Trusted_execution_environment) (TEE) to protect containers and data.
 
 The TEE seeks to protect the application and data from outside threats, with the application owner having complete control of all communication across the TEE boundary. The application is considered a single complete entity and once supplied with the resources it requires, the TEE protects those resources (memory and CPU) from the infrastructure and all communication across the TEE boundary is under the control of the application owner. 
 
 Confidential Containers supports multiple TEE Technologies, such as Intel SGX and Intel TDX. [`Intel Trust Domain Extensions`](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-trust-domain-extensions.html) (Intel TDX) is introducing new, architectural elements to help deploy hardware-isolated, virtual machines (VMs) called trust domains (TDs). Intel TDX is designed to isolate VMs from the virtual-machine manager (VMM)/hypervisor and any other non-TD software on the platform to protect TDs from a broad range of software.
 
-Combining the advantages of Intel TDX and Confidential Container, TDX-CC provides transparent deployment of unmodified containers and allows cloud-native application owners to enforce application security requirements.
+Combining the advantages of Intel TDX and Confidential Container, [TDX-CoCo](https://github.com/intel-sandbox/tdx-confidential-containers) provides transparent deployment of unmodified containers and allows cloud-native application owners to enforce application security requirements.
 
-To deploy an actual workload with TDX-CC, you need to prepare the environment in two parts, including **hardware environment** and **Kata CCv0**.
+To deploy an actual workload with TDX-CoCo, you need to prepare the environment in two parts, including **hardware environment** and **Kata CCv0**.
 
 ### Hardware Environment
 1. Configure Hardware
