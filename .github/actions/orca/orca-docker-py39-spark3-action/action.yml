@@ -1,0 +1,49 @@
+name: 'Orca Docker Test'
+description: 'Orca Docker Test'
+inputs:
+  image:
+    description: 'image'
+    required: true
+    default: '10.239.45.10/arda/intelanalytics/bigdl-orca'
+  image-tag:
+    description: 'image tag'
+    required: true
+    default: 'latest'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+    - name: Set Variable
+      shell: bash
+      env:
+        DEFAULT_IMAGE: ${{ inputs.image }}:${{ inputs.image-tag }}
+      run: |
+        whoami
+        export IMAGE=${{ env.DEFAULT_IMAGE }}
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+        export no_proxy="$NO_PROXY"
+
+    - name: Start Container
+      shell: bash
+      run: |
+        set -x
+        export LOCAL_IP=172.168.0.205
+        export HTTP_PROXY_HOST=child-prc.intel.com
+        export HTTP_PROXY_PORT=912
+        export HTTPS_PROXY_HOST=child-prc.intel.com
+        export HTTPS_PROXY_PORT=912
+        export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
+
+        docker run -itd \
+            --net=host \
+            --env http_proxy="http://child-prc.intel.com:913" \
+            --env https_proxy="http://child-prc.intel.com:913" \
+            --volume ${PWD}:/workspace \
+            --workdir /workspace \
+            --name=${CONTAINER_NAME} \
+            $IMAGE \
+            bash -c "pip install tensorflow==2.9.0 && pip install torch==1.7.1 && ./python/orca/dev/test/run-pytests-basic-env.sh && ./python/orca/dev/test/run-pytests-basic-pytorch.sh && ./python/orca/dev/test/run-pytests-basic-tf2.sh" 
+
+        docker stop /${CONTAINER_NAME}
+        docker container rm /${CONTAINER_NAME}
