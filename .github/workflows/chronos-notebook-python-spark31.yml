@@ -8,7 +8,7 @@ concurrency:
 # Controls when the action will run. 
 on:
   schedule:
-    - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
+    - cron: '0 15 * * *' # GMT time, 15:00 GMT == 23:00 China
   # Trigger the workflow on pull request events but only for the main branch
   pull_request:
     branches: [ main ]
