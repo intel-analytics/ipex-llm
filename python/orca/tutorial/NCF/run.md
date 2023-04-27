@@ -212,6 +212,15 @@ sudo docker pull intelanalytics/bigdl-k8s:latest
 ```
 
 ### Run Command
+For `k8s-client` mode
 ```bash
 python pytorch_train_spark_dataframe.py --data_dir /bigdl/nfsdata/ --cluster_mode k8s-client
+```
+
+For `k8s-cluster` mode 
+```bash
+conda pack -o environment.tar.gz
+cp environment.tar.gz /bigdl/nfsdata
+cp *.py /bigdl/nfsdata
+python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata --cluster_mode k8s-cluster
 ```
