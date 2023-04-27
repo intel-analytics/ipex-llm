@@ -23,7 +23,7 @@ cp -r ml-1m /bigdl/nfsdata
 + `--model_dir`: The path to save model and logs (default to be `./`). You should input an HDFS path if you run on yarn.
 + `--cluster_mode`: The cluster mode, one of `local`, `yarn-client`, `yarn-cluster`, `k8s-client`, `k8s-cluster`, `spark-submit` or `bigdl-submit` (default to be `local`).
 + `--backend`: The backend of Orca Estimator, either ray or spark (default to be `spark`).
-+ `--workers_per_node`: The number of workers on each node (default to be `1` in `local` mode, `2` on yarn/k8s cluster mode).
++ `--workers_per_node`: The number of workers on each node (default to be `1`).
 + `--tensorboard`: Whether to use TensorBoard as the train callback.
 + `--lr_scheduler`: Whether to use learning rate scheduler for training.
 
@@ -247,3 +247,35 @@ cp environment.tar.gz /bigdl/nfsdata
 cp *.py /bigdl/nfsdata
 python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata --cluster_mode k8s-cluster
 ```
+
+## 3.1 Run on K8s with spark submit
+You need to run the python command inside a docker container.
+
+### Run Command
++ For `k8s-client` mode
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master ${RUNTIME_SPARK_MASTER} \
+    --deploy-mode client \
+    --name orca-k8s-client-tutorial \
+    --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+    --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 10g \
+    --driver-cores 2 \
+    --driver-memory 2g \
+    --archives environment.tar.gz#environment \
+    --conf spark.pyspark.driver.python=python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,./pytorch_model.py \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    pytorch_train_sparkdataframe.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/
+```
+
++ For `k8s-cluster` mode
