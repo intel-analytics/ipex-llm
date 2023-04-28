@@ -1,17 +1,8 @@
-ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base
-ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
-
-FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as attestation-service-base
-
-ADD ./bigdl-as-entrypoint.sh /ppml/bigdl-as-entrypoint.sh
-RUN mkdir -p /opt/bigdl-as/data && \
-    chmod 777 /ppml/bigdl-as-entrypoint.sh
-
-RUN apt-get update --fix-missing && \
-    apt-get install -y libtdx-attest libtdx-attest-dev libsgx-dcap-quote-verify libsgx-dcap-quote-verify-dev libsgx-dcap-default-qpl
+ARG BASE_IMAGE_NAME=intelanalytics/bigdl-attestation-service-base
+ARG BASE_IMAGE_TAG=2.4.0-SNAPSHOT
 
 # stage 1. generate SGX secrets and prepare KMS env
-FROM attestation-service-base as temp
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
 ARG SGX_MEM_SIZE=32G
 ARG SGX_LOG_LEVEL=error
@@ -25,7 +16,7 @@ RUN cd /ppml && \
     make SGX=1 DEBUG=1 THIS_DIR=/ppml  SPARK_USER=root G_SGX_SIZE=$SGX_MEM_SIZE G_LOG_LEVEL=$SGX_LOG_LEVEL
 
 # stage 2. copy sign etc. secrets from temp into target image and generate AS secrets
-FROM attestation-service-base
+FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 # 2.1 copy sign etc. secrets from temp into target image
 COPY --from=temp /ppml/bash.manifest.sgx /ppml/bash.manifest.sgx

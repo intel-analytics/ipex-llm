@@ -19,7 +19,7 @@ runs:
         chmod a+x apps/run-app-tests-pip.sh
         gsed -i "s/sed/gsed/g" apps/run-app-tests-pip.sh
         bash apps/run-app-tests-pip.sh 1
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
