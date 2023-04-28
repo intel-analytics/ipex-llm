@@ -28,12 +28,8 @@ runs:
       shell: bash
       run: |
         set -x
-        export LOCAL_IP=172.168.0.205
-        export HTTP_PROXY_HOST=child-prc.intel.com
-        export HTTP_PROXY_PORT=912
-        export HTTPS_PROXY_HOST=child-prc.intel.com
-        export HTTPS_PROXY_PORT=912
-        export JDK_URL=http://10.239.45.10:8081/repository/raw/jdk/jdk-8u192-linux-x64.tar.gz
+        export CONTAINER_NAME=orca-docker-test
+        docker container rm ${CONTAINER_NAME} -f
 
         docker run -itd \
             --net=host \
@@ -43,7 +39,15 @@ runs:
             --workdir /workspace \
             --name=${CONTAINER_NAME} \
             $IMAGE \
-            bash -c "pip install tensorflow==2.9.0 && pip install torch==1.7.1 && ./python/orca/dev/test/run-pytests-basic-env.sh && ./python/orca/dev/test/run-pytests-basic-pytorch.sh && ./python/orca/dev/test/run-pytests-basic-tf2.sh" 
+            bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && cd python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
 
-        docker stop /${CONTAINER_NAME}
-        docker container rm /${CONTAINER_NAME}
+        docker wait ${CONTAINER_NAME}
+        exit_status=$?
+        
+        if [ $exit_status -ne 0 ];
+        then
+          docker logs ${CONTAINER_NAME}
+        fi
+        docker container rm ${CONTAINER_NAME} -f
+        exit $exit_status
+
