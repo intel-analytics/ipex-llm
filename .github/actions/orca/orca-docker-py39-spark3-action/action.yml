@@ -41,8 +41,7 @@ runs:
             $IMAGE \
             bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && cd python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
 
-        docker wait ${CONTAINER_NAME}
-        exit_status=$?
+        exit_status=$(docker wait ${CONTAINER_NAME})
         sudo rm -rf python/.pytest_cache
         sudo rm -rf python/orca/test/
 
