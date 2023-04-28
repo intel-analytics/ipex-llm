@@ -227,10 +227,6 @@ sudo docker run -itd --net=host \
     -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
     -e RUNTIME_DRIVER_HOST=${RUNTIME_DRIVER_HOST} \
     intelanalytics/bigdl-k8s:version bash
-```
-
-Launch the k8s client container
-```bash
 sudo docker exec -it <containerID> bash
 ```
 
@@ -248,8 +244,10 @@ cp *.py /bigdl/nfsdata
 python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata --cluster_mode k8s-cluster
 ```
 
-## 3.1 Run on K8s with spark submit
+## 3.2 Run on K8s with spark submit
 You need to run the python command inside a docker container.
++ Do not install bigdl-orca-spark3 in the conda environment.
++ Install the dependencies of bigdl-orca as listed in the dependency files.
 
 ### Run Command
 + For `k8s-client` mode
@@ -270,7 +268,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.pyspark.driver.python=python \
     --conf spark.pyspark.python=environment/bin/python \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,./pytorch_model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,pytorch_model.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -279,3 +277,31 @@ ${SPARK_HOME}/bin/spark-submit \
 ```
 
 + For `k8s-cluster` mode
+
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master ${RUNTIME_SPARK_MASTER} \
+    --deploy-mode cluster \
+    --name orca-k8s-cluster-tutorial \
+    --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 10g \
+    --driver-cores 2 \
+    --driver-memory 2g \
+    --archives /bigdl/nfsdata/environment.tar.gz#environment \
+    --conf spark.pyspark.driver.python=environment/bin/python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/process_spark_dataframe.py,/bigdl/nfsdata/pytorch_model.py,/bigdl/nfsdata/utils.py \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    /bigdl/nfsdata/pytorch_train_sparkdataframe.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/
+```
