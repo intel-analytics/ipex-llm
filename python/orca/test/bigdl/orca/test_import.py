@@ -34,6 +34,7 @@ class TestImport(TestCase):
         stop_orca_context()
 
     def test_data_import(self):
+        assert False
         from bigdl.orca.data import file, transformer
 
     def test_tf2_import(self):

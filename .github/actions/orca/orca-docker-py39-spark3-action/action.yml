@@ -31,7 +31,8 @@ runs:
         export CONTAINER_NAME=orca-docker-test
         docker container rm ${CONTAINER_NAME} -f
 
-        docker run -itd \
+        docker run -it \
+            -a stdout \
             --net=host \
             --env http_proxy="http://child-prc.intel.com:913" \
             --env https_proxy="http://child-prc.intel.com:913" \
@@ -41,13 +42,8 @@ runs:
             $IMAGE \
             bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && cd python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
 
-        docker wait ${CONTAINER_NAME}
         exit_status=$?
         
-        if [ $exit_status -ne 0 ];
-        then
-          docker logs ${CONTAINER_NAME}
-        fi
         docker container rm ${CONTAINER_NAME} -f
         exit $exit_status
 
