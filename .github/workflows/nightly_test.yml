@@ -56,6 +56,7 @@ on:
         - Orca-Tutorial-NCF-Ray-Py39-Spark3
         - Orca-Tutorial-NCF-Py39-Spark3
         - Orca-Pytest-Ray-Ctx-Py37-Spark3
+        - Orca-Docker-Py39-Spark3
         - Dllib-Scala-UT
         - Friesian-Scala-UT
         - Friesian-Python-Py37-Spark3
@@ -1239,7 +1240,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Docker-Py39-Spark3:
-    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Docker-Test' || github.event.inputs.artifact == 'all' }} 
+    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Docker-Py39-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin]
 
     steps:
