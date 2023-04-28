@@ -2,7 +2,7 @@ name: Nightly Test
 
 on:
 
-  pull_request:
+  #pull_request:
     #branchs: [ main ]
 
   schedule:
@@ -1240,7 +1240,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-Docker-Py39-Spark3:
-    # if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Docker-Py39-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-Docker-Py39-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Vilvarin]
 
     steps:
