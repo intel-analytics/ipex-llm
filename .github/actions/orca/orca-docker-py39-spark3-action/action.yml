@@ -35,16 +35,11 @@ runs:
             --net=host \
             --env http_proxy="http://child-prc.intel.com:913" \
             --env https_proxy="http://child-prc.intel.com:913" \
-            --volume ${PWD}:/workspace \
-            --workdir /workspace \
             --name=${CONTAINER_NAME} \
             $IMAGE \
-            bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && cd python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
+            bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && git clone https://github.com/intel-analytics/BigDL.git && cd BigDL/python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
 
         exit_status=$(docker wait ${CONTAINER_NAME})
-        # remove pytest cache, file permission must be root
-        sudo rm -rf python/.pytest_cache
-        sudo rm -rf python/orca/test/
 
         if [ $exit_status -ne 0 ];
         then
