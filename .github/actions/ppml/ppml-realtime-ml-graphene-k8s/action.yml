@@ -65,7 +65,7 @@ runs:
 
         echo "### 3/5 Helm start redis/flink..."
         #helm uninstall $RELEASE_NAME
-        helm install $RELEASE_NAME ./
+        helm upgrade $RELEASE_NAME ./ -i
         sleep 360
         kubectl get pods|grep -e master -e flink -e redis
         kubectl get svc|grep -e master -e flink -e redis
