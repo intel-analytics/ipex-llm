@@ -305,3 +305,8 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
     /bigdl/nfsdata/pytorch_train_sparkdataframe.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/
 ```
+
+## 3.2 Run on K8s with kubernetes deployment
+
++ For `k8s-client` mode: [NCF-tutorial-k8s-client.yaml](./NCF-tutorial-k8s-client.yaml)
++ For `k8s-cluster` mode: [NCF-tutorial-k8s-cluster.yaml](./NCF-tutorial-k8s-cluster.yaml)
