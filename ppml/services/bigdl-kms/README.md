@@ -132,7 +132,7 @@ kubectl get all | grep bigdl-key-management
 It is expected to get outputs similar to the following:
 ```bash
 pod/bigdl-key-management-server-f4985d65f-2qctz    1/1            Running
-service/bigdl-key-management-service               LoadBalancer   10.99.15.77     <serviceIP>    9875:31157/TCP
+service/bigdl-key-management-service               LoadBalancer   10.99.15.77     <serviceIP>    9876:31157/TCP
 deployment.apps/bigdl-key-management-server        1/1            1               1
 replicaset.apps/bigdl-key-management-server-f4985d65f
 ```

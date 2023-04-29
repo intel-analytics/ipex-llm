@@ -52,6 +52,8 @@ spec:
           value: "$rootKey"
         - name: SGX_ENABLED
           value: "true"
+        - name: SERVER_PORT_NUM
+          value: "9876"
         resources:
           requests:
             cpu: 8
