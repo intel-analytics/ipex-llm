@@ -1,4 +1,7 @@
 # Trusted Realtime ML
+
+> **Warning**: Trusted Realtime ML with Graphene has been deprecated, please refer to [ppml/trusted-bigdata](./../../../trusted-bigdata) page instead.
+
 SGX-based Trusted Big Data ML allows user to run end-to-end Intel BigDL cluster serving with Flink local and distributed cluster on Graphene-SGX.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own SGX server on which you are running the programs.*

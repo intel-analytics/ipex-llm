@@ -4,12 +4,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 on:
-
-  #pull_request:
-    #branches: [ main ]
-
+#   pull_request:
+#     branches: [ main ]
   schedule:
-    - cron: '0 11 * * *' # GMT time, 11:00 GMT == 19:00 China
+    - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
     inputs:
       artifact:

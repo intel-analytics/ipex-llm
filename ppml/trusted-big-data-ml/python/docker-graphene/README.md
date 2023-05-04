@@ -1,10 +1,10 @@
 # Trusted Big Data ML with Python
 
+> **Warning**: Trusted Big Data ML with Graphene has been deprecated, please refer to [ppml/trusted-bigdata](./../../../trusted-bigdata) page instead.
+
 SGX-based Trusted Big Data ML allows the user to run end-to-end big data analytics application and Intel BigDL model training with spark local and distributed cluster on Graphene-SGX.
 
 *Please mind the IP and file path settings. They should be changed to the IP/path of your own sgx server on which you are running the programs.*
-
-> **Warning**: This page has been deprecated, please refer to `ppml/trusted-bigdata` page instead.
 
 ## Before Running the Code
 

@@ -68,7 +68,8 @@ class LifeCycle(metaclass=ABCMeta):
                         world_size):
         """A runner will contain `rank`, `backend` and `size` after setup_torch_distribute."""
         import torch.distributed as dist
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
+        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False,
+                                     timeout=dist.constants.default_pg_timeout)
         dist.init_process_group(
             backend="gloo",
             store=client_store,
