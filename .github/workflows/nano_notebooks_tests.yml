@@ -158,7 +158,9 @@ jobs:
           $CONDA/bin/conda create -n example-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate example-tensorflow
           bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
-          pip install tensorflow-datasets
+          pip install tensorflow-datasets==4.4.0
+          pip install protobuf==3.19.5
+          pip install tensorflow-metadata==1.13.0
           source bigdl-nano-init
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
@@ -179,7 +181,9 @@ jobs:
             source bigdl-nano-init
             pip install pytest nbmake
             pip install jupyter nbconvert
-            pip install tensorflow-datasets
+            pip install tensorflow-datasets==4.4.0
+            pip install protobuf==3.19.5
+            pip install tensorflow-metadata==1.13.0
             bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-tensorflow --all
