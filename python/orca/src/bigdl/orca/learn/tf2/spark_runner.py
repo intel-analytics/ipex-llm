@@ -201,7 +201,9 @@ class SparkRunner:
                  application_id=None,
                  need_to_log_to_driver=False,
                  driver_ip=None,
-                 driver_port=None
+                 driver_port=None,
+                 custom_objects=None,
+                 compile=True
                  ):
         """Initializes the runner.
                 Args:
@@ -225,6 +227,8 @@ class SparkRunner:
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
+        self.custom_objects = custom_objects
+        self.compile = compile
         if mode == "fit" or mode == "evaluate":
             from pyspark import BarrierTaskContext
             self.partition_id = BarrierTaskContext.get().partitionId()
@@ -272,7 +276,9 @@ class SparkRunner:
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
                             else:
-                                self.model = tf.keras.models.load_model(self.model_load)
+                                self.model = tf.keras.models.load_model(self.model_load,
+                                                                        self.custom_objects,
+                                                                        self.compile)
 
                         if not self.model._is_compiled and self.compile_args_creator:
                             self.model.compile(**self.compile_args_creator(config))
@@ -281,14 +287,16 @@ class SparkRunner:
                         if self.model_creator is not None:
                             self.model = self.model_creator(self.config)
                         else:
-                            self.model = tf.keras.models.load_model(self.model_load)
+                            self.model = tf.keras.models.load_model(self.model_load,
+                                                                    self.custom_objects,
+                                                                    self.compile)
                         if self.model_weights:
                             self.model.set_weights(self.model_weights.value)
             else:
-                self.setup_local()
+                self.setup_local(self.custom_objects, self.compile)
         else:
             # create local model for predict
-            self.setup_local()
+            self.setup_local(self.custom_object, self.compile)
 
     def setup(self):
         import tensorflow as tf
@@ -297,13 +305,13 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def setup_local(self):
+    def setup_local(self, custom_object, compile):
         self.size = 1
         self.rank = 0
         if self.model_creator is not None:
             self.model = self.model_creator(self.config)
         else:
-            self.model = tf.keras.models.load_model(self.model_load)
+            self.model = tf.keras.models.load_model(self.model_load, custom_object, compile)
         if self.model_weights:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
