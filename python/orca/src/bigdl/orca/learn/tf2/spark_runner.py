@@ -202,6 +202,7 @@ class SparkRunner:
                  need_to_log_to_driver=False,
                  driver_ip=None,
                  driver_port=None,
+                 filepath=None,
                  custom_objects=None,
                  compile=True
                  ):
@@ -477,7 +478,9 @@ class SparkRunner:
             if self.model_creator is not None:
                 local_model = self.model_creator(self.config)
             else:
-                local_model = tf.keras.models.load_model(self.model_load)
+                local_model = tf.keras.models.load_model(self.model_load,
+                                                         self.custom_objects,
+                                                         self.compile)
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
