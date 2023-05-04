@@ -230,6 +230,13 @@ sudo docker run -itd --net=host \
 sudo docker exec -it <containerID> bash
 ```
 
+Upload py files and environment if run with cluster mode
+```bash
+conda pack -o environment.tar.gz
+cp environment.tar.gz /bigdl/nfsdata
+cp *.py /bigdl/nfsdata
+```
+
 ### Run Command
 For `k8s-client` mode
 ```bash
@@ -238,9 +245,6 @@ python pytorch_train_spark_dataframe.py --data_dir /bigdl/nfsdata/ --cluster_mod
 
 For `k8s-cluster` mode 
 ```bash
-conda pack -o environment.tar.gz
-cp environment.tar.gz /bigdl/nfsdata
-cp *.py /bigdl/nfsdata
 python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata --cluster_mode k8s-cluster
 ```
 
