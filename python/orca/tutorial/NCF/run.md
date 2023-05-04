@@ -245,7 +245,7 @@ python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata 
 ```
 
 ## 3.2 Run on K8s with spark submit
-You need to run `spark-submit` inside a docker container. See [prepare the environment]().
+You need to run `spark-submit` inside a docker container. See [prepare the environment](#prepare-the-environment-2).
 + Do not install bigdl-orca-spark3 in the conda environment.
 + Install the dependencies of bigdl-orca as listed in the dependency files.
 
@@ -308,5 +308,16 @@ ${SPARK_HOME}/bin/spark-submit \
 
 ## 3.2 Run on K8s with kubernetes deployment
 
+BigDL has provided two example yamls to directly run the NCF example.
+
 + For `k8s-client` mode: [NCF-tutorial-k8s-client.yaml](./NCF-tutorial-k8s-client.yaml)
 + For `k8s-cluster` mode: [NCF-tutorial-k8s-cluster.yaml](./NCF-tutorial-k8s-cluster.yaml)
+
+### Run Command
+```bash
+kubectl apply -f ./NCF-tutorial-k8s-client.yaml # for k8s-client
+kubectl apply -f ./NCF-tutorial-k8s-cluster.yaml # for k8s-cluster
+
+# delete the job before re-submit another one
+kubectl delete job orca-ncf-pytorch-spark-dataframe
+```
