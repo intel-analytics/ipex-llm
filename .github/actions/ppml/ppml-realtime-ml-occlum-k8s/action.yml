@@ -60,7 +60,7 @@ runs:
 
         echo "Start Kubernets cluster..."
         #helm uninstall $RELEASE_NAME
-        helm install $RELEASE_NAME ./
+        helm upgrade $RELEASE_NAME ./ -i
         sleep 20
         kubectl get pods
         export MASTER_DEPLOYMENT_POD_NAME=$(kubectl get pods|grep master-deployment|awk '{print $1}')
