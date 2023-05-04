@@ -245,7 +245,7 @@ python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata 
 ```
 
 ## 3.2 Run on K8s with spark submit
-You need to run the python command inside a docker container.
+You need to run `spark-submit` inside a docker container. See [prepare the environment]().
 + Do not install bigdl-orca-spark3 in the conda environment.
 + Install the dependencies of bigdl-orca as listed in the dependency files.
 
