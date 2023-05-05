@@ -88,6 +88,7 @@ class SparkTFEstimator():
         self.model_weights = None
         self.optimizer_weights = None
         self.load_path = None
+        self.load_params = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
