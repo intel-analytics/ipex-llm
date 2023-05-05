@@ -36,20 +36,15 @@ ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
-# Python3.7
+# Python3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
-# Python3.8
-    apt-get install -y python3.8 python3.8-dev python3.8-distutils && \
+    apt-get install -y python3.9 && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.8 /usr/bin/python3 && \
-    pip3 install --upgrade pip && \
-    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
-    pip3 install --upgrade requests && \
-    pip install setuptools==58.4.0 && \
+    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
+    apt-get install -y python3-pip && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
@@ -133,6 +128,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
