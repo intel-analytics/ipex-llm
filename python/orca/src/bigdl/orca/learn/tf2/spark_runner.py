@@ -306,13 +306,13 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def setup_local(self, custom_object, compile):
+    def setup_local(self, custom_objects, compile):
         self.size = 1
         self.rank = 0
         if self.model_creator is not None:
             self.model = self.model_creator(self.config)
         else:
-            self.model = tf.keras.models.load_model(self.model_load, custom_object, compile)
+            self.model = tf.keras.models.load_model(self.model_load, custom_objects, compile)
         if self.model_weights:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context

@@ -668,7 +668,11 @@ class SparkTFEstimator():
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
-            model = load_model(**self.load_params) # type:ignore
+            if self.load_params is not None:
+                model = load_model(**self.load_params) # type:ignore
+            else:
+                invalidInputError(False,
+                                  "Please load a saved model when model_creator is None.")
 
         if set_weights:
             if self.optimizer_weights is not None:
