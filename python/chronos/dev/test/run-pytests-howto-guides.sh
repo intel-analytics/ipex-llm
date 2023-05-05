@@ -22,6 +22,7 @@ export Chronos_Howto_Guides_dir=${ANALYTICS_ZOO_ROOT}/python/chronos/colab-noteb
 sed -i 's/epochs=./epochs=1/' $Chronos_Howto_Guides_dir/*.ipynb
 # comment out the install commands
 sed -i 's/!pip install/#!pip install/' $Chronos_Howto_Guides_dir/*.ipynb
+sed -i 's/!pip uninstall/#!pip uninstall/' $Chronos_Howto_Guides_dir/*.ipynb
 
 echo "Running tests for Chronos How-to Guides"
 python -m pytest -v  --nbmake --nbmake-timeout=6000 --nbmake-kernel=python3 ${Chronos_Howto_Guides_dir}
