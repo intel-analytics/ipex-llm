@@ -201,7 +201,9 @@ class SparkTFEstimator():
             driver_ip=self.ip,
             driver_port=self.port
         )
-        init_params.update(self.load_params)
+
+        if self.load_params is not None:
+            init_params.update(self.load_params)
 
         params = dict(
             epochs=epochs,
@@ -358,7 +360,9 @@ class SparkTFEstimator():
             driver_ip=self.ip,
             driver_port=self.port
         )
-        init_params.update(self.load_params)
+
+        if self.load_params is not None:
+            init_params.update(self.load_params)
 
         params = dict(
             batch_size=batch_size,
@@ -450,7 +454,9 @@ class SparkTFEstimator():
             driver_ip=self.ip,
             driver_port=self.port
         )
-        init_params.update(self.load_params)
+
+        if self.load_params is not None:
+            init_params.update(self.load_params)
 
         params = dict(
             verbose=verbose,
