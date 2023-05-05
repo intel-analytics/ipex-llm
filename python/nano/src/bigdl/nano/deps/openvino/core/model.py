@@ -174,6 +174,7 @@ class OpenVINOModel:
                 success = False
                 error_msg = f"Failed to reshape this model. Error message: \n {str(e)}"
                 if self._infer_request:
+                    print(error_msg)
                     return success, error_msg
                 else:
                     error_msg += "\nCompile the original model instead."
@@ -186,6 +187,8 @@ class OpenVINOModel:
             error_msg = f"Failed to compile the reshaped model. Error message: \n {str(e)}"
             invalidOperationError(self._infer_request is not None, error_msg)
             # Reshape to the original shapes
+            print(error_msg)
+            print("Revert the reshaping process.")
             self.ie_network.reshape(origin_shapes)
 
         return success, error_msg
