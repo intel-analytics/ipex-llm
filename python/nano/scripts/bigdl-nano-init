@@ -305,6 +305,7 @@ if [ "${OPENMP}" -eq 1 ]; then
         unset OMP_SCHEDULE  # to avoid affinity issue
         if [[ ! -z "${SGX_ENABLED:-}" ]]; then
             export MKL_NUM_THREADS=$core_
+            export MKL_DYNAMIC="FALSE"
             export OMP_PROC_BIND="close"
             export OMP_SCHEDULE="STATIC"
         fi
@@ -395,6 +396,7 @@ echo "OMP_NUM_THREADS       = ${OMP_NUM_THREADS}"
 echo "OMP_PROC_BIND         = ${OMP_PROC_BIND}"
 echo "OMP_SCHEDULE          = ${OMP_SCHEDULE}"
 echo "MKL_NUM_THREADS       = ${MKL_NUM_THREADS}"
+echo "MKL_DYNAMIC           = ${MKL_DYNAMIC}"
 echo "KMP_AFFINITY          = ${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME         = ${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS = ${TF_ENABLE_ONEDNN_OPTS}"
