@@ -307,6 +307,7 @@ if [ "${OPENMP}" -eq 1 ]; then
             export MKL_NUM_THREADS=$core_
             export OMP_PROC_BIND="close"
             export OMP_SCHEDULE="STATIC"
+            export MKL_DYNAMIC="FALSE"
         fi
     elif [ $OS = "macos" ]; then
         export OMP_NUM_THREADS=$(sysctl -n hw.physicalcpu)
