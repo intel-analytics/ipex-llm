@@ -297,7 +297,7 @@ class SparkRunner:
                 self.setup_local(self.custom_objects, self.compile)
         else:
             # create local model for predict
-            self.setup_local(self.custom_object, self.compile)
+            self.setup_local(self.custom_objects, self.compile)
 
     def setup(self):
         import tensorflow as tf
