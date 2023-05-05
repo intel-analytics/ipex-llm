@@ -17,7 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Union  # for typehint
 from openvino.runtime import Core
-from bigdl.nano.utils.common import invalidInputError, _flatten
+from bigdl.nano.utils.common import invalidInputError, _flatten, invalidOperationError
 from openvino.runtime import Model
 from openvino.runtime import AsyncInferQueue
 import numpy as np
@@ -153,13 +153,15 @@ class OpenVINOModel:
                           "like 'input1[1,3,224,224],input2[1,4]', '[1,3,224,224]' but got "
                           f"{shapes.__class__.__name__}.")
 
-        shapes, reshape = self._get_reshape_info(shapes)
+        success = True
+        error_msg = None
+        shapes, reshape, origin_shapes = self._get_reshape_info(shapes)
         if not reshape:
             print("Skip the reshape process since the input shapes are same as the current "
                   "model shapes.")
             if self._infer_request:
                 print("Skip compiling model.")
-                return
+                return success, error_msg
         else:
             start_time = datetime.utcnow()
             print('Reshaping model: {}'
@@ -169,13 +171,24 @@ class OpenVINOModel:
                 duration_ms = f"{(datetime.utcnow() - start_time).total_seconds() * 1000:.2f}"
                 print(f"Reshape model took {duration_ms} ms")
             except Exception as e:
-                print(f"Failed to reshape this model. Error message: {str(e)}")
+                success = False
+                error_msg = f"Failed to reshape this model. Error message: \n {str(e)}"
                 if self._infer_request:
-                    return
+                    return success, error_msg
                 else:
-                    print("Compile the original model instead.")
+                    error_msg += "\nCompile the original model instead."
+                print(error_msg)
 
-        self.create_infer_request()
+        try:
+            self.create_infer_request()
+        except RuntimeError as e:
+            success = False
+            error_msg = f"Failed to compile the reshaped model. Error message: \n {str(e)}"
+            invalidOperationError(self._infer_request is not None, error_msg)
+            # Reshape to the original shapes
+            self.ie_network.reshape(origin_shapes)
+
+        return success, error_msg
 
     def _get_reshape_info(self, shapes):
         invalidInputError(isinstance(shapes, str),
@@ -189,7 +202,9 @@ class OpenVINOModel:
         shape_map = parse_input_parameters(shapes, input_names=input_names)
         reshape = False
         input_shapes = {}
+        origin_shapes = {}
         for name, node_name, shape in inputs_info:
+            origin_shapes[name] = shape
             new_shape = None
             if name in shape_map:
                 new_shape = PartialShape(shape_map[name])
@@ -203,7 +218,7 @@ class OpenVINOModel:
                     reshape = True
                 input_shapes[name] = new_shape
 
-        return input_shapes, reshape
+        return input_shapes, reshape, origin_shapes
 
     def _save(self, path):
         """
