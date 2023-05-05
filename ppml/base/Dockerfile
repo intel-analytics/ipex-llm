@@ -44,7 +44,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip && \
+    apt-get install -y python3-pip python3.9-dev python3-wheel && \
+    pip install --upgrade pip && \
+    pip install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
+    pip install --upgrade requests && \
+    pip install setuptools==58.4.0 && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
@@ -128,6 +132,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
