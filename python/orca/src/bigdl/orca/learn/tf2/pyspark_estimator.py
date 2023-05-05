@@ -639,12 +639,12 @@ class SparkTFEstimator():
 
         """
         sc = OrcaContext.get_spark_context()
-        self.load_params = dict(
+        self.load_params = dict( # type:ignore
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile
         )
-        model = load_model(**self.load_params)
+        model = load_model(**self.load_params) # type:ignore
         self.model_weights = model.get_weights()
         if model.optimizer is not None:
             self.optimizer_weights = model.optimizer.get_weights()
@@ -668,7 +668,7 @@ class SparkTFEstimator():
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
-            model = load_model(**self.load_params)
+            model = load_model(**self.load_params) # type:ignore
 
         if set_weights:
             if self.optimizer_weights is not None:
