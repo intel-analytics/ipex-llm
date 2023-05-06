@@ -77,7 +77,7 @@ In a pure pip environment, you need to run `source bigdl-nano-init` every time y
 We support a wide range of PyTorch and Tensorflow. We only care the MAJOR.MINOR in [Semantic Versioning](https://semver.org/). If you have a specific PyTorch/Tensorflow version want to use, e.g. PyTorch 1.11.0+cpu, you may select corresponding MAJOR.MINOR (i.e., PyTorch 1.11 in this case) and install PyTorch again after installing nano.
 
 ## Python Version
-`bigdl-nano` is validated on Python 3.8-3.9.
+`bigdl-nano` is validated on Python 3.8-3.10.
 
 
 ## Operating System
