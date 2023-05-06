@@ -640,9 +640,11 @@ class TestOpenVINO(TestCase):
             assert (second_load_end - second_load_start) < (first_load_end - first_load_start)
 
             # Reshape failed, should not recompile
-            new_model.reshape("sample[1,4,64,64],encoder_hidden_states[1,12,10]")
+            success, error_msg = new_model.reshape("sample[1,4,64,64],encoder_hidden_states[1,12,10]")
             reshape_end = datetime.utcnow()
             new_model_inputs = {i.any_name: i.shape for i in new_model.ov_model.ie_network.inputs}
+            assert not success
+            assert "Failed to reshape this model." in error_msg
             assert list(new_model_inputs["sample"]) == [2, 4, 8, 8]
             assert list(new_model_inputs["encoder_hidden_states"]) == [2, 12, 10]
             assert (reshape_end - second_load_end).total_seconds() * 1000 < 50
