@@ -18,8 +18,8 @@
 
 set -x
 cd /ppml
-export JUPYTER_RUNTIME_DIR=/ppml/jupyter
-export JUPYTER_DATA_DIR=/ppml/data
+export JUPYTER_RUNTIME_DIR=/ppml/jupyter/runtime
+export JUPYTER_DATA_DIR=/ppml/jupyter/data
 
 if [ ! -d $JUPYTER_RUNTIME_DIR ]
 then
@@ -30,8 +30,8 @@ export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt < 
 if [ "$SGX_ENABLED" == "true" ]
 then
   bash init.sh
-  export sgx_command="/usr/local/bin/jupyter notebook --notebook-dir=/ppml --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root"
+  export sgx_command="export secure_password=$secure_password && /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root"
   gramine-sgx bash 2>&1 | tee /ppml/jupyter-notebook.log
 else
-  /usr/local/bin/jupyter notebook --notebook-dir=/ppml --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root
+  /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root
 fi

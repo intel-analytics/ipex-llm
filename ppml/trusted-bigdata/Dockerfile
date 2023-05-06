@@ -192,6 +192,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
+ADD ./examples/jupyter /ppml/apps
 ADD ./zeppelin /ppml/zeppelin
 ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
 ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
@@ -222,7 +223,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install --no-cache-dir numpy==1.18.1 scipy && \
     pip3 install --no-cache-dir pandas==1.0.3 && \
     pip3 install --no-cache-dir scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py==2.10.0 dm-tree==0.1.5 && \
-    python3 -m ipykernel.kernelspec
+    python3 -m ipykernel.kernelspec && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
 # zeppelin
