@@ -1,10 +1,10 @@
 name: Nightly Build
 
 on:
-  # pull_request:
-  #   branches: [ main ]
-  #   paths:
-  #     - '.github/workflows/nightly_build.yml'
+#   pull_request:
+#     branches: [ main ]
+#     paths:
+#       - '.github/workflows/nightly_build.yml'
   schedule:
     - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
   workflow_dispatch:
@@ -55,18 +55,18 @@ jobs:
         apacheSnapshots: true	
         proxies: |
           [{
-            "id": "cn-http", 
+            "id": "us-http", 
             "active": "true", 
             "protocol": "http", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_2 }}", 
             "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           },{
-            "id": "cn-https", 
+            "id": "us-https", 
             "active": "true", 
             "protocol": "https", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_3 }}", 
             "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           }]
         servers: |
@@ -216,7 +216,7 @@ jobs:
         export TAG_SNAPSHOT=2.4.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
         docker push ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT}
     - name: docker deploy bigdl-k8s
       run: |
         cd docker/bigdl-k8s
@@ -243,7 +243,7 @@ jobs:
         export TAG_SNAPSHOT=2.4.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
-        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+        docker rmi -f ${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}-spark-3.1.3:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
     - name: docker deploy bigdl-chronos
       run: |
         mv docker/chronos-nightly/Dockerfile ./Dockerfile
@@ -264,7 +264,7 @@ jobs:
         export TAG_SNAPSHOT=2.4.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
-        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
         mv ./Dockerfile docker/chronos-nightly/Dockerfile
     - name: docker deploy bigdl-orca
       run: |
@@ -291,7 +291,7 @@ jobs:
         export TAG_SNAPSHOT=2.4.0-SNAPSHOT
         docker tag 10.239.45.10/arda/${IMAGE}:${TAG} ${IMAGE}:${TAG_SNAPSHOT}
         docker push ${IMAGE}:${TAG_SNAPSHOT}
-        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG}
+        docker rmi -f ${IMAGE}:${TAG_SNAPSHOT} ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}
 
     - name: Create Job Badge
       if: ${{ always() }}
