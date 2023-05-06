@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-ppml-notebook
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-ppml-notebook
+  template:
+    metadata:
+      name: bigdl-ppml-notebook
+      labels:
+        app: bigdl-ppml-notebook
+    spec:
+      containers:
+      - name: bigdl-ppml-notebook
+        image: $imageName
+        command: [ "/ppml/start-notebook.sh" ]
+        ports:
+        - name: jupyter-port
+          containerPort: 12345
+          hostPort: 12345
+        env:
+        - name: RUNTIME_K8S_SPARK_IMAGE
+          value: $imageName
+        - name: RUNTIME_SPARK_MASTER
+          value: $k8sMasterURL
+        - name: SGX_ENABLED
+          value: "true"
+        volumeMounts:
+        - mountPath: /ppml/data
+          name: nfs-storage
+        - name: ssl-keys
+          mountPath: /ppml/keys
+        - name: ssl-password
+          mountPath: /ppml/password
+        - name: kubeconfig
+          mountPath: /root/.kube
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: aesm-socket
+          mountPath: /var/run/aesmd/aesm.socket
+        resources:
+          requests:
+            cpu: 8
+            memory: 32Gi
+            sgx.intel.com/epc: 34359738368
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+          limits:
+            cpu: 10
+            memory: 40Gi
+            sgx.intel.com/epc: 34359738368
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+      volumes:
+      - name: secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfsvolumeclaim
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+

@@ -26,12 +26,13 @@ then
   mkdir -p $JUPYTER_RUNTIME_DIR
 fi
 
-export secure_password=`openssl rsautl -inkey /ppml/password/key.txt -decrypt < /ppml/password/output.bin`
+export SECURE_PASSWORD=`openssl rsautl -inkey /ppml/password/key.txt -decrypt < /ppml/password/output.bin`
+export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' )
 if [ "$SGX_ENABLED" == "true" ]
 then
   bash init.sh
-  export sgx_command="export secure_password=$secure_password && /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root"
+  export sgx_command="export SECURE_PASSWORD=$SECURE_PASSWORD && export RUNTIME_DRIVER_HOST=$RUNTIME_DRIVER_HOST && /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$SECURE_PASSWORD --allow-root"
   gramine-sgx bash 2>&1 | tee /ppml/jupyter-notebook.log
 else
-  /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$secure_password --allow-root
+  /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=12345 --no-browser --NotebookApp.token=$SECURE_PASSWORD --allow-root
 fi
