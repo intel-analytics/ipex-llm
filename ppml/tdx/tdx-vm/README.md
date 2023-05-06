@@ -27,7 +27,7 @@ To deploy an actual workload with TDX-VM, you need to prepare the environment fi
     It is time to launch TD guests. Execute `./scripts/orchestrate-tdxvm.sh` to launch multiple tdvms based on images ppml provided.
     
 6. Deploy Kubernetes cluster on tdvms
-    Execute `./scripts/install-k8s-components.sh` on each tdvm and `./scripts/deploy-k8s-cluster.sh` on master node to get a Kubernetes cluster. 
+    Execute `./scripts/install-k8s-components.sh <Number of VMs> <Absolute path to store kernel & image>` on each tdvm and `./scripts/deploy-k8s-cluster.sh` on master node to get a Kubernetes cluster. 
 
 
 ## Run Sparkpi as Spark Local Mode
