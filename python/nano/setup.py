@@ -167,10 +167,7 @@ def setup_package():
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
-                          "onnxruntime-extensions==0.4.2; platform_system!='Darwin' and \
-                          python_full_version<'3.10.0'",
-                          "onnxruntime-extensions==0.7.0; platform_system!='Darwin' and \
-                          python_full_version>='3.10.0'",
+                          "onnxruntime-extensions==0.7.0; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
