@@ -62,7 +62,7 @@ jobs:
             "port": "${{ secrets.HTTP_PROXY_PORT_2 }}", 
             "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           },{
-            "id": "cn-https", 
+            "id": "us-https", 
             "active": "true", 
             "protocol": "https", 
             "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
