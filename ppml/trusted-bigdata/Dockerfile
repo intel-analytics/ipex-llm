@@ -165,6 +165,7 @@ ENV FLINK_HOME                          /ppml/flink
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
 ENV TINI_VERSION                        $TINI_VERSION
+ENV LOCAL_IP                            127.0.0.1
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
