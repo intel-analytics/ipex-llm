@@ -1,10 +1,10 @@
 name: Nightly Build
 
 on:
-  pull_request:
-    branches: [ main ]
-    paths:
-      - '.github/workflows/nightly_build.yml'
+#   pull_request:
+#     branches: [ main ]
+#     paths:
+#       - '.github/workflows/nightly_build.yml'
   schedule:
     - cron: '30 11 * * *'  # GMT time, 11:30 GMT == 19:30 China
   workflow_dispatch:
@@ -55,18 +55,18 @@ jobs:
         apacheSnapshots: true	
         proxies: |
           [{
-            "id": "cn-http", 
+            "id": "us-http", 
             "active": "true", 
             "protocol": "http", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_2 }}", 
             "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           },{
             "id": "cn-https", 
             "active": "true", 
             "protocol": "https", 
-            "host": "${{ secrets.HTTP_PROXY_HOST }}", 
-            "port": "${{ secrets.HTTP_PROXY_PORT }}", 
+            "host": "${{ secrets.HTTP_PROXY_HOST_2 }}", 
+            "port": "${{ secrets.HTTP_PROXY_PORT_3 }}", 
             "nonProxyHosts": "${{ secrets.NO_PROXY }}|localhost"
           }]
         servers: |
@@ -179,8 +179,8 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   docker-build-bigdl:
-    #needs: scala-build
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
+    needs: scala-build
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'docker-bigdl-build' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Shire]
 
     steps:
