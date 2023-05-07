@@ -33,7 +33,6 @@ ADD ./register-mrenclave.py /ppml/register-mrenclave.py
 ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 
 ADD ./_dill.py.patch /_dill.py.patch
-ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
 # Python3.9
@@ -76,9 +75,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
     patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py /_dill.py.patch && \
-    patch /usr/lib/python3.8/uuid.py /python-uuid.patch && \
     patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so.1 /usr/lib/libpython3.8.so.1 && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.9.so.1 /usr/lib/libpython3.9.so.1 && \
     chmod a+x /ppml/init.sh && \
     chmod a+x /ppml/clean.sh && \
     chmod +x /ppml/verify-attestation-service.sh && \
