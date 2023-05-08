@@ -22,8 +22,6 @@
     **Supported Python Version**:
 
     Chronos supports all installation options on Python 3.7 ~ 3.9. For details about different installation options, refer to `here <#install-using-conda>`_.
-
-    But if you need to use Chronos with Python >= 3.8 in cluster, you must install `bigdl-chronos-spark3`.
 ```
 
 
