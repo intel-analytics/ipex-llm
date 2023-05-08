@@ -31,7 +31,7 @@ import sys.process._
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 
-import com.intel.analytics.bigdl.ppml.kms.common.{BigDLKMServerUtil, SecretStore}
+import com.intel.analytics.bigdl.ppml.kms.utils.{BigDLKMServerUtil, SecretStore}
 
 import java.nio.charset.StandardCharsets
 
@@ -213,7 +213,7 @@ object BigDLKeyManagementServer extends Supportive {
                         rootKey = BigDLKMServerUtil
                           .recoverRootKey(secretStore, secretThreshold)
                         Log4Error.invalidOperationError(BigDLKMServerUtil
-                          .isBase64(rootKey),
+                          .isValidRootKey(rootKey),
                           "recover failure! wrong secret or try other ones")
                         complete(s"recover root key and initialize server successfully!")
                       } catch {
@@ -270,7 +270,7 @@ object BigDLKeyManagementServer extends Supportive {
 
 case class BigDLKeyManagementArguments(
   ip: String = "0.0.0.0",
-  port: Int = 9875,
+  port: Int = 9876,
   dbFilePath: String = "/ppml/data/kms.db",
   httpsKeyStorePath: String = null,
   httpsKeyStoreToken: String = null

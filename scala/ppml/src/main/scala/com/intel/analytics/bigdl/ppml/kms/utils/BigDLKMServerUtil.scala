@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.kms.common
+package com.intel.analytics.bigdl.ppml.kms.utils
 
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -170,7 +170,7 @@ object BigDLKMServerUtil extends Supportive {
         StandardCharsets.UTF_8)
   }
 
-  def isBase64(s: String): Boolean = {
+  def isValidRootKey(s: String): Boolean = {
     org.apache.commons.codec.binary.Base64.isBase64(s)
   }
 }

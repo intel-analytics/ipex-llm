@@ -33,7 +33,8 @@ if [ "$SGX_ENABLED" = "true" ]; then
     -Xms2g -Xmx10g -Dcom.intel.analytics.zoo.shaded.io.netty.tryReflectionSetAccessible=true \
     com.intel.analytics.bigdl.ppml.kms.BigDLKeyManagementServer \
     --httpsKeyStorePath ${HTTPS_KEY_STORE_PAHT} \
-    --httpsKeyStoreToken ${HTTPS_KEY_STORE_TOKEN}"
+    --httpsKeyStoreToken ${HTTPS_KEY_STORE_TOKEN} \
+    --port ${SERVER_PORT_NUM}"
   gramine-sgx bash 2>&1 | tee /ppml/data/bigdl-kms-server.log
 else
   java \
@@ -43,5 +44,6 @@ else
     -cp "/ppml/jars/*" \
     com.intel.analytics.bigdl.ppml.kms.BigDLKeyManagementServer \
     --httpsKeyStorePath "${HTTPS_KEY_STORE_PAHT}" \
-    --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" | tee /ppml/data/bigdl-kms-server.log
+    --httpsKeyStoreToken "${HTTPS_KEY_STORE_TOKEN}" \
+    --port "${SERVER_PORT_NUM}" | tee /ppml/data/bigdl-kms-server.log
 fi
