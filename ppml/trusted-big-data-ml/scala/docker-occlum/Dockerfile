@@ -170,6 +170,11 @@ RUN mkdir /ppml && cd /ppml && \
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
+#add jindo sdk to support oss
+RUN cd /opt && \
+    wget https://jindodata-binary.oss-cn-shanghai.aliyuncs.com/release/4.6.5/jindosdk-4.6.5-linux.tar.gz && \
+    tar -zxvf jindosdk-4.6.5-linux.tar.gz
+
 FROM occlum/occlum:0.29.5-ubuntu20.04 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
@@ -282,4 +287,5 @@ ADD ./py-examples /opt/py-examples
 # replace lightgbmlib.jar
 RUN rm -rf $BIGDL_HOME/jars/lightgbmlib*
 COPY --from=bigdl /ppml/LightGBM/build/lightgbmlib.jar $BIGDL_HOME/jars/
+COPY --from=bigdl /opt/jindosdk-4.6.5-linux/lib/*.jar $SPARK_HOME/jars/
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
