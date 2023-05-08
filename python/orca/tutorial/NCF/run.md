@@ -300,7 +300,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.pyspark.python=environment/bin/python \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/process_spark_dataframe.py,/bigdl/nfsdata/pytorch_model.py,/bigdl/nfsdata/utils.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/pytorch_train_sparkdataframe.py,/bigdl/nfsdata/process_spark_dataframe.py,/bigdl/nfsdata/pytorch_model.py,/bigdl/nfsdata/utils.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \

@@ -434,7 +434,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.pyspark.python=environment/bin/python \
     --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/train.py,/bigdl/nfsdata/model.py \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
@@ -645,7 +645,7 @@ spec:
                 --conf spark.pyspark.python=environment/bin/python \
                 --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
                 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
+                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/train.py,/bigdl/nfsdata/model.py \
                 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
                 --conf spark.kubernetes.executor.deleteOnTermination=True \
