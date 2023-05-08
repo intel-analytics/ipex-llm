@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: $nfsPath
+    server: $nfsServerIp
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: $nfsPath
+    server: $nfsServerIp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-ppml-notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-ppml-notebook
+  volumeClaimTemplates:
+      - metadata:
+          name: persistent-data-storage
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: "nfs"
+          resources:
+            requests:
+              storage: 10Gi
+  template:
+    metadata:
+      name: bigdl-ppml-notebook
+      labels:
+        app: bigdl-ppml-notebook
+    spec:
+      containers:
+      - name: bigdl-ppml-notebook
+        image: $imageName
+        command: [ "/ppml/start-notebook-test.sh" ]
+        ports:
+        - containerPort: 12345
+          hostPort: 12345
+        env:
+        - name: RUNTIME_K8S_SPARK_IMAGE
+          value: $imageName
+        - name: RUNTIME_SPARK_MASTER
+          value: $k8sMasterURL
+        - name: SGX_ENABLED
+          value: "false"
+        volumeMounts:
+        - mountPath: /ppml/data
+          name: persistent-data-storage
+        - name: ssl-keys
+          mountPath: /ppml/keys
+        - name: ssl-password
+          mountPath: /ppml/password
+        - name: kubeconfig
+          mountPath: /root/.kube
+      nodeSelector:
+        icx-1: "true"
+      volumes:
+      - name: ssl-keys
+        secret:
+          secretName: ssl-keys
+      - name: ssl-password
+        secret:
+          secretName: ssl-password
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfsvolumeclaim
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-ppml-notebook
+  labels:
+    app: bigdl-ppml-notebook
+spec:
+  ports:
+  - port: 12345
+    targetPort: 12345
+  type: NodePort
+  selector:
+    app: bigdl-ppml-notebook

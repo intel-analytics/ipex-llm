@@ -1,13 +1,36 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: $nfsPath
+    server: $nfsServerIp
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-ppml-notebook
-  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: bigdl-ppml-notebook
+  volumeClaimTemplates:
+      - metadata:
+          name: persistent-data-storage
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: "nfs"
+          resources:
+            requests:
+              storage: 10Gi
   template:
     metadata:
       name: bigdl-ppml-notebook
@@ -31,7 +54,7 @@ spec:
           value: "true"
         volumeMounts:
         - mountPath: /ppml/data
-          name: nfs-storage
+          name: persistent-data-storage
         - name: ssl-keys
           mountPath: /ppml/keys
         - name: ssl-password
@@ -56,9 +79,12 @@ spec:
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
       volumes:
-      - name: secure-keys
+      - name: ssl-keys
         secret:
           secretName: ssl-keys
+      - name: ssl-password
+        secret:
+          secretName: ssl-password
       - name: nfs-storage
         persistentVolumeClaim:
           claimName: nfsvolumeclaim
@@ -71,4 +97,19 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-ppml-notebook
+  labels:
+    app: bigdl-ppml-notebook
+spec:
+  ports:
+  - port: 12345
+    targetPort: 12345
+  type: NodePort
+  selector:
+    app: bigdl-ppml-notebook
 
