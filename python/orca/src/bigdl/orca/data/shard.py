@@ -166,7 +166,7 @@ class SparkXShards(XShards):
                  transient: bool = False,
                  class_name: Optional[str] = None) -> None:
         self.rdd = rdd
-        self.user_caching = self.rdd.is_cached()
+        self.user_caching = self.rdd.is_cached
         if transient:
             self.eager = False
         else:
