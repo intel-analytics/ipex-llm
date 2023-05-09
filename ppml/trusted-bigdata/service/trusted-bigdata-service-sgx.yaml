@@ -13,6 +13,18 @@ spec:
     path: $nfsPath
     server: $nfsServerIp
 ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: nfs
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,15 +34,6 @@ spec:
   selector:
     matchLabels:
       app: bigdl-ppml-notebook
-  volumeClaimTemplates:
-      - metadata:
-          name: persistent-data-storage
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          storageClassName: "nfs"
-          resources:
-            requests:
-              storage: 10Gi
   template:
     metadata:
       name: bigdl-ppml-notebook
@@ -40,11 +43,10 @@ spec:
       containers:
       - name: bigdl-ppml-notebook
         image: $imageName
-        command: [ "/ppml/start-notebook.sh" ]
+        command: [ "/ppml/start-notebook-test.sh" ]
         ports:
-        - name: jupyter-port
-          containerPort: 12345
-          hostPort: 12345
+        - containerPort: $jupyterPort
+          hostPort: $jupyterPort
         env:
         - name: RUNTIME_K8S_SPARK_IMAGE
           value: $imageName
@@ -52,9 +54,11 @@ spec:
           value: $k8sMasterURL
         - name: SGX_ENABLED
           value: "true"
+        - name: JUPYTER_PORT
+          value: "$jupyterPort"
         volumeMounts:
         - mountPath: /ppml/data
-          name: persistent-data-storage
+          name: nfs-storage
         - name: ssl-keys
           mountPath: /ppml/keys
         - name: ssl-password
@@ -78,6 +82,8 @@ spec:
             sgx.intel.com/epc: 34359738368
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
+      nodeSelector:
+        icx-1: "true"
       volumes:
       - name: ssl-keys
         secret:
@@ -87,7 +93,7 @@ spec:
           secretName: ssl-password
       - name: nfs-storage
         persistentVolumeClaim:
-          claimName: nfsvolumeclaim
+          claimName: nfs-pvc
       - name: kubeconfig
         secret:
           secretName: kubeconfig-secret
@@ -97,7 +103,6 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
-
 ---
 apiVersion: v1
 kind: Service
@@ -107,9 +112,8 @@ metadata:
     app: bigdl-ppml-notebook
 spec:
   ports:
-  - port: 12345
-    targetPort: 12345
+  - port: $jupyterPort
+    targetPort: $jupyterPort
   type: NodePort
   selector:
     app: bigdl-ppml-notebook
-
