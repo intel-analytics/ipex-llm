@@ -23,7 +23,7 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
   fi
-  ATTESTATION_COMMAND="java -Xmx1g -cp /ppml/jars/*: com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${APP_ID}  -k ${API_KEY}"
+  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp /ppml/jars/*: com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${APP_ID}  -k ${API_KEY}"
   if [ -n "$ATTESTATION_CHALLENGE" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -c ${ATTESTATION_CHALLENGE}"
   fi
