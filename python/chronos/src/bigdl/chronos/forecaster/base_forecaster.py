@@ -371,6 +371,15 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, DataLoader) and self.num_processes:
                 data = dataloader_batch_resize(data, batch_size, self.num_processes)
 
+            # Before multi-process training, check the data's batchsize to avoid
+            # the small batchsize inference result
+            if data.batch_size < 5 and self.has_bn:
+                warnings.warn(
+                    f"The sample number {data.batch_size} of per process is too small for "
+                    "multi-process training and can lead to large inaccuracy. It is recommended to "
+                    "reduce num_process like setting the forecaster's num_process=1 to use single "
+                    "process training or enlarge the data's batch_size")
+
             # training process
             # forecaster_log_dir is a temp directory for training log
             # validation_ckpt_dir is a temp directory for best checkpoint on validation data
