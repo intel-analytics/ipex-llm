@@ -294,10 +294,10 @@ class SparkRunner:
                         if self.model_weights:
                             self.model.set_weights(self.model_weights.value)
             else:
-                self.setup_local(self.custom_objects, self.compile)
+                self.setup_local()
         else:
             # create local model for predict
-            self.setup_local(self.custom_objects, self.compile)
+            self.setup_local()
 
     def setup(self):
         import tensorflow as tf
@@ -306,13 +306,14 @@ class SparkRunner:
         os.environ["KMP_BLOCKING_TIME"] = self.config.get("KMP_BLOCKING_TIME",
                                                           os.environ.get("KMP_BLOCKING_TIME", "0"))
 
-    def setup_local(self, custom_objects, compile):
+    def setup_local(self):
         self.size = 1
         self.rank = 0
         if self.model_creator is not None:
             self.model = self.model_creator(self.config)
         else:
-            self.model = tf.keras.models.load_model(self.model_load, custom_objects, compile)
+            self.model = tf.keras.models.load_model(self.model_load, self.custom_objects,
+                                                    self.compile)
         if self.model_weights:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
