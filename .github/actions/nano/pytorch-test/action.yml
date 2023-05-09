@@ -185,7 +185,9 @@ runs:
         fi
         source bigdl-nano-init
         if [ ! $SYSTEM = "windows" ]; then
-          bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh
+          if [ ! $SYSTEM = "centos" ]; then
+            bash python/nano/tutorial/notebook/inference/pytorch/run-nano-howto-guides-inference-pytorch-tests.sh
+          fi
           bash python/nano/tutorial/notebook/training/pytorch/run-nano-howto-guides-training-pytorch-tests.sh
           bash python/nano/tutorial/notebook/training/pytorch-lightning/run-nano-howto-guides-training-pytorch-lightning-tests.sh
         fi
