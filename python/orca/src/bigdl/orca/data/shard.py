@@ -277,7 +277,7 @@ class SparkXShards(XShards):
         try:
             if self.is_cached():
                 self.rdd.unpersist()
-        except Exception:
+        except (Py4JError, TypeError):
             pass
         return self
 
