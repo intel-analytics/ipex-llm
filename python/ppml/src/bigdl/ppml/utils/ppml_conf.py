@@ -58,4 +58,4 @@ class PPMLConf:
                 .set("spark.kubernetes.sgx.driver.mem", "64g")
                 .set("spark.kubernetes.sgx.driver.jvm.mem", "12g")
                 .set("spark.kubernetes.sgx.executor.mem", "64g")
-                .set("spark.kubernetes.sgx.executor.jvm.mem", "12g"))
+                .set("spark.kubernetes.sgx.executor.jvm.mem", "12g")
