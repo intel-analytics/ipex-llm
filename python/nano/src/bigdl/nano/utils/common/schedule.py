@@ -111,6 +111,12 @@ def schedule_workers(num_workers: int,
             p2l[physical_core] = logical_core
     p_cores = sorted(p_cores_set)
 
+    # we check the OMP_NUM_THREADS setting as the only
+    # indentifier for resource limitation
+    cpu_resource_limit = int(os.environ.get("OMP_NUM_THREADS", len(p_cores)))
+    if len(p_cores) > cpu_resource_limit:
+        p_cores = p_cores[:cpu_resource_limit]
+
     if cores_per_worker is None:
         cores_per_worker = len(p_cores) // num_workers
         invalidInputError(cores_per_worker > 0,
