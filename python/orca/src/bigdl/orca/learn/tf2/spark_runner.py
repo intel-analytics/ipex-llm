@@ -312,7 +312,8 @@ class SparkRunner:
         if self.model_creator is not None:
             self.model = self.model_creator(self.config)
         else:
-            self.model = tf.keras.models.load_model(self.model_load, self.custom_objects,
+            self.model = tf.keras.models.load_model(self.model_load,
+                                                    self.custom_objects,
                                                     self.compile)
         if self.model_weights:
             self.model.set_weights(self.model_weights.value)
