@@ -3,12 +3,12 @@
 ## Step 1: Install WSL2
 
 
-Follow [BigDL Windows User guide](../../UserGuide/win.md) to install WSL2.
+Follow [BigDL Windows User guide](../../../UserGuide/win.md) to install WSL2.
 
 
 ## Step 2: Install conda in WSL2
 
-It is highly recommended to use conda to manage the python environment for BigDL-Nano. Follow [BigDL Windows User Guide/Conda Install](../../UserGuide/win.md#install-conda) to install conda.
+It is highly recommended to use conda to manage the python environment for BigDL-Nano. Follow [BigDL Windows User Guide/Conda Install](../../../UserGuide/win.md#install-conda) to install conda.
 
 ## Step 3: Create a BigDL-Nano env
 
