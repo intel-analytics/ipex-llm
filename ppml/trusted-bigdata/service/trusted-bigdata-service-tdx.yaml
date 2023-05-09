@@ -13,21 +13,6 @@ spec:
     path: $nfsPath
     server: $nfsServerIp
 ---
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-pv
-spec:
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs
-  nfs:
-    path: $nfsPath
-    server: $nfsServerIp
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
