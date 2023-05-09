@@ -211,6 +211,17 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         """Setup the distributed environment of sub processes, we add ipex optimization here."""
         invalidInputError(self.model is not None, "You must specify the model.")
 
+        # when using spawn, multiple child processes may update the weights of
+        # the same model, so we should copy the model to avoid it
+        if self.strategy_name == "ddp_spawn":
+            # in pl 1.6, a trainer holds a strategy holds a model, a model holds a trainer,
+            # `trainer.model` equals to `trainer.strategy.model`, so after assigning to
+            # `self.model`, the trainer's model will refer to new model automatically
+            self.model = copy.deepcopy(self.model)
+            # `copy.deepcopy(self.model)` can't copy `self.model.trainer` correctly sometimes,
+            # so we reuse the original trainer
+            self.model.trainer = trainer    # type: ignore
+
         super().setup(trainer)
 
         if trainer.training and self.auto_lr:
@@ -218,13 +229,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             def _unpack_lightning_optimizer(opt):
                 return opt._optimizer if isinstance(opt, LightningOptimizer) else opt
 
-            if not self.strategy_name == "ddp_spawn":
-                optimizers = self.optimizers
-                optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
+            optimizers = self.optimizers
+            optimizers = [_unpack_lightning_optimizer(opt) for opt in optimizers]
 
-                for optimizer in optimizers:
-                    for param_group in optimizer.param_groups:
-                        param_group["lr"] *= self.world_size
+            for optimizer in optimizers:
+                for param_group in optimizer.param_groups:
+                    param_group["lr"] *= self.world_size
 
             lr_scheduler_configs = self.lr_scheduler_configs
             for config in lr_scheduler_configs:
