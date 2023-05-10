@@ -47,6 +47,13 @@ object AttestationCLI {
       // sha256.map("%02x".format(_))
     }
 
+    def sha512(nonce: String, userReport: String): Array[Byte] = {
+      val md = MessageDigest.getInstance("SHA-512")
+      md.update(nonce.getBytes())
+      md.update(userReport.getBytes())
+      md.digest()
+    }
+
     def main(args: Array[String]): Unit = {
         var quote = Array[Byte]()
         val logger = LogManager.getLogger(getClass)
@@ -82,7 +89,7 @@ object AttestationCLI {
               .text("policyID of registered MREnclave and MRSigner, defaultly empty")
               .action((x, c) => c.copy(policyID = x))
             opt[String]('p', "userReport")
-              .text("userReportDataPath, default is test")
+              .text("userReportData, default is test")
               .action((x, c) => c.copy(userReport = x))
             opt[String]('O', "quoteType")
               .text("quoteType, default is gramine, occlum can be chose")
@@ -92,25 +99,6 @@ object AttestationCLI {
               .action((x, c) => c.copy(apiVersion = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
-
-        // Generate quote
-        val userReportData = params.asType match {
-          case ATTESTATION_CONVENTION.MODE_AZURE =>
-            sha256(hex(params.userReport))
-          case _ =>
-            params.userReport.getBytes
-        }
-
-        val quoteGenerator = params.quoteType match {
-          case QUOTE_CONVENTION.MODE_GRAMINE =>
-            new GramineQuoteGeneratorImpl()
-          case QUOTE_CONVENTION.MODE_OCCLUM =>
-            new OcclumQuoteGeneratorImpl()
-          case QUOTE_CONVENTION.MODE_TDX =>
-            new TDXQuoteGeneratorImpl()
-          case _ => throw new AttestationRuntimeException("Wrong quote type")
-        }
-        quote = quoteGenerator.getQuote(userReportData)
 
         // Attestation Client
         val as = params.asType match {
@@ -125,8 +113,32 @@ object AttestationCLI {
             case ATTESTATION_CONVENTION.MODE_AZURE =>
                 new AzureAttestationService(params.asURL, params.apiVersion,
                  Base64.getUrlEncoder.encodeToString(hex(params.userReport)))
+            case ATTESTATION_CONVENTION.MODE_AMBER =>
+                new AmberAttestationService(params.asURL, params.apiKey, params.userReport)
             case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
         }
+
+        // Generate quote
+        val userReportData = params.asType match {
+          case ATTESTATION_CONVENTION.MODE_AZURE =>
+            sha256(hex(params.userReport))
+          case ATTESTATION_CONVENTION.MODE_AMBER =>
+            val nonceResp = as.getNonce()
+            sha512(as.nonce, params.userReport)
+          case _ =>
+            params.userReport.getBytes
+        }
+
+        val quoteGenerator = params.quoteType match {
+          case QUOTE_CONVENTION.MODE_GRAMINE =>
+            new GramineQuoteGeneratorImpl()
+          case QUOTE_CONVENTION.MODE_OCCLUM =>
+            new OcclumQuoteGeneratorImpl()
+          case QUOTE_CONVENTION.MODE_TDX =>
+            new TDXQuoteGeneratorImpl()
+          case _ => throw new AttestationRuntimeException("Wrong quote type")
+        }
+        quote = quoteGenerator.getQuote(userReportData)
 
         val challengeString = params.challenge
         val debug = System.getenv("ATTESTATION_DEBUG")
