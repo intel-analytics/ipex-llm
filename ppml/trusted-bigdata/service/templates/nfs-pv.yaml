@@ -1,0 +1,13 @@
+kind: PersistentVolume
+metadata:
+  name: nfs-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: {{ .Values.nfsPath }}
+    server: {{ .Values.nfsServerIp }}

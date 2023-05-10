@@ -34,5 +34,5 @@ then
   export sgx_command="export SECURE_PASSWORD=$SECURE_PASSWORD && export RUNTIME_DRIVER_HOST=$RUNTIME_DRIVER_HOST && /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=$JUPYTER_PORT --no-browser --NotebookApp.token=$SECURE_PASSWORD --allow-root"
   gramine-sgx bash 2>&1 | tee /ppml/jupyter-notebook.log
 else
-  /usr/local/bin/jupyter notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=$JUPYTER_PORT --no-browser --NotebookApp.token=$SECURE_PASSWORD --allow-root
+  /usr/local/bin/jupyter-lab notebook --notebook-dir=/ppml/apps --ip=0.0.0.0 --port=$JUPYTER_PORT --no-browser --NotebookApp.token=$SECURE_PASSWORD --allow-root
 fi
