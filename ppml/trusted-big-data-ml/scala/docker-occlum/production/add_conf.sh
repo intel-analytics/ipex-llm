@@ -24,6 +24,8 @@ echo "test" > test.txt
 
 # cp test.txt to ..data
 cp ./test.txt /opt/spark/conf/..data/
+# add spark conf
+cp -r /opt/spark/conf/* /opt/spark/conf-copy/
 cp ./test.txt /opt/spark/pod-template/..data/
 cp ./test.txt /var/run/secrets/kubernetes.io/serviceaccount/..data/
 rm ./test.txt
