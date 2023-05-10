@@ -1,4 +1,4 @@
-name: Chronos PRVN Python Spark3.1 py37
+name: Chronos PRVN Python Spark3.1 py38 py39
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -20,7 +20,7 @@ on:
     paths:
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
-      - '.github/workflows/chronos-prvn-python-spark-3.1-py37.yml'
+      - '.github/workflows/chronos-prvn-python-spark31.yml'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10"]
+        python-version: ["3.8", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-prvn-env -y --all
-          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          conda create -n chronos-prvn-env -y python=${{matrix.python-version}} setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env
           apt-get update
           apt-get install -y libgl1
@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10"]
+        python-version: ["3.8", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -101,7 +101,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-prvn-env -y --all
-          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          conda create -n chronos-prvn-env -y python=${{matrix.python-version}} setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env
           apt-get update
           apt-get install -y libgl1
@@ -137,7 +137,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10"]
+        python-version: ["3.8", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -154,7 +154,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-prvn-env -y --all
-          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          conda create -n chronos-prvn-env -y python=${{matrix.python-version}} setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env
           apt-get update
           apt-get install -y libgl1
@@ -190,7 +190,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.7.10"]
+        python-version: ["3.8", "3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 8
@@ -207,7 +207,7 @@ jobs:
         shell: bash
         run: |
           conda remove -n chronos-prvn-env -y --all
-          conda create -n chronos-prvn-env -y python==3.7.10 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          conda create -n chronos-prvn-env -y python=${{matrix.python-version}} setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source activate chronos-prvn-env
           apt-get update
           apt-get install -y libgl1
