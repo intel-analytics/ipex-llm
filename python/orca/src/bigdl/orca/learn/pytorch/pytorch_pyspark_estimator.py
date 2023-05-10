@@ -186,7 +186,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         local_init_params["log_to_driver"] = False
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
-            cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
         if self.model_creator:
@@ -197,10 +196,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         server_store = dist.TCPStore(self.ip, self.tcp_store_port, -1, True,
                                      dist.constants.default_pg_timeout)
         return server_store
-
-    def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
-        return cluster_info
 
     def fit(self,
             data: Union['SparkXShards', 'SparkDataFrame', Callable[[Dict, int], 'DataLoader']],
@@ -287,14 +282,12 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         sc = OrcaContext.get_spark_context()
         _ = self.create_tcpstore_server()
-        cluster_info = self._get_cluster_info(sc)
         if self.state_dict["epoch"] == 0:
             self.state_dict = None
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="fit",
-            state_dict=state_dict,
-            cluster_info=cluster_info)
+            state_dict=state_dict)
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
@@ -457,13 +450,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
-        cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
 
         init_params = dict(
             mode="predict",
-            state_dict=state_dict,
-            cluster_info=cluster_info)
+            state_dict=state_dict)
         init_params.update(self.worker_init_params)
 
         callbacks = callbacks or []
@@ -561,12 +552,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
-        cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="evaluate",
-            state_dict=state_dict,
-            cluster_info=cluster_info)
+            state_dict=state_dict)
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
