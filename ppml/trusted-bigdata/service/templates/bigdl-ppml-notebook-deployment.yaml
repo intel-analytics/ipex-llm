@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-ppml-notebook
+  namespace: bigdl-ppml
 spec:
   replicas: 1
   selector:
@@ -13,6 +14,7 @@ spec:
       labels:
         app: bigdl-ppml-notebook
     spec:
+      serviceAccountName: bigdl-ppml-sa
       containers:
       - name: bigdl-ppml-notebook
         image: {{ .Values.imageName }}
@@ -26,7 +28,11 @@ spec:
         - name: RUNTIME_SPARK_MASTER
           value: { .Values.k8sMasterURL }}
         - name: SGX_ENABLED
+        {{- if eq .Values.TEEMode "tdx" }}
           value: "false"
+        {{- else }}
+          value: "true"
+        {{- end }}
         - name: JUPYTER_PORT
           value: "{{ .Values.jupyterPort }}"
         volumeMounts:
@@ -38,7 +44,7 @@ spec:
           mountPath: /ppml/password
         - name: kubeconfig
           mountPath: /root/.kube
-      {{- if .Values.TEEMode == "sgx" }}
+      {{- if eq .Values.TEEMode "sgx" }}
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
         - name: aesm-socket
@@ -70,7 +76,7 @@ spec:
       - name: kubeconfig
         secret:
           secretName: kubeconfig-secret
-      {{- if .Values.TEEMode == "sgx" }}
+      {{- if eq .Values.TEEMode "sgx" }}
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins

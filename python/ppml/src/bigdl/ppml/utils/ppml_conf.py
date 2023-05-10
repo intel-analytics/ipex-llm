@@ -18,8 +18,8 @@ import os
 from pyspark import SparkConf
 
 class PPMLConf:
-    def __init__(self, sgx_enabled = True):
-        self.spark_conf = self.init_spark_on_k8s_conf(SparkConf(), sgx_enabled)
+    def __init__(self, k8s_enabled = True, sgx_enabled = True):
+        self.spark_conf = self.init_spark_on_k8s_conf(SparkConf(), k8s_enabled, sgx_enabled)
 
     def set(self, key, value):
         self.spark_conf = self.spark_conf.set(key, value)
@@ -32,7 +32,14 @@ class PPMLConf:
     def conf(self):
         return self.spark_conf
 
-    def init_spark_on_k8s_conf(self, spark_conf, sgx_enabled):
+    def init_spark_on_k8s_conf(self, spark_conf, k8s_enabled, sgx_enabled):
+        if not k8s_enabled:
+            spark_conf = spark_conf\
+                .setMaster("local[4]")
+                .set("spark.python.use.daemon", "false")\
+                .set("park.python.worker.reuse", "false")
+            return spark_conf
+
         master = os.getenv("RUNTIME_SPARK_MASTER")
         image = os.getenv("RUNTIME_K8S_SPARK_IMAGE")
         driver_ip = os.getenv("RUNTIME_DRIVER_HOST")
