@@ -373,4 +373,3 @@ def is_array_of_what(obj_list, obj_type):
             is_array = False
             break
     return is_array
-
