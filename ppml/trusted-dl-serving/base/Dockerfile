@@ -114,6 +114,8 @@ ENV TRITON_SERVER_GPU_ENABLED    0
 
 ENV TCMALLOC_RELEASE_RATE 200
 
+ENV TS_MODEL_SERVER_HOME /usr/local/lib/python3.9/dist-packages/
+
 RUN mkdir /ppml/examples && \
     mkdir /ppml/torchserve && \
     mkdir /ppml/tritonserver && \

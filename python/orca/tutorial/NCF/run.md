@@ -12,6 +12,9 @@ unzip ./ml-1m.zip
 hdfs dfs -mkdir -p hdfs://ip:port/data/NCF
 hdfs dfs -put ml-1m hdfs://ip:port/data/NCF
 hdfs dfs -chmod -R 777 hdfs://ip:port/data/NCF
+
+# Upload the dataset to NFS if you run on k8s:
+cp -r ml-1m /bigdl/nfsdata
 ```
  
 ## Arguments
@@ -96,7 +99,7 @@ val_loss: 0.26760029486236536
 
 </details>
 
-## 2-1 Run on YARN with python command
+## 2.1 Run on YARN with python command
 
 ### Run Command
 ```bash
@@ -104,7 +107,7 @@ python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --clu
 python pytorch_train_spark_dataframe.py --data_dir hdfs://ip:port/data/NCF --cluster_mode yarn-cluster
 ```
 
-## 2-2 Run on YARN with bigdl-submit
+## 2.2 Run on YARN with bigdl-submit
 ```bash
 conda pack -o environment.tar.gz
 ```
@@ -147,7 +150,7 @@ bigdl-submit \
    --data_dir hdfs://ip:port/data/NCF
 ```
 
-## 2-3 Run on YARN with spark-submit
+## 2.3 Run on YARN with spark-submit
 
 ### Prepare the Environment
 - **Do not** install bigdl-orca-spark3 in the conda environment.
@@ -193,4 +196,132 @@ ${SPARK_HOME}/bin/spark-submit \
     --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,process_spark_dataframe.py,pytorch_model.py,utils.py \
     --jars ${BIGDL_HOME}/jars/bigdl-assembly-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
     pytorch_train_spark_dataframe.py  --cluster_mode spark-submit --data_dir hdfs://ip:port/data/NCF
+```
+
+## 3.1 Run on K8s with python command
+You need to run the python command inside a docker container.
+
+### Prepare the Environment
+Pull the BigDL bigdl-k8s image
+```bash
+# For the release version, e.g. 2.3.0
+sudo docker pull intelanalytics/bigdl-k8s:version
+
+# For the latest nightly build version
+sudo docker pull intelanalytics/bigdl-k8s:latest
+```
+
+Create the client container
+```bash
+export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' )
+
+sudo docker run -itd --net=host \
+    -v /etc/kubernetes:/etc/kubernetes \
+    -v /root/.kube:/root/.kube \
+    -v /path/to/nfsdata:/bigdl/nfsdata \
+    -e http_proxy=http://your-proxy-host:your-proxy-port \
+    -e https_proxy=https://your-proxy-host:your-proxy-port \
+    -e RUNTIME_SPARK_MASTER=k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
+    -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
+    -e RUNTIME_K8S_SPARK_IMAGE=intelanalytics/bigdl-k8s:version \
+    -e RUNTIME_PERSISTENT_VOLUME_CLAIM=nfsvolumeclaim \
+    -e RUNTIME_DRIVER_HOST=${RUNTIME_DRIVER_HOST} \
+    intelanalytics/bigdl-k8s:version bash
+sudo docker exec -it <containerID> bash
+```
+
+Upload py files and environment if run with cluster mode
+```bash
+conda pack -o environment.tar.gz
+cp environment.tar.gz /bigdl/nfsdata
+cp *.py /bigdl/nfsdata
+```
+
+### Run Command
+For `k8s-client` mode
+```bash
+python pytorch_train_spark_dataframe.py --data_dir /bigdl/nfsdata/ --cluster_mode k8s-client
+```
+
+For `k8s-cluster` mode 
+```bash
+python /bigdl/nfsdata/pytorch_train_sparkdataframe.py --data_dir /bigdl/nfsdata --cluster_mode k8s-cluster
+```
+
+## 3.2 Run on K8s with spark submit
+You need to run `spark-submit` inside a docker container. See [prepare the environment](#prepare-the-environment-2).
++ Do not install bigdl-orca-spark3 in the conda environment.
++ Install the dependencies of bigdl-orca as listed in the dependency files.
+
+### Run Command
++ For `k8s-client` mode
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master ${RUNTIME_SPARK_MASTER} \
+    --deploy-mode client \
+    --name orca-k8s-client-tutorial \
+    --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+    --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 10g \
+    --driver-cores 2 \
+    --driver-memory 2g \
+    --archives environment.tar.gz#environment \
+    --conf spark.pyspark.driver.python=python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,pytorch_model.py \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    pytorch_train_sparkdataframe.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/
+```
+
++ For `k8s-cluster` mode
+
+```bash
+${SPARK_HOME}/bin/spark-submit \
+    --master ${RUNTIME_SPARK_MASTER} \
+    --deploy-mode cluster \
+    --name orca-k8s-cluster-tutorial \
+    --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+    --num-executors 2 \
+    --executor-cores 4 \
+    --total-executor-cores 8 \
+    --executor-memory 10g \
+    --driver-cores 2 \
+    --driver-memory 2g \
+    --archives /bigdl/nfsdata/environment.tar.gz#environment \
+    --conf spark.pyspark.driver.python=environment/bin/python \
+    --conf spark.pyspark.python=environment/bin/python \
+    --conf spark.kubernetes.file.upload.path=/bigdl/nfsdata \
+    --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/pytorch_train_sparkdataframe.py,/bigdl/nfsdata/process_spark_dataframe.py,/bigdl/nfsdata/pytorch_model.py,/bigdl/nfsdata/utils.py \
+    --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+    --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.options.claimName=${RUNTIME_PERSISTENT_VOLUME_CLAIM} \
+    --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.${RUNTIME_PERSISTENT_VOLUME_CLAIM}.mount.path=/bigdl/nfsdata \
+    /bigdl/nfsdata/pytorch_train_sparkdataframe.py --cluster_mode spark-submit --data_dir /bigdl/nfsdata/
+```
+
+## 3.2 Run on K8s with kubernetes deployment
+
+BigDL has provided two example yamls to directly run the NCF example.
+
++ For `k8s-client` mode: [NCF-tutorial-k8s-client.yaml](./NCF-tutorial-k8s-client.yaml)
++ For `k8s-cluster` mode: [NCF-tutorial-k8s-cluster.yaml](./NCF-tutorial-k8s-cluster.yaml)
+
+### Run Command
+```bash
+kubectl apply -f ./NCF-tutorial-k8s-client.yaml # for k8s-client
+kubectl apply -f ./NCF-tutorial-k8s-cluster.yaml # for k8s-cluster
+
+# delete the job before re-submit another one
+kubectl delete job orca-ncf-pytorch-spark-dataframe
 ```

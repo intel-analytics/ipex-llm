@@ -12,7 +12,7 @@ ENV TINI_VERSION                        $TINI_VERSION
 
 # Environment used for build pytorch
 ARG USE_CUDA=0 USE_CUDNN=0 USE_OPENMP=1 USE_MKLDNN=1 USE_DISTRIBUTED=1 USE_GLOO=1 USE_NCCL=0 USE_MPI=0 BUILD_CAFFE2=0 USE_ROCM=0 USE_GLOO_WITH_OPENSSL=1 USE_MKL=1 BUILD_TEST=0 BLAS=MKL
-ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.8/dist-packages/:/usr/local/lib/"
+ARG CMAKE_PREFIX_PATH="/usr/local/lib/python3.9/dist-packages/:/usr/local/lib/"
 
 RUN mkdir /ppml/examples
 
@@ -74,7 +74,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    patch /usr/local/lib/python3.8/dist-packages/datasets/utils/filelock.py /filelock.patch && \
+    patch /usr/local/lib/python3.9/dist-packages/datasets/utils/filelock.py /filelock.patch && \
     pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

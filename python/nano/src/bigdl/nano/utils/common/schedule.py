@@ -17,6 +17,7 @@
 
 import subprocess
 import re
+import os
 from typing import Optional
 import platform
 import cpuinfo
@@ -24,7 +25,21 @@ from bigdl.nano.utils.common import invalidInputError
 
 
 def get_cgroup_cpuset():
-    cpu_set = list(range(cpuinfo.get_cpu_info()["count"]))
+    cpu_set = []
+    # first try if /sys/fs/cgroup/cpuset/cpuset.cpus exists
+    if os.path.exists("/sys/fs/cgroup/cpuset/cpuset.cpus"):
+        with open("/sys/fs/cgroup/cpuset/cpuset.cpus", "r") as f:
+            cpu_cores_str = f.readline().strip()
+            cpu_ranges = cpu_cores_str.split(",")
+            for cpu_range in cpu_ranges:
+                if "-" in cpu_range:
+                    start, end = map(int, cpu_range.split("-"))
+                    cpu_set.extend(range(start, end + 1))
+                else:
+                    cpu_set.append(int(cpu_range))
+    else:
+        # if not, we use cpuinfo
+        cpu_set = list(range(cpuinfo.get_cpu_info()["count"]))
     return cpu_set
 
 
@@ -95,6 +110,15 @@ def schedule_workers(num_workers: int,
         if physical_core not in p2l:
             p2l[physical_core] = logical_core
     p_cores = sorted(p_cores_set)
+
+    # we check the OMP_NUM_THREADS setting as the only
+    # indentifier for resource limitation
+    try:
+        cpu_resource_limit = int(os.environ["OMP_NUM_THREADS"])
+    except Exception as _e:
+        cpu_resource_limit = len(p_cores)
+    if len(p_cores) > cpu_resource_limit:
+        p_cores = p_cores[:cpu_resource_limit]
 
     if cores_per_worker is None:
         cores_per_worker = len(p_cores) // num_workers

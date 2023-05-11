@@ -66,7 +66,7 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
-    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc","type": "hostfs","source": "/etc"}]')" && \
+    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc/ssl/certs","type": "hostfs","source": "/etc/ssl/certs"}]')" && \
     echo "${edit_json}" > Occlum.json
 
     if [[ -z "$SGX_MEM_SIZE" ]]; then

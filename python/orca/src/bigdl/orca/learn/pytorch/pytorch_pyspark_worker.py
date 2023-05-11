@@ -37,7 +37,7 @@ import tempfile
 import copy
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 
@@ -51,7 +51,6 @@ class PytorchPysparkWorker(TorchRunner):
                  model_creator,
                  optimizer_creator,
                  size,
-                 cluster_info,
                  cores_per_worker,
                  loss_creator=None,
                  metrics=None,
@@ -81,7 +80,6 @@ class PytorchPysparkWorker(TorchRunner):
         self.size = size
         self.mode = mode
         self.backend = backend
-        self.cluster_info = cluster_info
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
@@ -90,14 +88,11 @@ class PytorchPysparkWorker(TorchRunner):
             self.log_path, self.logger_thread, self.thread_stop = \
                 PytorchPysparkWorker._start_log_monitor(driver_ip, driver_log_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, cluster_info, driver_ip, driver_tcp_store_port)
+            self.setup_distributed(self.mode, driver_ip, driver_tcp_store_port)
 
     @staticmethod
     def _start_log_monitor(driver_ip, driver_log_port):
-        if TaskContext.get():
-            partition_id = TaskContext.get().partitionId()
-        else:
-            partition_id = BarrierTaskContext().get().partitionId()
+        partition_id = get_partition_id()
         log_path = os.path.join(tempfile.gettempdir(),
                                 "{}_runner.log".format(partition_id))
         duplicate_stdout_stderr_to_file(log_path)
@@ -108,10 +103,9 @@ class PytorchPysparkWorker(TorchRunner):
                                          partition_id=partition_id)
         return log_path, logger_thread, thread_stop
 
-    def setup_distributed(self, mode, cluster_info, driver_ip, driver_tcp_store_port):
+    def setup_distributed(self, mode, driver_ip, driver_tcp_store_port):
         if mode == "fit":
-            self.rank = get_rank(cluster_info)
-            logger.info(f"cluster is: {cluster_info}")
+            self.rank = get_partition_id()
             self.setup_components()
             self.setup_torch_distribute(tcp_store_host=driver_ip,
                                         tcp_store_port=driver_tcp_store_port,
