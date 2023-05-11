@@ -353,6 +353,12 @@ class BasePytorchForecaster(Forecaster):
                                   f"but 'batch_size' is {batch_size}, 'workers_per_node' "
                                   f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
             batch_size //= (self.workers_per_node * num_nodes)
+            if batch_size < 5 and self.has_bn:
+                warnings.warn(
+                    f"The sample number {batch_size} of per process is too small for "
+                    "multi-process training and can lead to large inaccuracy. It is recommended to "
+                    "reduce num_process like setting the forecaster's num_process=1 to use single "
+                    "process training or enlarge the data's batch_size")
             return self.internal.fit(data=data,
                                      epochs=epochs,
                                      batch_size=batch_size)
