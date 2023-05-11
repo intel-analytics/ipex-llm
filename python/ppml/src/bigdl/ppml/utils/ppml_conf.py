@@ -70,9 +70,7 @@ class PPMLConf:
         if sgx_enabled:
             spark_conf = spark_conf\
                 .set("spark.kubernetes.sgx.enabled", "true")\
-                .set("spark.kubernetes.sgx.driver.mem", "64g")\
-                .set("spark.kubernetes.sgx.driver.jvm.mem", "12g")\
-                .set("spark.kubernetes.sgx.executor.mem", "64g")\
-                .set("spark.kubernetes.sgx.executor.jvm.mem", "12g")
+                .set("spark.kubernetes.sgx.driver.jvm.mem", "1g")\
+                .set("spark.kubernetes.sgx.executor.jvm.mem", "3g")
         
         return spark_conf
