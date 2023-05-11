@@ -115,7 +115,7 @@ def schedule_workers(num_workers: int,
     # indentifier for resource limitation
     try:
         cpu_resource_limit = int(os.environ["OMP_NUM_THREADS"])
-    except:
+    except Exception as _e:
         cpu_resource_limit = len(p_cores)
     if len(p_cores) > cpu_resource_limit:
         p_cores = p_cores[:cpu_resource_limit]
