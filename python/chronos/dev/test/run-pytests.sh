@@ -24,6 +24,10 @@ export PYSPARK_PYTHON=python
 export PYSPARK_DRIVER_PYTHON=python
 unset OMP_NUM_THREADS
 
+if [ -n "${OMP_NUM_THREADS}" ]; then
+    export OMP_NUM_THREADS=2
+fi
+
 ray stop -f
 
 RUN_PART1=0
