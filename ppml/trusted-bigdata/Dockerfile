@@ -228,6 +228,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     python3 -m ipykernel.kernelspec && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+    chmod 777 /usr/bin/python && \
 # zeppelin
     chmod +x /ppml/zeppelin/deploy.sh && \
     chmod +x /ppml/zeppelin/delete.sh && \
