@@ -177,7 +177,8 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
-    mkdir -p /ppml/apps
+    mkdir -p /ppml/apps && \
+    mkdir -p /ppml/notebook
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
@@ -193,7 +194,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
-ADD ./examples/jupyter /ppml/apps
+ADD ./examples/jupyter /ppml/notebook
 ADD ./zeppelin /ppml/zeppelin
 ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
 ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml

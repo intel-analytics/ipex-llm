@@ -35,7 +35,7 @@ class PPMLConf:
     def init_spark_on_k8s_conf(self, spark_conf, k8s_enabled, sgx_enabled):
         if not k8s_enabled:
             spark_conf = spark_conf\
-                .setMaster("local[4]")
+                .setMaster("local[4]")\
                 .set("spark.python.use.daemon", "false")\
                 .set("park.python.worker.reuse", "false")
             return spark_conf
