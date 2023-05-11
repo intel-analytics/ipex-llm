@@ -2,6 +2,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: nfs-pvc
+  namespace: bigdl-ppml
 spec:
   accessModes:
   - ReadWriteOnce

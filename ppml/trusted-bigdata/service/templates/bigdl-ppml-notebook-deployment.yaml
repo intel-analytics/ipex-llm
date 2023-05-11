@@ -18,15 +18,15 @@ spec:
       containers:
       - name: bigdl-ppml-notebook
         image: {{ .Values.imageName }}
-        command: [ "/ppml/start-notebook-test.sh" ]
+        command: [ "/ppml/start-notebook.sh" ]
         ports:
-        - containerPort: $jupyterPort
+        - containerPort: {{ .Values.jupyterPort }}
           hostPort: {{ .Values.jupyterPort }}
         env:
         - name: RUNTIME_K8S_SPARK_IMAGE
           value: {{ .Values.imageName }}
         - name: RUNTIME_SPARK_MASTER
-          value: { .Values.k8sMasterURL }}
+          value: {{ .Values.k8sMasterURL }}
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "tdx" }}
           value: "false"
