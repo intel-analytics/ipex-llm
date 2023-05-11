@@ -42,6 +42,7 @@ fi
 
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
+echo $OMP_NUM_THREADS
 python -m pytest -v test/bigdl/chronos/forecaster/test_lstm_forecaster.py \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py \
@@ -55,6 +56,7 @@ fi
 
 if [ $RUN_PART2 = 1 ]; then
 echo "Running chronos tests Part 2"
+echo $OMP_NUM_THREADS
 python -m pytest -v test/bigdl/chronos/forecaster \
        -k "not TestChronosModelLSTMForecaster and \
            not TestChronosNBeatsForecaster and \
@@ -78,6 +80,7 @@ fi
 
 if [ $RUN_PART3 = 1 ]; then
 echo "Running chronos tests Part 3"
+echo $OMP_NUM_THREADS
 python -m pytest -v test/bigdl/chronos/detector\
                     test/bigdl/chronos/metric \
                     test/bigdl/chronos/model \
@@ -93,6 +96,7 @@ fi
 
 if [ $RUN_PART4 = 1 ]; then
 echo "Running chronos tests Part 4"
+echo $OMP_NUM_THREADS
 python -m pytest -v test/bigdl/chronos/autots\
                     test/bigdl/chronos/data\
                     test/bigdl/chronos/aiops

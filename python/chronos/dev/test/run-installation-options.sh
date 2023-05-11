@@ -30,6 +30,7 @@ unset OMP_NUM_THREADS
 
 OPTIONS=$1
 echo "Running chronos tests"
+echo $OMP_NUM_THREADS
 python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/data \
                                     test/bigdl/chronos/detector \
