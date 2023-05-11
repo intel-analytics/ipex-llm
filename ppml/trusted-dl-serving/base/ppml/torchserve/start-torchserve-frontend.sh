@@ -1,8 +1,9 @@
 #!/bin/bash
 configFile=""
 core=""
-SGX_ENABLED="false"
-while getopts ":f:c:x" opt
+SGX_ENABLED=$SGX_ENABLED
+ATTESTATION=$ATTESTATION
+while getopts ":f:c:XA" opt
 do
     case $opt in
         c)
@@ -11,8 +12,11 @@ do
         f)
             core=$OPTARG
             ;;
-        x)
+        X)
             SGX_ENABLED="true"
+            ;;
+        A)
+            ATTESTATION="true"
             ;;
         *)
             echo "Unknown argument passed in: $opt"
@@ -24,8 +28,13 @@ done
 cd /ppml || exit
 
 if [[ $SGX_ENABLED == "false" ]]; then
+    if [ "$ATTESTATION" = "true" ]; then
+        rm /ppml/temp_command_file || true
+        bash attestation.sh
+        bash temp_command_file
+    fi
     taskset -c "$core" /opt/jdk11/bin/java \
-            -Dmodel_server_home=/usr/local/lib/python3.8/dist-packages \
+            -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
             -Xms1g \
@@ -39,7 +48,7 @@ if [[ $SGX_ENABLED == "false" ]]; then
             -ncs
 else
     export sgx_command="/opt/jdk11/bin/java \
-            -Dmodel_server_home=/usr/local/lib/python3.8/dist-packages \
+            -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
             -Xms1g \
@@ -51,6 +60,28 @@ else
             --python /usr/bin/python3 \
             -f $configFile \
             -ncs"
+    if [ "$ATTESTATION" = "true" ]; then
+          # Also consider ENCRYPTEDFSD condition
+          rm /ppml/temp_command_file || true
+          bash attestation.sh
+          if [ "$ENCRYPTED_FSD" == "true" ]; then
+            echo "[INFO] Distributed encrypted file system is enabled"
+            bash encrypted-fsd.sh
+          fi
+          echo $sgx_command >>temp_command_file
+          export sgx_command="bash temp_command_file"
+    else
+          # ATTESTATION is false
+          if [ "$ENCRYPTED_FSD" == "true" ]; then
+            # ATTESTATION false, encrypted-fsd true
+            rm /ppml/temp_command_file || true
+            echo "[INFO] Distributed encrypted file system is enabled"
+            bash encrypted-fsd.sh
+            echo $sgx_command >>temp_command_file
+            export sgx_command="bash temp_command_file"
+          fi
+    fi
     taskset -c "$core" gramine-sgx bash 2>&1 | tee frontend-sgx.log
+    rm /ppml/temp_command_file || true
 fi
 
