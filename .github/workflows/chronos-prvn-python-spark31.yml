@@ -18,6 +18,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
+      # test
       - 'python/chronos/src/**'
       - 'python/chronos/test/**'
       - '.github/workflows/chronos-prvn-python-spark31.yml'
