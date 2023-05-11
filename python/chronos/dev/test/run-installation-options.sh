@@ -26,10 +26,6 @@ export PYSPARK_DRIVER_PYTHON=python
 unset MALLOC_CONF
 unset OMP_NUM_THREADS
 
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
-fi
-
 # ray stop -f
 
 OPTIONS=$1
