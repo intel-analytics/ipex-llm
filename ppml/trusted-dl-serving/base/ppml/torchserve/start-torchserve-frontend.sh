@@ -34,7 +34,7 @@ if [[ $SGX_ENABLED == "false" ]]; then
         bash temp_command_file
     fi
     taskset -c "$core" /opt/jdk11/bin/java \
-            -Dmodel_server_home=/usr/local/lib/python3.8/dist-packages \
+            -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
             -Xms1g \
@@ -48,7 +48,7 @@ if [[ $SGX_ENABLED == "false" ]]; then
             -ncs
 else
     export sgx_command="/opt/jdk11/bin/java \
-            -Dmodel_server_home=/usr/local/lib/python3.8/dist-packages \
+            -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
             -Xms1g \
