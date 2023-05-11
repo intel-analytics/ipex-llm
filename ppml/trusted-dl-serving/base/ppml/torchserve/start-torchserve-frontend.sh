@@ -17,6 +17,7 @@ do
             ;;
         A)
             ATTESTATION="true"
+            ;;
         *)
             echo "Unknown argument passed in: $opt"
             exit 1
