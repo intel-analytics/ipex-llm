@@ -233,7 +233,14 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
     apt-get install bsdmainutils && \
     curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl  && \
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+# unzip python dependency
+    unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src
 ADD azure /ppml/azure
 RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/generate-keys-az.sh && \
@@ -241,6 +248,5 @@ RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
     wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
-
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
