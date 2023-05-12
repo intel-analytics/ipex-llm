@@ -26,15 +26,15 @@ export PYSPARK_DRIVER_PYTHON=python
 unset MALLOC_CONF
 unset OMP_NUM_THREADS
 
-if [ -n "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=2
-fi
-
 # ray stop -f
 
 OPTIONS=$1
 echo "Running chronos tests"
-echo $OMP_NUM_THREADS
+if [ -z "$OMP_NUM_THREADS" ]; then
+    echo "OMP_NUM_THREADS is unset"
+else
+    echo $OMP_NUM_THREADS
+fi
 python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/data \
                                     test/bigdl/chronos/detector \

@@ -46,7 +46,11 @@ fi
 
 if [ $RUN_PART1 = 1 ]; then
 echo "Running chronos tests Part 1"
-echo $OMP_NUM_THREADS
+if [ -z "$OMP_NUM_THREADS" ]; then
+    echo "OMP_NUM_THREADS is unset"
+else
+    echo $OMP_NUM_THREADS
+fi
 python -m pytest -v test/bigdl/chronos/forecaster/test_lstm_forecaster.py \
                     test/bigdl/chronos/forecaster/test_nbeats_forecaster.py \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py \
