@@ -24,7 +24,7 @@ export PYSPARK_DRIVER_PYTHON=python
 
 # If init bigdl-nano, unset `MALLOC_CONF` and `OMP_NUM_THREADS` to avoid process kill
 unset MALLOC_CONF
-unset OMP_NUM_THREADS
+export OMP_NUM_THREADS=2
 
 # ray stop -f
 
