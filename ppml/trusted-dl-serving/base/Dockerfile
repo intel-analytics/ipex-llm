@@ -43,7 +43,7 @@ ENV TCMALLOC_RELEASE_RATE 200
 RUN mkdir /ppml/examples && \
     mkdir /ppml/torchserve && \
     mkdir -p /usr/local/cuda/lib64/stubs && \
-    mkdir -p /usr/local/cuda/targets/x86_64-linux/lib && \
+    mkdir -p /usr/local/cuda/targets/x86_64-linux/lib
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
