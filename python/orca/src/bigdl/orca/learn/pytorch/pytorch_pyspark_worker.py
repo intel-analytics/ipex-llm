@@ -37,7 +37,8 @@ import tempfile
 import copy
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank, get_partition_id
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank,\
+    get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 
