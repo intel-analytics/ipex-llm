@@ -13,6 +13,8 @@ sudo docker run -it \
 	-v ./kubernetes:/opt/k8s \
 	-v /root/.kube:/root.kube \
 	-e KUBECONFIG=/root/.kube/admin.conf \
+	-e kubernetes_master_url=${kubernetes_master_url} \
+	-e LOCAL_IP=${LOCAL_IP} \
 	-e SGX_MEM_SIZE=20GB \
 	-e SGX_THREAD=1024 \
 	-e SGX_HEAP=512MB \
