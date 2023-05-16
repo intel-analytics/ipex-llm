@@ -303,6 +303,41 @@ run_spark_pi() {
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
 
+run_spark_pi_client() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --deploy-mode client \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.driver.host=$LOCAL_IP \
+         --conf spark.driver.port=54321 \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="5G" \
+         --conf spark.executorEnv.MALLOC_ARENA_MAX=1 \
+         --verbose \
+         --jars $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
+         --class org.apache.spark.examples.SparkPi spark-internal
+}
+
 run_spark_unittest() {
     init_instance spark
     build_spark
@@ -610,6 +645,10 @@ case "$arg" in
         ;;
     pi)
         run_spark_pi
+        cd ../
+        ;;
+    pi_client)
+        run_spark_pi_client
         cd ../
         ;;
     lenet)
