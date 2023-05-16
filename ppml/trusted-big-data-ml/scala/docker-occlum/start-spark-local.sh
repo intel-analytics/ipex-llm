@@ -10,9 +10,6 @@ sudo docker run -it \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd:/var/run/aesmd \
 	-v data:/opt/occlum_spark/data \
-	-v ./kubernetes:/opt/k8s \
-	-v /root/.kube:/root.kube \
-	-e KUBECONFIG=/root/.kube/admin.conf \
 	-e kubernetes_master_url=${kubernetes_master_url} \
 	-e LOCAL_IP=${LOCAL_IP} \
 	-e SGX_MEM_SIZE=20GB \
