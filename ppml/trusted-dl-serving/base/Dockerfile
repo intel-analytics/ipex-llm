@@ -55,7 +55,8 @@ COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 ADD ./ppml /ppml
 
 # Dependencies
-RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
+RUN ls /ppml/torchserve && \
+    env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev python3-pip libpython3-dev && \
     apt-get install -y libssl-dev && \
 # Optimization related
