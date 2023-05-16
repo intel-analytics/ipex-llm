@@ -222,7 +222,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 # Python packages
     pip install numpy pandas pyarrow pyspark==3.1.3 && \
     pip install --no-cache-dir --upgrade setuptools && \
-    pip install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py==2.10.0 dm-tree==0.1.5 && \
+    pip install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
     python3 -m ipykernel.kernelspec && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
