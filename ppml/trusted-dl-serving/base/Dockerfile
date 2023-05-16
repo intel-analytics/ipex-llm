@@ -77,6 +77,8 @@ RUN ls /ppml/torchserve && \
     cp /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /ppml/torchserve/start-torchserve-backend.sh && \
     chmod +x /ppml/torchserve/start-torchserve-frontend.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-backend-k8s.sh && \
+    chmod +x /ppml/torchserve/start-torchserve-frontend-k8s.sh && \
     chmod +x /ppml/torchserve/start-torchserve.sh && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
