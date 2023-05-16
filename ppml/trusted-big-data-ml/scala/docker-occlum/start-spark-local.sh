@@ -10,6 +10,9 @@ sudo docker run -it \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd:/var/run/aesmd \
 	-v data:/opt/occlum_spark/data \
+	-v ./kubernetes:/opt/k8s \
+	-v /root/.kube:/root.kube \
+	-e KUBECONFIG=/root/.kube/admin.conf \
 	-e SGX_MEM_SIZE=20GB \
 	-e SGX_THREAD=1024 \
 	-e SGX_HEAP=512MB \
