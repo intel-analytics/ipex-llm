@@ -57,4 +57,4 @@ targets:
   - target: /root
     copy:
       - dirs:
-          - /opt/.kube
+          - /root/.kube
