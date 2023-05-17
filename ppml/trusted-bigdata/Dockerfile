@@ -220,9 +220,9 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod -R 777 ${FLINK_HOME} && \
     chown -R flink:flink ${FLINK_HOME} && \
 # Python packages
-    pip install numpy pandas pyarrow pyspark==3.1.3 && \
-    pip install --no-cache-dir --upgrade setuptools && \
-    pip install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
+    pip3 install numpy pandas pyarrow pyspark==3.1.3 && \
+    pip3 install --no-cache-dir --upgrade setuptools && \
+    pip3 install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
     python3 -m ipykernel.kernelspec && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
