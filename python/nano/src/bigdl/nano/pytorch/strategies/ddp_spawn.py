@@ -31,12 +31,11 @@
 # limitations under the License.
 
 
-import copy
 import logging
 import multiprocessing
 import os
 import warnings
-from typing import Any, List, Optional, Callable
+from typing import Any, List, Optional, Callable, Dict
 
 import torch
 from bigdl.nano.deps.ipex.ipex_api import ipex_optimize
@@ -81,13 +80,12 @@ try:
 except Exception as _e:
     pass
 
-
 log = logging.getLogger(__name__)
 
 
 class _DDPSpawnLauncher(_SpawnLauncher):
 
-    def __init__(self, strategy: 'DDPSpawnStrategy') -> None:   # type: ignore[override]
+    def __init__(self, strategy: 'DDPSpawnStrategy') -> None:  # type: ignore[override]
         self._strategy: DDPSpawnStrategy = strategy
         self._start_method = "spawn"
 
@@ -124,7 +122,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
                 log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
                 log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
                 error_queue = mp.SimpleQueue()
-                process = mp.Process(   # type: ignore
+                process = mp.Process(  # type: ignore
                     target=self._wrap,
                     args=(self._wrapping_function, i, args, error_queue, patch_status),
                     daemon=False,
@@ -165,13 +163,13 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
     strategy_name = "ddp_spawn"
 
     def __init__(
-        self,
-        num_processes: int = 1,
-        cpu_for_each_process: Optional[List[List[int]]] = None,
-        use_ipex=False,
-        dtype=None,
-        auto_lr=False,
-        **kwargs: Any
+            self,
+            num_processes: int = 1,
+            cpu_for_each_process: Optional[List[List[int]]] = None,
+            use_ipex=False,
+            dtype=None,
+            auto_lr=False,
+            **kwargs: Any
     ):
         """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
         device = 'cpu'
@@ -292,6 +290,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                         return start_factor
                     return (end_factor - start_factor) * epoch / total_iters \
                         + start_factor
+
                 scheduler = LambdaLR(optimizer=opt,
                                      lr_lambda=[lr_func] * len(opt.param_groups))
                 lr_scheduler = {
@@ -323,3 +322,11 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # `Trainer` will set it automatically, but `TorchNano` won't, so we set it manually
         self._ddp_kwargs['find_unused_parameters'] = True
         return DistributedDataParallel(model, **self._ddp_kwargs)
+
+    @classmethod
+    def register_strategies(cls, strategy_registry: Dict) -> None:
+        strategy_registry.register(
+            cls.strategy_name,
+            cls,
+            description=f"{cls.__class__.__name__}",
+        )
