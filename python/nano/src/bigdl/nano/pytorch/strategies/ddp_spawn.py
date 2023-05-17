@@ -325,9 +325,10 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
     @classmethod
     def register_strategies(cls, strategy_registry: Dict) -> None:
-        """Register strategy to lightning for passing connector check"""
+        """Register strategy to lightning for passing connector check."""
         strategy_registry.register(
             cls.strategy_name,
             cls,
             description=f"{cls.__class__.__name__}",
+            override=True
         )
