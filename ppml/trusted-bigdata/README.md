@@ -52,15 +52,15 @@ This image is designed for the big data field in Privacy Preserving Machine Lear
 **Tip:** if you want to skip building the image, you can use our public image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` for a quick start, which is provided for a demo purpose. Do not use it in production. All public images are as follows:
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-base:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest(8G EPC and log level is error)
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g:2.4.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-32g-all:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g-all:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-4g-all:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-4g:2.4.0-SNAPSHOT
-- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g:2.4.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-32g:2.4.0-SNAPSHOT
 - intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-16g:2.4.0-SNAPSHOT
+- intelanalytics/bigdl-ppml-trusted-bigdata-gramine-noattest-8g:2.4.0-SNAPSHOT
 
 `16g` in image names indicates the size of EPC memory. There are three log levels: error, debug and all. The log level defaults to error and `all` indicate that the log level is all. `noattest` means the attestation service is disabled in this image, which applies to the case where `aesmd` and `pccs` are not installed successfully. `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference:latest` is our recommended default image.
 
