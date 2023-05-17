@@ -24,9 +24,17 @@ import org.apache.spark.sql.functions._
 
 object BankDataFilter extends Supportive {
   def main(args: Array[String]): Unit = {
+
+    val arguments = EncryptIOArguments.parser.parse(args, EncryptIOArguments()) match {
+        case Some(arguments) =>
+          logger.info(s"starting with $arguments"); arguments
+        case None =>
+          EncryptIOArguments.parser.failure("miss args, please see the usage info"); null
+      }
+
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
 
-    val sc = PPMLContext.initPPMLContext(sparkSession)
+    val sc = PPMLContext.initPPMLContext("SimpleQuery", arguments.ppmlArgs())
 
     // Get user inputs
     val csvFilePath = args(0)
