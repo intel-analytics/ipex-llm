@@ -130,17 +130,6 @@ class PLTrainer:
 TORCH_CLS = PLTrainer
 
 
-class CaseWithoutAVX2:
-    def test_placeholder(self):
-        pass
-
-
-if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
-    print("Trainer IPEX Without AVX2")
-    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_CLS = CaseWithoutAVX2
-
-
 class TestTrainer(TORCH_CLS, TestCase):
     pass
 
