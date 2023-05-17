@@ -37,7 +37,8 @@ import tempfile
 import copy
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_partition_id
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank,\
+    get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 
@@ -52,6 +53,7 @@ class PytorchPysparkWorker(TorchRunner):
                  optimizer_creator,
                  size,
                  cores_per_worker,
+                 cluster_info=None,
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
@@ -88,7 +90,7 @@ class PytorchPysparkWorker(TorchRunner):
             self.log_path, self.logger_thread, self.thread_stop = \
                 PytorchPysparkWorker._start_log_monitor(driver_ip, driver_log_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, driver_ip, driver_tcp_store_port)
+            self.setup_distributed(self.mode, cluster_info, driver_ip, driver_tcp_store_port)
 
     @staticmethod
     def _start_log_monitor(driver_ip, driver_log_port):
@@ -103,9 +105,10 @@ class PytorchPysparkWorker(TorchRunner):
                                          partition_id=partition_id)
         return log_path, logger_thread, thread_stop
 
-    def setup_distributed(self, mode, driver_ip, driver_tcp_store_port):
+    def setup_distributed(self, mode, cluster_info, driver_ip, driver_tcp_store_port):
         if mode == "fit":
-            self.rank = get_partition_id()
+            self.rank = get_rank(cluster_info)
+            logger.info(f"cluster is: {cluster_info}")
             self.setup_components()
             self.setup_torch_distribute(tcp_store_host=driver_ip,
                                         tcp_store_port=driver_tcp_store_port,
