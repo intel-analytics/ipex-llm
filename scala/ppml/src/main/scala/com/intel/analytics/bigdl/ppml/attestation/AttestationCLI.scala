@@ -115,7 +115,7 @@ object AttestationCLI {
                  Base64.getUrlEncoder.encodeToString(hex(params.userReport)))
             case ATTESTATION_CONVENTION.MODE_AMBER =>
                 new AmberAttestationService(params.asURL, params.apiKey, params.userReport)
-            case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
+            case _ => throw new AttestationRuntimeException("Wrong Attestation Service type")
         }
 
         // Generate quote
@@ -146,7 +146,7 @@ object AttestationCLI {
             val asQuote = params.asType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>
                 Base64.getDecoder().decode(as.getQuoteFromServer(challengeString))
-              case _ => throw new AttestationRuntimeException("Wrong Attestation service type")
+              case _ => throw new AttestationRuntimeException("Wrong Attestation Service type")
             }
             val quoteVerifier = new SGXDCAPQuoteVerifierImpl()
             quoteVerifier.verifyQuote(asQuote)
