@@ -338,6 +338,47 @@ run_spark_pi_client() {
          --class org.apache.spark.examples.SparkPi spark-internal
 }
 
+run_spark_pi_cluster() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --name spark-pi-cluster \
+         --class org.apache.spark.examples.SparkPi \
+         --deploy-mode cluster \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.driver.podTemplateFile=/opt/k8s/driver.yaml \
+         --conf spark.kubernetes.file.upload.path=file:///tmp \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+         --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+         --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+         --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+         --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+         --conf spark.kubernetes.driverEnv.SGX_THREAD="2048" \
+         --conf spark.kubernetes.sgx.driver.jvm.mem="1G" \
+         --conf spark.kubernetes.sgx.executor.jvm.mem="7G" \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar
+}
+
 run_spark_unittest() {
     init_instance spark
     build_spark
@@ -649,6 +690,10 @@ case "$arg" in
         ;;
     pi_client)
         run_spark_pi_client
+        cd ../
+        ;;
+    pi_cluster)
+        run_spark_pi_cluster
         cd ../
         ;;
     lenet)
