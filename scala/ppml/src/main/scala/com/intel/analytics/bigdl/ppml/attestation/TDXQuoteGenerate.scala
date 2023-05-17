@@ -31,7 +31,7 @@ object TdxQuoteGenerate {
     def main(args: Array[String]): Unit = {
 
         val logger = LogManager.getLogger(getClass)
-        case class CmdParams(userReport: String = "test", 
+        case class CmdParams(userReport: String = "test",
                              filePath: String = "")
         val cmdParser: OptionParser[CmdParams] = new
             OptionParser[CmdParams]("PPML Quote Generation Cmd tool") {
@@ -47,7 +47,7 @@ object TdxQuoteGenerate {
 
         val quoteGenerator = new TDXQuoteGeneratorImpl()
         val quote = quoteGenerator.getQuote(userReportData.getBytes)
-        
+
         val filePath = params.filePath
         if (filePath.length() == 0) {
             val res = new String(quote)
