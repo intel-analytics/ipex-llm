@@ -4,8 +4,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 on:
-  pull_request:
-  #  branches: [ main ]
+#  pull_request:
+#    branches: [ main ]
   schedule:
     - cron: '0 13 * * *' # GMT time, 13:00 GMT == 21:00 China
   workflow_dispatch:
@@ -281,7 +281,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Mac-Orca-Python-ExampleTest-Ray-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Mac-Orca-Python-ExampleTest-Ray-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, mac, macOS]
 
     steps:
