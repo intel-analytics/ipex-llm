@@ -157,6 +157,8 @@ class SparkRunner:
                                    conf=None,
                                    jars=None,
                                    py_files=None):
+        import subprocess
+
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
@@ -408,6 +410,8 @@ class SparkRunner:
                                   conf=None,
                                   jars=None,
                                   python_location=None):
+        import subprocess
+
         print("Initializing SparkContext for k8s-cluster mode")
         executor_python_env = "python_env"
 

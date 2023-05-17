@@ -118,8 +118,6 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
         if len(loader_input_sample) > len(input_sample):
             # input_sample is also a sequence
             return False
-        else:
-            return True
     if isinstance(loader_input_sample, Sequence):
         if isinstance(loader_input_sample[0], Sequence) and \
                 len(loader_input_sample[0]) == forward_args_len:
@@ -150,4 +148,4 @@ def _check_whether_add_label(model, dataloader, input_sample=None):
                                 return True
                         else:
                             return True
-    return True
+    return False

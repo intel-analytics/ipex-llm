@@ -2,6 +2,9 @@
 #To avoid soft-link error, need to mkdir copy dir
 [[ -d /opt/spark/conf/..data ]] || mkdir /opt/spark/conf/..data
 [[ -d /opt/spark/conf-copy ]] || mkdir /opt/spark/conf-copy
+# add spark conf
+cp -rf /opt/spark/conf/* /opt/spark/conf-copy/
+rm -rf /opt/spark/conf-copy/spark.properties
 cp /opt/spark/conf/..data/* /opt/spark/conf-copy
 
 [[ -d /opt/spark/pod-template/..data ]] || mkdir /opt/spark/pod-template/..data

@@ -1,4 +1,4 @@
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
@@ -33,23 +33,21 @@ ADD ./register-mrenclave.py /ppml/register-mrenclave.py
 ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 
 ADD ./_dill.py.patch /_dill.py.patch
-ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
-# Python3.7
+# Python3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
-# Python3.8
-    apt-get install -y python3.8 python3.8-dev python3.8-distutils && \
+    apt-get install -y python3.9 && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.8 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     pip3 install --upgrade requests && \
-    pip install setuptools==58.4.0 && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+    pip3 install setuptools==58.4.0 && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
@@ -76,10 +74,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py /_dill.py.patch && \
-    patch /usr/lib/python3.8/uuid.py /python-uuid.patch && \
-    patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so.1 /usr/lib/libpython3.8.so.1 && \
+    patch /usr/local/lib/python3.9/dist-packages/dill/_dill.py /_dill.py.patch && \
+    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.9.so.1 /usr/lib/libpython3.9.so.1 && \
     chmod a+x /ppml/init.sh && \
     chmod a+x /ppml/clean.sh && \
     chmod +x /ppml/verify-attestation-service.sh && \
@@ -133,6 +130,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]

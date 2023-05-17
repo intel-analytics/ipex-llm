@@ -426,10 +426,6 @@ run_spark_xgboost() {
                 --master local[4] \
                 --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
@@ -446,12 +442,7 @@ run_spark_gbt() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
                 -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
-                --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
@@ -474,6 +465,23 @@ run_spark_lgbm() {
                 --numIterations 100 \
                 --partition 4 \
                 --modelSavePath /host/data/iris_output
+}
+
+run_spark_lgbm_criteo() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark lgbm criteo example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM.lgbmClassifierTrainingExampleOnCriteoClickLogsDataset \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                -i /host/data/ -s /host/data/model -I 100 -d 5
 }
 
 run_spark_gbt_e2e() {
@@ -634,6 +642,10 @@ case "$arg" in
         ;;
     lgbm)
         run_spark_lgbm
+        cd ../
+        ;;
+    lgbm_criteo)
+        run_spark_lgbm_criteo
         cd ../
         ;;
     gbt_e2e)

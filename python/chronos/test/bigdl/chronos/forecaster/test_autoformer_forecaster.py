@@ -479,6 +479,6 @@ class TestChronosModelAutoformerForecaster(TestCase):
         num = max(1, original_thread//2)
         with forecaster.get_context(thread_num=num):
             assert forecaster.context_enabled == True
+            pred = forecaster.predict(test_loader)
             current_thread = torch.get_num_threads()
             assert current_thread == num
-            pred = forecaster.predict(test_loader)

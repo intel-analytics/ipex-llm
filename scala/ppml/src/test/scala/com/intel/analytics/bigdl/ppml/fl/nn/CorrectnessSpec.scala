@@ -66,6 +66,8 @@ class CorrectnessSpec extends FLSpec {
       mockClient2.start()
       mockClient1.join()
       mockClient2.join()
+      mockClient1.testFlContext.getClient().shutdown()
+      mockClient2.testFlContext.getClient().shutdown()
       if (errorFlag) {
         throw new Exception("Test failed, check the log")
       }

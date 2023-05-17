@@ -20,7 +20,7 @@ from unittest import TestCase
 import operator
 import pytest
 import torch
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import TensorDataset, DataLoader, Dataset
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import operator
@@ -89,6 +89,19 @@ class MultipleInputWithKwargsNet(nn.Module):
 
     def forward(self, x1, x2, x3=10):
         return self.dense1(x1) + self.dense2(x2) + x3
+
+
+class JumpInputNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.dense1 = nn.Linear(10, 1)
+        self.dense2 = nn.Linear(10, 1)
+
+    def forward(self, x1, x2=None, x3=None):
+        if x3 is not None:
+            return self.dense1(x1) + self.dense2(x3)
+        else:
+            return self.dense1(x1)
 
 
 class IPEXJITInference:
@@ -627,6 +640,80 @@ class IPEXJITInference:
         with InferenceOptimizer.get_context(loaded_model):
             output3 = loaded_model(input_sample)
         np.testing.assert_allclose(output1, output3, atol=2e-1)
+
+    @pytest.mark.skipif(compare_version("torch", operator.lt, "2.0"),
+                        reason="example_kwarg_inputs is only supported when torch>=2.0")
+    def test_jit_jump_input(self):
+        model = JumpInputNet()
+        x1 = torch.randn(1, 10)
+        x3 = torch.randn(1, 10)
+        target = model(x1, None, x3)
+        # test jit
+        with pytest.raises(RuntimeError):
+            opt_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                                 input_sample=(x1, None, x3),
+                                                 jit_method='trace')
+
+        opt_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                             input_sample=None,
+                                             example_kwarg_inputs={'x1':x1, 'x3':x3},
+                                             jit_method='trace')
+        output1 = opt_model(x1, x3)
+        # TODO: accept opt_model(x1, None, x3)
+        np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-5)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(opt_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        output2 = loaded_model(x1, x3)
+        np.testing.assert_allclose(output2.detach().numpy(), target.detach().numpy(), atol=1e-5)
+
+        # test jit ipex
+        opt_model = InferenceOptimizer.trace(model, accelerator="jit",
+                                             use_ipex=True,
+                                             input_sample=None,
+                                             example_kwarg_inputs={'x1':x1, 'x3':x3},
+                                             jit_method='trace')
+        output1 = opt_model(x1, x3)
+        np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-5)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(opt_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        output2 = loaded_model(x1, x3)
+        np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
+        
+        # test jit int8
+        # custom dataloader
+        class CustomDataset(Dataset):
+            def __init__(self):
+                self.x1 = x1
+                self.x3 = x3
+            
+            def __len__(self):
+                return 1
+
+            def __getitem__(self, idx):
+                return (self.x1[0], None, self.x3[0]), target
+
+        def fn(input_data):
+            return input_data[0]
+
+        dataset = CustomDataset()
+        loader = DataLoader(dataset, batch_size=1, collate_fn=fn)
+
+        opt_model = InferenceOptimizer.quantize(model,
+                                                calib_data=loader,
+                                                input_sample=None,
+                                                example_kwarg_inputs={'x1':x1, 'x3':x3},
+                                                accelerator="jit",
+                                                precision="int8",
+                                                jit_method='trace')
+        output1 = opt_model(x1, x3)
+        np.testing.assert_allclose(output1.detach().numpy(), target.detach().numpy(), atol=1e-2)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            InferenceOptimizer.save(opt_model, tmp_dir)
+            loaded_model = InferenceOptimizer.load(tmp_dir)
+        output2 = loaded_model(x1, x3)
+        np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
 
 
 class CaseWithoutAVX2:

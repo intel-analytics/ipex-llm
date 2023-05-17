@@ -79,12 +79,16 @@ runs:
 
         # required by Ray test
         pip install google-api-core==2.8.2
-        pip install ray[default]==1.11.0 prometheus_client==0.13.0
+        pip install ray[default]==1.13.0 prometheus_client==0.13.0
 
         # required by Automl test
         pip install ConfigSpace optuna
 
         # required by NoteBook and Tutorial test
-        pip install "tensorflow-datasets<4.9" jinja2 jupyter nbconvert nbmake
+        pip install tensorflow-datasets==4.8.0 jinja2 jupyter nbconvert nbmake
+
+        # fix bug: last line will install protobuf >= 4.22
+        pip install protobuf==3.20.2
+
       env:
         OS: ${{ inputs.os }}

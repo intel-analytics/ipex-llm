@@ -1,4 +1,4 @@
-233,236c233,237
+203,206c203,207
 <     open = kwargs.pop("open", __builtin__.open)
 <     f = open(os.devnull, *args, **kwargs)
 <     t = type(f)

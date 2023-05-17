@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -48,7 +48,7 @@ jobs:
       - name: Run cifar10 notebooks PyTorch unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-trainer-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -64,7 +64,7 @@ jobs:
       - name: Run tutorial notebooks Pytorch unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch,inference
@@ -83,14 +83,14 @@ jobs:
       - name: Run tutorial notebooks Pytorch unit tests(OpenVINO)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
             pip install ipykernel==5.5.6
-            pip install openvino-dev==2022.2.0
+            pip install openvino-dev==2022.3.0
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh true
             bash python/nano/tutorial/inference/pytorch/run_nano_pytorch_inference_tests_openvino.sh
             source $CONDA/bin/deactivate
@@ -101,7 +101,7 @@ jobs:
       - name: Run tutorial notebooks Pytorch unit tests(JIT+IPEX)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -115,14 +115,14 @@ jobs:
       - name: Run realworld notebooks Pytorch unit tests(OpenVINO)
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-pytorch -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-pytorch
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
             pip install pytest nbmake
             pip install ipykernel==5.5.6
-            pip install openvino-dev==2022.2.0
+            pip install openvino-dev==2022.3.0
             pip install matplotlib
             bash python/nano/notebooks/pytorch/openvino/run-nano-notebooks-pytorch-openvino-tests.sh
             source $CONDA/bin/deactivate
@@ -137,7 +137,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -155,10 +155,12 @@ jobs:
 
       - name: Run TensorFlow Example
         run: |
-          $CONDA/bin/conda create -n example-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n example-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate example-tensorflow
           bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
-          pip install tensorflow-datasets
+          pip install tensorflow-datasets==4.4.0
+          pip install protobuf==3.19.5
+          pip install tensorflow-metadata==1.13.0
           source bigdl-nano-init
           bash python/nano/tutorial/training/tensorflow/run-nano-tensorflow-test.sh
           bash python/nano/tutorial/inference/tensorflow/run_nano_tf_quantization_inference_tests.sh
@@ -172,14 +174,16 @@ jobs:
       - name: Run tutorial notebooks TensorFlow unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-tensorflow -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-tensorflow -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-tensorflow
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false tensorflow,inference
             source bigdl-nano-init
             pip install pytest nbmake
             pip install jupyter nbconvert
-            pip install tensorflow-datasets
+            pip install tensorflow-datasets==4.4.0
+            pip install protobuf==3.19.5
+            pip install tensorflow-metadata==1.13.0
             bash python/nano/notebooks/tensorflow/tutorial/run-nano-notebooks-tensorflow-tutorial-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-tensorflow --all
@@ -193,7 +197,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -212,12 +216,12 @@ jobs:
       - name: Run tutorial notebooks OpenVINO unit tests
         shell: bash
         run: |
-            $CONDA/bin/conda create -n notebooks-tutorial-openvino -y python==3.7.10 setuptools=58.0.4
+            $CONDA/bin/conda create -n notebooks-tutorial-openvino -y python==3.8.16 setuptools=58.0.4
             source $CONDA/bin/activate notebooks-tutorial-openvino
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false basic
             source bigdl-nano-init
-            pip install openvino-dev==2022.2.0
+            pip install openvino-dev==2022.3.0
             bash python/nano/tutorial/inference/openvino/run_nano_openvino_inference_tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tutorial-openvino --all

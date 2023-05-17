@@ -67,30 +67,4 @@ echo $SGX_ENABLED
 
 runtime_command="$@"
 
-if [ "$SGX_ENABLED" == "true" ]; then
-  if [ "$ATTESTATION" ==  "true" ]; then 
-    delete_file "/ppml/temp_command_file"
-    bash attestation.sh
-    if [ "$ENCRYPTED_FSD" == "true" ]; then
-      echo "[INFO] Distributed encrypted file system is enabled"
-      bash encrypted-fsd.sh
-    fi
-    echo $runtime_command >> temp_command_file
-    export sgx_command="bash temp_command_file"
-  else 
-    if [ "$ENCRYPTED_FSD" == "true" ]; then
-      delete_file "/ppml/temp_command_file"
-      echo "[INFO] Distributed encrypted file system is enabled"
-      bash encrypted-fsd.sh
-      echo $runtime_command >> temp_command_file
-      export sgx_command="bash temp_command_file"
-    else
-      export sgx_command=$runtime_command
-    fi
-  fi
-  ./init.sh && \
-  gramine-sgx bash 2>&1
-  delete_file "/ppml/temp_command_file"
-else
-  exec $runtime_command
-fi
+exec $runtime_command

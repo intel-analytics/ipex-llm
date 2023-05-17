@@ -42,7 +42,7 @@ lib_urls = [
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.dylib",
     "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
-    "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v2.10/libtcmalloc.so"
 ]
 
 
@@ -168,7 +168,7 @@ def setup_package():
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
-                          "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
+                          "onnxruntime-extensions==0.7.0; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",

@@ -1,7 +1,7 @@
 export CUSTOM_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-custom
-export CUSTOM_IMAGE_TAG=2.3.0-SNAPSHOT
+export CUSTOM_IMAGE_TAG=2.3.0
 export MACHINE_LEARNING_BASE_IMAGE_NAME=bigdl-ppml-trusted-machine-learning-gramine-base
-export MACHINE_LEARNING_BASE_IMAGE_TAG=2.3.0-SNAPSHOT
+export MACHINE_LEARNING_BASE_IMAGE_TAG=2.3.0
 export SGX_MEM_SIZE=memory_size_of_sgx_in_custom_image
 export SGX_LOG_LEVEL=log_level_of_sgx_in_custom_image
 export ENABLE_DCAP_ATTESTATION=true
