@@ -34,15 +34,15 @@ object Encrypt extends Supportive {
         CryptoMode.parse(arguments.cryptoMode),
         arguments.dataSourceType,
         arguments.action,
-        arguments.header.toLowerCase() == "true"
+        arguments.header.toLowerCase()
     )
-
+    
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val sc: PPMLContext = PPMLContext.initPPMLContext(sparkSession)
     if (action.equals("encrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(PLAIN_TEXT).csv(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).option("header", header).csv(inputDataSourcePath)
           sc.write(df, cryptoMode).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
@@ -60,7 +60,7 @@ object Encrypt extends Supportive {
     } else if (action.equals("decrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(cryptoMode).csv(inputDataSourcePath)
+          val df = sc.read(cryptoMode).option("header", header).csv(inputDataSourcePath)
           sc.write(df, PLAIN_TEXT).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(cryptoMode).json(inputDataSourcePath)
@@ -99,7 +99,7 @@ object Encrypt extends Supportive {
         .action((x, c) => c.copy(action = x))
         .text("action type of encrypt or decrypt file, default is encrypt")
       opt[String]('h', "header")
-        .action((x, c) => c.copy(action = x))
+        .action((x, c) => c.copy(header = x))
         .text("whether to write header to the csv file, default is false")
     }
 }
