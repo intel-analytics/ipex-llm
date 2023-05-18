@@ -36,7 +36,7 @@ object Encrypt extends Supportive {
         arguments.action,
         arguments.header.toLowerCase()
     )
-    
+
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val sc: PPMLContext = PPMLContext.initPPMLContext(sparkSession)
     if (action.equals("encrypt")) {
