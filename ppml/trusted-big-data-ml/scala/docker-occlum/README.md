@@ -50,6 +50,7 @@ or:
 Client mode means that driver is running in the docker container, and executors are running in the k8s pods. So need to prepare the k8s environment first.
 
 To run Spark Pi example in client mode:
+
 1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
 And add to mount executor.yaml to /opt/k8s. For example:
 ```
@@ -78,6 +79,7 @@ Pi is roughly 3.1436957184785923
 Cluster mode means that driver and executors are running in the k8s pods. So need to prepare the k8s environment first.
 
 To run Spark Pi example in cluster mode:
+
 1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
 And add to mount driver.yaml and executor.yaml to /opt/k8s.
 ```
