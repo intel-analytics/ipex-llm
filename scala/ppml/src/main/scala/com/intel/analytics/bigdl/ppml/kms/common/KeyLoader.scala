@@ -44,7 +44,8 @@ case class KeyLoader(val fromKms: Boolean,
     val META_FILE_NAME = ".meta"
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
-    protected val hadoopConfig = if (config != null) config else new Configuration()
+    protected val hadoopConfig = if (SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration != null)
+      SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration else new Configuration()
     protected val encrypterType = SparkSession.builder().getOrCreate()
       .sparkContext.hadoopConfiguration
       .get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON).toLowerCase
