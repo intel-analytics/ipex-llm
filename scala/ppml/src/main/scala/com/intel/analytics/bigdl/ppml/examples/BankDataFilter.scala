@@ -18,13 +18,15 @@ package com.intel.analytics.bigdl.ppml.examples
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.PLAIN_TEXT
-import com.intel.analytics.bigdl.ppml.utils.Supportive
+import com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample.getClass
+import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, Supportive}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
+import org.slf4j.LoggerFactory
 
 object BankDataFilter extends Supportive {
   def main(args: Array[String]): Unit = {
-
+    val logger = LoggerFactory.getLogger(getClass)
     val arguments = EncryptIOArguments.parser.parse(args, EncryptIOArguments()) match {
         case Some(arguments) =>
           logger.info(s"starting with $arguments"); arguments
@@ -32,28 +34,22 @@ object BankDataFilter extends Supportive {
           EncryptIOArguments.parser.failure("miss args, please see the usage info"); null
       }
 
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val sc = PPMLContext.initPPMLContext("BankDataFilter", arguments.ppmlArgs())
 
-    val sc = PPMLContext.initPPMLContext("SimpleQuery", arguments.ppmlArgs())
-
-    // Get user inputs
-    val csvFilePath = args(0)
-    val bankFilter = args(1).split(",")
-    val startDate = args(2)
-    val endDate = args(3)
-    val outputFilePath = args(4)
-
+    val extraList = arguments.extras
+    val bankFilter = extraList.head.split(",")
+    val startDate = extraList.apply(1)
+    val endDate = extraList.apply(2)
 
     // Read CSV file
-    val df = sc.read(cryptoMode = PLAIN_TEXT)
+    val df = sc.read(cryptoMode = arguments.inputEncryptMode,
+      primaryKeyName = "defaultKey")
       .option("header", "true")
-      .csv(csvFilePath)
+      .csv(arguments.inputPath)
 
     // Filter data based on user inputs
     val filteredData = df.filter(col("BANK").isin(bankFilter: _*)
         && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate))
-
-    filteredData.show()
 
     // Table 1: Total number of each category for each month
     filteredData.groupBy("MONTH")
@@ -65,7 +61,7 @@ object BankDataFilter extends Supportive {
       .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath + "/categoryDate")
+      .json(arguments.outputPath + "/categoryDate")
 
     // Table 2: Total number of income and expense for each month
     filteredData.groupBy("MONTH")
@@ -74,7 +70,7 @@ object BankDataFilter extends Supportive {
       .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath + "/incomeExpenseDate")
+      .json(arguments.outputPath + "/incomeExpenseDate")
 
     // Table 3: Total number of RENT, FOOD, Transport, Clothing and Other
     filteredData.agg(sum(col("Rent")).as("Rent"),
@@ -85,10 +81,7 @@ object BankDataFilter extends Supportive {
       .coalesce(1)
       .write
       .mode("overwrite")
-      .json(outputFilePath + "/totalCategory")
-
-    // Stop SparkSession
-    sparkSession.stop()
+      .json(arguments.outputPath + "/totalCategory")
 
   }
 }
