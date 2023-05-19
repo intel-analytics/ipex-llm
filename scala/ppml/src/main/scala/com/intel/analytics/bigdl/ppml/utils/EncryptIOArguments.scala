@@ -42,7 +42,8 @@ case class EncryptIOArguments(
                                managedIdentityClientId: String = "",
                                userName: String = "bigdlKMSUserName",
                                userToken: String = "bigdlKMSUserToken",
-                               primaryKeyPlainText: String = "") {
+                               primaryKeyPlainText: String = "",
+                               extras: Seq[String] = Seq()) {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.primaryKey.defaultKey.kms.type") = kmsType
@@ -143,5 +144,10 @@ object EncryptIOArguments {
     opt[String]('d', "dataKeyPath")
       .action((x, c) => c.copy(dataKeyPath = x))
       .text("dataKeyPath")
+    arg[String]("<arg>...")
+      .unbounded()
+      .optional()
+      .action((x, c) => c.copy(extras = c.extras :+ x))
+      .text("optional unbounded args")
   }
 }
