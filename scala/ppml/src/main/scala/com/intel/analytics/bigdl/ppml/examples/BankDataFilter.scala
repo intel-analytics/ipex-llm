@@ -41,11 +41,15 @@ object BankDataFilter extends Supportive {
     val startDate = extraList.apply(1)
     val endDate = extraList.apply(2)
 
+    logger.info(s"Loading Encrypted Data")
+
     // Read CSV file
     val df = sc.read(cryptoMode = arguments.inputEncryptMode,
       primaryKeyName = "defaultKey")
       .option("header", "true")
       .csv(arguments.inputPath)
+
+    logger.info(s"Distributed Processing in SGX Enclaves")
 
     // Filter data based on user inputs
     val filteredData = df.filter(col("BANK").isin(bankFilter: _*)
@@ -83,6 +87,7 @@ object BankDataFilter extends Supportive {
       .mode("overwrite")
       .json(arguments.outputPath + "/totalCategory")
 
+    logger.info(s"Saving Encrypted Result")
   }
 }
 
