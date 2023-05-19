@@ -56,34 +56,40 @@ object BankDataFilter extends Supportive {
         && date_format(col("MONTH"), "yyyy-MM-dd").between(startDate, endDate))
 
     // Table 1: Total number of each category for each month
-    filteredData.groupBy("MONTH")
+    val categoryDateDf = filteredData.groupBy("MONTH")
       .agg(sum(col("Rent")).as("Rent"),
         sum(col("Food")).as("Food"),
         sum(col("Transport")).as("Transport"),
         sum(col("Clothing")).as("Clothing"),
         sum(col("Other")).as("Other"))
       .coalesce(1)
-      .write
+      sc.write(categoryDateDf,
+        cryptoMode = arguments.outputEncryptMode,
+        primaryKeyName = "defaultKey")
       .mode("overwrite")
       .json(arguments.outputPath + "/categoryDate")
 
     // Table 2: Total number of income and expense for each month
-    filteredData.groupBy("MONTH")
+    val incomeExpenseDateDf = filteredData.groupBy("MONTH")
       .agg(sum(col("INCOME")).as("INCOME"),
         sum(col("EXPENSE")).as("EXPENSE"))
       .coalesce(1)
-      .write
+    sc.write(incomeExpenseDateDf,
+      cryptoMode = arguments.outputEncryptMode,
+      primaryKeyName = "defaultKey")
       .mode("overwrite")
       .json(arguments.outputPath + "/incomeExpenseDate")
 
     // Table 3: Total number of RENT, FOOD, Transport, Clothing and Other
-    filteredData.agg(sum(col("Rent")).as("Rent"),
+    val totalCategoryDf = filteredData.agg(sum(col("Rent")).as("Rent"),
       sum(col("Food")).as("Food"),
       sum(col("Transport")).as("Transport"),
       sum(col("Clothing")).as("Clothing"),
       sum(col("Other")).as("Other"))
       .coalesce(1)
-      .write
+    sc.write(totalCategoryDf,
+      cryptoMode = arguments.outputEncryptMode,
+      primaryKeyName = "defaultKey")
       .mode("overwrite")
       .json(arguments.outputPath + "/totalCategory")
 
