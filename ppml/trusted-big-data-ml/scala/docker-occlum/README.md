@@ -45,6 +45,64 @@ or:
   --device=/dev/sgx/provision
 ```
 
+## Spark 3.1.3 Pi example client mode
+
+Client mode means that driver is running in the docker container, and executors are running in the k8s pods. So need to prepare the k8s environment first.
+
+To run Spark Pi example in client mode:
+
+1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
+And add to mount executor.yaml to /opt/k8s. For example:
+```
+-v ./kubernetes:/opt/k8s \   # to mount executor.yaml to /opt/k8s
+-v /root/.kube:/root.kube \  # mount /root/.kube
+-e KUBECONFIG=/root/.kube/admin.conf \ # make sure KUBECONFIG is in /root/.kube
+```
+2.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+3.Run the spark pi example in client model
+``` bash
+bash /opt/run_spark_on_occlum_glibc.sh pi_client
+```
+
+You can see executors by 'kubectl get pods | grep pi', and see Pi result in the container's log.
+
+```bash
+Pi is roughly 3.1436957184785923
+```
+
+## Spark 3.1.3 Pi example cluster mode
+
+Cluster mode means that driver and executors are running in the k8s pods. So need to prepare the k8s environment first.
+
+To run Spark Pi example in cluster mode:
+
+1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
+And add to mount driver.yaml and executor.yaml to /opt/k8s.
+```
+-v ./kubernetes:/opt/k8s \   # to mount executor.yaml and driver.yaml and  to /opt/k8s
+-v /root/.kube:/root.kube \  # mount /root/.kube
+-e KUBECONFIG=/root/.kube/admin.conf \ # make sure KUBECONFIG is in /root/.kube
+```
+2.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+3.Run the spark pi example in cluster model
+``` bash
+bash /opt/run_spark_on_occlum_glibc.sh pi_cluster
+```
+
+You can see driver and executors by 'kubectl get pods | grep pi', and see Pi result in the docker pod's log.
+
+```bash
+Pi is roughly 3.1436957184785923
+```
+
 ## Spark 3.1.3 Pi example
 
 To run Spark Pi example, start the docker container with:

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-ppml-notebook
+  namespace: bigdl-ppml
+  labels:
+    app: bigdl-ppml-notebook
+spec:
+  ports:
+  - port: {{ .Values.jupyterPort }}
+    targetPort: {{ .Values.jupyterPort }}
+  type: NodePort
+  selector:
+    app: bigdl-ppml-notebook

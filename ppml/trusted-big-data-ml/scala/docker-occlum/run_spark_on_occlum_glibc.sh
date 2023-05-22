@@ -47,7 +47,7 @@ init_instance() {
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.untrusted = [ "KUBECONFIG", "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
         .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -150,6 +150,12 @@ build_spark() {
     cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+
+    # add k8s config and k8s *.yaml bash
+    mkdir -p /opt/occlum_spark/image/opt/k8s/
+    mkdir -p /opt/occlum_spark/image/root/.kube/
+    cp -rf /opt/k8s/* /opt/occlum_spark/image/opt/k8s/
+    cp -rf /root/.kube/* /opt/occlum_spark/image/root/.kube/
 
     # copy spark and bigdl and others dependencies
     copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
@@ -301,6 +307,82 @@ run_spark_pi() {
                 -Xmx512m org.apache.spark.deploy.SparkSubmit \
                 --jars $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
                 --class org.apache.spark.examples.SparkPi spark-internal
+}
+
+run_spark_pi_client() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --deploy-mode client \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.driver.host=$LOCAL_IP \
+         --conf spark.driver.port=54321 \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="5G" \
+         --conf spark.executorEnv.MALLOC_ARENA_MAX=1 \
+         --verbose \
+         --jars $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
+         --class org.apache.spark.examples.SparkPi spark-internal
+}
+
+run_spark_pi_cluster() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --name spark-pi-cluster \
+         --class org.apache.spark.examples.SparkPi \
+         --deploy-mode cluster \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.driver.podTemplateFile=/opt/k8s/driver.yaml \
+         --conf spark.kubernetes.file.upload.path=file:///tmp \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+         --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+         --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+         --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+         --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+         --conf spark.kubernetes.driverEnv.SGX_THREAD="2048" \
+         --conf spark.kubernetes.sgx.driver.jvm.mem="1G" \
+         --conf spark.kubernetes.sgx.executor.jvm.mem="7G" \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar
 }
 
 run_spark_unittest() {
@@ -610,6 +692,14 @@ case "$arg" in
         ;;
     pi)
         run_spark_pi
+        cd ../
+        ;;
+    pi_client)
+        run_spark_pi_client
+        cd ../
+        ;;
+    pi_cluster)
+        run_spark_pi_cluster
         cd ../
         ;;
     lenet)

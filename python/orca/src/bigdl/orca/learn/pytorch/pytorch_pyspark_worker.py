@@ -37,7 +37,8 @@ import tempfile
 import copy
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank,\
+    get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
 
 
@@ -51,8 +52,8 @@ class PytorchPysparkWorker(TorchRunner):
                  model_creator,
                  optimizer_creator,
                  size,
-                 cluster_info,
                  cores_per_worker,
+                 cluster_info=None,
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
@@ -81,7 +82,6 @@ class PytorchPysparkWorker(TorchRunner):
         self.size = size
         self.mode = mode
         self.backend = backend
-        self.cluster_info = cluster_info
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
@@ -94,10 +94,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     @staticmethod
     def _start_log_monitor(driver_ip, driver_log_port):
-        if TaskContext.get():
-            partition_id = TaskContext.get().partitionId()
-        else:
-            partition_id = BarrierTaskContext().get().partitionId()
+        partition_id = get_partition_id()
         log_path = os.path.join(tempfile.gettempdir(),
                                 "{}_runner.log".format(partition_id))
         duplicate_stdout_stderr_to_file(log_path)

@@ -164,8 +164,8 @@ ARG TINI_VERSION
 ENV FLINK_HOME                          /ppml/flink
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
-ENV LOCAL_IP                            127.0.0.1
 ENV TINI_VERSION                        $TINI_VERSION
+ENV LOCAL_IP                            127.0.0.1
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
@@ -177,7 +177,8 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
-    mkdir -p /ppml/apps
+    mkdir -p /ppml/apps && \
+    mkdir -p /ppml/notebook
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
@@ -193,6 +194,7 @@ ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
 ADD ./examples /ppml/examples
+ADD ./examples/jupyter /ppml/notebook
 ADD ./zeppelin /ppml/zeppelin
 ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
 ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
@@ -218,9 +220,13 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod -R 777 ${FLINK_HOME} && \
     chown -R flink:flink ${FLINK_HOME} && \
 # Python packages
-    pip3 install numpy pandas pyarrow&& \
+    pip3 install numpy pandas pyarrow pyspark==3.1.3 && \
+    pip3 install --no-cache-dir --upgrade setuptools && \
+    pip3 install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
+    python3 -m ipykernel.kernelspec && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+    chmod 777 /usr/bin/python && \
 # zeppelin
     chmod +x /ppml/zeppelin/deploy.sh && \
     chmod +x /ppml/zeppelin/delete.sh && \
@@ -233,14 +239,22 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
     apt-get install bsdmainutils && \
     curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl  && \
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+# unzip python dependency
+    unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src
 ADD azure /ppml/azure
+ADD ./start-notebook.sh /ppml/start-notebook.sh
 RUN chmod a+x /ppml/azure/create-aks.sh && \
     chmod a+x /ppml/azure/generate-keys-az.sh && \
     chmod a+x /ppml/azure/generate-password-az.sh && \
     chmod a+x /ppml/azure/kubeconfig-secret.sh && \
     chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
-    wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so
-
+    wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
+    chmod a+x /ppml/start-notebook.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
