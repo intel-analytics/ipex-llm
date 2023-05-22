@@ -61,7 +61,7 @@ jobs:
 
   friesian-docker-build:
     needs: serving-jar-package
-    if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
+    if: always()
     runs-on: [ self-hosted, Shire ]
     steps:
       - uses: actions/checkout@v3
