@@ -24,7 +24,7 @@ ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends apt-utils=2.0.9 wget=1.20.3-1ubuntu2 && \
+    apt-get install -y --no-install-recommends apt-utils wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     wget --progress=dot:giga --no-check-certificate https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
@@ -61,7 +61,7 @@ WORKDIR /opt/work
 COPY --from=spark /opt/spark ${SPARK_HOME}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends openjdk-8-jdk=8u342-b07-0ubuntu1~20.04 libgomp1=10.3.0-1ubuntu1~20.04 vim=2:8.1.2269-1ubuntu5.9 net-tools=1.60+git20180626.aebd88e-1ubuntu1 openssh-server=1:8.2p1-4ubuntu0.5 wget=1.20.3-1ubuntu2 && \
+    apt-get install -y --no-install-recommends openjdk-8-jdk libgomp1 vim net-tools openssh-server wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
