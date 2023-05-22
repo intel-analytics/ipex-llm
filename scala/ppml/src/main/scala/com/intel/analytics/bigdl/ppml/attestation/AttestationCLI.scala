@@ -66,6 +66,8 @@ object AttestationCLI {
                              quoteType: String = QUOTE_CONVENTION.MODE_GRAMINE,
                              httpsEnabled: Boolean = false,
                              apiVersion: String = "2020-10-01",
+                             quotePath:String = "",
+                             nonce: String = "",
                              userReport: String = "010203040506")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -97,6 +99,12 @@ object AttestationCLI {
             opt[String]('v', "APIVersion")
               .text("APIType, default is 2020-10-01")
               .action((x, c) => c.copy(apiVersion = x))
+            opt[String]('n', "nonce")
+              .text("nonce, default is ''")
+              .action((x, c) => c.copy(userReport = x))
+            opt[String]('q', "quotePath")
+              .text("quotePath, default is ''")
+              .action((x, c) => c.copy(userReport = x))
         }
         val params = cmdParser.parse(args, CmdParams()).get
 
@@ -119,26 +127,40 @@ object AttestationCLI {
         }
 
         // Generate quote
-        val userReportData = params.asType match {
-          case ATTESTATION_CONVENTION.MODE_AZURE =>
-            sha256(hex(params.userReport))
-          case ATTESTATION_CONVENTION.MODE_AMBER =>
-            val nonceResp = as.getNonce()
-            sha512(as.nonce, params.userReport)
-          case _ =>
-            params.userReport.getBytes
-        }
+        val quotePath = params.quotePath
+        if (quotePath.length() == 0) {
+          val userReportData = params.asType match {
+            case ATTESTATION_CONVENTION.MODE_AZURE =>
+              sha256(hex(params.userReport))
+            case ATTESTATION_CONVENTION.MODE_AMBER =>
+              if (params.nonce.length() >0) {
+                val nonceResp = as.getNonce()
+                sha512(as.nonce, params.userReport)
+              } else {
+                params.userReport.getBytes
+              }
+            case _ =>
+              params.userReport.getBytes
+          }
 
-        val quoteGenerator = params.quoteType match {
-          case QUOTE_CONVENTION.MODE_GRAMINE =>
-            new GramineQuoteGeneratorImpl()
-          case QUOTE_CONVENTION.MODE_OCCLUM =>
-            new OcclumQuoteGeneratorImpl()
-          case QUOTE_CONVENTION.MODE_TDX =>
-            new TDXQuoteGeneratorImpl()
-          case _ => throw new AttestationRuntimeException("Wrong quote type")
+          val quoteGenerator = params.quoteType match {
+            case QUOTE_CONVENTION.MODE_GRAMINE =>
+              new GramineQuoteGeneratorImpl()
+            case QUOTE_CONVENTION.MODE_OCCLUM =>
+              new OcclumQuoteGeneratorImpl()
+            case QUOTE_CONVENTION.MODE_TDX =>
+              new TDXQuoteGeneratorImpl()
+            case _ => throw new AttestationRuntimeException("Wrong quote type")
+          }
+          quote = quoteGenerator.getQuote(userReportData)
+        } else {
+          val quoteFile = new File(quotePath)
+          val in = new FileInputStream(quoteFile)
+          val bufIn = new BufferedInputStream(in)
+          quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+          bufIn.close()
+          in.close()
         }
-        quote = quoteGenerator.getQuote(userReportData)
 
         val challengeString = params.challenge
         val debug = System.getenv("ATTESTATION_DEBUG")

@@ -87,6 +87,8 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
 
   override def setPolicy(policy: JSONObject): String = "true"
 
+  val debug = System.getenv("ATTESTATION_DEBUG")
+
   var nonceJson = new JSONObject()
   var nonce = ""
   
@@ -115,9 +117,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
 
     val postResult: JSONObject = timing("AmberAttestationService request for VerifyQuote") {
       val postContent = Map[String, Any](
-        "quote" -> quote,
-        "nonce" -> nonce,
-        "userdata" -> userReport
+        "quote" -> quote
       )
       val postString = JsonUtil.toJson(postContent)
       val postUrl = constructUrl(action)
@@ -145,9 +145,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     val postResult: JSONObject = timing("AmberAttestationService request for VerifyQuote") {
       val postContent = Map[String, Any](
         "quote" -> quote,
-        "nonce" -> nonce,
-        "policy" -> policyID,
-        "userdata" -> userReport
+        "policy" -> policyID
       )
       val postString = JsonUtil.toJson(postContent)
       val postUrl = constructUrl(action)
@@ -173,12 +171,14 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
   def getRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, apiKey: String): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
-    
 
     val httpGet = new HttpGet(url)
-    httpGet.setHeader(new BasicHeader("Content-Type", "application/json"));
+    httpGet.setHeader(new BasicHeader("Accept", "application/json"));
     httpGet.setHeader(new BasicHeader("x-api-key", apiKey));
     val response = httpsClient.execute(httpGet)
+    if (debug == "true") {
+      println(response)
+    }
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 
@@ -187,8 +187,12 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     val httpsClient: CloseableHttpClient = clientbuilder.build()
     val httpPost = new HttpPost(url)
     httpPost.setHeader(new BasicHeader("Content-Type", "application/json"));
+    httpPost.setHeader(new BasicHeader("Accept", "application/json"));
     httpPost.setHeader(new BasicHeader("x-api-key", apiKey));
     val response = httpsClient.execute(httpPost)
+    if (debug == "true") {
+      println(response)
+    }
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 
