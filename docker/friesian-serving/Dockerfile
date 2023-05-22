@@ -35,11 +35,11 @@ RUN apt-get update --fix-missing && \
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
     rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \
     rm -f ${SPARK_HOME}/jars/apache-log4j-extras-1.2.17.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar && \
     # remove conflict jars
     rm -f ${SPARK_HOME}/jars/guava* && \
     rm -f ${SPARK_HOME}/jars/metrics-core* && \
