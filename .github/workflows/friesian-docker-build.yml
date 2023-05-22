@@ -1,8 +1,9 @@
 name: Friesian Docker Build
 
-on:
-#  push:
-#    paths:
+on: 
+ push:
+   paths:
+    - docker/**
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
 #      - '.github/actions/friesian-docker-build-action/action.yml'
