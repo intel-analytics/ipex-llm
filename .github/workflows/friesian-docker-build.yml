@@ -6,8 +6,8 @@ on:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
 #      - '.github/actions/friesian-docker-build-action/action.yml'
-#  pull_request:
-#    branches: [ main ]
+ pull_request:
+   branches: [ main ]
 #    paths:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
@@ -60,8 +60,8 @@ jobs:
 
 
   friesian-docker-build:
-    needs: serving-jar-package
-    if: always()
+    # needs: serving-jar-package
+    # if: always()
     runs-on: [ self-hosted, Shire ]
     steps:
       - uses: actions/checkout@v3
