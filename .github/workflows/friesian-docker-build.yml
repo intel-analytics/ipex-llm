@@ -1,16 +1,14 @@
 name: Friesian Docker Build
 
 on: 
-  push:
-    paths:
-      - docker/**
+# push:
+#   paths:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
 #      - '.github/actions/friesian-docker-build-action/action.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - docker/**
+# pull_request:
+#   branches: [ main ]
+#   paths:
 #      - 'scala/friesian/**'
 #      - '.github/workflows/friesian-docker-build.yml'
 #      - '.github/actions/friesian-docker-build-action/action.yml'
@@ -62,8 +60,8 @@ jobs:
 
 
   friesian-docker-build:
-    # needs: serving-jar-package
-    # if: always()
+    needs: serving-jar-package
+    if: ${{ github.event.inputs.artifact == 'docker-build' || github.event.inputs.artifact == 'all' }}
     runs-on: [ self-hosted, Shire ]
     steps:
       - uses: actions/checkout@v3
