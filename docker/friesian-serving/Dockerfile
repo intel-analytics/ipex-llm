@@ -24,10 +24,10 @@ ARG SPARK_VERSION=2.4.6
 ARG SPARK_HOME=/opt/spark
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends apt-utils=2.0.9 wget=1.20.3-1ubuntu2 && \
+    apt-get install -y --no-install-recommends apt-utils wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    wget --progress=dot:giga https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget --progress=dot:giga --no-check-certificate https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
@@ -35,11 +35,11 @@ RUN apt-get update --fix-missing && \
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
     rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \
     rm -f ${SPARK_HOME}/jars/apache-log4j-extras-1.2.17.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget --progress=dot:giga --no-check-certificate -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar && \
     # remove conflict jars
     rm -f ${SPARK_HOME}/jars/guava* && \
     rm -f ${SPARK_HOME}/jars/metrics-core* && \
@@ -61,7 +61,7 @@ WORKDIR /opt/work
 COPY --from=spark /opt/spark ${SPARK_HOME}
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y --no-install-recommends openjdk-8-jdk=8u342-b07-0ubuntu1~20.04 libgomp1=10.3.0-1ubuntu1~20.04 vim=2:8.1.2269-1ubuntu5.9 net-tools=1.60+git20180626.aebd88e-1ubuntu1 openssh-server=1:8.2p1-4ubuntu0.5 wget=1.20.3-1ubuntu2 && \
+    apt-get install -y --no-install-recommends openjdk-8-jdk libgomp1 vim net-tools openssh-server wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
