@@ -630,8 +630,9 @@ class InferencePipeline:
         model = CannotCopyNet()
         ipex_model = inference_opt.trace(model, input_sample=self.train_loader, use_ipex=True, inplace=True)
 
-        inference_opt.save(ipex_model, "ipex")
-        ipex_model = inference_opt.load("ipex", model, inplace=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            inference_opt.save(ipex_model, tmpdir)
+            ipex_model = inference_opt.load(tmpdir, model, inplace=True)
 
     def test_multi_context_manager(self):
         inference_opt = InferenceOptimizer()

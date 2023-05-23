@@ -58,6 +58,7 @@ class MultipleInputNet(nn.Module):
     def forward(self, x1, x2):
         return self.dense1(x1) + self.dense2(x2)
 
+
 class DummyMultiInputModel(nn.Module):
     """
     A simple model for test various inputs of channels last format
@@ -452,7 +453,8 @@ class IPEXJITInference:
         model = InferenceOptimizer.trace(net,
                                          accelerator='jit',
                                          use_ipex=True,
-                                         calib_data=dataloader)
+                                         calib_data=dataloader,
+                                         enable_onednn=False)
         with InferenceOptimizer.get_context(model):
             model(x1, x2)
             # test keyword argument
