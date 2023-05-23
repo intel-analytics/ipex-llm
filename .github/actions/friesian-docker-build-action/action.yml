@@ -43,7 +43,7 @@ runs:
 
     - name: remove resources
       shell: bash
-      run:
+      run: |
         cd docker/friesian-serving
         docker rmi -f $IMAGE:${TAG}
         rm -rf lib faiss-lib.zip
