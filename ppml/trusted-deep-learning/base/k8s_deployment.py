@@ -2,21 +2,21 @@
 # coding: utf-8
 # %%
 
-# 
+#
 # Copyright 2016 The BigDL Authors.
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 # %%
 
@@ -42,7 +42,7 @@ def test1():
 
 def _parse_args(args):
     import argparse
-#     parser = _get_args_parser()
+    #     parser = _get_args_parser()
     parser = argparse.ArgumentParser(description="PyTorch MNIST Example")
     parser.add_argument(
         "--nnodes",
@@ -112,9 +112,9 @@ def _parse_args(args):
         default=[],
         help='A Json string specifying one volumeMount in all containers'
     )
-#     parser.add_argument("main_script", type=str)
+    #     parser.add_argument("main_script", type=str)
 
-#     parser.add_argument("main_script_args", nargs=REMAINDER)
+    #     parser.add_argument("main_script_args", nargs=REMAINDER)
     parser.add_argument(
         '--main_script',
         type=str,
@@ -203,7 +203,7 @@ def _create_pod(pod_name: str,
                      for json_str in volume_mount_strs]
     container = client.V1Container(name="pytorch",
                                    image=image,
-                                   image_pull_policy="Always",
+                                   image_pull_policy="IfNotPresent",
                                    env=envs,
                                    args=command,
                                    resources=resource,
@@ -212,7 +212,7 @@ def _create_pod(pod_name: str,
     volumes = [_deserialize_volume_object(
         json_str, api_client) for json_str in volume_strs]
 
-    node_selector = {"label": "test"}
+    node_selector = {"icx-1": "true"}
 
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never",
@@ -296,9 +296,9 @@ def main(myargs=None):
     """Entry point of bigdl-submit command line tool."""
     print("begin of the script", flush=True)
     args = _parse_args(myargs)
-    #/ppml/test/mnist.ipynb 
+    #/ppml/test/mnist.ipynb
     import os
-    os.system('jupyter nbconvert --to script '+ args.main_script)
+    os.system('jupyter nbconvert --to script '+ args.main_script + ' > /dev/null 2>&1')
 
     my_main_script=args.main_script.replace(".ipynb", ".py")
     print(args.main_script)
@@ -341,8 +341,8 @@ def main(myargs=None):
                        pod_name=driver_pod_name,
                        pod_labels=driver_pod_labels,
                        create_pod_fn=create_pod_fn)
-#     import time
-#     time.sleep(600)
+    #     import time
+    #     time.sleep(600)
 
     _create_worker_pods(v1_api=v1,
                         namespace=args.namespace,
