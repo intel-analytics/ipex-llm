@@ -88,6 +88,17 @@ class Plugin:
 TORCH_CLS = Plugin
 
 
+class CasePT2:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0:
+    print("Trainer Plugin with torch 2.0")
+    # TODO: after we upgrade version of pytorch lightning, we can remove this part
+    TORCH_CLS = CasePT2
+
+
 class TestPlugin(TORCH_CLS, TestCase):
     pass
 
