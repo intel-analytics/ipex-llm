@@ -20,6 +20,7 @@ from torch import nn
 import tempfile
 from unittest import TestCase
 import pytest
+import operator
 import torchvision.transforms as transforms
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -620,6 +621,8 @@ class InferencePipeline:
         with InferenceOptimizer.get_context(model):
             pass
 
+    @pytest.mark.skipif(compare_version('intel_extension_for_pytorch', operator.ge, '2.0.100+cpu'),
+                        reason="inplace ipex optimization will lose weight of model")
     def test_inplace(self):
         class CannotCopyNet(Net):
             def __deepcopy__(self, memo):
