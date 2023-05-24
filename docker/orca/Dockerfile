@@ -117,8 +117,7 @@ RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git --no-install-recommends && \
     apt-get install -y gcc g++ make --no-install-recommends && \
     apt-get install -y libsm6 libxext6 libxrender-dev --no-install-recommends && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm /bin/sh
+    rm -rf /var/lib/apt/lists/*
 SHELL ["/bin/bash", "-c"]
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
