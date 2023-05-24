@@ -42,6 +42,7 @@ TensorFlow
 * `How to accelerate a TensorFlow Keras application on training workloads through multiple instances <Training/TensorFlow/accelerate_tensorflow_training_multi_instance.html>`_
 * |tensorflow_training_embedding_sparseadam_link|_
 * `How to conduct BFloat16 Mixed Precision training in your TensorFlow Keras application <Training/TensorFlow/tensorflow_training_bf16.html>`_
+* `How to accelerate TensorFlow Keras customized training loop through multiple instances <Training/TensorFlow/tensorflow_custom_training_multi_instance.html>`_
 
 .. |tensorflow_training_embedding_sparseadam_link| replace:: How to optimize your model with a sparse ``Embedding`` layer and ``SparseAdam`` optimizer
 .. _tensorflow_training_embedding_sparseadam_link: Training/TensorFlow/tensorflow_training_embedding_sparseadam.html
@@ -63,21 +64,20 @@ OpenVINO
 PyTorch
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
 * `How to accelerate a PyTorch inference pipeline through ONNXRuntime <Inference/PyTorch/accelerate_pytorch_inference_onnx.html>`_
 * `How to accelerate a PyTorch inference pipeline through OpenVINO <Inference/PyTorch/accelerate_pytorch_inference_openvino.html>`_
 * `How to accelerate a PyTorch inference pipeline through JIT/IPEX <Inference/PyTorch/accelerate_pytorch_inference_jit_ipex.html>`_
-* `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
-* `How to quantize your PyTorch model for inference using Intel Neural Compressor <Inference/PyTorch/quantize_pytorch_inference_inc.html>`_
-* `How to quantize your PyTorch model for inference using OpenVINO Post-training Optimization Tools <Inference/PyTorch/quantize_pytorch_inference_pot.html>`_
-* |pytorch_inference_context_manager_link|_
-* `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
-* `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
+* `How to quantize your PyTorch model in INT8 for inference using Intel Neural Compressor <Inference/PyTorch/quantize_pytorch_inference_inc.html>`_
+* `How to quantize your PyTorch model in INT8 for inference using OpenVINO Post-training Optimization Tools <Inference/PyTorch/quantize_pytorch_inference_pot.html>`_
+* `How to enable automatic context management for PyTorch inference on Nano optimized models <Inference/PyTorch/pytorch_context_manager.html>`_
 * `How to save and load optimized ONNXRuntime model <Inference/PyTorch/pytorch_save_and_load_onnx.html>`_
 * `How to save and load optimized OpenVINO model <Inference/PyTorch/pytorch_save_and_load_openvino.html>`_
-* `How to find accelerated method with minimal latency using InferenceOptimizer <Inference/PyTorch/inference_optimizer_optimize.html>`_
-
-.. |pytorch_inference_context_manager_link| replace:: How to use context manager through ``get_context``
-.. _pytorch_inference_context_manager_link: Inference/PyTorch/pytorch_context_manager.html
+* `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
+* `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
+* `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
+* `How to accelerate a PyTorch inference pipeline using Intel ARC series dGPU <Inference/PyTorch/accelerate_pytorch_inference_gpu.html>`_
+* `How to accelerate PyTorch inference using async multi-stage pipeline <Inference/PyTorch/accelerate_pytorch_inference_async_pipeline.html>`_
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~

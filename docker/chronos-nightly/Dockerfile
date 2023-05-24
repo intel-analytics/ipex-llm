@@ -20,8 +20,8 @@ WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-# model: select from pytorch (default), tensorflow, prophet, arima, ml
-ARG model=pytorch
+# model: select from pytorch, tensorflow, prophet, arima, ml (default)
+ARG model=ml
 
 # auto_tuning: y (for yes) or n (default, for no)
 ARG auto_tuning=n
@@ -37,15 +37,13 @@ ARG inference=n
 #            y (for yes) or n (default, for no)
 ARG extra_dep=n
 
-ADD ./docker/chronos-nightly/install-python-env.sh /opt
-ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
+COPY ./docker/chronos-nightly/install-python-env.sh /opt
+COPY ./python/chronos/colab-notebook /opt/work/colab-notebook
+COPY ./python/chronos/use-case/AIOps /opt/work/use-case/AIOps
 RUN chmod a+x /opt/install-python-env.sh
 
-RUN apt-get update --fix-missing && \
-    apt-get install -y apt-utils vim curl nano wget unzip git && \
-    apt-get install -y gcc g++ make && \
-    apt-get install -y libsm6 libxext6 libxrender-dev && \
-    apt-get install -y openjdk-8-jre && \
+RUN apt-get update && \
+    apt-get install -y gcc wget && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
@@ -56,8 +54,8 @@ RUN apt-get update --fix-missing && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
 # python
+    conda create -y -n chronos python=3.7 setuptools=58.0.4 && \
     /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
 
 RUN echo "source activate chronos" > ~/.bashrc
-RUN echo "export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/" >> ~/.bashrc
 ENV PATH /usr/local/envs/chronos/bin:$PATH

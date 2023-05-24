@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.utils import TORCHVISION_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCHVISION_VERSION_LESS_1_12
 from torchvision.datasets import *
 del ImageFolder
 if not TORCHVISION_VERSION_LESS_1_12:

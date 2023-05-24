@@ -41,10 +41,16 @@ class Callback(object):
     def before_val_epoch(self, runner):
         self.before_epoch(runner)
 
+    def before_pred_epoch(self, runner):
+        self.before_epoch(runner)
+
     def after_train_epoch(self, runner):
         self.after_epoch(runner)
 
     def after_val_epoch(self, runner):
+        self.after_epoch(runner)
+
+    def after_pred_epoch(self, runner):
         self.after_epoch(runner)
 
     def before_train_iter(self, runner):
@@ -53,8 +59,20 @@ class Callback(object):
     def before_val_iter(self, runner):
         self.before_iter(runner)
 
+    def before_pred_iter(self, runner):
+        self.before_iter(runner)
+
     def after_train_iter(self, runner):
         self.after_iter(runner)
 
     def after_val_iter(self, runner):
         self.after_iter(runner)
+
+    def after_pred_iter(self, runner):
+        self.after_iter(runner)
+
+    def every_n_iter(self, runner, n):
+        return (runner.global_step + 1) % n == 0 if n > 0 else False
+
+    def every_n_epoch(self, runner, n):
+        return runner.epochs % n == 0 if n > 0 else False

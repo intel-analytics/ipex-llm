@@ -23,11 +23,6 @@ public class WebServiceController {
         return "welcome!";
     }
 
-    @RequestMapping(value = "/greetings")
-    public String greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return "hello, " + name;
-    }
-
     @RequestMapping(value = "/predict", method = {RequestMethod.POST})
     public String webPredict(@RequestBody String text) {
         if (!text.isEmpty()) {

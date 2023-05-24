@@ -1,6 +1,35 @@
 #!/bin/bash
 # Acceptable arguments: attestation, bigdl-kms, ehsm, kms-utils, pccs, all
 
+sgx() {
+    echo "Detecting SGX..."
+    if [ -e "/dev/sgx" ] && [ -e "/dev/sgx_enclave" ] && [ -e "/dev/sgx_provision" ]; then
+        echo "SGX driver is installed."
+    else
+        echo "SGX driver isn't installed."
+    fi
+
+    echo "Detecting aesmd..."
+    AESMDSTATUS=$(service aesmd status | grep "Active: active (running)")
+    if [ -n "$AESMDSTATUS" ]; then
+        echo "aesmd is installed."
+    else
+        echo "aesmd isn't installed."
+    fi
+
+    echo "Detecting SGX Device Plugin for Kubernetes..."
+    if [ -z $(command -v kubectl) ]; then
+        echo "kubectl not found."
+    else
+        K8SSGXPLUGIN=$(kubectl describe node | grep sgx.intel.com)
+        if [ -n "$K8SSGXPLUGIN" ]; then
+            echo "SGX Device Plugin for Kubernetes is installed"
+        else
+            echo "SGX Device Plugin for Kubernetes isn't installed"
+        fi
+    fi
+}
+
 attestation () {
     echo "Detecting bigdl-attestation-service..."
     ATTESTATIONSUCCESS=""
@@ -12,7 +41,7 @@ attestation () {
             echo "bigdl-attestation-service initialization failed. Unable to connect bigdl-attestation-service."
         fi
         if [ -n "$ATTESTATIONSUCCESS" ]; then 
-            echo "bigdl-attestation-service initialization successful."
+            echo "bigdl-attestation-service initialization is successful."
         fi
     fi
 }
@@ -28,7 +57,7 @@ bigdl-kms () {
             echo "bigdl-kms initialization failed. Unable to connect BigDl KMS frontend."
         fi
         if [ -n "$BIGDLKMSSUCCESS" ]; then 
-            echo "bigdl-kms initialization successful."
+            echo "bigdl-kms initialization is successful."
         fi
     fi
 }
@@ -44,7 +73,7 @@ ehsm () {
             echo "ehsm initialization failed. Unable to connect EHSM at " $EHSM_IP "."
         fi
         if [ -n "$EHSMSUCCESS" ]; then 
-            echo "ehsm initialization successful."
+            echo "ehsm initialization is successful."
         fi
     fi
 }
@@ -60,7 +89,7 @@ kms-utils () {
             echo "kms-utils initialization failed. Unable to connect kms-utils at " $KMS_UTILS_IP "."
         fi
         if [ -n "$KMSUTILSSUCCESS" ]; then
-            echo "kms-utils initialization successful."
+            echo "kms-utils initialization is successful."
         fi
     fi
 }
@@ -76,7 +105,7 @@ pccs () {
             echo "pccs initalization failed. Unable to connect pccs at " $PCCS_IP "."
         fi
         if [ -n $"PCCSSUCCESS" ]; then 
-            echo "pccs initalization successful."
+            echo "pccs initialization is successful."
         fi
     fi
 }
@@ -95,9 +124,10 @@ else
     done
 fi
 
-if [ "$#" -gt 5 ]; then
-    echo "Acceptable arguments: \"all\", or one or more among \"attestation\", \"bigdlKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
+if [ "$#" -gt 6 ]; then
+    echo "Acceptable arguments: \"all\", or one or more among \"SGX\",\"attestation\", \"bigdlKMS\", \"ehsm\", \"kmsUtils\", \"pccs\""
 elif [ "$all" -eq 1 ]; then 
+    SGX
     attestation
     bigdl-kms
     ehsm
@@ -106,7 +136,9 @@ elif [ "$all" -eq 1 ]; then
 else 
     for arg in "$@"
     do
-        if [ "$arg" == attestation ]; then
+        if [ "$arg" == SGX ]; then
+            sgx
+        elif [ "$arg" == attestation ]; then
             attestation
         elif [ "$arg" == bigdl-kms ]; then
             bigdl-kms

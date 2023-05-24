@@ -119,8 +119,8 @@ class XGBClassifier (val xgboostParams: Map[String, Any] = Map()) {
  */
 class XGBClassifierModel private[bigdl](
    val model: XGBoostClassificationModel) {
-  private var featuresCols: String = null
-  private var predictionCol: String = null
+  private var featuresCols: String = "features"
+  private var predictionCol: String = "prediction"
 
   def setFeaturesCol(featuresColName: String): this.type = {
     featuresCols = featuresColName

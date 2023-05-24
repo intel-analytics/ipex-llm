@@ -15,7 +15,7 @@
 #
 from ..core import version
 from packaging import version as v
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 if v.parse(version) >= v.parse("1.11"):

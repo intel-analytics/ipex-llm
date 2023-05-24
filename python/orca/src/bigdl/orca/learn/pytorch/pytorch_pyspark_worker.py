@@ -29,20 +29,17 @@
 # limitations under the License.
 
 
-from subprocess import call
-from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
 import logging
-from bigdl.orca.learn.utils import save_pkl
 import os
 import tempfile
 import copy
 
 from pyspark import BarrierTaskContext, TaskContext
-from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
+from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank,\
+    get_partition_id
 from bigdl.orca.learn.log_monitor import LogMonitor
-from bigdl.dllib.utils.log4Error import *
 
 
 logger = logging.getLogger(__name__)
@@ -55,8 +52,8 @@ class PytorchPysparkWorker(TorchRunner):
                  model_creator,
                  optimizer_creator,
                  size,
-                 cluster_info,
                  cores_per_worker,
+                 cluster_info=None,
                  loss_creator=None,
                  metrics=None,
                  scheduler_creator=None,
@@ -85,7 +82,6 @@ class PytorchPysparkWorker(TorchRunner):
         self.size = size
         self.mode = mode
         self.backend = backend
-        self.cluster_info = cluster_info
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
@@ -98,10 +94,7 @@ class PytorchPysparkWorker(TorchRunner):
 
     @staticmethod
     def _start_log_monitor(driver_ip, driver_log_port):
-        if TaskContext.get():
-            partition_id = TaskContext.get().partitionId()
-        else:
-            partition_id = BarrierTaskContext().get().partitionId()
+        partition_id = get_partition_id()
         log_path = os.path.join(tempfile.gettempdir(),
                                 "{}_runner.log".format(partition_id))
         duplicate_stdout_stderr_to_file(log_path)
@@ -128,49 +121,52 @@ class PytorchPysparkWorker(TorchRunner):
                 self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None,
+                     wrap_dataloader=None, callbacks=None,
                      validation_data_creator=None):
-        self.load_state_dict(self.state_dict.value)
+        if self.state_dict:
+            self.load_state_dict(self.state_dict.value)
         stats_list = super().train_epochs(data_creator=data_creator,
                                           epochs=epochs,
                                           batch_size=batch_size,
                                           profile=profile,
-                                          info=info,
                                           wrap_dataloader=wrap_dataloader,
                                           callbacks=callbacks,
                                           validation_data_creator=validation_data_creator)
-        state_dict = self.get_state_dict()
 
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
 
-        if self.rank == 0:
-            if self.model_dir is not None:
-                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
-
         if self.model_dir is not None:
+            if self.rank == 0:
+                state_dict = self.get_state_dict()
+                save_pkl(state_dict, os.path.join(self.model_dir, "state.pkl"))
             return [stats_list]
         else:
-            return [state_dict, stats_list]
+            if self.rank == 0:
+                state_dict = self.get_state_dict()
+                return [state_dict, stats_list]
+            else:
+                return [stats_list]
 
     def validate(self, data_creator, batch_size=32, num_steps=None, profile=False,
-                 info=None, wrap_dataloader=None, callbacks=None):
+                 wrap_dataloader=None, callbacks=None):
         """Evaluates the model on the validation data set."""
         self.load_state_dict(self.state_dict.value)
-        validation_stats = super().validate(data_creator, batch_size, num_steps, profile, info,
+        validation_stats = super().validate(data_creator, batch_size, num_steps, profile,
                                             wrap_dataloader, callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return [validation_stats]
 
-    def predict(self, data_creator, batch_size=32, profile=False):
+    def predict(self, data_creator, batch_size=32, profile=False, callbacks=None):
         """Evaluates the model on the validation data set."""
         config = copy.copy(self.config)
         self._toggle_profiling(profile=profile)
 
         partition = data_creator(config, batch_size)
         self.load_state_dict(self.state_dict.value)
-        result = super().predict(partition=partition, batch_size=batch_size, profile=profile)
+        result = super().predict(partition=partition, batch_size=batch_size,
+                                 profile=profile, callbacks=callbacks)
         if self.log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return result

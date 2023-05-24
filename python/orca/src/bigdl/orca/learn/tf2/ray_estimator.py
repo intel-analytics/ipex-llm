@@ -16,7 +16,6 @@
 
 import os
 import types
-import itertools
 import pickle
 import shutil
 import tempfile
@@ -25,7 +24,6 @@ import ray
 
 from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import is_local_path
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.file import enable_multi_fs_save, enable_multi_fs_load
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.dl_cluster import RayDLCluster
@@ -33,17 +31,17 @@ from bigdl.orca.learn.tf2.tf_runner import TFRunner
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, make_data_creator
+    process_xshards_of_pandas_dataframe, make_data_creator, \
+    add_predict_to_pd_xshards
 from bigdl.orca.data.file import get_remote_file_to_local, get_remote_dir_to_local, \
     is_file
 from bigdl.orca.data.utils import process_spark_xshards
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca.ray import OrcaRayContext
 
-from typing import TYPE_CHECKING, Any, Dict, List, Callable, Union, Optional
+from typing import TYPE_CHECKING, Dict, List, Callable, Union, Optional
 if TYPE_CHECKING:
     import numpy as np
-    import tensorflow as tf
     from tensorflow import Tensor
     from tensorflow.python.saved_model.save_options import SaveOptions
     from tensorflow.python.keras.callbacks import Callback
@@ -289,7 +287,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                   "Validation data type should be the same as train data,"
                                   " but got type: {}".format(type(validation_data)))
 
-                val_shards = validation_data.split(n=self.num_workers,
+                val_shards = validation_data.split(n=self.num_workers,  # type:ignore
                                                    locality_hints=self.remote_workers)
 
                 for i in range(self.num_workers):
@@ -297,15 +295,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                       label_cols,
                                                                       feature_cols,
                                                                       data_config)
-                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
-                                                                                 label_cols,
-                                                                                 feature_cols,
-                                                                                 data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(
+                        val_shards[i],  # type:ignore
+                        label_cols,
+                        feature_cols,
+                        data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
         else:
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = data  # type:ignore
+            params["validation_data_creator"] = validation_data  # type:ignore
             params_list = [params] * self.num_workers
 
             worker_stats = ray.get([self.remote_workers[i].step.remote(**params_list[i])
@@ -499,7 +498,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
                 feature_cols: Optional[List[str]]=None,
-                min_partition_num: Optional[int]=None) -> Union["SparkXShards",
+                min_partition_num: Optional[int]=None,
+                output_cols: Optional[List[str]]=None) -> Union["SparkXShards",
                                                                 "SparkDataFrame"]:
         """
         Predict the input data
@@ -526,6 +526,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                prediction results is not guaranteed to be the same as the input order, so you need
                to add id information to the input to identify the corresponding prediction results.
                Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
@@ -544,6 +547,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             steps=steps,
             callbacks=callbacks,
             data_config=data_config,
+            output_cols=output_cols
         )
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
@@ -558,12 +562,16 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                               accept_str_col=True,
                                               shard_size=local_batch_size)
             pred_shards = self._predict_spark_xshards(xshards, params)
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
         elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, params)
-            result = update_predict_xshards(data, pred_shards)
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, Dataset):
             data = data.get_xshards()
             if min_partition_num:

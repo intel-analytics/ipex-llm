@@ -141,6 +141,10 @@ class RabitTracker(object):
     def __init__(self, hostIP, nslave, port=9091, port_end=9999):
         sock = socket.socket(get_family(hostIP), socket.SOCK_STREAM)
         for port in range(port, port_end):
+            if type(port) != int:
+                logging.error('port must be an integer')
+            if port not in range(1,65535):
+                logging.error('port %d must be between 1 and 165535', port)
             try:
                 sock.bind((hostIP, port))
                 self.port = port

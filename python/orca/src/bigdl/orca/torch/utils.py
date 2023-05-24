@@ -16,8 +16,10 @@
 from torch.utils.data.sampler import Sampler
 import math
 from bigdl.dllib.utils.log4Error import *
+from deprecated import deprecated
 
 
+@deprecated(version='2.3.0', reason="Please use spark engine and ray engine.")
 def trainable_param(model):
     training = []
     for p in model.parameters():
@@ -26,6 +28,7 @@ def trainable_param(model):
     return training
 
 
+@deprecated(version='2.3.0', reason="Please use spark engine and ray engine.")
 class DistributedSequentialSampler(Sampler):
     """
     A sequential sampler used in FeatureSet when get (train=false) iterator .

@@ -1,0 +1,27 @@
+{{- if .Values.feature.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "friesian-serving.feature.fullname" . }}
+  namespace: {{ template "friesian-serving-service-monitor.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-feature
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.feature.labels }}
+    {{ toYaml .Values.feature.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.feature.annotations }}
+  annotations:
+    {{ toYaml .Values.feature.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ printf "%s" (include "friesian-serving.namespace" .) | quote }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-feature
+  endpoints:
+    - port: monitor
+      interval: {{ .Values.feature.serviceMonitor.interval }}
+{{- end }}

@@ -16,8 +16,8 @@
 
 
 import operator
-from bigdl.nano.utils.log4Error import invalidInputError
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import invalidInputError
+from bigdl.nano.utils.common import compare_version
 
 
 def load_inc_model(path, model, framework, input_sample=None):

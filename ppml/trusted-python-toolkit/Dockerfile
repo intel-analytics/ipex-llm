@@ -49,13 +49,13 @@ RUN pip3 install --upgrade pip && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import json/iimport sys' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i '/manifest_file\ =\ os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.7/dist-packages/ts/model_loader.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.7/dist-packages/ts/model_service_worker.py && \
+    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
+    sed -i '/import json/iimport sys' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    sed -i '/manifest_file\ =\ os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.8/dist-packages/ts/model_loader.py && \
+    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.8/dist-packages/ts/model_service_worker.py && \
     mkdir -p /ppml/tests/numpy && \
     mkdir -p /ppml/tests/pandas && \
-    cp /usr/local/lib/python3.7/dist-packages/ts/configs/metrics.yaml /ppml && \
+    cp /usr/local/lib/python3.8/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/work/start-scripts/start-python-flask-sgx.sh && \

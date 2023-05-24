@@ -24,7 +24,7 @@ import numpy as np
 from bigdl.chronos.utils import LazyImport
 tf = LazyImport('tensorflow')
 TCNForecaster = LazyImport('bigdl.chronos.forecaster.tf.tcn_forecaster.TCNForecaster')
-from test.bigdl.chronos import op_tf2, op_distributed
+from test.bigdl.chronos import op_tf2, op_distributed, op_inference
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -105,6 +105,38 @@ class TestTCNForecaster(TestCase):
                                        batch_size=32,
                                        multioutput="raw_values")
         assert mse[0].shape == test_data[1].shape[1:]
+
+    def test_tcn_forecaster_fit_predict_evaluate_normalization(self):
+        train_data, _, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2,
+                                   num_channels=[15]*7,
+                                   normalization=True)
+        forecaster.fit(train_data, epochs=2, batch_size=32)
+        yhat = forecaster.predict(test_data[0], batch_size=32)
+        assert yhat.shape == (400, 2, 2)
+        mse = forecaster.evaluate(test_data, batch_size=32, multioutput="raw_values")
+        assert mse[0].shape == test_data[1].shape[1:]
+
+    def test_tcn_forecaster_evaluate(self):
+        train_tsdata, _, test_tsdata = create_tsdataset()
+        forecaster = TCNForecaster.from_tsdataset(train_tsdata, past_seq_len=24, future_seq_len=5)
+        forecaster.fit(train_tsdata, epochs=1, batch_size=32)
+
+        # tf dataset
+        test = test_tsdata.to_tf_dataset(batch_size=32)
+        metrics = forecaster.evaluate(test, multioutput='uniform_average')
+
+        # TSDataset
+        metrics_tsdata = forecaster.evaluate(test_tsdata, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics, metrics_tsdata, decimal=5)
+
+        # numpy
+        test_data = test_tsdata.to_numpy()
+        metrics_data = forecaster.evaluate(test_data, multioutput='uniform_average')
+        np.testing.assert_almost_equal(metrics_data, metrics_tsdata, decimal=5)
 
     def test_tcn_forecaster_fit_tf_data(self):
         train_data, _, test_data = create_data(tf_data=True)
@@ -251,6 +283,24 @@ class TestTCNForecaster(TestCase):
             forecaster.evaluate(test_data)
 
         stop_orca_context()
+
+    @op_inference
+    def test_tcn_keras_forecaster_quantization(self):
+        # Capturing behaviors during `pytest -v` influence generating the valid sampling log
+        # during quantization. Work around by using `pytest -s` to test this ut.
+        train_data, _, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=10,
+                                   future_seq_len=2,
+                                   input_feature_num=10,
+                                   output_feature_num=2)
+
+        forecaster.fit(train_data, epochs=1)
+        forecaster.quantize(input_data=train_data[0], target_data=train_data[1])
+        assert forecaster.accelerated_model
+        assert forecaster.accelerate_method == "tensorflow_int8"
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        assert pred_q.shape == test_data[1].shape
 
 if __name__ == '__main__':
     pytest.main([__file__])

@@ -28,7 +28,7 @@ from bigdl.nano.automl.utils import EasyDict
 from bigdl.nano.deps.automl.hpo_api import create_configuration_space
 from bigdl.nano.deps.automl.hpo_api import (
     create_uniform_float_hp, create_uniform_int_hp, create_categorical_hp)
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',

@@ -19,8 +19,8 @@ import os
 import subprocess
 import warnings
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
-from bigdl.nano.common.common import _find_library
+from bigdl.nano.utils.common import schedule_workers
+from bigdl.nano.utils.common import _find_library
 
 
 def get_bytesize(bytes):

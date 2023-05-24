@@ -23,7 +23,7 @@ from typing import Dict, List, Callable, Optional
 import yaml
 import json
 from os import path
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def _get_args_parser() -> ArgumentParser:

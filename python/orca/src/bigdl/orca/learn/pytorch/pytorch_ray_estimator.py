@@ -17,23 +17,24 @@
 import types
 import copy
 import logging
+import math
 
-from bigdl.orca import OrcaContext
 from bigdl.orca.data.ray_xshards import RayXShards
 from bigdl.orca.learn.pytorch.pytorch_ray_worker import PytorchRayWorker
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
-    process_xshards_of_pandas_dataframe, reload_dataloader_creator
+    process_xshards_of_pandas_dataframe, add_predict_to_pd_xshards
 from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.pytorch.core.base_ray_estimator import BaseRayEstimator
 from bigdl.orca.learn.pytorch.utils import process_stats, check_for_failure
 from bigdl.orca.learn.pytorch.callbacks.maincallback import make_only_mainCallback
-from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback
+from bigdl.orca.learn.pytorch.callbacks.tqdm import TqdmCallback, is_tqdm_exists
+from bigdl.orca.learn.pytorch.callbacks.maxsteps import MaxstepsCallback
 
 import ray
 from bigdl.dllib.utils.log4Error import invalidInputError
 
-from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List, Type
+from typing import TYPE_CHECKING, Union, Optional, Callable, Dict, List
 if TYPE_CHECKING:
     from torch.nn import Module
     from torch.optim import Optimizer
@@ -62,7 +63,11 @@ def partition_refs_to_creator(partition_refs):
                 return get_size(self.y)
 
             def __getitem__(self, i):
-                return index_data(self.x, i), index_data(self.y, i)
+                index_data_x = index_data(self.x, i)
+                if isinstance(index_data_x, (list, tuple)):
+                    return (*index_data_x, index_data(self.y, i))
+                else:
+                    return (index_data_x, index_data(self.y, i))
 
         params = {"batch_size": batch_size, "shuffle": True}
         for arg in ["shuffle", "sampler", "batch_sampler", "num_workers", "collate_fn",
@@ -104,11 +109,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
-        if not (isinstance(model_creator, types.FunctionType) and
-                isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
+        if not isinstance(model_creator, types.FunctionType):  # Torch model is also callable.
             invalidInputError(False,
-                              "Must provide a function for both model_creator and"
-                              " optimizer_creator")
+                              "Must provide a function for model_creator.")
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -142,10 +145,10 @@ class PyTorchRayEstimator(BaseRayEstimator):
                         'RayDataset',
                         Callable[[Dict, int], 'DataLoader']],
             epochs: int=1,
+            max_steps: Optional[int] = None,
             batch_size: int=32,
             profile: bool=False,
             reduce_results: bool=True,
-            info: Optional[Dict]=None,
             feature_cols: Optional[List[str]]=None,
             label_cols: Optional[List[str]]=None,
             validation_data: Union['SparkXShards',
@@ -162,6 +165,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
+        :param max_steps: The max steps to train the model. Default is None.
+         If max_steps > 0, `epochs` would be ignored.
         :param batch_size: Total batch size for all workers used for training. Each worker's batch
                size would be this value divide the total number of workers. Default is 32.
                If your training data is a function, you can set batch_size to be the input
@@ -172,8 +177,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner for
-               train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param validation_data: validation data. Validation data type should be the same
@@ -196,14 +199,15 @@ class PyTorchRayEstimator(BaseRayEstimator):
         # Check uniqueness of the MainCallback
         callbacks = callbacks or []
         make_only_mainCallback(callbacks)
-        if self.use_tqdm:
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
+        if max_steps is not None:
+            callbacks.append(MaxstepsCallback(max_step=max_steps))
 
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
             profile=profile,
-            info=info,
             callbacks=callbacks,
         )
 
@@ -309,8 +313,8 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               " Ray Dataset or a callable function, but"
                               " got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
-            params["validation_data_creator"] = reload_dataloader_creator(validation_data)
+            params["data_creator"] = data
+            params["validation_data_creator"] = validation_data
             success, worker_stats = self._train_epochs(**params)
 
         epoch_stats = list(map(list, zip(*worker_stats)))  # type:ignore
@@ -325,7 +329,9 @@ class PyTorchRayEstimator(BaseRayEstimator):
                 data: Union['SparkXShards', 'SparkDataFrame'],
                 batch_size: int=32,
                 feature_cols: Optional[List[str]]=None,
-                profile: bool=False) -> Union['SparkXShards', 'SparkDataFrame']:
+                profile: bool=False,
+                callbacks: Optional[List['Callback']]=None) -> Union['SparkXShards',
+                                                                     'SparkDataFrame']:
         """
         Using this PyTorch model to make predictions on the data.
 
@@ -344,10 +350,18 @@ class PyTorchRayEstimator(BaseRayEstimator):
         if batch_size <= 0:
             batch_size = 1
         from bigdl.orca.data import SparkXShards
-        param = dict(
+
+        callbacks = callbacks or []
+        make_only_mainCallback(callbacks)
+        if self.use_tqdm:
+            callbacks.append(TqdmCallback())
+
+        params = dict(
             batch_size=batch_size,
-            profile=profile
+            profile=profile,
+            callbacks=callbacks
         )
+
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,
@@ -356,13 +370,17 @@ class PyTorchRayEstimator(BaseRayEstimator):
                                               label_cols=None,
                                               mode="predict",
                                               shard_size=batch_size)
-            pred_shards = self._predict_spark_xshards(xshards, param)
+            pred_shards = self._predict_spark_xshards(xshards, params)
             result = convert_predict_xshards_to_dataframe(data, pred_shards)
         elif isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols)
-            pred_shards = self._predict_spark_xshards(data, param)
-            result = update_predict_xshards(data, pred_shards)
+            xshards = data.to_lazy()
+            if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
+                xshards = process_xshards_of_pandas_dataframe(xshards, feature_cols)
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = add_predict_to_pd_xshards(data, pred_shards)
+            else:
+                pred_shards = self._predict_spark_xshards(xshards, params)
+                result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
@@ -373,7 +391,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
 
             remote_worker_stats = []
             for shard, worker in zip(shards, self.remote_workers):
-                worker_stats = worker.predict.remote(data_creator, batch_size, profile)
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile, callbacks)
                 remote_worker_stats.append(worker_stats)
             result = ray.data.from_numpy(remote_worker_stats).map(
                 lambda r: {"prediction_result": r["value"]})
@@ -393,7 +411,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                  num_steps: int=None,
                  profile: bool=False,
                  reduce_results: bool=True,
-                 info: Dict=None,
                  feature_cols: Optional[List[str]]=None,
                  label_cols:  Optional[List[str]]=None,
                  callbacks: Optional[List['Callback']]=None) -> Union[List[Dict], Dict]:
@@ -419,8 +436,6 @@ class PyTorchRayEstimator(BaseRayEstimator):
                one dict. If a metric is a non-numerical value, the one value will be randomly
                selected among the workers. If False, returns a list of dicts for
                all workers. Default is True.
-        :param info: An optional dictionary that can be passed to the TorchRunner
-               for validate.
         :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
         :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks. Note that only one MainCallback
@@ -447,13 +462,12 @@ class PyTorchRayEstimator(BaseRayEstimator):
         # Check uniqueness of the MainCallback
         callbacks = callbacks or []
         make_only_mainCallback(callbacks)
-        if self.use_tqdm:
+        if self.use_tqdm and not is_tqdm_exists(callbacks):
             callbacks.append(TqdmCallback())
 
         params = dict(batch_size=batch_size,
                       num_steps=num_steps,
                       profile=profile,
-                      info=info,
                       wrap_dataloader=False,
                       callbacks=callbacks)
 
@@ -491,7 +505,7 @@ class PyTorchRayEstimator(BaseRayEstimator):
                               "data should be either an instance of SparkXShards or a callable"
                               " function, but got type: {}".format(type(data)))
 
-            params["data_creator"] = reload_dataloader_creator(data)
+            params["data_creator"] = data  # type:ignore
             worker_stats = ray.get([w.validate.remote(**params) for w in self.remote_workers])
 
         if reduce_results:

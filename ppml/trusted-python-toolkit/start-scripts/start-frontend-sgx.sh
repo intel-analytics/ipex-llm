@@ -11,7 +11,7 @@ done
 
 cd /ppml
 export sgx_command="/opt/jdk11/bin/java \
-        -Dmodel_server_home=/usr/local/lib/python3.7/dist-packages \
+        -Dmodel_server_home=/usr/local/lib/python3.8/dist-packages \
         -cp .:/ppml/torchserve/* \
         -Xmx30g \
         -Xms30g \

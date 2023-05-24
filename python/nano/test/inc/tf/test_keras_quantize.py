@@ -24,7 +24,7 @@ from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class TestModelQuantize(TestCase):

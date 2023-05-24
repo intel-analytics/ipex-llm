@@ -16,7 +16,8 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError, _flatten
+import numpy as np
 
 
 class ONNXRuntimeModel:
@@ -27,15 +28,25 @@ class ONNXRuntimeModel:
         self.session_options = session_options
         self._build_ortsess(session_options)
 
-    def forward_step(self, *inputs):
+    def forward_step(self, *inputs, **kwargs):
         '''
         This function run through the onnxruntime forwarding step
         '''
-        invalidInputError(len(self._forward_args) >= len(inputs), "The length of inputs is "
-                          "inconsistent with the length of ONNX Runtime session's inputs, "
-                          "there may be some redundant inputs.")
-        inputs = dict(zip(self.forward_args, inputs))
-        ort_outs = self.ortsess.run(None, inputs)
+        flattened_inputs = []
+        _flatten(inputs, flattened_inputs)
+        zipped_inputs = dict(zip(self.forward_args, flattened_inputs))
+        if kwargs is not None and len(kwargs) > 0:
+            zipped_inputs.update(kwargs)
+        # TODO: kwargs has tuple or dict?
+        if len(self._forward_args) != len(zipped_inputs):
+            # formatting a Tensor will cost much time,
+            # so we put it in this `if` statement
+            invalidInputError(False,
+                              "The length of inputs is "
+                              "inconsistent with the length of ONNX Runtime session's inputs, "
+                              f"got model_forward_args: {self._forward_args}, "
+                              f"and flattened inputs: {flattened_inputs}")
+        ort_outs = self.ortsess.run(None, zipped_inputs)
         return ort_outs
 
     @property
@@ -64,7 +75,7 @@ class ONNXRuntimeModel:
         self.ortsess = ort.InferenceSession(onnx_path_or_bytes, sess_options=sess_options)
         self._forward_args = list(map(lambda x: x.name, self.ortsess.get_inputs()))
 
-    def _save_model(self, path):
+    def _save_model(self, path, compression="fp32"):
         """
         Save ONNXRuntimeModel to local as an onnx file
 

@@ -20,6 +20,7 @@ import os
 from bigdl.nano.tf.keras import InferenceOptimizer
 import numpy as np
 from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras import layers, Model
 
 
 class TestInferencePipeline(TestCase):
@@ -37,6 +38,7 @@ class TestInferencePipeline(TestCase):
                      thread_num=8)
         model = opt.get_best_model()
         assert isinstance(opt.optimized_model_dict["original"]["latency"], float)
+        assert isinstance(opt.optimized_model_dict["static_int8"]["latency"], float)
 
     def test_optimize_model_without_accuracy(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
@@ -143,3 +145,38 @@ class TestInferencePipeline(TestCase):
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             output2 = load_model(train_examples)
             np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+
+    def test_compile_model(self):
+        from tensorflow.keras.metrics import CategoricalAccuracy
+        inputs = tf.keras.Input(shape=(28*28,), name='digits')
+        x = layers.Dense(10, name='dense_logits')(inputs)
+        outputs = layers.Activation('softmax', dtype='float32', name='predictions')(x)
+        # test model with metrics in subprocess
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(loss='sparse_categorical_crossentropy',
+                      optimizer=tf.keras.optimizers.RMSprop(),
+                      metrics=CategoricalAccuracy())
+
+        x = np.random.random((100, 28*28))
+        y = np.random.randint(0, 10, 100)
+
+        infer_opt = InferenceOptimizer()
+        infer_opt.optimize(model, x=x, y=y,
+                           batch_size=1,
+                           metric=CategoricalAccuracy(),
+                           direction="max",
+                           includes=["static_int8"])
+        assert infer_opt.optimized_model_dict["static_int8"]["status"] == "successful"
+
+        # test model without metrics in subprocess
+        model = Model(inputs=inputs, outputs=outputs)
+        model.compile(loss='sparse_categorical_crossentropy',
+                      optimizer=tf.keras.optimizers.RMSprop())
+
+        infer_opt = InferenceOptimizer()
+        infer_opt.optimize(model, x=x, y=y,
+                           batch_size=1,
+                           metric=CategoricalAccuracy(),
+                           direction="max",
+                           includes=["static_int8"])
+        assert infer_opt.optimized_model_dict["static_int8"]["status"] == "successful"

@@ -16,7 +16,7 @@
 
 import torch
 import operator
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 
 class BaseContextManager(object):
@@ -69,7 +69,7 @@ class AutocastContextManager(BaseContextManager):
     def __enter__(self):
         super().__enter__()
         if self.accelerator == "jit" and self.enable_onednn is True:
-            if compare_version("torch", operator.le, "1.13.1"):
+            if compare_version("torch", operator.lt, "1.14"):
                 # onednn fusion for bf16 only work for torch version > 1.13
                 if compare_version("torch", operator.ge, "1.12.0"):
                     # onednn fusion be added to torch from version 1.12
@@ -84,8 +84,27 @@ class AutocastContextManager(BaseContextManager):
         super().__exit__(exc_type, exc_value, exc_tb)
 
 
+class XPUAutocastContextManager(AutocastContextManager):
+    """
+    Autocast context manager for Pytorch XPU Model Inference.
+
+    This context manager is used for providing no grad and autocast context,
+    which is used for bf16 model.
+    """
+    def __init__(self, thread_num=None, accelerator=None, enable_onednn=True):
+        super().__init__(thread_num=thread_num, accelerator=accelerator,
+                         enable_onednn=enable_onednn)
+        self.autocast = torch.xpu.amp.autocast(enabled=True, dtype=torch.float16)
+
+    def __enter__(self):
+        super().__enter__()
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        super().__exit__(exc_type, exc_value, exc_tb)
+
+
 def generate_context_manager(accelerator=None, precision="fp32", thread_num=None,
-                             enable_onednn=True):
+                             enable_onednn=True, use_xpu=False):
     '''
     generate correct context manager according to different situation
     :param acclerator: str, the accelerator to use, we support "onnxruntime", "openvino",
@@ -95,10 +114,14 @@ def generate_context_manager(accelerator=None, precision="fp32", thread_num=None
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
            ``True``, only valid when accelerator="jit", otherwise will be ignored.
+    :param use_xpu: if xpu model is used.
     '''
-    if precision != "bf16":
+    if (precision != "bf16" and use_xpu is False) or precision == "fp32":
         return BaseContextManager(thread_num=thread_num, accelerator=accelerator,
                                   enable_onednn=enable_onednn)
-    else:
+    elif not use_xpu:
         return AutocastContextManager(thread_num=thread_num, accelerator=accelerator,
                                       enable_onednn=enable_onednn)
+    else:
+        return XPUAutocastContextManager(thread_num=thread_num, accelerator=accelerator,
+                                         enable_onednn=enable_onednn)

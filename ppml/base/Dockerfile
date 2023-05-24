@@ -1,11 +1,13 @@
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
+ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
 FROM ubuntu:20.04
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
 ARG BIGDL_VERSION
+ARG GRAMINE_BRANCH
 ARG JDK_VERSION=8u192
 ARG JDK_URL
 ARG SPARK_VERSION
@@ -16,6 +18,8 @@ ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV JAVA_HOME                           /opt/jdk8
 ENV PATH                                ${JAVA_HOME}/bin:${PATH}
+
+ENV MALLOC_ARENA_MAX                    4
 
 RUN mkdir -p /ppml/
 
@@ -29,20 +33,21 @@ ADD ./register-mrenclave.py /ppml/register-mrenclave.py
 ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 
 ADD ./_dill.py.patch /_dill.py.patch
-ADD ./python-uuid.patch /python-uuid.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
-# Python3.7
+# Python3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.7-minimal build-essential python3.7-distutils python3.7 python3-setuptools python3.7-dev python3-wheel python3-pip libpython3.7 && \
+    apt-get install -y python3.9 && \
     rm /usr/bin/python3 && \
-    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
+    ln -s /usr/bin/python3.9 /usr/bin/python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
+    apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --upgrade pip && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
-    pip install setuptools==58.4.0 && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
+    pip3 install --upgrade requests && \
+    pip3 install setuptools==58.4.0 && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
@@ -53,14 +58,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     git clone https://github.com/analytics-zoo/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
-    git checkout devel-v1.3.1-2022-10-08 && \
+    git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
     meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
     mkdir -p /ppml/lib/ && \
-    mv /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
+    cp /usr/local/lib/x86_64-linux-gnu/gramine/runtime/glibc/libgomp.so.1 /ppml/lib/ && \
 # meson will copy the original file instead of the symlink, which enable us to delete the gramine directory entirely
     rm -rf /gramine && \
     apt-get update --fix-missing && \
@@ -69,22 +74,21 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libsm6 make build-essential && \
     apt-get install -y autoconf gawk bison libcurl4-openssl-dev python3-protobuf libprotobuf-c-dev protobuf-c-compiler && \
     apt-get install -y netcat net-tools && \
-    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py /_dill.py.patch && \
-    patch /usr/lib/python3.7/uuid.py /python-uuid.patch && \
-    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
+    patch /usr/local/lib/python3.9/dist-packages/dill/_dill.py /_dill.py.patch && \
+    patch /usr/local/lib/python3.9/dist-packages/psutil/_pslinux.py /python-pslinux.patch && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.9.so.1 /usr/lib/libpython3.9.so.1 && \
     chmod a+x /ppml/init.sh && \
     chmod a+x /ppml/clean.sh && \
     chmod +x /ppml/verify-attestation-service.sh && \
 # Install sgxsdk and dcap, which is used for remote attestation
     mkdir -p /opt/intel/ && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.18.100.3.bin && \
-    chmod a+x ./sgx_linux_x64_sdk_2.18.100.3.bin && \
-    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.18.100.3.bin && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.19.100.3.bin && \
+    chmod a+x ./sgx_linux_x64_sdk_2.19.100.3.bin && \
+    printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.19.100.3.bin && \
     . /opt/intel/sgxsdk/environment && \
     cd /opt/intel && \
-    wget https://download.01.org/intel-sgx/sgx-dcap/1.15/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
+    wget https://download.01.org/intel-sgx/sgx-dcap/1.16/linux/distro/ubuntu20.04-server/sgx_debian_local_repo.tgz && \
     tar xzf sgx_debian_local_repo.tgz && \
     echo 'deb [trusted=yes arch=amd64] file:///opt/intel/sgx_debian_local_repo focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - && \
@@ -126,6 +130,6 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]

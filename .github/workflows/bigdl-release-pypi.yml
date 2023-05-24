@@ -4,15 +4,6 @@ on:
   #pull_request:
   
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
-        required: true
-        default: '2.1.0'
-        type: string
-
-env:
-  PYPI_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
   contents: read
@@ -44,6 +35,7 @@ jobs:
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
+        export PYPI_VERSION=$(cat ./python/version.txt | head -1)
         echo ${PYPI_VERSION}
         nb_version=${PYPI_VERSION}
         #nb_version=${PYPI_VERSION}b${TIMESTAMP}1

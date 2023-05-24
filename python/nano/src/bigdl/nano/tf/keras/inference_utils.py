@@ -17,7 +17,7 @@ from typing import Optional, List, Union
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.utils import deprecated
+from bigdl.nano.utils.common import deprecated
 
 
 class InferenceUtils:

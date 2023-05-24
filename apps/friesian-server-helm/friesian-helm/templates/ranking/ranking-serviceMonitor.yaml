@@ -1,0 +1,27 @@
+{{- if .Values.ranking.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "friesian-serving.ranking.fullname" . }}
+  namespace: {{ template "friesian-serving-service-monitor.namespace" . }}
+  labels:
+    app: {{ template "friesian-serving.name" . }}-ranking
+    {{ include "friesian-serving.labels" . | nindent 4 }}
+    {{- if .Values.ranking.labels }}
+    {{ toYaml .Values.ranking.labels | nindent 4 }}
+    {{- end }}
+  {{- if .Values.ranking.annotations }}
+  annotations:
+    {{ toYaml .Values.ranking.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ printf "%s" (include "friesian-serving.namespace" .) | quote }}
+  selector:
+    matchLabels:
+      app: {{ template "friesian-serving.name" . }}-ranking
+  endpoints:
+    - port: monitor
+      interval: {{ .Values.ranking.serviceMonitor.interval }}
+{{- end }}

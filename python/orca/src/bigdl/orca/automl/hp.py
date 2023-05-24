@@ -16,9 +16,10 @@
 
 import ray.tune as tune
 import numpy as np
+from typing import List, Union, Callable
 
 
-def uniform(lower, upper):
+def uniform(lower: float, upper: float) -> "tune.sample.Float":
     '''
     Sample a float uniformly between lower and upper.
 
@@ -28,7 +29,7 @@ def uniform(lower, upper):
     return tune.uniform(lower, upper)
 
 
-def quniform(lower, upper, q):
+def quniform(lower: float, upper: float, q: float) -> "tune.sample.Float":
     '''
     Sample a float uniformly between lower and upper.
     Round the result to nearest value with granularity q, include upper.
@@ -40,7 +41,7 @@ def quniform(lower, upper, q):
     return tune.quniform(lower, upper, q)
 
 
-def loguniform(lower, upper, base=10):
+def loguniform(lower: float, upper: float, base: int=10) -> "tune.sample.Float":
     '''
     Sample a float between lower and upper.
     Power distribute uniformly between log_{base}(lower) and log_{base}(upper).
@@ -52,7 +53,7 @@ def loguniform(lower, upper, base=10):
     return tune.loguniform(lower, upper, base)
 
 
-def qloguniform(lower, upper, q, base=10):
+def qloguniform(lower: float, upper: float, q: float, base: int=10) -> "tune.sample.Float":
     '''
     Sample a float between lower and upper.
     Power distribute uniformly between log_{base}(lower) and log_{base}(upper).
@@ -66,7 +67,7 @@ def qloguniform(lower, upper, q, base=10):
     return tune.qloguniform(lower, upper, q, base)
 
 
-def randn(mean=0.0, std=1.0):
+def randn(mean: float=0.0, std: float=1.0) -> "tune.sample.Float":
     '''
     Sample a float from normal distribution.
 
@@ -76,7 +77,7 @@ def randn(mean=0.0, std=1.0):
     return tune.randn(mean, std)
 
 
-def qrandn(mean, std, q):
+def qrandn(mean: float, std: float, q: float) -> "tune.sample.Float":
     '''
     Sample a float from normal distribution.
     Round the result to nearest value with granularity q.
@@ -85,10 +86,10 @@ def qrandn(mean, std, q):
     :param std: Std of the normal distribution. Default to 1.0.
     :param q: Granularity for increment.
     '''
-    return tune.randn(mean, std, q)
+    return tune.qrandn(mean, std, q)
 
 
-def randint(lower, upper):
+def randint(lower: int, upper: int) -> "tune.sample.Integer":
     '''
     Uniformly sample integer between lower and upper. (Both inclusive)
 
@@ -98,7 +99,7 @@ def randint(lower, upper):
     return tune.randint(lower, upper)
 
 
-def qrandint(lower, upper, q=1):
+def qrandint(lower: int, upper: int, q: int=1) -> "tune.sample.Integer":
     '''
     Uniformly sample integer between lower and upper. (Both inclusive)
     Round the result to nearest value with granularity q.
@@ -110,7 +111,7 @@ def qrandint(lower, upper, q=1):
     return tune.qrandint(lower, upper, q)
 
 
-def choice(categories):
+def choice(categories: List) -> "tune.sample.Categorical":
     '''
     Uniformly sample from a list
 
@@ -119,7 +120,7 @@ def choice(categories):
     return tune.choice(categories)
 
 
-def choice_n(categories, min_items, max_items):
+def choice_n(categories: List, min_items: int, max_items: int) -> "tune.sample.Function":
     """
     Sample a subset from a list
 
@@ -138,7 +139,7 @@ def choice_n(categories, min_items, max_items):
             )))
 
 
-def sample_from(func):
+def sample_from(func: Callable) -> Callable:
     '''
     Sample from a function.
 
@@ -147,7 +148,7 @@ def sample_from(func):
     return tune.sample_from(func)
 
 
-def grid_search(values):
+def grid_search(values: List) -> dict:
     '''
     Specifying grid search over a list.
 

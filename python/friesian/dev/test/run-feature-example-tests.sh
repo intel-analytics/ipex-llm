@@ -87,13 +87,13 @@ python ../../example/wnd/recsys2021/valid_to_parquet.py \
     --input_file ./data/recsys_sample/valid \
     --output_folder ./data/recsys_sample/test_spark_parquet
 
+mv ./data/recsys_sample/spark_parquet ./data/recsys_sample/train
+mv ./data/recsys_sample/test_spark_parquet ./data/recsys_sample/test
 python ../../example/wnd/recsys2021/wnd_preprocess_recsys.py \
     --executor_cores 6 \
     --executor_memory 50g \
     --train_files 1-1 \
-    --input_train_folder ./data/recsys_sample/spark_parquet \
-    --input_test_folder ./data/recsys_sample/test_spark_parquet \
-    --output_folder ./result
+    --data_dir ./data/recsys_sample/
 now=$(date "+%s")
 time3=$((now - start))
 

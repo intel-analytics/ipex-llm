@@ -23,7 +23,7 @@ from torch.utils.data import TensorDataset, DataLoader, Dataset
 from torch import nn
 import torchmetrics
 from bigdl.nano.pytorch import Trainer
-from bigdl.nano.utils.util import compare_version
+from bigdl.nano.utils.common import compare_version
 
 input1 = TensorDataset(torch.ones(10, 3))
 input2 = TensorDataset(torch.ones(10, 4))

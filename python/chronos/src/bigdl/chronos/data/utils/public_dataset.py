@@ -30,7 +30,7 @@ logger.addHandler(ch)
 import pandas as pd
 import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
@@ -290,7 +290,7 @@ def download(url, path, chunk_size):
     param url: File download source address, str or list.
     param path: File save path, default path/name/name_data.csv.
     """
-    from bigdl.nano.utils.log4Error import invalidInputError
+    from bigdl.nano.utils.common import invalidInputError
     req = requests.get(url, stream=True)
     file_size = bytes_convert(int(req.headers['content-length']))
     invalidInputError(req.status_code == 200, "download failure, please check the network.")

@@ -22,17 +22,15 @@ import org.apache.spark.SparkConf
 import java.io.File
 
 class EncryptedJsonSpec extends DataFrameHelper {
-  val (plainFileName, encryptFileName, data, dataKeyPlaintext) = generateCsvData()
+  val (plainFileName, encryptFileName, data) = generateCsvData()
 
   val ppmlArgs = Map(
-    "spark.bigdl.kms.appId" -> appid,
-    "spark.bigdl.kms.apiKey" -> apikey,
-    "spark.bigdl.kms.primaryKey" -> primaryKeyPath,
-    "spark.bigdl.kms.dataKey" -> dataKeyPath
+      "spark.bigdl.primaryKey.defaultKey.kms.type" -> "SimpleKeyManagementService",
+      "spark.bigdl.primaryKey.defaultKey.kms.appId" -> appid,
+      "spark.bigdl.primaryKey.defaultKey.kms.apiKey" -> apikey,
+      "spark.bigdl.primaryKey.defaultKey.material" -> primaryKeyPath
   )
   val conf = new SparkConf().setMaster("local[4]")
-  conf.set("spark.hadoop.io.compression.codecs",
-    "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)
 
   val sparkSession = sc.getSparkSession()
@@ -41,9 +39,7 @@ class EncryptedJsonSpec extends DataFrameHelper {
     val encryptJsonPath = dir + "/en-json"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .json(encryptJsonPath)
+    df.write.json(encryptJsonPath)
     val jsonDf = sparkSession.read.json(encryptJsonPath)
     jsonDf.count()
     val d = "name,age,job\n" +
@@ -55,9 +51,7 @@ class EncryptedJsonSpec extends DataFrameHelper {
     val encryptJsonPath = dir + "/en-json"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .json(encryptJsonPath)
+    df.write.json(encryptJsonPath)
     val jsonDf = sparkSession.read.json(encryptJsonPath)
     jsonDf.count()
     val d = "name,age,job\n" +

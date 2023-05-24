@@ -1,19 +1,19 @@
 name: BigDL Core Release Pypi
 
 on:
-  #pull_request:
-  
+#  pull_request:
+#    branchs: [ main ] 
   workflow_dispatch:
     inputs:
-      version:
-        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
-        required: true
-        default: '2.2.0b20221205'
-        type: string
       branch:
         description: 'bigdl core branch (e.g. master, branch-2.1)'
         required: true
         default: 'master'
+        type: string
+      version:
+        description: 'pypi version (e.g. 2.1.0, 2.2.0b20220927)'
+        required: true
+        default: '2.2.0b20221206'
         type: string
       jarurl:
         description: 'jar url (e.g. https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar)'
@@ -22,9 +22,7 @@ on:
         type: string
 
 env:
-  PYPI_VERSION: ${{ github.event.inputs.version }}
   Branch: ${{ github.event.inputs.branch }}
-  JAR_URL: ${{ github.event.inputs.jarurl }}
 
 permissions:
   contents: read
@@ -69,7 +67,15 @@ jobs:
               }
           }]
         mirrors: '[{"id": "ardaNexus", "name": "ardaNexus", "mirrorOf": "*", "url": "${NEXUS_URL}" }]'
-    
+
+    - name: set env 
+      env:
+        PYPI: '2.2.0b20221206'
+        JAR: 'https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/core/dist/all/2.2.0-SNAPSHOT/all-2.2.0-20220919.010507-1.jar'
+      run: |
+        echo "PYPI_VERSION=${{ github.event.inputs.version || env.PYPI }}" >> $GITHUB_ENV
+        echo "JAR_URL=${{ github.event.inputs.jarurl || env.JAR }}" >> $GITHUB_ENV
+
     - name: Set up Python 
       uses: actions/setup-python@v2
       with:
@@ -84,11 +90,9 @@ jobs:
         pip install wheel
         pip install twine
         
-    
     - name: Build package
       run: |
         set -x
-        export TIMESTAMP=`date '+%Y%m%d'`
         echo ${{ env.PYPI_VERSION }}
         export ORIGINAL_PATH=$PATH
         
@@ -97,8 +101,8 @@ jobs:
         #export PYPI_VERSION=2.2.0b20221205
         cd python/dev/
         ## linux ##
-        bash release_default_linux.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_linux.sh $JAR_URL $PYPI_VERSION true
         
         ## mac ##
-        bash release_default_mac.sh ${{ env.JAR_URL }} ${{ env.PYPI_VERSION }} true
+        bash release_default_mac.sh $JAR_URL $PYPI_VERSION true
         

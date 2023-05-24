@@ -9,4 +9,6 @@ Tutorials & Examples
 
 * `PPML E2E Example on Azure <../Overview/azure_ppml.html>`__ introduces the end-to-end PPML workflow on Azure Cloud using TPC-H as an example.
 
+* `PPML Occlum E2E Example on Alicloud <../Overview/ali_ecs_occlum_cn.html>`__ introduces the end-to-end PPML with Occlum workflow on Alibaba ECS.
+
 * You can also find Trusted Data Analysis, Trusted ML, Trusted DL and Trusted FL examples in `more examples <https://github.com/intel-analytics/BigDL/tree/main/ppml/docs/examples.md>`__.

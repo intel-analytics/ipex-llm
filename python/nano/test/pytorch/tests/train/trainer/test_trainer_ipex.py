@@ -27,8 +27,8 @@ from torch import nn
 
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
-from bigdl.nano.common import check_avx512
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_2_0
+from bigdl.nano.utils.common import _avx2_checker
 
 batch_size = 256
 max_epochs = 2
@@ -48,7 +48,7 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
-class TestTrainer(TestCase):
+class PLTrainer:
     model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     loss = nn.CrossEntropyLoss()
@@ -125,6 +125,24 @@ class TestTrainer(TestCase):
             # Diable IPEX AMP
             # Avoid affecting other tests
             ipex.enable_auto_mixed_precision(None)
+
+
+TORCH_CLS = PLTrainer
+
+
+class CaseWithoutAVX2:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
+    print("Trainer IPEX Without AVX2")
+    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
+    TORCH_CLS = CaseWithoutAVX2
+
+
+class TestTrainer(TORCH_CLS, TestCase):
+    pass
 
 
 if __name__ == '__main__':

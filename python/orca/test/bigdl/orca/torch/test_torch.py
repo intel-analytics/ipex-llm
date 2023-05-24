@@ -29,8 +29,6 @@ from bigdl.dllib.optim.optimizer import MaxEpoch, EveryEpoch
 from bigdl.dllib.keras.metrics import Accuracy
 from bigdl.dllib.feature.common import FeatureSet
 
-from bigdl.dllib.nn.layer import Model
-
 
 class TestPytorch(TestCase):
 

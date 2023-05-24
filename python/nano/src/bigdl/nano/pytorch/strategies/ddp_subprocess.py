@@ -37,14 +37,15 @@ import multiprocessing
 import subprocess
 import sys
 import uuid
+import json
 from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
 
 import pytorch_lightning as pl
 
 from bigdl.nano.pytorch.strategies.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
-from bigdl.nano.common.cpu_schedule import schedule_processors
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import schedule_processors
+from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.dispatcher import _get_patch_status
 
 import logging
@@ -69,16 +70,13 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
+        envs = schedule_processors(self._strategy.num_processes)
         cpu_procs = self._strategy.cpu_for_each_process
-        if cpu_procs is None:
-            envs = schedule_processors(self._strategy.num_processes)
-        else:
-            envs = [{
-                "KMP_AFFINITY": f"granularity=fine,proclist"
-                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                "PROCESS_IDX": str(i),
-            } for i in range(self._strategy.num_processes)]
+        if cpu_procs is not None:
+            for i in range(len(cpu_procs)):
+                envs[i]["KMP_AFFINITY"] = f"granularity=fine,proclist" + \
+                    f"=[{','.join(map(str, cpu_procs[i]))}],explicit"
+                envs[i]["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
 
         # the `return_queue` is necessary for recovering child process's state, we need
         # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in
@@ -107,11 +105,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                     cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
             # we also need to pass sys.path to subprocess
-            with open(os.path.join(temp_dir, "sys_path.pkl"), "wb") as f:
-                cloudpickle.dump(sys.path, f)
+            with open(os.path.join(temp_dir, "sys_path.json"), "w") as f:
+                json.dump(sys.path, f)
 
-            with open(os.path.join(temp_dir, "patch_status.pkl"), "wb") as f:
-                cloudpickle.dump(_get_patch_status(), f)
+            with open(os.path.join(temp_dir, "patch_status.json"), "w") as f:
+                json.dump(_get_patch_status(), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]

@@ -23,13 +23,15 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
-from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
+from bigdl.nano.utils.common import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.chronos.data import TSDataset
 from bigdl.nano.automl.hpo.space import Space
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule, \
     _config_has_search_space
+from bigdl.chronos.pytorch.context_manager import DummyForecasterContextManager,\
+    ForecasterContextManager
 
 from .utils_hpo import _format_metric_str
 import warnings
@@ -182,6 +184,11 @@ class AutoformerForecaster(Forecaster):
 
         self.model_creator = model_creator
         self.loss_creator = loss_creator
+        self.cxt_manager = DummyForecasterContextManager()
+        self.context_enabled = False
+        current_num_threads = torch.get_num_threads()
+        self.thread_num = current_num_threads
+        self.accelerate_method = None
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         """Build a Generic Model using config parameters."""
@@ -223,8 +230,16 @@ class AutoformerForecaster(Forecaster):
         """
         Search the hyper parameter.
 
-        :param data: train data, as numpy ndarray tuple (x, y, x_enc, y_enc)
-        :param validation_data: validation data, as numpy ndarray tuple (x, y, x_enc, y_enc)
+        :param data: The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+
+        :param validation_data: validation data, The data support following formats:
+
+               | 1. numpy ndarrays: generate from `TSDataset.roll`,
+                    be sure to set label_len > 0 and time_enc = True
+
         :param target_metric: the target metric to optimize,
                a string or an instance of torchmetrics.metric.Metric, default to 'mse'.
         :param direction: in which direction to optimize the target metric,
@@ -468,6 +483,15 @@ class AutoformerForecaster(Forecaster):
                         self.trainer.move_metrics_to_cpu)
                     return fit_out
 
+    def get_context(self, thread_num=None):
+        """
+        Obtain context manager from forecaster.
+        :param thread_num: int, the num of thread limit. The value is set to None by
+               default where no limit is set.
+        :return: a context manager.
+        """
+        return ForecasterContextManager(self, thread_num, optimize=False)
+
     def predict(self, data, batch_size=32):
         """
         Predict using a trained forecaster.
@@ -509,7 +533,10 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-        return self.trainer.predict(self.internal, data)
+        if not self.context_enabled:
+            self.cxt_manager = ForecasterContextManager(self, self.thread_num, optimize=False)
+        with self.cxt_manager:
+            return self.trainer.predict(self.internal, data)
 
     def evaluate(self, data, batch_size=32):
         """
@@ -736,7 +763,7 @@ class AutoformerForecaster(Forecaster):
 
         :return: A Forecaster Model.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         invalidInputError(isinstance(tsdataset, TSDataset),
                           f"We only supports input a TSDataset, but get{type(tsdataset)}.")
 

@@ -22,7 +22,6 @@ from bigdl.dllib.utils.log4Error import *
 import pyspark.sql.functions as F
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Dict,
     List,
     Optional,
@@ -180,9 +179,9 @@ def combine(data_list):
         res = {}
         for k, v in item.items():
             res[k] = np.concatenate([data[k] for data in data_list], axis=0)
-    elif isinstance(item, list) or isinstance(item, tuple):
+    elif isinstance(item, (list, tuple)):
         res = []
-        for i in range(len(data_list[0])):
+        for i in range(len(item)):
             res.append(np.concatenate([data[i] for data in data_list], axis=0))
         if isinstance(item, tuple):
             res = tuple(res)
@@ -371,14 +370,18 @@ def process_spark_xshards(spark_xshards: "SparkXShards", num_workers: int) -> "R
 def index_data(x, i):
     if isinstance(x, np.ndarray):
         return x[i]
-    elif isinstance(x, tuple):
-        return tuple(item[i] for item in x)
-    elif isinstance(x, list):
+    elif isinstance(x, dict):
+        res = {}
+        for k, v in x.items():
+            res[k] = v[i]
+        return res
+    elif isinstance(x, (list, tuple)):
         return [item[i] for item in x]
     else:
         invalidInputError(False,
                           "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
                           " or a list of ndarrays, please check your input")
+        return []
 
 
 def get_size(x):
@@ -387,7 +390,7 @@ def get_size(x):
     elif isinstance(x, dict):
         for k, v in x.items():
             return len(v)
-    elif isinstance(x, tuple) or isinstance(x, list):
+    elif isinstance(x, (list, tuple)):
         return len(x[0])
     else:
         invalidInputError(False,

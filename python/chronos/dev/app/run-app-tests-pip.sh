@@ -43,18 +43,18 @@ execute_test(){
 }
 
 
-# ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
+${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
 FILENAME="${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv"
 if [ ! -f "$FILENAME" ];then
    wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv
 fi
 
-# sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-# sed -i "s/epochs=20/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-# cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
-# execute_test anomaly-detect-unsupervised-forecast-based "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py"
-# time1=$?
-# cd -
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+sed -i "s/epochs=10/epochs=1/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
+cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
+execute_test anomaly-detect-unsupervised-forecast-based "${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py"
+time1=$?
+cd -
 
 ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised
 sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.py
@@ -144,8 +144,8 @@ execute_test network-traffic-autots-customized-model "${BIGDL_ROOT}/python/chron
 time10=$?
 
 
-# Because of the long time cost, test 1/4/7 temporarily skipped
-# echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
+# Because of the long time cost, test 4/7 temporarily skipped
+echo "#1 anomaly-detect-unsupervised-forecast-based time used:$time1 seconds"
 echo "#2 anomaly-detect-unsupervised time used:$time2 seconds"
 echo "#3 electricity-tcn time used:$time3 seconds"
 # echo "#4 electricity-autoformer time used:$time4 seconds"

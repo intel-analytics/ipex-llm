@@ -194,13 +194,17 @@ class SparkRunner:
                  config=None,
                  verbose=False,
                  model_weights=None,
+                 optimizer_weights=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
                  application_id=None,
                  need_to_log_to_driver=False,
                  driver_ip=None,
-                 driver_port=None
+                 driver_port=None,
+                 filepath=None,
+                 custom_objects=None,
+                 compile=True
                  ):
         """Initializes the runner.
                 Args:
@@ -218,11 +222,14 @@ class SparkRunner:
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
         self.verbose = verbose
         self.model_weights = model_weights
+        self.optimizer_weights = optimizer_weights
         self.size = size
         self.mode = mode
         self.backend = backend
         self.setup()
         self.cluster = cluster_info
+        self.custom_objects = custom_objects
+        self.compile = compile
         if mode == "fit" or mode == "evaluate":
             from pyspark import BarrierTaskContext
             self.partition_id = BarrierTaskContext.get().partitionId()
@@ -258,10 +265,21 @@ class SparkRunner:
                         else:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
+                                if self.optimizer_weights:
+                                    def load_opt_weights():
+                                        grad_vars = self.model.trainable_weights
+                                        zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                                        self.model.optimizer.apply_gradients(
+                                            zip(zero_grads, grad_vars))
+                                        self.model.optimizer.set_weights(
+                                            self.optimizer_weights.value)
+                                    self.strategy.run(load_opt_weights)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
                             else:
-                                self.model = tf.keras.models.load_model(self.model_load)
+                                self.model = tf.keras.models.load_model(self.model_load,
+                                                                        self.custom_objects,
+                                                                        self.compile)
 
                         if not self.model._is_compiled and self.compile_args_creator:
                             self.model.compile(**self.compile_args_creator(config))
@@ -270,7 +288,9 @@ class SparkRunner:
                         if self.model_creator is not None:
                             self.model = self.model_creator(self.config)
                         else:
-                            self.model = tf.keras.models.load_model(self.model_load)
+                            self.model = tf.keras.models.load_model(self.model_load,
+                                                                    self.custom_objects,
+                                                                    self.compile)
                         if self.model_weights:
                             self.model.set_weights(self.model_weights.value)
             else:
@@ -292,7 +312,9 @@ class SparkRunner:
         if self.model_creator is not None:
             self.model = self.model_creator(self.config)
         else:
-            self.model = tf.keras.models.load_model(self.model_load)
+            self.model = tf.keras.models.load_model(self.model_load,
+                                                    self.custom_objects,
+                                                    self.compile)
         if self.model_weights:
             self.model.set_weights(self.model_weights.value)
         from tensorflow.python.distribute import distribution_strategy_context as ds_context
@@ -302,16 +324,17 @@ class SparkRunner:
         """
         Sets up TensorFLow distributed environment and initializes the model.
         """
-        self.rank = get_rank(cluster)
-        logger.info("cluster is: {}".format(cluster))
+        worker_cluster, node_cluster = cluster
+        self.rank = get_rank(node_cluster)
+        logger.info("cluster is: {}".format(node_cluster))
 
         os.environ["TF_CONFIG"] = json.dumps({
             'cluster': {
-                'worker': cluster
+                'worker': worker_cluster
             },
             'task': {'type': 'worker', 'index': self.rank}
         })
-        ips = set([node.split(":")[0] for node in cluster])
+        ips = set([node.split(":")[0] for node in worker_cluster])
         os.environ["no_proxy"] = ",".join(ips)
 
         self.strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy()
@@ -410,13 +433,16 @@ class SparkRunner:
                     shutil.rmtree(temp_dir)
                     self._stop_log_monitor()
         else:
-            weights = self.model.get_weights()
+            model_state = {
+                "weights": self.model.get_weights(),
+                "opt_weights": self.model.optimizer.get_weights()
+            }
             self._stop_log_monitor()
         if self.rank == 0:
             if self.model_dir is not None:
                 return [stats]
             else:
-                return [stats, weights]
+                return [stats, model_state]
         else:
             return []
 
@@ -453,7 +479,9 @@ class SparkRunner:
             if self.model_creator is not None:
                 local_model = self.model_creator(self.config)
             else:
-                local_model = tf.keras.models.load_model(self.model_load)
+                local_model = tf.keras.models.load_model(self.model_load,
+                                                         self.custom_objects,
+                                                         self.compile)
             if self.model_weights:
                 local_model = local_model.set_weights(self.model_weights.value)
             results = local_model.evaluate(dataset, **params)
@@ -478,7 +506,8 @@ class SparkRunner:
             self._stop_log_monitor()
             return []
 
-    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
+    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config,
+                output_cols):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
@@ -498,7 +527,13 @@ class SparkRunner:
 
         def predict_fn(shard):
             y = self.model.predict(shard["x"], **params)
-            return {"prediction": y}
+            if output_cols is None:
+                return {"prediction": y}
+            else:
+                if len(output_cols) == 1:
+                    return {output_cols[0]: y}
+                else:
+                    return dict(zip(output_cols, y))
         for shard in dataset:
             yield predict_fn(shard)
         self._stop_log_monitor()

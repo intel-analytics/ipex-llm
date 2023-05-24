@@ -20,7 +20,7 @@ import torch
 from bigdl.nano.pytorch import InferenceOptimizer
 from torchvision.models.resnet import resnet18
 from unittest.mock import MagicMock, PropertyMock, patch
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12
 import tempfile
 
 
@@ -169,6 +169,11 @@ class Pytorch1_12:
         assert y_hat1.shape == (10, 10) and y_hat1.dtype == torch.bfloat16
         assert bf16_model.channels == 3
         bf16_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'ResNet' object has no attribute 'strange_call'"
+        ):
+            bf16_model.strange_call()
 
         # test bf16 + channels_last
         bf16_model = InferenceOptimizer.quantize(model, precision='bf16',
@@ -180,6 +185,18 @@ class Pytorch1_12:
         bf16_model.hello()
         with pytest.raises(AttributeError):
             bf16_model.width
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'ResNet' object has no attribute 'strange_call'"
+        ):
+            load_model.strange_call()
 
     def test_bf16_channels_last_various_input_sample(self):
 
@@ -209,6 +226,34 @@ class Pytorch1_12:
             load_model = InferenceOptimizer.load(tmp_dir_name, model)
             load_model(x1, x2, x3)
 
+    def test_bf16_channels_last_3d_various_input_sample(self):
+        import torch.nn as nn
+
+        class DummyModelWith3d(nn.Module):
+            """
+            A simple model for test various inputs of channels last format
+            """
+            def __init__(self):
+                super(DummyModelWith3d, self).__init__()
+                self.conv3d_1 = nn.Conv3d(3, 33, 3, stride=2)
+
+            def forward(self, x1, x2:int):
+                return self.conv3d_1(x1), x2
+
+        model = DummyModelWith3d()
+        x1 = torch.rand(32, 3, 3, 224, 224) # 5-dim input test
+        x2 = 3
+
+        bf16_channels_3d_last_model = InferenceOptimizer.quantize(model, precision='bf16',
+                                                                  channels_last=True)
+
+        with InferenceOptimizer.get_context(bf16_channels_3d_last_model):
+            bf16_channels_3d_last_model(x1, x2)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(bf16_channels_3d_last_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model)
+            load_model(x1, x2)
 
 
 TORCH_VERSION_CLS = Pytorch1_12

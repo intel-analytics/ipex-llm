@@ -77,7 +77,7 @@ class SparkRunner:
                            extra_python_lib=None,
                            penv_archive=None,
                            additional_archive=None,
-                           hadoop_user_name="root",
+                           hadoop_user_name=None,
                            spark_yarn_archive=None,
                            conf=None,
                            jars=None,
@@ -85,7 +85,10 @@ class SparkRunner:
         print("Initializing SparkContext for yarn-client mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
-        os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        if hadoop_user_name:
+            os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        elif not os.environ.get("HADOOP_USER_NAME"):
+            os.environ["HADOOP_USER_NAME"] = os.getlogin()
         os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
 
         pack_env = False
@@ -149,15 +152,20 @@ class SparkRunner:
                                    extra_python_lib=None,
                                    penv_archive=None,
                                    additional_archive=None,
-                                   hadoop_user_name="root",
+                                   hadoop_user_name=None,
                                    spark_yarn_archive=None,
                                    conf=None,
                                    jars=None,
                                    py_files=None):
+        import subprocess
+
         print("Initializing job for yarn-cluster mode")
         executor_python_env = "python_env"
         os.environ["HADOOP_CONF_DIR"] = hadoop_conf
-        os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        if hadoop_user_name:
+            os.environ["HADOOP_USER_NAME"] = hadoop_user_name
+        elif not os.environ.get("HADOOP_USER_NAME"):
+            os.environ["HADOOP_USER_NAME"] = os.getlogin()
 
         pack_env = False
         invalidInputError(penv_archive or conda_name,
@@ -218,7 +226,8 @@ class SparkRunner:
             print(sys_args)
             submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
             print(submit_command)
-            return_value = os.system(submit_command)
+            submit_command_list = submit_command.split()
+            return_value = subprocess.run(submit_command_list)
         finally:
             if conda_name and penv_archive and pack_env:
                 os.remove(penv_archive)
@@ -401,6 +410,8 @@ class SparkRunner:
                                   conf=None,
                                   jars=None,
                                   python_location=None):
+        import subprocess
+
         print("Initializing SparkContext for k8s-cluster mode")
         executor_python_env = "python_env"
 
@@ -442,8 +453,9 @@ class SparkRunner:
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())
         submit_command = "spark-submit " + submit_args + " " + conf + " " + sys_args
-        print("submit command", submit_command)
-        return_value = os.system(submit_command)
+        print(submit_command)
+        submit_command_list = submit_command.split()
+        return_value = subprocess.run(submit_command_list)
         return return_value
 
 

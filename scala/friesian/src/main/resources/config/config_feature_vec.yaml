@@ -7,7 +7,7 @@ servicePort: 8085
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
-monitorPort: 1236
+# monitorPort: 1236
 
 # 'kv' or 'inference' default: kv
 serviceType: kv
@@ -27,19 +27,19 @@ redisClusterItemSlotType:
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# userModelPath: /home/yina/Documents/model/recys2021/2tower/exp8/user-model
+# userModelPath: ./mnt/user-model
 
 # default: null, user model path or item model path must be provided if serviceType
 # contains 'inference'. If serviceType=kv, usermodelPath, itemModelPath and modelParallelism will
 # be ignored
-# itemModelPath:
+# itemModelPath: ./mnt/item-model
 
 # default: 1, number of models used for inference
 # modelParallelism: 3
 
 ### Redis Configuration
 # default: localhost:6379
-# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+# redisUrl: localhost:6379
 
 # default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
 # redisType:

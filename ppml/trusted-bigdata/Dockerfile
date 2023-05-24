@@ -1,5 +1,6 @@
 ARG BASE_IMAGE_NAME=intelanalytics/bigdl-ppml-gramine-base
-ARG BASE_IMAGE_TAG=2.3.0-SNAPSHOT
+ARG BASE_IMAGE_TAG=2.4.0-SNAPSHOT
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG TINI_VERSION=v0.18.0
 ARG JDK_VERSION=8u192
@@ -140,8 +141,21 @@ RUN wget -nv -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/dow
   sed -i '/taskmanager.host: localhost/d' $FLINK_HOME/conf/flink-conf.yaml
 RUN ls -al /opt
 
+# Stage.2 BigDL
+FROM ubuntu:20.04 as bigdl
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+RUN apt-get update --fix-missing && \
+    apt-get install -y apt-utils curl wget unzip git
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+    chmod a+x ./download-bigdl.sh
+RUN ./download-bigdl.sh && \
+    rm bigdl*.zip
 
-# stage.2 gramine
+# stage.3 gramine
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG
 
 ARG SPARK_VERSION
@@ -150,24 +164,27 @@ ARG TINI_VERSION
 ENV FLINK_HOME                          /ppml/flink
 ENV SPARK_VERSION                       ${SPARK_VERSION}
 ENV SPARK_HOME                          /ppml/spark-${SPARK_VERSION}
-ENV LOCAL_IP                            127.0.0.1
 ENV TINI_VERSION                        $TINI_VERSION
+ENV LOCAL_IP                            127.0.0.1
 ENV LC_ALL                              C.UTF-8
 ENV LANG                                C.UTF-8
 ENV PATH                                $FLINK_HOME/bin:$PATH
-
+ENV BIGDL_HOME                          /ppml/bigdl-${BIGDL_VERSION}
+ENV PYSPARK_PYTHON                      /usr/bin/python
 
 RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/keys && \
     mkdir -p /ppml/password && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
-    mkdir -p /ppml/apps
+    mkdir -p /ppml/apps && \
+    mkdir -p /ppml/notebook
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
 COPY --from=bigdata /opt/flink $FLINK_HOME
 COPY --from=bigdata /usr/local/bin/gosu /usr/local/bin/gosu
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 ADD ./bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./scripts /ppml/scripts
@@ -176,6 +193,11 @@ ADD ./spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD ./flink-entrypoint.sh /opt/flink-entrypoint.sh
 ADD ./flink-k8s-template.yaml /ppml/flink-k8s-template.yaml
+ADD ./examples /ppml/examples
+ADD ./examples/jupyter /ppml/notebook
+ADD ./zeppelin /ppml/zeppelin
+ADD ./spark-executor-template-for-tdxvm.yaml /ppml/spark-executor-template-for-tdxvm.yaml
+ADD ./spark-driver-template-for-tdxvm.yaml /ppml/spark-driver-template-for-tdxvm.yaml
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
@@ -187,6 +209,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar && \
+    chmod a+x /ppml/scripts/* && \
 #flink
     env DEBIAN_FRONTEND=noninteractive apt-get install -y libsnappy1v5 gettext-base libjemalloc-dev && \
     rm -rf /var/lib/apt/lists/* && \
@@ -195,9 +218,43 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /usr/local/bin/gosu && \
     chmod +x /opt/flink-entrypoint.sh && \
     chmod -R 777 ${FLINK_HOME} && \
-    chown -R flink:flink ${FLINK_HOME}
-
-RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
-
+    chown -R flink:flink ${FLINK_HOME} && \
+# Python packages
+    pip3 install numpy pandas pyarrow pyspark==3.1.3 && \
+    pip3 install --no-cache-dir --upgrade setuptools && \
+    pip3 install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
+    python3 -m ipykernel.kernelspec && \
+    cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+    cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
+    chmod 777 /usr/bin/python && \
+# zeppelin
+    chmod +x /ppml/zeppelin/deploy.sh && \
+    chmod +x /ppml/zeppelin/delete.sh && \
+# Azure support
+    apt purge -y libsgx-dcap-default-qpl && \
+    echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/20.04/prod focal main" | tee /etc/apt/sources.list.d/msprod.list && \
+    wget -qO - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    apt update && \
+    apt install -y az-dcap-client && \
+    curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+    apt-get install bsdmainutils && \
+    curl -LO https://dl.k8s.io/release/v1.25.0/bin/linux/amd64/kubectl  && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+# unzip python dependency
+    unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d /ppml/bigdl-ppml/src
+ADD azure /ppml/azure
+ADD ./start-notebook.sh /ppml/start-notebook.sh
+RUN chmod a+x /ppml/azure/create-aks.sh && \
+    chmod a+x /ppml/azure/generate-keys-az.sh && \
+    chmod a+x /ppml/azure/generate-password-az.sh && \
+    chmod a+x /ppml/azure/kubeconfig-secret.sh && \
+    chmod a+x /ppml/azure/submit-spark-sgx-az.sh && \
+    wget -P /ppml/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
+    chmod a+x /ppml/start-notebook.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

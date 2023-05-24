@@ -47,7 +47,7 @@ init_instance() {
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.untrusted = [ "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
         .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -66,7 +66,7 @@ init_instance() {
         echo "${edit_json}" > Occlum.json
     fi
 
-    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc","type": "hostfs","source": "/etc"}]')" && \
+    edit_json="$(cat Occlum.json | jq '.mount+=[{"target": "/etc/ssl/certs","type": "hostfs","source": "/etc/ssl/certs"}]')" && \
     echo "${edit_json}" > Occlum.json
 
     if [[ -z "$SGX_MEM_SIZE" ]]; then
@@ -111,21 +111,15 @@ init_instance() {
            copy_bom -f /root/demos/remote_attestation/dcap/dcap-ppml.yaml --root image --include-dir /opt/occlum/etc/template
     fi
 
-    # check occlum log level for docker
-    if [[ -z "$ENABLE_SGX_DEBUG" ]]; then
-        echo "No ENABLE_SGX_DEBUG specified, set to off."
-        export ENABLE_SGX_DEBUG=false
+    #check glic ENV MALLOC_ARENA_MAX for docker
+    if [[ -z "$MALLOC_ARENA_MAX" ]]; then
+        echo "No MALLOC_ARENA_MAX specified, set to 1."
+        export MALLOC_ARENA_MAX=1
     fi
-    export OCCLUM_LOG_LEVEL=off
-    if [[ -z "$SGX_LOG_LEVEL" ]]; then
-        echo "No SGX_LOG_LEVEL specified, set to off."
-    else
-        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
-            export ENABLE_SGX_DEBUG=true
-            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-        fi
-    fi
+
+    # ENABLE_SGX_DEBUG
+    export ENABLE_SGX_DEBUG=true
+
 
     sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
@@ -157,6 +151,17 @@ attestation_init() {
     # make source mount file exit to avoid occlum mout fail
     cd /opt/occlum_spark
     bash /opt/mount.sh
+
+    # check occlum log level for docker
+    export OCCLUM_LOG_LEVEL=off
+    if [[ -z "$SGX_LOG_LEVEL" ]]; then
+        echo "No SGX_LOG_LEVEL specified, set to off."
+    else
+        echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+        if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
+            export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+        fi
+    fi
 
     #attestation
     if [[ $ATTESTATION == "true" ]]; then
@@ -236,6 +241,24 @@ run_pyspark_sklearn_example() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
                 -Xmx3g org.apache.spark.deploy.SparkSubmit \
                 /py-examples/sklearn_example.py
+}
+
+run_pyspark_tpch_example() {
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run pyspark tpch example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*" \
+                -Xmx5g org.apache.spark.deploy.SparkSubmit \
+                --conf spark.sql.shuffle.partitions=8 \
+                --py-files /py-examples/tpch/tpch.zip \
+                /py-examples/tpch/main.py \
+                /host/data/ /host/data/output/ true
 }
 
 run_spark_pi() {
@@ -347,33 +370,14 @@ run_spark_tpch(){
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx8g -Xms8g \
+                -Xmx5g -Xms5g \
                 org.apache.spark.deploy.SparkSubmit \
-                --master 'local[4]' \
-                --conf spark.driver.port=54321 \
-                --conf spark.driver.memory=8g \
-                --conf spark.driver.blockManager.port=10026 \
-                --conf spark.blockManager.port=10025 \
-                --conf spark.scheduler.maxRegisteredResourcesWaitingTime=5000000 \
-                --conf spark.worker.timeout=600 \
-                --conf spark.python.use.daemon=false \
-                --conf spark.python.worker.reuse=false \
-                --conf spark.network.timeout=10000000 \
-                --conf spark.starvation.timeout=250000 \
-                --conf spark.rpc.askTimeout=600 \
-                --conf spark.sql.autoBroadcastJoinThreshold=-1 \
-                --conf spark.io.compression.codec=lz4 \
                 --conf spark.sql.shuffle.partitions=8 \
-                --conf spark.speculation=false \
-                --conf spark.executor.heartbeatInterval=10000000 \
-                --conf spark.executor.instances=8 \
-                --executor-cores 2 \
-                --total-executor-cores 16 \
-                --executor-memory 8G \
-                --class main.scala.TpchQuery \
+                --master 'local[4]' \
+                --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
                 --verbose \
                 /bin/jars/spark-tpc-h-queries_2.12-1.0.jar \
-                /host/data /host/data/output
+                /host/data /host/data/output plain_text plain_text
 }
 
 run_spark_xgboost() {
@@ -431,19 +435,12 @@ run_spark_gbt_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
-                --master local[4] \
-                --conf spark.task.cpus=2 \
-                --class com.intel.analytics.bigdl.ppml.examples.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --class com.intel.analytics.bigdl.ppml.examples.GbtClassifierTrainingExampleOnCriteoClickLogsDataset \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --trainingDataPath /host/data/encrypt/ \
+                --trainingDataPath /host/data/encryptEhsm/ \
                 --modelSavePath /host/data/model/ \
                 --inputEncryptMode AES/CBC/PKCS5Padding \
                 --kmsServerIP $EHSM_KMS_IP \
@@ -467,19 +464,12 @@ run_spark_sql_e2e() {
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
-                -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
-                --master local[4] \
-                --conf spark.task.cpus=2 \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
                 --class com.intel.analytics.bigdl.ppml.examples.SimpleQuerySparkExample \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 --primaryKeyPath /host/data/key/ehsm_encrypted_primary_key \
-                --dataKeyPath /host/data/key/ehsm_encrypted_data_key \
                 --kmsType EHSMKeyManagementService \
-                --inputPath /host/data/encrypt/ \
+                --inputPath /host/data/encryptEhsm/ \
                 --outputPath /host/data/model/ \
                 --inputEncryptModeValue AES/CBC/PKCS5Padding \
                 --outputEncryptModeValue AES/CBC/PKCS5Padding \
@@ -487,6 +477,36 @@ run_spark_sql_e2e() {
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $APP_ID \
                 --ehsmAPIKEY $API_KEY
+}
+
+run_multi_spark_sql_e2e() {
+    attestation_init
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL MultiParty Spark SQL e2e${NC}"
+    EHSM_URL=${ATTESTATION_URL}
+    EHSM_KMS_IP=${EHSM_URL%:*}
+    EHSM_KMS_PORT=${EHSM_URL#*:}
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+                --conf spark.bigdl.primaryKey.BobPK.kms.type=EHSMKeyManagementService \
+                --conf spark.bigdl.primaryKey.BobPK.kms.ip=$EHSM_KMS_IP \
+                --conf spark.bigdl.primaryKey.BobPK.kms.port=$EHSM_KMS_PORT \
+                --conf spark.bigdl.primaryKey.BobPK.kms.appId=$APP_ID \
+                --conf spark.bigdl.primaryKey.BobPK.kms.apiKey=$API_KEY \
+                --conf spark.bigdl.primaryKey.BobPK.material=/host/data/key/ehsm_encrypted_primary_key \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.type=SimpleKeyManagementService \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.appId=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.kms.apiKey=123456654321 \
+                --conf spark.bigdl.primaryKey.AmyPK.material=/host/data/key/simple_encrypted_primary_key \
+                --class com.intel.analytics.bigdl.ppml.examples.MultiPartySparkQueryExample \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                /host/data/encryptSimple /host/data/encryptEhsm /host/data/ /host/data/
 }
 
 verify() { #verify ehsm quote
@@ -529,6 +549,10 @@ case "$arg" in
         run_pyspark_sklearn_example
         cd ../
         ;;
+    pytpch)
+        run_pyspark_tpch_example
+        cd ../
+        ;;
     pi)
         run_spark_pi
         cd ../
@@ -567,6 +591,10 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    multi_sql_e2e)
+        run_multi_spark_sql_e2e
         cd ../
         ;;
     verify)

@@ -1,0 +1,76 @@
+# remote-attestation-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-attestation-service
+  namespace: bigdl-remote-attestation-service
+  labels:
+    app: remote-attestation-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: remote-attestation-service
+      port: 9875
+      targetPort: 9875
+  selector:
+    app: remote-attestation-service
+  externalIPs:
+  - 0.0.0.0 
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: remote-attestation-service
+  namespace: bigdl-remote-attestation-service
+spec:
+  selector:
+    matchLabels:
+      app: remote-attestation-service
+  serviceName: "remote-attestation-service"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: remote-attestation-service
+    spec:
+      volumes:
+        - name: dev-tdx-guest
+          hostPath:
+            path: /dev/tdx-guest
+        - name: dev-aesmd
+          hostPath:
+            path: /var/run/aesmd
+        - name: bigdl-attestation-service-data
+          hostPath:
+            path: your_service_data_path
+        - name: bigdl-attestation-service-keys
+          hostPath:
+            path: your_service_keys_path
+      containers:
+      - name: remote-attestation-service
+        image: intelanalytics/bigdl-attestation-service-base:2.4.0-SNAPSHOT
+        imagePullPolicy: Always
+        command: ["/ppml/bigdl-as-entrypoint.sh"]
+        env:
+        - name: PCCS_URL
+          value: your_pccs_url
+        - name: ATTESTATION_SERVICE_HOST
+          value: 0.0.0.0
+        - name: ATTESTATION_SERVICE_PORT
+          value: "9875"
+        - name: HTTPS_KEY_STORE_TOKEN
+          value: your_https_key_store_token
+        - name: SECRET_KEY
+          value: your_secret_key
+        - name: SGX_ENABLED
+          value: "false"
+        volumeMounts:
+        - mountPath: /dev/tdx-guest
+          name: dev-tdx-guest
+        - mountPath: /var/run/aesmd
+          name: dev-aesmd
+        - mountPath: /opt/bigdl-as/data
+          name: bigdl-attestation-service-data
+        - mountPath: /ppml/keys
+          name: bigdl-attestation-service-keys
+---

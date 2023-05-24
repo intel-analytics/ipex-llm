@@ -482,7 +482,8 @@ class TFRunner:
 
         return stats
 
-    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config):
+    def predict(self, data_creator, batch_size, verbose, steps, callbacks, data_config,
+                output_cols):
         config = copy.copy(self.config)
         if data_config is not None:
             config.update(data_config)
@@ -547,7 +548,13 @@ class TFRunner:
                 y = local_model.predict(shard["x"], **params)
             else:
                 y = local_model.predict(shard, **params)
-            return {"prediction": y}
+            if output_cols is None:
+                return {"prediction": y}
+            else:
+                if len(output_cols) == 1:
+                    return {output_cols[0]: y}
+                else:
+                    return dict(zip(output_cols, y))
 
         new_part = [predict_fn(shard) for shard in partition]
 
@@ -619,13 +626,12 @@ class TFRunner:
     def load_remote_model(self, filepath, custom_objects, compile, options):
         """Load the model from provided remote filepath."""
         import tensorflow as tf
-        params = dict(
+        self.load_params = dict(
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile,
             options=options
         )
-        self.load_params = params
         file_name = os.path.basename(filepath)
         temp_path = os.path.join(tempfile.mkdtemp(), file_name)
         if is_file(filepath):
@@ -637,12 +643,13 @@ class TFRunner:
                 os.makedirs(temp_path)
             get_remote_dir_to_local(filepath, temp_path)
         try:
-            params["filepath"] = temp_path
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
-                    self.model = self.process_model_load(**params)
+                    self.model = self.process_model_load(temp_path, custom_objects, compile,
+                                                         options)
             else:
-                self.model = self.process_model_load(**params)
+                self.model = self.process_model_load(temp_path, custom_objects, compile,
+                                                     options)
         finally:
             if os.path.isdir(temp_path):
                 shutil.rmtree(temp_path)

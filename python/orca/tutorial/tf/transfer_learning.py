@@ -127,12 +127,12 @@ def xception_model(dropout):
 
 
 def model_creator(config):
-    model = xception_model(config['dropout'])
+    model = xception_model(config["dropout"])
     return model
 
 
-# Step 4: Distributed training with Orca keras Estimator
-backend = 'spark'  # 'ray' or 'spark'
+# Step 4: Distributed transfer learning with Orca TF2 Estimator
+backend = "spark"  # "ray" or "spark"
 est = Estimator.from_keras(model_creator=model_creator,
                            config={"dropout": 0.2},
                            backend=backend)
@@ -141,7 +141,7 @@ batch_size = 32
 train_steps = math.ceil(tf.data.experimental.cardinality(train_ds) / batch_size)
 val_steps = math.ceil(tf.data.experimental.cardinality(validation_ds) / batch_size)
 test_steps = math.ceil(tf.data.experimental.cardinality(test_ds) / batch_size)
-train_stats = est.fit(data=train_data_creator,
+train_stats = est.fit(train_data_creator,
                       epochs=1,
                       batch_size=batch_size,
                       steps_per_epoch=train_steps,
@@ -161,9 +161,10 @@ for k, v in eval_stats.items():
     print("{}: {}".format(k, v))
 
 
-# Step 6: Save the trained Tensorflow model
+# Step 6: Save the trained TensorFlow model
 est.save("xception_model")
 
 
-# Step 7: Stop Orca Context when program finishes
+# Step 7: Shutdown the Estimator and stop Orca Context when the program finishes
+est.shutdown()
 stop_orca_context()

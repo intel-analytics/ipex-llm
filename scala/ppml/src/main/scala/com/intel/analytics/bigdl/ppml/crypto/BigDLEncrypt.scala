@@ -26,6 +26,7 @@ import java.time.Instant
 import java.util.Arrays
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
+import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
@@ -41,9 +42,24 @@ class BigDLEncrypt extends Crypto {
   protected var encryptionKeySpec: SecretKeySpec = null
   protected var opMode: OperationMode = null
   protected var initializationVector: Array[Byte] = null
+  protected var encryptedDataKey: String = ""
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
+  // Init an encrypter
+  def init(cryptoMode: CryptoMode, mode: OperationMode,
+           dataKeyPlaintext: String, dataKeyCipherText: String): Unit = {
+    encryptedDataKey = dataKeyCipherText
+    init(cryptoMode, mode, dataKeyPlaintext)
+  }
+
+  // Init a decrypter
+  def init(cryptoMode: CryptoMode, mode: OperationMode,
+           dataKeyPlaintext: String, initializationVector: Array[Byte]): Unit = {
+    init(cryptoMode, mode, dataKeyPlaintext)
+    verifyHeader(initializationVector)
+  }
+
 
   /**
    * Init this crypto with crypto mode, operation mode and keys.
@@ -57,7 +73,6 @@ class BigDLEncrypt extends Crypto {
     // key encrypt
     val signingKey = Arrays.copyOfRange(secret, 0, 16)
     val encryptKey = Arrays.copyOfRange(secret, 16, 32)
-//    initializationVector = Arrays.copyOfRange(secret, 0, 16)
     val r = new SecureRandom()
     initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     ivParameterSpec = new IvParameterSpec(initializationVector)
@@ -78,26 +93,25 @@ class BigDLEncrypt extends Crypto {
   override def genHeader(): Array[Byte] = {
     Log4Error.invalidOperationError(cipher != null,
       s"you should init BigDLEncrypt first.")
-    val timestamp: Instant = Instant.now()
-    val signingByteBuffer = ByteBuffer.allocate(1 + 8 + ivParameterSpec.getIV.length)
-    val version: Byte = (0x80).toByte
-    signingByteBuffer.put(version)
-    signingByteBuffer.putLong(timestamp.getEpochSecond())
+    val dataKeyCipherTextBytes = encryptedDataKey.getBytes(StandardCharsets.UTF_8)
+    val signingByteBuffer = ByteBuffer.allocate(400)
+    signingByteBuffer.putInt(dataKeyCipherTextBytes.length)
+    signingByteBuffer.putInt(ivParameterSpec.getIV.length)
+    signingByteBuffer.put(dataKeyCipherTextBytes)
     signingByteBuffer.put(ivParameterSpec.getIV())
+    val suffixLength = (
+      400 - 4 - dataKeyCipherTextBytes.length - 4 - ivParameterSpec.getIV.length).max(0)
+    val suffix: Array[Byte] = Array.fill(suffixLength)((0x80).toByte)
+    signingByteBuffer.put(suffix)
     signingByteBuffer.array()
   }
 
   /**
    * Verify the header bytes when decrypt.
    * @param header header bytes
+   * @return encryptedDataKey String
    */
-  override def verifyHeader(header: Array[Byte]): Unit = {
-    val headerBuffer = ByteBuffer.wrap(header)
-    val version: Byte = headerBuffer.get()
-    Log4Error.invalidInputError(version.compare((0x80).toByte) == 0,
-      "File header version error!")
-    val timestampSeconds: Long = headerBuffer.getLong
-    val initializationVector: Array[Byte] = header.slice(1 + 8, header.length)
+  override def verifyHeader(initializationVector: Array[Byte]): Unit = {
     if (!initializationVector.sameElements(this.initializationVector)) {
       ivParameterSpec = new IvParameterSpec(initializationVector)
       cipher.init(opMode.opmode, encryptionKeySpec, ivParameterSpec)
@@ -109,7 +123,7 @@ class BigDLEncrypt extends Crypto {
    * @param header header bytes
    */
   override def verifyHeader(in: InputStream): Unit = {
-    val header = read(in, 25)
+    val header = read(in, 400)
     verifyHeader(header)
   }
 
@@ -234,6 +248,20 @@ class BigDLEncrypt extends Crypto {
     }
   }
 
+  def getHeader(in: InputStream): (String, Array[Byte]) = {
+    val header = read(in, 400)
+    val headerBuffer = ByteBuffer.wrap(header)
+    val dataKeyCipherTextBytesLength = headerBuffer.getInt
+    val initializationVectorLength = headerBuffer.getInt
+    val dataKeyCipherTextBytes: Array[Byte] = header.slice(
+      4 + 4, 4 + 4 + dataKeyCipherTextBytesLength)
+    val initializationVector: Array[Byte] = header.slice(
+      4 + 4 + dataKeyCipherTextBytesLength,
+      4 + 4 + dataKeyCipherTextBytesLength + initializationVectorLength)
+    val encryptedDataKeyStr = new String(dataKeyCipherTextBytes, StandardCharsets.UTF_8)
+    (encryptedDataKeyStr, initializationVector)
+  }
+
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
@@ -268,7 +296,7 @@ class BigDLEncrypt extends Crypto {
     outs.close()
   }
 
-  private def read(stream: InputStream, numBytes: Int): Array[Byte] = {
+  protected def read(stream: InputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
     Log4Error.invalidOperationError(bytesRead == numBytes,
@@ -282,8 +310,8 @@ class BigDLEncrypt extends Crypto {
    * @return iterator of String.
    */
   override def decryptBigContent(
-        inputStream: InputStream): Iterator[String] = {
-    verifyHeader(read(inputStream, 25))
+    inputStream: InputStream): Iterator[String] = {
+    // verifyHeader(read(inputStream, 25))
     new Iterator[String] {
       var cachedArray: Array[String] = null
       var pointer = Int.MaxValue
@@ -320,8 +348,29 @@ class BigDLEncrypt extends Crypto {
         pointer += 1
         cachedArray(pointer - 1)
       }
-
     }
   }
+}
 
+object BigDLEncrypt {
+
+  val COMMON = "common"
+  val NATIVE_AES_CBC = "nativeaescbc"
+
+  /**
+   * Create encrypter by type string
+   */
+   def apply(s: String): BigDLEncrypt = {
+     s.toLowerCase() match {
+       case COMMON =>
+         new BigDLEncrypt
+       case NATIVE_AES_CBC =>
+         new BigDLAESCBCEncrypt
+       case _ =>
+         Log4Error.invalidInputError(false,
+          s"Excepted $COMMON or $NATIVE_AES_CBC " +
+          s"in spark.bigdl.encryter.type but got $s")
+         null
+     }
+   }
 }

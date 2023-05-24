@@ -86,7 +86,9 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
+        self.optimizer_weights = None
         self.load_path = None
+        self.load_params = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
@@ -107,8 +109,18 @@ class SparkTFEstimator():
             self.log_server_thread = start_log_server(self.ip, self.port)
 
     def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
-        return cluster_info
+        def get_worker_address(iter):
+            worker_ip = get_node_ip()
+            worker_port = find_free_port()
+            addresses = find_ip_and_free_port(iter)
+            res = [(f"{worker_ip}:{worker_port}", address) for address in addresses]
+            return res
+
+        worker_info = self.workerRDD.barrier().mapPartitions(get_worker_address).collect()
+        address_info = [info[0] for info in worker_info]
+        cluster_info = [info[1] for info in worker_info]
+
+        return address_info, cluster_info
 
     def fit(self,
             data: Union["SparkXShards", "SparkDataFrame", Callable],
@@ -167,6 +179,11 @@ class SparkTFEstimator():
         else:
             weights = None
 
+        if self.optimizer_weights:
+            opt_weights = sc.broadcast(self.optimizer_weights)
+        else:
+            opt_weights = None
+
         init_params = dict(
             model_creator=self.model_creator,
             model_load=self.load_path,
@@ -175,6 +192,7 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
+            optimizer_weights=opt_weights,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -183,6 +201,9 @@ class SparkTFEstimator():
             driver_ip=self.ip,
             driver_port=self.port
         )
+
+        if self.load_params is not None:
+            init_params.update(self.load_params)
 
         params = dict(
             epochs=epochs,
@@ -234,7 +255,7 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.rdd.barrier().mapPartitions(
+                res = data.rdd.barrier().mapPartitions(  # type:ignore
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -245,13 +266,14 @@ class SparkTFEstimator():
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
+                val_rdd = validation_data.rdd.mapPartitions(  # type:ignore
+                    lambda iter: [list(iter)])
                 res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = data  # type:ignore
+            params["validation_data_creator"] = validation_data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
@@ -339,6 +361,9 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
+        if self.load_params is not None:
+            init_params.update(self.load_params)
+
         params = dict(
             batch_size=batch_size,
             verbose=verbose,
@@ -357,10 +382,10 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            res = data.rdd.barrier().mapPartitions(
+            res = data.rdd.barrier().mapPartitions(  # type:ignore
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).validate(**param)
@@ -376,7 +401,8 @@ class SparkTFEstimator():
                 steps: Optional[int]=None,
                 callbacks: Optional[List["Callback"]]=None,
                 data_config: Optional[Dict]=None,
-                feature_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
+                feature_cols: Optional[List[str]]=None,
+                output_cols: Optional[List[str]]=None) -> Union["SparkXShards", "SparkDataFrame"]:
         """
         Predict the input data
         :param data: predict input data.  It can be XShards or Spark DataFrame.
@@ -391,6 +417,9 @@ class SparkTFEstimator():
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param output_cols: Column name(s) of the model output data. Only used when data is
+               a Spark DataFrame, note the order of column name(s) should be consistent with the
+               model output data. Default: None.
         :return:
         """
         # Use the local batch size for each worker to convert to XShards
@@ -426,12 +455,16 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
+        if self.load_params is not None:
+            init_params.update(self.load_params)
+
         params = dict(
             verbose=verbose,
             batch_size=batch_size,
             steps=steps,
             callbacks=callbacks,
-            data_config=data_config
+            data_config=data_config,
+            output_cols=output_cols
         )
 
         def transform_func(iter, init_param, param):
@@ -455,7 +488,7 @@ class SparkTFEstimator():
 
             pred_shards = SparkXShards.lazy(xshards.rdd.mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)))
-            result = convert_predict_xshards_to_dataframe(data, pred_shards)
+            result = convert_predict_xshards_to_dataframe(data, pred_shards, output_cols)
         elif isinstance(data, SparkXShards):  # Computation triggered when updating XShards
             xshards = data.to_lazy()
             if xshards._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -606,13 +639,15 @@ class SparkTFEstimator():
 
         """
         sc = OrcaContext.get_spark_context()
-        self.load_params = dict(
+        self.load_params = dict(  # type:ignore
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile
         )
-        model = load_model(**self.load_params)
+        model = load_model(**self.load_params)  # type:ignore
         self.model_weights = model.get_weights()
+        if model.optimizer is not None:
+            self.optimizer_weights = model.optimizer.get_weights()
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
             if is_file(self.load_path):  # type:ignore
@@ -633,10 +668,21 @@ class SparkTFEstimator():
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
-            model = load_model(**self.load_params)
+            if self.load_params is not None:
+                model = load_model(**self.load_params)  # type:ignore
+            else:
+                invalidInputError(False,
+                                  "Please load a saved model when model_creator is None.")
 
-        if set_weights and self.model_weights is not None:
-            model.set_weights(self.model_weights)
+        if set_weights:
+            if self.optimizer_weights is not None:
+                import tensorflow as tf
+                grad_vars = model.trainable_weights
+                zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                model.optimizer.apply_gradients(zip(zero_grads, grad_vars))
+                model.optimizer.set_weights(self.optimizer_weights)
+            if self.model_weights is not None:
+                model.set_weights(self.model_weights)
         return model
 
     @property
@@ -665,5 +711,7 @@ class SparkTFEstimator():
                 shutil.rmtree(temp_dir)
         else:
             result = res[0]
-            self.model_weights = res[1]
+            states = res[1]
+            self.model_weights = states["weights"]
+            self.optimizer_weights = states["opt_weights"]
         return result

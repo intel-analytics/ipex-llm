@@ -43,10 +43,10 @@ bash ${NANO_SCRIPT_DIR}/release_default_mac_mseries.sh ${version} ${upload}
 # Serving has a universal jar for all platforms and spark versions and is released in the release_default_linux.sh.
 
 # Release default bigdl without suffix
-bash ${RUN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} false ${upload} false
+bash ${RUN_SCRIPT_DIR}/release_default_mac_spark2.sh ${version} false ${upload} false
 
 # Release bigdl-spark2. Using quick build as this will be the same as bigdl without suffix
-bash ${RUN_SCRIPT_DIR}/release_default_mac_spark246.sh ${version} true ${upload} true
+bash ${RUN_SCRIPT_DIR}/release_default_mac_spark2.sh ${version} true ${upload} true
 
 # Release bigdl-spark3
-bash ${RUN_SCRIPT_DIR}/release_default_mac_spark313.sh ${version} false ${upload} true
+bash ${RUN_SCRIPT_DIR}/release_default_mac_spark3.sh ${version} false ${upload} true

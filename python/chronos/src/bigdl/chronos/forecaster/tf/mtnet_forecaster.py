@@ -123,7 +123,7 @@ class MTNetForecaster(Forecaster):
 
         :return: A numpy.ndarray with shape of (num_samples, feature_dum).
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if not self._fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
@@ -147,7 +147,7 @@ class MTNetForecaster(Forecaster):
 
         :return: A list of evaluation results. Calculation results for each metrics.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if not self._fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
@@ -161,7 +161,7 @@ class MTNetForecaster(Forecaster):
 
         :param checkpoint_file: The location you want to save the forecaster.
         """
-        from bigdl.nano.utils.log4Error import invalidInputError
+        from bigdl.nano.utils.common import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")

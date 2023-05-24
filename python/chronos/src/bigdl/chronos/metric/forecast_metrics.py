@@ -16,7 +16,7 @@
 
 from numpy import ndarray
 import numpy as np
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from timeit import repeat
 import random
 
@@ -334,14 +334,14 @@ class Evaluator(object):
             for col_iter in range(1, col_num + 1):
                 # generate the index
                 if instance_index_iter is None:
-                    instance_index = random.randint(0, y.shape[0])
+                    instance_index = random.randint(0, y.shape[0] - 1)
                 else:
                     try:
                         instance_index = next(instance_index_iter)
                     except e:
                         # nothing to plot, skip following grids
                         continue
-                ax = plt.subplot(row_num * 100 + col_num * 10 + iter_num)
+                ax = plt.subplot(row_num, col_num, iter_num)
                 ax.plot(y_index, y[instance_index, :, feature_index], color="royalblue")
                 if ground_truth is not None:
                     ax.plot(y_index, ground_truth[instance_index, :, feature_index],

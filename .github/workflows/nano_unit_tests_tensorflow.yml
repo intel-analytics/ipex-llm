@@ -28,12 +28,16 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
+        python-version: ["3.8"]
         tf-version: [
           "tensorflow_27",
           "tensorflow_28",
           "tensorflow_29",
           "tensorflow_210",
+          "stock_tensorflow_27",
+          "stock_tensorflow_28",
+          "stock_tensorflow_29",
+          "stock_tensorflow_210"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -51,10 +55,27 @@ jobs:
           python -m pip install --upgrade wheel
           sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 
-      - name: Run TensorFlow unit tests
+      - name: Run TensorFlow unit tests (train)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.8.16
+          source $CONDA/bin/activate nano-tensorflow
+          $CONDA/bin/conda info
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            bash python/nano/dev/build_and_install.sh linux default false ${{matrix.tf-version}}
+          fi
+          pip install pytest
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-train-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n nano-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run TensorFlow unit tests (inference)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.8.16
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -62,7 +83,7 @@ jobs:
           fi
           pip install pytest
           source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-tests.sh
+          bash python/nano/test/run-nano-tf-inference-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n nano-tensorflow --all
         env:
@@ -81,6 +102,10 @@ jobs:
           "tensorflow_28",
           "tensorflow_29",
           "tensorflow_210",
+          "stock_tensorflow_27",
+          "stock_tensorflow_28",
+          "stock_tensorflow_29",
+          "stock_tensorflow_210"
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -94,7 +119,7 @@ jobs:
       - name: Run TensorFlow unit tests (Horovod)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n horovod-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -112,7 +137,7 @@ jobs:
       - name: Run TensorFlow unit tests (Ray)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n ray-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -132,7 +157,7 @@ jobs:
       - name: Run TensorFlow unit tests (Automl)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -152,7 +177,7 @@ jobs:
       - name: Run TensorFlow unit tests (INC)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n inc-tf -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate inc-tf
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -169,7 +194,7 @@ jobs:
       - name: Run tensorflow unit tests (OpenVINO)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -186,7 +211,7 @@ jobs:
       - name: Run tensorflow unit tests (ONNX)
         shell: bash
         run: |
-          $CONDA/bin/conda create -n onnx-tensorflow -y python==3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n onnx-tensorflow -y python==3.8.16 setuptools=58.0.4
           source $CONDA/bin/activate onnx-tensorflow
           $CONDA/bin/conda info
           if [ ! -z "${{matrix.tf-version}}" ]; then

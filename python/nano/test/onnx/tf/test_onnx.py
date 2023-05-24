@@ -21,7 +21,7 @@ import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
 import numpy as np
 from bigdl.nano.tf.keras import Model, InferenceOptimizer
-from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model \
+from bigdl.nano.deps.onnxruntime.tensorflow.model \
     import KerasONNXRuntimeModel
 
 
@@ -67,7 +67,7 @@ class TestONNX(TestCase):
         preds2 = new_onnx_model.predict(input_examples, batch_size=5)
 
         np.testing.assert_almost_equal(preds1, preds2, decimal=5)
-        
+
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(onnx_model, tmp_dir_name)
             new_onnx_model = InferenceOptimizer.load(tmp_dir_name, model)

@@ -10,8 +10,10 @@ sudo docker run -it \
 	--device=/dev/sgx/provision \
 	-v /var/run/aesmd:/var/run/aesmd \
 	-v data:/opt/occlum_spark/data \
-	-e SGX_MEM_SIZE=24GB \
-	-e SGX_THREAD=512 \
+	-e kubernetes_master_url=${kubernetes_master_url} \
+	-e LOCAL_IP=${LOCAL_IP} \
+	-e SGX_MEM_SIZE=20GB \
+	-e SGX_THREAD=1024 \
 	-e SGX_HEAP=512MB \
 	-e SGX_KERNEL_HEAP=1GB \
         -e ATTESTATION=false \
@@ -22,5 +24,5 @@ sudo docker run -it \
         -e CHALLENGE=cHBtbAo= \
         -e REPORT_DATA=ppml \
 	-e SGX_LOG_LEVEL=off \
-	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.3.0-SNAPSHOT \
+	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT \
 	bash /opt/run_spark_on_occlum_glibc.sh $1

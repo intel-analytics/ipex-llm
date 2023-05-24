@@ -1,41 +1,28 @@
 # Orca NCF Tutorial
 
-## Download Dataset
-- https://files.grouplens.org/datasets/movielens/ml-1m.zip
-- https://files.grouplens.org/datasets/movielens/ml-100k.zip
+## TensorFlow
+- Spark DataFrame Users:
+    - [Distributed Training and Evaluation](tf_train_spark_dataframe.py)
+    - [Distributed Inference](tf_predict_spark_dataframe.py)
+    - [Distributed Resume Training](tf_resume_train_spark_dataframe.py)
+- Pandas DataFrame Users (using Orca XShards):
+    - [Distributed Training and Evaluation](tf_train_xshards.py)
+    - [Distributed Inference](tf_predict_xshards.py)
+    - [Distributed Resume Training](tf_resume_train_xshards.py)
 
-TODO: Add command to upload to HDFS
+## PyTorch
+- Spark DataFrame Users:
+    - [Distributed Training and Evaluation](pytorch_train_spark_dataframe.py)
+    - [Distributed Inference](pytorch_predict_spark_dataframe.py)
+    - [Distributed Resume Training](pytorch_resume_train_spark_dataframe.py)
+- Pandas DataFrame Users (using Orca XShards):
+    - [Distributed Training and Evaluation](pytorch_train_xshards.py)
+    - [Distributed Inference](pytorch_predict_xshards.py)
+    - [Distributed Resume Training](pytorch_resume_train_xshards.py)
+- PyTorch DataLoader Users:
+    - [Distributed Training and Evaluation](pytorch_train_dataloader.py)
+    - [Distributed Resume Training](pytorch_resume_train_dataloader.py)
 
-## Arguments
-TODO
-
-## 1. Run on local
-### Prepare the environment
-TODO
-
-### Run Command
-TODO
-
-### Results
-TODO
-
-## 2-1 Run on YARN with python command
-### Prepare the environment
-TODO
-
-### Run Command
-TODO
-
-## 2-2 Run on YARN with bigdl-submit
-### Prepare the environment
-TODO
-
-### Run Command
-TODO
-
-## 2-3 Run on YARN with spark-submit
-### Prepare the environment
-TODO
-
-### Run Command
-TODO
+## Remarks
+- Can enable Tensorboard as callback by adding `--tensorboard`
+- Can enable learning rate scheduler by adding `--lr_scheduler`

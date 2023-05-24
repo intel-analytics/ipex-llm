@@ -1,0 +1,34 @@
+name: Scanner-snyk-docker
+on:
+#  pull_request:
+#    branchs: [ main ]
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
+  workflow_dispatch:
+    inputs:
+      snyk_image:
+        description: 'snyk image'
+        required: true
+        type: string
+        default: 'intelanalytics/bigdl-k8s:latest'
+      snyk_tag:
+        description: 'snyk image tag'
+        required: true
+        type: string
+        default: 'latest'
+
+jobs:
+  snyk-docker:
+    runs-on: [self-hosted, SDL-TEST]
+    steps:
+    - uses: actions/checkout@v3
+    - name: set env
+      run: |
+        echo "IMAGE=${{inputs.snyk_image}}"
+    - name: "Pull docker image"
+      run: |
+#         docker pull ${{inputs.snyk_image}}
+    - name: "snyk docker"
+      run: |
+        export IMAGE=intelanalytics/bigdl-k8s:latest
+        snyk monitor --docker $IMAGE

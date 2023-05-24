@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 import requests
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 Timestamp = Union[str, float, datetime.datetime]  # RFC-3339 string or a Unix timestamp in seconds
 Duration = Union[str, datetime.timedelta]  # Prometheus duration string

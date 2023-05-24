@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>2.3.0-SNAPSHOT</version>
+        <version>2.4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>bigdl-ppml-spark_${spark.version}</artifactId>
@@ -13,7 +13,6 @@
 
     <properties>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
-        <parquet.version>1.12.2</parquet.version>
         <akka.http.version>10.1.15</akka.http.version>
         <akka.actor.version>2.5.31</akka.actor.version>
     </properties>
@@ -24,7 +23,7 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
-            </dependency>
+	    </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-sdk-bom</artifactId>
@@ -41,7 +40,19 @@
             <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
-            <exclusions>
+	    <exclusions>
+	       <exclusion>
+		    <groupId>org.codehaus.jackson</groupId>
+		    <artifactId>jackson-core-asl</artifactId>
+	       </exclusion>
+	       <exclusion>
+		     <groupId>org.codehaus.jackson</groupId>
+		     <artifactId>jackson-mapper-asl</artifactId>
+	       </exclusion>
+		<exclusion>
+	            <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+	        </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
@@ -82,27 +93,42 @@
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
+	    <groupId>com.codahale</groupId>
+            <artifactId>shamir</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+	<dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
+	    <artifactId>parquet-hadoop</artifactId>
+	    <version>1.13.0</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-hadoop</artifactId>
-            <version>${parquet.version}</version>
+	    <artifactId>parquet-hadoop</artifactId>
+	    <version>1.13.0</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
-            <artifactId>parquet-column</artifactId>
-            <version>${parquet.version}</version>
+	    <artifactId>parquet-column</artifactId>
+	    <version>1.13.0</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
@@ -156,7 +182,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220320</version>
+            <version>20230227</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -194,18 +220,18 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.core.dist</groupId>
             <artifactId>all</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
             <scope>${bigdl-core-all-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-grpc-spark_${spark.version}</artifactId>
-            <version>2.3.0-SNAPSHOT</version>
+            <version>2.4.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
@@ -278,7 +304,48 @@
         </dependency>
         <dependency>
             <groupId>com.azure</groupId>
-            <artifactId>azure-identity</artifactId>
+	    <artifactId>azure-identity</artifactId>
+	     <exclusions>
+                <exclusion>
+                    <groupId>net.minidev</groupId>
+                    <artifactId>json-smart</artifactId>
+	        </exclusion>
+	     </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-security-attestation</artifactId>
+             <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
+                    <artifactId>jackson-datatype-jsr310</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.projectreactor</groupId>
+                    <artifactId>reactor-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+            <version>2.4.10</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -298,6 +365,11 @@
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
         <dependency>

@@ -20,7 +20,7 @@ import torch
 from unittest import TestCase
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import TorchNano
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_12
+from bigdl.nano.utils.pytorch import TORCH_VERSION_LESS_1_12, TORCH_VERSION_LESS_2_0
 from torchvision.models.resnet import ResNet, BasicBlock
 from torchmetrics.functional import accuracy
 import pytorch_lightning as pl
@@ -158,7 +158,7 @@ class MyNanoChannelsLastCorrectness(TorchNano):
         assert origin_model.conv1.weight.equal(result)
 
 
-class TestChannelsLast(TestCase):
+class ChannelsLast:
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
@@ -263,7 +263,7 @@ class TestChannelsLast(TestCase):
         MyNanoChannelsLastCorrectness(num_processes=2, strategy="subprocess", channels_last=True).train()
 
 
-class TestChannelsLastSpawn(TestCase):
+class ChannelsLastSpawn:
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size)
     test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
@@ -309,6 +309,30 @@ class TestChannelsLastSpawn(TestCase):
 
     def test_torch_nano_channels_last_spawn_correctness(self):
         MyNanoChannelsLastCorrectness(num_processes=2, strategy="spawn", channels_last=True).train()
+
+
+TORCH_CLS = ChannelsLast
+TORCH_CLS_Spawn = ChannelsLastSpawn
+
+
+class CaseWithoutscheduler:
+    def test_placeholder(self):
+        pass
+
+
+if not TORCH_VERSION_LESS_2_0:
+    # TODO: after we upgrade version of pytorch lightning, we can remove this part
+    print("channels last for torch >= 2.0")
+    TORCH_CLS = CaseWithoutscheduler
+    TORCH_CLS_Spawn = CaseWithoutscheduler
+
+
+class TestChannelsLast(TORCH_CLS, TestCase):
+    pass
+
+
+class TestChannelsLastSpawn(TORCH_CLS_Spawn, TestCase):
+    pass
 
 
 if __name__ == '__main__':

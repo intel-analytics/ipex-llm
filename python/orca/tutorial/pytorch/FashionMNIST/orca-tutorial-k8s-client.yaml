@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: orca-pytorch-job
+spec:
+  template:
+    spec:
+      serviceAccountName: spark
+      restartPolicy: Never
+      hostNetwork: true
+      containers:
+      - name: spark-k8s-client
+        image: intelanalytics/bigdl-k8s:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh","-c"]
+        args: ["
+                export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
+                ${SPARK_HOME}/bin/spark-submit \
+                --master ${RUNTIME_SPARK_MASTER} \
+                --deploy-mode client \
+                --name orca-k8s-client-tutorial \
+                --conf spark.driver.host=${RUNTIME_DRIVER_HOST} \
+                --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+                --num-executors 2 \
+                --executor-cores 4 \
+                --executor-memory 2g \
+                --total-executor-cores 8 \
+                --driver-cores 2 \
+                --driver-memory 2g \
+                --conf spark.pyspark.driver.python=/bigdl/nfsdata/environment/bin/python \
+                --conf spark.pyspark.python=/bigdl/nfsdata/environment/bin/python \
+                --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
+                --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,/bigdl/nfsdata/model.py \
+                --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+                --conf spark.kubernetes.executor.deleteOnTermination=True \
+                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+                --conf spark.kubernetes.driver.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
+                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=nfsvolumeclaim \
+                --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=/bigdl/nfsdata/ \
+                /bigdl/nfsdata/train.py
+                --cluster_mode spark-submit
+                --data_dir /bigdl/nfsdata/dataset
+                "]
+        securityContext:
+          privileged: true
+        env:
+          - name: RUNTIME_K8S_SPARK_IMAGE
+            value: intelanalytics/bigdl-k8s:latest
+          - name: RUNTIME_SPARK_MASTER
+            value: k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port>
+        volumeMounts:
+          - name: nfs-storage
+            mountPath: /bigdl/nfsdata
+          - name: nfs-storage
+            mountPath: /root/.kube/config
+            subPath: kubeconfig
+      volumes:
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfsvolumeclaim

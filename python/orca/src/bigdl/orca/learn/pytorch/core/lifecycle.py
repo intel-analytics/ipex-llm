@@ -68,7 +68,8 @@ class LifeCycle(metaclass=ABCMeta):
                         world_size):
         """A runner will contain `rank`, `backend` and `size` after setup_torch_distribute."""
         import torch.distributed as dist
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
+        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False,
+                                     timeout=dist.constants.default_pg_timeout)
         dist.init_process_group(
             backend="gloo",
             store=client_store,
@@ -76,7 +77,7 @@ class LifeCycle(metaclass=ABCMeta):
             world_size=world_size)
         self.backend = "torch-distributed"
 
-    def with_sampler(self, loader):
+    def with_sampler(self, loader, shuffle=True):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
         data_loader_args = {
             "dataset": loader.dataset,
@@ -90,7 +91,8 @@ class LifeCycle(metaclass=ABCMeta):
             "worker_init_fn": loader.worker_init_fn,
             "sampler": DistributedSampler(loader.dataset,
                                           num_replicas=self.size,
-                                          rank=self.rank)
+                                          rank=self.rank,
+                                          shuffle=shuffle)
         }
         return DataLoader(**data_loader_args)
 

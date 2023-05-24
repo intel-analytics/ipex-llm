@@ -19,6 +19,7 @@ import os
 import subprocess
 import sys
 import copy
+import json
 
 import logging
 log = logging.getLogger(__name__)
@@ -39,8 +40,8 @@ def run_parallel(func, kwargs, n_procs):
     log.info("-" * 100)
 
     with TemporaryDirectory() as temp_dir:
-        with open(os.path.join(temp_dir, "search_kwargs.pkl"), 'wb') as f:
-            cloudpickle.dump(kwargs, f)
+        with open(os.path.join(temp_dir, "search_kwargs.json"), 'w') as f:
+            json.dump(kwargs, f)
         with open(os.path.join(temp_dir, "search_func.pkl"), 'wb') as f:
             cloudpickle.dump(func, f)
 
@@ -51,7 +52,7 @@ def run_parallel(func, kwargs, n_procs):
 
 
 def _run_subprocess(tmpdir, num_processes):
-    from bigdl.nano.common.cpu_schedule import schedule_processors
+    from bigdl.nano.utils.common import schedule_processors
 
     envs = schedule_processors(num_processes)
 

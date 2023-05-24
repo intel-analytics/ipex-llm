@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          thread_num=None, device='CPU',
                          dynamic_axes=True, logging=True,
-                         config=None, **kwargs):
+                         config=None, output_tensors=True, **kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -49,6 +49,8 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                          If accelerator != 'openvino'/'onnxruntime', it will be ignored.
     :param logging: whether to log detailed information of model conversion. default: True.
     :param config: The config to be inputted in core.compile_model.
+    :param output_tensors: boolean, default to True and output of the model will be Tensors.
+                           If output_tensors=False, output of the OpenVINO model will be ndarray.
     :param **kwargs: will be passed to torch.onnx.export function or model optimizer function.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
@@ -61,24 +63,34 @@ def PytorchOpenVINOModel(model, input_sample=None, precision='fp32',
                                 dynamic_axes=dynamic_axes,
                                 logging=logging,
                                 config=config,
+                                output_tensors=output_tensors,
                                 **kwargs)
 
 
-def load_openvino_model(path, framework='pytorch', device=None):
+def load_openvino_model(path, framework='pytorch', device=None, cache_dir=None, shapes=None):
     """
     Load an OpenVINO model for inference from directory.
 
     :param path: Path to model to be loaded.
     :param framework: Only support pytorch and tensorflow now
     :param device: A string represents the device of the inference.
+    :param cache_dir: A directory for OpenVINO to cache the model. Default to None.
+    :param shapes: input shape. For example, 'input1[1,3,224,224],input2[1,4]',
+               '[1,3,224,224]'. This parameter affect model Parameter shape, can be
+               dynamic. For dynamic dimesions use symbol `?`, `-1` or range `low.. up`.'.
+               Only valid for openvino model, otherwise will be ignored.
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
+    if cache_dir is not None:
+        from pathlib import Path
+        Path(cache_dir).mkdir(exist_ok=True)
+
     if framework == 'pytorch':
         from .pytorch.model import PytorchOpenVINOModel
-        return PytorchOpenVINOModel._load(path, device=device)
+        return PytorchOpenVINOModel._load(path, device=device, cache_dir=cache_dir, shapes=shapes)
     elif framework == 'tensorflow':
         from .tf.model import KerasOpenVINOModel
-        return KerasOpenVINOModel._load(path, device=device)
+        return KerasOpenVINOModel._load(path, device=device, cache_dir=cache_dir, shapes=shapes)
     else:
         invalidInputError(False,
                           "The value {} for framework is not supported."

@@ -12,6 +12,7 @@ ENV HADOOP_VERSION=${HADOOP_VERSION}
 ENV SPARK_VERSION=${SPARK_VERSION}
 ENV SPARK_SCALA_VERSION=${SPARK_SCALA_VERSION}
 ENV SPARK_HOME=/opt/spark
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
 ARG SPARK_JAR_REPO_URL
 
@@ -23,7 +24,7 @@ ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
 ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential wget git unzip && \
+        openjdk-8-jdk build-essential wget git unzip zip swig libssl-dev cmake && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -156,14 +157,23 @@ RUN cd /opt && \
     cd zoo-tutorials/tpch-spark && \
     sed -i 's/2.11.7/2.12.1/g' tpch.sbt && \
     sed -i 's/2.4.0/3.1.3/g' tpch.sbt && \
-    sbt package
+    sbt package && \
+    cd /opt/zoo-tutorials/tpch-pyspark && \
+    zip -r tpch.zip ./tpch
+
+#LGBM make
+RUN mkdir /ppml && cd /ppml && \
+    git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
+    cd LightGBM && mkdir build && cd build && \
+    cmake -DUSE_SWIG=ON -DUSE_SSL=1 .. && make -j4
 
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
-FROM occlum/occlum:0.29.4-ubuntu20.04 as ppml
+FROM occlum/occlum:0.29.5-ubuntu20.04 as ppml
 
-ARG BIGDL_VERSION=2.3.0-SNAPSHOT
+MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
+ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION
 ARG HADOOP_VERSION
 ENV HADOOP_VERSION=${HADOOP_VERSION}
@@ -228,6 +238,11 @@ RUN cd /opt && \
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 
+# Prepare pyspark TPC-H
+RUN mkdir -p /opt/py-examples/tpch
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/tpch.zip /opt/py-examples/tpch/
+COPY --from=bigdl /opt/zoo-tutorials/tpch-pyspark/main.py /opt/py-examples/tpch/
+
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
 ADD ./sqlSuites /opt/sqlSuites
@@ -264,4 +279,7 @@ ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
 
+# replace lightgbmlib.jar
+RUN rm -rf $BIGDL_HOME/jars/lightgbmlib*
+COPY --from=bigdl /ppml/LightGBM/build/lightgbmlib.jar $BIGDL_HOME/jars/
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

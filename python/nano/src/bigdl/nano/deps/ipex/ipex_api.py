@@ -16,7 +16,7 @@
 
 
 from typing import Any
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 
 def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
@@ -47,7 +47,8 @@ def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
                         use_jit=False, channels_last=None, thread_num=None,
                         inplace=False, jit_strict=True, jit_method=None,
-                        weights_prepack=None, enable_onednn=True):
+                        weights_prepack=None, enable_onednn=True,
+                        example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -67,19 +68,25 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
            ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+    :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+           to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+           should be specified when use_jit is ``True`` and torch > 2.0,
+           otherwise will be ignored.
     '''
     from .ipex_inference_model import PytorchIPEXJITModel
     return PytorchIPEXJITModel(model, input_sample=input_sample, use_ipex=use_ipex,
                                use_jit=use_jit, channels_last=channels_last,
                                thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
                                jit_method=jit_method, weights_prepack=weights_prepack,
-                               enable_onednn=enable_onednn)
+                               enable_onednn=enable_onednn,
+                               example_kwarg_inputs=example_kwarg_inputs)
 
 
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                             use_jit=False, channels_last=None, thread_num=None,
                             inplace=False, jit_strict=True, jit_method=None,
-                            weights_prepack=None, enable_onednn=True):
+                            weights_prepack=None, enable_onednn=True,
+                            example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param input_sample: torch tensor indicate the data sample to be used
@@ -99,19 +106,24 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
            ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+    :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+           to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+           should be specified when use_jit is ``True`` and torch > 2.0,
+           otherwise will be ignored.
     '''
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
     return PytorchIPEXJITBF16Model(model, input_sample=input_sample, use_ipex=use_ipex,
                                    use_jit=use_jit, channels_last=channels_last,
                                    thread_num=thread_num, inplace=inplace, jit_strict=jit_strict,
                                    jit_method=jit_method, weights_prepack=weights_prepack,
-                                   enable_onednn=enable_onednn)
+                                   enable_onednn=enable_onednn,
+                                   example_kwarg_inputs=example_kwarg_inputs)
 
 
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
                                  input_sample=None, channels_last=None,
                                  thread_num=None, inplace=False,
-                                 jit_strict=True):
+                                 jit_strict=True, example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform.
     :param calib_data: calibration data is required for static quantization.
@@ -124,24 +136,45 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
     :param thread_num: the thread num allocated for this model.
     :param inplace: whether to perform inplace optimization. Default: ``False``.
     :param jit_strict: Whether recording your mutable container types.
+    :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+           to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+           should be specified when use_jit is ``True`` and torch > 2.0,
+           otherwise will be ignored.
     '''
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
     return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
                                         input_sample=input_sample, channels_last=channels_last,
                                         thread_num=thread_num, inplace=inplace,
-                                        jit_strict=jit_strict)
+                                        jit_strict=jit_strict,
+                                        example_kwarg_inputs=example_kwarg_inputs)
 
 
-def load_ipexjit_model(path, model, inplace=False):
+def PytorchIPEXPUModel(model, thread_num=None, precision="fp32", use_ipex=False):
+    '''
+    :param model: the model(nn.module) to be transform.
+    :param thread_num: the thread num allocated for this model.
+    '''
+    from .ipex_inference_xpu_model import PytorchIPEXPUModel
+    return PytorchIPEXPUModel(model, thread_num=thread_num, precision=precision, use_ipex=use_ipex)
+
+
+def load_ipexjit_model(path, model, inplace=False, input_sample=None):
     from .ipex_inference_model import PytorchIPEXJITModel
-    return PytorchIPEXJITModel._load(path, model, inplace=inplace)
+    return PytorchIPEXJITModel._load(path, model, inplace=inplace,
+                                     input_sample=input_sample)
 
 
-def load_ipexjitbf16_model(path, model, inplace=False):
+def load_ipexjitbf16_model(path, model, inplace=False, input_sample=None):
     from .ipex_inference_bf16_model import PytorchIPEXJITBF16Model
-    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace)
+    return PytorchIPEXJITBF16Model._load(path, model, inplace=inplace,
+                                         input_sample=input_sample)
 
 
 def load_ipex_quantization_model(path, model, inplace=False):
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
     return PytorchIPEXQuantizationModel._load(path, model, inplace=inplace)
+
+
+def load_ipex_xpu_model(path, model, inplace=False):
+    from .ipex_inference_xpu_model import PytorchIPEXPUModel
+    return PytorchIPEXPUModel._load(path, model, inplace=inplace)

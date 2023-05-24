@@ -1,0 +1,45 @@
+name: Scanner-snyk-scala
+on:
+#  pull_request:
+#    branchs: [ main ]
+  schedule:
+    - cron: '0 4 * * 0' # GMT time, 4:00 GMT == 12:00 China Every Sunday
+  workflow_dispatch:
+    inputs:
+      snyk_apitoken:
+        description: 'Snyk token'
+        required: false
+        type: string        
+        default: 'monitor'
+      snyk_org:
+        description: 'Enter synk org: (eg- iags_mlp)'
+        required: true
+        type: string
+        default: 'iags_mlp'
+
+jobs:
+  snyk-scala:
+    runs-on: [self-hosted, SDL]
+    steps:
+    - uses: actions/checkout@v3
+    - name: "run Snyk test scan Spark 2.4.6"
+      env: 
+          no_proxy: snyk.devtools.intel.com, intel.com
+      run: |
+        sed -i 's/<artifactId>${spark-version.project}<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/dllib/pom.xml
+        sed -i 's/<artifactId>2.0<\/artifactId>/<artifactId>2.0-SPARK_2.4<\/artifactId>/' scala/common/spark-version/2.0/pom.xml
+        cd scala
+        snyk monitor --all-projects
+        cd -
+    - name: "run Snyk test scan Spark 3.1.3"
+      env:
+          no_proxy: snyk.devtools.intel.com, intel.com
+      run: |
+        sed -i 's/<scala.major.version>2.11<\/scala.major.version>/<scala.major.version>2.12<\/scala.major.version>/' scala/pom.xml
+        sed -i 's/<scala.version>2.11.12<\/scala.version>/<scala.version>2.12.10<\/scala.version>/' scala/pom.xml
+        sed -i 's/<spark-version.project>2.0<\/spark-version.project>/<spark-version.project>3.0<\/spark-version.project>/' scala/pom.xml
+        sed -i 's/<spark.version>2.4.6<\/spark.version>/<spark.version>3.1.3<\/spark.version>/' scala/pom.xml
+        cd scala
+        snyk monitor --all-projects
+        cd -
+

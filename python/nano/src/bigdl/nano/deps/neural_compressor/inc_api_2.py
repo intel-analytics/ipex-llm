@@ -15,8 +15,10 @@
 #
 
 
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 from .core.base_metric import BaseINCMetric
+from bigdl.nano.utils.common import compare_version
+import operator
 
 
 def quantize(model, dataloader=None, eval_func=None, metric=None,
@@ -38,7 +40,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
         from .pytorch.quantized_model import PytorchQuantizedModel
         quantized_model = PytorchQuantizedModel(q_model, thread_num)
 
-        from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+        from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
         patch_attrs_from_model_to_object(model, quantized_model)
         return quantized_model
 
@@ -56,7 +58,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
             onnxruntime_session_options.intra_op_num_threads = thread_num
             onnxruntime_session_options.inter_op_num_threads = thread_num
         if onnx_option == 'tensorflow':
-            from bigdl.nano.deps.onnxruntime.tensorflow.tensorflow_onnxruntime_model import \
+            from bigdl.nano.deps.onnxruntime.tensorflow.model import \
                 KerasONNXRuntimeModel
             return KerasONNXRuntimeModel(q_model.model,
                                          onnxruntime_session_options=onnxruntime_session_options)
@@ -66,7 +68,7 @@ def quantize(model, dataloader=None, eval_func=None, metric=None,
             quantized_model = PytorchONNXRuntimeModel(q_model.model, None,
                                                       onnxruntime_session_options)
 
-            from bigdl.nano.pytorch.utils import patch_attrs_from_model_to_object
+            from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object
             patch_attrs_from_model_to_object(model, quantized_model)
             return quantized_model
 
@@ -92,7 +94,10 @@ def _quantize(
     **kwargs
 ):
     from neural_compressor import quantization
-    from neural_compressor.quantization import PostTrainingQuantConfig
+    if compare_version("neural_compressor", operator.ge, "2.1"):
+        from neural_compressor import PostTrainingQuantConfig
+    else:
+        from neural_compressor.quantization import PostTrainingQuantConfig
     from neural_compressor.config import AccuracyCriterion, TuningCriterion
     from neural_compressor.conf.pythonic_config import Config
     from neural_compressor.conf.config import QuantConf
@@ -108,7 +113,8 @@ def _quantize(
 
             def wrap_collate_fn(func):
                 def new_collate_fn(batch):
-                    return [x.numpy() if isinstance(x, torch.Tensor) else x for x in func(batch)]
+                    return [x.detach().numpy() if isinstance(x, torch.Tensor) else x
+                            for x in func(batch)]
                 return new_collate_fn
 
             dataloader = DataLoader(framework, dataloader.dataset,
@@ -116,8 +122,13 @@ def _quantize(
         else:
             # `dataloader` is tensorflow (x,y)
             # we should construct a INC DataLoader from tf.Dataset or numpy ndarray
-            from .onnx.tensorflow.quantization import KerasNumpyDataset
-            dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
+            import tensorflow as tf
+            if isinstance(dataloader[0], tf.data.Dataset):
+                dataloader = DataLoader("tensorflow", dataloader[0])
+            else:
+                from .onnx.tensorflow.quantization import KerasNumpyDataset
+                dataloader = KerasNumpyDataset(dataloader[0], dataloader[1])
+
     elif not hasattr(dataloader, "batch_size") and not hasattr(dataloader, "_batch_size"):
         # INC requires a batched dataloader,
         # A torch.Dataset doesn't have `batch_size` attribute,
@@ -125,7 +136,6 @@ def _quantize(
         # So we construct a INC DataLoader from them
         dataloader = DataLoader(framework, dataloader)
 
-    inc_metric = metric
     if 'pytorch' in framework:
         # INC 1.14 and 2.0 doesn't support quantizing pytorch-lightning module for now
         from bigdl.nano.pytorch.lightning import LightningModule
@@ -210,12 +220,17 @@ def _quantize(
     )
     if metric is None and eval_func is None:
         config.performance_only = True
-    config = Config(quantization=config, benchmark=None, pruning=None,
-                    distillation=None, nas=None)
 
-    q_conf = QuantConf()
-    q_conf.map_pyconfig_to_cfg(config)
-    q_conf.usr_cfg.model.framework = framework
+    if compare_version("neural_compressor", operator.ge, "2.1"):
+        q_conf = config
+        # TODO: how to pass framework?
+    else:
+        config = Config(quantization=config, benchmark=None, pruning=None,
+                        distillation=None, nas=None)
+
+        q_conf = QuantConf()
+        q_conf.map_pyconfig_to_cfg(config)
+        q_conf.usr_cfg.model.framework = framework
 
     q_model = quantization.fit(
         model=model,

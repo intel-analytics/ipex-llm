@@ -22,17 +22,21 @@ import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import com.intel.analytics.bigdl.ppml.kms.common.KeyLoaderManagement
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  *
  * @param sparkSession
  * @param encryptMode
- * @param dataKeyPlainText
+ * @param primaryKeyName
+ * @param keyLoaderManagement
  */
 class EncryptedDataFrameReader(
       sparkSession: SparkSession,
       encryptMode: CryptoMode,
-      dataKeyPlainText: String) {
+      primaryKeyName: String,
+      keyLoaderManagement: KeyLoaderManagement) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
 
   def option(key: String, value: String): this.type = {
@@ -40,16 +44,31 @@ class EncryptedDataFrameReader(
     this
   }
 
+  def setCryptoCodecContext(path: String): Unit = {
+    encryptMode match {
+      case PLAIN_TEXT =>
+      case AES_CBC_PKCS5PADDING =>
+        val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                  .retrieveDataKeyPlainText(path)
+      case _ =>
+        Log4Error.invalidOperationError(false, "unknown EncryptMode " + CryptoMode.toString)
+    }
+  }
+
   def csv(path: String): DataFrame = {
+    setCryptoCodecContext(path)
     sparkSession.read.options(extraOptions).csv(path)
   }
 
   def json(path: String): DataFrame = {
+    setCryptoCodecContext(path)
     sparkSession.read.options(extraOptions).json(path)
   }
 
   def parquet(path: String): DataFrame = {
     if (encryptMode != PLAIN_TEXT) {
+      val dataKeyPlainText = keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+                                                .retrieveDataKeyPlainText(path)
       EncryptedDataFrameReader.setParquetKey(sparkSession, dataKeyPlainText)
     }
     sparkSession.read.parquet(path)

@@ -21,12 +21,16 @@ from sklearn.metrics import mean_squared_log_error
 import numpy as np
 import pandas as pd
 from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
+from numpy import float64, ndarray
+from typing import List, Tuple, Union, Optional, Callable, Any
 
 
 EPSILON = 1e-10
 
 
-def _standardize_input(y_true, y_pred, multioutput):
+def _standardize_input(y_true: "ndarray", y_pred: "ndarray",
+                       multioutput: str) -> Tuple:
     """
     This function check the validation of the input
     input should be one of list/tuple/ndarray with same shape and not be None
@@ -83,7 +87,8 @@ def _standardize_input(y_true, y_pred, multioutput):
     return y_true, y_pred, original_shape
 
 
-def sMAPE(y_true, y_pred, multioutput='raw_values'):
+def sMAPE(y_true: "ndarray", y_pred: "ndarray",
+          multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate Symmetric mean absolute percentage error (sMAPE).
 
@@ -109,7 +114,8 @@ def sMAPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def MPE(y_true, y_pred, multioutput='raw_values'):
+def MPE(y_true: "ndarray", y_pred: "ndarray",
+        multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate mean percentage error (MPE).
 
@@ -134,7 +140,8 @@ def MPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def MAPE(y_true, y_pred, multioutput='raw_values'):
+def MAPE(y_true: "ndarray", y_pred: "ndarray",
+         multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate mean absolute percentage error (MAPE).
 
@@ -159,7 +166,8 @@ def MAPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def MDAPE(y_true, y_pred, multioutput='raw_values'):
+def MDAPE(y_true: "ndarray", y_pred: "ndarray",
+          multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate Median Absolute Percentage Error (MDAPE).
 
@@ -185,7 +193,8 @@ def MDAPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def sMDAPE(y_true, y_pred, multioutput='raw_values'):
+def sMDAPE(y_true: "ndarray", y_pred: "ndarray",
+           multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate Symmetric Median Absolute Percentage Error (sMDAPE).
 
@@ -212,7 +221,8 @@ def sMDAPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def ME(y_true, y_pred, multioutput='raw_values'):
+def ME(y_true: "ndarray", y_pred: "ndarray",
+       multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate Mean Error (ME).
 
@@ -237,7 +247,8 @@ def ME(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def MSPE(y_true, y_pred, multioutput='raw_values'):
+def MSPE(y_true: "ndarray", y_pred: "ndarray",
+         multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate mean squared percentage error (MSPE).
 
@@ -262,7 +273,8 @@ def MSPE(y_true, y_pred, multioutput='raw_values'):
     return np.mean(output_errors)
 
 
-def MSLE(y_true, y_pred, multioutput='raw_values'):
+def MSLE(y_true: "ndarray", y_pred: "ndarray",
+         multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate the mean squared log error(MSLE).
 
@@ -287,7 +299,8 @@ def MSLE(y_true, y_pred, multioutput='raw_values'):
     return result
 
 
-def R2(y_true, y_pred, multioutput='raw_values'):
+def R2(y_true: "ndarray", y_pred: "ndarray",
+       multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate the r2 score.
 
@@ -312,7 +325,8 @@ def R2(y_true, y_pred, multioutput='raw_values'):
     return result
 
 
-def MAE(y_true, y_pred, multioutput='raw_values'):
+def MAE(y_true: "ndarray", y_pred: "ndarray",
+        multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate the mean absolute error (MAE).
 
@@ -337,7 +351,8 @@ def MAE(y_true, y_pred, multioutput='raw_values'):
     return result
 
 
-def RMSE(y_true, y_pred, multioutput='raw_values'):
+def RMSE(y_true: "ndarray", y_pred: "ndarray",
+         multioutput: str='raw_values') -> Union[float64, "ndarray"]:
     """
     Calculate square root of the mean squared error (RMSE).
 
@@ -358,7 +373,8 @@ def RMSE(y_true, y_pred, multioutput='raw_values'):
     return np.sqrt(MSE(y_true, y_pred, multioutput=multioutput))
 
 
-def MSE(y_true, y_pred, multioutput='uniform_average'):
+def MSE(y_true: "ndarray", y_pred: "ndarray",
+        multioutput: str='uniform_average') -> Union[float64, "ndarray"]:
     """
     Calculate the mean squared error (MSE).
 
@@ -383,7 +399,7 @@ def MSE(y_true, y_pred, multioutput='uniform_average'):
     return result
 
 
-def Accuracy(y_true, y_pred, multioutput=None):
+def Accuracy(y_true: "ndarray", y_pred: "ndarray", multioutput=None) -> Union[float64, "ndarray"]:
     """
     Calculate the accuracy score (Accuracy).
 
@@ -439,7 +455,8 @@ class Evaluator(object):
     max_mode_metrics = ('r2', 'accuracy')
 
     @staticmethod
-    def evaluate(metric, y_true, y_pred, multioutput='raw_values'):
+    def evaluate(metric: str, y_true: "ndarray",
+                 y_pred: "ndarray", multioutput: str='raw_values') -> float64:
         """
         Evaluate a specific metric for y_true and y_pred.
 
@@ -463,7 +480,7 @@ class Evaluator(object):
             return result
 
     @staticmethod
-    def check_metric(metric):
+    def check_metric(metric: str) -> None:
         if not metric:
             invalidInputError(False,
                               f"Got invalid metric name of {metric}!")
@@ -472,7 +489,7 @@ class Evaluator(object):
                               "metric " + metric + " is not supported")
 
     @staticmethod
-    def get_metric_mode(metric):
+    def get_metric_mode(metric: Union[Callable[..., Any], str, None]) -> str:
         Evaluator.check_metric(metric)
         if metric in Evaluator.max_mode_metrics:
             return "max"

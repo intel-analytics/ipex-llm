@@ -62,6 +62,227 @@ class MultiInputModel(nn.Module):
         return self.layer_3(x)
 
 
+class TupleInputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 128)
+        self.layer_2 = nn.Linear(28 * 28, 128)
+        self.layer_3 = nn.Linear(256, 1)
+    
+    def forward(self, x1, x2, x3):
+        x1 = self.layer_1(x1)
+        x2_ = None
+        for x in x2:
+            if x2_ is None:
+                x2_ = self.layer_2(x)
+            else:
+                x2_ += self.layer_2(x)
+        x = torch.cat([x1, x2_], axis=1)
+
+        return self.layer_3(x) + x3
+
+
+class DictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2, "x3": x3}
+        return output
+
+
+class DictOutputModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x3": x3, "x1": x1, "x2": x2}
+        return output
+
+
+class DictTensorOutputModel1(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output = {"x1": x1, "x2": x2}
+        return output, x3
+
+
+class MultiDictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output1 = {"x1": x1, "x2": x2, "x3": x3}
+        output2 = {"x3": x3, "x1": x1, "x2": x2}
+        return output1, output2
+
+
+class MultiDictTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        x3 = self.layer_3(x)
+        output1 = {"x1": x1, "x2": x2, "x3": x3}
+        output2 = {"x3": x3, "x1": x1, "x2": x2}
+        return x3, output1, output2
+
+
+
+class ListOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1, x2, output]
+
+
+class TupleTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return output, (x1, x2, x)
+
+
+class MultiTupleOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2], (output, x)
+
+
+class MultiTupleTensorOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return output, [x1,x2], (output, x)
+
+
+
+class TupleDictOutputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2], {"x":x, "output":output}
+
+
+class TupleDictOutputModel2(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return [x1,x2,{"x":x, "output":output}]
+
+class TupleDictOutputModel3(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 12)
+        self.layer_2 = nn.Linear(28 * 28, 12)
+        self.layer_3 = nn.Linear(24, 1)
+    
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+        output = self.layer_3(x)
+        return {"intermediate": [x1,x2], "x":x, "output":output}
+
+
 class TestOnnx(TestCase):
     def test_trace_onnx(self):
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
@@ -206,8 +427,35 @@ class TestOnnx(TestCase):
 
         assert onnx_model.channels == 3
         onnx_model.hello()
-        with pytest.raises(AttributeError):
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
             onnx_model.width
+
+        # save & load without original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'channels'"
+        ):
+            load_model.channels
+        with pytest.raises(AttributeError):
+            load_model.hello()
+
+        # save & load with original model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name, model=pl_model)
+        assert load_model.channels == 3
+        load_model.hello()
+        with pytest.raises(
+            AttributeError,
+            match="'PytorchONNXRuntimeModel' object has no attribute 'width'"
+        ):
+            load_model.width
 
     def test_onnx_default_values(self):
         # default bool values
@@ -264,16 +512,16 @@ class TestOnnx(TestCase):
         accmodel = InferenceOptimizer.trace(model,
                                             accelerator="onnxruntime",
                                             input_sample=torch.rand(2,3,1,1))
-        result_m = accmodel(x, np.array([y]))  # TODO: make y work here
+        result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
 
         # sample with only all parameters (in a tuple)
         accmodel = InferenceOptimizer.trace(model,
                                             accelerator="onnxruntime",
                                             input_sample=(torch.rand(2,3,1,1),3))
-        result_m = accmodel(x, np.array([y]))  # TODO: make y work here
+        result_m = accmodel(x, y)
         assert torch.equal(result_true, result_m)
-    
+
     def test_onnx_dynamic_axes(self):
         class CustomModel(nn.Module):
             def __init__(self):
@@ -305,6 +553,337 @@ class TestOnnx(TestCase):
         accmodel(x1)
         accmodel(x2)
         accmodel(x3)
+
+    def test_onnx_trace_output_tensors(self):
+        model = ResNet18(10, pretrained=True, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+
+        onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
+                                              input_sample=train_loader)
+        test_onnx_model = InferenceOptimizer.trace(pl_model, accelerator="onnxruntime",
+                                                   input_sample=train_loader, output_tensors=False)
+
+        for x, y in train_loader:
+            forward_res_tensor = onnx_model(x).numpy()
+            forward_res_numpy = test_onnx_model(x)
+            assert isinstance(forward_res_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_onnx_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        forward_res_tensor = load_model(x).numpy()
+        forward_res_numpy = test_load_model(x)
+        assert isinstance(forward_res_numpy, np.ndarray)
+        np.testing.assert_almost_equal(forward_res_tensor, forward_res_numpy, decimal=5)
+
+    def test_onnx_tuple_input(self):
+        model = TupleInputModel()
+        x1 = torch.randn(100, 28 * 28)
+        x2 = [torch.randn(100, 28 * 28), torch.randn(100, 28 * 28), torch.randn(100, 28 * 28)]  # tuple
+        x3 = 5
+        target = model(x1, x2, x3)
+
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2, x3))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2, x3)
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model(x1, x2, x3)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+
+    def test_onnx_kwargs(self):
+        model = MultiInputModel()
+        x1 = torch.randn(100, 28 * 28)
+        x2 = torch.randn(100, 28 * 28)
+        target = model(x1, x2)
+
+        onnx_model = InferenceOptimizer.trace(model,
+                                              accelerator='onnxruntime',
+                                              input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+            np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
+            output2 = onnx_model(x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
+            output3 = onnx_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output1.numpy(), output3.numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        
+        with InferenceOptimizer.get_context(load_model):
+            output4 = load_model(x1=x1, x2=x2)
+            np.testing.assert_almost_equal(output4.numpy(), output4.numpy(), decimal=5)
+
+    def test_onnxruntime_dict_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: output is a single dict
+        for Model in [DictOutputModel, DictOutputModel2]:
+            model = Model()
+            output = model(x1, x2)
+            assert isinstance(output, dict)
+
+            onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+            with InferenceOptimizer.get_context(onnx_model):
+                output1 = onnx_model(x1, x2)
+
+            assert output.keys() == output1.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                InferenceOptimizer.save(onnx_model, tmp_dir_name)
+                load_model = InferenceOptimizer.load(tmp_dir_name)
+
+            with InferenceOptimizer.get_context(load_model):
+                output2 = load_model(x1, x2)
+
+            assert output.keys() == output2.keys()
+            for k in output.keys():
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output2[k].detach().numpy(), decimal=5)
+
+        # test2: output is a dict with other non-list items
+        model = DictTensorOutputModel1()
+        dic, out = model(x1, x2)
+        assert isinstance(dic, dict)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            dic1, out1 = onnx_model(x1, x2)
+        assert dic1.keys() == dic.keys()
+        np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            dic2, out2 = load_model(x1, x2)
+        assert dic2.keys() == dic1.keys()
+        np.testing.assert_almost_equal(out2.detach().numpy(), out1.detach().numpy(), decimal=5)
+        
+        # test3: test multi dict, output are 2 dicts
+        model = MultiDictOutputModel()
+        dic1, dic2 = model(x1, x2)
+        assert isinstance(dic1, dict)
+        assert isinstance(dic2, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output_dic1, output_dic2 = ov_model(x1, x2)
+        assert dic1.keys() == output_dic1.keys()
+        assert dic2.keys() == output_dic2.keys()
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2_dic1, output2_dic2 = load_model(x1, x2)
+        assert dic1.keys() == output2_dic1.keys()
+        assert dic2.keys() == output2_dic2.keys()
+        
+        # test4: test multi dict with non-list item, output is a tensor with 2 dicts
+        model = MultiDictTensorOutputModel()
+        output, dic1, dic2 = model(x1, x2)
+        assert isinstance(dic1, dict)
+        assert isinstance(dic2, dict)
+        ov_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(ov_model):
+            output1, output1_dic1, output1_dic2 = ov_model(x1, x2)
+        assert dic1.keys() == output_dic1.keys()
+        assert dic2.keys() == output_dic2.keys()
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(ov_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2, output2_dic1, output2_dic2 = load_model(x1, x2)
+        assert dic1.keys() == output2_dic1.keys()
+        assert dic2.keys() == output2_dic2.keys()
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+    def test_onnxruntime_list_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: output is a single list
+        model = ListOutputModel()
+        output = model(x1, x2)
+        assert isinstance(output, list)
+
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+        
+        assert len(output) == len(output1)
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2 = load_model(x1, x2)
+
+        assert len(output) == len(output2)
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output2[k].detach().numpy(), decimal=5)
+
+        # test2: output is a tuple with other non-list items
+        model = TupleTensorOutputModel()
+        out, list_out = model(x1, x2)
+        assert isinstance(list_out, tuple)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            out1, list_out1 = onnx_model(x1, x2)
+        assert len(list_out) == len(list_out1)
+        np.testing.assert_almost_equal(out.detach().numpy(), out1.detach().numpy(), decimal=5)
+        for k in range(len(list_out)):
+            np.testing.assert_almost_equal(list_out[k].detach().numpy(), list_out1[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            out2, list_out2 = load_model(x1, x2)
+        assert len(list_out) == len(list_out2)
+        np.testing.assert_almost_equal(out2.detach().numpy(), out1.detach().numpy(), decimal=5)
+        for k in range(len(list_out1)):
+            np.testing.assert_almost_equal(list_out1[k].detach().numpy(), list_out2[k].detach().numpy(), decimal=5)
+
+        # test3: test multi list/tuple, output are 2 lists
+        model = MultiTupleOutputModel()
+        list1, list2 = model(x1, x2)
+        assert isinstance(list1, list)
+        assert isinstance(list2, tuple)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output_list1, output_list2 = onnx_model(x1, x2)
+        assert len(output_list1) == len(list1)
+        assert len(output_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output_list2[k].detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2_list1, output2_list2 = load_model(x1, x2)
+        assert len(output2_list1) == len(list1)
+        assert len(output2_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output2_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output2_list2[k].detach().numpy(), decimal=5)
+
+        # test4: test multi list/tuple with non-list item, output is a tensor with 2list/tuples
+        model = MultiTupleTensorOutputModel()
+        output, list1, list2 = model(x1, x2)
+        assert isinstance(list1, list)
+        assert isinstance(list2, tuple)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1, output1_list1, output1_list2 = onnx_model(x1, x2)
+        assert len(output1_list1) == len(list1)
+        assert len(output1_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output1_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output1_list2[k].detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(onnx_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        with InferenceOptimizer.get_context(load_model):
+            output2, output2_list1, output2_list2 = load_model(x1, x2)
+        assert len(output2_list1) == len(list1)
+        assert len(output2_list2) == len(list2)
+        for k in range(len(list1)):
+            np.testing.assert_almost_equal(list1[k].detach().numpy(), output2_list1[k].detach().numpy(), decimal=5)
+        for k in range(len(list2)):
+            np.testing.assert_almost_equal(list2[k].detach().numpy(), output2_list2[k].detach().numpy(), decimal=5)
+        np.testing.assert_almost_equal(output2.detach().numpy(), output1.detach().numpy(), decimal=5)
+
+
+    def test_onnxruntime_list_dict_output(self):
+        x1 = torch.randn(10, 28 * 28)
+        x2 = torch.randn(10, 28 * 28)
+        # test1: test single dict and a single list
+        model = TupleDictOutputModel()
+        output, dic = model(x1, x2)
+        assert isinstance(output, list)
+        assert isinstance(dic, dict)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1, dic1 = onnx_model(x1, x2)
+        assert isinstance(output1, list)
+        assert isinstance(dic1, dict)
+        assert dic.keys() == dic1.keys()
+        for k in range(len(output)):
+            np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+        for k in dic.keys():
+            np.testing.assert_almost_equal(dic[k].detach().numpy(), dic1[k].detach().numpy(), decimal=5)
+
+        # test2: test list contains dict
+        model = TupleDictOutputModel2()
+        output = model(x1, x2)
+        assert isinstance(output, list)
+        assert isinstance(output[2], dict)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+        assert isinstance(output1, list)
+        assert isinstance(output1[2], dict)
+        assert len(output1) == len(output)
+        for i in range(2):
+            np.testing.assert_almost_equal(output[i].detach().numpy(), output1[i].detach().numpy(), decimal=5)
+        assert output[2].keys() == output1[2].keys()
+        for k in output[2].keys():
+            np.testing.assert_almost_equal(output[2][k].detach().numpy(), output1[2][k].detach().numpy(), decimal=5)
+
+        # test3: test dict contains list
+        model = TupleDictOutputModel3()
+        output = model(x1, x2)
+        assert isinstance(output, dict)
+        assert isinstance(output["intermediate"], list)
+        onnx_model = InferenceOptimizer.trace(model, accelerator='onnxruntime', input_sample=(x1, x2))
+        with InferenceOptimizer.get_context(onnx_model):
+            output1 = onnx_model(x1, x2)
+        assert isinstance(output1, dict)
+        assert isinstance(output1["intermediate"], list)
+        assert output1.keys() == output.keys()
+        for k in output.keys():
+            if k != "intermediate":
+                np.testing.assert_almost_equal(output[k].detach().numpy(), output1[k].detach().numpy(), decimal=5)
+            else:
+                for i in range(2):
+                    np.testing.assert_almost_equal(output["intermediate"][i].detach().numpy(), output1["intermediate"][i].detach().numpy(), decimal=5)
 
 
 if __name__ == '__main__':

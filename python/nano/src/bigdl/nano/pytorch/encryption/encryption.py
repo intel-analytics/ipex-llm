@@ -22,7 +22,7 @@ import pathlib
 from cryptography.fernet import Fernet
 from typing import BinaryIO, Union, IO, Optional
 import pickle
-from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.common import invalidInputError
 
 DEFAULT_PROTOCOL = 2
 
