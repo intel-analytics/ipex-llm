@@ -35,14 +35,14 @@ ENV SPARK_HOME                          ${SPARK_HOME}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git --no-install-recommends && \
 # java
-    wget --progress=dot:giga $JDK_URL && \
+    wget -q $JDK_URL && \
     gunzip jdk-$JDK_VERSION-linux-x64.tar.gz && \
     tar -xf jdk-$JDK_VERSION-linux-x64.tar -C /opt && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk && \
 # spark
-    wget --progress=dot:giga https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    wget -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 /opt/spark && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
@@ -51,21 +51,21 @@ RUN apt-get update --fix-missing && \
     rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
     rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \
     rm -f ${SPARK_HOME}/jars/apache-log4j-extras-1.2.17.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
-    wget --progress=dot:giga -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
+    wget -qP ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -qP ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -qP ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -qP ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -qP ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 COPY ./log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
 COPY ./spark-defaults.conf ${SPARK_HOME}/conf/spark-defaults.conf
 SHELL ["/bin/bash", "-c"]
 RUN if [ $SPARK_VERSION = "3.1.3" ]; then \
         rm $SPARK_HOME/jars/okhttp-*.jar && \
-        wget --progress=dot:giga -P $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
+        wget -qP $SPARK_HOME/jars https://repo1.maven.org/maven2/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar; \
     elif [ $SPARK_VERSION = "2.4.6" ]; then \
         rm $SPARK_HOME/jars/kubernetes-client-*.jar && \
-        wget --progress=dot:giga -P $SPARK_HOME/jars https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar; \
+        wget -qP $SPARK_HOME/jars https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar; \
     fi
 
 # stage.2 bigdl
@@ -122,7 +122,7 @@ SHELL ["/bin/bash", "-c"]
 RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
 # Install Miniconda
-    wget --progress=dot:giga https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
+    wget -q https://repo.continuum.io/miniconda/Miniconda3-4.5.4-Linux-x86_64.sh && \
     chmod +x Miniconda3-4.5.4-Linux-x86_64.sh && \
     ./Miniconda3-4.5.4-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-4.5.4-Linux-x86_64.sh && \
