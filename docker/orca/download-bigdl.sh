@@ -23,10 +23,10 @@ echo $SPARK_VERSION
 echo $SPARK_MAJOR_VERSION
 
 if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
-  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
-  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip
+  NIGHTLY_VERSION=$(echo $(echo `wget --no-check-certificate -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+  wget --no-check-certificate -q https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip
   unzip bigdl-assembly-spark_$SPARK_VERSION-$NIGHTLY_VERSION.zip -d $BIGDL_HOME
 else
-  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip
+  wget --no-check-certificate -q https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip
   unzip bigdl-assembly-spark_$SPARK_VERSION-$BIGDL_VERSION.zip -d $BIGDL_HOME
 fi
