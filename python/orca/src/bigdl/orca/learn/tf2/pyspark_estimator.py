@@ -86,7 +86,7 @@ class SparkTFEstimator():
             self.config["intra_op_parallelism"] = num_core // workers_per_node
 
         self.model_weights = None
-        self.optimizer_weights = None
+        self.variables = None
         self.load_path = None
         self.load_params = None
 
@@ -179,10 +179,10 @@ class SparkTFEstimator():
         else:
             weights = None
 
-        if self.optimizer_weights:
-            opt_weights = sc.broadcast(self.optimizer_weights)
+        if self.variables:
+            model_variables = sc.broadcast(self.variables)
         else:
-            opt_weights = None
+            model_variables = None
 
         init_params = dict(
             model_creator=self.model_creator,
@@ -192,7 +192,7 @@ class SparkTFEstimator():
             verbose=self.verbose,
             size=self.num_workers,
             model_weights=weights,
-            optimizer_weights=opt_weights,
+            model_variables=model_variables,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -647,7 +647,8 @@ class SparkTFEstimator():
         model = load_model(**self.load_params)  # type:ignore
         self.model_weights = model.get_weights()
         if model.optimizer is not None:
-            self.optimizer_weights = model.optimizer.get_weights()
+            optimizer = model.optimizer
+            self.variables = model.trainable_variables()
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
             if is_file(self.load_path):  # type:ignore

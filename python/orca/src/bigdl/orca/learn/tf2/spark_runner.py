@@ -194,7 +194,7 @@ class SparkRunner:
                  config=None,
                  verbose=False,
                  model_weights=None,
-                 optimizer_weights=None,
+                 model_variables=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
@@ -222,7 +222,7 @@ class SparkRunner:
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
         self.verbose = verbose
         self.model_weights = model_weights
-        self.optimizer_weights = optimizer_weights
+        self.model_variables = model_variables
         self.size = size
         self.mode = mode
         self.backend = backend
@@ -265,15 +265,8 @@ class SparkRunner:
                         else:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
-                                if self.optimizer_weights:
-                                    def load_opt_weights():
-                                        grad_vars = self.model.trainable_weights
-                                        zero_grads = [tf.zeros_like(w) for w in grad_vars]
-                                        self.model.optimizer.apply_gradients(
-                                            zip(zero_grads, grad_vars))
-                                        self.model.optimizer.set_weights(
-                                            self.optimizer_weights.value)
-                                    self.strategy.run(load_opt_weights)
+                                if self.model_variables:
+                                    self.model.optimizer.build(self.model_variables)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
                             else:
