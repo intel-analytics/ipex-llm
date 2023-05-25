@@ -28,7 +28,8 @@ object Encrypt extends Supportive {
         case Some(arguments) => arguments
         case None => argumentsParser.failure("miss args, please see the usage info"); null
     }
-    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action, header, nPartition) = (
+    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action,
+    header, nPartition) = (
         arguments.inputDataSourcePath,
         arguments.outputDataSinkPath,
         CryptoMode.parse(arguments.cryptoMode),
@@ -43,7 +44,8 @@ object Encrypt extends Supportive {
     if (action.equals("encrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(PLAIN_TEXT).option("header", header).csv(inputDataSourcePath).repartition(nPartition)
+          val df = sc.read(PLAIN_TEXT).option("header", header).
+            csv(inputDataSourcePath).repartition(nPartition)
           sc.write(df, cryptoMode).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
