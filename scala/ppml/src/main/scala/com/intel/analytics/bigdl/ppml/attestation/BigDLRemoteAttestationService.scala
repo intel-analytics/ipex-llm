@@ -54,6 +54,10 @@ case class Enroll(appID: String, apiKey: String)
 case class PolicyBase(policyID: String, policyType: String)
 case class SGXMREnclavePolicy(appID: String, mrEnclave: String) extends Policy
 case class SGXMRSignerPolicy(appID: String, mrSigner: String, isvProdID: String) extends Policy
+case class SGXReportDataPolicy(appID: String, reportData: String) extends Policy
+
+case class TDXMRTDPolicy(appID: String, mrTD: String) extends Policy
+case class TDXReportDataPolicy(appID: String, reportData: String) extends Policy
 
 case class Quote(quote: String)
 
@@ -89,6 +93,12 @@ object BigDLRemoteAttestationService {
         JsonUtil.fromJson(classOf[SGXMREnclavePolicy], msg)
       case "SGXMRSignerPolicy" =>
         JsonUtil.fromJson(classOf[SGXMRSignerPolicy], msg)
+      case "SGXReportDataPolicy" =>
+        JsonUtil.fromJson(classOf[SGXReportDataPolicy], msg)
+      case "TDXMRTDPolicy" =>
+        JsonUtil.fromJson(classOf[TDXMRTDPolicy], msg)
+      case "TDXReportDataPolicy" =>
+        JsonUtil.fromJson(classOf[TDXReportDataPolicy], msg)
       case _ =>
         null
     }
@@ -138,6 +148,35 @@ object BigDLRemoteAttestationService {
               val res = "{\"result\": -1}"
               complete(400, res)
             }
+          case Some(SGXReportDataPolicy(policyAppID, policyReportData)) =>
+            val reportData = AttestationUtil.getReportDataFromSGXQuote(quote)
+            if (appID == policyAppID && reportData == policyReportData) {
+              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+
+          case Some(TDXMRTDPolicy(policyAppID, policyMRTD)) =>
+            val mrTD = AttestationUtil.getMRTDFromQuote(quote)
+            if (appID == policyAppID && mrTD == policyMRTD) {
+              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+          case Some(TDXReportDataPolicy(policyAppID, policyReportData)) =>
+            val reportData = AttestationUtil.getReportDataFromTDXQuote(quote)
+            if (appID == policyAppID && reportData == policyReportData) {
+              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+
           case _ =>
             complete(400, "Unsupported policy type.")
         }

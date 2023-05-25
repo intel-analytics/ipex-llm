@@ -61,6 +61,20 @@ cd BigDL/ppml/
     kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
     ```
 
+If spark service account secret is not auto-generated, please generate manually with the following command:
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spark-secret
+  annotations:
+    kubernetes.io/service-account.name: spark
+type: kubernetes.io/service-account-token
+EOF
+```
+
 2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash

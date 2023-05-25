@@ -38,6 +38,18 @@ object AttestationUtil {
     new BigInteger(1, quote.slice(304, 306)).toString(16)
   }
 
+  def getReportDataFromSGXQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(368, 432)).toString(16)
+  }
+
+  def getReportDataFromTDXQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(568, 632)).toString(16)
+  }
+
+  def getMRTDFromQuote(quote: Array[Byte]): String = {
+    new BigInteger(1, quote.slice(184, 232)).toString(16)
+  }
+
   def generateToken(length: Int = 32): String = {
     val secureRandom = new SecureRandom()
     val charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
