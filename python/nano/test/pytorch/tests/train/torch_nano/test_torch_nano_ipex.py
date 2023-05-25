@@ -188,17 +188,6 @@ class Lite:
 TORCH_CLS = Lite
 
 
-class CaseWithoutAVX2:
-    def test_placeholder(self):
-        pass
-
-
-if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
-    print("Torch_nano IPEX Without AVX2")
-    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_CLS = CaseWithoutAVX2
-
-
 class TestLite(TORCH_CLS, TestCase):
     pass
 
