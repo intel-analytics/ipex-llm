@@ -64,10 +64,11 @@ object AttestationCLI {
                              challenge: String = "",
                              policyID: String = "",
                              quoteType: String = QUOTE_CONVENTION.MODE_GRAMINE,
-                             httpsEnabled: Boolean = false,
                              apiVersion: String = "2020-10-01",
                              quotePath:String = "",
                              nonce: String = "",
+                             proxyHost: String = "",
+                             proxyPort: Int = 0,
                              userReport: String = "010203040506")
 
         val cmdParser: OptionParser[CmdParams] = new OptionParser[CmdParams](
@@ -104,9 +105,16 @@ object AttestationCLI {
               .action((x, c) => c.copy(userReport = x))
             opt[String]('q', "quotePath")
               .text("quotePath, default is ''")
-              .action((x, c) => c.copy(userReport = x))
+              .action((x, c) => c.copy(quotePath = x))
+            opt[String]("proxyHost")
+              .text("proxyHost, default is ''")
+              .action((x, c) => c.copy(proxyHost = x))
+            opt[Int]("proxyPort")
+              .text("proxyPort, default is ''")
+              .action((x, c) => c.copy(proxyPort = x.toInt))
         }
         val params = cmdParser.parse(args, CmdParams()).get
+        println(params)
 
         // Attestation Client
         val as = params.asType match {
@@ -122,7 +130,7 @@ object AttestationCLI {
                 new AzureAttestationService(params.asURL, params.apiVersion,
                  Base64.getUrlEncoder.encodeToString(hex(params.userReport)))
             case ATTESTATION_CONVENTION.MODE_AMBER =>
-                new AmberAttestationService(params.asURL, params.apiKey, params.userReport)
+                new AmberAttestationService(params.asURL, params.apiKey, params.userReport, params.proxyHost, params.proxyPort)
             case _ => throw new AttestationRuntimeException("Wrong Attestation Service type")
         }
 
@@ -154,6 +162,7 @@ object AttestationCLI {
           }
           quote = quoteGenerator.getQuote(userReportData)
         } else {
+          println("[INFO] Using generated quote, only for debug!")
           val quoteFile = new File(quotePath)
           val in = new FileInputStream(quoteFile)
           val bufIn = new BufferedInputStream(in)
@@ -164,6 +173,12 @@ object AttestationCLI {
 
         val challengeString = params.challenge
         val debug = System.getenv("ATTESTATION_DEBUG")
+
+        if (debug == "true") {
+            val quote_base64 = Base64.getEncoder.encodeToString(quote)
+            println(s"quote: ${quote_base64}")
+        }
+
         if (challengeString.length() > 0 && params.asType != ATTESTATION_CONVENTION.MODE_DUMMY) {
             val asQuote = params.asType match {
               case ATTESTATION_CONVENTION.MODE_EHSM_KMS =>

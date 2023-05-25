@@ -39,6 +39,8 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.client.HttpClients
+import org.apache.http.HttpHost
+import org.apache.http.client.config.RequestConfig
 import org.apache.http.ssl.SSLContextBuilder
 import org.apache.http.ssl.SSLContexts
 import org.apache.http.client.methods.{HttpGet, HttpPost}
@@ -59,7 +61,7 @@ import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUt
  * @param appID application ID
  * @param apiKey application Key
  */
-class AmberAttestationService(attestationServerURL: String, apiKey: String, userReport: String) extends AttestationService {
+class AmberAttestationService(attestationServerURL: String, apiKey: String, userReport: String, proxyHost: String, proxyPort: Int) extends AttestationService {
   val logger = LogManager.getLogger(getClass)
 
   val sslConSocFactory = {
@@ -91,12 +93,12 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
 
   var nonceJson = new JSONObject()
   var nonce = ""
-  
+
   def getNonce(): String = {
     val action: String = ACTION_GET_NONCE
     val getUrl = constructUrl(action)
     var response: String = null
-    response = getRequest(getUrl, sslConSocFactory, apiKey)
+    response = getRequest(getUrl, sslConSocFactory)
     nonceJson = new JSONObject(response)
     nonce = nonceJson.getString("val")
     nonce
@@ -164,17 +166,27 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
   }
 
   private def constructUrl(action: String): String = {
-    s"$attestationServerURL/$action"
+    s"$attestationServerURL$action"
   }
 
   
-  def getRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, apiKey: String): String = {
+  def getRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
 
     val httpGet = new HttpGet(url)
     httpGet.setHeader(new BasicHeader("Accept", "application/json"));
     httpGet.setHeader(new BasicHeader("x-api-key", apiKey));
+    if (proxyHost.length > 0) {
+      val proxy_host = new HttpHost(proxyHost,proxyPort)
+      val config = RequestConfig.custom()
+                  .setProxy(proxy_host)
+                  .build()
+      httpGet.setConfig(config)
+    }
+    if (debug == "true") {
+      println(httpGet)
+    }
     val response = httpsClient.execute(httpGet)
     if (debug == "true") {
       println(response)
@@ -182,13 +194,28 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 
-  def postRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, apiKey: String): String = {
+  def postRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, content: String): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
     val httpPost = new HttpPost(url)
     httpPost.setHeader(new BasicHeader("Content-Type", "application/json"));
     httpPost.setHeader(new BasicHeader("Accept", "application/json"));
     httpPost.setHeader(new BasicHeader("x-api-key", apiKey));
+    if (proxyHost.length > 0) {
+      val proxy_host = new HttpHost(proxyHost,proxyPort)
+      val config = RequestConfig.custom()
+                  .setProxy(proxy_host)
+                  .build()
+      httpPost.setConfig(config)
+    }
+    if (content.length > 0) {
+      httpPost.setEntity(new StringEntity(content, "UTF-8"))
+    }
+    if (debug == "true") {
+      println(httpPost)
+      val headers = httpPost.getAllHeaders().toSeq.map(header => header.getName() -> header.getValue())
+println(s"Headers: $headers")
+    }
     val response = httpsClient.execute(httpPost)
     if (debug == "true") {
       println(response)
