@@ -28,13 +28,14 @@ object Encrypt extends Supportive {
         case Some(arguments) => arguments
         case None => argumentsParser.failure("miss args, please see the usage info"); null
     }
-    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action, header) = (
+    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action, header, nPartition) = (
         arguments.inputDataSourcePath,
         arguments.outputDataSinkPath,
         CryptoMode.parse(arguments.cryptoMode),
         arguments.dataSourceType,
         arguments.action,
-        arguments.header.toLowerCase()
+        arguments.header.toLowerCase(),
+        arguments.nPartition
     )
 
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
@@ -42,7 +43,7 @@ object Encrypt extends Supportive {
     if (action.equals("encrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(PLAIN_TEXT).option("header", header).csv(inputDataSourcePath)
+          val df = sc.read(PLAIN_TEXT).option("header", header).csv(inputDataSourcePath).repartition(nPartition)
           sc.write(df, cryptoMode).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
@@ -101,6 +102,9 @@ object Encrypt extends Supportive {
       opt[String]('h', "header")
         .action((x, c) => c.copy(header = x))
         .text("whether to write header to the csv file, default is false")
+      opt[Int]('p', "partition")
+        .text("The number of partitions")
+        .action((x, c) => c.copy(nPartition = x))
     }
 }
 
@@ -109,7 +113,8 @@ case class EncryptArguments(inputDataSourcePath: String = "input_data_path",
                             cryptoMode: String = "aes/cbc/pkcs5padding",
                             dataSourceType: String = "csv",
                             action: String = "encrypt",
-                            header: String = "false"
+                            header: String = "false",
+                            nPartition: Int = 4
                            )
 
 
