@@ -118,7 +118,7 @@ class PPMLConf:
                 .set_k8s_env("https_proxy", "http://child-prc.intel.com:913/") \
                 .set_k8s_env("no_proxy", "10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.*") \
                 .set_k8s("namespace", "default") \
-                .set_k8s("image", "intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.4.0-SNAPSHOT-test") \
+                .set_k8s("image", "intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.4.0-SNAPSHOT") \
                 .set_k8s("driver_port", "29500")
             
             
