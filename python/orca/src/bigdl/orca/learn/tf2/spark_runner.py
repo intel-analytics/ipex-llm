@@ -266,7 +266,13 @@ class SparkRunner:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
                                 if self.model_variables:
-                                    self.model.optimizer.build(self.model_variables)
+                                    def build_optimizer():
+                                        grad_vars = self.model.trainable_weights
+                                        zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                                        self.model.optimizer.apply_gradients(
+                                            zip(zero_grads, grad_vars))
+                                        self.model.optimizer.build(self.model_variables)
+                                    self.strategy.run(build_optimizer)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
                             else:
