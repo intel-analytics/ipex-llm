@@ -26,6 +26,7 @@ def quantize(input_filename: str, output_filename: str=None, ftype: str='q4_0', 
                       "Now we only support quantization of model family('llama', 'bloomz', 'gptneox')",
                       "{} is not in the list.".format(model_family))
     # TODO : auto construction of output filename
+    
 
     # TODO: convert str type into number based on each model
     if ftype == 'q4_0':
