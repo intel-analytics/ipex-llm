@@ -38,7 +38,7 @@ if (UNIX AND NOT FORCE_CMAKE)
     install(
         PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/llama.cpp/quantize
         RENAME quantize-llama
-        DESTINATION src/bigdl/llm/quantize
+        DESTINATION src/bigdl/llm/bin
     )
     install(
         FILES ${CMAKE_CURRENT_SOURCE_DIR}/vendor/redpajama.cpp/libgptneox.so
@@ -46,7 +46,7 @@ if (UNIX AND NOT FORCE_CMAKE)
     )
     install(
         PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/redpajama.cpp/quantize-gptneox
-        DESTINATION src/bigdl/llm/quantize
+        DESTINATION src/bigdl/llm/bin
     )
     install(
         FILES ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bloomz.cpp/libbloom.so
@@ -55,7 +55,7 @@ if (UNIX AND NOT FORCE_CMAKE)
     install(
         PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bloomz.cpp/quantize
         RENAME quantize-bloomz
-        DESTINATION src/bigdl/llm/quantize
+        DESTINATION src/bigdl/llm/bin
     )
 else()
     set(BUILD_SHARED_LIBS "On")
