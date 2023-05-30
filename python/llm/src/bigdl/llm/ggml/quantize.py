@@ -38,15 +38,17 @@ _quantize_type = {"llama": _llama_quantize_type,
                   "bloomz": _bloomz_quantize_type,
                   "gptneox": _gptneox_quantize_type}
 
-_valid_types = set(list(_llama_quantize_type.keys()) + list(_bloomz_quantize_type.keys()) + list(_gptneox_quantize_type.keys()))
+_valid_types = set(list(_llama_quantize_type.keys()) + list(_bloomz_quantize_type.keys()) +
+                   list(_gptneox_quantize_type.keys()))
 
 
-def quantize(input_path: str, output_path: str=None, model_family: str = 'llama', dtype: str='q4_0'):
+def quantize(input_path: str, output_path: str=None,
+             model_family: str = 'llama', dtype: str='q4_0'):
     """
     Quantize ggml file to lower precision.
 
     :param input_path: Path of input ggml file, for example `./ggml-model-f16.bin`.
-    :param output_path: Save path of output quantized model. Default to `None`. 
+    :param output_path: Save path of output quantized model. Default to `None`.
             If you don't specify this parameter, quantized model will be saved in
             the same directory as the input and just replace precision with quantize_type
             like `./ggml-model-q4_0.bin`.
@@ -60,7 +62,8 @@ def quantize(input_path: str, output_path: str=None, model_family: str = 'llama'
             gptneox : "q4_0", "q4_1", "q4_2", "q5_0", "q5_1", "q8_0"
     """
     invalidInputError(model_family in ['llama', 'bloomz', 'gptneox'],
-                      "Now we only support quantization of model family('llama', 'bloomz', 'gptneox')",
+                      "Now we only support quantization of model \
+                       family('llama', 'bloomz', 'gptneox')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
                       "The file {} was not found".format(input_path))
@@ -69,11 +72,11 @@ def quantize(input_path: str, output_path: str=None, model_family: str = 'llama'
         output_path = input_path.replace("f16", dtype)
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
-    invalidInputError(dtype in quantize_type_map,
-                      "{0} model just accept {1} now, but you pass in {2}.".format(
-                        model_family,
-                        list(quantize_type_map.keys()),
-                        dtype))
+    invalidInputError(dtype in quantize_type_map, "{0} model just accept {1} now, \
+                      but you pass in {2}.".format(
+                      model_family,
+                      list(quantize_type_map.keys()),
+                      dtype))
     quantize_type = quantize_type_map[dtype]
     quantize_args = "{0}/bin/quantize-{1} {2} {3} {4}".format(bin_dirname,
                                                               model_family,
