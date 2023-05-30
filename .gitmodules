@@ -1,7 +1,3 @@
-[submodule "python/llm/vendor/llama.cpp"]
-	path = python/llm/vendor/llama.cpp
-	url = https://github.com/analytics-zoo/llama.cpp.git
-	branch = server
 [submodule "python/llm/vendor/redpajama.cpp"]
 	path = python/llm/vendor/redpajama.cpp
 	url = https://github.com/analytics-zoo/redpajama.cpp.git
@@ -10,3 +6,7 @@
 	path = python/llm/vendor/bloomz.cpp
 	url = https://github.com/analytics-zoo/bloomz.cpp.git
 	branch = server
+[submodule "python/llm/vendor/llama.cpp"]
+	path = python/llm/vendor/llama.cpp
+	url = https://github.com/analytics-zoo/llama.cpp.git
+	branch = cache
