@@ -72,11 +72,8 @@ ${wheel_command}
 rm -r ./vendor
 mv vendor_copy vendor
 
-test_name=bigdl_llm-${bigdl_version}-cp${py_version}-cp${py_version}-${verbose_pname}.whl
-echo $test_name
-
-# if [ ${upload} == true ]; then
-#     upload_command="twine upload dist/bigdl_llm-${bigdl_version}-cp${py_version}-cp${py_version}-${verbose_pname}.whl"
-#     echo "Please manually upload with this command: $upload_command"
-#     $upload_command
-# fi
+if [ ${upload} == true ]; then
+    upload_command="twine upload dist/bigdl_llm-${bigdl_version}-cp${py_version}-cp${py_version}-${verbose_pname}.whl"
+    echo "Please manually upload with this command: $upload_command"
+    $upload_command
+fi
