@@ -18,8 +18,12 @@ package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, PLAIN_TEXT}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
+import java.net.URI
 
 object Encrypt extends Supportive {
 
@@ -38,6 +42,27 @@ object Encrypt extends Supportive {
         arguments.header.toLowerCase(),
         arguments.nPartition
     )
+    var partition: Int = 0
+    if (nPartition == 0) {
+//      use default partition number: file_size / block_size + 1
+      val hadoopConfig =
+        if (SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration != null) {
+          SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration
+        } else {
+          new Configuration()
+        }
+      val filePath = new Path(inputDataSourcePath)
+      val fs: FileSystem = FileSystem.get(new URI(filePath.toString), hadoopConfig)
+      val fileStatus = fs.getFileStatus(filePath)
+      val fileSize = fileStatus.getLen()
+      val blockSize = fs.getDefaultBlockSize(filePath)
+      print("fileSize:" + fileSize)
+      print("default blockSize:" + blockSize)
+      partition = (fileSize / (blockSize + 1024) + 1).toInt
+      print("partition number" + partition)
+    } else {
+      partition = nPartition
+    }
 
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val sc: PPMLContext = PPMLContext.initPPMLContext(sparkSession)
@@ -45,7 +70,7 @@ object Encrypt extends Supportive {
       dataSourceType match {
         case "csv" =>
           val df = sc.read(PLAIN_TEXT).option("header", header).
-            csv(inputDataSourcePath).repartition(nPartition)
+              csv(inputDataSourcePath).repartition(partition)
           sc.write(df, cryptoMode).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
@@ -105,7 +130,7 @@ object Encrypt extends Supportive {
         .action((x, c) => c.copy(header = x))
         .text("whether to write header to the csv file, default is false")
       opt[Int]('p', "partition")
-        .text("The number of partitions")
+        .text("number of partitions, default is 0, and will repartition file_size/block_size+1")
         .action((x, c) => c.copy(nPartition = x))
     }
 }
