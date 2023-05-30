@@ -70,7 +70,9 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 rm -r ./vendor
-mv vendor_copy vendor
+mv vendor_copy vendo
+rm -r ${BIGDL_DIR}/python/llm/_skbuild
+rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 
 if [ ${upload} == true ]; then
     upload_command="twine upload dist/bigdl_llm-${bigdl_version}-cp${py_version}-cp${py_version}-${verbose_pname}.whl"

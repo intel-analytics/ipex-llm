@@ -48,7 +48,7 @@ jobs:
           $CONDA/bin/conda info
           pip install scikit-build
           bash python/llm/dev/release_default_linux.sh default false
-          pip install python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-manylinux2010_x86_64.whl
+          pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-manylinux2010_x86_64.whl
           source $CONDA/bin/deactivate
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda remove -n bigdl-init --all
