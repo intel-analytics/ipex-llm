@@ -116,7 +116,7 @@ case class EncryptArguments(inputDataSourcePath: String = "input_data_path",
                             dataSourceType: String = "csv",
                             action: String = "encrypt",
                             header: String = "false",
-                            nPartition: Int = 4
+                            nPartition: Int = 0
                            )
 
 

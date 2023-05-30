@@ -62,7 +62,7 @@ elif [ "$action" = "encrypt" ]; then
                     --cryptoMode aes/cbc/pkcs5padding \
                     --dataSourceType csv \
                     --header true \
-                    --partition 10
+                    --partition 0
 
 	elif [ "$KMS_TYPE" = "simple" ]; then
 		appid=123456654321
@@ -87,7 +87,7 @@ elif [ "$action" = "encrypt" ]; then
                     --cryptoMode aes/cbc/pkcs5padding \
                     --dataSourceType csv \
                     --header true \
-                    --partition 10
+                    --partition 0
 	else
 		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple "
                 return -1
