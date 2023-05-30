@@ -48,6 +48,7 @@ def get_llm_packages():
 lib_urls = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/llama.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
     # TODO: add bloomz and redpajama
 ]
 
@@ -66,7 +67,8 @@ def setup_package():
     
     package_data = [
         "libs/llama.dll",
-        "libs/quantize-llama.exe"
+        "libs/quantize-llama.exe",
+        "libs/gptneox.dll",
     ]
 
     for url in lib_urls:
