@@ -13,21 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# ===========================================================================
+#
+# This file is adapted from
+# https://github.com/ggerganov/llama.cpp/blob/master/convert.py
+#
 # MIT License
-
+#
 # Copyright (c) 2023 Georgi Gerganov
-
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -69,7 +73,7 @@ def _convert_bloomz(model_path, outfile_dir, outtype):
 
 
 def _convert_to_ggml(model_path: str, outfile_dir: str,
-                     model_family: str = 'llama', outtype: str="f16"):
+                     model_family: str = 'llama', outtype: str="fp16"):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to ggml format.
 
@@ -77,7 +81,7 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     :param outfile_dir: str, the directory to save ggml compatible file, for example `./models`.
     :param model_family: Which model family your input model belongs to. Default to `llama`.
             Now only `llama`/`bloomz`/`gptneox` are supported.
-    :param outtype: specify the output format. Defalut to `f16`. Now `f32`/`f16` are supported.
+    :param outtype: specify the output format. Defalut to `fp16`. Now `fp32`/`fp16` are supported.
     """
     invalidInputError(model_family in ['llama', 'bloomz', 'gptneox'],
                       "Now we only support quantization of model \
@@ -85,10 +89,14 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.exists(model_path),
                       "The file {} was not found".format(model_path))
+    invalidInputError(outtype in ['fp32', 'fp16'],
+                      "Now we only support converting to 'fp32'/'fp16' format",
+                      "{} is not in the list.".format(outtype))
 
     # make sure the output directory exists
     os.makedirs(outfile_dir, exist_ok=True)
 
+    outtype = outtype.replace('p','')
     if model_family == 'llama':
         _convert_llama(model_path, outfile_dir, outtype)
     if model_family == 'gptneox':

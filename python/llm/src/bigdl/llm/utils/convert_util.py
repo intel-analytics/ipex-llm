@@ -13,21 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# ===========================================================================
+#
+# This file is adapted from
+# https://github.com/ggerganov/llama.cpp/blob/master/convert.py
+# https://github.com/togethercomputer/redpajama.cpp/blob/master/examples/redpajama/scripts/convert_gptneox_to_ggml.py
+# https://github.com/NouamaneTazi/bloomz.cpp/blob/patch/convert-hf-to-ggml.py
+#
 # MIT License
-
+#
 # Copyright (c) 2023 Georgi Gerganov
-
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
