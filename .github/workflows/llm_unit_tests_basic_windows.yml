@@ -43,6 +43,6 @@ jobs:
         shell: bash
         run: |
           bash python/llm/dev/release_default_windows.sh default false
-          pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-win_amd64.whl
+          pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-py3-none-win_amd64.whl
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
