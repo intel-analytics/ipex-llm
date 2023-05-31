@@ -96,7 +96,7 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     # make sure the output directory exists
     os.makedirs(outfile_dir, exist_ok=True)
 
-    outtype = outtype.replace('p','')
+    outtype = outtype.replace('p', '')
     if model_family == 'llama':
         _convert_llama(model_path, outfile_dir, outtype)
     if model_family == 'gptneox':
