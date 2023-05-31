@@ -271,7 +271,8 @@ class SparkRunner:
                                         zero_grads = [tf.zeros_like(w) for w in grad_vars]
                                         self.model.optimizer.apply_gradients(
                                             zip(zero_grads, grad_vars))
-                                        self.model.optimizer.set_weights(self.optimizer_weights.value)
+                                        self.model.optimizer.set_weights(
+                                            self.optimizer_weights.value)
                                     self.strategy.run(build_optimizer)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)

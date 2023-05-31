@@ -87,7 +87,6 @@ class SparkTFEstimator():
 
         self.model_weights = None
         self.optimizer_weights = None
-        self.variables = None
         self.load_path = None
         self.load_params = None
 
