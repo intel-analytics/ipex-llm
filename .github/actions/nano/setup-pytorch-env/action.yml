@@ -84,7 +84,7 @@ runs:
         pip install ray[default]==1.13.0 prometheus_client==0.13.0
 
         # required by Automl test
-        pip install ConfigSpace optuna<=3.1.1
+        pip install ConfigSpace 'optuna<=3.1.1'
 
         # required by NoteBook and Tutorial test
         pip install nbmake==1.3.0 lightning-bolts==0.5.0 ipykernel==5.5.6 matplotlib
