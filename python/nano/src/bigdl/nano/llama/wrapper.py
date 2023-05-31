@@ -66,7 +66,8 @@ def main():
                         help='prompt to start generation with (default: empty)')
     parser.add_argument('-n', '--n_predict', type=int, default=-1,
                         help='number of tokens to predict (default: -1, -1 = infinity)')
-    parser.add_argument('-m', '--model', type=str, default='llama.cpp/models/lamma-7B/ggml-model.bin',
+    parser.add_argument('-m', '--model', type=str,
+                        default='llama.cpp/models/lamma-7B/ggml-model.bin',
                         help='model path (default: llama.cpp/models/lamma-7B/ggml-model.bin)')
     parser.add_argument('--model_family', type=str, default='',
                         choices=['llama', 'bloomz', 'redpajama'],
