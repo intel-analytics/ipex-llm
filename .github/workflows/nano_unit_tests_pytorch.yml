@@ -169,7 +169,7 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
           pip install ConfigSpace
-          pip install optuna
+          pip install 'optuna<=3.1.1'
           source bigdl-nano-init
           bash python/nano/test/run-nano-automl-pytorch-tests.sh
           source $CONDA/bin/deactivate

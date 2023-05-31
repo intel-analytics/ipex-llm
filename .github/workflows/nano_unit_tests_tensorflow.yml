@@ -5,7 +5,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
@@ -165,7 +165,7 @@ jobs:
           fi
           pip install pytest
           pip install ConfigSpace
-          pip install optuna
+          pip install 'optuna<=3.1.1'
           source bigdl-nano-init
           bash python/nano/test/run-nano-automl-common-tests.sh
           bash python/nano/test/run-nano-automl-tf-tests.sh
@@ -207,7 +207,7 @@ jobs:
           $CONDA/bin/conda remove -n openvino-tensorflow --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
+
       - name: Run tensorflow unit tests (ONNX)
         shell: bash
         run: |
