@@ -68,7 +68,8 @@ def _convert_bloomz(model_path, outfile_dir, outtype):
     _convert_bloomz_hf_to_ggml(model_path, outfile_dir, outtype)
 
 
-def _convert_to_ggml(model_path: str, outfile_dir: str, model_family: str = 'llama', outtype: str="f16"):
+def _convert_to_ggml(model_path: str, outfile_dir: str,
+                     model_family: str = 'llama', outtype: str="f16"):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to ggml format.
 

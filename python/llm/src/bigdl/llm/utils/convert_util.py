@@ -69,7 +69,7 @@ if TYPE_CHECKING:
 if hasattr(faulthandler, 'register') and hasattr(signal, 'SIGUSR1'):
     faulthandler.register(signal.SIGUSR1)
 
-NDArray: 'TypeAlias' = 'np.ndarray[Any, Any]'
+NDArray = np.ndarray[Any, Any]
 
 
 __all__ = ['Params',
@@ -109,20 +109,18 @@ DataType = Union[UnquantizedDataType, QuantizedDataType]
 
 DATA_TYPE_TO_FTYPE = Dict[DataType, int]
 DATA_TYPE_TO_FTYPE = {DT_F32: 0,
-    DT_F16: 1,
-    DT_Q4_0: 2,
-    DT_Q4_1: 3,
-}
+                      DT_F16: 1,
+                      DT_Q4_0: 2,
+                      DT_Q4_1: 3,}
 
 FTYPE_TO_DATA_TYPE = Dict[int, DataType]
 FTYPE_TO_DATA_TYPE = {ftype: dtype for (dtype, ftype) in DATA_TYPE_TO_FTYPE.items()}
 
 DATA_TYPE_TO_NUMPY = Dict[DataType, 'np.dtype[Any]']
 DATA_TYPE_TO_NUMPY = {DT_BF16: np.dtype(np.uint16),
-    DT_F16: np.dtype(np.float16),
-    DT_F32: np.dtype(np.float32),
-    DT_I32: np.dtype(np.int32),
-}
+                      DT_F16: np.dtype(np.float16),
+                      DT_F32: np.dtype(np.float32),
+                      DT_I32: np.dtype(np.int32),}
 
 NUMPY_TYPE_TO_DATA_TYPE = Dict['np.dtype[Any]', DataType]
 NUMPY_TYPE_TO_DATA_TYPE = {dtype: data_type for (data_type, dtype) in DATA_TYPE_TO_NUMPY.items()}
@@ -200,8 +198,8 @@ class Params:
             n_embd=n_embd,
             n_mult=256,
             n_head=n_embd // 128,
-            n_layer=next(i for i in itertools.count() \
-                if f"layers.{i}.attention.wq.weight" not in model),
+            n_layer=next(i for i in itertools.count()
+                         if f"layers.{i}.attention.wq.weight" not in model),
             file_type=file_type,
         )
 
@@ -295,7 +293,7 @@ def dequantize_q4(qvalues_pack32: NDArray, scales: NDArray,
 
     invalidInputError(addends is None or addends.shape == scales.shape,
                       "Fail during dequantization because addends and scales dismatch.")
-    invalidInputError(qvalues.shape[0] == scales.shape[0] and \
+    invalidInputError(qvalues.shape[0] == scales.shape[0] and
                       qvalues.shape[1] % scales.shape[1] == 0,
                       "Fail during dequantization because qvalues and scales dismatch.")
     if g_idx is None:
@@ -499,7 +497,7 @@ class GPTQForLLaMaQuantizedTensor(Tensor):
 
     def astype(self, data_type: DataType) -> Tensor:
         if isinstance(data_type, QuantizedDataType):
-            invalidInputError(self.g_idx is None and data_type.have_addends is True \
+            invalidInputError(self.g_idx is None and data_type.have_addends is True
                               and data_type.have_g_idx is False,
                               "Fail to call `GPTQForLLaMaQuantizedTensor.astype`.")
             return self.regroup(data_type.groupsize)
@@ -509,7 +507,7 @@ class GPTQForLLaMaQuantizedTensor(Tensor):
         return UnquantizedTensor(dequantized).astype(data_type)
 
     def groupsize(self) -> int:
-        invalidInputError(self.addends.shape == self.scales.shape and \
+        invalidInputError(self.addends.shape == self.scales.shape and
                           self.shape[1] % self.scales.shape[1] == 0,
                           "Fail to call `GPTQForLLaMaQuantizedTensor.groupsize`.")
         return self.shape[1] // self.scales.shape[1]
@@ -524,7 +522,7 @@ class GPTQForLLaMaQuantizedTensor(Tensor):
         invalidInputError(self.g_idx is None,
                           "Fail to call `GPTQForLLaMaQuantizedTensor.regroup`.")
         old_groupsize = self.groupsize()
-        invalidInputError(old_groupsize >= new_groupsize and old_groupsize % new_groupsize == 0 \
+        invalidInputError(old_groupsize >= new_groupsize and old_groupsize % new_groupsize == 0
                           and old_groupsize,
                           "Fail to call `GPTQForLLaMaQuantizedTensor.regroup`.")
         ret = copy.copy(self)
@@ -572,7 +570,7 @@ class LazyTensor:
 
     def load(self) -> Tensor:
         ret = self._load()
-        invalidInputError(ret.data_type == self.data_type and \
+        invalidInputError(ret.data_type == self.data_type and
                           (self.data_type, ret.data_type, self.description),
                           "Fail to load `LazyTensor`.")
         return ret
@@ -595,7 +593,7 @@ class LazyTensor:
                 sys.stderr.write("Error: Input uses the newer GPTQ-for-LLaMa format (using g_idx)"
                                  ", which is not yet natively supported by GGML.")
                 sys.exit(1)
-            invalidInputError(not data_type.have_g_idx and self.data_type.have_addends and \
+            invalidInputError(not data_type.have_g_idx and self.data_type.have_addends and
                               data_type.have_addends,
                               "Fail to convert to expected data type.")
 
@@ -849,7 +847,7 @@ def lazy_load_safetensors_file(fp: IO[bytes], path: Path) -> ModelPlus:
         numpy_dtype = DATA_TYPE_TO_NUMPY[data_type]
         shape = info['shape']
         begin, end = info['data_offsets']
-        invalidInputError(0 <= begin <= end <= len(byte_buf) and \
+        invalidInputError(0 <= begin <= end <= len(byte_buf) and
                           end - begin == math.prod(shape) * numpy_dtype.itemsize,
                           "Fail to load safetensors files.")
         buf = byte_buf[begin:end]
@@ -905,7 +903,7 @@ def lazy_load_ggml_file(fp: io.BufferedReader, path: Path) -> ModelPlus:
     # Use mmap for the actual data to avoid race conditions with the file offset.
     off = fp.raw.tell()
     mapped = memoryview(mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ))
-     # needed on Windows
+    # needed on Windows
     fp.raw.seek(off)
 
     def read_tensor() -> None:
@@ -1004,7 +1002,7 @@ def check_vocab_size(params: Params, vocab: Vocab) -> None:
             msg += f" combined with {vocab.fname_added_tokens}"
         msg += f" has {vocab.vocab_size})."
         if vocab.vocab_size < params.n_vocab < vocab.vocab_size + 20 and \
-            vocab.fname_added_tokens is None:
+           vocab.fname_added_tokens is None:
             msg += " Most likely you are missing added_tokens.json,"
             msg += f" which should be in {vocab.fname_tokenizer.parent})."
         invalidInputError(False, msg)
@@ -1080,14 +1078,14 @@ def pick_output_type(model: LazyModel, output_type_str: Optional[str]) -> GGMLFi
         return GGMLFileType.AllF32
     if output_type_str == "f16" or (output_type_str is None and wq_type == DT_F16):
         return GGMLFileType.MostlyF16
-    if output_type_str == "q4_1" or (output_type_str is None and \
-        isinstance(wq_type, QuantizedDataType) and wq_type.have_addends):
+    if output_type_str == "q4_1" or (output_type_str is None and
+       isinstance(wq_type, QuantizedDataType) and wq_type.have_addends):
         if isinstance(model["output.weight"].data_type, QuantizedDataType):
             return GGMLFileType.MostlyQ4_1
         else:
             return GGMLFileType.PerLayerIsQ4_1
     if output_type_str == "q4_0" or \
-        (output_type_str is None and isinstance(wq_type, QuantizedDataType)):
+       (output_type_str is None and isinstance(wq_type, QuantizedDataType)):
         return GGMLFileType.MostlyQ4_0
     name_to_type = {name: lazy_tensor.data_type for (name, lazy_tensor) in model.items()}
     invalidInputError(False, f"Unexpected combination of types: {name_to_type}.")
@@ -1236,8 +1234,8 @@ def bytes_to_unicode():
 def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 torch_dtype=torch.float16 \
-                                                    if outtype == "f16" else torch.float32)
+                                                 torch_dtype=torch.float16
+                                                 if outtype == "f16" else torch.float32)
 
     model.eval()
     for p in model.parameters():
@@ -1263,8 +1261,8 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
     fout.write(struct.pack("i", hparams["hidden_size"]))
     fout.write(struct.pack("i", hparams["num_attention_heads"]))
     fout.write(struct.pack("i", hparams["num_hidden_layers"]))
-    fout.write(struct.pack("i", int((hparams["hidden_size"] / hparams["num_attention_heads"]) \
-        * hparams["rotary_pct"])))  # rotary_dim
+    fout.write(struct.pack("i", int((hparams["hidden_size"] / hparams["num_attention_heads"])
+                                    * hparams["rotary_pct"])))  # rotary_dim
     fout.write(struct.pack("i", int(hparams["use_parallel_residual"])))
     fout.write(struct.pack("i", ftype))
 
@@ -1279,7 +1277,7 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
     for name in list_vars.keys():
         if name.startswith('gpt_neox.layers.'):
             if 'attention.masked_bias' in name or 'attention.rotary_emb.inv_freq' in name or \
-                'attention.bias' in name:
+               'attention.bias' in name:
                 continue
         # No gradients for these
         list_vars[name].requires_grad = False
@@ -1329,8 +1327,8 @@ def _convert_bloomz_hf_to_ggml(model_path, outfile_dir, outtype):
     config = AutoConfig.from_pretrained(model_path)
     hparams = config.to_dict()
     model = AutoModelForCausalLM.from_pretrained(model_path, config=config,
-                                                 torch_dtype=torch.float16 \
-                                                    if outtype == "f16" else torch.float32,
+                                                 torch_dtype=torch.float16
+                                                 if outtype == "f16" else torch.float32,
                                                  low_cpu_mem_usage=True)
 
     fn_out = outfile_dir + f"/ggml-model-{model_path.split('/')[-1]}-{outtype}.bin"
