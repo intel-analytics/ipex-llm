@@ -1,0 +1,72 @@
+name: LLM Unit Tests Basic
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-unit-test-basic:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.8"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run LLM-init test
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n bigdl-init -y python==3.8.16 setuptools==58.0.4
+          source $CONDA/bin/activate bigdl-init
+          $CONDA/bin/conda info
+          pip install scikit-build
+          bash python/llm/dev/release_default_linux.sh default false
+          pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-manylinux2010_x86_64.whl
+          source $CONDA/bin/deactivate
+          source $CONDA/bin/activate bigdl-init
+          $CONDA/bin/conda remove -n bigdl-init --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Run LLM naive installation test
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n bigdl-init -y python==3.8.16 setuptools==58.0.4
+          source $CONDA/bin/activate bigdl-init
+          $CONDA/bin/conda info
+          pip install scikit-build
+          bash python/llm/dev/release_default_linux.sh default false
+          pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-manylinux2010_x86_64.whl
+          pip install pytest
+          bash python/llm/test/run-llm-basic-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n bigdl-init --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
