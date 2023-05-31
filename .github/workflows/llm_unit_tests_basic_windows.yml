@@ -42,14 +42,7 @@ jobs:
       - name: Run LLM-init test
         shell: bash
         run: |
-          $CONDA/bin/conda create -n bigdl-init -y python==3.8.16 setuptools==58.0.4
-          source $CONDA/bin/activate bigdl-init
-          $CONDA/bin/conda info
-          pip install scikit-build
           bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dev/dist/bigdl_llm-2.4.0.dev0-cp38-cp38-win_amd64.whl
-          source $CONDA/bin/deactivate
-          source $CONDA/bin/activate bigdl-init
-          $CONDA/bin/conda remove -n bigdl-init --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
