@@ -117,6 +117,18 @@ KEYWORD_REGEX = re.compile(r'(\s*)\b(?:%s)\b(\s*)' % r'|'.join(KEYWORDS))
 OPERATOR_REGEX = re.compile(r'(?:[^,\s])(\s*)(?:[-+*/|!<=>%&^]+)(\s*)')
 LAMBDA_REGEX = re.compile(r'\blambda\b')
 HUNK_REGEX = re.compile(r'^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@.*$')
+STARTSWITH_DEF_REGEX = re.compile(r'^(async\s+def|def)\b')
+STARTSWITH_INDENT_STATEMENT_REGEX = re.compile(
+    r'^\s*({})\b'.format('|'.join(s.replace(' ', r'\s+') for s in (
+        'def', 'async def',
+        'for', 'async for',
+        'if', 'elif', 'else',
+        'try', 'except', 'finally',
+        'with', 'async with',
+        'class',
+        'while',
+    )))
+)
 
 # Work around Python < 2.6 behaviour, which does not generate NL after
 # a comment which is on a line by itself.
@@ -913,7 +925,8 @@ def module_imports_on_top_of_file(
 
 
 def compound_statements(logical_line):
-    r"""Compound statements (on the same line) are generally discouraged.
+    r"""Compound statements (on the same line) are generally
+    discouraged.
 
     While sometimes it's okay to put an if/for/while with a small body
     on the same line, never do this for multi-clause statements.
@@ -943,22 +956,27 @@ def compound_statements(logical_line):
     line = logical_line
     last_char = len(line) - 1
     found = line.find(':')
+    prev_found = 0
+    counts = {char: 0 for char in '{}[]()'}
     while -1 < found < last_char:
-        before = line[:found]
-        if ((before.count('{') <= before.count('}') and   # {'a': 1} (dict)
-             before.count('[') <= before.count(']') and   # [1:2] (slice)
-             before.count('(') <= before.count(')'))):    # (annotation)
-            lambda_kw = LAMBDA_REGEX.search(before)
+        update_counts(line[prev_found:found], counts)
+        if ((counts['{'] <= counts['}'] and   # {'a': 1} (dict)
+             counts['['] <= counts[']'] and   # [1:2] (slice)
+             counts['('] <= counts[')']) and  # (annotation)
+            not (sys.version_info >= (3, 8) and
+                 line[found + 1] == '=')):  # assignment expression
+            lambda_kw = LAMBDA_REGEX.search(line, 0, found)
             if lambda_kw:
                 before = line[:lambda_kw.start()].rstrip()
-                if before[-1:] == '=' and isidentifier(before[:-1].strip()):
+                if before[-1:] == '=' and before[:-1].strip().isidentifier():
                     yield 0, ("E731 do not assign a lambda expression, use a "
                               "def")
                 break
-            if before.startswith('def '):
+            if STARTSWITH_DEF_REGEX.match(line):
                 yield 0, "E704 multiple statements on one line (def)"
-            else:
+            elif STARTSWITH_INDENT_STATEMENT_REGEX.match(line):
                 yield found, "E701 multiple statements on one line (colon)"
+        prev_found = found
         found = line.find(':', found + 1)
     found = line.find(';')
     while -1 < found:
@@ -1304,6 +1322,14 @@ def filename_match(filename, patterns, default=True):
     if not patterns:
         return default
     return any(fnmatch(filename, pattern) for pattern in patterns)
+
+
+def update_counts(s, counts):
+    r"""Adds one to the counts of each appearance of characters in s,
+        for characters in counts"""
+    for char in s:
+        if char in counts:
+            counts[char] += 1
 
 
 def _is_eol_token(token):
