@@ -32,27 +32,27 @@ add_custom_target(
 )
 install(
     FILES ${CMAKE_CURRENT_SOURCE_DIR}/vendor/llama.cpp/libllama.so
-    DESTINATION src/bigdl/llm/lib
+    DESTINATION src/bigdl/llm/libs
 )
 install(
     PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/llama.cpp/quantize
     RENAME quantize-llama
-    DESTINATION src/bigdl/llm/bin
+    DESTINATION src/bigdl/llm/libs
 )
 install(
     FILES ${CMAKE_CURRENT_SOURCE_DIR}/vendor/redpajama.cpp/libgptneox.so
-    DESTINATION src/bigdl/llm/lib
+    DESTINATION src/bigdl/llm/libs
 )
 install(
     PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/redpajama.cpp/quantize-gptneox
-    DESTINATION src/bigdl/llm/bin
+    DESTINATION src/bigdl/llm/libs
 )
 install(
     FILES ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bloomz.cpp/libbloom.so
-    DESTINATION src/bigdl/llm/lib
+    DESTINATION src/bigdl/llm/libs
 )
 install(
     PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/vendor/bloomz.cpp/quantize
     RENAME quantize-bloomz
-    DESTINATION src/bigdl/llm/bin
+    DESTINATION src/bigdl/llm/libs
 )

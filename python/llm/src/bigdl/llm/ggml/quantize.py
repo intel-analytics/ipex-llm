@@ -17,14 +17,17 @@
 import os
 import subprocess
 from bigdl.llm.utils.common import invalidInputError
+import platform
 
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
-bin_dirname = os.path.dirname(dirname)
+libs_dirname = os.path.dirname(dirname)
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
-                        "q4_2": 5}
+                        "q5_0": 8,
+                        "q5_1": 9,
+                        "q8_0": 7}
 _bloomz_quantize_type = {"q4_0": 2,
                          "q4_1": 3}
 _gptneox_quantize_type = {"q4_0": 2,
@@ -78,11 +81,16 @@ def quantize(input_path: str, output_path: str=None,
                       list(quantize_type_map.keys()),
                       dtype))
     quantize_type = quantize_type_map[dtype]
-    quantize_args = "{0}/bin/quantize-{1} {2} {3} {4}".format(bin_dirname,
-                                                              model_family,
-                                                              input_path,
-                                                              output_path,
-                                                              str(quantize_type))
+    if platform.platform().startswith('Windows'):
+        suffix = '.exe'
+    else:
+        suffix = ''
+    quantize_args = "{0}/libs/quantize-{1}{2} {3} {4} {5}".format(libs_dirname,
+                                                                  model_family,
+                                                                  suffix,
+                                                                  input_path,
+                                                                  output_path,
+                                                                  str(quantize_type))
     p = subprocess.Popen(quantize_args.split())
     p.communicate()
     invalidInputError(not p.returncode,
