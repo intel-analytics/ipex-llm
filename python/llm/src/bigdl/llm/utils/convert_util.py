@@ -86,7 +86,7 @@ __all__ = ['Params',
 
 @dataclass(frozen=True)
 class UnquantizedDataType:
-    name = str
+    name: str
 
 
 DT_F16 = UnquantizedDataType('F16')
@@ -111,7 +111,7 @@ DATA_TYPE_TO_FTYPE = Dict[DataType, int]
 DATA_TYPE_TO_FTYPE = {DT_F32: 0,
                       DT_F16: 1,
                       DT_Q4_0: 2,
-                      DT_Q4_1: 3,}
+                      DT_Q4_1: 3}
 
 FTYPE_TO_DATA_TYPE = Dict[int, DataType]
 FTYPE_TO_DATA_TYPE = {ftype: dtype for (dtype, ftype) in DATA_TYPE_TO_FTYPE.items()}
@@ -120,7 +120,7 @@ DATA_TYPE_TO_NUMPY = Dict[DataType, 'np.dtype[Any]']
 DATA_TYPE_TO_NUMPY = {DT_BF16: np.dtype(np.uint16),
                       DT_F16: np.dtype(np.float16),
                       DT_F32: np.dtype(np.float32),
-                      DT_I32: np.dtype(np.int32),}
+                      DT_I32: np.dtype(np.int32)}
 
 NUMPY_TYPE_TO_DATA_TYPE = Dict['np.dtype[Any]', DataType]
 NUMPY_TYPE_TO_DATA_TYPE = {dtype: data_type for (data_type, dtype) in DATA_TYPE_TO_NUMPY.items()}
