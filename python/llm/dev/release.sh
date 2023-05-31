@@ -90,7 +90,3 @@ if [ ${upload} == true ]; then
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi
-
-dir "${BIGDL_DIR}/python/llm"
-dir "${BIGDL_DIR}/python/llm/dev"
-dir "${BIGDL_DIR}/python/llm/dev/dist"
