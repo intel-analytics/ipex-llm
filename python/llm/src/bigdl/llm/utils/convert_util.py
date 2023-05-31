@@ -86,7 +86,8 @@ __all__ = ['Params',
 
 @dataclass(frozen=True)
 class UnquantizedDataType:
-    name: str
+    name: \
+        str
 
 
 DT_F16 = UnquantizedDataType('F16')
