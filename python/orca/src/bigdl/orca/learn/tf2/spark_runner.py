@@ -195,7 +195,6 @@ class SparkRunner:
                  verbose=False,
                  model_weights=None,
                  optimizer_weights=None,
-                 model_variables=None,
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
@@ -224,7 +223,6 @@ class SparkRunner:
         self.verbose = verbose
         self.model_weights = model_weights
         self.optimizer_weights = optimizer_weights
-        self.model_variables = model_variables
         self.size = size
         self.mode = mode
         self.backend = backend
@@ -267,16 +265,13 @@ class SparkRunner:
                         else:
                             if self.model_creator is not None:
                                 self.model = self.model_creator(self.config)
-                                if self.model_variables or self.optimizer_weights:
+                                if self.optimizer_weights:
                                     def build_optimizer():
                                         grad_vars = self.model.trainable_weights
                                         zero_grads = [tf.zeros_like(w) for w in grad_vars]
                                         self.model.optimizer.apply_gradients(
                                             zip(zero_grads, grad_vars))
-                                        if hasattr(self.model.optimizer, "build"):
-                                            self.model.optimizer.build(self.model_variables)
-                                        else:
-                                            self.model.optimizer.set_weights(self.optimizer_weights.value)
+                                        self.model.optimizer.set_weights(self.optimizer_weights.value)
                                     self.strategy.run(build_optimizer)
                                 if self.model_weights:
                                     self.model.set_weights(self.model_weights.value)
@@ -437,10 +432,16 @@ class SparkRunner:
                     shutil.rmtree(temp_dir)
                     self._stop_log_monitor()
         else:
-            model_state = {
-                "weights": self.model.get_weights(),
-                "opt_weights": self.model.optimizer.get_weights()
-            }
+            if hasattr(self.model.optimizer, "get_weights"):
+                model_state = {
+                    "weights": self.model.get_weights(),
+                    "opt_weights": self.model.optimizer.get_weights()
+                }
+            else:
+                model_state = {
+                    "weights": self.model.get_weights(),
+                    "opt_weights": [v.numpy() for v in self.model.optimizer.variables()]
+                }
             self._stop_log_monitor()
         if self.rank == 0:
             if self.model_dir is not None:

@@ -194,7 +194,6 @@ class SparkTFEstimator():
             size=self.num_workers,
             model_weights=weights,
             optimizer_weights=opt_weights,
-            model_variables=model_variables,
             mode="fit",
             cluster_info=self._get_cluster_info(sc),
             model_dir=self.model_dir,
@@ -652,7 +651,7 @@ class SparkTFEstimator():
             if hasattr(model.optimizer, "get_weights"):
                 self.optimizer_weights = model.optimizer.get_weights()
             else:
-                self.variables = model.trainable_variables
+                self.optimizer_weights = [var.numpy() for var in model.optimizer.variables()]
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
             if is_file(self.load_path):  # type:ignore
@@ -718,4 +717,5 @@ class SparkTFEstimator():
             result = res[0]
             states = res[1]
             self.model_weights = states["weights"]
+            self.optimizer_weights = states["opt_weights"]
         return result
