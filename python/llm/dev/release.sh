@@ -43,7 +43,9 @@ bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" == "linux" ]; then
-    verbose_pname="manylinux2010_x86_64" 
+    verbose_pname="manylinux2010_x86_64"
+elif [ "$platform" == "windows" ]; then
+    verbose_pname="win_amd64"
 else
     echo "Unsupported platform"
 fi
