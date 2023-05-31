@@ -86,8 +86,7 @@ __all__ = ['Params',
 
 @dataclass(frozen=True)
 class UnquantizedDataType:
-    name: \
-        str
+    name: str
 
 
 DT_F16 = UnquantizedDataType('F16')
@@ -98,9 +97,9 @@ DT_BF16 = UnquantizedDataType('BF16')
 
 @dataclass(frozen=True)
 class QuantizedDataType:
-    groupsize = int
-    have_addends = bool
-    have_g_idx = bool
+    groupsize: int
+    have_addends: bool
+    have_g_idx: bool
 
 
 DT_Q4_0 = QuantizedDataType(groupsize=32, have_addends=False, have_g_idx=False)
@@ -183,12 +182,12 @@ TENSORS_SET = set(TENSORS_LIST)
 
 @dataclass
 class Params:
-    n_vocab = int
-    n_embd = int
-    n_mult = int
-    n_head = int
-    n_layer = int
-    file_type = GGMLFileType
+    n_vocab: int
+    n_embd: int
+    n_mult: int
+    n_head: int
+    n_layer: int
+    file_type: GGMLFileType
 
     @staticmethod
     def guessed(model: 'LazyModel', file_type: GGMLFileType) -> 'Params':
@@ -324,7 +323,7 @@ def dequantize_q4(qvalues_pack32: NDArray, scales: NDArray,
 
 
 class Tensor(metaclass=ABCMeta):
-    data_type = DataType
+    data_type: DataType
 
     @abstractmethod
     def astype(self, data_type: DataType) -> 'Tensor':
@@ -382,7 +381,7 @@ def load_unquantized(lazy_tensor: 'LazyTensor', expected_dtype: Any = None,
 
 
 class GGMLQuantizedTensor(Tensor):
-    data_type = QuantizedDataType
+    data_type: QuantizedDataType
 
     def __init__(self, ndarray: NDArray, shape: List[int], data_type: DataType) -> None:
         rows, columns = shape
@@ -564,10 +563,10 @@ class GPTQForLLaMaQuantizedTensor(Tensor):
 
 @dataclass
 class LazyTensor:
-    _load = Callable[[], Tensor]
-    shape = List[int]
-    data_type = DataType
-    description = str
+    _load: Callable[[], Tensor]
+    shape: List[int]
+    data_type: DataType
+    description: str
 
     def load(self) -> Tensor:
         ret = self._load()
@@ -604,10 +603,10 @@ LazyModel = Dict[str, LazyTensor]
 
 @dataclass
 class ModelPlus:
-    model = LazyModel
-    paths = List[Path]  # Where this was read from.
-    format = Literal['ggml', 'torch', 'safetensors']
-    vocab = Optional[Vocab]  # For GGML models (which have vocab built in), the vocab.
+    model: LazyModel
+    paths: List[Path]  # Where this was read from.
+    format: Literal['ggml', 'torch', 'safetensors']
+    vocab: Optional[Vocab]  # For GGML models (which have vocab built in), the vocab.
 
 
 def merge_sharded(models: List[LazyModel]) -> LazyModel:
@@ -748,14 +747,14 @@ def handle_quantization(model: LazyModel) -> LazyModel:
 
 @dataclass
 class LazyStorageKind:
-    data_type = DataType
+    data_type: DataType
 
 
 @dataclass
 class LazyStorage:
-    load = Callable[[int, int], NDArray]
-    kind = LazyStorageKind
-    description = str
+    load: Callable[[int, int], NDArray]
+    kind: LazyStorageKind
+    description: str
 
 
 class LazyUnpickler(pickle.Unpickler):
@@ -1157,7 +1156,7 @@ def load_some_model(path: Path) -> ModelPlus:
             # model and a GGML model exist in the same directory, we assume the
             # latter was converted from the former.
             files = list(path.glob("ggml-model*.bin*"))
-        invalidInputError(files == [], f"Can't find model in directory {path}.")
+        invalidInputError(files, f"Can't find model in directory {path}.")
         invalidInputError(len(files) == 1,
                           f"Found multiple models in {path}, not sure which to pick: {files}.")
         path = files[0]
