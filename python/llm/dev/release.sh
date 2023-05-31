@@ -32,7 +32,6 @@ fi
 platform=$1
 version=$2
 upload=$3  # Whether to upload the whl to pypi
-py_version=3$(python --version | grep -Po 'Python 3.\K[^.]*')
 
 if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
@@ -66,20 +65,15 @@ fi
 
 cd $BIGDL_PYTHON_DIR
 
-cp -r vendor vendor_copy
-git submodule update --init --recursive ./vendor
-
 wheel_command="python ${setup_file} bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
-rm -r ./vendor
-mv vendor_copy vendo
 rm -r ${BIGDL_DIR}/python/llm/_skbuild
 rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 
 if [ ${upload} == true ]; then
-    upload_command="twine upload dist/bigdl_llm-${bigdl_version}-cp${py_version}-cp${py_version}-${verbose_pname}.whl"
+    upload_command="twine upload dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi
