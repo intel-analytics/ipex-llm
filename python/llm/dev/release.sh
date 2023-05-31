@@ -59,6 +59,10 @@ if [ -d "${BIGDL_DIR}/python/llm/_skbuild" ]; then
    rm -r ${BIGDL_DIR}/python/llm/_skbuild
 fi
 
+if [ -d "${BIGDL_DIR}/python/llm/build" ]; then
+   rm -r ${BIGDL_DIR}/python/llm/build
+fi
+
 if [ -d "${BIGDL_DIR}/python/llm/bigdl_llm.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 fi
@@ -73,14 +77,20 @@ if [ -d "${BIGDL_DIR}/python/llm/_skbuild" ]; then
    rm -r ${BIGDL_DIR}/python/llm/_skbuild
 fi
 
+if [ -d "${BIGDL_DIR}/python/llm/build" ]; then
+   rm -r ${BIGDL_DIR}/python/llm/build
+fi
+
 if [ -d "${BIGDL_DIR}/python/llm/bigdl_llm.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 fi
-
-rm -r ${BIGDL_DIR}/python/llm/build
 
 if [ ${upload} == true ]; then
     upload_command="twine upload dist/bigdl_llm-${bigdl_version}-*-${verbose_pname}.whl"
     echo "Please manually upload with this command: $upload_command"
     $upload_command
 fi
+
+dir "${BIGDL_DIR}/python/llm"
+dir "${BIGDL_DIR}/python/llm/dev"
+dir "${BIGDL_DIR}/python/llm/dev/dist"
