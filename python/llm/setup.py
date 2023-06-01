@@ -73,7 +73,8 @@ def download_libs(url: str, change_permission=False):
     if not os.path.exists(libso_file):
         print(">> Downloading from ", url)
         urllib.request.urlretrieve(url, libso_file)
-        os.chmod(libso_file, 0o775)
+        if change_permission:
+            os.chmod(libso_file, 0o775)
 
 
 def setup_package():
@@ -95,9 +96,9 @@ def setup_package():
         # "libs/quantize-gptneox-avx512",
     ]
 
-    platform_name = "Windows"  
+    platform_name = "Linux"   
 
-    change_permission = True if platform_name == "Linux"  else False
+    change_permission = True if platform_name == "Linux" else False
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
