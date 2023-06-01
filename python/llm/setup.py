@@ -20,6 +20,7 @@ import os
 import fnmatch
 from setuptools import setup
 import urllib.request
+import platform
 
 long_description = '''
     BigDL LLM
@@ -45,12 +46,23 @@ def get_llm_packages():
     return llm_packages
 
 
-lib_urls = [
+lib_urls = {}
+lib_urls["Windows"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/llama.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
     # TODO: add bloomz
+]
+lib_urls["Linux"] = [
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx2.so",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx512.so",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama-avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama-avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx2.so",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
+    # "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox-avx2",
+    # "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox-avx512",
 ]
 
 
@@ -61,18 +73,35 @@ def download_libs(url: str):
     libso_file_name = url.split('/')[-1]
     libso_file = os.path.join(libs_dir, libso_file_name)
     if not os.path.exists(libso_file):
+        print(">> Downloading from ", url)
         urllib.request.urlretrieve(url, libso_file)
 
 
 def setup_package():
     
-    package_data = [
+    package_data = {}
+    package_data["Windows"] = [
         "libs/llama.dll",
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
     ]
+    package_data["Linux"] = [
+        "libs/libllama_avx2.so",
+        "libs/libllama_avx512.so",
+        "libs/quantize-llama-avx2",
+        "libs/quantize-llama-avx512",
+        "libs/libgptneox_avx2.so",
+        "libs/libgptneox_avx512.so",
+        # "libs/quantize-gptneox-avx2",
+        # "libs/quantize-gptneox-avx512",
+    ]
 
-    for url in lib_urls:
+    if platform.platform().startswith('Windows'):
+        platform_name = "Windows"
+    else:
+        platform_name = "Linux"
+
+    for url in lib_urls[platform_name]:
         download_libs(url)
 
     metadata = dict(
@@ -87,7 +116,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_llm_packages(),
         package_dir={"": "src"},
-        package_data={"bigdl.llm": package_data},
+        package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
