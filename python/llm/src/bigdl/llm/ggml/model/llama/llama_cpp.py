@@ -51,7 +51,8 @@ def _load_shared_library(lib_base_name: str):
         raise RuntimeError("Unsupported platform")
 
     # Construct the paths to the possible shared library names
-    _base_path = pathlib.Path(__file__).parent.resolve()
+    _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
+    _base_path = _base_path / 'libs'
     # Searching for the library in the current directory under the name "libllama" (default name
     # for llamacpp) and "llama" (default name for this repo)
     _lib_paths = [
