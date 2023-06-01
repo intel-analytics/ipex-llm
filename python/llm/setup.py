@@ -70,6 +70,7 @@ def setup_package():
         "libs/llama.dll",
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
+        "libs/quantize-gptneox.exe",
     ]
 
     for url in lib_urls:
