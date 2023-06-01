@@ -1,7 +1,6 @@
 import requests
 import json
 import base64
-import generate_tdx_quote
 from collections import OrderedDict
 use_secure_cert = False
 headers = {"Content-Type":"application/json"}
