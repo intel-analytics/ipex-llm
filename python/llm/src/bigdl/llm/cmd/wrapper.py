@@ -23,44 +23,41 @@ LIB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 
 def llama(args):
     if os.name == 'nt':
-        exec_path = os.path.join(LIB_DIR, 'quantize-llama.exe')
+        exec_path = os.path.join(LIB_DIR, 'main-llama.exe')
     else:
-        exec_path = os.path.join(LIB_DIR, 'quantize-llama')
-    command = f'''{exec_path} \
-        -t {args.threads} \
-        -p {args.prompt} \
-        -n {args.n_predict} \
-        -m {args.model}
-    '''
-    subprocess.run(command.strip().split(), check=True)
+        exec_path = os.path.join(LIB_DIR, 'main-llama')
+    command = [exec_path,
+               '-t', args.threads,
+               '-p', args.prompt,
+               '-n', args.n_predict,
+               '-m', args.model]
+    subprocess.run(command, check=True)
 
 
 def bloomz(args):
     if os.name == 'nt':
-        exec_path = os.path.join(LIB_DIR, 'quantize-bloomz.exe')
+        exec_path = os.path.join(LIB_DIR, 'main-bloomz.exe')
     else:
-        exec_path = os.path.join(LIB_DIR, 'quantize-bloomz')
-    command = f'''{exec_path} \
-        -t {args.threads} \
-        -p {args.prompt} \
-        -n {args.n_predict} \
-        -m {args.model}
-    '''
-    subprocess.run(command.strip().split(), check=True)
+        exec_path = os.path.join(LIB_DIR, 'main-bloomz')
+    command = [exec_path,
+               '-t', args.threads,
+               '-p', args.prompt,
+               '-n', args.n_predict,
+               '-m', args.model]
+    subprocess.run(command, check=True)
 
 
 def redpajama(args):
     if os.name == 'nt':
-        exec_path = os.path.join(LIB_DIR, 'quantize-gptneox.exe')
+        exec_path = os.path.join(LIB_DIR, 'main-gptneox.exe')
     else:
-        exec_path = os.path.join(LIB_DIR, 'quantize-gptneox')
-    command = f'''{exec_path} \
-        -t {args.threads} \
-        -p {args.prompt} \
-        -n {args.n_predict} \
-        -m {args.model}
-    '''
-    subprocess.run(command.strip().split(), check=True)
+        exec_path = os.path.join(LIB_DIR, 'main-gptneox')
+    command = [exec_path,
+               '-t', args.threads,
+               '-p', args.prompt,
+               '-n', args.n_predict,
+               '-m', args.model]
+    subprocess.run(command, check=True)
 
 
 model_exec_map = {
