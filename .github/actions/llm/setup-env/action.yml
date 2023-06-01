@@ -1,0 +1,51 @@
+name: 'Setup LLM Env'
+description: 'setup LLM env'
+
+inputs:
+  python-version:
+    description: 'python version'
+    required: true
+  os:
+    description: 'ubuntu or windows'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install System Dependencies
+      shell: bash
+      run: |
+        if [ $OS = "ubuntu" ]; then
+          sudo apt-get update && sudo apt-get install -y wget libgl1
+        else
+          :
+        fi
+      env:
+        OS: ${{ inputs.os }}
+
+    - name: Setup Python (Ubuntu and Windows)
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install LLM packages
+      shell: bash
+      run: |
+        python -m pip install --upgrade setuptools==58.0.4
+        python -m pip install --upgrade wheel
+        if [ $OS = "windows" ]; then
+          bash python/llm/dev/release_default_windows.sh default false
+        else
+          bash python/llm/dev/release_default_linux.sh default false
+        fi
+        pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
+      env:
+        OS: ${{ inputs.os }}
+        IS_PR: ${{ github.event.pull_request != null }}
+
+    - name: Install Python Dependencies
+      shell: bash
+      run: |
+        pip install pytest
+      env:
+        OS: ${{ inputs.os }}
