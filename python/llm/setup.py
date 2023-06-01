@@ -96,7 +96,7 @@ def setup_package():
         # "libs/quantize-gptneox-avx512",
     ]
 
-    platform_name = "Linux"   
+    platform_name = "Windows"   
 
     change_permission = True if platform_name == "Linux" else False
 
