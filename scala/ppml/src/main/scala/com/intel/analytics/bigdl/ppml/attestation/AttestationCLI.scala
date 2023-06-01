@@ -114,7 +114,6 @@ object AttestationCLI {
               .action((x, c) => c.copy(proxyPort = x.toInt))
         }
         val params = cmdParser.parse(args, CmdParams()).get
-        println(params)
 
         // Attestation Client
         val as = params.asType match {
