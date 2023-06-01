@@ -13,6 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# ===========================================================================
+#
+# This file is adapted from
+# https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/llama.py
+#
+# MIT License
+#
+# Copyright (c) 2023 Andrei Betlen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 # This would makes sure Python is aware there is more than one sub-package within bigdl,
 # physically located elsewhere.
@@ -27,7 +53,7 @@ import math
 import multiprocessing
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
-
+from bigdl.llm.utils.common import invalidInputError
 from . import gptneox_cpp
 from .gptneox_types import *
 
@@ -63,8 +89,7 @@ class GptneoxCache:
     def __getitem__(self, key: Sequence[gptneox_cpp.gptneox_token]) -> "GptneoxState":
         key = tuple(key)
         _key = self._find_longest_prefix_key(key)
-        if _key is None:
-            raise KeyError(f"Key not found")
+        invalidInputError(_key is not None, "Key not found.")
         value = self.cache_state[_key]
         self.cache_state.move_to_end(_key)
         return value
@@ -124,7 +149,8 @@ class Gptneox:
         Args:
             model_path: Path to the model.
             n_ctx: Maximum context size.
-            n_parts: Number of parts to split the model into. If -1, the number of parts is automatically determined.
+            n_parts: Number of parts to split the model into. If -1,
+            the number of parts is automatically determined.
             seed: Random seed. 0 for random.
             f16_kv: Use half-precision for key/value cache.
             logits_all: Return logits for all tokens, not just the last token.
@@ -132,10 +158,12 @@ class Gptneox:
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. If None, the number of threads is automatically determined.
+            n_threads: Number of threads to use. If None, the number of threads
+            is automatically determined.
             n_batch: Maximum number of prompt tokens to batch together when calling gptneox_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
-            lora_base: Optional path to base model, useful if using a quantized base model and you want to apply LoRA to an f16 model.
+            lora_base: Optional path to base model, useful if using a quantized base model and
+            you want to apply LoRA to an f16 model.
             lora_path: Path to a LoRA file to apply to the model.
             verbose: Print verbose output to stderr.
 
@@ -172,14 +200,13 @@ class Gptneox:
         self.lora_base = lora_base
         self.lora_path = lora_path
 
-        if not os.path.exists(model_path):
-            raise ValueError(f"Model path does not exist: {model_path}")
+        invalidInputError(os.path.exists(model_path), f"Model path does not exist: {model_path}.")
 
         self.ctx = gptneox_cpp.gptneox_init_from_file(
             self.model_path.encode("utf-8"), self.params
         )
 
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
         if self.lora_path:
             if gptneox_cpp.gptneox_apply_lora_from_file(
@@ -190,9 +217,9 @@ class Gptneox:
                 else gptneox_cpp.c_char_p(0),
                 gptneox_cpp.c_int(self.n_threads),
             ):
-                raise RuntimeError(
-                    f"Failed to apply LoRA from lora path: {self.lora_path} to base path: {self.lora_base}"
-                )
+                invalidInputError(False,
+                                  f"Failed to apply LoRA from lora path: {self.lora_path}"
+                                  f" to base path: {self.lora_base}.")
 
         if self.verbose:
             print(gptneox_cpp.gptneox_print_system_info().decode("utf-8"), file=sys.stderr)
@@ -211,7 +238,7 @@ class Gptneox:
         Returns:
             A list of tokens.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         n_ctx = gptneox_cpp.gptneox_n_ctx(self.ctx)
         tokens = (gptneox_cpp.gptneox_token * int(n_ctx))()
         n_tokens = gptneox_cpp.gptneox_tokenize(
@@ -231,10 +258,8 @@ class Gptneox:
                 gptneox_cpp.c_int(n_tokens),
                 gptneox_cpp.c_bool(add_bos),
             )
-            if n_tokens < 0:
-                raise RuntimeError(
-                    f'Failed to tokenize: text="{text}" n_tokens={n_tokens}'
-                )
+            invalidInputError(n_tokens >= 0,
+                              f'Failed to tokenize: text="{text}" n_tokens={n_tokens}.')
         return list(tokens[:n_tokens])
 
     def detokenize(self, tokens: List[gptneox_cpp.gptneox_token]) -> bytes:
@@ -246,7 +271,7 @@ class Gptneox:
         Returns:
             The detokenized string.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         output = b""
         for token in tokens:
             output += gptneox_cpp.gptneox_token_to_str(self.ctx, token)
@@ -271,10 +296,10 @@ class Gptneox:
         Args:
             tokens: The list of tokens to evaluate.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         n_ctx = int(gptneox_cpp.gptneox_n_ctx(self.ctx))
         for i in range(0, len(tokens), self.n_batch):
-            batch = tokens[i : min(len(tokens), i + self.n_batch)]
+            batch = tokens[i: min(len(tokens), i + self.n_batch)]
             n_past = min(n_ctx - len(batch), len(self.eval_tokens))
             n_tokens = len(batch)
             return_code = gptneox_cpp.gptneox_eval(
@@ -284,8 +309,7 @@ class Gptneox:
                 n_past=gptneox_cpp.c_int(n_past),
                 n_threads=gptneox_cpp.c_int(self.n_threads),
             )
-            if int(return_code) != 0:
-                raise RuntimeError(f"gptneox_eval returned {return_code}")
+            invalidInputError(int(return_code) == 0, f"gptneox_eval returned {return_code}.")
             # Save tokens
             self.eval_tokens.extend(batch)
             # Save logits
@@ -313,8 +337,9 @@ class Gptneox:
         mirostat_tau: gptneox_cpp.c_float,
         mirostat_eta: gptneox_cpp.c_float,
     ):
-        assert self.ctx is not None
-        assert len(self.eval_logits) > 0
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
+        invalidInputError(len(self.eval_logits) > 0,
+                          "The attribute `eval_logits` of `Gptneox` object is None.")
         n_vocab = int(gptneox_cpp.gptneox_n_vocab(self.ctx))
         logits = self.eval_logits[-1]
         data = (gptneox_cpp.gptneox_token_data * n_vocab)(
@@ -443,10 +468,10 @@ class Gptneox:
         Returns:
             The sampled token.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         last_n_tokens_data = [gptneox_cpp.gptneox_token(0)] * max(
             0, self.last_n_tokens_size - len(self.eval_tokens)
-        ) + list(self.eval_tokens)[-self.last_n_tokens_size :]
+        ) + list(self.eval_tokens)[-self.last_n_tokens_size:]
         return self._sample(
             last_n_tokens_data=(gptneox_cpp.gptneox_token * self.last_n_tokens_size)(
                 *last_n_tokens_data
@@ -486,7 +511,8 @@ class Gptneox:
         Examples:
             >>> gptneox = Gptneox("models/ggml-7b.bin")
             >>> tokens = gptneox.tokenize(b"Hello, world!")
-            >>> for token in gptneox.generate(tokens, top_k=40, top_p=0.95, temp=1.0, repeat_penalty=1.1):
+            >>> for token in gptneox.generate(tokens, top_k=40, top_p=0.95,
+            >>>                               temp=1.0, repeat_penalty=1.1):
             ...     print(gptneox.detokenize([token]))
 
         Args:
@@ -500,7 +526,7 @@ class Gptneox:
         Yields:
             The generated tokens.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
         if reset and len(self.eval_tokens) > 0:
             longest_prefix = 0
@@ -552,12 +578,10 @@ class Gptneox:
         Returns:
             An embedding object.
         """
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
-        if self.params.embedding == False:
-            raise RuntimeError(
-                "Gptneox model must be created with embedding=True to call this method"
-            )
+        invalidInputError(self.params.embedding,
+                          "Gptneox model must be created with embedding=True to call this method.")
 
         if self.verbose:
             gptneox_cpp.gptneox_reset_timings(self.ctx)
@@ -620,7 +644,7 @@ class Gptneox:
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
     ) -> Union[Iterator[Completion], Iterator[CompletionChunk]]:
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         completion_id: str = f"cmpl-{str(uuid.uuid4())}"
         created: int = int(time.time())
         completion_tokens: List[gptneox_cpp.gptneox_token] = []
@@ -636,9 +660,9 @@ class Gptneox:
             gptneox_cpp.gptneox_reset_timings(self.ctx)
 
         if len(prompt_tokens) + max_tokens > int(gptneox_cpp.gptneox_n_ctx(self.ctx)):
-            raise ValueError(
-                f"Requested tokens exceed context window of {gptneox_cpp.gptneox_n_ctx(self.ctx)}"
-            )
+            invalidInputError(False,
+                              "Requested tokens exceed context window of"
+                              f" {gptneox_cpp.gptneox_n_ctx(self.ctx)}.")
 
         if stop != []:
             stop_sequences = [s.encode("utf-8") for s in stop]
@@ -646,9 +670,8 @@ class Gptneox:
             stop_sequences = []
 
         if logprobs is not None and self.params.logits_all is False:
-            raise ValueError(
-                "logprobs is not supported for models created with logits_all=False"
-            )
+            invalidInputError(False,
+                              "logprobs is not supported for models created with logits_all=False")
 
         if self.cache:
             try:
@@ -741,7 +764,7 @@ class Gptneox:
                     "usage":
                         {
                             "prompt_tokens": len(prompt_tokens)
-                        }
+                    }
                 }
 
             if len(completion_tokens) >= max_tokens:
@@ -774,9 +797,9 @@ class Gptneox:
                     }
                 ],
                 "usage":
-                        {
-                            "prompt_tokens": len(prompt_tokens)
-                        }
+                    {
+                        "prompt_tokens": len(prompt_tokens)
+                }
             }
             return
 
@@ -1149,12 +1172,11 @@ class Gptneox:
         )
 
     def save_state(self) -> GptneoxState:
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         state_size = gptneox_cpp.gptneox_get_state_size(self.ctx)
         gptneox_state = (gptneox_cpp.c_uint8 * int(state_size))()
         n_bytes = gptneox_cpp.gptneox_copy_state_data(self.ctx, gptneox_state)
-        if int(n_bytes) > int(state_size):
-            raise RuntimeError("Failed to copy gptneox state data")
+        invalidInputError(int(n_bytes) <= int(state_size), "Failed to copy gptneox state data.")
         gptneox_state_compact = (gptneox_cpp.c_uint8 * int(n_bytes))()
         gptneox_cpp.ctypes.memmove(gptneox_state_compact, gptneox_state, int(n_bytes))
         if self.verbose:
@@ -1170,12 +1192,13 @@ class Gptneox:
         )
 
     def load_state(self, state: GptneoxState) -> None:
-        assert self.ctx is not None
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         self.eval_tokens = state.eval_tokens.copy()
         self.eval_logits = state.eval_logits.copy()
         state_size = state.gptneox_state_size
-        if gptneox_cpp.gptneox_set_state_data(self.ctx, state.gptneox_state) != state_size:
-            raise RuntimeError("Failed to set gptneox state data")
+        invalidInputError(gptneox_cpp.gptneox_set_state_data(self.ctx,
+                                                             state.gptneox_state) == state_size,
+                          "Failed to set gptneox state data.")
 
     @staticmethod
     def token_eos() -> gptneox_cpp.gptneox_token:
