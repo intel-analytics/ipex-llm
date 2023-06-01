@@ -51,7 +51,7 @@ jobs:
       - name: Run LLM naive installation test
         shell: bash
         run: |
-          bash python/llm/dev/release_default_linux.sh default false
+          bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
           pip install pytest
           bash python/llm/test/run-llm-basic-tests.sh
