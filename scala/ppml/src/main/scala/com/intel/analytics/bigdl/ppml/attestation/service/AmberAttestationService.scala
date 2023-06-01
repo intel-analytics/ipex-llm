@@ -143,11 +143,12 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
         "Quote should be specified")
     }
     val action: String = ACTION_VERIFY_QUOTE
+    val policyIDArray = policyID.split(",").map(_.trim)
 
     val postResult: JSONObject = timing("AmberAttestationService request for VerifyQuote") {
       val postContent = Map[String, Any](
         "quote" -> quote,
-        "policy" -> policyID
+        "policy" -> policyIDArray
       )
       val postString = JsonUtil.toJson(postContent)
       val postUrl = constructUrl(action)
