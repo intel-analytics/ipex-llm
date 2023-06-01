@@ -65,7 +65,7 @@ lib_urls["Linux"] = [
 ]
 
 
-def download_libs(url: str):
+def download_libs(url: str, change_permission=False):
     libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
     if not os.path.exists(libs_dir):
         os.makedirs(libs_dir, exist_ok=True)
@@ -74,6 +74,7 @@ def download_libs(url: str):
     if not os.path.exists(libso_file):
         print(">> Downloading from ", url)
         urllib.request.urlretrieve(url, libso_file)
+        os.chmod(libso_file, 0o775)
 
 
 def setup_package():
@@ -97,11 +98,13 @@ def setup_package():
 
     if platform.platform().startswith('Windows'):
         platform_name = "Windows"
+        change_permission = False
     else:
         platform_name = "Linux"
+        change_permission = True
 
     for url in lib_urls[platform_name]:
-        download_libs(url)
+        download_libs(url, change_permission=change_permission)
 
     metadata = dict(
         name='bigdl-llm',
