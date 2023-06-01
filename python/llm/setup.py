@@ -20,7 +20,6 @@ import os
 import fnmatch
 from setuptools import setup
 import urllib.request
-import platform
 
 long_description = '''
     BigDL LLM
@@ -96,12 +95,9 @@ def setup_package():
         # "libs/quantize-gptneox-avx512",
     ]
 
-    if platform.platform().startswith('Windows'):
-        platform_name = "Windows"
-        change_permission = False
-    else:
-        platform_name = "Linux"
-        change_permission = True
+    platform_name = "Windows"  
+
+    change_permission = True if platform_name == "Linux"  else False
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
