@@ -18,6 +18,7 @@ import os
 import subprocess
 from bigdl.llm.utils.common import invalidInputError
 import platform
+from pathlib import Path
 
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -72,7 +73,7 @@ def quantize(input_path: str, output_path: str=None,
                       "The file {} was not found".format(input_path))
     # TODO : multi input model path
     if output_path is None:
-        output_path = input_path.replace("f16", dtype)
+        output_path = Path(str(input_path).replace('f16', dtype))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
     invalidInputError(dtype in quantize_type_map, "{0} model just accept {1} now, \
