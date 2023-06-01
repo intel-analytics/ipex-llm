@@ -19,5 +19,4 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-from .quantize import quantize
-from .convert import _convert_to_ggml
+from .log4Error import invalidInputError
