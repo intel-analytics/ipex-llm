@@ -13,7 +13,7 @@ def bigdl_attestation_service(base_url, app_id, api_key, quote, policy_id):
     if len(policy_id) > 0:
         payload["policyID"] = policy_id
     try:
-        resp = requests.post(url=base_url + "/verifyQuote", data=json.dumps(payload), headers=headers, verify=use_secure_cert)
+        resp = requests.post(url="https://" + base_url + "/verifyQuote", data=json.dumps(payload), headers=headers, verify=use_secure_cert)
         resp_dict = json.loads(resp.text)
         result = resp_dict["result"]
     except (json.JSONDecodeError, KeyError):
