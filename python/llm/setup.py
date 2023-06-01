@@ -95,8 +95,8 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         entry_points={
-            'llm_cmd': [
-                'llm-cmd=bigdl.llm.cmd.wrapper:main'
+            'console_scripts': [
+                'llm-cmd = bigdl.llm.cmd.wrapper:main'
             ]
         },
         platforms=['windows']

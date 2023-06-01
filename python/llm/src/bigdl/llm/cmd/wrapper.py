@@ -89,7 +89,7 @@ def main():
 
     parser.add_argument('-t', '--threads', type=int, default=28,
                         help='number of threads to use during computation (default: 28)')
-    parser.add_argument('-p', '--prompt', type=str, default='',
+    parser.add_argument('-p', '--prompt', type=str, default='empty',
                         help='prompt to start generation with (default: empty)')
     parser.add_argument('-n', '--n_predict', type=int, default=-1,
                         help='number of tokens to predict (default: -1, -1 = infinity)')
