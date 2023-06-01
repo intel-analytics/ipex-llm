@@ -84,6 +84,7 @@ def setup_package():
         "libs/llama.dll",
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
+        "libs/quantize-gptneox.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
