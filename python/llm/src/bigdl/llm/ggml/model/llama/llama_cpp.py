@@ -13,6 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# ===========================================================================
+#
+# This file is adapted from
+# https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/llama_cpp.py
+#
+# MIT License
+#
+# Copyright (c) 2023 Andrei Betlen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 # This would makes sure Python is aware there is more than one sub-package within bigdl,
 # physically located elsewhere.
@@ -36,6 +62,7 @@ from ctypes import (
     c_size_t,
 )
 import pathlib
+from bigdl.llm.utils.common import invalidInputError
 
 
 # Load the library
@@ -48,7 +75,7 @@ def _load_shared_library(lib_base_name: str):
     elif sys.platform == "win32":
         lib_ext = ".dll"
     else:
-        raise RuntimeError("Unsupported platform")
+        invalidInputError(False, "Unsupported platform.")
 
     # Construct the paths to the possible shared library names
     _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
@@ -81,11 +108,9 @@ def _load_shared_library(lib_base_name: str):
             try:
                 return ctypes.CDLL(str(_lib_path), **cdll_args)
             except Exception as e:
-                raise RuntimeError(f"Failed to load shared library '{_lib_path}': {e}")
+                invalidInputError(False, f"Failed to load shared library '{_lib_path}': {e}.")
 
-    raise FileNotFoundError(
-        f"Shared library with base name '{lib_base_name}' not found"
-    )
+    invalidInputError(False, f"Shared library with base name '{lib_base_name}' not found.")
 
 
 # Specify the base name of the shared library to load
@@ -300,7 +325,8 @@ _lib.llama_free.restype = None
 
 # TODO: not great API - very likely to change
 # Returns 0 on success
-# nthread - how many threads to use. If <=0, will use std::thread::hardware_concurrency(), else the number given
+# nthread - how many threads to use. If <=0, will use std::thread::hardware_concurrency(),
+# else the number given
 # LLAMA_API int llama_model_quantize(
 #         const char * fname_inp,
 #         const char * fname_out,
@@ -399,7 +425,8 @@ _lib.llama_set_state_data.restype = c_size_t
 
 
 # Save/load session file
-# LLAMA_API bool llama_load_session_file(struct llama_context * ctx, const char * path_session, llama_token * tokens_out, size_t n_token_capacity, size_t * n_token_count_out);
+# LLAMA_API bool llama_load_session_file(struct llama_context * ctx, const char * path_session,
+# llama_token * tokens_out, size_t n_token_capacity, size_t * n_token_count_out);
 def llama_load_session_file(
     ctx: llama_context_p,
     path_session: bytes,
@@ -422,7 +449,8 @@ _lib.llama_load_session_file.argtypes = [
 _lib.llama_load_session_file.restype = c_size_t
 
 
-# LLAMA_API bool llama_save_session_file(struct llama_context * ctx, const char * path_session, const llama_token * tokens, size_t n_token_count);
+# LLAMA_API bool llama_save_session_file(struct llama_context * ctx, const char * path_session,
+# const llama_token * tokens, size_t n_token_count);
 def llama_save_session_file(
     ctx: llama_context_p,
     path_session: bytes,
@@ -601,8 +629,10 @@ _lib.llama_init_candidates.argtypes = [
 _lib.llama_init_candidates.restype = None
 
 
-# @details Repetition penalty described in CTRL academic paper https://arxiv.org/abs/1909.05858, with negative logit fix.
-# LLAMA_API void llama_sample_repetition_penalty(struct llama_context * ctx, llama_token_data_array * candidates, const llama_token * last_tokens, size_t last_tokens_size, float penalty);
+# @details Repetition penalty described in CTRL academic paper https://arxiv.org/abs/1909.05858,
+# with negative logit fix.
+# LLAMA_API void llama_sample_repetition_penalty(struct llama_context * ctx, llama_token_data_array
+# * candidates, const llama_token * last_tokens, size_t last_tokens_size, float penalty);
 def llama_sample_repetition_penalty(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -625,8 +655,11 @@ _lib.llama_sample_repetition_penalty.argtypes = [
 _lib.llama_sample_repetition_penalty.restype = None
 
 
-# @details Frequency and presence penalties described in OpenAI API https://platform.openai.com/docs/api-reference/parameter-details.
-# LLAMA_API void llama_sample_frequency_and_presence_penalties(struct llama_context * ctx, llama_token_data_array * candidates, const llama_token * last_tokens, size_t last_tokens_size, float alpha_frequency, float alpha_presence);
+# @details Frequency and presence penalties described in OpenAI API
+# https://platform.openai.com/docs/api-reference/parameter-details.
+# LLAMA_API void llama_sample_frequency_and_presence_penalties(struct llama_context * ctx,
+# llama_token_data_array * candidates, const llama_token * last_tokens,
+# size_t last_tokens_size, float alpha_frequency, float alpha_presence);
 def llama_sample_frequency_and_presence_penalties(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -656,8 +689,10 @@ _lib.llama_sample_frequency_and_presence_penalties.argtypes = [
 _lib.llama_sample_frequency_and_presence_penalties.restype = None
 
 
-# @details Sorts candidate tokens by their logits in descending order and calculate probabilities based on logits.
-# LLAMA_API void llama_sample_softmax(struct llama_context * ctx, llama_token_data_array * candidates);
+# @details Sorts candidate tokens by their logits in descending order and calculate probabilities
+# based on logits.
+# LLAMA_API void llama_sample_softmax(struct llama_context * ctx,
+# llama_token_data_array * candidates);
 def llama_sample_softmax(
     ctx: llama_context_p, candidates  # type: _Pointer[llama_token_data]
 ):
@@ -671,8 +706,10 @@ _lib.llama_sample_softmax.argtypes = [
 _lib.llama_sample_softmax.restype = None
 
 
-# @details Top-K sampling described in academic paper "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
-# LLAMA_API void llama_sample_top_k(struct llama_context * ctx, llama_token_data_array * candidates, int k, size_t min_keep);
+# @details Top-K sampling described in academic paper
+# "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
+# LLAMA_API void llama_sample_top_k(struct llama_context * ctx,
+# llama_token_data_array * candidates, int k, size_t min_keep);
 def llama_sample_top_k(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -691,8 +728,10 @@ _lib.llama_sample_top_k.argtypes = [
 _lib.llama_sample_top_k.restype = None
 
 
-# @details Nucleus sampling described in academic paper "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
-# LLAMA_API void llama_sample_top_p(struct llama_context * ctx, llama_token_data_array * candidates, float p, size_t min_keep);
+# @details Nucleus sampling described in academic paper
+# "The Curious Case of Neural Text Degeneration" https://arxiv.org/abs/1904.09751
+# LLAMA_API void llama_sample_top_p(struct llama_context * ctx,
+# llama_token_data_array * candidates, float p, size_t min_keep);
 def llama_sample_top_p(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -711,8 +750,10 @@ _lib.llama_sample_top_p.argtypes = [
 _lib.llama_sample_top_p.restype = None
 
 
-# @details Tail Free Sampling described in https://www.trentonbricken.com/Tail-Free-Sampling/.
-# LLAMA_API void llama_sample_tail_free(struct llama_context * ctx, llama_token_data_array * candidates, float z, size_t min_keep);
+# @details Tail Free Sampling described in
+# https://www.trentonbricken.com/Tail-Free-Sampling/.
+# LLAMA_API void llama_sample_tail_free(struct llama_context * ctx,
+# llama_token_data_array * candidates, float z, size_t min_keep);
 def llama_sample_tail_free(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -731,8 +772,10 @@ _lib.llama_sample_tail_free.argtypes = [
 _lib.llama_sample_tail_free.restype = None
 
 
-# @details Locally Typical Sampling implementation described in the paper https://arxiv.org/abs/2202.00666.
-# LLAMA_API void llama_sample_typical(struct llama_context * ctx, llama_token_data_array * candidates, float p, size_t min_keep);
+# @details Locally Typical Sampling implementation described in the paper
+# https://arxiv.org/abs/2202.00666.
+# LLAMA_API void llama_sample_typical(struct llama_context * ctx,
+# llama_token_data_array * candidates, float p, size_t min_keep);
 def llama_sample_typical(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -751,7 +794,8 @@ _lib.llama_sample_typical.argtypes = [
 _lib.llama_sample_typical.restype = None
 
 
-# LLAMA_API void llama_sample_temperature(struct llama_context * ctx, llama_token_data_array * candidates, float temp);
+# LLAMA_API void llama_sample_temperature(struct llama_context * ctx,
+# llama_token_data_array * candidates, float temp);
 def llama_sample_temperature(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -768,13 +812,25 @@ _lib.llama_sample_temperature.argtypes = [
 _lib.llama_sample_temperature.restype = None
 
 
-# @details Mirostat 1.0 algorithm described in the paper https://arxiv.org/abs/2007.14966. Uses tokens instead of words.
-# @param candidates A vector of `llama_token_data` containing the candidate tokens, their probabilities (p), and log-odds (logit) for the current position in the generated text.
-# @param tau  The target cross-entropy (or surprise) value you want to achieve for the generated text. A higher value corresponds to more surprising or less predictable text, while a lower value corresponds to less surprising or more predictable text.
-# @param eta The learning rate used to update `mu` based on the error between the target and observed surprisal of the sampled word. A larger learning rate will cause `mu` to be updated more quickly, while a smaller learning rate will result in slower updates.
-# @param m The number of tokens considered in the estimation of `s_hat`. This is an arbitrary value that is used to calculate `s_hat`, which in turn helps to calculate the value of `k`. In the paper, they use `m = 100`, but you can experiment with different values to see how it affects the performance of the algorithm.
-# @param mu Maximum cross-entropy. This value is initialized to be twice the target cross-entropy (`2 * tau`) and is updated in the algorithm based on the error between the target and observed surprisal.
-# LLAMA_API llama_token llama_sample_token_mirostat(struct llama_context * ctx, llama_token_data_array * candidates, float tau, float eta, int m, float * mu);
+# @details Mirostat 1.0 algorithm described in the paper https://arxiv.org/abs/2007.14966.
+# Uses tokens instead of words.
+# @param candidates A vector of `llama_token_data` containing the candidate tokens,
+# their probabilities (p), and log-odds (logit) for the current position in the generated text.
+# @param tau  The target cross-entropy (or surprise) value you want to achieve for the generated
+# text. A higher value corresponds to more surprising or less predictable text, while a lower
+# value corresponds to less surprising or more predictable text.
+# @param eta The learning rate used to update `mu` based on the error between the target and
+# observed surprisal of the sampled word. A larger learning rate will cause `mu` to be
+# updated more quickly, while a smaller learning rate will result in slower updates.
+# @param m The number of tokens considered in the estimation of `s_hat`. This is an arbitrary value
+# that is used to calculate `s_hat`, which in turn helps to calculate the value of `k`.
+# In the paper, they use `m = 100`, but you can experiment with different values to see
+# how it affects the performance of the algorithm.
+# @param mu Maximum cross-entropy. This value is initialized to be twice the target cross-entropy
+# (`2 * tau`) and is updated in the algorithm based on the error between the target and
+# observed surprisal.
+# LLAMA_API llama_token llama_sample_token_mirostat(struct llama_context * ctx,
+# llama_token_data_array * candidates, float tau, float eta, int m, float * mu);
 def llama_sample_token_mirostat(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -797,12 +853,21 @@ _lib.llama_sample_token_mirostat.argtypes = [
 _lib.llama_sample_token_mirostat.restype = llama_token
 
 
-# @details Mirostat 2.0 algorithm described in the paper https://arxiv.org/abs/2007.14966. Uses tokens instead of words.
-# @param candidates A vector of `llama_token_data` containing the candidate tokens, their probabilities (p), and log-odds (logit) for the current position in the generated text.
-# @param tau  The target cross-entropy (or surprise) value you want to achieve for the generated text. A higher value corresponds to more surprising or less predictable text, while a lower value corresponds to less surprising or more predictable text.
-# @param eta The learning rate used to update `mu` based on the error between the target and observed surprisal of the sampled word. A larger learning rate will cause `mu` to be updated more quickly, while a smaller learning rate will result in slower updates.
-# @param mu Maximum cross-entropy. This value is initialized to be twice the target cross-entropy (`2 * tau`) and is updated in the algorithm based on the error between the target and observed surprisal.
-# LLAMA_API llama_token llama_sample_token_mirostat_v2(struct llama_context * ctx, llama_token_data_array * candidates, float tau, float eta, float * mu);
+# @details Mirostat 2.0 algorithm described in the paper https://arxiv.org/abs/2007.14966.
+# Uses tokens instead of words.
+# @param candidates A vector of `llama_token_data` containing the candidate tokens,
+# their probabilities (p), and log-odds (logit) for the current position in the generated text.
+# @param tau  The target cross-entropy (or surprise) value you want to achieve for the generated
+# text. A higher value corresponds to more surprising or less predictable text, while a lower value
+# corresponds to less surprising or more predictable text.
+# @param eta The learning rate used to update `mu` based on the error between the target and
+# observed surprisal of the sampled word. A larger learning rate will cause `mu` to be
+# updated more quickly, while a smaller learning rate will result in slower updates.
+# @param mu Maximum cross-entropy. This value is initialized to be twice the target cross-entropy
+# (`2 * tau`) and is updated in the algorithm based on the error between the target
+# and observed surprisal.
+# LLAMA_API llama_token llama_sample_token_mirostat_v2(struct llama_context * ctx,
+# llama_token_data_array * candidates, float tau, float eta, float * mu);
 def llama_sample_token_mirostat_v2(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -824,7 +889,8 @@ _lib.llama_sample_token_mirostat_v2.restype = llama_token
 
 
 # @details Selects the token with the highest probability.
-# LLAMA_API llama_token llama_sample_token_greedy(struct llama_context * ctx, llama_token_data_array * candidates);
+# LLAMA_API llama_token llama_sample_token_greedy(struct llama_context * ctx,
+# llama_token_data_array * candidates);
 def llama_sample_token_greedy(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
@@ -840,7 +906,8 @@ _lib.llama_sample_token_greedy.restype = llama_token
 
 
 # @details Randomly selects a token from the candidates based on their probabilities.
-# LLAMA_API llama_token llama_sample_token(struct llama_context * ctx, llama_token_data_array * candidates);
+# LLAMA_API llama_token llama_sample_token(struct llama_context * ctx,
+# llama_token_data_array * candidates);
 def llama_sample_token(
     ctx: llama_context_p,
     candidates,  # type: _Pointer[llama_token_data_array]
