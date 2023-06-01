@@ -18,38 +18,49 @@ import argparse
 import os
 import subprocess
 
+LIB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "libs")
+
 
 def llama(args):
-    exec_path = 'llama.cpp/main'
+    if os.name == 'nt':
+        exec_path = os.path.join(LIB_DIR, 'quantize-llama.exe')
+    else:
+        exec_path = os.path.join(LIB_DIR, 'quantize-llama')
     command = f'''{exec_path} \
         -t {args.threads} \
         -p {args.prompt} \
         -n {args.n_predict} \
         -m {args.model}
     '''
-    subprocess.run(command.split(), check=True)
+    subprocess.run(command.strip().split(), check=True)
 
 
 def bloomz(args):
-    exec_path = 'bloomz.cpp/main'
+    if os.name == 'nt':
+        exec_path = os.path.join(LIB_DIR, 'quantize-bloomz.exe')
+    else:
+        exec_path = os.path.join(LIB_DIR, 'quantize-bloomz')
     command = f'''{exec_path} \
         -t {args.threads} \
         -p {args.prompt} \
         -n {args.n_predict} \
         -m {args.model}
     '''
-    subprocess.run(command.split(), check=True)
+    subprocess.run(command.strip().split(), check=True)
 
 
 def redpajama(args):
-    exec_path = 'redpajama.cpp/main'
+    if os.name == 'nt':
+        exec_path = os.path.join(LIB_DIR, 'quantize-gptneox.exe')
+    else:
+        exec_path = os.path.join(LIB_DIR, 'quantize-gptneox')
     command = f'''{exec_path} \
         -t {args.threads} \
         -p {args.prompt} \
         -n {args.n_predict} \
         -m {args.model}
     '''
-    subprocess.run(command.split(), check=True)
+    subprocess.run(command.strip().split(), check=True)
 
 
 model_exec_map = {
@@ -90,12 +101,7 @@ def main():
                         help='family name of model')
 
     args = parser.parse_args()
-
-    # Print the values of the parsed arguments
-    print('Threads:', args.threads)
-    print('Prompt:', args.prompt)
-    print('N Predict:', args.n_predict)
-    print('Model:', args.model)
+    args.model = os.path.abspath(args.model)
 
     if args.model_family:
         model_exec_map[args.model_family](args)

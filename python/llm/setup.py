@@ -16,10 +16,11 @@
 # limitations under the License.
 #
 
-import os
 import fnmatch
-from setuptools import setup
+import os
 import urllib.request
+
+from setuptools import setup
 
 long_description = '''
     BigDL LLM
@@ -37,7 +38,7 @@ def get_llm_packages():
         print(dirpath)
         package = dirpath.split(llm_home + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
-                for pattern in exclude_patterns):
+               for pattern in exclude_patterns):
             print("excluding", package)
         else:
             llm_packages.append(package)
@@ -65,7 +66,6 @@ def download_libs(url: str):
 
 
 def setup_package():
-    
     package_data = [
         "libs/llama.dll",
         "libs/quantize-llama.exe",
@@ -94,6 +94,11 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
+        entry_points={
+            'llm_cmd': [
+                'llm-cmd=bigdl.llm.cmd.wrapper:main'
+            ]
+        },
         platforms=['windows']
     )
 
