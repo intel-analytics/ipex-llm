@@ -50,8 +50,9 @@ def _load_shared_library(lib_base_name: str):
     else:
         raise RuntimeError("Unsupported platform")
 
-    # Construct the paths to the possible shared library names
-    _base_path = pathlib.Path(__file__).parent.resolve()
+    # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
+    _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
+    _base_path = _base_path / 'libs'
     # Searching for the library in the current directory under the name "libgptneox" (default name
     # for gptneoxcpp) and "gptneox" (default name for this repo)
     _lib_paths = [
