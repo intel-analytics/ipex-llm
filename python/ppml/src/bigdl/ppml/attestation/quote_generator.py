@@ -36,8 +36,6 @@ def generate_tdx_quote(user_report_data):
     result = tdx_attest.tdx_att_get_report(ctypes.byref(report_data), ctypes.byref(report))
     if result != 0:
         print("Error: " + hex(result))
-    else:
-        print("Report: " + bytes(report.d).hex())
 
     att_key_id_list = None
     list_size = 0
@@ -52,7 +50,4 @@ def generate_tdx_quote(user_report_data):
         print("Error: " + hex(result))
     else:
         quote = ctypes.string_at(p_quote, quote_size.value)
-        print("Quote: ", bytes(quote).hex())
-        print(base64.b64encode(quote))
         return quote
-        # print("Quote: " + ctypes.string_at(pp_quote, p_quote_size))
