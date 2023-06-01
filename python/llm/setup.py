@@ -52,6 +52,9 @@ lib_urls = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
     # TODO: add bloomz
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloomz.exe",
+    # TODO: redpajama main
 ]
 
 
