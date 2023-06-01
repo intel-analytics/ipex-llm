@@ -18,8 +18,7 @@
 
 import os
 import fnmatch
-from setuptools import setup
-import urllib.request
+from skbuild import setup
 
 long_description = '''
     BigDL LLM
@@ -45,36 +44,7 @@ def get_llm_packages():
     return llm_packages
 
 
-lib_urls = [
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/llama.dll",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
-    # TODO: add bloomz
-]
-
-
-def download_libs(url: str):
-    libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-    if not os.path.exists(libs_dir):
-        os.makedirs(libs_dir, exist_ok=True)
-    libso_file_name = url.split('/')[-1]
-    libso_file = os.path.join(libs_dir, libso_file_name)
-    if not os.path.exists(libso_file):
-        urllib.request.urlretrieve(url, libso_file)
-
-
 def setup_package():
-    
-    package_data = [
-        "libs/llama.dll",
-        "libs/quantize-llama.exe",
-        "libs/gptneox.dll",
-    ]
-
-    for url in lib_urls:
-        download_libs(url)
-
     metadata = dict(
         name='bigdl-llm',
         version=VERSION,
@@ -87,14 +57,14 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_llm_packages(),
         package_dir={"": "src"},
-        package_data={"bigdl.llm": package_data},
+        install_requires=[""],
         include_package_data=True,
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
-        platforms=['windows']
+        platforms=['linux']
     )
 
     setup(**metadata)
