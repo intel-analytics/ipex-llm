@@ -57,8 +57,7 @@ lib_urls["Windows"] = [
 lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx2.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx512.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama-avx2",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama-avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx2.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
     # "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox-avx2",
@@ -89,8 +88,7 @@ def setup_package():
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
         "libs/libllama_avx512.so",
-        "libs/quantize-llama-avx2",
-        "libs/quantize-llama-avx512",
+        "libs/quantize-llama",
         "libs/libgptneox_avx2.so",
         "libs/libgptneox_avx512.so",
         # "libs/quantize-gptneox-avx2",
