@@ -54,7 +54,7 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-def train(args, model, device, train_loader, optimizer, epoch):
+def train(model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -63,7 +63,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
-        if batch_idx % 50 == 0:
+        if batch_idx % 10 == 0:
             msg = "Train Epoch: {} [{}/{} ({:.0f}%)]\tloss={:.4f}".format(
                 epoch, batch_idx, len(train_loader),
                 100. * batch_idx / len(train_loader), loss.item())
@@ -71,7 +71,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
             niter = epoch * len(train_loader) + batch_idx
 
 
-def test(args, model, device, test_loader, epoch):
+def test(model, device, test_loader, epoch):
     model.eval()
     test_loss = 0
     correct = 0
@@ -98,24 +98,22 @@ def main(args=None):
 
 
     torch.manual_seed(args.seed)
-    import ppml_context
-#     ppml_context = ppml_context.PPMLContext(k8s_enabled=True)
 
     print("Before downloading data", flush=True)
     train_data = datasets.FashionMNIST("./data",
-                            train=True,
-                            download=True,
-                            transform=transforms.Compose([
-                            transforms.ToTensor()
-                            ]))
+                                       train=True,
+                                       download=True,
+                                       transform=transforms.Compose([
+                                           transforms.ToTensor()
+                                       ]))
 
 
     test_data = datasets.FashionMNIST("./data",
-                            train=True,
-                            download=True,
-                            transform=transforms.Compose([
-                            transforms.ToTensor()
-                            ]))
+                                      train=True,
+                                      download=True,
+                                      transform=transforms.Compose([
+                                          transforms.ToTensor()
+                                      ]))
 
     train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
     test_dataloader = torch.utils.data.DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False)
@@ -134,10 +132,13 @@ def main(args=None):
     cpu_start = time.process_time()
 
     # do_train
-#     model, train_dataloader, test_dataloader = ppml_context.get_distributed(model, train_dataloader, test_dataloader)
+    print("mnist.test ----------------")
+    import ppml_context
+    mycontext = ppml_context.PPMLContext("k8s")
+    model, train_dataloader, test_dataloader = mycontext.set_training(model, train_dataloader, test_dataloader)
     for epoch in range(1, args.epochs + 1):
-        train(args, model, args.device, train_dataloader, optimizer, epoch)
-        test(args, model, args.device, test_dataloader, epoch)
+        train(model, args.device, train_dataloader, optimizer, epoch)
+        test(model, args.device, test_dataloader, epoch)
 
     cpu_end = time.process_time()
     end = time.perf_counter()
@@ -152,45 +153,38 @@ if __name__ == "__main__":
     import os
     import sys
     os.environ['HF_DATASETS_OFFLINE'] = '1'
-    import ppml_conf
-    local_conf = ppml_conf.PPMLConf(k8s_enabled = False) \
-    .set("epoch", "2") \
-    .set("test-batch-size", "16") \
-    .set("batch-size", "16") \
-    .set("model-save-path", "/ppml/model/mnist_cnn.pt") \
-    .set("momentum", "0.5")
+    import ppml_context
+    local_conf = ppml_context.PPMLConf(k8s_enabled = False) \
+        .set("epoch", "2") \
+        .set("test-batch-size", "16") \
+        .set("batch-size", "16") \
+        .set("model-save-path", "/ppml/model/mnist_cnn.pt") \
+        .set("momentum", "0.5")
 
     args1=local_conf.conf_to_args()
     main(args1)
     sys.exit()
 
 # +
-import k8s_deployment
+import ppml_context
+k8s_conf = ppml_context.PPMLConf(k8s_enabled = True, sgx_enabled=False) \
+    .set("bigdl.ppml.k8s.env.GLOO_TCP_IFACE", "ens803f0") \
+    .set("bigdl.ppml.k8s.env.HF_DATASETS_OFFLINE", "1") \
+    .set("bigdl.ppml.k8s.conf.nnodes", "2") \
+    .set("bigdl.ppml.k8s.conf.pod_cpu", "13") \
+    .set("bigdl.ppml.k8s.conf.pod_memory", "64G") \
+    .set("bigdl.ppml.k8s.conf.pod_epc_memory", "68719476736")
 
-import ppml_conf
-k8s_conf = ppml_conf.PPMLConf(k8s_enabled = True, sgx_enabled=False) \
-.set_k8s_env("GLOO_TCP_IFACE", "ens803f0") \
-.set_k8s_env("HF_DATASETS_OFFLINE", "1") \
-.set_k8s("nnodes", "2") \
-.set_k8s("pod_cpu", "13") \
-.set_k8s("pod_memory", "64G") \
-.set_k8s("pod_epc_memory", "68719476736")
-
-# set_volumn_host("volume_name,host_path")
-# set_volumn_nfs("volume_name, nfs_server, nfs_path")
-# set_volumn_mount("mount_path,volume_name")
+# set("bigdl.ppml.k8s.volume_nfs.volume_name,host_path")
+# set("bigdl.ppml.k8s.volume_nfs.volume_name, nfs_server, nfs_path")
+# set("bigdl.ppml.k8s.volume_mount.mount_path,volume_name")
 k8s_conf \
-.set_volume_nfs("source-code", "172.168.0.205","/mnt/sdb/disk1/nfsdata/wangjian/idc") \
-.set_volume_mount("/ppml/notebook/nfs", "source-code") \
-.set_volume_nfs("nfs-data", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/hf") \
-.set_volume_mount("/root/.cache", "nfs-data") \
-.set_volume_nfs("nfs-model", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/model/chinese-pert-base") \
-.set_volume_mount("/ppml/model", "nfs-model") \
+    .set("bigdl.ppml.k8s.volume_nfs.source-code", "172.168.0.205","/mnt/sdb/disk1/nfsdata/wangjian/idc") \
+    .set("bigdl.ppml.k8s.volume_mount.source-code", "/ppml/notebook/nfs") \
+    .set("bigdl.ppml.k8s.volume_nfs.nfs-data", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/hf") \
+    .set("bigdl.ppml.k8s.volume_mount.nfs-data", "/root/.cache") \
+    .set("bigdl.ppml.k8s.volume_nfs.nfs-model", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/model/chinese-pert-base") \
+    .set("bigdl.ppml.k8s.volume_mount.nfs-model", "/ppml/model")
 
-k8s_args = k8s_conf.conf_to_args()
-
-
-k8s_deployment.run_k8s(k8s_args)
+k8s_conf.run_k8s()
 # -
-
-
