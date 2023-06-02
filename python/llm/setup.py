@@ -16,10 +16,22 @@
 # limitations under the License.
 #
 
+# >> Usage:
+#
+# >>>> Build for the current platform:
+# python setup.py clean --all bdist_wheel
+# >>>> Windows:
+# python setup.py clean --all bdist_wheel --win
+# >>>> Linux：
+# python setup.py clean --all bdist_wheel --linux
+
 import os
+import sys
 import fnmatch
 from setuptools import setup
 import urllib.request
+import platform
+import shutil
 
 long_description = '''
     BigDL LLM
@@ -29,6 +41,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
+libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 
 
 def get_llm_packages():
@@ -59,15 +72,11 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx2.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
-    # "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox-avx2",
-    # "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox-avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
 ]
 
 
 def download_libs(url: str, change_permission=False):
-    libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-    if not os.path.exists(libs_dir):
-        os.makedirs(libs_dir, exist_ok=True)
     libso_file_name = url.split('/')[-1]
     libso_file = os.path.join(libs_dir, libso_file_name)
     if not os.path.exists(libso_file):
@@ -92,13 +101,30 @@ def setup_package():
         "libs/quantize-llama",
         "libs/libgptneox_avx2.so",
         "libs/libgptneox_avx512.so",
-        # "libs/quantize-gptneox-avx2",
-        # "libs/quantize-gptneox-avx512",
+        "libs/quantize-gptneox",
     ]
 
-    platform_name = "Windows"   
+    platform_name = None
+    if "--win" in sys.argv:
+        platform_name = "Windows"
+        sys.argv.remove("--win")
+    if "--linux" in sys.argv:
+        platform_name = "Linux"
+        sys.argv.remove("--linux")
+    
+    if platform_name is None:
+        if platform.platform().startswith('Windows'):
+            platform_name = "Windows"
+        else:
+            platform_name = "Linux" 
 
     change_permission = True if platform_name == "Linux" else False
+
+    # Delete legacy libs
+    if os.path.exists(libs_dir):
+        print(f"Deleting existing libs_dir {libs_dir} ....")
+        shutil.rmtree(libs_dir)
+    os.makedirs(libs_dir, exist_ok=True)
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
