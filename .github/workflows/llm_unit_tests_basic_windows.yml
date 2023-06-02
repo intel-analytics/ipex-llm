@@ -54,6 +54,10 @@ jobs:
           bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
           pip install pytest
+          pip install numpy
+          pip install torch
+          pip install transformers
+          pip install sentencepiece
           bash python/llm/test/run-llm-basic-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
