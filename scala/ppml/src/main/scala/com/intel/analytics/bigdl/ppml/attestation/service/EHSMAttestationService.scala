@@ -73,6 +73,9 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   val RES_QUOTE = "quote"
   val RES_CHALLENGE = "challenge"
 
+  override def getNonce(): String = ""
+  var nonce = ""
+
   override def register(appID: String): String = "true"
 
   override def getPolicy(appID: String): String = "true"
