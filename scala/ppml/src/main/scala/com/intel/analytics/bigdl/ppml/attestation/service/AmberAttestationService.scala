@@ -61,7 +61,8 @@ import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUt
  * @param appID application ID
  * @param apiKey application Key
  */
-class AmberAttestationService(attestationServerURL: String, apiKey: String, userReport: String, proxyHost: String, proxyPort: Int) extends AttestationService {
+class AmberAttestationService(attestationServerURL: String, apiKey: String, userReport: String,
+  proxyHost: String, proxyPort: Int) extends AttestationService {
   val logger = LogManager.getLogger(getClass)
 
   val sslConSocFactory = {
@@ -131,7 +132,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
       }
       new JSONObject(response)
     }
-    
+
     val token = postResult.getString(RES_TOKEN)
     val verifyQuoteResult = token.length() > 0
     (verifyQuoteResult, postResult.toString)
@@ -160,7 +161,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
       }
       new JSONObject(response)
     }
-    
+
     val token = postResult.getString(RES_TOKEN)
     val verifyQuoteResult = token.length() > 0
     (verifyQuoteResult, postResult.toString)
@@ -170,7 +171,6 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     s"$attestationServerURL$action"
   }
 
-  
   def getRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
@@ -179,7 +179,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     httpGet.setHeader(new BasicHeader("Accept", "application/json"));
     httpGet.setHeader(new BasicHeader("x-api-key", apiKey));
     if (proxyHost.length > 0) {
-      val proxy_host = new HttpHost(proxyHost,proxyPort)
+      val proxy_host = new HttpHost(proxyHost, proxyPort)
       val config = RequestConfig.custom()
                   .setProxy(proxy_host)
                   .build()
@@ -195,7 +195,8 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     EntityUtils.toString(response.getEntity, "UTF-8")
   }
 
-  def postRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory, content: String): String = {
+  def postRequest(url: String, sslConSocFactory: SSLConnectionSocketFactory,
+  content: String): String = {
     val clientbuilder = HttpClients.custom().setSSLSocketFactory(sslConSocFactory)
     val httpsClient: CloseableHttpClient = clientbuilder.build()
     val httpPost = new HttpPost(url)
@@ -203,7 +204,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     httpPost.setHeader(new BasicHeader("Accept", "application/json"));
     httpPost.setHeader(new BasicHeader("x-api-key", apiKey));
     if (proxyHost.length > 0) {
-      val proxy_host = new HttpHost(proxyHost,proxyPort)
+      val proxy_host = new HttpHost(proxyHost, proxyPort)
       val config = RequestConfig.custom()
                   .setProxy(proxy_host)
                   .build()
@@ -214,8 +215,6 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
     }
     if (debug == "true") {
       println(httpPost)
-      val headers = httpPost.getAllHeaders().toSeq.map(header => header.getName() -> header.getValue())
-println(s"Headers: $headers")
     }
     val response = httpsClient.execute(httpPost)
     if (debug == "true") {

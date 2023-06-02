@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.ppml.attestation._
 class DummyAttestationService extends AttestationService {
 
     val logger = LogManager.getLogger(getClass)
-    
+
     override def getNonce(): String = ""
     var nonce = ""
 

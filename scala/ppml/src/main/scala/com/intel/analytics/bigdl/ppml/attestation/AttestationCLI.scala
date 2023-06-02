@@ -65,7 +65,7 @@ object AttestationCLI {
                              policyID: String = "",
                              quoteType: String = QUOTE_CONVENTION.MODE_GRAMINE,
                              apiVersion: String = "2020-10-01",
-                             quotePath:String = "",
+                             quotePath: String = "",
                              nonce: String = "",
                              proxyHost: String = "",
                              proxyPort: Int = 0,
@@ -129,7 +129,8 @@ object AttestationCLI {
                 new AzureAttestationService(params.asURL, params.apiVersion,
                  Base64.getUrlEncoder.encodeToString(hex(params.userReport)))
             case ATTESTATION_CONVENTION.MODE_AMBER =>
-                new AmberAttestationService(params.asURL, params.apiKey, params.userReport, params.proxyHost, params.proxyPort)
+                new AmberAttestationService(params.asURL, params.apiKey, params.userReport,
+                params.proxyHost, params.proxyPort)
             case _ => throw new AttestationRuntimeException("Wrong Attestation Service type")
         }
 

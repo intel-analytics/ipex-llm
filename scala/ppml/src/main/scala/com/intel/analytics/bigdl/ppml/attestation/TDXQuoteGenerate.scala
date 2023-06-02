@@ -68,7 +68,6 @@ object TdxQuoteGenerate {
         val debug = System.getenv("ATTESTATION_DEBUG")
         if (debug == "true") {
             val quote_base64 = Base64.getEncoder.encodeToString(quote)
-            
             println(s"quote: ${quote_base64}")
         }
 
