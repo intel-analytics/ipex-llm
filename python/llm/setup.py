@@ -42,6 +42,7 @@ BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
+QUAN_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece']
 
 
 def get_llm_packages():
@@ -128,6 +129,10 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
+    
+    install_requires=[]
+    if "--all" in sys.argv:
+        install_requires += QUAN_DEP
 
     metadata = dict(
         name='bigdl-llm',
@@ -143,6 +148,7 @@ def setup_package():
         package_dir={"": "src"},
         package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
+        install_requires=install_requires,
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
