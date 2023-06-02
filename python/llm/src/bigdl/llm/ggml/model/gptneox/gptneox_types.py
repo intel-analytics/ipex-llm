@@ -45,7 +45,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 from typing_extensions import TypedDict, NotRequired, Literal
 
 
@@ -69,9 +69,9 @@ class Embedding(TypedDict):
 
 class CompletionLogprobs(TypedDict):
     text_offset: List[int]
-    token_logprobs: List[Optional[float]]
+    token_logprobs: List[float]
     tokens: List[str]
-    top_logprobs: List[Optional[Dict[str, float]]]
+    top_logprobs: List[Dict[str, float]]
 
 
 class CompletionChoice(TypedDict):

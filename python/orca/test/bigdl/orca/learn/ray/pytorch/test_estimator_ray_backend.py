@@ -369,7 +369,8 @@ class TestPyTorchEstimator(TestCase):
 
         sc = init_nncontext()
         rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
+            lambda x: {"x": np.stack([list(i) for i in x])})  # convert chain to list
         shards = SparkXShards(shards)
 
         estimator = get_estimator(workers_per_node=2,
@@ -793,7 +794,8 @@ class TestPyTorchEstimator(TestCase):
     def test_optional_optimizer(self):
         sc = OrcaContext.get_spark_context()
         rdd = sc.range(0, 110).map(lambda x: np.array([x] * 50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
+            lambda x: {"x": np.stack([list(i) for i in x])})  # convert chain to list
         shards = SparkXShards(shards)
 
         try:

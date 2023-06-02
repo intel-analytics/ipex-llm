@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 # ===========================================================================
 #
 # This file is adapted from
@@ -55,29 +54,31 @@ import multiprocessing
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
 from bigdl.llm.utils.common import invalidInputError
-from . import llama_cpp
-from .llama_types import *
+from . import gptneox_cpp
+from .gptneox_types import *
 
 
-class LlamaCache:
-    """Cache for a llama.cpp model."""
+class GptneoxCache:
+    """Cache for a gptneox.cpp model."""
 
     def __init__(self, capacity_bytes: int = (2 << 30)):
-        self.cache_state: OrderedDict[Tuple[int, ...], "LlamaState"] = OrderedDict()
+        self.cache_state: OrderedDict[
+            Tuple[gptneox_cpp.gptneox_token, ...], "GptneoxState"
+        ] = OrderedDict()
         self.capacity_bytes = capacity_bytes
 
     @property
     def cache_size(self):
-        return sum([state.llama_state_size for state in self.cache_state.values()])
+        return sum([state.gptneox_state_size for state in self.cache_state.values()])
 
     def _find_longest_prefix_key(
         self,
-        key: Tuple[int, ...],
-    ) -> Optional[Tuple[int, ...]]:
+        key: Tuple[gptneox_cpp.gptneox_token, ...],
+    ) -> Optional[Tuple[gptneox_cpp.gptneox_token, ...]]:
         min_len = 0
         min_key = None
         keys = (
-            (k, Llama.longest_token_prefix(k, key)) for k in self.cache_state.keys()
+            (k, Gptneox.longest_token_prefix(k, key)) for k in self.cache_state.keys()
         )
         for k, prefix_len in keys:
             if prefix_len > min_len:
@@ -85,7 +86,7 @@ class LlamaCache:
                 min_key = k
         return min_key
 
-    def __getitem__(self, key: Sequence[int]) -> "LlamaState":
+    def __getitem__(self, key: Sequence[gptneox_cpp.gptneox_token]) -> "GptneoxState":
         key = tuple(key)
         _key = self._find_longest_prefix_key(key)
         invalidInputError(_key is not None, "Key not found.")
@@ -93,10 +94,10 @@ class LlamaCache:
         self.cache_state.move_to_end(_key)
         return value
 
-    def __contains__(self, key: Sequence[int]) -> bool:
+    def __contains__(self, key: Sequence[gptneox_cpp.gptneox_token]) -> bool:
         return self._find_longest_prefix_key(tuple(key)) is not None
 
-    def __setitem__(self, key: Sequence[int], value: "LlamaState"):
+    def __setitem__(self, key: Sequence[gptneox_cpp.gptneox_token], value: "GptneoxState"):
         key = tuple(key)
         if key in self.cache_state:
             del self.cache_state[key]
@@ -105,22 +106,22 @@ class LlamaCache:
             self.cache_state.popitem(last=False)
 
 
-class LlamaState:
+class GptneoxState:
     def __init__(
         self,
-        eval_tokens: Deque[int],
+        eval_tokens: Deque[gptneox_cpp.gptneox_token],
         eval_logits: Deque[List[float]],
-        llama_state,  # type: llama_cpp.Array[llama_cpp.c_uint8]
-        llama_state_size: int,
+        gptneox_state,  # type: gptneox_cpp.Array[gptneox_cpp.c_uint8]
+        gptneox_state_size: int,
     ):
         self.eval_tokens = eval_tokens
         self.eval_logits = eval_logits
-        self.llama_state = llama_state
-        self.llama_state_size = llama_state_size
+        self.gptneox_state = gptneox_state
+        self.gptneox_state_size = gptneox_state_size
 
 
-class Llama:
-    """High-level Python wrapper for a llama.cpp model."""
+class Gptneox:
+    """High-level Python wrapper for a gptneox.cpp model."""
 
     def __init__(
         self,
@@ -143,13 +144,13 @@ class Llama:
         lora_path: Optional[str] = None,
         verbose: bool = True,
     ):
-        """Load a llama.cpp model from `model_path`.
+        """Load a gptneox.cpp model from `model_path`.
 
         Args:
             model_path: Path to the model.
             n_ctx: Maximum context size.
-            n_parts: Number of parts to split the model into. If -1, the number of parts
-            is automatically determined.
+            n_parts: Number of parts to split the model into. If -1,
+            the number of parts is automatically determined.
             seed: Random seed. 0 for random.
             f16_kv: Use half-precision for key/value cache.
             logits_all: Return logits for all tokens, not just the last token.
@@ -157,9 +158,9 @@ class Llama:
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. If None, the number of threads is
-            automatically determined.
-            n_batch: Maximum number of prompt tokens to batch together when calling llama_eval.
+            n_threads: Number of threads to use. If None, the number of threads
+            is automatically determined.
+            n_batch: Maximum number of prompt tokens to batch together when calling gptneox_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             lora_base: Optional path to base model, useful if using a quantized base model and
             you want to apply LoRA to an f16 model.
@@ -170,13 +171,14 @@ class Llama:
             ValueError: If the model path does not exist.
 
         Returns:
-            A Llama instance.
+            A Gptneox instance.
         """
         self.verbose = verbose
         self.model_path = model_path
 
-        self.params = llama_cpp.llama_context_default_params()
+        self.params = gptneox_cpp.gptneox_context_default_params()
         self.params.n_ctx = n_ctx
+        self.params.n_parts = n_parts
         self.params.n_gpu_layers = n_gpu_layers
         self.params.seed = seed
         self.params.f16_kv = f16_kv
@@ -188,68 +190,43 @@ class Llama:
 
         self.last_n_tokens_size = last_n_tokens_size
         self.n_batch = min(n_ctx, n_batch)
-        self.eval_tokens: Deque[int] = deque(maxlen=n_ctx)
+        self.eval_tokens: Deque[gptneox_cpp.gptneox_token] = deque(maxlen=n_ctx)
         self.eval_logits: Deque[List[float]] = deque(maxlen=n_ctx if logits_all else 1)
 
-        self.cache: Optional[LlamaCache] = None
+        self.cache: Optional[GptneoxCache] = None
 
         self.n_threads = n_threads or max(multiprocessing.cpu_count() // 2, 1)
 
         self.lora_base = lora_base
         self.lora_path = lora_path
 
-        # DEPRECATED
-        self.n_parts = n_parts
-        # DEPRECATED
-
         invalidInputError(os.path.exists(model_path), f"Model path does not exist: {model_path}.")
 
-        self.ctx = llama_cpp.llama_init_from_file(
+        self.ctx = gptneox_cpp.gptneox_init_from_file(
             self.model_path.encode("utf-8"), self.params
         )
 
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
         if self.lora_path:
-            if llama_cpp.llama_apply_lora_from_file(
+            if gptneox_cpp.gptneox_apply_lora_from_file(
                 self.ctx,
-                llama_cpp.c_char_p(self.lora_path.encode("utf-8")),
-                llama_cpp.c_char_p(self.lora_base.encode("utf-8"))
+                gptneox_cpp.c_char_p(self.lora_path.encode("utf-8")),
+                gptneox_cpp.c_char_p(self.lora_base.encode("utf-8"))
                 if self.lora_base is not None
-                else llama_cpp.c_char_p(0),
-                llama_cpp.c_int(self.n_threads),
+                else gptneox_cpp.c_char_p(0),
+                gptneox_cpp.c_int(self.n_threads),
             ):
                 invalidInputError(False,
-                                  "Failed to apply LoRA from lora path: "
-                                  f"{self.lora_path} to base path: {self.lora_base}")
+                                  f"Failed to apply LoRA from lora path: {self.lora_path}"
+                                  f" to base path: {self.lora_base}.")
 
         if self.verbose:
-            print(llama_cpp.llama_print_system_info().decode("utf-8"), file=sys.stderr)
+            print(gptneox_cpp.gptneox_print_system_info().decode("utf-8"), file=sys.stderr)
 
-        n_vocab = self.n_vocab()
-        n_ctx = self.n_ctx()
-        data = (llama_cpp.llama_token_data * n_vocab)(
-            *[
-                llama_cpp.llama_token_data(
-                    id=llama_cpp.llama_token(i),
-                    logit=llama_cpp.c_float(0.0),
-                    p=llama_cpp.c_float(0.0),
-                )
-                for i in range(n_vocab)
-            ]
-        )
-        size = llama_cpp.c_size_t(n_vocab)
-        sorted = False
-        candidates = llama_cpp.llama_token_data_array(
-            data=data,
-            size=size,
-            sorted=sorted,
-        )
-        self._candidates = candidates
-        self._token_nl = Llama.token_nl()
-        self._token_eos = Llama.token_eos()
-
-    def tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
+    def tokenize(
+        self, text: bytes, add_bos: bool = True
+    ) -> List[gptneox_cpp.gptneox_token]:
         """Tokenize a string.
 
         Args:
@@ -261,31 +238,31 @@ class Llama:
         Returns:
             A list of tokens.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        n_ctx = llama_cpp.llama_n_ctx(self.ctx)
-        tokens = (llama_cpp.llama_token * int(n_ctx))()
-        n_tokens = llama_cpp.llama_tokenize(
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
+        n_ctx = gptneox_cpp.gptneox_n_ctx(self.ctx)
+        tokens = (gptneox_cpp.gptneox_token * int(n_ctx))()
+        n_tokens = gptneox_cpp.gptneox_tokenize(
             self.ctx,
             text,
             tokens,
-            llama_cpp.c_int(n_ctx),
-            llama_cpp.c_bool(add_bos),
+            n_ctx,
+            gptneox_cpp.c_bool(add_bos),
         )
         if int(n_tokens) < 0:
             n_tokens = abs(n_tokens)
-            tokens = (llama_cpp.llama_token * int(n_tokens))()
-            n_tokens = llama_cpp.llama_tokenize(
+            tokens = (gptneox_cpp.gptneox_token * int(n_tokens))()
+            n_tokens = gptneox_cpp.gptneox_tokenize(
                 self.ctx,
                 text,
                 tokens,
-                llama_cpp.c_int(n_tokens),
-                llama_cpp.c_bool(add_bos),
+                gptneox_cpp.c_int(n_tokens),
+                gptneox_cpp.c_bool(add_bos),
             )
             invalidInputError(n_tokens >= 0,
-                              f'Failed to tokenize: text="{text}" n_tokens={n_tokens}')
+                              f'Failed to tokenize: text="{text}" n_tokens={n_tokens}.')
         return list(tokens[:n_tokens])
 
-    def detokenize(self, tokens: List[int]) -> bytes:
+    def detokenize(self, tokens: List[gptneox_cpp.gptneox_token]) -> bytes:
         """Detokenize a list of tokens.
 
         Args:
@@ -294,15 +271,13 @@ class Llama:
         Returns:
             The detokenized string.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         output = b""
         for token in tokens:
-            output += llama_cpp.llama_token_to_str(
-                self.ctx, llama_cpp.llama_token(token)
-            )
+            output += gptneox_cpp.gptneox_token_to_str(self.ctx, token)
         return output
 
-    def set_cache(self, cache: Optional[LlamaCache]):
+    def set_cache(self, cache: Optional[GptneoxCache]):
         """Set the cache.
 
         Args:
@@ -315,33 +290,33 @@ class Llama:
         self.eval_tokens.clear()
         self.eval_logits.clear()
 
-    def eval(self, tokens: Sequence[int]):
+    def eval(self, tokens: Sequence[gptneox_cpp.gptneox_token]):
         """Evaluate a list of tokens.
 
         Args:
             tokens: The list of tokens to evaluate.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        n_ctx = int(llama_cpp.llama_n_ctx(self.ctx))
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
+        n_ctx = int(gptneox_cpp.gptneox_n_ctx(self.ctx))
         for i in range(0, len(tokens), self.n_batch):
             batch = tokens[i: min(len(tokens), i + self.n_batch)]
             n_past = min(n_ctx - len(batch), len(self.eval_tokens))
             n_tokens = len(batch)
-            return_code = llama_cpp.llama_eval(
+            return_code = gptneox_cpp.gptneox_eval(
                 ctx=self.ctx,
-                tokens=(llama_cpp.llama_token * len(batch))(*batch),
-                n_tokens=llama_cpp.c_int(n_tokens),
-                n_past=llama_cpp.c_int(n_past),
-                n_threads=llama_cpp.c_int(self.n_threads),
+                tokens=(gptneox_cpp.gptneox_token * len(batch))(*batch),
+                n_tokens=gptneox_cpp.c_int(n_tokens),
+                n_past=gptneox_cpp.c_int(n_past),
+                n_threads=gptneox_cpp.c_int(self.n_threads),
             )
-            invalidInputError(int(return_code) == 0, f"llama_eval returned {return_code}.")
+            invalidInputError(int(return_code) == 0, f"gptneox_eval returned {return_code}.")
             # Save tokens
             self.eval_tokens.extend(batch)
             # Save logits
             rows = n_tokens if self.params.logits_all else 1
-            n_vocab = llama_cpp.llama_n_vocab(self.ctx)
+            n_vocab = gptneox_cpp.gptneox_n_vocab(self.ctx)
             cols = int(n_vocab)
-            logits_view = llama_cpp.llama_get_logits(self.ctx)
+            logits_view = gptneox_cpp.gptneox_get_logits(self.ctx)
             logits: List[List[float]] = [
                 [logits_view[i * cols + j] for j in range(cols)] for i in range(rows)
             ]
@@ -349,123 +324,124 @@ class Llama:
 
     def _sample(
         self,
-        last_n_tokens_data,  # type: llama_cpp.Array[llama_cpp.llama_token]
-        last_n_tokens_size: llama_cpp.c_int,
-        top_k: llama_cpp.c_int,
-        top_p: llama_cpp.c_float,
-        temp: llama_cpp.c_float,
-        tfs_z: llama_cpp.c_float,
-        repeat_penalty: llama_cpp.c_float,
-        frequency_penalty: llama_cpp.c_float,
-        presence_penalty: llama_cpp.c_float,
-        mirostat_mode: llama_cpp.c_int,
-        mirostat_tau: llama_cpp.c_float,
-        mirostat_eta: llama_cpp.c_float,
-        penalize_nl: bool = True,
+        last_n_tokens_data,  # type: gptneox_cpp.Array[gptneox_cpp.gptneox_token]
+        last_n_tokens_size: gptneox_cpp.c_int,
+        top_k: gptneox_cpp.c_int,
+        top_p: gptneox_cpp.c_float,
+        temp: gptneox_cpp.c_float,
+        tfs_z: gptneox_cpp.c_float,
+        repeat_penalty: gptneox_cpp.c_float,
+        frequency_penalty: gptneox_cpp.c_float,
+        presence_penalty: gptneox_cpp.c_float,
+        mirostat_mode: gptneox_cpp.c_int,
+        mirostat_tau: gptneox_cpp.c_float,
+        mirostat_eta: gptneox_cpp.c_float,
     ):
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         invalidInputError(len(self.eval_logits) > 0,
-                          "The attribute `eval_logits` of `Llama` object is None.")
-        n_vocab = self.n_vocab()
-        n_ctx = self.n_ctx()
-        top_k = llama_cpp.c_int(n_vocab) if top_k.value <= 0 else top_k
-        last_n_tokens_size = (
-            llama_cpp.c_int(n_ctx)
-            if last_n_tokens_size.value < 0
-            else last_n_tokens_size
-        )
+                          "The attribute `eval_logits` of `Gptneox` object is None.")
+        n_vocab = int(gptneox_cpp.gptneox_n_vocab(self.ctx))
         logits = self.eval_logits[-1]
-        nl_logit = logits[self._token_nl]
-        candidates = self._candidates
-        llama_cpp.llama_init_candidates(
-            ctx=self.ctx,
-            candidates=llama_cpp.ctypes.byref(candidates),
+        data = (gptneox_cpp.gptneox_token_data * n_vocab)(
+            *[
+                gptneox_cpp.gptneox_token_data(
+                    id=gptneox_cpp.gptneox_token(i),
+                    logit=logits[i],
+                    p=gptneox_cpp.c_float(0.0),
+                )
+                for i in range(n_vocab)
+            ]
         )
-        llama_cpp.llama_sample_repetition_penalty(
+        size = gptneox_cpp.c_size_t(n_vocab)
+        sorted = False
+        candidates = gptneox_cpp.gptneox_token_data_array(
+            data=data,
+            size=size,
+            sorted=sorted,
+        )
+        gptneox_cpp.gptneox_sample_repetition_penalty(
             ctx=self.ctx,
             last_tokens_data=last_n_tokens_data,
             last_tokens_size=last_n_tokens_size,
-            candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+            candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             penalty=repeat_penalty,
         )
-        llama_cpp.llama_sample_frequency_and_presence_penalties(
+        gptneox_cpp.gptneox_sample_frequency_and_presence_penalties(
             ctx=self.ctx,
-            candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+            candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             last_tokens_data=last_n_tokens_data,
             last_tokens_size=last_n_tokens_size,
             alpha_frequency=frequency_penalty,
             alpha_presence=presence_penalty,
         )
-        if not penalize_nl:
-            candidates.data[self._token_nl].logit = llama_cpp.c_float(nl_logit)
         if temp.value == 0.0:
-            return llama_cpp.llama_sample_token_greedy(
+            return gptneox_cpp.gptneox_sample_token_greedy(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             )
         elif mirostat_mode.value == 1:
-            mirostat_mu = llama_cpp.c_float(2.0 * mirostat_tau.value)
-            mirostat_m = llama_cpp.c_int(100)
-            llama_cpp.llama_sample_temperature(
+            mirostat_mu = gptneox_cpp.c_float(2.0 * mirostat_tau.value)
+            mirostat_m = gptneox_cpp.c_int(100)
+            gptneox_cpp.gptneox_sample_temperature(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 temp=temp,
             )
-            return llama_cpp.llama_sample_token_mirostat(
+            return gptneox_cpp.gptneox_sample_token_mirostat(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 tau=mirostat_tau,
                 eta=mirostat_eta,
-                mu=llama_cpp.ctypes.byref(mirostat_mu),  # type: ignore
+                mu=gptneox_cpp.ctypes.byref(mirostat_mu),  # type: ignore
                 m=mirostat_m,
             )
         elif mirostat_mode.value == 2:
-            mirostat_mu = llama_cpp.c_float(2.0 * mirostat_tau.value)
-            llama_cpp.llama_sample_temperature(
+            mirostat_mu = gptneox_cpp.c_float(2.0 * mirostat_tau.value)
+            gptneox_cpp.gptneox_sample_temperature(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.pointer(candidates),
+                candidates=gptneox_cpp.ctypes.pointer(candidates),
                 temp=temp,
             )
-            return llama_cpp.llama_sample_token_mirostat_v2(
+            return gptneox_cpp.gptneox_sample_token_mirostat_v2(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 tau=mirostat_tau,
                 eta=mirostat_eta,
-                mu=llama_cpp.ctypes.byref(mirostat_mu),  # type: ignore
+                mu=gptneox_cpp.ctypes.byref(mirostat_mu),  # type: ignore
             )
         else:
-            llama_cpp.llama_sample_top_k(
+            gptneox_cpp.gptneox_sample_top_k(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 k=top_k,
-                min_keep=llama_cpp.c_size_t(1),
+                min_keep=gptneox_cpp.c_size_t(1),
             )
-            llama_cpp.llama_sample_tail_free(
+            gptneox_cpp.gptneox_sample_tail_free(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 z=tfs_z,
-                min_keep=llama_cpp.c_size_t(1),
+                min_keep=gptneox_cpp.c_size_t(1),
             )
-            llama_cpp.llama_sample_typical(
+            gptneox_cpp.gptneox_sample_typical(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
-                p=llama_cpp.c_float(1.0),
-                min_keep=llama_cpp.c_size_t(1),
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
+                p=gptneox_cpp.c_float(1.0),
+                min_keep=gptneox_cpp.c_size_t(1),
             )
-            llama_cpp.llama_sample_top_p(
+            gptneox_cpp.gptneox_sample_top_p(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 p=top_p,
-                min_keep=llama_cpp.c_size_t(1),
+                min_keep=gptneox_cpp.c_size_t(1),
             )
-            llama_cpp.llama_sample_temperature(
+            gptneox_cpp.gptneox_sample_temperature(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
                 temp=temp,
             )
-            return llama_cpp.llama_sample_token(
+            return gptneox_cpp.gptneox_sample_token(
                 ctx=self.ctx,
-                candidates=llama_cpp.ctypes.byref(candidates),  # type: ignore
+                candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             )
 
     def sample(
@@ -480,7 +456,6 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_eta: float = 0.1,
         mirostat_tau: float = 5.0,
-        penalize_nl: bool = True,
     ):
         """Sample a token from the model.
 
@@ -493,35 +468,34 @@ class Llama:
         Returns:
             The sampled token.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        last_n_tokens_data = [llama_cpp.llama_token(0)] * max(
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
+        last_n_tokens_data = [gptneox_cpp.gptneox_token(0)] * max(
             0, self.last_n_tokens_size - len(self.eval_tokens)
         ) + list(self.eval_tokens)[-self.last_n_tokens_size:]
         return self._sample(
-            last_n_tokens_data=(llama_cpp.llama_token * self.last_n_tokens_size)(
+            last_n_tokens_data=(gptneox_cpp.gptneox_token * self.last_n_tokens_size)(
                 *last_n_tokens_data
             ),
-            last_n_tokens_size=llama_cpp.c_int(self.last_n_tokens_size),
-            top_k=llama_cpp.c_int(top_k),
-            top_p=llama_cpp.c_float(top_p),
-            temp=llama_cpp.c_float(temp),
-            tfs_z=llama_cpp.c_float(tfs_z),
-            repeat_penalty=llama_cpp.c_float(repeat_penalty),
-            frequency_penalty=llama_cpp.c_float(frequency_penalty),
-            presence_penalty=llama_cpp.c_float(presence_penalty),
-            mirostat_mode=llama_cpp.c_int(mirostat_mode),
-            mirostat_tau=llama_cpp.c_float(mirostat_tau),
-            mirostat_eta=llama_cpp.c_float(mirostat_eta),
-            penalize_nl=penalize_nl,
+            last_n_tokens_size=gptneox_cpp.c_int(self.last_n_tokens_size),
+            top_k=gptneox_cpp.c_int(top_k),
+            top_p=gptneox_cpp.c_float(top_p),
+            temp=gptneox_cpp.c_float(temp),
+            tfs_z=gptneox_cpp.c_float(tfs_z),
+            repeat_penalty=gptneox_cpp.c_float(repeat_penalty),
+            frequency_penalty=gptneox_cpp.c_float(frequency_penalty),
+            presence_penalty=gptneox_cpp.c_float(presence_penalty),
+            mirostat_mode=gptneox_cpp.c_int(mirostat_mode),
+            mirostat_tau=gptneox_cpp.c_float(mirostat_tau),
+            mirostat_eta=gptneox_cpp.c_float(mirostat_eta),
         )
 
     def generate(
         self,
-        tokens: Sequence[int],
-        top_k: int = 40,
-        top_p: float = 0.95,
-        temp: float = 0.80,
-        repeat_penalty: float = 1.1,
+        tokens: Sequence[gptneox_cpp.gptneox_token],
+        top_k: int,
+        top_p: float,
+        temp: float,
+        repeat_penalty: float,
         reset: bool = True,
         frequency_penalty: float = 0.0,
         presence_penalty: float = 0.0,
@@ -529,15 +503,17 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-    ) -> Generator[int, Optional[Sequence[int]], None]:
+    ) -> Generator[
+        gptneox_cpp.gptneox_token, Optional[Sequence[gptneox_cpp.gptneox_token]], None
+    ]:
         """Create a generator of tokens from a prompt.
 
         Examples:
-            >>> llama = Llama("models/ggml-7b.bin")
-            >>> tokens = llama.tokenize(b"Hello, world!")
-            >>> for token in llama.generate(tokens, top_k=40, top_p=0.95,
-            >>>                             temp=1.0, repeat_penalty=1.1):
-            ...     print(llama.detokenize([token]))
+            >>> gptneox = Gptneox("models/ggml-7b.bin")
+            >>> tokens = gptneox.tokenize(b"Hello, world!")
+            >>> for token in gptneox.generate(tokens, top_k=40, top_p=0.95,
+            >>>                               temp=1.0, repeat_penalty=1.1):
+            ...     print(gptneox.detokenize([token]))
 
         Args:
             tokens: The prompt tokens.
@@ -550,7 +526,7 @@ class Llama:
         Yields:
             The generated tokens.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
         if reset and len(self.eval_tokens) > 0:
             longest_prefix = 0
@@ -561,7 +537,7 @@ class Llama:
                     break
             if longest_prefix > 0:
                 if self.verbose:
-                    print("Llama.generate: prefix-match hit", file=sys.stderr)
+                    print("Gptneox.generate: prefix-match hit", file=sys.stderr)
                 reset = False
                 tokens = tokens[longest_prefix:]
                 for _ in range(len(self.eval_tokens) - longest_prefix):
@@ -593,9 +569,7 @@ class Llama:
             if tokens_or_none is not None:
                 tokens.extend(tokens_or_none)
 
-    def create_embedding(
-        self, input: Union[str, List[str]], model: Optional[str] = None
-    ) -> Embedding:
+    def create_embedding(self, input: str) -> Embedding:
         """Embed a string.
 
         Args:
@@ -604,49 +578,38 @@ class Llama:
         Returns:
             An embedding object.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        model_name: str = model if model is not None else self.model_path
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
 
         invalidInputError(self.params.embedding,
-                          "Llama model must be created with embedding=True to call this method.")
+                          "Gptneox model must be created with embedding=True to call this method.")
 
         if self.verbose:
-            llama_cpp.llama_reset_timings(self.ctx)
+            gptneox_cpp.gptneox_reset_timings(self.ctx)
 
-        if isinstance(input, str):
-            inputs = [input]
-        else:
-            inputs = input
+        tokens = self.tokenize(input.encode("utf-8"))
+        self.reset()
+        self.eval(tokens)
+        n_tokens = len(tokens)
+        embedding = gptneox_cpp.gptneox_get_embeddings(self.ctx)[
+            : gptneox_cpp.gptneox_n_embd(self.ctx)
+        ]
 
-        data: List[EmbeddingData] = []
-        total_tokens = 0
-        for index, input in enumerate(inputs):
-            tokens = self.tokenize(input.encode("utf-8"))
-            self.reset()
-            self.eval(tokens)
-            n_tokens = len(tokens)
-            total_tokens += n_tokens
-            embedding = llama_cpp.llama_get_embeddings(self.ctx)[
-                : llama_cpp.llama_n_embd(self.ctx)
-            ]
-
-            data.append(
-                {
-                    "object": "embedding",
-                    "embedding": embedding,
-                    "index": index,
-                }
-            )
         if self.verbose:
-            llama_cpp.llama_print_timings(self.ctx)
+            gptneox_cpp.gptneox_print_timings(self.ctx)
 
         return {
             "object": "list",
-            "data": data,
-            "model": model_name,
+            "data": [
+                {
+                    "object": "embedding",
+                    "embedding": embedding,
+                    "index": 0,
+                }
+            ],
+            "model": self.model_path,
             "usage": {
-                "prompt_tokens": total_tokens,
-                "total_tokens": total_tokens,
+                "prompt_tokens": n_tokens,
+                "total_tokens": n_tokens,
             },
         }
 
@@ -670,7 +633,7 @@ class Llama:
         top_p: float = 0.95,
         logprobs: Optional[int] = None,
         echo: bool = False,
-        stop: Optional[Union[str, List[str]]]=[],
+        stop: Optional[List[str]] = [],
         frequency_penalty: float = 0.0,
         presence_penalty: float = 0.0,
         repeat_penalty: float = 1.1,
@@ -680,27 +643,26 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-        model: Optional[str] = None,
     ) -> Union[Iterator[Completion], Iterator[CompletionChunk]]:
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         completion_id: str = f"cmpl-{str(uuid.uuid4())}"
         created: int = int(time.time())
-        completion_tokens: List[int] = []
-        # Add blank space to start of prompt to match OG llama tokenizer
-        prompt_tokens: List[int] = self.tokenize(b" " + prompt.encode("utf-8"))
-        text: bytes = b""
-        returned_tokens: int = 0
-        stop = (
-            stop if isinstance(stop, list) else [stop] if isinstance(stop, str) else []
+        completion_tokens: List[gptneox_cpp.gptneox_token] = []
+        # Add blank space to start of prompt to match OG gptneox tokenizer
+        prompt_tokens: List[gptneox_cpp.gptneox_token] = self.tokenize(
+            b" " + prompt.encode("utf-8")
         )
-        model_name: str = model if model is not None else self.model_path
+        text: bytes = b""
+        returned_characters: int = 0
+        stop = stop if stop is not None else []
 
         if self.verbose:
-            llama_cpp.llama_reset_timings(self.ctx)
+            gptneox_cpp.gptneox_reset_timings(self.ctx)
 
-        invalidInputError(len(prompt_tokens) + max_tokens <= int(llama_cpp.llama_n_ctx(self.ctx)),
-                          "Requested tokens exceed context window of "
-                          f"{llama_cpp.llama_n_ctx(self.ctx)}.")
+        if len(prompt_tokens) + max_tokens > int(gptneox_cpp.gptneox_n_ctx(self.ctx)):
+            invalidInputError(False,
+                              "Requested tokens exceed context window of"
+                              f" {gptneox_cpp.gptneox_n_ctx(self.ctx)}.")
 
         if stop != []:
             stop_sequences = [s.encode("utf-8") for s in stop]
@@ -714,19 +676,19 @@ class Llama:
         if self.cache:
             try:
                 cache_item = self.cache[prompt_tokens]
-                cache_prefix_len = Llama.longest_token_prefix(
+                cache_prefix_len = Gptneox.longest_token_prefix(
                     cache_item.eval_tokens, prompt_tokens
                 )
-                eval_prefix_len = Llama.longest_token_prefix(
+                eval_prefix_len = Gptneox.longest_token_prefix(
                     self.eval_tokens, prompt_tokens
                 )
                 if cache_prefix_len > eval_prefix_len:
                     self.load_state(cache_item)
                     if self.verbose:
-                        print("Llama._create_completion: cache hit", file=sys.stderr)
+                        print("Gptneox._create_completion: cache hit", file=sys.stderr)
             except KeyError:
                 if self.verbose:
-                    print("Llama._create_completion: cache miss", file=sys.stderr)
+                    print("Gptneox._create_completion: cache miss", file=sys.stderr)
 
         finish_reason = "length"
         multibyte_fix = 0
@@ -743,7 +705,7 @@ class Llama:
             presence_penalty=presence_penalty,
             repeat_penalty=repeat_penalty,
         ):
-            if token == self._token_eos:
+            if token == gptneox_cpp.gptneox_token_eos():
                 text = self.detokenize(completion_tokens)
                 finish_reason = "stop"
                 break
@@ -773,81 +735,37 @@ class Llama:
                 break
 
             if stream:
+                start = returned_characters
+                longest = 0
                 # We want to avoid yielding any characters from
                 # the generated text if they are part of a stop
                 # sequence.
-                first_stop_position = 0
                 for s in stop_sequences:
                     for i in range(len(s), 0, -1):
                         if all_text.endswith(s[:i]):
-                            if i > first_stop_position:
-                                first_stop_position = i
+                            if i > longest:
+                                longest = i
                             break
-
-                token_end_position = 0
-                remaining_tokens = completion_tokens[returned_tokens:]
-                remaining_length = len(self.detokenize(remaining_tokens))
-                for token in remaining_tokens:
-                    token_end_position += len(self.detokenize([token]))
-                    # Check if stop sequence is in the token
-                    if token_end_position >= (
-                        remaining_length - first_stop_position - 1
-                    ):
-                        break
-                    logprobs_or_none: Optional[CompletionLogprobs] = None
-                    if logprobs is not None:
-                        token_str = self.detokenize([token]).decode(
-                            "utf-8", errors="ignore"
-                        )
-                        text_offset = len(prompt) + len(
-                            self.detokenize(completion_tokens[:returned_tokens])
-                        )
-                        token_offset = len(prompt_tokens) + returned_tokens
-                        logits = self.eval_logits[token_offset - 1]
-                        current_logprobs = Llama.logits_to_logprobs(logits)
-                        sorted_logprobs = list(
-                            sorted(
-                                zip(current_logprobs, range(len(current_logprobs))),
-                                reverse=True,
-                            )
-                        )
-                        top_logprob = {
-                            self.detokenize([i]).decode(
-                                "utf-8", errors="ignore"
-                            ): logprob
-                            for logprob, i in sorted_logprobs[:logprobs]
+                text = all_text[: len(all_text) - longest]
+                returned_characters += len(text[start:])
+                yield {
+                    "id": completion_id,
+                    "object": "text_completion",
+                    "created": created,
+                    "model": self.model_path,
+                    "choices": [
+                        {
+                            "text": text[start:].decode("utf-8", errors="ignore"),
+                            "index": 0,
+                            "logprobs": None,
+                            "finish_reason": None,
                         }
-                        top_logprob.update({token_str: current_logprobs[int(token)]})
-                        logprobs_or_none = {
-                            "tokens": [
-                                self.detokenize([token]).decode(
-                                    "utf-8", errors="ignore"
-                                )
-                            ],
-                            "text_offset": [text_offset],
-                            "token_logprobs": [sorted_logprobs[int(token)][0]],
-                            "top_logprobs": [top_logprob],
-                        }
-                    returned_tokens += 1
-                    yield {
-                        "id": completion_id,
-                        "object": "text_completion",
-                        "created": created,
-                        "model": model_name,
-                        "choices": [
-                            {
-                                "text": self.detokenize([token]).decode(
-                                    "utf-8", errors="ignore"
-                                ),
-                                "index": 0,
-                                "logprobs": logprobs_or_none,
-                                "finish_reason": None,
-                            }
-                        ],
-                        "usage": {
-                            "prompt_tokens": len(prompt_tokens),
-                        },
+                    ],
+                    "usage":
+                        {
+                            "prompt_tokens": len(prompt_tokens)
                     }
+                }
 
             if len(completion_tokens) >= max_tokens:
                 text = self.detokenize(completion_tokens)
@@ -856,103 +774,33 @@ class Llama:
 
         if self.cache:
             if self.verbose:
-                print("Llama._create_completion: cache save", file=sys.stderr)
+                print("Gptneox._create_completion: cache save", file=sys.stderr)
             self.cache[prompt_tokens + completion_tokens] = self.save_state()
 
         if self.verbose:
-            llama_cpp.llama_print_timings(self.ctx)
+            gptneox_cpp.gptneox_print_timings(self.ctx)
 
         if stream:
-            remaining_tokens = completion_tokens[returned_tokens:]
-            all_text = self.detokenize(remaining_tokens)
-            any_stop = [s for s in stop_sequences if s in all_text]
-            if len(any_stop) > 0:
-                end = min(all_text.index(stop) for stop in any_stop)
-            else:
-                end = len(all_text)
-
-            token_end_position = 0
-            for token in remaining_tokens:
-                token_end_position += len(self.detokenize([token]))
-
-                logprobs_or_none: Optional[CompletionLogprobs] = None
-                if logprobs is not None:
-                    token_str = self.detokenize([token]).decode(
-                        "utf-8", errors="ignore"
-                    )
-                    text_offset = len(prompt) + len(
-                        self.detokenize(completion_tokens[:returned_tokens])
-                    )
-                    token_offset = len(prompt_tokens) + returned_tokens - 1
-                    logits = self.eval_logits[token_offset]
-                    current_logprobs = Llama.logits_to_logprobs(logits)
-                    sorted_logprobs = list(
-                        sorted(
-                            zip(current_logprobs, range(len(current_logprobs))),
-                            reverse=True,
-                        )
-                    )
-                    top_logprob = {
-                        self.detokenize([i]).decode("utf-8", errors="ignore"): logprob
-                        for logprob, i in sorted_logprobs[:logprobs]
+            yield {
+                "id": completion_id,
+                "object": "text_completion",
+                "created": created,
+                "model": self.model_path,
+                "choices": [
+                    {
+                        "text": text[returned_characters:].decode(
+                            "utf-8", errors="ignore"
+                        ),
+                        "index": 0,
+                        "logprobs": None,
+                        "finish_reason": finish_reason,
                     }
-                    top_logprob.update({token_str: current_logprobs[int(token)]})
-                    logprobs_or_none = {
-                        "tokens": [
-                            self.detokenize([token]).decode("utf-8", errors="ignore")
-                        ],
-                        "text_offset": [text_offset],
-                        "token_logprobs": [sorted_logprobs[int(token)][0]],
-                        "top_logprobs": [top_logprob],
-                    }
-
-                if token_end_position >= end:
-                    last_text = self.detokenize([token])
-                    if token_end_position == end - 1:
-                        break
-                    returned_tokens += 1
-                    yield {
-                        "id": completion_id,
-                        "object": "text_completion",
-                        "created": created,
-                        "model": model_name,
-                        "choices": [
-                            {
-                                "text": last_text[
-                                    : len(last_text) - (token_end_position - end)
-                                ].decode("utf-8", errors="ignore"),
-                                "index": 0,
-                                "logprobs": logprobs_or_none,
-                                "finish_reason": finish_reason,
-                            }
-                        ],
-                        "usage": {
-                            "prompt_tokens": len(prompt_tokens),
-                        },
-                    }
-                    break
-                returned_tokens += 1
-                yield {
-                    "id": completion_id,
-                    "object": "text_completion",
-                    "created": created,
-                    "model": model_name,
-                    "choices": [
-                        {
-                            "text": self.detokenize([token]).decode(
-                                "utf-8", errors="ignore"
-                            ),
-                            "index": 0,
-                            "logprobs": logprobs_or_none,
-                            "finish_reason": finish_reason
-                            if returned_tokens == len(completion_tokens)
-                            else None,
-                        }
-                    ],
-                    "usage": {
-                        "prompt_tokens": len(prompt_tokens),
-                    },
+                ],
+                "usage":
+                    {
+                        "prompt_tokens": len(prompt_tokens)
                 }
+            }
             return
 
         text_str = text.decode("utf-8", errors="ignore")
@@ -965,27 +813,21 @@ class Llama:
 
         logprobs_or_none: Optional[CompletionLogprobs] = None
         if logprobs is not None:
-            text_offset = 0 if echo else len(prompt)
-            token_offset = 0 if echo else len(prompt_tokens[1:])
+            text_offset = 0
             text_offsets: List[int] = []
-            token_logprobs: List[Optional[float]] = []
+            token_logprobs: List[float] = []
             tokens: List[str] = []
-            top_logprobs: List[Optional[Dict[str, float]]] = []
+            top_logprobs: List[Dict[str, float]] = []
 
-            if echo:
-                # Remove leading BOS token
-                all_tokens = prompt_tokens[1:] + completion_tokens
-            else:
-                all_tokens = completion_tokens
-
+            all_tokens = prompt_tokens + completion_tokens
             all_token_strs = [
                 self.detokenize([token]).decode("utf-8", errors="ignore")
                 for token in all_tokens
             ]
             all_logprobs = [
-                Llama.logits_to_logprobs(list(map(float, row)))
+                Gptneox.logits_to_logprobs(list(map(float, row)))
                 for row in self.eval_logits
-            ][token_offset:]
+            ]
             for token, token_str, logprobs_token in zip(
                 all_tokens, all_token_strs, all_logprobs
             ):
@@ -998,18 +840,14 @@ class Llama:
                     )
                 )
                 token_logprobs.append(sorted_logprobs[int(token)][0])
-                top_logprob: Optional[Dict[str, float]] = {
-                    self.detokenize([i]).decode("utf-8", errors="ignore"): logprob
+                top_logprob = {
+                    self.detokenize([gptneox_cpp.gptneox_token(i)]).decode(
+                        "utf-8", errors="ignore"
+                    ): logprob
                     for logprob, i in sorted_logprobs[:logprobs]
                 }
-                top_logprob.update({token_str: logprobs_token[int(token)]})
+                top_logprob.update({token_str: sorted_logprobs[int(token)][0]})
                 top_logprobs.append(top_logprob)
-            # Weird idosincracy of the OpenAI API where
-            # token_logprobs and top_logprobs are null for
-            # the first token.
-            if echo and len(all_tokens) > 0:
-                token_logprobs[0] = None
-                top_logprobs[0] = None
             logprobs_or_none = {
                 "tokens": tokens,
                 "text_offset": text_offsets,
@@ -1021,7 +859,7 @@ class Llama:
             "id": completion_id,
             "object": "text_completion",
             "created": created,
-            "model": model_name,
+            "model": self.model_path,
             "choices": [
                 {
                     "text": text_str,
@@ -1046,7 +884,7 @@ class Llama:
         top_p: float = 0.95,
         logprobs: Optional[int] = None,
         echo: bool = False,
-        stop: Optional[Union[str, List[str]]]=[],
+        stop: Optional[List[str]] = [],
         frequency_penalty: float = 0.0,
         presence_penalty: float = 0.0,
         repeat_penalty: float = 1.1,
@@ -1056,7 +894,6 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-        model: Optional[str] = None,
     ) -> Union[Completion, Iterator[CompletionChunk]]:
         """Generate text from a prompt.
 
@@ -1098,7 +935,6 @@ class Llama:
             mirostat_mode=mirostat_mode,
             mirostat_tau=mirostat_tau,
             mirostat_eta=mirostat_eta,
-            model=model,
         )
         if stream:
             chunks: Iterator[CompletionChunk] = completion_or_chunks
@@ -1115,7 +951,7 @@ class Llama:
         top_p: float = 0.95,
         logprobs: Optional[int] = None,
         echo: bool = False,
-        stop: Optional[Union[str, List[str]]]=[],
+        stop: Optional[List[str]] = [],
         frequency_penalty: float = 0.0,
         presence_penalty: float = 0.0,
         repeat_penalty: float = 1.1,
@@ -1125,7 +961,6 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-        model: Optional[str] = None,
     ) -> Union[Completion, Iterator[CompletionChunk]]:
         """Generate text from a prompt.
 
@@ -1167,7 +1002,6 @@ class Llama:
             mirostat_mode=mirostat_mode,
             mirostat_tau=mirostat_tau,
             mirostat_eta=mirostat_eta,
-            model=model,
         )
 
     def _convert_text_completion_to_chat(
@@ -1235,7 +1069,7 @@ class Llama:
         top_p: float = 0.95,
         top_k: int = 40,
         stream: bool = False,
-        stop: Optional[Union[str, List[str]]]=[],
+        stop: Optional[List[str]] = [],
         max_tokens: int = 256,
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
@@ -1244,7 +1078,6 @@ class Llama:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-        model: Optional[str] = None,
     ) -> Union[ChatCompletion, Iterator[ChatCompletionChunk]]:
         """Generate a chat completion from a list of messages.
 
@@ -1261,9 +1094,7 @@ class Llama:
         Returns:
             Generated chat completion or a stream of chat completion chunks.
         """
-        stop = (
-            stop if isinstance(stop, list) else [stop] if isinstance(stop, str) else []
-        )
+        stop = stop if stop is not None else []
         chat_history = "".join(
             f'### {"Human" if message["role"] == "user" else "Assistant"}:{message["content"]}'
             for message in messages
@@ -1285,7 +1116,6 @@ class Llama:
             mirostat_mode=mirostat_mode,
             mirostat_tau=mirostat_tau,
             mirostat_eta=mirostat_eta,
-            model=model,
         )
         if stream:
             chunks: Iterator[CompletionChunk] = completion_or_chunks  # type: ignore
@@ -1296,7 +1126,7 @@ class Llama:
 
     def __del__(self):
         if self.ctx is not None:
-            llama_cpp.llama_free(self.ctx)
+            gptneox_cpp.gptneox_free(self.ctx)
             self.ctx = None
 
     def __getstate__(self):
@@ -1304,6 +1134,7 @@ class Llama:
             verbose=self.verbose,
             model_path=self.model_path,
             n_ctx=self.params.n_ctx,
+            n_parts=self.params.n_parts,
             n_gpu_layers=self.params.n_gpu_layers,
             seed=self.params.seed,
             f16_kv=self.params.f16_kv,
@@ -1317,9 +1148,6 @@ class Llama:
             n_threads=self.n_threads,
             lora_base=self.lora_base,
             lora_path=self.lora_path,
-            # DEPRECATED
-            n_parts=self.n_parts,
-            # DEPRECATED
         )
 
     def __setstate__(self, state):
@@ -1343,64 +1171,44 @@ class Llama:
             verbose=state["verbose"],
         )
 
-    def save_state(self) -> LlamaState:
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        state_size = llama_cpp.llama_get_state_size(self.ctx)
-        llama_state = (llama_cpp.c_uint8 * int(state_size))()
-        n_bytes = llama_cpp.llama_copy_state_data(self.ctx, llama_state)
-        invalidInputError(int(n_bytes) <= int(state_size), "Failed to copy llama state data.")
-        llama_state_compact = (llama_cpp.c_uint8 * int(n_bytes))()
-        llama_cpp.ctypes.memmove(llama_state_compact, llama_state, int(n_bytes))
+    def save_state(self) -> GptneoxState:
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
+        state_size = gptneox_cpp.gptneox_get_state_size(self.ctx)
+        gptneox_state = (gptneox_cpp.c_uint8 * int(state_size))()
+        n_bytes = gptneox_cpp.gptneox_copy_state_data(self.ctx, gptneox_state)
+        invalidInputError(int(n_bytes) <= int(state_size), "Failed to copy gptneox state data.")
+        gptneox_state_compact = (gptneox_cpp.c_uint8 * int(n_bytes))()
+        gptneox_cpp.ctypes.memmove(gptneox_state_compact, gptneox_state, int(n_bytes))
         if self.verbose:
             print(
-                f"Llama.save_state: saving {n_bytes} bytes of llama state",
+                f"Gptneox.save_state: saving {n_bytes} bytes of gptneox state",
                 file=sys.stderr,
             )
-        return LlamaState(
+        return GptneoxState(
             eval_tokens=self.eval_tokens.copy(),
             eval_logits=self.eval_logits.copy(),
-            llama_state=llama_state_compact,
-            llama_state_size=n_bytes,
+            gptneox_state=gptneox_state_compact,
+            gptneox_state_size=n_bytes,
         )
 
-    def load_state(self, state: LlamaState) -> None:
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
+    def load_state(self, state: GptneoxState) -> None:
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Gptneox` object is None.")
         self.eval_tokens = state.eval_tokens.copy()
         self.eval_logits = state.eval_logits.copy()
-        state_size = state.llama_state_size
-        invalidInputError(llama_cpp.llama_set_state_data(self.ctx,
-                                                         state.llama_state) == state_size,
-                          "Failed to set llama state data.")
-
-    def n_ctx(self) -> int:
-        """Return the context window size."""
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        return llama_cpp.llama_n_ctx(self.ctx)
-
-    def n_embd(self) -> int:
-        """Return the embedding size."""
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        return llama_cpp.llama_n_embd(self.ctx)
-
-    def n_vocab(self) -> int:
-        """Return the vocabulary size."""
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-        return llama_cpp.llama_n_vocab(self.ctx)
+        state_size = state.gptneox_state_size
+        invalidInputError(gptneox_cpp.gptneox_set_state_data(self.ctx,
+                                                             state.gptneox_state) == state_size,
+                          "Failed to set gptneox state data.")
 
     @staticmethod
-    def token_eos() -> int:
+    def token_eos() -> gptneox_cpp.gptneox_token:
         """Return the end-of-sequence token."""
-        return llama_cpp.llama_token_eos()
+        return gptneox_cpp.gptneox_token_eos()
 
     @staticmethod
-    def token_bos() -> int:
+    def token_bos() -> gptneox_cpp.gptneox_token:
         """Return the beginning-of-sequence token."""
-        return llama_cpp.llama_token_bos()
-
-    @staticmethod
-    def token_nl() -> int:
-        """Return the newline token."""
-        return llama_cpp.llama_token_nl()
+        return gptneox_cpp.gptneox_token_bos()
 
     @staticmethod
     def logits_to_logprobs(logits: List[float]) -> List[float]:
@@ -1409,7 +1217,9 @@ class Llama:
         return [math.log(x / sum_exps) for x in exps]
 
     @staticmethod
-    def longest_token_prefix(a: Sequence[int], b: Sequence[int]):
+    def longest_token_prefix(
+        a: Sequence[gptneox_cpp.gptneox_token], b: Sequence[gptneox_cpp.gptneox_token]
+    ):
         longest_prefix = 0
         for _a, _b in zip(a, b):
             if _a == _b:
