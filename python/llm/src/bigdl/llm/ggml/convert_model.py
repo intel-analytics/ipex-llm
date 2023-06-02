@@ -22,6 +22,7 @@ def convert_model(input_path: str,
             Now only int4 supported.
     """
 
+    dtype = dtype.lower()
     if dtype == 'int4':
         dtype = 'q4_0'
 
