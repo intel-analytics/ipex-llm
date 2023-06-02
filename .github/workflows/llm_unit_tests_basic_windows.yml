@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["windows-latest"]
-        python-version: ["3.8"]
+        python-version: ["3.9"]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -39,10 +39,25 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
+
       - name: Run LLM-init test
         shell: bash
         run: |
           bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Run LLM naive installation test
+        shell: bash
+        run: |
+          bash python/llm/dev/release_default_windows.sh default false
+          pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
+          pip install pytest
+          pip install numpy
+          pip install torch
+          pip install transformers
+          pip install sentencepiece
+          bash python/llm/test/run-llm-basic-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

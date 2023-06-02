@@ -43,10 +43,8 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
-    setup_file="setup-linux.py"
 elif [ "$platform" == "windows" ]; then
     verbose_pname="win_amd64"
-    setup_file="setup.py"
 else
     echo "Unsupported platform"
 fi
@@ -55,34 +53,19 @@ if [ -d "${BIGDL_DIR}/python/llm/dist" ]; then
    rm -r ${BIGDL_DIR}/python/llm/dist
 fi
 
-if [ -d "${BIGDL_DIR}/python/llm/_skbuild" ]; then
-   rm -r ${BIGDL_DIR}/python/llm/_skbuild
-fi
-
 if [ -d "${BIGDL_DIR}/python/llm/build" ]; then
    rm -r ${BIGDL_DIR}/python/llm/build
-fi
-
-if [ -d "${BIGDL_DIR}/python/llm/bigdl_llm.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 fi
 
 cd $BIGDL_PYTHON_DIR
 
-wheel_command="python ${setup_file} bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+wheel_command="python setup.py clean --all bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
-if [ -d "${BIGDL_DIR}/python/llm/_skbuild" ]; then
-   rm -r ${BIGDL_DIR}/python/llm/_skbuild
-fi
-
 if [ -d "${BIGDL_DIR}/python/llm/build" ]; then
    rm -r ${BIGDL_DIR}/python/llm/build
-fi
-
-if [ -d "${BIGDL_DIR}/python/llm/bigdl_llm.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/llm/bigdl_llm.egg-info
 fi
 
 if [ ${upload} == true ]; then
