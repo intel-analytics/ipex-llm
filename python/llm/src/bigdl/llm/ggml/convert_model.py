@@ -5,8 +5,8 @@ import time
 
 
 def convert_model(input_path: str,
-                  output_path: str = None,
-                  model_family: str = 'llama',
+                  output_path: str,
+                  model_family: str,
                   dtype: str = 'int4'):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
@@ -16,9 +16,9 @@ def convert_model(input_path: str,
             If you don't specify this parameter, quantized model will be saved in
             the same directory as the input and just replace precision with quantize_type
             like `./ggml-model-q4_0.bin`.
-    :param model_family: Which model family your input model belongs to. Default to `llama`.
-            Now only `llama`/`bloomz`/`gptneox` are supported.
-    :param dtype: Which quantized precision will be converted
+    :param model_family: Which model family your input model belongs to.
+            Now only `llama`/`bloom`/`gptneox` are supported.
+    :param dtype: Which quantized precision will be converted.
             Now only int4 supported.
     """
 
