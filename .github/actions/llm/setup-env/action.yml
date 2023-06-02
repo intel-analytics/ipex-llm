@@ -47,5 +47,9 @@ runs:
       shell: bash
       run: |
         pip install pytest
+        pip install numpy
+        pip install torch
+        pip install transformers
+        pip install sentencepiece
       env:
         OS: ${{ inputs.os }}
