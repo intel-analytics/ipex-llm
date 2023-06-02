@@ -20,7 +20,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 # This file is adapted from 
-# https://github.com/hwchase17/langchain/blob/master/langchain/llms/BigDLLLM.py
+# https://github.com/hwchase17/langchain/blob/master/langchain/llms/llamacpp.py
 
 # The MIT License
 
@@ -54,14 +54,14 @@ from langchain.llms.base import LLM
 
 
 
-class BigDLLLM(LLM):
+class BigdlLLM(LLM):
     """Wrapper around the BigDL-LLM
 
     Example:
         .. code-block:: python
 
-            from langchain.llms import BigDLLLM
-            llm = BigDLLLM(model_path="/path/to/llama/model")
+            from langchain.llms import BigdlLLM
+            llm = BigdlLLM(model_path="/path/to/llama/model")
     """
 
     client: Any  #: :meta private:
@@ -254,8 +254,8 @@ class BigDLLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigDLLLM
-                llm = BigDLLLM(model_path="/path/to/local/llama/model.bin")
+                from langchain.llms import BigdlLLM
+                llm = BigdlLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
         if self.streaming:
@@ -299,8 +299,8 @@ class BigDLLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigDLLLM
-                llm = BigDLLLM(
+                from langchain.llms import BigdlLLM
+                llm = BigdlLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5
                 )
