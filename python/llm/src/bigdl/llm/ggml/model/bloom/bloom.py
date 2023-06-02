@@ -47,6 +47,7 @@
 
 from .bloom_cpp import bloom_load, bloom_free, bloom_run
 
+
 class Bloom:
     """High-level Python wrapper for a bloom.cpp model."""
 
@@ -67,7 +68,8 @@ class Bloom:
             n_ctx: Maximum context size.
             seed: Random seed. 0 for random.
             logits_all: Return logits for all tokens, not just the last token.
-            n_threads: Number of threads to use. If None, the number of threads is automatically determined.
+            n_threads: Number of threads to use.
+                       If None, the number of threads is automatically determined.
             n_batch: Maximum number of prompt tokens to batch together when calling llama_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             verbose: Print verbose output to stderr.
