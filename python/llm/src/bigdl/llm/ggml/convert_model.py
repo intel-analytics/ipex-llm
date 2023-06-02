@@ -25,7 +25,6 @@ def convert_model(input_path: str,
     if dtype == 'int4':
         dtype = 'q4_0'
 
-
     model_name = Path(input_path).stem
     tmp_ggml_file_path = f'/tmp/{model_name}_{int(time.time())}'
     _convert_to_ggml(model_path=input_path,
