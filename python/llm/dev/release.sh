@@ -43,8 +43,10 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
+    platform_name="--linux"
 elif [ "$platform" == "windows" ]; then
     verbose_pname="win_amd64"
+    platform_name="--win"
 else
     echo "Unsupported platform"
 fi
@@ -59,7 +61,7 @@ fi
 
 cd $BIGDL_PYTHON_DIR
 
-wheel_command="python setup.py clean --all bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+wheel_command="python setup.py clean --all bdist_wheel ${platform_name} --plat-name ${verbose_pname} --python-tag py3"
 
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
