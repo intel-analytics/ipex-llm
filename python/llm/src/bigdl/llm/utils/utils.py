@@ -17,6 +17,7 @@
 import sys
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 
+
 def get_avx_flags():
     avx = ""
     if sys.platform != "win32":
