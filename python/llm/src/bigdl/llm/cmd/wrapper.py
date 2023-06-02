@@ -31,6 +31,7 @@ def llama(args):
                '-p', args.prompt,
                '-n', args.n_predict,
                '-m', args.model]
+    command = list(map(lambda x: str(x), command))
     subprocess.run(command, check=True)
 
 
@@ -44,6 +45,7 @@ def bloomz(args):
                '-p', args.prompt,
                '-n', args.n_predict,
                '-m', args.model]
+    command = list(map(lambda x: str(x), command))
     subprocess.run(command, check=True)
 
 
@@ -57,6 +59,7 @@ def redpajama(args):
                '-p', args.prompt,
                '-n', args.n_predict,
                '-m', args.model]
+    command = list(map(lambda x: str(x), command))
     subprocess.run(command, check=True)
 
 
