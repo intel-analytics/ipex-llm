@@ -4,14 +4,14 @@ from pathlib import Path
 import time
 
 
-def convert_model(model_path: str,
+def convert_model(input_path: str,
                   output_path: str = None,
                   model_family: str = 'llama',
                   dtype: str = 'q4_0'):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
 
-    :param model_path: str, path of model, for example `./llama-7b-hf`.
+    :param input_path: str, path of model, for example `./llama-7b-hf`.
     :param output_path: Save path of output quantized model. Default to `None`.
             If you don't specify this parameter, quantized model will be saved in
             the same directory as the input and just replace precision with quantize_type
@@ -20,9 +20,9 @@ def convert_model(model_path: str,
             Now only `llama`/`bloomz`/`gptneox` are supported.
     """
 
-    model_name = Path(model_path).stem
+    model_name = Path(input_path).stem
     tmp_ggml_file_path = f'/tmp/{model_name}_{int(time.time())}'
-    _convert_to_ggml(model_path=model_path,
+    _convert_to_ggml(model_path=input_path,
                      outfile_dir=tmp_ggml_file_path,
                      model_family=model_family,
                      outtype="fp16")
