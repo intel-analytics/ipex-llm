@@ -54,7 +54,7 @@ lib_urls = [
     # TODO: add bloomz
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloomz.exe",
-    # TODO: redpajama main
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox.exe",
 ]
 
 
@@ -97,11 +97,9 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
-        entry_points={
-            'console_scripts': [
-                'llm-cmd = bigdl.llm.cmd.wrapper:main'
-            ]
-        },
+        scripts=[
+            'src/bigdl/llm/cmd/cmd-cli.sh'
+        ],
         platforms=['windows']
     )
 
