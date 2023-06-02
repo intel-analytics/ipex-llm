@@ -2,7 +2,7 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
-export LLM_BASIC_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/basics
+export LLM_BASIC_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/packaging
 
 set -e
 

@@ -23,6 +23,8 @@ from unittest import TestCase
 class Test_LLM_Basics(TestCase):
 
     def test_naive(self):
+        from bigdl.llm.ggml import quantize
+        from bigdl.llm.utils.common import invalidInputError
         pass
 
 
