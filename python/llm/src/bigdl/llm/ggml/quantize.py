@@ -18,6 +18,7 @@ import os
 import subprocess
 from bigdl.llm.utils.common import invalidInputError
 import platform
+from pathlib import Path
 
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -28,7 +29,7 @@ _llama_quantize_type = {"q4_0": 2,
                         "q5_0": 8,
                         "q5_1": 9,
                         "q8_0": 7}
-_bloomz_quantize_type = {"q4_0": 2,
+_bloom_quantize_type = {"q4_0": 2,
                          "q4_1": 3}
 _gptneox_quantize_type = {"q4_0": 2,
                           "q4_1": 3,
@@ -38,7 +39,7 @@ _gptneox_quantize_type = {"q4_0": 2,
                           "q8_0": 7}
 
 _quantize_type = {"llama": _llama_quantize_type,
-                  "bloomz": _bloomz_quantize_type,
+                  "bloom": _bloom_quantize_type,
                   "gptneox": _gptneox_quantize_type}
 
 _valid_types = set(list(_llama_quantize_type.keys()) + list(_bloomz_quantize_type.keys()) +
@@ -56,23 +57,23 @@ def quantize(input_path: str, output_path: str=None,
             the same directory as the input and just replace precision with quantize_type
             like `./ggml-model-q4_0.bin`.
     :param model_family: Which model family your input model belongs to. Default to `llama`.
-            Now only `llama`/`bloomz`/`gptneox` are supported.
+            Now only `llama`/`bloom`/`gptneox` are supported.
     :param dtype: Quantization method which differs in the resulting model disk size and
             inference speed. Defalut to `q4_0`. Difference model family may support different types,
             now the supported list is:
             llama : "q4_0", "q4_1", "q4_2"
-            bloomz : "q4_0", "q4_1"
+            bloom : "q4_0", "q4_1"
             gptneox : "q4_0", "q4_1", "q4_2", "q5_0", "q5_1", "q8_0"
     """
-    invalidInputError(model_family in ['llama', 'bloomz', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloomz', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
                       "The file {} was not found".format(input_path))
     # TODO : multi input model path
     if output_path is None:
-        output_path = input_path.replace("f16", dtype)
+        output_path = Path(str(input_path).replace('f16', dtype))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
     invalidInputError(dtype in quantize_type_map, "{0} model just accept {1} now, \
