@@ -45,8 +45,9 @@ class EncryptedDataFrameReader(
     this
   }
 
-  def schema(schema: StructType): Unit = {
-    dataFrameReader = dataFrameReader.schema(schema)
+  def schema(schema: StructType): this.type = {
+    this.dataFrameReader = dataFrameReader.schema(schema)
+    this
   }
 
   def setCryptoCodecContext(path: String): Unit = {

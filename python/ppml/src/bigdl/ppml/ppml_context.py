@@ -103,6 +103,10 @@ class EncryptedDataFrameReader:
         self.bigdl_type = bigdl_type
         self.df_reader = df_reader
 
+    def schema(self, value):
+        self.df_reader = callBigDlFunc(self.bigdl_type, "schema", self.df_reader, value)
+        return self
+
     def option(self, key, value):
         self.df_reader = callBigDlFunc(self.bigdl_type, "option", self.df_reader, key, value)
         return self
