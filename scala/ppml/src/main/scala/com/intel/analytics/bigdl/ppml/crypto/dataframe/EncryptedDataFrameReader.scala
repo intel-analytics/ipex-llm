@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, PLAIN_TEXT}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, DataFrameReader, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.kms.common.KeyLoaderManagement
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
@@ -38,16 +38,15 @@ class EncryptedDataFrameReader(
       primaryKeyName: String,
       keyLoaderManagement: KeyLoaderManagement) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
-  protected val dataFrameReader = sparkSession.read
+  protected var dataFrameReader = sparkSession.read
 
   def option(key: String, value: String): this.type = {
     this.extraOptions += (key -> value)
     this
   }
 
-  def schema(schema: StructType): DataFrameReader = {
-    dataFrameReader.schema(schema)
-    this
+  def schema(schema: StructType): Unit = {
+    dataFrameReader = dataFrameReader.schema(schema)
   }
 
   def setCryptoCodecContext(path: String): Unit = {
