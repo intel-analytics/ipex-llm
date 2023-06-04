@@ -51,6 +51,7 @@ import uuid
 import time
 import math
 import multiprocessing
+import ctypes
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
 from bigdl.llm.utils.common import invalidInputError
@@ -342,22 +343,29 @@ class Gptneox:
                           "The attribute `eval_logits` of `Gptneox` object is None.")
         n_vocab = int(gptneox_cpp.gptneox_n_vocab(self.ctx))
         logits = self.eval_logits[-1]
-        data = (gptneox_cpp.gptneox_token_data * n_vocab)(
-            *[
-                gptneox_cpp.gptneox_token_data(
-                    id=gptneox_cpp.gptneox_token(i),
-                    logit=logits[i],
-                    p=gptneox_cpp.c_float(0.0),
-                )
-                for i in range(n_vocab)
-            ]
-        )
-        size = gptneox_cpp.c_size_t(n_vocab)
-        sorted = False
-        candidates = gptneox_cpp.gptneox_token_data_array(
-            data=data,
-            size=size,
-            sorted=sorted,
+        # accelerate below code by moving to cpp
+        # data = (gptneox_cpp.gptneox_token_data * n_vocab)(
+        #     *[
+        #         gptneox_cpp.gptneox_token_data(
+        #             id=gptneox_cpp.gptneox_token(i),
+        #             logit=logits[i],
+        #             p=gptneox_cpp.c_float(0.0),
+        #         )
+        #         for i in range(n_vocab)
+        #     ]
+        # )
+        # size = gptneox_cpp.c_size_t(n_vocab)
+        # sorted = False
+        # candidates = gptneox_cpp.gptneox_token_data_array(
+        #     data=data,
+        #     size=size,
+        #     sorted=sorted,
+        # )
+        logits = (ctypes.c_float * n_vocab)(*logits)
+        candidates = gptneox_cpp.gptneox_get_candidates(
+           ctx=self.ctx,
+           n_vocab=n_vocab,
+           logits=logits
         )
         gptneox_cpp.gptneox_sample_repetition_penalty(
             ctx=self.ctx,
@@ -365,7 +373,7 @@ class Gptneox:
             last_tokens_size=last_n_tokens_size,
             candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             penalty=repeat_penalty,
-        )
+        ) 
         gptneox_cpp.gptneox_sample_frequency_and_presence_penalties(
             ctx=self.ctx,
             candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
