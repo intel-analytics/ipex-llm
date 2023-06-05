@@ -28,6 +28,9 @@ ADD ./Makefile /ppml/Makefile
 ADD ./init.sh /ppml/init.sh
 ADD ./clean.sh /ppml/clean.sh
 
+ENV TZ=Asia/Shanghai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # These files ared used for attestation service and register MREnclave
 ADD ./register-mrenclave.py /ppml/register-mrenclave.py
 ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
