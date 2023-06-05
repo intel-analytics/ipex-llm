@@ -35,7 +35,8 @@ ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
-RUN apt install -y wget && \
+RUN apt update && \
+    apt install -y wget gnupg && \
     echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 
