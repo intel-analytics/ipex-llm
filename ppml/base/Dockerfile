@@ -35,7 +35,7 @@ ADD ./verify-attestation-service.sh /ppml/verify-attestation-service.sh
 ADD ./_dill.py.patch /_dill.py.patch
 ADD ./python-pslinux.patch /python-pslinux.patch
 
-RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | tee /etc/apt/sources.list.d/intel-sgx.list && \
     wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 
 # Python3.9
