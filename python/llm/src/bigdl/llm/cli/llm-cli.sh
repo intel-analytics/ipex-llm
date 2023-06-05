@@ -18,19 +18,19 @@ function display_help {
 }
 
 function llama {
-  command="$lib_dir/main-llama $filteredArguments"
+  command="$lib_dir/main-llama ${filteredArguments[*]}"
   echo "$command"
   $command
 }
 
 function bloom {
-  command="$lib_dir/main-bloom $filteredArguments"
+  command="$lib_dir/main-bloom ${filteredArguments[*]}"
   echo "$command"
   $command
 }
 
 function gptneox {
-  command="$lib_dir/main-gptneox $filteredArguments"
+  command="$lib_dir/main-gptneox ${filteredArguments[*]}"
   echo "$command"
   $command
 }
