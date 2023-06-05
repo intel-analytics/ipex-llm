@@ -13,7 +13,7 @@ lib_dir="$(dirname "$script_dir")/libs"
 
 # Function to display help message
 function display_help {
-  echo "Usage: ./script.sh [OPTIONS]"
+  echo "Usage: ./llm-cli.sh [OPTIONS]"
   echo "Options:"
   echo "  -c, --ctx_size N      size of the prompt context (default: 512)"
   echo "  -i, --interactive     run in interactive mode"
@@ -21,7 +21,7 @@ function display_help {
   echo "  -m, --model FNAME     model path"
   echo "  -p, --prompt PROMPT   prompt to start generation with (default: empty)"
   echo "  -t, --threads N       number of threads to use during computation (default: 28)"
-  echo "  -x, --model_family {llama,bloomz,gptneox}"
+  echo "  -x, --model_family {llama,bloom,gptneox}"
   echo "                        family name of model"
   echo "  -h, --help            display this help message"
   exit 1
@@ -37,21 +37,23 @@ function llama {
   if [[ $interactive ]]; then
     command="$command -i"
   fi
-  eval command
+  $command
 }
-function bloomz {
-  command="$lib_dir/main-bloomz \
+
+function bloom {
+  command="$lib_dir/main-bloom \
     -c $ctx_size \
     -n $n_predict \
     -m $model \
     -p $prompt \
     -t $threads"
   if [[ $interactive ]]; then
-    echo "Bloomz model family not support interactive mode"
+    echo "bloom model family not support interactive mode"
     exit 1
   fi
-  eval command
+  $command
 }
+
 function gptneox {
   command="$lib_dir/main-gptneox \
     -c $ctx_size \
@@ -62,7 +64,7 @@ function gptneox {
   if [[ $interactive ]]; then
     command="$command -i"
   fi
-  eval command
+  $command
 }
 
 # Parse command line options
@@ -117,8 +119,8 @@ echo "Model Family: $model_family"
 # Perform actions based on the model_family
 if [[ "$model_family" == "llama" ]]; then
   llama
-elif [[ "$model_family" == "bloomz" ]]; then
-  bloomz
+elif [[ "$model_family" == "bloom" ]]; then
+  bloom
 elif [[ "$model_family" == "gptneox" ]]; then
   gptneox
 else
