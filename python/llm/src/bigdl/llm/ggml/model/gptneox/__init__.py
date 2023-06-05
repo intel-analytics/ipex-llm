@@ -19,4 +19,5 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-from .utils import *
+from .gptneox_cpp import *
+from .gptneox import *

@@ -14,9 +14,19 @@
 # limitations under the License.
 #
 
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
-# physically located elsewhere.
-# Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
+import sys
+from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 
-from .utils import *
+
+def get_avx_flags():
+    avx = ""
+    if sys.platform != "win32":
+        import subprocess
+        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
+        if "avx512_vnni" in msg:
+            avx = "_avx512"
+        elif "avx2" in msg:
+            avx = "_avx2"
+        else:
+            invalidOperationError(False, "Unsupported CPUFLAGS.")
+    return avx

@@ -24,7 +24,7 @@ import org.json.JSONObject
 object ATTESTATION_CONVENTION {
   val MODE_DUMMY = "DummyAttestationService"
   val MODE_EHSM_KMS = "EHSMAttestationService"
-  val MODE_AMBER = "AMBERService"
+  val MODE_AMBER = "AmberAttestationService"
   val MODE_AZURE = "AzureAttestationService"
   val MODE_BIGDL = "BigDLRemoteAttestationService"
 }
@@ -57,4 +57,7 @@ trait AttestationService extends Supportive {
    * @return attestation result/token
    */
   def attestWithServer(quote: String, policyID: String): (Boolean, String)
+
+  def getNonce(): String
+  var nonce: String
 }

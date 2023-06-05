@@ -21,3 +21,4 @@
 
 from .quantize import quantize
 from .convert import _convert_to_ggml
+from .convert_model import convert_model

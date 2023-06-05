@@ -187,6 +187,8 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 # Install occlum from package
 # RUN apt-get update && \
 #     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \

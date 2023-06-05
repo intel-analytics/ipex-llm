@@ -13,10 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# This would makes sure Python is aware there is more than one sub-package within bigdl,
-# physically located elsewhere.
-# Otherwise there would be module not found error in non-pip's setting as Python would
-# only search the first bigdl package and end up finding only one sub-package.
-
-from .utils import *
