@@ -22,7 +22,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-unit-test-basic-linux:
-    runs-on: [self-hosted, ubuntu-20.04-lts]
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
