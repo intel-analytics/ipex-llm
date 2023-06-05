@@ -22,8 +22,15 @@ import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader
 import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.types.{BooleanType, ByteType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.util
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters.asScalaBufferConverter
+
+
 
 
 object PPMLContextPython {
@@ -69,6 +76,55 @@ class PPMLContextPython[T]() {
   def option(encryptedDataFrameReader: EncryptedDataFrameReader,
              key: String, value: String): EncryptedDataFrameReader = {
     encryptedDataFrameReader.option(key, value)
+  }
+  import net.razorvine.pickle.objects.ClassDict
+
+  def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
+             value: ClassDict): EncryptedDataFrameReader = {
+    // get map
+    val hashMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
+    val reslist = new util.LinkedList[StructField]()
+    // get fields
+    val fieldlist = hashMap.get("fields").asInstanceOf[java.util.List[_]]
+    if (fieldlist == null) {
+      println("failed")
+    }
+    println(fieldlist)
+    for (map1 <- fieldlist) {
+      val map = map1.asInstanceOf[util.HashMap[String, Object]]
+      println("dataTpye" + map.get("dataType"))
+      val test = map.get("dataType").asInstanceOf[util.HashMap[String, Object]]
+      val structType = test.get("__class__").toString
+      println("structType" + structType)
+      println("dataname" + map.get("name"))
+      val fieldName =  map.get("name").toString
+      val nullable = map.get("nullable").toString.toLowerCase().equals("true")
+      val fieldType = structType match {
+        case "pyspark.sql.types.ByteType" => ByteType
+        case "pyspark.sql.types.ShortType" => ShortType
+        case "pyspark.sql.types.IntegerType" => IntegerType
+        case "pyspark.sql.types.LongType" => LongType
+        case "pyspark.sql.types.FloatType" => FloatType
+        case "pyspark.sql.types.DoubleType" => DoubleType
+        case "pyspark.sql.types.BooleanType" => BooleanType
+        case "pyspark.sql.types.StringType" => StringType
+        case _ => {
+          println("error-------")
+          throw new IllegalArgumentException(s"Unsupported data type for field $structType")
+        }
+      }
+      val structField = StructField(fieldName, fieldType, nullable = nullable)
+      reslist.add(structField)
+    }
+    println("structtype here -----------" + StructType(reslist))
+    encryptedDataFrameReader.schema(StructType(reslist))
+  }
+
+
+
+  def schema1(encryptedDataFrameReader: EncryptedDataFrameReader,
+             value: String): EncryptedDataFrameReader = {
+    encryptedDataFrameReader.schema1(value)
   }
 
   def csv(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
