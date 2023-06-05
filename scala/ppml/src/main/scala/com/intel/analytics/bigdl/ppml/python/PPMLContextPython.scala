@@ -17,18 +17,16 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT, EncryptRuntimeException}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
-import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.types.{BooleanType, ByteType, DoubleType, FloatType, IntegerType, LongType, ShortType, StringType, StructField, StructType}
-import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters.asScalaBufferConverter
 
 
 
@@ -92,7 +90,7 @@ class PPMLContextPython[T]() {
       val map = map1.asInstanceOf[util.HashMap[String, Object]]
       val test = map.get("dataType").asInstanceOf[util.HashMap[String, Object]]
       val structType = test.get("__class__").toString
-      val fieldName =  map.get("name").toString
+      val fieldName = map.get("name").toString
       val nullable = map.get("nullable").toString.toLowerCase().equals("true")
       val fieldType = structType match {
         case "pyspark.sql.types.ByteType" => ByteType
@@ -103,9 +101,8 @@ class PPMLContextPython[T]() {
         case "pyspark.sql.types.DoubleType" => DoubleType
         case "pyspark.sql.types.BooleanType" => BooleanType
         case "pyspark.sql.types.StringType" => StringType
-        case _ => {
+        case _ =>
           throw new IllegalArgumentException(s"Unsupported data type for field $structType")
-        }
       }
       val structField = StructField(fieldName, fieldType, nullable = nullable)
       reslist.add(structField)
