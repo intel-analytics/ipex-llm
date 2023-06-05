@@ -14,16 +14,19 @@ function Display-Help {
 
 function llama {
     $command = "$lib_dir/main-llama.exe $filteredArguments"
+    Write-Host "$command"
     Invoke-Expression $command
 }
 
 function bloom {
     $command = "$lib_dir/main-bloom.exe $filteredArguments"
+    Write-Host "$command"
     Invoke-Expression $command
 }
 
 function gptneox {
     $command = "$lib_dir/main-gptneox.exe $filteredArguments"
+    Write-Host "$command"
     Invoke-Expression $command
 }
 
