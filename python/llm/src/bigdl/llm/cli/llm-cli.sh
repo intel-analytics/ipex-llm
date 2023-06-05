@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
   -h | --help)
     display_help
-    filteredArguments+=("$1")
+    filteredArguments+=("'$1'")
     shift
     ;;
   -x | --model_family)
@@ -48,7 +48,7 @@ while [[ $# -gt 0 ]]; do
     shift 2
     ;;
   *)
-    filteredArguments+=("$1")
+    filteredArguments+=("'$1'")
     shift
     ;;
   esac
