@@ -165,8 +165,8 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
-            'Linux': ['src/bigdl/llm/cmd/llm-cli.sh'],
-            'Windows': ['src/bigdl/llm/cmd/llm-cli.ps1'],
+            'Linux': ['src/bigdl/llm/cli/llm-cli.sh'],
+            'Windows': ['src/bigdl/llm/cli/llm-cli.ps1'],
         }[platform_name],
         platforms=['windows']
     )

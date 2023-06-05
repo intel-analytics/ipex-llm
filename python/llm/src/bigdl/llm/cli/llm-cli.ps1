@@ -64,26 +64,16 @@ function Display-Help {
 
 function llama {
     $command = "$lib_dir/main-llama.exe $filteredArguments"
-    if ($interactive) {
-        $command += " -i"
-    }
     Invoke-Expression $command
 }
 
 function bloom {
     $command = "$lib_dir/main-bloom.exe $filteredArguments"
-    if ($interactive) {
-        Write-Host "bloom model family does not support interactive mode"
-        exit 1
-    }
     Invoke-Expression $command
 }
 
 function gptneox {
     $command = "$lib_dir/main-gptneox.exe $filteredArguments"
-    if ($interactive) {
-        $command += " -i"
-    }
     Invoke-Expression $command
 }
 
@@ -93,6 +83,7 @@ for ($i = 0; $i -lt $args.Length; $i++) {
     if ($args[$i] -eq '--model_family' -or $args[$i] -eq '-x') {
         if ($i + 1 -lt $args.Length -and $args[$i + 1] -notlike '-*') {
             $i++
+            $model_family = $args[$i]
         }
     }
     else {
