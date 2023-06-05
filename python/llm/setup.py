@@ -102,6 +102,9 @@ def setup_package():
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
         "libs/quantize-gptneox.exe",
+        "libs/main-bloom.exe",
+        "libs/main-gptneox.exe",
+        "libs/main-llama.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
@@ -112,6 +115,9 @@ def setup_package():
         "libs/quantize-gptneox",
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
+        "libs/main-bloom",
+        "libs/main-gptneox",
+        "libs/main-llama",
     ]
 
     platform_name = None
@@ -158,9 +164,10 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
-        scripts=[
-            'src/bigdl/llm/cmd/cmd-cli.sh'
-        ],
+        scripts={
+            'Linux': ['src/bigdl/llm/cmd/llm-cli.sh'],
+            'Windows': ['src/bigdl/llm/cmd/llm-cli.ps1'],
+        }[platform_name],
         platforms=['windows']
     )
 
