@@ -2,7 +2,7 @@ ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
 ARG GRAMINE_BRANCH=devel-v1.3.1-2022-12-28
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 ARG http_proxy
 ARG https_proxy
 ARG no_proxy
@@ -130,6 +130,5 @@ ADD ./encrypted-fsd.sh /ppml
 RUN cd /ppml && \
     bash ./download_jars.sh
 
-ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
