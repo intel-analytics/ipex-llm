@@ -23,7 +23,7 @@ def get_avx_flags():
     if sys.platform != "win32":
         import subprocess
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        if "avx512_vnni" in msg:
+        if "avx512f" in msg:
             avx = "_avx512"
         elif "avx2" in msg:
             avx = "_avx2"
