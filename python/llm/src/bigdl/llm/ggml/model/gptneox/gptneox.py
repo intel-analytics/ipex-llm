@@ -363,9 +363,9 @@ class Gptneox:
         # )
         logits = (ctypes.c_float * n_vocab)(*logits)
         candidates = gptneox_cpp.gptneox_get_candidates(
-           ctx=self.ctx,
-           n_vocab=n_vocab,
-           logits=logits
+            ctx=self.ctx,
+            n_vocab=n_vocab,
+            logits=logits
         )
         gptneox_cpp.gptneox_sample_repetition_penalty(
             ctx=self.ctx,

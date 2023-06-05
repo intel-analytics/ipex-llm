@@ -46,6 +46,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .bloom_cpp import bloom_load, bloom_free, bloom_run
+from bigdl.llm.utils.common import invalidInputError
 
 
 class Bloom:
@@ -81,8 +82,7 @@ class Bloom:
             A Bloom instance.
         """
         self.ctx = bloom_load(bytes(model_path, encoding='utf-8'), n_ctx, n_threads)
-        if not self.ctx:
-            raise RuntimeError(f"Failed to load model from {model_path}")
+        invalidInputError(self.ctx is not None, f"Failed to load model from {model_path}")
         self.n_ctx = n_ctx
         self.seed = seed
         self.logits_all = logits_all

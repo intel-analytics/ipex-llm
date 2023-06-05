@@ -62,6 +62,8 @@ from ctypes import (
 )
 import pathlib
 from bigdl.llm.utils import get_avx_flags
+from bigdl.llm.utils.common import invalidInputError
+
 
 # Load the library
 def _load_shared_library(lib_base_name: str):
@@ -71,8 +73,8 @@ def _load_shared_library(lib_base_name: str):
     elif sys.platform == "win32":
         lib_ext = ".dll"
     else:
-        raise RuntimeError("Unsupported platform")
-    
+        invalidInputError(False, "Unsupported platform")
+
     avx = get_avx_flags()
 
     # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
@@ -101,9 +103,10 @@ def _load_shared_library(lib_base_name: str):
             try:
                 return ctypes.CDLL(str(_lib_path))
             except Exception as e:
-                raise RuntimeError(f"Failed to load shared library '{_lib_path}': {e}")
+                invalidInputError(False,
+                                  f"Failed to load shared library '{_lib_path}': {e}")
 
-    raise FileNotFoundError(f"Shared library with base name '{lib_base_name}' not found")
+    invalidInputError(False, f"Shared library with base name '{lib_base_name}' not found")
 
 
 # Specify the base name of the shared library to load
