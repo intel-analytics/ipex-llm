@@ -529,6 +529,24 @@ _lib.gptneox_token_eos.restype = gptneox_token
 # Sampling functions
 
 
+def gptneox_get_candidates(
+    ctx: gptneox_context_p,
+    n_vocab: c_int,
+    logits: c_float_p,
+):
+    return _lib.gptneox_get_candidates(
+        ctx, n_vocab, logits
+    )
+
+
+_lib.gptneox_get_candidates.argtypes = [
+    gptneox_context_p,
+    c_int,
+    c_float_p
+]
+_lib.gptneox_get_candidates.restype = gptneox_token_data_array
+
+
 # @details Repetition penalty described in CTRL academic paper https://arxiv.org/abs/1909.05858,
 # with negative logit fix.
 def gptneox_sample_repetition_penalty(
