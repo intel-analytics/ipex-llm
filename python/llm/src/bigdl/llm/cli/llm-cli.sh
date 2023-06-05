@@ -37,6 +37,8 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
   -h | --help)
     display_help
+    filteredArguments+=("$1")
+    shift
     ;;
   -x | --model_family)
     model_family="$2"
