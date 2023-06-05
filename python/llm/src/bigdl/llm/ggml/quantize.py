@@ -30,10 +30,9 @@ _llama_quantize_type = {"q4_0": 2,
                         "q5_1": 9,
                         "q8_0": 7}
 _bloom_quantize_type = {"q4_0": 2,
-                         "q4_1": 3}
+                        "q4_1": 3}
 _gptneox_quantize_type = {"q4_0": 2,
                           "q4_1": 3,
-                          "q4_2": 5,
                           "q5_0": 8,
                           "q5_1": 9,
                           "q8_0": 7}
@@ -41,9 +40,6 @@ _gptneox_quantize_type = {"q4_0": 2,
 _quantize_type = {"llama": _llama_quantize_type,
                   "bloom": _bloom_quantize_type,
                   "gptneox": _gptneox_quantize_type}
-
-_valid_types = set(list(_llama_quantize_type.keys()) + list(_bloomz_quantize_type.keys()) +
-                   list(_gptneox_quantize_type.keys()))
 
 
 def quantize(input_path: str, output_path: str=None,
