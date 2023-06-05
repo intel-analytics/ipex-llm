@@ -25,13 +25,12 @@
 # >>>> Linux：
 # python setup.py clean --all bdist_wheel --linux
 
-import os
-import sys
 import fnmatch
 import os
-import urllib.request
 import platform
 import shutil
+import sys
+import urllib.request
 
 from setuptools import setup
 
@@ -68,7 +67,7 @@ lib_urls["Windows"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
     # TODO: add bloomz
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloomz.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox.exe",
 ]
 lib_urls["Linux"] = [
@@ -79,7 +78,10 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx2.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so"
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox",
 ]
 
 
@@ -119,12 +121,12 @@ def setup_package():
     if "--linux" in sys.argv:
         platform_name = "Linux"
         sys.argv.remove("--linux")
-    
+
     if platform_name is None:
         if platform.platform().startswith('Windows'):
             platform_name = "Windows"
         else:
-            platform_name = "Linux" 
+            platform_name = "Linux"
 
     change_permission = True if platform_name == "Linux" else False
 
