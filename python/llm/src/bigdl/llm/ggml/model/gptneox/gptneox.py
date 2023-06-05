@@ -373,7 +373,7 @@ class Gptneox:
             last_tokens_size=last_n_tokens_size,
             candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
             penalty=repeat_penalty,
-        ) 
+        )
         gptneox_cpp.gptneox_sample_frequency_and_presence_penalties(
             ctx=self.ctx,
             candidates=gptneox_cpp.ctypes.byref(candidates),  # type: ignore
