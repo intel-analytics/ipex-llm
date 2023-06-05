@@ -81,22 +81,17 @@ class PPMLContextPython[T]() {
 
   def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
              value: ClassDict): EncryptedDataFrameReader = {
-    // get map
     val hashMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
     val reslist = new util.LinkedList[StructField]()
-    // get fields
+    // get fields list
     val fieldlist = hashMap.get("fields").asInstanceOf[java.util.List[_]]
     if (fieldlist == null) {
-      println("failed")
+      throw new IllegalArgumentException("schema cann't be null")
     }
-    println(fieldlist)
     for (map1 <- fieldlist) {
       val map = map1.asInstanceOf[util.HashMap[String, Object]]
-      println("dataTpye" + map.get("dataType"))
       val test = map.get("dataType").asInstanceOf[util.HashMap[String, Object]]
       val structType = test.get("__class__").toString
-      println("structType" + structType)
-      println("dataname" + map.get("name"))
       val fieldName =  map.get("name").toString
       val nullable = map.get("nullable").toString.toLowerCase().equals("true")
       val fieldType = structType match {
@@ -109,22 +104,15 @@ class PPMLContextPython[T]() {
         case "pyspark.sql.types.BooleanType" => BooleanType
         case "pyspark.sql.types.StringType" => StringType
         case _ => {
-          println("error-------")
           throw new IllegalArgumentException(s"Unsupported data type for field $structType")
         }
       }
       val structField = StructField(fieldName, fieldType, nullable = nullable)
       reslist.add(structField)
     }
-    println("structtype here -----------" + StructType(reslist))
-    encryptedDataFrameReader.schema(StructType(reslist))
-  }
-
-
-
-  def schema1(encryptedDataFrameReader: EncryptedDataFrameReader,
-             value: String): EncryptedDataFrameReader = {
-    encryptedDataFrameReader.schema1(value)
+    val schema = StructType(reslist)
+    println("Schema: " + schema)
+    encryptedDataFrameReader.schema(schema)
   }
 
   def csv(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
