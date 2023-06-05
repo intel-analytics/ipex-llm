@@ -37,8 +37,8 @@ keep=0
 model="./model.bin"
 model_family=""
 
-script_dir="$(dirname "$(readlink -f "$0")")"
-lib_dir="$(dirname "$script_dir")/libs"
+llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
+lib_dir="$llm_dir/libs"
 
 # Function to display help message
 function display_help {
