@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["self-hosted"]
+        os: ["self-hosted", "ubuntu-20.04-lts"]
         python-version: ["3.9"]
     steps:
       - uses: actions/checkout@v2
@@ -43,13 +43,13 @@ jobs:
       - name: Run LLM-init test
         shell: bash
         run: |
-          conda create -n bigdl-init -y python==3.9 setuptools==58.0.4
-          conda activate bigdl-init
-          conda info
+          $CONDA_HOME/bin/conda create -n bigdl-init -y python==3.9 setuptools==58.0.4
+          source $CONDA_HOME/bin/activate bigdl-init
+          $CONDA_HOME/bin/conda info
           bash python/llm/dev/release_default_linux.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
-          conda deactivate
-          conda remove -n bigdl-init --all
+          source $CONDA_HOME/bin/deactivate
+          $CONDA_HOME/bin/conda remove -n bigdl-init --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
