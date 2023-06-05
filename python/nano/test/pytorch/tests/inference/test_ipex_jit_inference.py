@@ -58,6 +58,7 @@ class MultipleInputNet(nn.Module):
     def forward(self, x1, x2):
         return self.dense1(x1) + self.dense2(x2)
 
+
 class DummyMultiInputModel(nn.Module):
     """
     A simple model for test various inputs of channels last format
@@ -452,7 +453,8 @@ class IPEXJITInference:
         model = InferenceOptimizer.trace(net,
                                          accelerator='jit',
                                          use_ipex=True,
-                                         calib_data=dataloader)
+                                         calib_data=dataloader,
+                                         enable_onednn=False)
         with InferenceOptimizer.get_context(model):
             model(x1, x2)
             # test keyword argument
@@ -716,18 +718,9 @@ class IPEXJITInference:
         np.testing.assert_allclose(output2.detach().numpy(), output1.detach().numpy(), atol=1e-5)
 
 
-class CaseWithoutAVX2:
-    def test_placeholder(self):
-        pass
-
-
 TORCH_VERSION_CLS = IPEXJITInference
 if TORCH_VERSION_LESS_1_10:
     print("IPEX Inference Model Without AVX512")
-    TORCH_VERSION_CLS = CaseWithoutAVX2
-if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
-    print("IPEX Inference Model Without AVX2")
-    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
     TORCH_VERSION_CLS = CaseWithoutAVX2
 
 

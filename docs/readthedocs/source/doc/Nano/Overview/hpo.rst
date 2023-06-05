@@ -18,7 +18,7 @@ Next, install a few dependencies required for Nano HPO using below commands.
 .. code-block:: console
 
     pip install ConfigSpace
-    pip install optuna
+    pip install optuna<=3.1.1
 
 
 

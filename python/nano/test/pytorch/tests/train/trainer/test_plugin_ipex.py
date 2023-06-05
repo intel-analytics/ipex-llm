@@ -88,15 +88,15 @@ class Plugin:
 TORCH_CLS = Plugin
 
 
-class CaseWithoutAVX2:
+class CasePT2:
     def test_placeholder(self):
         pass
 
 
-if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
-    print("Plugin IPEX Without AVX2")
-    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_CLS = CaseWithoutAVX2
+if not TORCH_VERSION_LESS_2_0:
+    print("Trainer Plugin with torch 2.0")
+    # TODO: after we upgrade version of pytorch lightning, we can remove this part
+    TORCH_CLS = CasePT2
 
 
 class TestPlugin(TORCH_CLS, TestCase):

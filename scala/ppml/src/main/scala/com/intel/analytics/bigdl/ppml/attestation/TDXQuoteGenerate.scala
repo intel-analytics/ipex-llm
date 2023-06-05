@@ -26,6 +26,7 @@ import java.util.Base64
 import com.intel.analytics.bigdl.ppml.attestation.service._
 import com.intel.analytics.bigdl.ppml.attestation.generator._
 import com.intel.analytics.bigdl.ppml.attestation.verifier._
+import com.intel.analytics.bigdl.ppml.attestation.utils.{AttestationUtil, JsonUtil}
 
 object TdxQuoteGenerate {
     def main(args: Array[String]): Unit = {
@@ -63,6 +64,11 @@ object TdxQuoteGenerate {
                 throw new AttestationRuntimeException("Failed " +
                 "to write quote!", e)
             }
+        }
+        val debug = System.getenv("ATTESTATION_DEBUG")
+        if (debug == "true") {
+            val quote_base64 = Base64.getEncoder.encodeToString(quote)
+            println(s"quote: ${quote_base64}")
         }
 
         System.exit(0)
