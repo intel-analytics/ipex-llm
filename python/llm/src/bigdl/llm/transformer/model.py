@@ -20,6 +20,8 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 import os
+import traceback
+from huggingface_hub import snapshot_download
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml import convert_model
 from bigdl.llm.ggml.model.llama import Llama
@@ -41,7 +43,7 @@ class AutoModelForCausalLM:
                         cache_dir: str = None,
                         **kwargs):
         """
-        :param pretrained_model_name_or_path: We support 2 kinds of pretrained model checkpoint
+        :param pretrained_model_name_or_path: We support 3 kinds of pretrained model checkpoint
 
                1. path for huggingface checkpoint that are directly pulled from hugginface hub.
                   This should be a dir path that contains: weight bin, tokenizer config,
@@ -49,12 +51,13 @@ class AutoModelForCausalLM:
                   For lora fine tuned model, the path should be pointed to a merged weight.
                2. path for converted ggml binary checkpoint. The checkpoint should be converted by
                   ``bigdl.llm.ggml.convert_model``.
+               3. a str for huggingface hub repo name.
 
         :param model_family: the model family of the pretrained checkpoint.
                Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``.
         :param dtype: (optional) the data type for weight. Currently we only support ``"int4"``
         :param cache_dir: (optional) this parameter will only be used when
-               ``pretrained_model_name_or_path`` is a hugginface checkpoint.
+               ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo name.
                It indicates the saving path for the converted low precision model.
         :param **kwargs: keyword arguments which will be passed to the model instance
 
@@ -64,9 +67,19 @@ class AutoModelForCausalLM:
                           "Now we only support model family: 'llama', 'gptneox', 'bloom', " \
                           "'{}' is not in the list.".format(model_family))
         invalidInputError(dtype == 'int4',
-                          "Now we only support int4 as date type for weight")
-        invalidInputError(os.path.exists(pretrained_model_name_or_path),
-                          "The path {} was not found".format(pretrained_model_name_or_path))
+                          "Now we only support 'int4' as date type for weight")
+
+        if not os.path.exists(pretrained_model_name_or_path):
+            try:
+                # download from huggingface based on repo id
+                pretrained_model_name_or_path = snapshot_download(
+                                                    repo_id=pretrained_model_name_or_path)
+            except Exception as e:
+                traceback.print_exc()
+                invalidInputError(False,
+                                 "Please input valid huggingface hub repo id, " \
+                                 "or provide the valid path to huggingface / " \
+                                 "ggml binary checkpoint for pretrained_model_name_or_path")
 
         ggml_model_path = pretrained_model_name_or_path
         if not os.path.isfile(pretrained_model_name_or_path):
@@ -75,7 +88,7 @@ class AutoModelForCausalLM:
                                             output_path=cache_dir,
                                             model_family=model_family,
                                             dtype=dtype)
-        
+
         if model_family == 'llama':
             return Llama(model_path=ggml_model_path, **kwargs)
         elif model_family == 'gptneox':
