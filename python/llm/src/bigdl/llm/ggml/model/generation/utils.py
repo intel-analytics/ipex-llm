@@ -33,7 +33,7 @@ class GenerationMixin:
     """
     def generate(
         self,
-        inputs: Union[Optional[Sequence[int]], Sequence[gptneox_cpp.gptneox_token]] = None,
+        inputs: Union[Optional[Sequence[int]], Sequence[gptneox_cpp.gptneox_token]]=None,
         max_new_tokens: int = 128,
         top_k: int = 40,
         top_p: float = 0.95,
