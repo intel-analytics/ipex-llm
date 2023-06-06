@@ -37,7 +37,7 @@ class AutoModelForCausalLM:
                         pretrained_model_name_or_path: str,
                         model_family: str = 'llama',
                         dtype: str = 'int4',
-                        cache_dir: str = None,
+                        cache_dir: str = './',
                         **kwargs):
         """
         :param pretrained_model_name_or_path: We support 3 kinds of pretrained model checkpoint
