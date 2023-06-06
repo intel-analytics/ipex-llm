@@ -64,7 +64,7 @@ class AutoModelForCausalLM:
         :return: a model instance
         """
         invalidInputError(model_family in ['llama', 'gptneox', 'bloom'],
-                          "Now we only support model family: 'llama', 'gptneox', 'bloom', " \
+                          "Now we only support model family: 'llama', 'gptneox', 'bloom', "
                           "'{}' is not in the list.".format(model_family))
         invalidInputError(dtype == 'int4',
                           "Now we only support 'int4' as date type for weight")
@@ -73,13 +73,13 @@ class AutoModelForCausalLM:
             try:
                 # download from huggingface based on repo id
                 pretrained_model_name_or_path = snapshot_download(
-                                                    repo_id=pretrained_model_name_or_path)
+                    repo_id=pretrained_model_name_or_path)
             except Exception as e:
                 traceback.print_exc()
                 invalidInputError(False,
-                                 "Please input valid huggingface hub repo id, " \
-                                 "or provide the valid path to huggingface / " \
-                                 "ggml binary checkpoint for pretrained_model_name_or_path")
+                                  "Please input valid huggingface hub repo id, "
+                                  "or provide the valid path to huggingface / "
+                                  "ggml binary checkpoint for pretrained_model_name_or_path")
 
         ggml_model_path = pretrained_model_name_or_path
         if not os.path.isfile(pretrained_model_name_or_path):
