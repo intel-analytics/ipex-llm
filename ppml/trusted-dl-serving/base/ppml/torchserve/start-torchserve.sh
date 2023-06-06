@@ -75,7 +75,7 @@ if [[ $SGX_ENABLED == "true" ]]; then
 fi
 
 if [[ $ATTESTATION == "true" ]]; then
-    attestation_flag= " -A "
+    attestation_flag=" -A "
 fi
 
 # Consider the situation where we have multiple models, and each load serveral workers.
