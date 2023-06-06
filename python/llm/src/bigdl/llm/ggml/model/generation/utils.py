@@ -20,11 +20,9 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 
-import sys
-from typing import Optional, Union, Sequence
+from typing import Optional, Union, Sequence, List
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.model.gptneox import gptneox_cpp
-from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 
 class GenerationMixin:
@@ -35,7 +33,7 @@ class GenerationMixin:
     """
     def generate(
         self,
-        inputs: Optional[Sequence[int]] = None,
+        inputs: Union[Optional[Sequence[int]], Sequence[gptneox_cpp.gptneox_token]] = None,
         max_new_tokens: int = 128,
         top_k: int = 40,
         top_p: float = 0.95,
@@ -48,7 +46,7 @@ class GenerationMixin:
         mirostat_mode: int = 0,
         mirostat_tau: float = 5.0,
         mirostat_eta: float = 0.1,
-        stopping_criteria: Optional[StoppingCriteriaList] = None,
+        stop: Optional[Union[str, List[str]]]=[],
         **kwargs,
     ) -> Union[Optional[Sequence[int]], Optional[Sequence[gptneox_cpp.gptneox_token]], None]:
         # TODO: modify docs
@@ -72,46 +70,17 @@ class GenerationMixin:
         Yields:
             The generated tokens.
         """
-        # TODO: modify log
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Llama` object is None.")
-
-        if reset and len(self.eval_tokens) > 0:
-            longest_prefix = 0
-            for a, b in zip(self.eval_tokens, tokens[:-1]):
-                if a == b:
-                    longest_prefix += 1
-                else:
-                    break
-            if longest_prefix > 0:
-                if self.verbose:
-                    print("Llama.generate: prefix-match hit", file=sys.stderr)
-                reset = False
-                tokens = tokens[longest_prefix:]
-                for _ in range(len(self.eval_tokens) - longest_prefix):
-                    self.eval_tokens.pop()
-                    try:
-                        self.eval_logits.pop()
-                    except IndexError:
-                        pass
-
-        if reset:
-            self.reset()
-
-        while True:
-            self.eval(tokens)
-            token = self.sample(
-                top_k=top_k,
-                top_p=top_p,
-                temp=temperature,
-                repeat_penalty=repetition_penalty,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                tfs_z=tfs_z,
-                mirostat_mode=mirostat_mode,
-                mirostat_tau=mirostat_tau,
-                mirostat_eta=mirostat_eta,
-            )
-            tokens_or_none = yield token
-            tokens = [token]
-            if tokens_or_none is not None:
-                tokens.extend(tokens_or_none)
+        # TODO: stop & max_token
+        self._generate(tokens=inputs,
+                       top_k=top_k,
+                       top_p=top_p,
+                       temp=temperature,
+                       repeat_penalty=repetition_penalty,
+                       reset=reset,
+                       frequency_penalty=frequency_penalty,
+                       presence_penalty=presence_penalty,
+                       tfs_z=tfs_z,
+                       mirostat_mode=mirostat_mode,
+                       mirostat_tau=mirostat_tau,
+                       mirostat_eta=mirostat_eta,
+                       **kwargs)
