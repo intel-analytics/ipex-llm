@@ -59,12 +59,8 @@ jobs:
           source $CONDA_HOME/bin/activate bigdl-init
           $CONDA_HOME/bin/conda info
           bash python/llm/dev/release_default_linux.sh default false
-          pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
-          pip install pytest
-          pip install numpy
-          pip install torch
-          pip install transformers
-          pip install sentencepiece
+          whl_name=$(ls python/llm/dist)
+          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
           bash python/llm/test/run-llm-basic-tests.sh
           source $CONDA_HOME/bin/deactivate
           $CONDA_HOME/bin/conda remove -n bigdl-init --all
