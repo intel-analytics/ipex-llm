@@ -25,6 +25,7 @@ from huggingface_hub import snapshot_download
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml import convert_model
 
+
 class AutoModelForCausalLM:
     """
     A generic model class that mimics the behavior of
