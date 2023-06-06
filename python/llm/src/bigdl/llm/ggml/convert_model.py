@@ -13,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
+import time
+from pathlib import Path
 
 from bigdl.llm.ggml.convert import _convert_to_ggml
 from bigdl.llm.ggml.quantize import quantize
-from pathlib import Path
-import time
 
 
 def convert_model(input_path: str,
                   output_path: str,
                   model_family: str,
-                  dtype: str = 'int4'):
+                  dtype: str = 'int4',
+                  tmp_path: str = '/tmp'):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
 
@@ -36,6 +38,7 @@ def convert_model(input_path: str,
             Now only `llama`/`bloom`/`gptneox` are supported.
     :param dtype: Which quantized precision will be converted.
             Now only int4 supported.
+    :param tmp_path: Which path to store the intermediate model during the conversion process.
     """
 
     dtype = dtype.lower()
@@ -43,7 +46,7 @@ def convert_model(input_path: str,
         dtype = 'q4_0'
 
     model_name = Path(input_path).stem
-    tmp_ggml_file_path = f'/tmp/{model_name}_{int(time.time())}'
+    tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
     _convert_to_ggml(model_path=input_path,
                      outfile_dir=tmp_ggml_file_path,
                      model_family=model_family,
