@@ -55,6 +55,7 @@ import multiprocessing
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.model.generation import GenerationMixin
 from . import llama_cpp
 from .llama_types import *
 
@@ -119,7 +120,7 @@ class LlamaState:
         self.llama_state_size = llama_state_size
 
 
-class Llama:
+class Llama(GenerationMixin):
     """High-level Python wrapper for a llama.cpp model."""
 
     def __init__(
@@ -515,7 +516,7 @@ class Llama:
             penalize_nl=penalize_nl,
         )
 
-    def generate(
+    def _generate(
         self,
         tokens: Sequence[int],
         top_k: int = 40,
@@ -730,7 +731,7 @@ class Llama:
 
         finish_reason = "length"
         multibyte_fix = 0
-        for token in self.generate(
+        for token in self._generate(
             prompt_tokens,
             top_k=top_k,
             top_p=top_p,
