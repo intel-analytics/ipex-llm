@@ -17,6 +17,6 @@ sc = PPMLContext("MyApp", ppml_args, conf)
 from bigdl.ppml.ppml_context import *
 
 # read an encrypted csv file and return a DataFrame
-df1 = sc.read(CryptoMode.PLAIN_TEXT).option("header", "false").csv(plain_csv_path)
+df1 = sc.read(CryptoMode.PLAIN_TEXT).option("header", "false").csv(encrypt_csv_path)
 # write a DataFrame as a plain csv file
 sc.write(df1, CryptoMode.AES_CBC_PKCS5PADDING).mode('overwrite').option("false", True).csv(plain_output_path)

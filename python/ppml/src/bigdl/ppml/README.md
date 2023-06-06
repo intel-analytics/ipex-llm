@@ -2,6 +2,38 @@
 
 This is a tutorial about how to use `PPMLContext` in python to read/write files in multiple formats(csv, parquet, json etc.). `PPMLContext` provide the ability to save DataFrame as encrypted files and read encrypted files as a plain DataFrame or RDD.
 
+### 0.How to submit PPMLContext task
+The step 0 is tested based on intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT,
+which needs to be configured according to the specific environment if using gramine or other image.
+1. set python home
+```
+export PYTHONHOME=/opt/python-occlum
+```
+2. set BigDL python lib
+```
+export PYTHONPATH=/opt/bigdl-2.4.0-SNAPSHOT/python-lib/
+```
+3. update *.py config. For example, encrypt.py
+```
+ppml_args = {"kms_type": "SimpleKeyManagementService",
+             "app_id": "123456654321",
+             "api_key": "123456654321",
+             "primary_key_material": "/opt/occlum_spark/data/key/simple_encrypted_primary_key",
+             }
+```
+4. submit your task with spark jars and bigdl jars.
+```
+/usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -Djdk.lang.Process.launchMechanism=vfork \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$BIGDL_HOME/jars/*" \
+                -Xmx512m org.apache.spark.deploy.SparkSubmit \
+                /encrypt_csv_util.py /opt/occlum_spark/data/people.csv /opt/occlum_spark/data/people-encrypt/
+```
+
 ### 1.Create a PPMLContext
 
 `PPMLContext` who wraps a `SparkSession` and provides read functions to read encrypted data files to plain-text RDD or DataFrame, also provides write functions to save DataFrame to encrypted data files. 

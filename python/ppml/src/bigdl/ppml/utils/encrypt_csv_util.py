@@ -19,4 +19,4 @@ from bigdl.ppml.ppml_context import *
 # read a plain csv file and return a DataFrame
 df1 = sc.read(CryptoMode.PLAIN_TEXT).option("header", "false").csv(plain_csv_path)
 # write a DataFrame as an encrypted csv file
-sc.write(df1, CryptoMode.AES_CBC_PKCS5PADDING).mode('overwrite').option("false", True).csv(encrypt_output_path)
+sc.write(df1, CryptoMode.AES_CBC_PKCS5PADDING).mode('overwrite').option("header", "false").csv(encrypt_output_path)
