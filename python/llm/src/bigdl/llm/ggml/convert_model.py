@@ -16,24 +16,22 @@
 import os
 import time
 from pathlib import Path
-
 from bigdl.llm.ggml.convert import _convert_to_ggml
 from bigdl.llm.ggml.quantize import quantize
+import tempfile
 
 
 def convert_model(input_path: str,
-                  output_path: str,
+                  output_dir: str,
                   model_family: str,
                   dtype: str = 'int4',
-                  tmp_path: str = '/tmp'):
+                  tmp_path: str = None):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
 
     :param input_path: str, path of model, for example `./llama-7b-hf`.
-    :param output_path: Save path of output quantized model. Default to `None`.
-            If you don't specify this parameter, quantized model will be saved in
-            the same directory as the input and just replace precision with quantize_type
-            like `./ggml-model-q4_0.bin`.
+    :param output_dir: Save path of output quantized model. You must pass a directory to
+            save all related output.
     :param model_family: Which model family your input model belongs to.
             Now only `llama`/`bloom`/`gptneox` are supported.
     :param dtype: Which quantized precision will be converted.
@@ -47,16 +45,28 @@ def convert_model(input_path: str,
     if dtype == 'int4':
         dtype = 'q4_0'
 
-    model_name = Path(input_path).stem
-    tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
-    _convert_to_ggml(model_path=input_path,
-                     outfile_dir=tmp_ggml_file_path,
-                     model_family=model_family,
-                     outtype="fp16")
-
-    tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
-
-    return quantize(input_path=tmp_ggml_file_path,
-                    output_path=output_path,
-                    model_family=model_family,
-                    dtype=dtype)
+    # make sure directory exists
+    os.makedirs(output_dir, exist_ok=True)
+    if tmp_path is not None:
+        model_name = Path(input_path).stem
+        tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
+        _convert_to_ggml(model_path=input_path,
+                         outfile_dir=tmp_ggml_file_path,
+                         model_family=model_family,
+                         outtype="fp16")
+        tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
+        return quantize(input_path=tmp_ggml_file_path,
+                        output_dir=output_dir,
+                        model_family=model_family,
+                        dtype=dtype)
+    else:
+        with tempfile.TemporaryDirectory() as tmp_ggml_file_path:
+            _convert_to_ggml(model_path=input_path,
+                             outfile_dir=tmp_ggml_file_path,
+                             model_family=model_family,
+                             outtype="fp16")
+            tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
+            return quantize(input_path=tmp_ggml_file_path,
+                            output_dir=output_dir,
+                            model_family=model_family,
+                            dtype=dtype)
