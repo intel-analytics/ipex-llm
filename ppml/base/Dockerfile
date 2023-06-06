@@ -46,14 +46,14 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
-    apt-get install -y python3-pip python3.9-dev python3-wheel && \
+    apt-get install -y python3.9-distutils python3-pip python3.9-dev python3-wheel && \
     pip3 install --upgrade pip && \
-    pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
+    pip3 install --no-cache requests argparse cryptography==41.0.0 urllib3 && \
     pip3 install --upgrade requests && \
     pip3 install setuptools==58.4.0 && \
 # Gramine
     apt-get update --fix-missing && \
-    env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
+    env DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
     pip install --no-cache-dir meson==0.63.2 cmake==3.24.1.1 toml==0.10.2 pyelftools cffi dill==0.3.4 psutil && \
 # Create a link to cmake, upgrade cmake version so that it is compatible with latest meson build (require version >= 3.17)
     ln -s /usr/local/bin/cmake /usr/bin/cmake && \
