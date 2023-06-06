@@ -43,21 +43,22 @@ _quantize_type = {"llama": _llama_quantize_type,
 
 
 def quantize(input_path: str, output_dir: str,
-             model_family: str = 'llama', dtype: str='q4_0'):
+             model_family: str, dtype: str='q4_0'):
     """
     Quantize ggml file to lower precision.
 
     :param input_path: Path of input ggml file, for example `./ggml-model-f16.bin`.
     :param output_dir: Save path of output quantized model. You must pass a directory to
-            save all related output. A default output will be `output_dir/bigdl_llm_q4_0.bin`.
-    :param model_family: Which model family your input model belongs to. Default to `llama`.
+            save all related output. Filename of quantized model will be like
+            `bigdl_llm_llama_q4_0.bin`.
+    :param model_family: Which model family your input model belongs to.
             Now only `llama`/`bloom`/`gptneox` are supported.
     :param dtype: Quantization method which differs in the resulting model disk size and
-            inference speed. Defalut to `q4_0`. Difference model family may support different types,
-            now the supported list is:
+            inference speed. Defalut to `q4_0`. Difference model family may support
+            different types, now the supported list is:
             llama : "q4_0", "q4_1", "q4_2"
             bloom : "q4_0", "q4_1"
-            gptneox : "q4_0", "q4_1", "q4_2", "q5_0", "q5_1", "q8_0"
+            gptneox : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
 
     :return: the path str to the converted ggml binary checkpoint
     """
@@ -71,7 +72,8 @@ def quantize(input_path: str, output_dir: str,
                       "The output_dir {} was not a directory".format(output_dir))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
-    output_filename = "bigdl_llm_{}.bin".format(dtype.lower())
+    output_filename = "bigdl_llm_{}_{}.bin".format(model_family,
+                                                   dtype.lower())
     output_path = os.path.join(output_dir, output_filename)
     invalidInputError(dtype.lower() in quantize_type_map, "{0} model just accept {1} now, \
                       but you pass in {2}.".format(
@@ -93,4 +95,4 @@ def quantize(input_path: str, output_dir: str,
     p.communicate()
     invalidInputError(not p.returncode,
                       "Fail to quantize {}.".format(str(input_path)))
-    return output_path
+    return str(output_path)
