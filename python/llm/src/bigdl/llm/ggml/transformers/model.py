@@ -78,9 +78,11 @@ class AutoModelForCausalLM:
                 # if downloading fails, it could be the case that repo id is invalid,
                 # or the user pass in the wrong path for checkpoint
                 invalidInputError(False,
+                                  "Downloadng from huggingface repo id {} failed. "
                                   "Please input valid huggingface hub repo id, "
                                   "or provide the valid path to huggingface / "
-                                  "ggml binary checkpoint, for pretrained_model_name_or_path")
+                                  "ggml binary checkpoint, for pretrained_model_name_or_path"
+                                  .format(pretrained_model_name_or_path))
 
         ggml_model_path = pretrained_model_name_or_path
         # check whether pretrained_model_name_or_path is a file.
