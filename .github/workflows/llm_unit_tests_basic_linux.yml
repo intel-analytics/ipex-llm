@@ -42,7 +42,7 @@ jobs:
       - name: Run LLM-init test
         shell: bash
         run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source $CONDA_HOME/bin/activate bigdl-init-llm
           $CONDA_HOME/bin/conda info
@@ -56,7 +56,7 @@ jobs:
       - name: Run LLM naive installation test
         shell: bash
         run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source $CONDA_HOME/bin/activate bigdl-init-llm
           $CONDA_HOME/bin/conda info
