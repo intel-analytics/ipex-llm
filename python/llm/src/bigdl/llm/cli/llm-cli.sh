@@ -20,19 +20,19 @@ function display_help {
 function llama {
   command="$lib_dir/main-llama ${filteredArguments[*]}"
   echo "$command"
-  $command
+  eval "$command"
 }
 
 function bloom {
   command="$lib_dir/main-bloom ${filteredArguments[*]}"
   echo "$command"
-  $command
+  eval "$command"
 }
 
 function gptneox {
   command="$lib_dir/main-gptneox ${filteredArguments[*]}"
   echo "$command"
-  $command
+  eval "$command"
 }
 # Remove model_family/x parameter
 filteredArguments=()
