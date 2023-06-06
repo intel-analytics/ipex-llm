@@ -60,6 +60,8 @@ def quantize(input_path: str, output_path: str=None,
             llama : "q4_0", "q4_1", "q4_2"
             bloom : "q4_0", "q4_1"
             gptneox : "q4_0", "q4_1", "q4_2", "q5_0", "q5_1", "q8_0"
+
+    :return: the path str to the converted ggml binary checkpoint
     """
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
                       "Now we only support quantization of model \
@@ -92,4 +94,4 @@ def quantize(input_path: str, output_path: str=None,
     p.communicate()
     invalidInputError(not p.returncode,
                       "Fail to quantize {}.".format(str(input_path)))
-    return output_path
+    return str(output_path)

@@ -39,6 +39,8 @@ def convert_model(input_path: str,
     :param dtype: Which quantized precision will be converted.
             Now only int4 supported.
     :param tmp_path: Which path to store the intermediate model during the conversion process.
+
+    :return: the path str to the converted lower precision checkpoint
     """
 
     dtype = dtype.lower()
