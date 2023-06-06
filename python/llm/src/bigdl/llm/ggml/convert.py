@@ -77,7 +77,8 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to ggml format.
 
-    :param model_path: str, path of model, for example `./llama-7b-hf`.
+    :param input_path: A path to a *directory* containing model weights saved using
+           `PreTrainedModel.save_pretrained` in transformers, for example `./llama-7b-hf`.
     :param outfile_dir: str, the directory to save ggml compatible file, for example `./models`.
     :param model_family: Which model family your input model belongs to. Default to `llama`.
             Now only `llama`/`bloom`/`gptneox` are supported.

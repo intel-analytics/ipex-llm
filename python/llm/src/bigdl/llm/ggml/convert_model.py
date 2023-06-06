@@ -18,6 +18,7 @@ import time
 from pathlib import Path
 from bigdl.llm.ggml.convert import _convert_to_ggml
 from bigdl.llm.ggml.quantize import quantize
+from bigdl.llm.utils.common import invalidInputError
 import tempfile
 
 
@@ -29,8 +30,9 @@ def convert_model(input_path: str,
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
 
-    :param input_path: str, path of model, for example `./llama-7b-hf`.
-    :param output_dir: Save path of output quantized model. You must pass a directory to
+    :param input_path: A path to a *directory* containing model weights saved using
+            `PreTrainedModel.save_pretrained` in transformers, for example `./llama-7b-hf`.
+    :param output_dir: Save path of output quantized model. You must pass a *directory* to
             save all related output.
     :param model_family: Which model family your input model belongs to.
             Now only `llama`/`bloom`/`gptneox` are supported.
@@ -39,10 +41,24 @@ def convert_model(input_path: str,
     :param tmp_path: Which path to store the intermediate model during the conversion process.
             Default to `None` so that intermediate model will not be saved.
 
-    :return: the path str to the converted lower precision checkpoint
+    :return: the path string to the converted lower precision checkpoint.
     """
 
     dtype = dtype.lower()
+    # check input value
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
+                      "Now we only support quantization of model \
+                       family('llama', 'bloom', 'gptneox')",
+                      "{} is not in the list.".format(model_family))
+    invalidInputError(os.path.isdir(output_dir),
+                      "The output_dir {} was not a directory".format(output_dir))
+    # check for input_path
+    invalidInputError(os.path.exists(input_path),
+                      "The input path {} was not found".format(model_path))
+    invalidInputError(os.path.isdir(input_path),
+                      "The input path {} was not a directory".format(model_path))
+    # shall we support model_id or just model directory?
+
     if dtype == 'int4':
         dtype = 'q4_0'
 
