@@ -68,8 +68,8 @@ def _convert_gptneox(model_path, outfile_dir, outtype):
     _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype)
 
 
-def _convert_bloomz(model_path, outfile_dir, outtype):
-    _convert_bloomz_hf_to_ggml(model_path, outfile_dir, outtype)
+def _convert_bloom(model_path, outfile_dir, outtype):
+    _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype)
 
 
 def _convert_to_ggml(model_path: str, outfile_dir: str,
@@ -80,12 +80,12 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     :param model_path: str, path of model, for example `./llama-7b-hf`.
     :param outfile_dir: str, the directory to save ggml compatible file, for example `./models`.
     :param model_family: Which model family your input model belongs to. Default to `llama`.
-            Now only `llama`/`bloomz`/`gptneox` are supported.
+            Now only `llama`/`bloom`/`gptneox` are supported.
     :param outtype: specify the output format. Defalut to `fp16`. Now `fp32`/`fp16` are supported.
     """
-    invalidInputError(model_family in ['llama', 'bloomz', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloomz', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.exists(model_path),
                       "The file {} was not found".format(model_path))
@@ -101,5 +101,5 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
         _convert_llama(model_path, outfile_dir, outtype)
     if model_family == 'gptneox':
         _convert_gptneox(model_path, outfile_dir, outtype)
-    if model_family == 'bloomz':
-        _convert_bloomz(model_path, outfile_dir, outtype)
+    if model_family == 'bloom':
+        _convert_bloom(model_path, outfile_dir, outtype)
