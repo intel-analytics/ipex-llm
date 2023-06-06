@@ -97,6 +97,7 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
     os.makedirs(outfile_dir, exist_ok=True)
 
     outtype = outtype.replace('p', '')
+    print("It may takes several minutes to load the original model, please wait...")
     if model_family == 'llama':
         _convert_llama(model_path, outfile_dir, outtype)
     if model_family == 'gptneox':
