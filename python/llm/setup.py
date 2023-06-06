@@ -130,9 +130,8 @@ def setup_package():
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
     
-    install_requires=[]
-    if "--all" in sys.argv:
-        install_requires += CONVERT_DEP
+    all_requires = []
+    all_requires += CONVERT_DEP
 
     metadata = dict(
         name='bigdl-llm',
@@ -148,7 +147,7 @@ def setup_package():
         package_dir={"": "src"},
         package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
-        install_requires=install_requires,
+        extras_require={"all": all_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
