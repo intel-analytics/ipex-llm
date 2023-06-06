@@ -142,7 +142,7 @@ object CryptoCodec {
       decompressed.length
     }
 
-    override def resetState():Unit = {
+    override def resetState(): Unit = {
       bigdlEncrypt.reset
       headerVerified = false
     }
