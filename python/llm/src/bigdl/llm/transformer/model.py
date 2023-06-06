@@ -61,8 +61,8 @@ class AutoModelForCausalLM:
         :return: a model instance
         """
         invalidInputError(model_family in ['llama', 'gptneox', 'bloom'],
-                          "Now we only support model family: 'llama', 'gptneox', 'bloom'" \
-                          "{} is not in the list.".format(model_family))
+                          "Now we only support model family: 'llama', 'gptneox', 'bloom', " \
+                          "'{}' is not in the list.".format(model_family))
         invalidInputError(dtype == 'int4',
                           "Now we only support int4 as date type for weight")
         invalidInputError(os.path.exists(pretrained_model_name_or_path),
