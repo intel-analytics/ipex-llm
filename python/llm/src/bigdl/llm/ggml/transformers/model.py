@@ -24,10 +24,6 @@ import traceback
 from huggingface_hub import snapshot_download
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml import convert_model
-from bigdl.llm.ggml.model.llama import Llama
-from bigdl.llm.ggml.model.gptneox import Gptneox
-from bigdl.llm.ggml.model.bloom import Bloom
-
 
 class AutoModelForCausalLM:
     """
@@ -51,13 +47,13 @@ class AutoModelForCausalLM:
                   For lora fine tuned model, the path should be pointed to a merged weight.
                2. path for converted ggml binary checkpoint. The checkpoint should be converted by
                   ``bigdl.llm.ggml.convert_model``.
-               3. a str for huggingface hub repo name.
+               3. a str for huggingface hub repo id.
 
         :param model_family: the model family of the pretrained checkpoint.
                Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``.
         :param dtype: (optional) the data type for weight. Currently we only support ``"int4"``
         :param cache_dir: (optional) this parameter will only be used when
-               ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo name.
+               ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo id.
                It indicates the saving path for the converted low precision model.
         :param **kwargs: keyword arguments which will be passed to the model instance
 
@@ -69,6 +65,8 @@ class AutoModelForCausalLM:
         invalidInputError(dtype == 'int4',
                           "Now we only support 'int4' as date type for weight")
 
+        # check whether pretrained_model_name_or_path exists.
+        # if not, it is likely that the user wants to pass in the repo id.
         if not os.path.exists(pretrained_model_name_or_path):
             try:
                 # download from huggingface based on repo id
@@ -76,12 +74,17 @@ class AutoModelForCausalLM:
                     repo_id=pretrained_model_name_or_path)
             except Exception as e:
                 traceback.print_exc()
+                # if downloading fails, it could be the case that repo id is invalid,
+                # or the user pass in the wrong path for checkpoint
                 invalidInputError(False,
                                   "Please input valid huggingface hub repo id, "
                                   "or provide the valid path to huggingface / "
-                                  "ggml binary checkpoint for pretrained_model_name_or_path")
+                                  "ggml binary checkpoint, for pretrained_model_name_or_path")
 
         ggml_model_path = pretrained_model_name_or_path
+        # check whether pretrained_model_name_or_path is a file.
+        # if not, it is likely that pretrained_model_name_or_path
+        # points to a huggingface checkpoint
         if not os.path.isfile(pretrained_model_name_or_path):
             # huggingface checkpoint
             ggml_model_path = convert_model(input_path=pretrained_model_name_or_path,
@@ -90,8 +93,11 @@ class AutoModelForCausalLM:
                                             dtype=dtype)
 
         if model_family == 'llama':
+            from bigdl.llm.ggml.model.llama import Llama
             return Llama(model_path=ggml_model_path, **kwargs)
         elif model_family == 'gptneox':
+            from bigdl.llm.ggml.model.gptneox import Gptneox
             return Gptneox(model_path=ggml_model_path, **kwargs)
         elif model_family == 'bloom':
+            from bigdl.llm.ggml.model.bloom import Bloom
             return Bloom(model_path=ggml_model_path, **kwargs)
