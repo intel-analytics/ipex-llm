@@ -625,6 +625,31 @@ run_spark_sql_e2e() {
                 --ehsmAPIKEY $API_KEY
 }
 
+run_pyspark_sql_e2e() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL PySpark simplequery SQL e2e${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                    -XX:-UseCompressedOops \
+                    -XX:ActiveProcessorCount=4 \
+                    -Divy.home="/tmp/.ivy" \
+                    -Dos.name="Linux" \
+                    -Djdk.lang.Process.launchMechanism=vfork \
+                    -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                    -Xmx1g org.apache.spark.deploy.SparkSubmit \
+                    --py-files /py-example/bigdl.zip \
+                    /py-examples/simple_query_example.py \
+                   --app_id 123456654321 \
+                   --api_key 123456654321 \
+                   --primary_key_material /host/data/key/simple_encrypted_primary_key \
+                   --input_path /host/data/encryptSimple \
+                   --output_path /host/data/decryptSimple \
+                   --input_encrypt_mode aes/cbc/pkcs5padding \
+                   --output_encrypt_mode plain_text \
+                   --kms_type SimpleKeyManagementService
+}
+
 run_multi_spark_sql_e2e() {
     init_instance spark
     build_spark
@@ -744,6 +769,10 @@ case "$arg" in
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    pysql_e2e)
+        run_pyspark_sql_e2e
         cd ../
         ;;
     multi_sql_e2e)
