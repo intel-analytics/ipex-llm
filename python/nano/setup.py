@@ -153,7 +153,7 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==39.0.1"]
+                               "cryptography==41.0.0"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
@@ -171,6 +171,7 @@ def setup_package():
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
+                          "scipy<=1.10.1",
                           "neural-compressor==2.0; platform_system!='Windows'",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
