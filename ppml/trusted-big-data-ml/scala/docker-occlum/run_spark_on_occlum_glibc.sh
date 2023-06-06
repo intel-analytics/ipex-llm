@@ -644,7 +644,7 @@ run_pyspark_sql_e2e() {
                    --api_key 123456654321 \
                    --primary_key_material /host/data/key/simple_encrypted_primary_key \
                    --input_path /host/data/encryptSimple \
-                   --output_path /host/data/decryptSimple \
+                   --output_path /host/data/model \
                    --input_encrypt_mode aes/cbc/pkcs5padding \
                    --output_encrypt_mode plain_text \
                    --kms_type SimpleKeyManagementService
