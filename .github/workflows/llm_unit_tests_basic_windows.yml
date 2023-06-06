@@ -52,8 +52,8 @@ jobs:
         shell: bash
         run: |
           bash python/llm/dev/release_default_windows.sh default false
-          whl_name="ls python/llm/dist"
-          pip install -i https://pypi.python.org/simple python/llm/dist/${whl_name}[all]
+          whl_name=$(ls python/llm/dist)
+          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
           pip install pytest
           bash python/llm/test/run-llm-basic-tests.sh
         env:
