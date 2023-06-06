@@ -92,3 +92,4 @@ def quantize(input_path: str, output_path: str=None,
     p.communicate()
     invalidInputError(not p.returncode,
                       "Fail to quantize {}.".format(str(input_path)))
+    return output_path

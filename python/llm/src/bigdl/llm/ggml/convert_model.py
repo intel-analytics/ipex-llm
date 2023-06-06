@@ -54,7 +54,7 @@ def convert_model(input_path: str,
 
     tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
 
-    quantize(input_path=tmp_ggml_file_path,
-             output_path=output_path,
-             model_family=model_family,
-             dtype=dtype)
+    return quantize(input_path=tmp_ggml_file_path,
+                    output_path=output_path,
+                    model_family=model_family,
+                    dtype=dtype)
