@@ -286,6 +286,18 @@ ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
 
+# Prepare Bigdl python libs
+RUN unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib
+
+RUN cd $BIGDL_HOME/python-lib/ && \
+    zip -r bigdl.zip ./bigdl && \
+    mv bigdl.zip /opt/py-examples/
+
 # replace lightgbmlib.jar
 RUN rm -rf $BIGDL_HOME/jars/lightgbmlib*
 COPY --from=bigdl /ppml/LightGBM/build/lightgbmlib.jar $BIGDL_HOME/jars/
