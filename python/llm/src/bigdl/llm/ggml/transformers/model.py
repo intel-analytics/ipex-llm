@@ -64,7 +64,7 @@ class AutoModelForCausalLM:
                           "Now we only support model family: 'llama', 'gptneox', 'bloom', "
                           "'{}' is not in the list.".format(model_family))
         invalidInputError(dtype.lower() == 'int4',
-                          "Now we only support 'int4' as date type for weight")
+                          "Now we only support int4 as date type for weight")
 
         # check whether pretrained_model_name_or_path exists.
         # if not, it is likely that the user wants to pass in the repo id.
