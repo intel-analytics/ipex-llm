@@ -114,20 +114,20 @@ class Bloom:
                 "model": self.model_path,
                 "choices": [
                     {
-                    "text": prompt,
-                    "index": 0,
-                    "logprobs": None,
-                    "finish_reason": "length",
-                }
-            ],
+                        "text": prompt,
+                        "index": 0,
+                        "logprobs": None,
+                        "finish_reason": "length",
+                    }
+                ],
                 "usage":
                 {
                     # TODO: need tokenize
                     "prompt_tokens": None,
                     "completion_tokens": None,
                     "total_tokens": None,
+                }
             }
-        }
         # use `buf` to store prompt and generated string,
         # assume the average length of words is less than 20 bytes
         buf = bytes((len(prompt) + max_tokens) * 20)
@@ -150,27 +150,26 @@ class Bloom:
             finish_reason = "stop"
         else:
             finish_reason = None
-        return {
-                "id": completion_id,
+        return {"id": completion_id,
                 "object": "text_completion",
                 "created": created,
                 "model": self.model_path,
                 "choices": [
                     {
-                    "text": prompt + split_text,
-                    "index": 0,
-                    "logprobs": None,
-                    "finish_reason": finish_reason,
-                }
-            ],
+                        "text": prompt + split_text,
+                        "index": 0,
+                        "logprobs": None,
+                        "finish_reason": finish_reason,
+                    }
+                ],
                 "usage":
                 {
                     # TODO: need tokenize
                     "prompt_tokens": None,
                     "completion_tokens": None,
                     "total_tokens": None,
-            }
-        }
+                }
+                }
 
     def stream(self, prompt: str, max_tokens: int, stop: Optional[List[str]] = []):
         completion_id: str = f"cmpl-{str(uuid.uuid4())}"
@@ -182,7 +181,7 @@ class Bloom:
                 "created": created,
                 "model": self.model_path,
                 "choices": [
-                        {
+                    {
                         "text": prompt,
                         "index": 0,
                         "logprobs": None,
