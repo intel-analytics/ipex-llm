@@ -86,12 +86,12 @@ class PPMLContextPython[T]() {
     if (fieldlist == null) {
       throw new IllegalArgumentException("schema cann't be null")
     }
-    for (map1 <- fieldlist) {
-      val map = map1.asInstanceOf[util.HashMap[String, Object]]
-      val test = map.get("dataType").asInstanceOf[util.HashMap[String, Object]]
-      val structType = test.get("__class__").toString
-      val fieldName = map.get("name").toString
-      val nullable = map.get("nullable").toString.toLowerCase().equals("true")
+    for ( map <- fieldlist) {
+      val fieldmap = map.asInstanceOf[util.HashMap[String, Object]]
+      val dataTypemap = fieldmap.get("dataType").asInstanceOf[util.HashMap[String, Object]]
+      val structType = dataTypemap.get("__class__").toString
+      val fieldName = fieldmap.get("name").toString
+      val nullable = fieldmap.get("nullable").toString.toLowerCase().equals("true")
       val fieldType = structType match {
         case "pyspark.sql.types.ByteType" => ByteType
         case "pyspark.sql.types.ShortType" => ShortType
