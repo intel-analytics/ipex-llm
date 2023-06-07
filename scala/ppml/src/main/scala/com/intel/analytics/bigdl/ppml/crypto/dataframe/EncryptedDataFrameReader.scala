@@ -51,11 +51,6 @@ class EncryptedDataFrameReader(
     this
   }
 
-  def sql(sqlText: String): this.type = {
-    session.sql(sqlText)
-    this
-  }
-
   def setCryptoCodecContext(path: String): Unit = {
     encryptMode match {
       case PLAIN_TEXT =>
