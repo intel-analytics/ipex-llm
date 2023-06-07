@@ -225,7 +225,7 @@ class Gptneox:
         if self.verbose:
             print(gptneox_cpp.gptneox_print_system_info().decode("utf-8"), file=sys.stderr)
 
-    def tokenize(
+    def _tokenize(
         self, text: bytes, add_bos: bool = True
     ) -> List[gptneox_cpp.gptneox_token]:
         """Tokenize a string.
