@@ -5,6 +5,7 @@ This is a tutorial about how to use `PPMLContext` in python to read/write files 
 ### 0.How to submit PPMLContext task
 The step 0 is tested based on intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.4.0-SNAPSHOT,
 which needs to be configured according to the specific environment if using gramine or other image.
+You can refer to [this example](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#bigdl-simplequery-e2e-example) for more detail.
 1. set python home
 ```
 export PYTHONHOME=/opt/python-occlum
@@ -13,7 +14,7 @@ export PYTHONHOME=/opt/python-occlum
 ```
 export PYTHONPATH=/opt/bigdl-2.4.0-SNAPSHOT/python-lib/
 ```
-3. update *.py config. For example, encrypt.py
+3. update *.py config. For example, encrypt_csv_util.py
 ```
 ppml_args = {"kms_type": "SimpleKeyManagementService",
              "app_id": "123456654321",

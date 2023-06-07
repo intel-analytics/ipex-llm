@@ -638,7 +638,7 @@ run_pyspark_sql_e2e() {
                     -Djdk.lang.Process.launchMechanism=vfork \
                     -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
                     -Xmx1g org.apache.spark.deploy.SparkSubmit \
-                    --py-files /py-example/bigdl.zip \
+                    --py-files /py-examples/bigdl.zip \
                     /py-examples/simple_query_example.py \
                    --app_id 123456654321 \
                    --api_key 123456654321 \
