@@ -64,6 +64,18 @@ class BigdlLLM(LLM):
             llm = BigdlLLM(model_path="/path/to/llama/model")
     """
 
+    
+    model_family: str = "llama"
+    """the model family: currently supports llama, gptneox, and bloom."""
+    
+    
+    family_info = {
+            'llama': {'module': "bigdl.llm.models.llama" , 'class': "Llama"},
+            'bloom': {'module': "bigdl.llm.models.bloom", 'class': "Bloom"},
+            'gptneox': {'module': "bigdl.llm.models.gptneox", 'class': "Gptneox"},
+        } #: :meta private:
+    """info necessary for different model families initiation and configure"""
+    
     client: Any  #: :meta private:
     model_path: str
     """The path to the Llama model file."""
@@ -145,7 +157,8 @@ class BigdlLLM(LLM):
 
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that llama-cpp-python library is installed."""
+        """Validate that bigdl-llm is installed, family is supported"""  
+          
         model_path = values["model_path"]
         model_param_names = [
             "lora_path",
@@ -167,10 +180,21 @@ class BigdlLLM(LLM):
         if values["n_gpu_layers"] is not None:
             model_params["n_gpu_layers"] = values["n_gpu_layers"]
 
-        try:
-            from bigdl.llm.ggml.model.llama import Llama
 
-            values["client"] = Llama(model_path, **model_params)
+        model_family = values["model_family"].lower()
+        if model_family not in list(values["family_info"].keys()):
+            raise ValueError("Model family \"%s\" is not supported. Valid" \
+                " values are %s"%(values["model_family"],
+                ','.join(list(values["family_info"].keys()))))
+                
+        try:
+            
+            b_info = values["family_info"][model_family]
+            module = importlib.import_module(b_info['module'])
+            class_ = getattr(module, b_info['class'])
+            
+            values["client"] = class_(model_path, **model_params)
+ 
         except ImportError:
             raise ModuleNotFoundError(
                 "Could not import llama-cpp-python library. "
@@ -179,7 +203,9 @@ class BigdlLLM(LLM):
             )
         except Exception as e:
             raise ValueError(
-                f"Could not load Llama model from path: {model_path}. "
+                f"Could not load model from path: {model_path}. "
+                f"Please make sure the model family {model_family} matches "
+                "the model you want to load."
                 f"Received error {e}"
             )
 
@@ -203,7 +229,8 @@ class BigdlLLM(LLM):
     @property
     def _identifying_params(self) -> Dict[str, Any]:
         """Get the identifying parameters."""
-        return {**{"model_path": self.model_path}, 
+        return {**{"model_path": self.model_path,
+                   "model_family": self.model_family}, 
                 **self._default_params}
 
     @property
