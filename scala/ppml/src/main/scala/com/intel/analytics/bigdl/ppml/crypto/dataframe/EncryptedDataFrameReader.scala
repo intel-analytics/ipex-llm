@@ -38,7 +38,7 @@ class EncryptedDataFrameReader(
       primaryKeyName: String,
       keyLoaderManagement: KeyLoaderManagement) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
-  protected var dataFrameReader = sparkSession.read
+  protected val session = sparkSession
 
   def option(key: String, value: String): this.type = {
     this.extraOptions += (key -> value)
@@ -46,7 +46,12 @@ class EncryptedDataFrameReader(
   }
 
   def schema(schema: StructType): this.type = {
-    this.dataFrameReader = dataFrameReader.schema(schema)
+    this.session.read.schema(schema)
+    this
+  }
+
+  def sql(sqlText: String): this.type = {
+    session.sql(sqlText)
     this
   }
 
@@ -63,12 +68,12 @@ class EncryptedDataFrameReader(
 
   def csv(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    dataFrameReader.options(extraOptions).csv(path)
+    this.session.read.options(extraOptions).csv(path)
   }
 
   def json(path: String): DataFrame = {
     setCryptoCodecContext(path)
-    dataFrameReader.options(extraOptions).json(path)
+    this.session.read.options(extraOptions).json(path)
   }
 
   def parquet(path: String): DataFrame = {
@@ -77,7 +82,7 @@ class EncryptedDataFrameReader(
                                                 .retrieveDataKeyPlainText(path)
       EncryptedDataFrameReader.setParquetKey(sparkSession, dataKeyPlainText)
     }
-    dataFrameReader.parquet(path)
+    this.session.read.parquet(path)
   }
 }
 
