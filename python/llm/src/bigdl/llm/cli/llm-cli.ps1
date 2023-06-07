@@ -1,5 +1,5 @@
-$script_dir = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
-$lib_dir = Join-Path -Path $script_dir -ChildPath "libs"
+$llm_dir = (Split-Path -Parent (python -c "import bigdl.llm;print(bigdl.llm.__file__)"))
+$lib_dir = Join-Path $llm_dir "libs"
 
 # Function to display help message
 function Display-Help {
@@ -40,7 +40,7 @@ for ($i = 0; $i -lt $args.Length; $i++) {
         }
     }
     else {
-        $filteredArguments += $args[$i]
+        $filteredArguments += "`'"+$args[$i]+"`'"
     }
 }
 

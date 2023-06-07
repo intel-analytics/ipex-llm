@@ -8,10 +8,7 @@ and generates results based on the provided prompt.
 ### Usage
 
 ```bash
-# windows
-llm-cli.ps1 -x <llama/gptneox/bloom> [-h] [args]
-# linux
-llm-cli.sh -x <llama/gptneox/bloom> [-h] [args]
+llm-cli -x <llama/gptneox/bloom> [-h] [args]
 ```
 
 `args` are the arguments provided to the specified model program. You can use `-x MODEL_FAMILY -h`
@@ -37,13 +34,13 @@ Here are some examples of how to use the llm-cli tool:
 #### Completion:
 
 ```bash
-llm-cli.sh -x llama -m ./llm-llama-model.bin -p 'Once upon a time,'
+llm-cli.sh -t 16 -x llama -m ./llm-llama-model.bin -p 'Once upon a time,'
 ```
 
 #### Chatting:
 
 ```bash
-llm-cli.sh -x llama -m ./llm-llama-model.bin -i --color
+llm-cli.sh -t 16 -x llama -m ./llm-llama-model.bin -i --color
 ```
 
 Feel free to explore different options and experiment with the llama/gptneox/bloom models using
