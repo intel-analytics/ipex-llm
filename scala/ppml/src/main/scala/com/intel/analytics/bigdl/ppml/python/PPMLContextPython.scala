@@ -26,8 +26,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 
 import java.util
-import java.util.{List => JList}
-import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 
 
@@ -83,11 +82,11 @@ class PPMLContextPython[T]() {
     val hashMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
     val reslist = new util.LinkedList[StructField]()
     // get fields list
-    val fieldlist = hashMap.get("fields").asInstanceOf[JList[_]]
+    val fieldlist = hashMap.get("fields").asInstanceOf[java.util.List[_]]
     if (fieldlist == null) {
       throw new IllegalArgumentException("schema cann't be null")
     }
-    for (map1 <- fieldlist.asScala.toArray) {
+    for (map1 <- fieldlist) {
       val map = map1.asInstanceOf[util.HashMap[String, Object]]
       val test = map.get("dataType").asInstanceOf[util.HashMap[String, Object]]
       val structType = test.get("__class__").toString
