@@ -104,7 +104,8 @@ def main():
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
-                        help="Which path to store the intermediate model during the conversion process.")
+                        help="Which path to store the intermediate model during the"
+                        "conversion process.")
     args = parser.parse_args()
     params = vars(args)
     convert_model(**params)
