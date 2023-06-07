@@ -42,13 +42,13 @@ _quantize_type = {"llama": _llama_quantize_type,
                   "gptneox": _gptneox_quantize_type}
 
 
-def quantize(input_path: str, output_dir: str,
+def quantize(input_path: str, output_path: str,
              model_family: str, dtype: str='q4_0'):
     """
     Quantize ggml file to lower precision.
 
     :param input_path: Path of input ggml file, for example `./ggml-model-f16.bin`.
-    :param output_dir: Save path of output quantized model. You must pass a directory to
+    :param output_path: Save path of output quantized model. You must pass a directory to
             save all related output. Filename of quantized model will be like
             `bigdl_llm_llama_q4_0.bin`.
     :param model_family: Which model family your input model belongs to.
@@ -68,13 +68,13 @@ def quantize(input_path: str, output_dir: str,
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
                       "The file {} was not found".format(input_path))
-    invalidInputError(os.path.isdir(output_dir),
-                      "The output_dir {} was not a directory".format(output_dir))
+    invalidInputError(os.path.isdir(output_path),
+                      "The output_path {} was not a directory".format(output_path))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
     output_filename = "bigdl_llm_{}_{}.bin".format(model_family,
                                                    dtype.lower())
-    output_path = os.path.join(output_dir, output_filename)
+    output_path = os.path.join(output_path, output_filename)
     invalidInputError(dtype.lower() in quantize_type_map, "{0} model just accept {1} now, \
                       but you pass in {2}.".format(
                       model_family,

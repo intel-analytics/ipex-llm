@@ -24,7 +24,7 @@ import tempfile
 
 
 def convert_model(input_path: str,
-                  output_dir: str,
+                  output_path: str,
                   model_family: str,
                   dtype: str = 'int4',
                   tmp_path: str = None):
@@ -36,7 +36,7 @@ def convert_model(input_path: str,
             path that contains: weight bin, tokenizer config, tokenizer.model (required for
             llama) and added_tokens.json (if applied).
             For lora finetuned model, the path should be pointed to a merged weight.
-    :param output_dir: Save path of output quantized model. You must pass a *directory* to
+    :param output_path: Save path of output quantized model. You must pass a *directory* to
             save all related output.
     :param model_family: Which model family your input model belongs to.
             Now only `llama`/`bloom`/`gptneox` are supported.
@@ -50,14 +50,14 @@ def convert_model(input_path: str,
 
     dtype = dtype.lower()
     # make sure directory exists
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_path, exist_ok=True)
     # check input value
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
                       "Now we only support quantization of model \
                        family('llama', 'bloom', 'gptneox')",
                       "{} is not in the list.".format(model_family))
-    invalidInputError(os.path.isdir(output_dir),
-                      "The output_dir {} was not a directory".format(output_dir))
+    invalidInputError(os.path.isdir(output_path),
+                      "The output_path {} was not a directory".format(output_path))
     invalidInputError(dtype == 'int4',
                       "Now only int4 is supported.")
     # check for input_path
@@ -79,7 +79,7 @@ def convert_model(input_path: str,
                          outtype="fp16")
         tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
         return quantize(input_path=tmp_ggml_file_path,
-                        output_dir=output_dir,
+                        output_path=output_path,
                         model_family=model_family,
                         dtype=dtype)
     else:
@@ -90,7 +90,7 @@ def convert_model(input_path: str,
                              outtype="fp16")
             tmp_ggml_file_path = next(Path(tmp_ggml_file_path).iterdir())
             return quantize(input_path=tmp_ggml_file_path,
-                            output_dir=output_dir,
+                            output_path=output_path,
                             model_family=model_family,
                             dtype=dtype)
 
@@ -99,8 +99,8 @@ def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
     parser.add_argument('-i', '--input_path', type=str, required=True,
                         help=("input_path, a path to a *directory* containing model weights"))
-    parser.add_argument('-o', '--output_dir', type=str, required=True,
-                        help=("output_dir,save path of output quantized model."))
+    parser.add_argument('-o', '--output_path', type=str, required=True,
+                        help=("output_path,save path of output quantized model."))
     parser.add_argument('-x', '--model_family', type=str, required=True,
                         help=("model_family: Which model family your input model belongs to."
                               "Now only `llama`/`bloom`/`gptneox` are supported."))
