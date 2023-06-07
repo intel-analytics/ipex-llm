@@ -37,8 +37,10 @@ callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 # Make sure the model path is correct for your system!
 llm = BigdlLLM(
-    model_path="model/ggml/gpt4all-model-q4_0.bin", 
-    # model_path="models/ggml/vicuna-model-q4_0.bin",
+    # model_path="model/ggml/gpt4all-model-q4_0.bin", 
+    model_path="model/ggml/vicuna-model-q4_0.bin",
+    # model_path="model/ggml/nano-gptneox-7b-redpajama-q4_0.bin",
+    # model_family="gptneox",
     callback_manager=callback_manager, 
     verbose=True
 )

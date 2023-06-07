@@ -32,8 +32,12 @@ from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
 
 
 INPUT_DOC="python/llm/example/langchain/bigdl.txt"
-MODEL_PATH="model/ggml/gpt4all-model-q4_0.bin"
-# MODEL_PATH="models/ggml/vicuna-model-q4_0.bin",
+# MODEL_PATH="model/ggml/gpt4all-model-q4_0.bin"
+# MODEL_PATH="model/ggml/vicuna-model-q4_0.bin"
+MODEL_PATH="model/ggml/nano-gptneox-7b-redpajama-q4_0.bin"
+# MODEL_FAMILY="llama"
+MODEL_FAMILY="gptneox"
+
 query = "What is BigDL"
 
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
@@ -45,7 +49,8 @@ text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_text(input_doc)
 
 # create embeddings and store into vectordb
-embeddings = BigdlLLMEmbeddings(model_path=MODEL_PATH,n_ctx=2048)
+
+embeddings = BigdlLLMEmbeddings(model_path=MODEL_PATH, model_family=MODEL_FAMILY, n_ctx=2048)
 docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
 #get relavant texts
@@ -53,7 +58,7 @@ docs = docsearch.get_relevant_documents(query)
 
     
 bigdl_llm = BigdlLLM(
-    model_path=MODEL_PATH, n_ctx=2048, callback_manager=callback_manager
+    model_path=MODEL_PATH, model_family=MODEL_FAMILY, n_ctx=2048, callback_manager=callback_manager
 )
 
 doc_chain = load_qa_chain(
