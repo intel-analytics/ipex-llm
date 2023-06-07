@@ -19,7 +19,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-# This file is adapted from 
+# This file is adapted from
 # https://github.com/hwchase17/langchain/blob/master/langchain/embeddings/llamacpp.py
 
 # The MIT License
@@ -62,18 +62,17 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
             from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
             llama = BigdlLLMEmbeddings(model_path="/path/to/model.bin")
     """
-    
+
     model_family: str = "llama"
     """the model family: currently supports llama, gptneox, and bloom."""
-    
-    
+
     family_info = {
             'llama': {'module': "bigdl.llm.ggml.model.llama" , 'class': "Llama"},
             'bloom': {'module': "bigdl.llm.ggml.model.bloom", 'class': "Bloom"},
             'gptneox': {'module': "bigdl.llm.ggml.model.gptneox", 'class': "Gptneox"},
         } #: :meta private:
     """info necessary for different model family initiation and configure"""
-    
+
     client: Any  #: :meta private:
     model_path: str
 
@@ -141,15 +140,15 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
             raise ValueError("Model family \"%s\" is not supported. Valid" \
                 " values are %s"%(values["model_family"],
                 ','.join(list(values["family_info"].keys()))))
-            
+
         try:
-            
+
             b_info = values["family_info"][model_family]
             module = importlib.import_module(b_info['module'])
             class_ = getattr(module, b_info['class'])
-            
+
             values["client"] = class_(model_path, embedding=True, **model_params)
-            
+
             # from bigdl.llm.ggml.model.llama import Llama
 
             # values["client"] = Llama(model_path, embedding=True, **model_params)
