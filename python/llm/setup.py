@@ -79,9 +79,12 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx2.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx512",
 ]
 
 
@@ -115,9 +118,12 @@ def setup_package():
         "libs/quantize-gptneox",
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
-        "libs/main-bloom",
-        "libs/main-gptneox",
-        "libs/main-llama",
+        "libs/main-bloom_avx2",
+        "libs/main-bloom_avx512",
+        "libs/main-gptneox_avx2",
+        "libs/main-gptneox_avx512",
+        "libs/main-llama_avx2",
+        "libs/main-llama_avx512",
     ]
 
     platform_name = None
