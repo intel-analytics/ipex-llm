@@ -31,8 +31,11 @@ def convert_model(input_path: str,
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
 
-    :param input_path: A path to a *directory* containing model weights saved using
-            `PreTrainedModel.save_pretrained` in transformers, for example `./llama-7b-hf`.
+    :param input_path: Path to a *directory*  for huggingface checkpoint that are directly
+            pulled from huggingface hub, for example `./llama-7b-hf`. This should be a dir
+            path that contains: weight bin, tokenizer config, tokenizer.model (required for
+            llama) and added_tokens.json (if applied).
+            For lora finetuned model, the path should be pointed to a merged weight.
     :param output_dir: Save path of output quantized model. You must pass a *directory* to
             save all related output.
     :param model_family: Which model family your input model belongs to.
@@ -98,7 +101,7 @@ def main():
                         help=("input_path, a path to a *directory* containing model weights"))
     parser.add_argument('-o', '--output_dir', type=str, required=True,
                         help=("output_dir,save path of output quantized model."))
-    parser.add_argument('-f', '--model_family', type=str, required=True,
+    parser.add_argument('-x', '--model_family', type=str, required=True,
                         help=("model_family: Which model family your input model belongs to."
                               "Now only `llama`/`bloom`/`gptneox` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
