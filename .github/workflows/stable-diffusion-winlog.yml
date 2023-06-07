@@ -1,0 +1,20 @@
+name: stable-diffusion-win
+on:
+  schedule:
+    - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
+#  push:
+#    branches: [ "main" ]
+  pull_request:
+    branchs: [ main ]
+  workflow_dispatch:
+
+jobs:
+  scan-virus:
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    steps:
+#    - uses: actions/checkout@v3
+    - name: "stable-diffusion-win"
+      run: |
+        wget ftp://bigdl:1234qwer@10.112.231.51:8821/stable-diffusion/ui-test-20230607.log
+        cat ui-test-20230607.log
+        rm ui-test-20230607.log
