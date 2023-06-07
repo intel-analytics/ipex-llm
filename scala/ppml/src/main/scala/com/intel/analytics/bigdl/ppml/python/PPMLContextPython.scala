@@ -85,10 +85,10 @@ class PPMLContextPython[T]() {
 
   def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
              value: ClassDict): EncryptedDataFrameReader = {
-    val hashMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
+    val classDictMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
     val resList = new util.LinkedList[StructField]()
     // get fields list
-    val fieldList = hashMap.get("fields").asInstanceOf[JList[_]]
+    val fieldList = classDictMap.get("fields").asInstanceOf[JList[_]]
     if (fieldList == null) {
       throw new IllegalArgumentException("schema cann't be null")
     }
