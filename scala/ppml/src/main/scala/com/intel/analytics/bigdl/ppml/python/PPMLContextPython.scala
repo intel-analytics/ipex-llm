@@ -67,6 +67,11 @@ class PPMLContextPython[T]() {
     sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
 
+  def sql(sc: PPMLContext, sqlText: String = "defaultKey"): DataFrame = {
+    logger.debug("running spark sql " + sqlText)
+    sc.sql(sqlText)
+  }
+
   /**
    * EncryptedDataFrameReader method
    */
@@ -80,18 +85,18 @@ class PPMLContextPython[T]() {
   def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
              value: ClassDict): EncryptedDataFrameReader = {
     val hashMap: util.HashMap[String, Object] = value.asInstanceOf[util.HashMap[String, Object]]
-    val reslist = new util.LinkedList[StructField]()
+    val resList = new util.LinkedList[StructField]()
     // get fields list
-    val fieldlist = hashMap.get("fields").asInstanceOf[java.util.List[_]]
-    if (fieldlist == null) {
+    val fieldList = hashMap.get("fields").asInstanceOf[java.util.List[_]]
+    if (fieldList == null) {
       throw new IllegalArgumentException("schema cann't be null")
     }
-    for ( map <- fieldlist) {
-      val fieldmap = map.asInstanceOf[util.HashMap[String, Object]]
-      val dataTypemap = fieldmap.get("dataType").asInstanceOf[util.HashMap[String, Object]]
-      val structType = dataTypemap.get("__class__").toString
-      val fieldName = fieldmap.get("name").toString
-      val nullable = fieldmap.get("nullable").toString.toLowerCase().equals("true")
+    for ( map <- fieldList) {
+      val fieldMap = map.asInstanceOf[util.HashMap[String, Object]]
+      val dataTypeMap = fieldMap.get("dataType").asInstanceOf[util.HashMap[String, Object]]
+      val structType = dataTypeMap.get("__class__").toString
+      val fieldName = fieldMap.get("name").toString
+      val nullable = fieldMap.get("nullable").toString.toLowerCase().equals("true")
       val fieldType = structType match {
         case "pyspark.sql.types.ByteType" => ByteType
         case "pyspark.sql.types.ShortType" => ShortType
@@ -105,9 +110,9 @@ class PPMLContextPython[T]() {
           throw new IllegalArgumentException(s"Unsupported data type for field $structType")
       }
       val structField = StructField(fieldName, fieldType, nullable = nullable)
-      reslist.add(structField)
+      resList.add(structField)
     }
-    val schema = StructType(reslist)
+    val schema = StructType(resList)
     println("Schema: " + schema)
     encryptedDataFrameReader.schema(schema)
   }
