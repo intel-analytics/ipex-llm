@@ -1,15 +1,13 @@
 name: stable-diffusion-win
 on:
-  schedule:
-    - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
-#  push:
-#    branches: [ "main" ]
   pull_request:
     branchs: [ main ]
+  schedule:
+    - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
   workflow_dispatch:
 
 jobs:
-  scan-virus:
+  stable-diffusion-win:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
 #    - uses: actions/checkout@v3
