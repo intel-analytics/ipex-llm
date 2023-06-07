@@ -42,7 +42,7 @@ class AutoModelForCausalLM:
         """
         :param pretrained_model_name_or_path: We support 3 kinds of pretrained model checkpoint
 
-               1. path for huggingface checkpoint that are directly pulled from hugginface hub.
+               1. path for huggingface checkpoint that are directly pulled from huggingface hub.
                   This should be a dir path that contains: weight bin, tokenizer config,
                   tokenizer.model (required for llama) and added_tokens.json (if applied).
                   For lora fine tuned model, the path should be pointed to a merged weight.
