@@ -77,7 +77,8 @@ class GenerationMixin:
         """Create a generator of tokens from a prompt.
 
         Examples:
-            >>> llm = AutoModelForCausalLM.from_pretrained("gpt4all-model-q4_0.bin", model_family="llama")
+            >>> llm = AutoModelForCausalLM.from_pretrained("gpt4all-model-q4_0.bin",
+                                                           model_family="llama")
             >>> tokens = llm.tokenize("Q: Tell me something about Intel. A:")
             >>> tokens_id = llm.generate(tokens, max_new_tokens=32)
             >>> llm.decode(tokens_id)
