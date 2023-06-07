@@ -19,7 +19,7 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-# This file is adapted from 
+# This file is adapted from
 # https://github.com/hwchase17/langchain/blob/master/langchain/llms/llamacpp.py
 
 # The MIT License
@@ -44,7 +44,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import logging
+import importlib
 from typing import Any, Dict, Generator, List, Optional
 
 from pydantic import Field, root_validator
@@ -64,19 +64,21 @@ class BigdlLLM(LLM):
             llm = BigdlLLM(model_path="/path/to/llama/model")
     """
 
-    
+
     model_family: str = "llama"
     """the model family: currently supports llama, gptneox, and bloom."""
-    
-    
+
+
     family_info = {
-            'llama': {'module': "bigdl.llm.models.llama" , 'class': "Llama"},
-            'bloom': {'module': "bigdl.llm.models.bloom", 'class': "Bloom"},
-            'gptneox': {'module': "bigdl.llm.models.gptneox", 'class': "Gptneox"},
-        } #: :meta private:
+        'llama': {'module': "bigdl.llm.models.llama" , 'class': "Llama"},
+        'bloom': {'module': "bigdl.llm.models.bloom", 'class': "Bloom"},
+        'gptneox': {'module': "bigdl.llm.models.gptneox", 'class': "Gptneox"},
+    }  #: :meta private:
     """info necessary for different model families initiation and configure"""
-    
+
     client: Any  #: :meta private:
+    """the actual model"""
+
     model_path: str
     """The path to the Llama model file."""
 
@@ -158,7 +160,7 @@ class BigdlLLM(LLM):
     @root_validator()
     def validate_environment(cls, values: Dict) -> Dict:
         """Validate that bigdl-llm is installed, family is supported"""  
-          
+
         model_path = values["model_path"]
         model_param_names = [
             "lora_path",
@@ -183,18 +185,18 @@ class BigdlLLM(LLM):
 
         model_family = values["model_family"].lower()
         if model_family not in list(values["family_info"].keys()):
-            raise ValueError("Model family \"%s\" is not supported. Valid" \
-                " values are %s"%(values["model_family"],
-                ','.join(list(values["family_info"].keys()))))
-                
+            raise ValueError("Model family '%s' is not supported. Valid" \
+                    " values are %s"%(values["model_family"],
+                    ','.join(list(values["family_info"].keys()))))
+
         try:
-            
+
             b_info = values["family_info"][model_family]
             module = importlib.import_module(b_info['module'])
             class_ = getattr(module, b_info['class'])
-            
+
             values["client"] = class_(model_path, **model_params)
- 
+
         except ImportError:
             raise ModuleNotFoundError(
                 "Could not import llama-cpp-python library. "

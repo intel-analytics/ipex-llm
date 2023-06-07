@@ -67,10 +67,10 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
     """the model family: currently supports llama, gptneox, and bloom."""
 
     family_info = {
-            'llama': {'module': "bigdl.llm.ggml.model.llama" , 'class': "Llama"},
-            'bloom': {'module': "bigdl.llm.ggml.model.bloom", 'class': "Bloom"},
-            'gptneox': {'module': "bigdl.llm.ggml.model.gptneox", 'class': "Gptneox"},
-        } #: :meta private:
+        'llama': {'module': "bigdl.llm.ggml.model.llama", 'class': "Llama"},
+        'bloom': {'module': "bigdl.llm.ggml.model.bloom", 'class': "Bloom"},
+        'gptneox': {'module': "bigdl.llm.ggml.model.gptneox", 'class': "Gptneox"},
+    }  #: :meta private:
     """info necessary for different model family initiation and configure"""
 
     client: Any  #: :meta private:
@@ -137,9 +137,9 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
 
         model_family = values["model_family"].lower()
         if model_family not in list(values["family_info"].keys()):
-            raise ValueError("Model family \"%s\" is not supported. Valid" \
-                " values are %s"%(values["model_family"],
-                ','.join(list(values["family_info"].keys()))))
+            raise ValueError("Model family '%s' is not supported. Valid" \
+                    " values are %s" % (values["model_family"],
+                    ','.join(list(values["family_info"].keys()))))
 
         try:
 
