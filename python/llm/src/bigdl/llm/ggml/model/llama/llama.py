@@ -250,7 +250,7 @@ class Llama(GenerationMixin):
         self._token_nl = Llama.token_nl()
         self._token_eos = Llama.token_eos()
 
-    def tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
+    def _tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
         """Tokenize a string.
 
         Args:
