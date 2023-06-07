@@ -19,6 +19,7 @@ from pathlib import Path
 from bigdl.llm.ggml.convert import _convert_to_ggml
 from bigdl.llm.ggml.quantize import quantize
 from bigdl.llm.utils.common import invalidInputError
+import argparse
 import tempfile
 
 
@@ -37,7 +38,7 @@ def convert_model(input_path: str,
     :param model_family: Which model family your input model belongs to.
             Now only `llama`/`bloom`/`gptneox` are supported.
     :param dtype: Which quantized precision will be converted.
-            Now only int4 supported.
+            Now only int4 is supported.
     :param tmp_path: Which path to store the intermediate model during the conversion process.
             Default to `None` so that intermediate model will not be saved.
 
@@ -45,6 +46,8 @@ def convert_model(input_path: str,
     """
 
     dtype = dtype.lower()
+    # make sure directory exists
+    os.makedirs(output_dir, exist_ok=True)
     # check input value
     invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
                       "Now we only support quantization of model \
@@ -52,18 +55,18 @@ def convert_model(input_path: str,
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isdir(output_dir),
                       "The output_dir {} was not a directory".format(output_dir))
+    invalidInputError(dtype == 'int4',
+                      "Now only int4 is supported.")
     # check for input_path
     invalidInputError(os.path.exists(input_path),
-                      "The input path {} was not found".format(model_path))
+                      "The input path {} was not found".format(input_path))
     invalidInputError(os.path.isdir(input_path),
-                      "The input path {} was not a directory".format(model_path))
+                      "The input path {} was not a directory".format(input_path))
     # shall we support model_id or just model directory?
 
     if dtype == 'int4':
         dtype = 'q4_0'
 
-    # make sure directory exists
-    os.makedirs(output_dir, exist_ok=True)
     if tmp_path is not None:
         model_name = Path(input_path).stem
         tmp_ggml_file_path = os.path.join(tmp_path, f'{model_name}_{int(time.time())}')
@@ -87,3 +90,21 @@ def convert_model(input_path: str,
                             output_dir=output_dir,
                             model_family=model_family,
                             dtype=dtype)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Model Convert Parameters')
+    parser.add_argument('-i', '--input_path', type=str, required=True,
+                        help=("input_path, a path to a *directory* containing model weights"))
+    parser.add_argument('-o', '--output_dir', type=str, required=True,
+                        help=("output_dir,save path of output quantized model."))
+    parser.add_argument('-f', '--model_family', type=str, required=True,
+                        help=("model_family: Which model family your input model belongs to."
+                              "Now only `llama`/`bloom`/`gptneox` are supported."))
+    parser.add_argument('-t', '--dtype', type=str, default="int4",
+                        help="Which quantized precision will be converted.")
+    parser.add_argument('-p', '--tmp_path', type=str, default=None,
+                        help="Which path to store the intermediate model during the conversion process.")
+    args = parser.parse_args()
+    params = vars(args)
+    convert_model(**params)

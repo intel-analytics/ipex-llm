@@ -151,6 +151,11 @@ def setup_package():
         package_dir={"": "src"},
         package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                'convert_model=bigdl.llm.ggml.convert_model:main'
+            ]
+        },
         extras_require={"all": all_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
