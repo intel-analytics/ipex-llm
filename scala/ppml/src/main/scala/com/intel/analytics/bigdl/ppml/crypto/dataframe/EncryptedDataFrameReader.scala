@@ -38,7 +38,6 @@ class EncryptedDataFrameReader(
       primaryKeyName: String,
       keyLoaderManagement: KeyLoaderManagement) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
-  protected val session = sparkSession
   protected var dataFrameReader = sparkSession.read
 
   def option(key: String, value: String): this.type = {
