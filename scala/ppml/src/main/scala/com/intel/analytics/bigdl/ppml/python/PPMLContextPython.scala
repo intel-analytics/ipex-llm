@@ -67,7 +67,7 @@ class PPMLContextPython[T]() {
     sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
 
-  def sql(sc: PPMLContext, sqlText: String = "defaultKey"): DataFrame = {
+  def sql(sc: PPMLContext, sqlText: String): DataFrame = {
     logger.debug("running spark sql " + sqlText)
     sc.sql(sqlText)
   }

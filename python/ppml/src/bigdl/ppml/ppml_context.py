@@ -97,6 +97,10 @@ class PPMLContext(JavaValue):
                              self.value, path, min_partitions,
                              crypto_mode, primary_key_name)
 
+    def sql(self, sqlText):
+        return callBigDlFunc(self.bigdl_type, "sql",
+                             self.value, sqlText)
+
 
 class EncryptedDataFrameReader:
     def __init__(self, bigdl_type, df_reader):
