@@ -65,7 +65,8 @@ lib_urls["Windows"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
-    # TODO: add bloomz
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/bloom.dll",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom.exe",
 ]
 lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx2.so",
@@ -97,6 +98,8 @@ def setup_package():
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
         "libs/quantize-gptneox.exe",
+        "libs/bloom.dll",
+        "libs/quantize-bloom.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
