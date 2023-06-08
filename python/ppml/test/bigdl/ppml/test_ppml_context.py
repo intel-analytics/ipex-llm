@@ -103,7 +103,33 @@ class TestPPMLContext(unittest.TestCase):
         self.assertEqual(csv_content, self.data_content)
 
 
-    def test_sql(self):
+    def test_sql_by_write_and_read_encrypted_csv(self):
+        path = os.path.join(resource_path, "sql_csv/plain")
+        test_schema = StructType([
+            StructField("language", StringType()),
+            StructField("user", StringType()),
+        ])
+
+        # write as plain csv file
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .schema(test_schema) \
+            .option("header", True) \
+            .csv(path)
+
+        # read from a plain csv file
+        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
+            .option("header", "true") \
+            .schema(test_schema) \
+            .csv(path)
+        df.createOrReplaceTempView("test")
+        sqlTest = "select language, user from test"
+        data = self.sc.sql(sqlTest)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in data.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
 
 
     def test_write_and_read_plain_csv(self):
