@@ -19,6 +19,7 @@ import types
 import subprocess
 import cloudpickle
 from pyspark.sql import DataFrame
+from pyspark.rdd import RDD
 from torch.utils.data import Dataset, DataLoader
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.mpi.mpi_runner import MPIRunner
@@ -57,7 +58,7 @@ class MPIEstimator:
     # triggered at the end of an epoch.
     def fit(self, data, epochs=1, batch_size=32, validation_data=None, validate_batch_size=32,
             train_func=None, validate_func=None, train_batches=None, validate_batches=None,
-            validate_steps=None, feature_cols=None, label_cols=None):
+            validate_steps=None, feature_cols=None, label_cols=None, before_train_func=None, mpi_config=None):
         if isinstance(data, DataFrame):
             invalidInputError(feature_cols is not None and label_cols is not None,
                               "feature_cols and label_cols must be provided if data is"
@@ -137,10 +138,11 @@ class MPIEstimator:
         with open("mpi_train_data.pkl", "wb") as f:
             cloudpickle.dump((data_creator, epochs, batch_size, validation_data_creator,
                               validate_batch_size, train_func, validate_func, train_batches,
-                              validate_batches, validate_steps), f)
+                              validate_batches, validate_steps, before_train_func), f)
         self.mpi_runner.scp_file("mpi_train_data.pkl", self.dir)
-        self.mpi_runner.run("{}/mpi_train.py".format(self.dir), pkl_path=self.dir)
-        self.mpi_runner.shutdown_plasma()
+        self.mpi_runner.run("{}/mpi_train.py".format(self.dir), mpi_config=mpi_config, pkl_path=self.dir)
+        if isinstance(data, DataFrame) or isinstance(data, RDD):
+            self.mpi_runner.shutdown_plasma()
 
     def shutdown(self):
         self.mpi_runner.shutdown_plasma()

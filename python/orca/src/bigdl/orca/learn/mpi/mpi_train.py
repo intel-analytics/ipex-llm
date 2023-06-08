@@ -34,7 +34,7 @@ with open("{}/saved_mpi_estimator.pkl".format(pkl_path), "rb") as f:
 with open("{}/mpi_train_data.pkl".format(pkl_path), "rb") as f:
     train_data_creator, epochs, batch_size, validation_data_creator,\
         validate_batch_size, train_func, validate_func, train_batches, \
-        validate_batches, validate_steps = cloudpickle.load(f)
+        validate_batches, validate_steps, before_train_func = cloudpickle.load(f)
 config["batch_size"] = batch_size
 config["validate_batch_size"] = validate_batch_size
 
@@ -60,6 +60,9 @@ if validation_data_creator:
 else:
     valid_ld = None
     validate_batches = None
+
+if before_train_func:
+    config, model, optimizer, loss, scheduler= before_train_func(config, model, optimizer, loss, scheduler)
 
 for i in range(epochs):
     config["epoch"] = i

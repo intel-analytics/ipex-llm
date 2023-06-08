@@ -59,8 +59,10 @@ class MPIRunner:
         print("Hosts: ", self.hosts)
         self.processes_per_node = processes_per_node
         self.env = env if env else {}
+        import getpass
+        self.user = getpass.getuser()
 
-    def run(self, file, **kwargs):
+    def run(self, file, mpi_config=None, **kwargs):
         file_path = os.path.abspath(file)
         invalidInputError(os.path.exists(file_path), "file_path doesn't exist")
         file_dir = "/".join(file_path.split("/")[:-1])
@@ -70,18 +72,20 @@ class MPIRunner:
         cmd = ["mpiexec.hydra"]
         # -l would label the output with process rank. -l/-ppn not available for openmpi.
         # mpi_config = "-np {} ".format(
-        mpi_config = "-np {} -ppn {} -l ".format(
+        mpi_config_all = "-np {} -ppn {} -l ".format(
             self.processes_per_node * len(self.hosts),
             self.processes_per_node)
+        if mpi_config:
+            mpi_config_all += mpi_config
         mpi_env = os.environ.copy()
         mpi_env.update(self.env)
-        if "I_MPI_PIN_DOMAIN" in mpi_env:
-            mpi_config += "-genv I_MPI_PIN_DOMAIN={} ".format(mpi_env["I_MPI_PIN_DOMAIN"])
+        for k, v in mpi_env.items():
+            mpi_config_all += "-genv I_MPI_PIN_DOMAIN={} ".format(mpi_env["I_MPI_PIN_DOMAIN"])
         if "OMP_NUM_THREADS" in mpi_env:
-            mpi_config += "-genv OMP_NUM_THREADS={} ".format(mpi_env["OMP_NUM_THREADS"])
+            mpi_config_all += "-genv OMP_NUM_THREADS={} ".format(mpi_env["OMP_NUM_THREADS"])
         if len(self.remote_hosts) > 0:
-            mpi_config += "-hosts {}".format(",".join(self.hosts))
-        cmd.extend(mpi_config.split())
+            mpi_config_all += "-hosts {}".format(",".join(self.hosts))
+        cmd.extend(mpi_config_all.split())
         # cmd.append("ls")
         cmd.append(sys.executable)
         cmd.append("-u")  # This can print as the program runs
@@ -101,7 +105,7 @@ class MPIRunner:
     def scp_file(self, file, remote_dir):
         for host in self.remote_hosts:
             p = subprocess.Popen(["scp", file,
-                                  "root@{}:{}/".format(host, remote_dir)])
+                                  "{}@{}:{}/".format(self.user, host, remote_dir)])
             os.waitpid(p.pid, 0)
 
     def launch_plasma(self, object_store_memory="2g"):
