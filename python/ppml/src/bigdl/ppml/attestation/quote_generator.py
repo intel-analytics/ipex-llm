@@ -17,7 +17,6 @@
 import ctypes
 import base64
 import os
-import log4Error
 
 def generate_tdx_quote(user_report_data):
     # Define the uuid data structure
