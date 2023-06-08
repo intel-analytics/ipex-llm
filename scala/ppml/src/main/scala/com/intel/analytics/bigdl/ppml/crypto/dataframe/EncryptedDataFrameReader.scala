@@ -55,6 +55,11 @@ class EncryptedDataFrameReader(
     }
   }
 
+  def schema(schema: StructType): this.type = {
+    sparkSession.read.schema(schema)
+    this
+  }
+
   def csv(path: String): DataFrame = {
     setCryptoCodecContext(path)
     sparkSession.read.options(extraOptions).csv(path)

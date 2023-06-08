@@ -95,7 +95,7 @@ class PPMLContext {
       ).setLightGBMBooster(lightGBMBooster)
   }
 
-  def loadLightGBMRanker(
+  def loadLightGBMRankerModel(
     modelPath: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
     primaryKeyName: String = "defaultKey"): LightGBMRankerModel = {
@@ -111,14 +111,12 @@ class PPMLContext {
   def saveLightGBMModel[LightGBMModel <: LightGBMModelMethods](
     model: LightGBMModel,
     path: String,
-    modelType: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
     primaryKeyName: String = "defaultKey"): Unit = {
       if (cryptoMode != PLAIN_TEXT) {
         loadDataKeyPlainText(path, primaryKeyName)
       }
-      model.getLightGBMBooster
-        .saveNativeModel(sparkSession, path, true)
+      model.saveNativeModel(path, true)
   }
 
   /**
