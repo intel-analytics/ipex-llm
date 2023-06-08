@@ -75,9 +75,9 @@ object EncryptedLightGBMModelIO extends Supportive {
     }
 
     timing("4/4 load the encrypted model and use it to predict") {
-      val reloadedLgbmClassifier = sc.loadLightGBMClassificationModel(
+      val reloadedModel = sc.loadLightGBMClassificationModel(
             modelPath = "./lgbmClassification.model", cryptoMode = AES_CBC_PKCS5PADDING)
-      val predictions = model.transform(test)
+      val predictions = reloadedModel.transform(test)
       predictions.show(10)
     }
   } 
