@@ -114,7 +114,6 @@ class PPMLContextPython[T]() {
       structField
     }
     val schema = StructType(resList.toList)
-    println("Schema: " + schema)
     encryptedDataFrameReader.schema(schema)
   }
 
