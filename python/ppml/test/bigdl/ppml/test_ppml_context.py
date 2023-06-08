@@ -20,6 +20,8 @@ import random
 import shutil
 
 from bigdl.ppml.ppml_context import *
+from pyspark.sql.types import StructType, StructField, StringType
+
 
 resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
@@ -74,6 +76,59 @@ class TestPPMLContext(unittest.TestCase):
     def tearDownClass(cls) -> None:
         if os.path.exists(resource_path):
             shutil.rmtree(resource_path)
+
+    def test_schema_by_write_and_read_csv(self):
+        path = os.path.join(resource_path, "schema_csv/plain")
+        test_schema = StructType([
+            StructField("language", StringType()),
+            StructField("user", StringType()),
+        ])
+
+            # write as plain csv file
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
+        # read from a plain csv file
+        df = self.sc.read(CryptoMode.PLAIN_TEXT) \
+            .option("header", "true") \
+            .schema(test_schema) \
+            .csv(path)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in df.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
+
+
+    def test_sql_by_write_and_read_encrypted_csv(self):
+        path = os.path.join(resource_path, "sql_csv/plain")
+        test_schema = StructType([
+            StructField("language", StringType()),
+            StructField("user", StringType()),
+        ])
+
+        # write as plain csv file
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
+            .mode('overwrite') \
+            .option("header", True) \
+            .csv(path)
+
+        # read from a plain csv file
+        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
+            .option("header", "true") \
+            .schema(test_schema) \
+            .csv(path)
+        df.createOrReplaceTempView("test")
+        sqlTest = "select language, user from test"
+        data = self.sc.sql(sqlTest)
+
+        csv_content = '\n'.join([str(v['language']) + "," + str(v['user'])
+                                 for v in data.orderBy('language').collect()])
+
+        self.assertEqual(csv_content, self.data_content)
+
 
     def test_write_and_read_plain_csv(self):
         path = os.path.join(resource_path, "csv/plain")
