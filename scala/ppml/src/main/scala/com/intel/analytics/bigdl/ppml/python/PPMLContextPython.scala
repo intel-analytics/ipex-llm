@@ -87,13 +87,12 @@ class PPMLContextPython[T]() {
              value: ClassDict): EncryptedDataFrameReader = {
     val classDictMap: util.HashMap[String, Object] =
       value.asInstanceOf[util.HashMap[String, Object]]
-    val resList = new util.LinkedList[StructField]()
     // get fields list
     val fieldList = classDictMap.get("fields").asInstanceOf[JList[_]]
     if (fieldList == null) {
       throw new IllegalArgumentException("schema cann't be null")
     }
-    for ( map <- fieldList.asScala.toArray) {
+    val resList = fieldList.asScala.toArray.map { map =>
       val fieldMap = map.asInstanceOf[util.HashMap[String, Object]]
       val dataTypeMap = fieldMap.get("dataType").asInstanceOf[util.HashMap[String, Object]]
       val structType = dataTypeMap.get("__class__").toString
@@ -112,9 +111,9 @@ class PPMLContextPython[T]() {
           throw new IllegalArgumentException(s"Unsupported data type for field $structType")
       }
       val structField = StructField(fieldName, fieldType, nullable = nullable)
-      resList.add(structField)
+      structField
     }
-    val schema = StructType(resList)
+    val schema = StructType(resList.toList)
     println("Schema: " + schema)
     encryptedDataFrameReader.schema(schema)
   }
