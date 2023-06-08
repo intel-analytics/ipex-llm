@@ -14,7 +14,7 @@ jobs:
       env:
         FTP_URII_PSD: ${{ secrets.FTP_PASSWORD }}
       run: |
-        export FTP_URI = ftp://bigdl:${{env.FTP_URI_PSD}}@10.112.231.51:8821
+        export FTP_URI=ftp://bigdl:${{env.FTP_URI_PSD}}@10.112.231.51:8821
         wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
         cat ui-test-20230607.log
         rm ui-test-20230607.log
