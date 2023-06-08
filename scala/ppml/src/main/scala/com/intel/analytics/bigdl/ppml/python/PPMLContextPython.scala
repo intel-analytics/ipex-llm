@@ -17,13 +17,19 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT, EncryptRuntimeException}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
-import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
+
+import java.util
+import java.util.{List => JList}
+import scala.collection.JavaConverters._
+
+
 
 
 object PPMLContextPython {
@@ -62,6 +68,11 @@ class PPMLContextPython[T]() {
     sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
 
+  def sql(sc: PPMLContext, sqlText: String): DataFrame = {
+    logger.debug("running spark sql " + sqlText)
+    sc.sql(sqlText)
+  }
+
   /**
    * EncryptedDataFrameReader method
    */
@@ -69,6 +80,41 @@ class PPMLContextPython[T]() {
   def option(encryptedDataFrameReader: EncryptedDataFrameReader,
              key: String, value: String): EncryptedDataFrameReader = {
     encryptedDataFrameReader.option(key, value)
+  }
+  import net.razorvine.pickle.objects.ClassDict
+
+  def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
+             value: ClassDict): EncryptedDataFrameReader = {
+    val classDictMap: util.HashMap[String, Object] =
+      value.asInstanceOf[util.HashMap[String, Object]]
+    // get fields list
+    val fieldList = classDictMap.get("fields").asInstanceOf[JList[_]]
+    if (fieldList == null) {
+      throw new IllegalArgumentException("schema cann't be null")
+    }
+    val resList = fieldList.asScala.toArray.map { map =>
+      val fieldMap = map.asInstanceOf[util.HashMap[String, Object]]
+      val dataTypeMap = fieldMap.get("dataType").asInstanceOf[util.HashMap[String, Object]]
+      val structType = dataTypeMap.get("__class__").toString
+      val fieldName = fieldMap.get("name").toString
+      val nullable = fieldMap.get("nullable").toString.toLowerCase().equals("true")
+      val fieldType = structType match {
+        case "pyspark.sql.types.ByteType" => ByteType
+        case "pyspark.sql.types.ShortType" => ShortType
+        case "pyspark.sql.types.IntegerType" => IntegerType
+        case "pyspark.sql.types.LongType" => LongType
+        case "pyspark.sql.types.FloatType" => FloatType
+        case "pyspark.sql.types.DoubleType" => DoubleType
+        case "pyspark.sql.types.BooleanType" => BooleanType
+        case "pyspark.sql.types.StringType" => StringType
+        case _ =>
+          throw new IllegalArgumentException(s"Unsupported data type for field $structType")
+      }
+      val structField = StructField(fieldName, fieldType, nullable = nullable)
+      structField
+    }
+    val schema = StructType(resList.toList)
+    encryptedDataFrameReader.schema(schema)
   }
 
   def csv(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {

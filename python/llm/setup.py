@@ -25,13 +25,14 @@
 # >>>> Linux：
 # python setup.py clean --all bdist_wheel --linux
 
-import os
-import sys
 import fnmatch
-from setuptools import setup
-import urllib.request
+import os
 import platform
 import shutil
+import sys
+import urllib.request
+
+from setuptools import setup
 
 long_description = '''
     BigDL LLM
@@ -51,7 +52,7 @@ def get_llm_packages():
         print(dirpath)
         package = dirpath.split(llm_home + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
-                for pattern in exclude_patterns):
+               for pattern in exclude_patterns):
             print("excluding", package)
         else:
             llm_packages.append(package)
@@ -67,6 +68,9 @@ lib_urls["Windows"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/bloom.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom.exe",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox.exe",
 ]
 lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx2.so",
@@ -76,7 +80,14 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx2.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so"
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx2",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom",
 ]
 
 
@@ -91,7 +102,6 @@ def download_libs(url: str, change_permission=False):
 
 
 def setup_package():
-    
     package_data = {}
     package_data["Windows"] = [
         "libs/llama.dll",
@@ -100,6 +110,9 @@ def setup_package():
         "libs/quantize-gptneox.exe",
         "libs/bloom.dll",
         "libs/quantize-bloom.exe",
+        "libs/main-bloom.exe",
+        "libs/main-gptneox.exe",
+        "libs/main-llama.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
@@ -110,6 +123,13 @@ def setup_package():
         "libs/quantize-gptneox",
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
+        "libs/quantize-bloom",
+        "libs/main-bloom_avx2",
+        "libs/main-bloom_avx512",
+        "libs/main-gptneox_avx2",
+        "libs/main-gptneox_avx512",
+        "libs/main-llama_avx2",
+        "libs/main-llama_avx512",
     ]
 
     platform_name = None
@@ -119,12 +139,12 @@ def setup_package():
     if "--linux" in sys.argv:
         platform_name = "Linux"
         sys.argv.remove("--linux")
-    
+
     if platform_name is None:
         if platform.platform().startswith('Windows'):
             platform_name = "Windows"
         else:
-            platform_name = "Linux" 
+            platform_name = "Linux"
 
     change_permission = True if platform_name == "Linux" else False
 
@@ -165,6 +185,10 @@ def setup_package():
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
+        scripts={
+            'Linux': ['src/bigdl/llm/cli/llm-cli'],
+            'Windows': ['src/bigdl/llm/cli/llm-cli.ps1'],
+        }[platform_name],
         platforms=['windows']
     )
 
