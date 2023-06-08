@@ -36,6 +36,12 @@ elif [ "$ATTESTATION" = "true" ]; then
   if [ -n "$QUOTE_TYPE" ]; then
     ATTESTATION_COMMAND="${ATTESTATION_COMMAND} -O ${QUOTE_TYPE}"
   fi
+  if [ -n "$ATTESTATION_PORXY_HOST" ]; then
+    ATTESTATION_COMMAND="${ATTESTATION_COMMAND} --proxyHost ${ATTESTATION_PORXY_HOST}"
+  fi
+  if [ -n "$ATTESTATION_PORXY_PORT" ]; then
+    ATTESTATION_COMMAND="${ATTESTATION_COMMAND} --proxyPort ${ATTESTATION_PORXY_PORT}"
+  fi
   echo $ATTESTATION_COMMAND > temp_command_file
   echo 'if [ $? -gt 0 ]; then ' >> temp_command_file
   echo '  exit 1' >> temp_command_file
