@@ -38,6 +38,11 @@ def remove_batch_dim_fn(loader):
         def recusive_remove(data):
             if isinstance(data, torch.Tensor):
                 return data.squeeze(0)
+            # TODO: if the data type of dict value is not tensor, will crash
+            elif isinstance(data, dict):
+                for key in data:
+                    data[key] = data[key].squeeze(0)
+                return data
             else:
                 return tuple([recusive_remove(x) for x in data])
         return recusive_remove(data)
