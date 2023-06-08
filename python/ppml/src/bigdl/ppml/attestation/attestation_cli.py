@@ -41,7 +41,8 @@ if __name__ == "__main__":
     if args.as_type == "bigdl":
         attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
     elif args.as_type == "amber":
-        attestation_result = attestation_service.amber(args.url, args.api_key, quote, args.policy_id, proxies)3
+        policy_list = args.policy_id.split(",")
+        attestation_result = attestation_service.amber(args.url, args.api_key, quote, policy_list, proxies)
 
     if attestation_result == 0:
         print("Attestation Success!")
