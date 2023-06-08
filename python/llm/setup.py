@@ -77,6 +77,7 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx2.so",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so"
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom",
 ]
 
 
@@ -110,6 +111,7 @@ def setup_package():
         "libs/quantize-gptneox",
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
+        "libs/quantize-bloom"
     ]
 
     platform_name = None
