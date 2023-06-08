@@ -76,8 +76,8 @@ def generate_gramine_quote(user_report_data):
         raise Exception(f"File {USER_REPORT_PATH} not found.")
     if not os.path.isfile(QUOTE_PATH):
         raise Exception(f"File {QUOTE_PATH} not found.")
-    with open(USER_REPORT_PATH, 'wb') as out:
-        out.write(userReportData)
+    with open(USER_REPORT_PATH, 'w') as out:
+        out.write(user_report_data)
     with open(QUOTE_PATH, "rb") as f:
         quote = f.read()
     if len(quote) == 0:

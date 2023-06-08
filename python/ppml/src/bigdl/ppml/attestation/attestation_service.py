@@ -37,14 +37,14 @@ def bigdl_attestation_service(base_url, app_id, api_key, quote, policy_id):
         result = -1
     return result
 
-def amber(base_url, api_key, quote, policy_id):
+def amber(base_url, api_key, quote, policy_id, proxies):
     headers = {"Content-Type":"application/json",
                "Accept":"application/json",
                "x-api-key": api_key}
     payload = OrderedDict()
     payload["quote"] = base64.b64encode(quote).decode()
     try:
-        resp = requests.post(url="https://" + base_url + "/appraisal/v1/attest", data=json.dumps(payload), headers=headers, verify=use_secure_cert)
+        resp = requests.post(url=base_url + "/appraisal/v1/attest", data=json.dumps(payload), headers=headers, verify=use_secure_cert, proxies=proxies)
         resp_dict = json.loads(resp.text)
         if len(resp_dict["token"]) > 0:
             result = 0
@@ -52,3 +52,4 @@ def amber(base_url, api_key, quote, policy_id):
             result = -1
     except (json.JSONDecodeError, KeyError):
         result = -1
+    return result

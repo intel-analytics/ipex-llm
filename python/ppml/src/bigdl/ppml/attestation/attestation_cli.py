@@ -26,8 +26,13 @@ if __name__ == "__main__":
     parser.add_argument('-O', '--quote_type', type=str, help='quote type', default='TDX')
     parser.add_argument('-o', '--policy_id', type=str, help='policy id', default='')
     parser.add_argument('-p', '--user_report', type=str, help='user report', default='ppml')
+    parser.add_argument('--proxy', type=str, help='proxy', default='')
     args = parser.parse_args()
 
+    proxies = {
+        'http': args.proxy,
+        'https': args.proxy
+    }
     if args.quote_type == "TDX":
         quote = quote_generator.generate_tdx_quote(args.user_report)
     elif args.quote_type == "Gramine":
@@ -36,7 +41,8 @@ if __name__ == "__main__":
     if args.as_type == "bigdl":
         attestation_result = attestation_service.bigdl_attestation_service(args.url, args.app_id, args.api_key, quote, args.policy_id)
     elif args.as_type == "amber":
-        attestation_result = attestation_service.amber(args.url, args.api_key, quote, args.policy_id)
+        attestation_result = attestation_service.amber(args.url, args.api_key, quote, args.policy_id, proxies)3
+
     if attestation_result == 0:
         print("Attestation Success!")
     if attestation_result == 1:
