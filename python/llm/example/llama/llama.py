@@ -31,7 +31,7 @@ def convert_and_load(repo_id_or_model_path, n_threads):
     # the downloaded folder as the value of `pretrained_model_name_or_path``
     llm = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=repo_id_or_model_path,
-        model_family='gptneox',
+        model_family='llama',
         dtype='int4',
         cache_dir='./',
         n_threads=n_threads)
@@ -47,11 +47,11 @@ def convert_and_load(repo_id_or_model_path, n_threads):
     #     input_path=model_path,
     #     output_path='./',
     #     dtype='int4',
-    #     model_family='gptneox')
+    #     model_family='llama')
     #
     # llm = AutoModelForCausalLM.from_pretrained(
     #     pretrained_model_name_or_path=output_ckpt_path,
-    #     model_family='gptneox',
+    #     model_family='llama',
     #     n_threads=n_threads)
 
     return llm
@@ -97,11 +97,11 @@ def inference(llm, prompt, repo_id_or_model_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='GptNeoX pipeline example')
+    parser = argparse.ArgumentParser(description='Llama pipeline example')
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/RedPajama-INCITE-7B-Chat",
-                        help='The huggingface repo id for gptneox family model to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="lmsys/vicuna-7b-delta-v1.1",
+                        help='The huggingface repo id for llama family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Q: tell me something about intel. A:',
                         help='Prompt to infer')
