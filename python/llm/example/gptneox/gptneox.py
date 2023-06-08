@@ -45,7 +45,8 @@ def convert_and_load(repo_id_or_model_path, n_threads):
     # model_path = repo_id_or_model_path
     # output_ckpt_path = convert_model(
     #     input_path=model_path,
-    #     output_path="./",
+    #     output_path='./',
+    #     dtype='int4',
     #     model_family='gptneox')
     #
     # llm = AutoModelForCausalLM.from_pretrained(
@@ -58,48 +59,53 @@ def convert_and_load(repo_id_or_model_path, n_threads):
 def inference(llm, prompt, repo_id_or_model_path):
 
     # Option 1: Use transformers tokenizer
+    print('-'*20, ' transformers tokenizer ', '-'*20)
     from transformers import AutoTokenizer
 
+    print('Please note that the loading of transformers tokenizer may takes some time.\n')
     tokenizer = AutoTokenizer.from_pretrained(repo_id_or_model_path)
 
     st = time.time()
 
-    tokens_id = tokenizer.encode(prompt) # please note that the prompt can either be a string or a list of string
+    tokens_id = tokenizer.encode(prompt)
     output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
     output = tokenizer.decode(output_tokens_id)
 
-    print(f"Inference time (transformers tokenizer): {time.time()-st} s")
-    print(f"Output:\n{output}")
+    print(f'Inference time: {time.time()-st} s')
+    print(f'Output:\n{output}')
 
     # Option 2: Use bigdl-llm based tokenizer
+    print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
     st = time.time()
 
-    tokens_id = llm.tokenize(prompt) # please note that the prompt can either be a string or a list of string
+    tokens_id = llm.tokenize(prompt)
     output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
     output = llm.decode(output_tokens_id)
 
-    print(f"Inference time (bigdl-llm based tokenizer): {time.time()-st} s")
-    print(f"Output:\n{output}")
+    print(f'Inference time: {time.time()-st} s')
+    print(f'Output:\n{output}')
 
     # Option 3: fast forward
+    print('-'*20, ' fast forward ', '-'*20)
     st = time.time()
 
-    output = llm(prompt, # please note that the prompt can only be a string here
+    output = llm(prompt,
                  max_tokens=32)
 
-    print(f"Inference time (fast forward): {time.time()-st} s")
-    print(f"Output:\n{output}")
+    print(f'Inference time (fast forward): {time.time()-st} s')
+    print(f'Output:\n{output}')
+
 
 def main():
     parser = argparse.ArgumentParser(description='GptNeoX pipeline example')
+    parser.add_argument('--thread-num', type=int, default=2, required=True,
+                        help='Number of threads to use for inference')
     parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/RedPajama-INCITE-7B-Chat",
                         help='The huggingface repo id for gptneox family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--thread-num', type=int, default=2, help='Number of threads to use for inference')
     parser.add_argument('--prompt', type=str, default='Q: tell me something about intel. A:',
-                        help='Prompt for inference')
+                        help='Prompt to infer')
     args = parser.parse_args()
-    print(args)
 
     # Step 1: convert and load int4 model
     llm = convert_and_load(repo_id_or_model_path=args.repo_id_or_model_path, n_threads=args.thread_num)
