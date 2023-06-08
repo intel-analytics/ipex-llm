@@ -9,15 +9,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all]
-pip install protobuf==3.20.0
 ```
-Please note that `protobuf==3.20.0` is for HuggingFace `transformers` tokenizer for Llama family model.
-
-Please also note that if you choose Llama family model `'decapoda-research/llama-7b-hf'` (which is default in this example), you should also downgrade transformers:
-```bash
-pip install transformers==4.28.1
-```
-as the `tokenizer_config.json` is not up to date for this model.
 
 ## Run Example
 ```bash
