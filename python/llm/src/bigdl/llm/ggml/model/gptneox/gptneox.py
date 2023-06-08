@@ -139,7 +139,7 @@ class Gptneox(GenerationMixin):
         use_mmap: bool = True,
         use_mlock: bool = False,
         embedding: bool = False,
-        n_threads: Optional[int] = None,
+        n_threads: Optional[int] = 2,
         n_batch: int = 512,
         last_n_tokens_size: int = 64,
         lora_base: Optional[str] = None,
@@ -160,8 +160,7 @@ class Gptneox(GenerationMixin):
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. If None, the number of threads
-            is automatically determined.
+            n_threads: Number of threads to use. Default to be 2.
             n_batch: Maximum number of prompt tokens to batch together when calling gptneox_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             lora_base: Optional path to base model, useful if using a quantized base model and
@@ -197,7 +196,7 @@ class Gptneox(GenerationMixin):
 
         self.cache: Optional[GptneoxCache] = None
 
-        self.n_threads = n_threads or max(multiprocessing.cpu_count() // 2, 1)
+        self.n_threads = n_threads
 
         self.lora_base = lora_base
         self.lora_path = lora_path

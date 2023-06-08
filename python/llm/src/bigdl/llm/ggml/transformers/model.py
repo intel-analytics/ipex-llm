@@ -21,9 +21,7 @@
 
 import os
 import traceback
-from huggingface_hub import snapshot_download
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.ggml import convert_model
 
 
 class AutoModelForCausalLM:
@@ -71,6 +69,7 @@ class AutoModelForCausalLM:
         if not os.path.exists(pretrained_model_name_or_path):
             try:
                 # download from huggingface based on repo id
+                from huggingface_hub import snapshot_download
                 pretrained_model_name_or_path = snapshot_download(
                     repo_id=pretrained_model_name_or_path)
             except Exception as e:
@@ -90,6 +89,7 @@ class AutoModelForCausalLM:
         # points to a huggingface checkpoint
         if not os.path.isfile(pretrained_model_name_or_path):
             # huggingface checkpoint
+            from bigdl.llm.ggml import convert_model
             ggml_model_path = convert_model(input_path=pretrained_model_name_or_path,
                                             output_path=cache_dir,
                                             model_family=model_family,
