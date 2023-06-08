@@ -33,7 +33,7 @@ if [[ $SGX_ENABLED == "false" ]]; then
         bash attestation.sh
         bash temp_command_file
     fi
-    taskset -c "$core" /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type unix --sock-name /tmp/.ts.sock."${port}" --metrics-config /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml
+    taskset -c "$core" /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port  --metrics-config /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml
 else
     export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --metrics-config /ppml/metrics.yaml"
     if [ "$ATTESTATION" = "true" ]; then
