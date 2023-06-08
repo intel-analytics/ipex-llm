@@ -20,4 +20,4 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from bigdl.llm.utils.common import LazyImport
-convert_model = LazyImport('bigdl.llm.ggml.convert_model')
+convert_model = LazyImport('bigdl.llm.ggml.convert_model.convert_model')
