@@ -1,47 +1,100 @@
 # BigDL LLM
+`bigdl-llm` is an SDK for large language model (LLM). It helps users develop AI applications that contains LLM on Intel XPU by using less computing and memory resources.`bigdl-llm` utilize a highly optimized GGML on Intel XPU.
 
-## llm-cli
+Users could use `bigdl-llm` to
+- Convert their model to lower precision
+- Use command line tool like `llama.cpp` to run the model inference
+- Use transformers like API to run the model inference
+- Integrate the model in `langchain` pipeline
 
-llm-cli is a command-line interface tool that allows easy execution of llama/gptneox/bloom models
-and generates results based on the provided prompt.
+Currently `bigdl-llm` has supported
+- Precision: INT4
+- Model Family: llama, gptneox, bloom
+- Platform: Linux, Windows
+- Device: CPU
 
-### Usage
-
+## Installation
+BigDL-LLM is a self-contained SDK library for model loading and inferencing, while model conversion procedure will rely on some 3rd party libraries. It's recommended to add `[all]` option for installation to prepare environment.
 ```bash
-llm-cli -x <llama/gptneox/bloom> [-h] [args]
+pip install --pre --upgrade bigdl-llm[all]
 ```
 
-`args` are the arguments provided to the specified model program. You can use `-x MODEL_FAMILY -h`
-to retrieve the parameter list for a specific `MODEL_FAMILY`, for example:
+## Usage
+A standard procedure for using `bigdl-llm` contains 3 steps:
+
+1. Download model from huggingface hub
+2. Convert model from huggingface format to GGML format
+3. Inference using `llm-cli`, transformers like API, or `langchain`.
+
+### Convert your model
+A python function and a command line tool `convert_model` is provided to transform the model from huggingface format to GGML format.
+
+Here is an example to use `convert_model` command line tool.
+```bash
+convert_model -i "/path/to/llama-7b-hf/" -o "/path/to/llama-7b-int4/" -x "llama"
+```
+
+Here is an example to use `convert_model` python API.
+```bash
+from bigdl.llm.ggml import convert_model
+
+convert_model(input_path="/path/to/llama-7b-hf/",
+              output_path="/path/to/llama-7b-int4/",
+              model_family="llama")
+```
+
+### Inferencing
+
+#### llm-cli command line
+llm-cli is a command-line interface tool that follows the interface as the main program in `llama.cpp`.
 
 ```bash
+# text completion
+llm-cli.sh -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -p 'Once upon a time,'
+
+# chatting
+llm-cli.sh -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -i --color
+
+# help information
 llm-cli.sh -x llama -h
-
-# Output:
-# usage: main-llama [options]
-#
-# options:
-#   -h, --help show this help message and exit
-#   -i, --interactive run in interactive mode
-#   --interactive-first run in interactive mode and wait for input right away
-#   ...
 ```
 
-### Examples
+#### Transformers like API
+Users could load converted model or even the unconverted huggingface model directly by `AutoModelForCausalLM.from_pretrained`.
 
-Here are some examples of how to use the llm-cli tool:
+```python
+from bigdl.llm.ggml.transformers import AutoModelForCausalLM
 
-#### Completion:
+# option 1: load converted model
+llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
+                                           model_family="llama")
 
-```bash
-llm-cli.sh -t 16 -x llama -m ./llm-llama-model.bin -p 'Once upon a time,'
+# option 2: load huggingface checkpoint
+llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-hf/",
+                                           model_family="llama")
+
+# option 3: load from huggingface hub repo
+llm = AutoModelForCausalLM.from_pretrained("decapoda-research/llama-7b-hf",
+                                           model_family="llama")
 ```
 
-#### Chatting:
+Users could use llm to do the inference. Apart from end-to-end fast forward, we also support split the tokenization and model inference in our API.
 
-```bash
-llm-cli.sh -t 16 -x llama -m ./llm-llama-model.bin -i --color
+```python
+# end-to-end fast forward w/o spliting the tokenization and model inferencing
+result = llm("what is ai")
+
+# Use transformers tokenizer
+tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
+tokens = tokenizer("what is ai").input_ids
+tokens_id = llm.generate(tokens, max_new_tokens=32)
+tokenizer.batch_decode(tokens_id)
+
+# Use bigdl-llm tokenizer
+tokens = llm.tokenize("what is ai")
+tokens_id = llm.generate(tokens, max_new_tokens=32)
+decoded = llm.decode(tokens_id)
 ```
 
-Feel free to explore different options and experiment with the llama/gptneox/bloom models using
-llm-cli!
+#### langchain integration
+TODO
