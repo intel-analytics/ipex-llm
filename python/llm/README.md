@@ -113,10 +113,10 @@ result = llm("what is ai")
 #### langchain integration
 TODO
 
-### Examples
+## Examples
 We prepared several examples in https://github.com/intel-analytics/BigDL/tree/main/python/llm/example
 
-### Dynamic library BOM
+## Dynamic library BOM
 To avoid difficaulties during the installtion. `bigdl-llm` release the C implementation by dynamic library or executive file. The compilation details are stated below. **These information is only for reference, no compilation procedure is needed for our users.**
 
 | Model family | Platform | Compiler  | GLIBC |
