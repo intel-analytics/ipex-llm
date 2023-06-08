@@ -13,7 +13,7 @@ pip install protobuf==3.20.0
 ```
 Please note that `protobuf==3.20.0` is for HuggingFace `transformers` tokenizer for Llama family model.
 
-Please also note that if you choose Llama family model `'decapoda-research/llama-7b-hf'` (which is default in this example), you should also install
+Please also note that if you choose Llama family model `'decapoda-research/llama-7b-hf'` (which is default in this example), you should also downgrade transformers:
 ```bash
 pip install transformers==4.28.1
 ```
