@@ -10,12 +10,10 @@ jobs:
   stable-diffusion-win:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
-    - name: "Set up env"
-      with:
-      ftp: |
-          [{"URI": "${{ secrets.FTP_URI_2 }}"}]
     - name: "stable-diffusion-win"
+      env:
+        FTP_URI: ${{ secrets.FTP_URI_2 }}
       run: |
-        wget ${{ secrets.FTP_URI_2 }}/stable-diffusion/ui-test-20230607.log
+        wget  ${{env.FTP_URI}}/stable-diffusion/ui-test-20230607.log
         cat ui-test-20230607.log
         rm ui-test-20230607.log
