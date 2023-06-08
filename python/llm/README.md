@@ -14,7 +14,11 @@ Currently `bigdl-llm` has supported
 - Device: CPU
 
 ## Installation
-BigDL-LLM is a self-contained SDK library for model loading and inferencing, while model conversion procedure will rely on some 3rd party libraries. It's recommended to add `[all]` option for installation to prepare environment.
+BigDL-LLM is a self-contained SDK library for model loading and inferencing. Users could directly
+```bash
+pip install --pre --upgrade bigdl-llm
+```
+While model conversion procedure will rely on some 3rd party libraries. Add `[all]` option for installation to prepare environment.
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
@@ -50,13 +54,13 @@ llm-cli is a command-line interface tool that follows the interface as the main 
 
 ```bash
 # text completion
-llm-cli.sh -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -p 'Once upon a time,'
+llm-cli -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -p 'Once upon a time,'
 
 # chatting
-llm-cli.sh -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -i --color
+llm-cli -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -i --color
 
 # help information
-llm-cli.sh -x llama -h
+llm-cli -x llama -h
 ```
 
 #### Transformers like API
@@ -93,8 +97,33 @@ tokenizer.batch_decode(tokens_id)
 # Use bigdl-llm tokenizer
 tokens = llm.tokenize("what is ai")
 tokens_id = llm.generate(tokens, max_new_tokens=32)
-decoded = llm.decode(tokens_id)
+decoded = llm.batch_decode(tokens_id)
+```
+
+#### llama-cpp-python like API
+`llama-cpp-python` has become a popular pybinding for `llama.cpp` program. Some users may be familiar with this API so `bigdl-llm` reserve this API and extend it to other model families (e.g., gptneox, bloom)
+
+```python
+from bigdl.llm.models import Llama, Bloom, Gptneox
+
+llm = Llama("/path/to/llama-7b-int4/bigdl-llm-xxx.bin", n_threads=4)
+result = llm("what is ai")
 ```
 
 #### langchain integration
 TODO
+
+### Examples
+We prepared several examples in https://github.com/intel-analytics/BigDL/tree/main/python/llm/example
+
+### Dynamic library BOM
+To avoid difficaulties during the installtion. `bigdl-llm` release the C implementation by dynamic library or executive file. The compilation details are stated below. **These information is only for reference, no compilation procedure is needed for our users.**
+
+| Model family | Platform | Compiler  | GLIBC |
+| ------------ | -------- | --------- | ----- |
+| llama        | Linux    | GCC 9.4.0 | 2.17  |
+| llama        | Windows  | MSVC      |       |
+| gptneox      | Linux    | GCC 9.4.0 | 2.17  |
+| gptneox      | Windows  | MSVC      |       |
+| bloom        | Linux    | GCC 9.4.0 | 2.31  |
+| bloom        | Windows  | MSVC      |       |
