@@ -115,6 +115,10 @@ class PPMLContext {
   def getSparkSession(): SparkSession = {
     sparkSession
   }
+
+  def sql(sqlText: String): DataFrame = {
+    getSparkSession().sql(sqlText)
+  }
 }
 
 
