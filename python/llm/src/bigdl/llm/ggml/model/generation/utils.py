@@ -22,7 +22,6 @@
 
 from typing import Optional, Union, Sequence, List
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.ggml.model.gptneox import gptneox_cpp
 
 
 class GenerationMixin:
@@ -57,7 +56,7 @@ class GenerationMixin:
 
     def generate(
         self,
-        inputs: Union[Optional[Sequence[int]], Sequence[gptneox_cpp.gptneox_token]]=None,
+        inputs: Optional[Sequence[int]]=None,
         max_new_tokens: int = 128,
         top_k: int = 40,
         top_p: float = 0.95,
@@ -72,7 +71,7 @@ class GenerationMixin:
         mirostat_eta: float = 0.1,
         stop: Optional[Union[str, List[str]]]=[],  # TODO: rebase to support stopping_criteria
         **kwargs,
-    ) -> Union[Optional[Sequence[int]], Optional[Sequence[gptneox_cpp.gptneox_token]], None]:
+    ) -> Union[Optional[Sequence[int]], None]:
         # TODO: modify docs
         """Create a generator of tokens from a prompt.
 
