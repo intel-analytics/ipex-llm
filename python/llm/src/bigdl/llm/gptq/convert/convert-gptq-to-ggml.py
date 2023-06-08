@@ -26,6 +26,7 @@ import struct
 import numpy as np
 import torch
 from sentencepiece import SentencePieceProcessor
+from bigdl.llm.utils.common.log4Error import invalidInputError
 
 if len(sys.argv) != 4:
     print("Usage: convert-gptq-to-ggml.py llamaXXb-4bit.pt tokenizer.model out.bin\n")
@@ -34,6 +35,8 @@ if len(sys.argv) != 4:
 fname_model = sys.argv[1]
 fname_tokenizer = sys.argv[2]
 dir_out = sys.argv[3]
+invalidInputError(fname_model.endswith(".pt"),
+    "only support pytorch's .pt format now.")
 
 model = torch.load(fname_model, map_location="cpu")
 
@@ -152,6 +155,7 @@ def convert_q4_with_groupsize(src_name, dst_name, permute=False):
 
     # Q4_1 does not support bias; good thing the bias is always all zeros.
     # assert not np.any(g_idx)
+    invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]), "Act-order is not supported, please use a no act-order model.")
     if not np.any(zeros):
         ftype = 2  # Q4_0
     else:
