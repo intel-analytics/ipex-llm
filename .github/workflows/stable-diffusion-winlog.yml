@@ -14,6 +14,6 @@ jobs:
     - name: "stable-diffusion-win"
       run: |
         export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
-        wget $FTP_URI/stable-diffusion/ui-test-20230607.log
-        cat ui-test-20230607.log
-        rm ui-test-20230607.log
+        wget $FTP_URI/stable-diffusion/ui-test.log
+        cat ui-test.log
+        rm ui-test.log
