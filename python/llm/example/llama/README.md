@@ -11,7 +11,7 @@ conda activate llm
 pip install bigdl-llm[all]
 pip install protobuf==3.20.0
 ```
-Please note that `protobuf==3.20.0` is for Huggingface `transformers` tokenizer for Llama family model.
+Please note that `protobuf==3.20.0` is for HuggingFace `transformers` tokenizer for Llama family model.
 
 ## Run Example
 ```bash
