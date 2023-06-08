@@ -87,7 +87,6 @@ class TestPPMLContext(unittest.TestCase):
             # write as plain csv file
         self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
             .mode('overwrite') \
-            .schema(test_schema) \
             .option("header", True) \
             .csv(path)
 
@@ -113,7 +112,6 @@ class TestPPMLContext(unittest.TestCase):
         # write as plain csv file
         self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
             .mode('overwrite') \
-            .schema(test_schema) \
             .option("header", True) \
             .csv(path)
 
