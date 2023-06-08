@@ -43,6 +43,7 @@ BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
+CONVERT_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece', 'accelerate']
 
 
 def get_llm_packages():
@@ -65,7 +66,8 @@ lib_urls["Windows"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
-    # TODO: add bloomz
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/bloom.dll",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom.exe",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox.exe",
@@ -85,6 +87,7 @@ lib_urls["Linux"] = [
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx512",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx512",
     "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx512",
+    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom",
 ]
 
 
@@ -105,6 +108,8 @@ def setup_package():
         "libs/quantize-llama.exe",
         "libs/gptneox.dll",
         "libs/quantize-gptneox.exe",
+        "libs/bloom.dll",
+        "libs/quantize-bloom.exe",
         "libs/main-bloom.exe",
         "libs/main-gptneox.exe",
         "libs/main-llama.exe",
@@ -118,6 +123,7 @@ def setup_package():
         "libs/quantize-gptneox",
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
+        "libs/quantize-bloom",
         "libs/main-bloom_avx2",
         "libs/main-bloom_avx512",
         "libs/main-gptneox_avx2",
@@ -150,6 +156,9 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
+    
+    all_requires = []
+    all_requires += CONVERT_DEP
 
     metadata = dict(
         name='bigdl-llm',
@@ -165,6 +174,12 @@ def setup_package():
         package_dir={"": "src"},
         package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                'convert_model=bigdl.llm.ggml.convert_model:main'
+            ]
+        },
+        extras_require={"all": all_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',

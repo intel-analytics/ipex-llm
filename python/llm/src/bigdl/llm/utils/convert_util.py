@@ -64,9 +64,7 @@ from pathlib import Path
 from typing import (IO, TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
                     Literal, Optional, Sequence, Tuple, TypeVar, Union)
 import numpy as np
-import torch
 from sentencepiece import SentencePieceProcessor
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from bigdl.llm.utils.common import invalidInputError
 
 if TYPE_CHECKING:
@@ -1238,6 +1236,8 @@ def bytes_to_unicode():
 
 
 def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  torch_dtype=torch.float16
@@ -1317,6 +1317,8 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
 
 
 def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
+    from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+    import torch
     conv_map = {'word_embeddings': 'tok_embeddings',
                 'word_embeddings_layernorm': 'norm',
                 'input_layernorm': 'attention_norm',

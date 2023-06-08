@@ -55,6 +55,7 @@ import ctypes
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.model.generation import GenerationMixin
 from . import gptneox_cpp
 from .gptneox_types import *
 
@@ -121,7 +122,7 @@ class GptneoxState:
         self.gptneox_state_size = gptneox_state_size
 
 
-class Gptneox:
+class Gptneox(GenerationMixin):
     """High-level Python wrapper for a gptneox.cpp model."""
 
     def __init__(
@@ -225,7 +226,7 @@ class Gptneox:
         if self.verbose:
             print(gptneox_cpp.gptneox_print_system_info().decode("utf-8"), file=sys.stderr)
 
-    def tokenize(
+    def _tokenize(
         self, text: bytes, add_bos: bool = True
     ) -> List[gptneox_cpp.gptneox_token]:
         """Tokenize a string.
@@ -497,13 +498,13 @@ class Gptneox:
             mirostat_eta=gptneox_cpp.c_float(mirostat_eta),
         )
 
-    def generate(
+    def _generate(
         self,
         tokens: Sequence[gptneox_cpp.gptneox_token],
-        top_k: int,
-        top_p: float,
-        temp: float,
-        repeat_penalty: float,
+        top_k: int = 40,
+        top_p: float = 0.95,
+        temp: float = 0.80,
+        repeat_penalty: float = 1.1,
         reset: bool = True,
         frequency_penalty: float = 0.0,
         presence_penalty: float = 0.0,
@@ -700,7 +701,7 @@ class Gptneox:
 
         finish_reason = "length"
         multibyte_fix = 0
-        for token in self.generate(
+        for token in self._generate(
             prompt_tokens,
             top_k=top_k,
             top_p=top_p,
