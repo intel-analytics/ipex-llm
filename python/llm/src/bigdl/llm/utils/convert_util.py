@@ -87,7 +87,7 @@ __all__ = ['Params',
            'load_vocab',
            'default_outfile',
            '_convert_gptneox_hf_to_ggml',
-           '_convert_bloomz_hf_to_ggml']
+           '_convert_bloom_hf_to_ggml']
 
 
 @dataclass(frozen=True)
@@ -1316,7 +1316,7 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
     fout.close()
 
 
-def _convert_bloomz_hf_to_ggml(model_path, outfile_dir, outtype):
+def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
     conv_map = {'word_embeddings': 'tok_embeddings',
                 'word_embeddings_layernorm': 'norm',
                 'input_layernorm': 'attention_norm',

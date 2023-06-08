@@ -42,6 +42,7 @@ BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
+CONVERT_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece', 'accelerate']
 
 
 def get_llm_packages():
@@ -132,6 +133,9 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
+    
+    all_requires = []
+    all_requires += CONVERT_DEP
 
     metadata = dict(
         name='bigdl-llm',
@@ -147,6 +151,12 @@ def setup_package():
         package_dir={"": "src"},
         package_data={"bigdl.llm": package_data[platform_name]},
         include_package_data=True,
+        entry_points={
+            "console_scripts": [
+                'convert_model=bigdl.llm.ggml.convert_model:main'
+            ]
+        },
+        extras_require={"all": all_requires},
         classifiers=[
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python :: 3',
