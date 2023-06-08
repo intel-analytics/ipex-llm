@@ -67,9 +67,10 @@ def inference(llm, prompt, repo_id_or_model_path):
 
     st = time.time()
 
-    tokens_id = tokenizer.encode(prompt)
+    # please note that the prompt here can either be a string or a list of string
+    tokens_id = tokenizer(prompt).input_ids
     output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-    output = tokenizer.decode(output_tokens_id)
+    output = tokenizer.batch_decode(output_tokens_id)
 
     print(f'Inference time: {time.time()-st} s')
     print(f'Output:\n{output}')
@@ -78,9 +79,10 @@ def inference(llm, prompt, repo_id_or_model_path):
     print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
     st = time.time()
 
+    # please note that the prompt here can either be a string or a list of string
     tokens_id = llm.tokenize(prompt)
     output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-    output = llm.decode(output_tokens_id)
+    output = llm.batch_decode(output_tokens_id)
 
     print(f'Inference time: {time.time()-st} s')
     print(f'Output:\n{output}')
@@ -89,7 +91,7 @@ def inference(llm, prompt, repo_id_or_model_path):
     print('-'*20, ' fast forward ', '-'*20)
     st = time.time()
 
-    output = llm(prompt,
+    output = llm(prompt, # please note that the prompt here can ONLY be a string
                  max_tokens=32)
 
     print(f'Inference time (fast forward): {time.time()-st} s')

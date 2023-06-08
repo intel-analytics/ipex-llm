@@ -13,11 +13,17 @@ pip install protobuf==3.20.0
 ```
 Please note that `protobuf==3.20.0` is for HuggingFace `transformers` tokenizer for Llama family model.
 
+Please also note that if you choose Llama family model `'decapoda-research/llama-7b-hf'` (which is default in this example), you should also install
+```bash
+pip install transformers==4.28.1
+```
+as the `tokenizer_config.json` is not up to date for this model.
+
 ## Run Example
 ```bash
 python ./llama.py --thread-num THREAD_NUM
 ```
 arguments info:
 - `--thread-num THREAD_NUM`: required argument defining the number of threads to use for inference. It is default to be `2`.
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: optional argument defining the huggingface repo id from which the Llama family model is downloaded, or the path to the huggingface checkpoint folder for Llama family model. It is default to be `'lmsys/vicuna-7b-delta-v1.1'`
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: optional argument defining the huggingface repo id from which the Llama family model is downloaded, or the path to the huggingface checkpoint folder for Llama family model. It is default to be `'decapoda-research/llama-7b-hf'`
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: tell me something about intel. A:'`.
