@@ -56,7 +56,7 @@ class GenerationMixin:
         if not is_batched:
             result = result[0]
         return result
-    
+
     def decode(self, tokens: List[int]) -> str:
         '''
         Decode the id to words
@@ -74,7 +74,7 @@ class GenerationMixin:
         return self.detokenize(tokens).decode()
 
     def batch_decode(self,
-               tokens: Union[List[int], List[List[int]]]) -> str:
+                     tokens: Union[List[int], List[List[int]]]) -> str:
         '''
         Decode the id to words
 
