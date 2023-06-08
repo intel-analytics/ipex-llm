@@ -200,7 +200,25 @@ class Bloom:
                     break
                 else:
                     prompt = self._eval(prompt, 1, i != 0, stop)['choices'][0]['text']
-                    yield prompt
+                    yield {
+                        "id": completion_id,
+                        "object": "text_completion",
+                        "created": created,
+                        "model": self.model_path,
+                        "choices": [
+                            {
+                                "text": prompt,
+                                "index": 0,
+                                "logprobs": None,
+                                "finish_reason": None,
+                            }
+                        ],
+                        "usage":
+                            {
+                                # TODO: need tokenize
+                                "prompt_tokens": None
+                        }
+                    }
 
     def free(self):
         bloom_free(self.ctx)
