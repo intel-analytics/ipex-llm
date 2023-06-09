@@ -21,11 +21,11 @@ import tempfile
 import shutil
 
 from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import is_local_path
+from bigdl.dllib.utils.file_utils import is_local_path, put_local_file_to_remote, \
+    put_local_files_with_prefix_to_remote
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.data.file import is_file, exists, get_remote_file_to_local, \
-    get_remote_files_with_prefix_to_local, put_local_file_to_remote, \
-    put_local_files_with_prefix_to_remote
+    get_remote_files_with_prefix_to_local
 from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
