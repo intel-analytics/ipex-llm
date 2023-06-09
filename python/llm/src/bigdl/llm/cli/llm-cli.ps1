@@ -3,7 +3,7 @@ $lib_dir = Join-Path $llm_dir "libs"
 
 $model_family = ""
 $threads = 8
-$n_predict = 512
+$n_predict = 128
 
 # Function to display help message
 function Display-Help

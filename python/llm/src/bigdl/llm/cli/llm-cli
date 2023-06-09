@@ -3,7 +3,7 @@
 # Default values
 model_family=""
 threads=8
-n_predict=512
+n_predict=128
 
 
 llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
