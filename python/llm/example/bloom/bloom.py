@@ -56,7 +56,7 @@ def convert_and_load(repo_id_or_model_path, n_threads):
 
     return llm
 
-def inference(llm, prompt, repo_id_or_model_path):
+def inference(llm, prompt):
 
     st = time.time()
 
@@ -82,7 +82,7 @@ def main():
     llm = convert_and_load(repo_id_or_model_path=args.repo_id_or_model_path, n_threads=args.thread_num)
 
     # Step 2: conduct inference
-    inference(llm=llm, prompt=args.prompt, repo_id_or_model_path=args.repo_id_or_model_path)
+    inference(llm=llm, prompt=args.prompt)
 
 
 if __name__ == '__main__':
