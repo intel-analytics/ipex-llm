@@ -62,7 +62,7 @@ def inference(llm, prompt, repo_id_or_model_path):
     print('-'*20, ' HuggingFace transformers tokenizer ', '-'*20)
     from transformers import LlamaTokenizer
 
-    print('Please note that the loading of transformers tokenizer may takes some time.\n')
+    print('Please note that the loading of HuggingFace transformers tokenizer may takes some time.\n')
     tokenizer = LlamaTokenizer.from_pretrained(repo_id_or_model_path)
 
     st = time.time()
