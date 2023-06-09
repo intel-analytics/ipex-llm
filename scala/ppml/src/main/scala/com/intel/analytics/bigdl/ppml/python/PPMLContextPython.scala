@@ -28,9 +28,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.util
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
-
-
-
+import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMModelMethods, LightGBMClassificationModel, LightGBMRegressionModel, LightGBMRankerModel, LightGBMClassifier}
+import com.microsoft.azure.synapse.ml.lightgbm.booster.LightGBMBooster
 
 object PPMLContextPython {
   def ofFloat: PPMLContextPython[Float] = new PPMLContextPython[Float]()
@@ -79,7 +78,7 @@ class PPMLContextPython[T]() {
     path: String,
     cryptoStr: String,
     primaryKeyName: String = ""): Unit = {
-      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val cryptoMode = CryptoMode.parse(cryptoStr)
       sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
   }
 
@@ -88,9 +87,9 @@ class PPMLContextPython[T]() {
     modelPath: String,
     cryptoStr: String,
     primaryKeyName: String = ""): LightGBMClassificationModel = {
-      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val cryptoMode = CryptoMode.parse(cryptoStr)
       val model = sc.loadLightGBMClassificationModel(modelPath,
-        cryptoMode, primaryKey)
+        cryptoMode, primaryKeyName)
       model
   }
 
@@ -99,9 +98,9 @@ class PPMLContextPython[T]() {
     modelPath: String,
     cryptoStr: String,
     primaryKeyName: String = ""): LightGBMRegressionModel = {
-      val cryptoMode = CryptoMode.parse(cryptoModeStr)
-      val model = sc.loadLightGBMClassificationModel(modelPath,
-        cryptoMode, primaryKey)
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      val model = sc.loadLightGBMRegressionModel(modelPath,
+        cryptoMode, primaryKeyName)
       model
   }
 
@@ -110,9 +109,9 @@ class PPMLContextPython[T]() {
     modelPath: String,
     cryptoStr: String,
     primaryKeyName: String = ""): LightGBMRankerModel = {
-      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val cryptoMode = CryptoMode.parse(cryptoStr)
       val model = sc.loadLightGBMRankerModel(modelPath,
-        cryptoMode, primaryKey)
+        cryptoMode, primaryKeyName)
       model
   }
 
