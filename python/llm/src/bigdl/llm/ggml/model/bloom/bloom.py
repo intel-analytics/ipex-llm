@@ -60,7 +60,7 @@ class Bloom:
                  n_ctx: int = 512,
                  seed: int = 1337,
                  logits_all: bool = False,
-                 n_threads: int = -1,
+                 n_threads: int = 2,
                  n_batch: int = 8,
                  last_n_tokens_size: int = 64,
                  verbose: bool = True,
@@ -72,8 +72,7 @@ class Bloom:
             n_ctx: Maximum context size.
             seed: Random seed. 0 for random.
             logits_all: Return logits for all tokens, not just the last token.
-            n_threads: Number of threads to use.
-                       If None, the number of threads is automatically determined.
+            n_threads: Number of threads to use. Default to be 2.
             n_batch: Maximum number of prompt tokens to batch together when calling llama_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             verbose: Print verbose output to stderr.
