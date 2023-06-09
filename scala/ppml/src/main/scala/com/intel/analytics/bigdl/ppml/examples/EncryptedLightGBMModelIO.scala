@@ -46,14 +46,15 @@ object EncryptedLightGBMModelIO extends Supportive {
         .setOutputCol("classIndex")
         .fit(df)
       val labelTransformed = stringIndexer.transform(df).drop("class")
-      val vectorAssembler = new VectorAssembler().
-        setInputCols(Array("sepal length", "sepal width", "petal length", "petal width")).
-        setOutputCol("features")
+      val vectorAssembler = new VectorAssembler()
+        .setInputCols(Array("sepal length", "sepal width", "petal length", "petal width"))
+        .setHandleInvalid("skip")
+        .setOutputCol("features")
       val dfinput = vectorAssembler.transform(labelTransformed)
         .select("features", "classIndex")
       dfinput.randomSplit(Array(0.8, 0.2))
     }
-    
+
     val model = timing("2/4 create a LightGBMClassifier and fit a LightGBMClassificationModel") {
       val classifier = new LightGBMClassifier()
       classifier.setFeaturesCol("features")

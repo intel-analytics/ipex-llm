@@ -56,7 +56,7 @@ class PPMLContext {
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
                cryptoMode: CryptoMode = PLAIN_TEXT,
-               primaryKeyName: String = "defaultKey"): RDD[String] = {
+               primaryKeyName: String = ""): RDD[String] = {
     cryptoMode match {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
@@ -70,7 +70,7 @@ class PPMLContext {
   def loadLightGBMClassificationModel(
     modelPath: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
-    primaryKeyName: String = "defaultKey"): LightGBMClassificationModel = {
+    primaryKeyName: String = ""): LightGBMClassificationModel = {
       if (cryptoMode != PLAIN_TEXT) {
         loadDataKeyPlainText(modelPath, primaryKeyName)
       }
@@ -85,7 +85,7 @@ class PPMLContext {
   def loadLightGBMRegressionModel(
     modelPath: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
-    primaryKeyName: String = "defaultKey"): LightGBMRegressionModel = {
+    primaryKeyName: String = ""): LightGBMRegressionModel = {
       if (cryptoMode != PLAIN_TEXT) {
         loadDataKeyPlainText(modelPath, primaryKeyName)
       }
@@ -98,7 +98,7 @@ class PPMLContext {
   def loadLightGBMRankerModel(
     modelPath: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
-    primaryKeyName: String = "defaultKey"): LightGBMRankerModel = {
+    primaryKeyName: String = ""): LightGBMRankerModel = {
       if (cryptoMode != PLAIN_TEXT) {
         loadDataKeyPlainText(modelPath, primaryKeyName)
       }
@@ -112,11 +112,13 @@ class PPMLContext {
     model: LightGBMModel,
     path: String,
     cryptoMode: CryptoMode = PLAIN_TEXT,
-    primaryKeyName: String = "defaultKey"): Unit = {
-      if (cryptoMode != PLAIN_TEXT) {
-        loadDataKeyPlainText(path, primaryKeyName)
-      }
-      model.saveNativeModel(path, true)
+    primaryKeyName: String = ""): Unit = {
+      val lightGBMBooster = model.getNativeModel
+      val sc = sparkSession
+      import sc.implicits._
+      val boosterDF = sparkSession.sparkContext
+        .parallelize(Seq((lightGBMBooster))).toDF
+      write(boosterDF, cryptoMode, primaryKeyName).text(path)
   }
 
   /**
@@ -168,7 +170,7 @@ class PPMLContext {
   private def loadDataKeyPlainText(dirPath: String,
     primaryKeyName: String): String = {
     val dataKeyPlainText = primaryKeyName match {
-      case "defaultKey" =>
+      case "" =>
         keyLoaderManagement.retrieveKeyLoader(defaultKey)
           .retrieveDataKeyPlainText(dirPath)
       case _ =>
