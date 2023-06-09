@@ -105,7 +105,7 @@ def main():
     parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
                         help='The huggingface repo id for LLaMA family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default='Q: tell me something about intel. A:',
+    parser.add_argument('--prompt', type=str, default='Q: tell me something about Intel. A:',
                         help='Prompt to infer')
     args = parser.parse_args()
 
