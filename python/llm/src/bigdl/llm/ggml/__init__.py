@@ -19,6 +19,5 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-from .quantize import quantize
-from .convert import _convert_to_ggml
-from .convert_model import convert_model
+from bigdl.llm.utils.common import LazyImport
+convert_model = LazyImport('bigdl.llm.ggml.convert_model.convert_model')
