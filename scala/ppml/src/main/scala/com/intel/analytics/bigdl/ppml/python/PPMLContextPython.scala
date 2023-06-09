@@ -55,7 +55,7 @@ class PPMLContextPython[T]() {
   }
 
   def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String,
-    primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
+    primaryKeyName: String = ""): EncryptedDataFrameWriter = {
     logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.write(dataFrame, cryptoMode, primaryKeyName)
@@ -63,7 +63,7 @@ class PPMLContextPython[T]() {
 
   def textFile(sc: PPMLContext, path: String,
     minPartitions: Int, cryptoModeStr: String,
-    primaryKeyName: String = "defaultKey"): RDD[String] = {
+    primaryKeyName: String = ""): RDD[String] = {
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
@@ -71,6 +71,49 @@ class PPMLContextPython[T]() {
   def sql(sc: PPMLContext, sqlText: String): DataFrame = {
     logger.debug("running spark sql " + sqlText)
     sc.sql(sqlText)
+  }
+
+  def saveLightGBMModel[LightGBMModel <: LightGBMModelMethods](
+    sc: PPMLContext,
+    model: LightGBMModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def loadLightGBMClassificationModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMClassificationModel = {
+      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val model = sc.loadLightGBMClassificationModel(modelPath,
+        cryptoMode, primaryKey)
+      model
+  }
+
+  def loadLightGBMRegressionModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMRegressionModel = {
+      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val model = sc.loadLightGBMClassificationModel(modelPath,
+        cryptoMode, primaryKey)
+      model
+  }
+
+  def loadLightGBMRankerModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMRankerModel = {
+      val cryptoMode = CryptoMode.parse(cryptoModeStr)
+      val model = sc.loadLightGBMRankerModel(modelPath,
+        cryptoMode, primaryKey)
+      model
   }
 
   /**
