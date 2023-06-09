@@ -15,16 +15,18 @@
 #
 
 import os
-import types
 import subprocess
+import types
+
 import cloudpickle
-from pyspark.sql import DataFrame
 from pyspark.rdd import RDD
+from pyspark.sql import DataFrame
 from torch.utils.data import Dataset, DataLoader
+
+from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.orca.learn.mpi.mpi_runner import MPIRunner
 from bigdl.orca.learn.mpi.utils import *
-from bigdl.dllib.utils.log4Error import *
 
 
 class MPIEstimator:
@@ -58,7 +60,7 @@ class MPIEstimator:
     # triggered at the end of an epoch.
     def fit(self, data, epochs=1, batch_size=32, validation_data=None, validate_batch_size=32,
             train_func=None, validate_func=None, train_batches=None, validate_batches=None,
-            validate_steps=None, feature_cols=None, label_cols=None, before_train_func=None, mpi_config=None):
+            validate_steps=None, feature_cols=None, label_cols=None, mpi_options=None):
         if isinstance(data, DataFrame):
             invalidInputError(feature_cols is not None and label_cols is not None,
                               "feature_cols and label_cols must be provided if data is"
@@ -97,7 +99,7 @@ class MPIEstimator:
                     put_to_plasma(object_store_address)).collect()
                 validate_size_map = {}
                 for partition_id, subpartition_id, subpartition_size, object_id, ip \
-                        in validate_plasma_meta:
+                    in validate_plasma_meta:
                     if ip not in validate_size_map:
                         validate_size_map[ip] = {}
                     if partition_id not in validate_size_map[ip]:
@@ -130,7 +132,7 @@ class MPIEstimator:
             else:
                 validation_data_creator = None
         if not train_func:
-            train_func = train_epoch
+            train_func = train
         if validation_data_creator:
             if not validate_func:
                 validate_func = validate
@@ -138,9 +140,9 @@ class MPIEstimator:
         with open("mpi_train_data.pkl", "wb") as f:
             cloudpickle.dump((data_creator, epochs, batch_size, validation_data_creator,
                               validate_batch_size, train_func, validate_func, train_batches,
-                              validate_batches, validate_steps, before_train_func), f)
+                              validate_batches, validate_steps), f)
         self.mpi_runner.scp_file("mpi_train_data.pkl", self.dir)
-        self.mpi_runner.run("{}/mpi_train.py".format(self.dir), mpi_config=mpi_config, pkl_path=self.dir)
+        self.mpi_runner.run("{}/mpi_train.py".format(self.dir), mpi_options=mpi_options, pkl_path=self.dir)
         if isinstance(data, DataFrame) or isinstance(data, RDD):
             self.mpi_runner.shutdown_plasma()
 
@@ -164,11 +166,11 @@ def convert_row(feature_cols, label_cols):
             return features, labels
         else:
             return features,
+
     return transform
 
 
 def put_to_plasma(address):
-
     def f(index, iterator):
         import pyarrow.plasma as plasma
         client = plasma.connect(address)
@@ -294,7 +296,6 @@ class PlasmaNDArrayDataset(Dataset):
 
 def plasma_data_creator(meta_data, object_store_address,
                         workers_per_node=1, batch_size=1):
-
     def create_plasma_dataloader(config):
         dataset = PlasmaNDArrayDataset(meta_data, object_store_address,
                                        workers_per_node, batch_size)
@@ -308,6 +309,74 @@ def plasma_data_creator(meta_data, object_store_address,
         return loader
 
     return create_plasma_dataloader
+
+
+# def train_epoch(config, model, train_ld, train_batches, optimizer, loss, scheduler,
+#                 validate_func, valid_ld, metrics, validate_batches, validate_steps):
+def train(config, epochs, model, train_ld, train_batches, optimizer, loss, scheduler,
+          validate_func, valid_ld, metrics, validate_batches, validate_steps):
+    import time
+    total_loss = 0
+    total_samp = 0
+    total_iter = 0
+    total_time = 0
+    previous_iteration_time = None
+    step = 0
+    for i in range(epochs):
+        # import time
+        # total_loss = 0
+        # total_samp = 0
+        # total_iter = 0
+        # total_time = 0
+        # previous_iteration_time = None
+        train_iter = iter(train_ld)
+        for j in range(train_batches):
+            # Iterate again from the beginning if running out of batches.
+            if j > 0 and j % len(train_ld) == 0:
+                train_iter = iter(train_ld)
+            current_time = time.time()
+            if previous_iteration_time:
+                iteration_time = current_time - previous_iteration_time
+            else:
+                iteration_time = 0
+            previous_iteration_time = current_time
+            x, y = next(train_iter)
+            o = model(x, y)
+            l = loss(o, y)
+            l_np = l.detach().cpu().numpy()
+            y_np = y.detach().cpu().numpy()
+            optimizer.zero_grad()
+            l.backward()
+            optimizer.step()
+            if scheduler:
+                scheduler.step()
+
+            batch_samples = y_np.shape[0]
+            total_time += iteration_time
+            total_loss += l_np * batch_samples
+            total_iter += 1
+            total_samp += batch_samples
+            step += 1
+            should_print = ("print_freq" in config and (step % config["print_freq"] == 0)) \
+                           or (j + 1 == train_batches)
+            if should_print:
+                average_batch_time = 1000.0 * total_time / total_iter
+                total_time = 0
+                average_loss = total_loss / total_samp
+                total_loss = 0
+
+                print(
+                    "Finished training it {}/{} of epoch {}, {:.2f} ms/it, ".format(
+                        j + 1, train_batches, i, average_batch_time)
+                    + "loss {:.6f}, ".format(average_loss)
+                )
+                total_iter = 0
+                total_samp = 0
+
+            should_validate = valid_ld and ((validate_steps > 0 and (step % validate_steps == 0))
+                                            or (j + 1 == train_batches))
+            if should_validate:
+                validate_func(config, model, valid_ld, metrics, validate_batches)
 
 
 def train_epoch(config, model, train_ld, train_batches, optimizer, loss, scheduler,
@@ -347,7 +416,7 @@ def train_epoch(config, model, train_ld, train_batches, optimizer, loss, schedul
         total_samp += batch_samples
 
         should_print = ("print_freq" in config and ((j + 1) % config["print_freq"] == 0)) \
-            or (j + 1 == train_batches)
+                       or (j + 1 == train_batches)
         if should_print:
             average_batch_time = 1000.0 * total_time / total_iter
             total_time = 0

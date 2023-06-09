@@ -62,7 +62,7 @@ class MPIRunner:
         import getpass
         self.user = getpass.getuser()
 
-    def run(self, file, mpi_config=None, **kwargs):
+    def run(self, file, mpi_options=None, **kwargs):
         file_path = os.path.abspath(file)
         invalidInputError(os.path.exists(file_path), "file_path doesn't exist")
         file_dir = "/".join(file_path.split("/")[:-1])
@@ -72,20 +72,20 @@ class MPIRunner:
         cmd = ["mpiexec.hydra"]
         # -l would label the output with process rank. -l/-ppn not available for openmpi.
         # mpi_config = "-np {} ".format(
-        mpi_config_all = "-np {} -ppn {} -l ".format(
+        mpi_config = "-np {} -ppn {} -l ".format(
             self.processes_per_node * len(self.hosts),
             self.processes_per_node)
-        if mpi_config:
-            mpi_config_all += mpi_config
+        if mpi_options:
+            mpi_config += mpi_options
         mpi_env = os.environ.copy()
         mpi_env.update(self.env)
-        for k, v in mpi_env.items():
-            mpi_config_all += "-genv I_MPI_PIN_DOMAIN={} ".format(mpi_env["I_MPI_PIN_DOMAIN"])
+        if "I_MPI_PIN_DOMAIN" in mpi_env:
+            mpi_config += "-genv I_MPI_PIN_DOMAIN={} ".format(mpi_env["I_MPI_PIN_DOMAIN"])
         if "OMP_NUM_THREADS" in mpi_env:
-            mpi_config_all += "-genv OMP_NUM_THREADS={} ".format(mpi_env["OMP_NUM_THREADS"])
+            mpi_config += "-genv OMP_NUM_THREADS={} ".format(mpi_env["OMP_NUM_THREADS"])
         if len(self.remote_hosts) > 0:
-            mpi_config_all += "-hosts {}".format(",".join(self.hosts))
-        cmd.extend(mpi_config_all.split())
+            mpi_config += "-hosts {}".format(",".join(self.hosts))
+        cmd.extend(mpi_config.split())
         # cmd.append("ls")
         cmd.append(sys.executable)
         cmd.append("-u")  # This can print as the program runs
