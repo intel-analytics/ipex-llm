@@ -12,6 +12,7 @@ Currently `bigdl-llm` has supported
 - Model Family: llama, gptneox, bloom
 - Platform: Ubuntu 20.04 or later, CentOS 7 or later, Windows 10/11
 - Device: CPU
+- Python: 3.9 (recommended) or later 
 
 ## Installation
 BigDL-LLM is a self-contained SDK library for model loading and inferencing. Users could directly
