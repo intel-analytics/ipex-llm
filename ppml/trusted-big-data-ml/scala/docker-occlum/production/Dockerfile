@@ -291,4 +291,16 @@ ADD ./py-examples /opt/py-examples
 # Add jindo lib
 COPY --from=bigdl /opt/jindosdk-4.6.8-linux/lib/*.jar $SPARK_HOME/jars/
 
+# Prepare Bigdl python libs
+RUN unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib
+
+RUN cd $BIGDL_HOME/python-lib/ && \
+    zip -r bigdl.zip ./bigdl && \
+    mv bigdl.zip /opt/py-examples/
+
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
