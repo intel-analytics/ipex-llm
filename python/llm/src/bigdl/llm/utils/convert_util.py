@@ -66,6 +66,8 @@ from typing import (IO, TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
 import numpy as np
 from sentencepiece import SentencePieceProcessor
 from bigdl.llm.utils.common import invalidInputError
+import os
+from pathlib import Path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -1248,7 +1250,8 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
         p.requires_grad = False
     hparams = model.config.to_dict()
 
-    fn_out = outfile_dir + f"/ggml-{model_path.split('/')[-1]}-{outtype}.bin"
+    filestem = Path(model_path).stem
+    fn_out = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
     fout = open(fn_out, "wb")
 
     ggml_file_magic = 0x67676d66  # 0x67676d6c is unversioned
@@ -1339,7 +1342,8 @@ def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
                                                  if outtype == "f16" else torch.float32,
                                                  low_cpu_mem_usage=True)
 
-    fn_out = outfile_dir + f"/ggml-model-{model_path.split('/')[-1]}-{outtype}.bin"
+    filestem = Path(model_path).stem
+    fn_out = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
     fout = open(fn_out, "wb")
 
     if outtype == "f16":
