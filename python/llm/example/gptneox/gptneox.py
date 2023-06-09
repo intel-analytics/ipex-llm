@@ -105,7 +105,7 @@ def main():
     parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/RedPajama-INCITE-7B-Chat",
                         help='The huggingface repo id for GPT-NeoX family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default='Q: tell me something about Intel. A:',
+    parser.add_argument('--prompt', type=str, default='Q: What is AI? A:',
                         help='Prompt to infer')
     args = parser.parse_args()
 
