@@ -736,14 +736,20 @@ class TestOpenVINO(TestCase):
         with InferenceOptimizer.get_context(ov_model):
             output1 = ov_model(x1, x2, x3)
             np.testing.assert_almost_equal(target.numpy(), output1.numpy(), decimal=5)
+            # test tuple input as kwargs
+            output2 = ov_model(x1, x2=x2, x3=x3)
+            np.testing.assert_almost_equal(output1.numpy(), output2.numpy(), decimal=5)
         
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             InferenceOptimizer.save(ov_model, tmp_dir_name)
             load_model = InferenceOptimizer.load(tmp_dir_name)
         
         with InferenceOptimizer.get_context(load_model):
-            output2 = load_model(x1, x2, x3)
-            np.testing.assert_almost_equal(target.numpy(), output2.numpy(), decimal=5)
+            output3 = load_model(x1, x2, x3)
+            np.testing.assert_almost_equal(target.numpy(), output3.numpy(), decimal=5)
+            # test tuple input as kwargs
+            output4 = ov_model(x1, x2=x2, x3=x3)
+            np.testing.assert_almost_equal(output3.numpy(), output4.numpy(), decimal=5)
 
     def test_openvino_keyword_argument(self):
         net = MultipleInputNet()
