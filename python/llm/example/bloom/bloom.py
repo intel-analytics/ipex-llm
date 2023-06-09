@@ -31,7 +31,7 @@ def convert_and_load(repo_id_or_model_path, n_threads):
     # the downloaded folder as the value of `pretrained_model_name_or_path``
     llm = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=repo_id_or_model_path,
-        model_family='llama',
+        model_family='bloom',
         dtype='int4',
         cache_dir='./',
         n_threads=n_threads)
@@ -47,51 +47,20 @@ def convert_and_load(repo_id_or_model_path, n_threads):
     #     input_path=model_path,
     #     output_path='./',
     #     dtype='int4',
-    #     model_family='llama')
+    #     model_family='bloom')
     #
     # llm = AutoModelForCausalLM.from_pretrained(
     #     pretrained_model_name_or_path=output_ckpt_path,
-    #     model_family='llama',
+    #     model_family='bloom',
     #     n_threads=n_threads)
 
     return llm
 
 def inference(llm, prompt, repo_id_or_model_path):
 
-    # Option 1: Use HuggingFace transformers tokenizer
-    print('-'*20, ' HuggingFace transformers tokenizer ', '-'*20)
-    from transformers import LlamaTokenizer
-
-    print('Please note that the loading of transformers tokenizer may takes some time.\n')
-    tokenizer = LlamaTokenizer.from_pretrained(repo_id_or_model_path)
-
     st = time.time()
 
-    # please note that the prompt here can either be a string or a list of string
-    tokens_id = tokenizer(prompt).input_ids
-    output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-    output = tokenizer.batch_decode(output_tokens_id)
-
-    print(f'Inference time: {time.time()-st} s')
-    print(f'Output:\n{output}')
-
-    # Option 2: Use bigdl-llm based tokenizer
-    print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
-    st = time.time()
-
-    # please note that the prompt here can either be a string or a list of string
-    tokens_id = llm.tokenize(prompt)
-    output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-    output = llm.batch_decode(output_tokens_id)
-
-    print(f'Inference time: {time.time()-st} s')
-    print(f'Output:\n{output}')
-
-    # Option 3: fast forward
-    print('-'*20, ' fast forward ', '-'*20)
-    st = time.time()
-
-    output = llm(prompt, # please note that the prompt here can ONLY be a string
+    output = llm(prompt,
                  max_tokens=32)
 
     print(f'Inference time (fast forward): {time.time()-st} s')
@@ -99,11 +68,11 @@ def inference(llm, prompt, repo_id_or_model_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='LLaMA pipeline example')
+    parser = argparse.ArgumentParser(description='BLOOM pipeline example')
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
-                        help='The huggingface repo id for LLaMA family model to be downloaded'
+    parser.add_argument('--repo-id-or-model-path', type=str, default="bigscience/bloomz-7b1",
+                        help='The huggingface repo id for BLOOM family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Q: tell me something about intel. A:',
                         help='Prompt to infer')

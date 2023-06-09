@@ -103,7 +103,7 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/RedPajama-INCITE-7B-Chat",
-                        help='The huggingface repo id for gptneox family model to be downloaded'
+                        help='The huggingface repo id for GPT-NeoX family model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Q: tell me something about intel. A:',
                         help='Prompt to infer')
