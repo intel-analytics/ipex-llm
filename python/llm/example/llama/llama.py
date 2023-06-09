@@ -99,7 +99,7 @@ def inference(llm, prompt, repo_id_or_model_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Llama pipeline example')
+    parser = argparse.ArgumentParser(description='LLaMA pipeline example')
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",

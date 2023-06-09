@@ -99,7 +99,7 @@ def inference(llm, prompt, repo_id_or_model_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='GptNeoX pipeline example')
+    parser = argparse.ArgumentParser(description='GPT-NeoX pipeline example')
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--repo-id-or-model-path', type=str, default="togethercomputer/RedPajama-INCITE-7B-Chat",
