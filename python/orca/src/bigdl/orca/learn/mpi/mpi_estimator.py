@@ -311,8 +311,6 @@ def plasma_data_creator(meta_data, object_store_address,
     return create_plasma_dataloader
 
 
-# def train_epoch(config, model, train_ld, train_batches, optimizer, loss, scheduler,
-#                 validate_func, valid_ld, metrics, validate_batches, validate_steps):
 def train(config, epochs, model, train_ld, train_batches, optimizer, loss, scheduler,
           validate_func, valid_ld, metrics, validate_batches, validate_steps):
     import time
@@ -323,12 +321,6 @@ def train(config, epochs, model, train_ld, train_batches, optimizer, loss, sched
     previous_iteration_time = None
     step = 0
     for i in range(epochs):
-        # import time
-        # total_loss = 0
-        # total_samp = 0
-        # total_iter = 0
-        # total_time = 0
-        # previous_iteration_time = None
         train_iter = iter(train_ld)
         for j in range(train_batches):
             # Iterate again from the beginning if running out of batches.
