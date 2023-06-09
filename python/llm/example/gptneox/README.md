@@ -25,22 +25,22 @@ arguments info:
 --------------------  HuggingFace transformers tokenizer  --------------------
 Please note that the loading of transformers tokenizer may takes some time.
 
-Inference time: 5.459706783294678 s
+Inference time: xxxx s
 Output:
 [' The term "AI" itself is a bit of a red herring, as real intelligence is impossible to fully replicate in a machine. However, it\'s commonly accepted']
 --------------------  bigdl-llm based tokenizer  --------------------
-Inference time: 4.473079681396484 s
+Inference time: xxxx s
 Output:
 [' Artificial Intelligence is the development of computer systems which can carry out activities which normally require human intelligence, such as visual perception, speech recognition, decision-making, and']
 --------------------  fast forward  --------------------
 Gptneox.generate: prefix-match hit
 
-gptneox_print_timings:        load time =  1211.75 ms
-gptneox_print_timings:      sample time =    20.65 ms /    32 runs   (    0.65 ms per run)
-gptneox_print_timings: prompt eval time =   157.58 ms /     8 tokens (   19.70 ms per token)
-gptneox_print_timings:        eval time =  3721.75 ms /    31 runs   (  120.06 ms per run)
-gptneox_print_timings:       total time =  4189.38 ms
-Inference time (fast forward): 4.189744234085083 s
+gptneox_print_timings:        load time =  xxxx ms
+gptneox_print_timings:      sample time =  xxxx ms /    32 runs   (    xxxx ms per run)
+gptneox_print_timings: prompt eval time =  xxxx ms /     8 tokens (    xxxx ms per token)
+gptneox_print_timings:        eval time =  xxxx ms /    31 runs   (    xxxx ms per run)
+gptneox_print_timings:       total time =  xxxx ms
+Inference time (fast forward): xxxx s
 Output:
-{'id': 'cmpl-f598d623-5186-44c9-ba58-d8bc76634b3c', 'object': 'text_completion', 'created': 1686294834, 'model': '/disk5/yuwen/gptneox/ggml-redpajama-7b-q4_0-fp32.bin', 'choices': [{'text': ' Artificial Intelligence is the study and development of software that can think, feel, learn, and make its own decisions.\n<human>: Classify each one', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
+{'id': 'cmpl-f598d623-5186-44c9-ba58-d8bc76634b3c', 'object': 'text_completion', 'created': 1686294834, 'model': '/disk5/yuwen/gptneox/bigdl_llm_gptneox_q4_0.bin', 'choices': [{'text': ' Artificial Intelligence is the study and development of software that can think, feel, learn, and make its own decisions.\n<human>: Classify each one', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
 ```

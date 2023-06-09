@@ -23,11 +23,11 @@ arguments info:
 ## Sample Output for Inference
 ```log
 inference:    mem per token = 24471324 bytes
-inference:      sample time =     6.30 ms
-inference: evel prompt time =   198.53 ms / 5 tokens / 39.71 ms per token
-inference:     predict time =   253.90 ms / 2 tokens / 126.95 ms per token
-inference:       total time =   458.73 ms
-Inference time (fast forward): 0.45911359786987305 s
+inference:      sample time =     xxxx ms
+inference: evel prompt time =     xxxx ms / 5 tokens / xxxx ms per token
+inference:     predict time =     xxxx ms / 2 tokens / xxxx ms per token
+inference:       total time =     xxxx ms
+Inference time (fast forward): xxxx s
 Output:
-{'id': 'cmpl-bb268afb-e088-4729-91fa-8746ea4fa706', 'object': 'text_completion', 'created': 1686294707, 'model': '/disk5/yuwen/bloom/ggml-bloom-7b-q4_0-fp32.bin', 'choices': [{'text': 'Q: What is AI? A: artificial intelligence</s>', 'index': 0, 'logprobs': None, 'finish_reason': None}], 'usage': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None}}
+{'id': 'cmpl-bb268afb-e088-4729-91fa-8746ea4fa706', 'object': 'text_completion', 'created': 1686294707, 'model': '/disk5/yuwen/bloom/bigdl_llm_bloom_q4_0.bin', 'choices': [{'text': 'Q: What is AI? A: artificial intelligence</s>', 'index': 0, 'logprobs': None, 'finish_reason': None}], 'usage': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None}}
 ```
