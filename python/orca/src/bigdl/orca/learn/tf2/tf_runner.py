@@ -569,8 +569,9 @@ class TFRunner:
         return {
             "weights": self.model.get_weights(),
             "optimizer_weights": self.model.optimizer.get_weights()
-                    if hasattr(self.model.optimizer, "get_weights")
-                    else [var.numpy() for var in self.model.optimizer.variables()]  # type:ignore
+                                 if hasattr(self.model.optimizer, "get_weights")
+                                 else [var.numpy() 
+                                       for var in self.model.optimizer.variables()]  # type:ignore
         }
 
     def set_state(self, state, sample_input=None):
