@@ -70,7 +70,7 @@ object EncryptedLightGBMModelIO extends Supportive {
       lgbmClassificationModel
     }
 
-    timing("3/4 save trained model in ciphtertext") {  
+    timing("3/4 save trained model in ciphtertext") {
       sc.saveLightGBMModel(model = model,
           path = "./lgbmClassification.model", cryptoMode = AES_CBC_PKCS5PADDING)
     }
@@ -81,5 +81,5 @@ object EncryptedLightGBMModelIO extends Supportive {
       val predictions = reloadedModel.transform(test)
       predictions.show(10)
     }
-  } 
+  }
 }

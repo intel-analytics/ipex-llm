@@ -179,7 +179,7 @@ class PPMLContext {
     }
     dataKeyPlainText
   }
-  
+
   def sql(sqlText: String): DataFrame = {
     getSparkSession().sql(sqlText)
   }
