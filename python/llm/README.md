@@ -10,7 +10,7 @@ Users could use `bigdl-llm` to
 Currently `bigdl-llm` has supported
 - Precision: INT4
 - Model Family: llama, gptneox, bloom
-- Platform: Linux, Windows
+- Platform: Ubuntu 20.04 or later, CentOS 7 or later, Windows 10/11
 - Device: CPU
 
 ## Installation
@@ -117,13 +117,13 @@ TODO
 We prepared several examples in https://github.com/intel-analytics/BigDL/tree/main/python/llm/example
 
 ## Dynamic library BOM
-To avoid difficaulties during the installtion. `bigdl-llm` release the C implementation by dynamic library or executive file. The compilation details are stated below. **These information is only for reference, no compilation procedure is needed for our users.**
+To avoid difficaulties during the installtion. `bigdl-llm` release the C implementation by dynamic library or executive file. The compilation details are stated below. **These information is only for reference, no compilation procedure is needed for our users.** `GLIBC` version may affect the compatibility.
 
-| Model family | Platform | Compiler  | GLIBC |
-| ------------ | -------- | --------- | ----- |
-| llama        | Linux    | GCC 9.4.0 | 2.17  |
-| llama        | Windows  | MSVC      |       |
-| gptneox      | Linux    | GCC 9.4.0 | 2.17  |
-| gptneox      | Windows  | MSVC      |       |
-| bloom        | Linux    | GCC 9.4.0 | 2.31  |
-| bloom        | Windows  | MSVC      |       |
+| Model family | Platform | Compiler           | GLIBC |
+| ------------ | -------- | ------------------ | ----- |
+| llama        | Linux    | GCC 9.4.0          | 2.17  |
+| llama        | Windows  | MSVC 19.36.32532.0 |       |
+| gptneox      | Linux    | GCC 9.4.0          | 2.17  |
+| gptneox      | Windows  | MSVC 19.36.32532.0 |       |
+| bloom        | Linux    | GCC 9.4.0          | 2.31  |
+| bloom        | Windows  | MSVC 19.36.32532.0 |       |
