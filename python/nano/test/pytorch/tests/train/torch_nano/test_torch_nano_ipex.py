@@ -182,7 +182,7 @@ class Lite:
         MyNano(use_ipex=True, precision='bf16', num_processes=2, distributed_backend="subprocess").train()
 
     def test_torch_nano_load_state_dict(self):
-        # _ipex_optimizer does not suppory load_state_dict until 1.13
+        # _ipex_optimizer does not support load_state_dict until 1.13
         # https://github.com/intel/intel-extension-for-pytorch/blob/release/1.12/
         # intel_extension_for_pytorch/optim/_optimizer_utils.py#L72
         from bigdl.nano.utils.common import compare_version
