@@ -27,10 +27,12 @@ function display_help {
   echo "usage: ./llm-cli.sh -x MODEL_FAMILY [-h] [args]"
   echo ""
   echo "options:"
-  echo "  -h, --help  show this help message"
+  echo "  -h, --help           show this help message"
   echo "  -x, --model_family {llama,bloom,gptneox}"
-  echo "              family name of model"
-  echo "  args        parameters passed to the specified model function"
+  echo "                       family name of model"
+  echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
+  echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
+  echo "  args                 parameters passed to the specified model function"
 }
 
 function llama {
@@ -60,7 +62,7 @@ while [[ $# -gt 0 ]]; do
     filteredArguments+=("'$1'")
     shift
     ;;
-  -x | --model_family)
+  -x | --model_family | --model-family)
     model_family="$2"
     shift 2
     ;;
@@ -68,7 +70,7 @@ while [[ $# -gt 0 ]]; do
     threads="$2"
     shift 2
     ;;
-  -n | --n_predict)
+  -n | --n_predict | --n-predict)
     n_predict="$2"
     shift 2
     ;;

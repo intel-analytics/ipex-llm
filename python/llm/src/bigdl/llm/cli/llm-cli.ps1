@@ -11,10 +11,12 @@ function Display-Help
     Write-Host "usage: ./llm-cli.ps1 -x MODEL_FAMILY [-h] [args]"
     Write-Host ""
     Write-Host "options:"
-    Write-Host "  -h, --help  show this help message"
+    Write-Host "  -h, --help           show this help message"
     Write-Host "  -x, --model_family {llama,bloom,gptneox}"
-    Write-Host "              family name of model"
-    Write-Host "  args        parameters passed to the specified model function"
+    Write-Host "                       family name of model"
+    Write-Host "  -t N, --threads N    number of threads to use during computation (default: 8)"
+    Write-Host "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
+    Write-Host "  args                 parameters passed to the specified model function"
 }
 
 function llama
@@ -41,7 +43,7 @@ function gptneox
 # Remove model_family/x parameter
 $filteredArguments = @()
 for ($i = 0; $i -lt $args.Length; $i++) {
-    if ($args[$i] -eq '--model_family' -or $args[$i] -eq '-x')
+    if ($args[$i] -eq '--model_family' -or $args[$i] -eq '--model-family' -or $args[$i] -eq '-x')
     {
         if ($i + 1 -lt $args.Length -and $args[$i + 1] -notlike '-*')
         {
@@ -54,7 +56,7 @@ for ($i = 0; $i -lt $args.Length; $i++) {
         $i++
         $threads = $args[$i]
     }
-    elseif ($args[$i] -eq '--n_predict' -or $args[$i] -eq '-n')
+    elseif ($args[$i] -eq '--n_predict' -or $args[$i] -eq '--n-predict' -or $args[$i] -eq '-n')
     {
         $i++
         $n_predict = $args[$i]
