@@ -16,6 +16,9 @@
 
 from bigdl.ppml.ppml_context import *
 from bigdl.ppml.kms.utils.kms_argument_parser import KmsArgumentParser
+from pyspark.sql.types import *
+from pyspark.ml.feature import *
+from synapse.ml.lightgbm import LightGBMClassifier
 
 args = KmsArgumentParser().get_arg_dict()
 sc = PPMLContext('pyspark-lightgbm', args)
@@ -29,30 +32,28 @@ schema = StructType([StructField("sepal length", DoubleType(), True),
 # read data for training
 df = sc.read("plain_text").schema(schema).csv(args["input_path"])
 
-stringIndexer = StringIndexer()
-    .setInputCol("class")
-    .setOutputCol("classIndex")
+stringIndexer = StringIndexer()\
+    .setInputCol("class")\
+    .setOutputCol("classIndex")\
     .fit(df)
 labelTransformed = stringIndexer.transform(df).drop("class")
-vectorAssembler = VectorAssembler()
-    .setInputCols(["sepal length", "sepal width", "petal length", "petal width"])
-    .setHandleInvalid("skip")
+vectorAssembler = VectorAssembler()\
+    .setInputCols(["sepal length", "sepal width", "petal length", "petal width"])\
+    .setHandleInvalid("skip")\
     .setOutputCol("features")
 dfinput = vectorAssembler.transform(labelTransformed).select("features", "classIndex")
 (train, test) = dfinput.randomSplit([0.8, 0.2])
 
 # fit a classification model
-classifier = LightGBMClassifier()
-    .setFeaturesCol("features")
-    .setLabelCol("classIndex")
-    .setNumIterations(100)
-    .setNumLeaves(10)
-    .setMaxDepth(6)
-    .setLambdaL1(0.01)
-    .setLambdaL2(0.01)
-    .setBaggingFreq(5)
-    .setMaxBin(255)
-classificationModel = classifier.fit(train)
+classificationModel = LightGBMClassifier(featuresCol = "features",
+    labelCol = "classIndex",
+    numIterations = 100,
+    numLeaves = 10,
+    maxDepth = 6,
+    lambdaL1 = 0.01,
+    lambdaL2 = 0.01,
+    baggingFreq = 5,
+    maxBin = 255).fit(train)
 
 # save the trained model in ciphertext
 sc.saveLightGBMModel(classificationModel, args["output_path"], "AES/CBC/PKCS5Padding")

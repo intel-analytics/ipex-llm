@@ -19,6 +19,11 @@
 
     <dependencyManagement>
 	<dependencies>
+	    <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+		<artifactId>jackson-core</artifactId>
+		<version>2.6.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
@@ -38,7 +43,7 @@
         <dependency>
             <groupId>com.microsoft.azure</groupId>
             <artifactId>synapseml-lightgbm_2.12</artifactId>
-            <version>0.10.1</version>
+            <version>0.11.1</version>
             <scope>${lightgbm.scope}</scope>
             <exclusions>
                 <exclusion>

@@ -72,12 +72,29 @@ class PPMLContextPython[T]() {
     sc.sql(sqlText)
   }
 
-  def saveLightGBMModel[LightGBMModel <: LightGBMModelMethods](
-    sc: PPMLContext,
-    model: LightGBMModel,
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMClassificationModel,
     path: String,
     cryptoStr: String,
-    primaryKeyName: String = ""): Unit = {
+    primaryKeyName: String): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMRegressionModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMRankerModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String): Unit = {
       val cryptoMode = CryptoMode.parse(cryptoStr)
       sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
   }
@@ -123,8 +140,8 @@ class PPMLContextPython[T]() {
              key: String, value: String): EncryptedDataFrameReader = {
     encryptedDataFrameReader.option(key, value)
   }
-  import net.razorvine.pickle.objects.ClassDict
 
+  import net.razorvine.pickle.objects.ClassDict
   def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
              value: ClassDict): EncryptedDataFrameReader = {
     val classDictMap: util.HashMap[String, Object] =

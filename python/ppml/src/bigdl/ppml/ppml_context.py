@@ -105,16 +105,17 @@ class PPMLContext(JavaValue):
             crypto_mode = "plain_text", primary_key_name = ""):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
-        return callBigDLFunc(self.bigdl_type, "saveLightGBMModel",
-                lightgbm_model._java_obj, path,
-                crypto_mode, primary_key_name)
+        return callBigDlFunc(self.bigdl_type, "saveLightGBMModel",
+                self.value, lightgbm_model._java_obj,
+                path, crypto_mode, primary_key_name)
 
     def loadLightGBMClassificationModel(self, model_path,
             crypto_mode = "plain_text", primary_key_name = ""):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
-        java_model = callBigDLFunc(self.bigdl_type,
-                "loadLightGBMClassificationModel", model_path,
+        java_model = callBigDlFunc(self.bigdl_type,
+                "loadLightGBMClassificationModel",
+                self.value, model_path,
                 crypto_mode, primary_key_name)
         return JavaParams._from_java(java_model)
 
