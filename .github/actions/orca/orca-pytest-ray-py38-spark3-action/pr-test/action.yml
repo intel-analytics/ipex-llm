@@ -30,7 +30,7 @@ runs:
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tabulate==0.8.7
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} scikit-optimize==0.8.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} grpcio==1.43.0
-        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.19.6
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} protobuf==3.20.0
         
         pip list
         
