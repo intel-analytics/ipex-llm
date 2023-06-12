@@ -103,12 +103,16 @@ class PPMLContext(JavaValue):
 
     def saveLightGBMModel(self, lightgbm_model, path,
             crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         return callBigDLFunc(self.bigdl_type, "saveLightGBMModel",
                 lightgbm_model._java_obj, path,
                 crypto_mode, primary_key_name)
 
     def loadLightGBMClassificationModel(self, model_path,
             crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         java_model = callBigDLFunc(self.bigdl_type,
                 "loadLightGBMClassificationModel", model_path,
                 crypto_mode, primary_key_name)
@@ -116,6 +120,8 @@ class PPMLContext(JavaValue):
 
     def loadLightGBMRegressionModel(self, model_path,
             crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         java_model = callBigDLFunc(self.bigdl_type,
                 "loadLightGBMRegressionModel", model_path,
                 crypto_mode, primary_key_name)
@@ -123,6 +129,8 @@ class PPMLContext(JavaValue):
 
     def loadLightGBMRankerModel(self, model_path,
             crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         java_model = callBigDLFunc(self.bigdl_type,
                 "loadLightGBMRankerModel", model_path,
                 crypto_mode, primary_key_name)
