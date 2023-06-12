@@ -94,7 +94,7 @@ class Bloom:
         self.last_n_tokens_size = last_n_tokens_size
         self.verbose = verbose
 
-    def __call__(self, prompt: str, max_tokens: int, stream: bool = False,
+    def __call__(self, prompt: str, max_tokens: int = 128, stream: bool = False,
                  stop: Optional[List[str]] = []):
         if stream:
             return self.stream(prompt, max_tokens, stop)
