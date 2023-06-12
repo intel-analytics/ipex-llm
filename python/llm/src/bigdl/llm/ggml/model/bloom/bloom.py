@@ -46,22 +46,31 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .bloom_cpp import bloom_load, bloom_free, bloom_run
+from .bloom_cpp import bloom_tokenize, bloom_detokenize, bloom_forward, bloom_eval
 from bigdl.llm.utils.common import invalidInputError
-from typing import List, Optional
+from bigdl.llm.ggml.model.generation import GenerationMixin
+from typing import List, Optional, Generator, Sequence, Union
 import time
 import uuid
 
 
-class Bloom:
+class Bloom(GenerationMixin):
     """High-level Python wrapper for a bloom.cpp model."""
 
     def __init__(self,
                  model_path: str,
                  n_ctx: int = 512,
+                 n_parts: int = -1,
+                 n_gpu_layers: int = 0,
                  seed: int = 1337,
+                 f16_kv: bool = True,
                  logits_all: bool = False,
+                 vocab_only: bool = False,
+                 use_mmap: bool = True,
+                 use_mlock: bool = False,
+                 embedding: bool = False,
                  n_threads: int = 2,
-                 n_batch: int = 8,
+                 n_batch: int = 512,
                  last_n_tokens_size: int = 64,
                  verbose: bool = True,
                  ):
@@ -221,3 +230,82 @@ class Bloom:
 
     def free(self):
         bloom_free(self.ctx)
+
+    def _tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
+        """Tokenize a string.
+
+        Args:
+            text: The utf-8 encoded string to tokenize.
+
+        Raises:
+            RuntimeError: If the tokenization failed.
+
+        Returns:
+            A list of tokens.
+        """
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
+        return bloom_tokenize(self.ctx, text, add_bos)
+
+    def detokenize(self, tokens: List[int]) -> bytes:
+        """Detokenize a list of tokens.
+
+        Args:
+            tokens: The list of tokens to detokenize.
+
+        Returns:
+            The detokenized string.
+        """
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
+        output = b""
+        for token in tokens:
+            output += bloom_detokenize(self.ctx, token)
+        return output
+
+    def forward(self, input_ids: List[int]) -> int:
+        return bloom_forward(ctx=self.ctx,
+                             input_ids=input_ids,
+                             seed=self.seed,
+                             n_threads=self.n_threads,
+                             n_batch=self.n_batch)
+
+    def eval(self, input_ids: List[int]) -> List[List[float]]:
+        """Only used for testing accuracy"""
+        return bloom_eval(ctx=self.ctx,
+                          input_ids=input_ids,
+                          seed=self.seed,
+                          n_threads=self.n_threads,
+                          n_batch=len(input_ids))
+
+    def _generate(self, tokens: Sequence[int]) -> Generator[int, Optional[Sequence[int]], None]:
+        """Create a generator of tokens from a prompt.
+
+        Examples:
+            >>> llm = Bloom(your_model_path)
+            >>> tokens = llm._tokenize(b"Learning English is")
+            >>> for token in llm._generate(tokens):
+            >>>     print(llm.detokenize([token]).decode("utf-8", errors="ignore"))
+
+        Args:
+            tokens: The prompt tokens.
+
+        Yields:
+            The generated tokens.
+        """
+        # TODO: Sample related parameters need to add to align with GenerationMixin.generate
+        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
+
+        while True:
+            token = self.forward(tokens)
+            tokens_or_none = yield token
+            tokens.append(token)
+            if tokens_or_none is not None:
+                tokens.extend(tokens_or_none)
+
+    def embed(self, prompt: Union[str, bytes]) -> List[float]:
+        """Only used for langchain"""
+        input_ids = self.tokenize(prompt)
+        return bloom_embed(ctx=self.ctx,
+                           input_ids=input_ids,
+                           seed=self.seed,
+                           n_threads=self.n_threads,
+                           n_batch=len(input_ids))
