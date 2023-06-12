@@ -19,6 +19,8 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+import argparse
+
 from langchain.vectorstores import Chroma
 from langchain.chains.chat_vector_db.prompts import (CONDENSE_QUESTION_PROMPT,
                                                      QA_PROMPT)
@@ -31,38 +33,57 @@ from bigdl.llm.langchain.llms import BigdlLLM
 from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
 
 
-INPUT_DOC="python/llm/example/langchain/bigdl.txt"
-# MODEL_PATH="model/ggml/gpt4all-model-q4_0.bin"
-# MODEL_PATH="model/ggml/vicuna-model-q4_0.bin"
-MODEL_PATH="model/ggml/nano-gptneox-7b-redpajama-q4_0.bin"
-# MODEL_FAMILY="llama"
-MODEL_FAMILY="gptneox"
 
-query = "What is BigDL"
-
-callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-
-# split texts of input doc
-with open(INPUT_DOC) as f:
-    input_doc = f.read()
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-texts = text_splitter.split_text(input_doc)
-
-# create embeddings and store into vectordb
-
-embeddings = BigdlLLMEmbeddings(model_path=MODEL_PATH, model_family=MODEL_FAMILY, n_ctx=2048)
-docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
-
-#get relavant texts
-docs = docsearch.get_relevant_documents(query)
-
+def main(args):
     
-bigdl_llm = BigdlLLM(
-    model_path=MODEL_PATH, model_family=MODEL_FAMILY, n_ctx=2048, callback_manager=callback_manager
-)
+    input_path = args.input_path 
+    model_path = args.model_path 
+    model_family = args.model_family
+    query = args.question
+    n_ctx = args.n_ctx
+    n_threads=args.thread_num
 
-doc_chain = load_qa_chain(
-    bigdl_llm, chain_type="stuff", prompt=QA_PROMPT, callback_manager=callback_manager
-)
 
-doc_chain.run(input_documents=docs, question=query)
+    callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+
+    # split texts of input doc
+    with open(input_path) as f:
+        input_doc = f.read()
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+    texts = text_splitter.split_text(input_doc)
+
+    # create embeddings and store into vectordb
+    embeddings = BigdlLLMEmbeddings(model_path=model_path, model_family=model_family, n_threads=n_threads, n_ctx=n_ctx)
+    docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
+
+    #get relavant texts
+    docs = docsearch.get_relevant_documents(query)
+        
+    bigdl_llm = BigdlLLM(
+        model_path=model_path, model_family=model_family, n_ctx=n_ctx, n_threads=n_threads, callback_manager=callback_manager
+    )
+
+    doc_chain = load_qa_chain(
+        bigdl_llm, chain_type="stuff", prompt=QA_PROMPT, callback_manager=callback_manager
+    )
+
+    doc_chain.run(input_documents=docs, question=query)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser.add_argument('-x','--model-family', type=str, required=True,
+                        help='the model family')
+    parser.add_argument('-m','--model-path', type=str, required=True,
+                        help='the path to the converted llm model')
+    parser.add_argument('-i', '--input-path', type=str,
+                        help='the path to the input doc.')
+    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+                        help='qustion you want to ask.')
+    parser.add_argument('-c','--n-ctx', type=int, default=2048,
+                        help='number of threads to use for inference')
+    parser.add_argument('-t','--thread-num', type=int, default=2,
+                        help='number of threads to use for inference')
+    args = parser.parse_args()
+    
+    main(args)

@@ -70,9 +70,9 @@ class BigdlLLM(LLM):
 
 
     family_info = {
-        'llama': {'module': "bigdl.llm.models.llama" , 'class': "Llama"},
-        'bloom': {'module': "bigdl.llm.models.bloom", 'class': "Bloom"},
-        'gptneox': {'module': "bigdl.llm.models.gptneox", 'class': "Gptneox"},
+        'llama': {'module': "bigdl.llm.models" , 'class': "Llama"},
+        'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
+        'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
     }  #: :meta private:
     """info necessary for different model families initiation and configure"""
 
@@ -181,6 +181,8 @@ class BigdlLLM(LLM):
         # For backwards compatibility, only include if non-null.
         if values["n_gpu_layers"] is not None:
             model_params["n_gpu_layers"] = values["n_gpu_layers"]
+        if values["n_threads"] is None:
+            model_params["n_threads"] = 2
 
 
         model_family = values["model_family"].lower()

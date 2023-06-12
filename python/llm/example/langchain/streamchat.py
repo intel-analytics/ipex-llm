@@ -19,36 +19,52 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+import argparse
+
 from bigdl.llm.langchain.llms import BigdlLLM
 from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
-template ="""{question}"""
+def main(args):
+    
+    question = args.question
+    model_path = args.model_path
+    model_family = args.model_family
+    n_threads = args.thread_num
+    
+    template ="""{question}"""
 
-prompt = PromptTemplate(template=template, input_variables=["question"])
+    prompt = PromptTemplate(template=template, input_variables=["question"])
+
+    # Callbacks support token-wise streaming
+    callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+    
+    # Verbose is required to pass to the callback manager
+    llm = BigdlLLM(
+        model_path=model_path,
+        model_family=model_family,
+        n_threads=n_threads,
+        callback_manager=callback_manager, 
+        verbose=True
+    )
+
+    llm_chain = LLMChain(prompt=prompt, llm=llm)
+
+    llm_chain.run(question)
 
 
-# Callbacks support token-wise streaming
-callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-# Verbose is required to pass to the callback manager
-
-
-# Make sure the model path is correct for your system!
-llm = BigdlLLM(
-    # model_path="model/ggml/gpt4all-model-q4_0.bin", 
-    model_path="model/ggml/vicuna-model-q4_0.bin",
-    # model_path="model/ggml/nano-gptneox-7b-redpajama-q4_0.bin",
-    # model_family="gptneox",
-    callback_manager=callback_manager, 
-    verbose=True
-)
-
-
-llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-#question = "What NFL team won the Super Bowl in the year Justin Bieber was born?"
-
-question = "What is AI?"
-llm_chain.run(question)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser.add_argument('-x','--model-family', type=str, required=True,
+                        help='the model family')
+    parser.add_argument('-m','--model-path', type=str, required=True,
+                        help='the path to the converted llm model')
+    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+                        help='qustion you want to ask.')
+    parser.add_argument('-t','--thread-num', type=int, default=2,
+                        help='Number of threads to use for inference')
+    args = parser.parse_args()
+    
+    main(args)

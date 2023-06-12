@@ -24,4 +24,3 @@ from .bigdlllm import BigdlLLMEmbeddings
 __all__ = [
     "BigdlLLMEmbeddings",
 ]
-

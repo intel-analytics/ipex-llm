@@ -67,9 +67,9 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
     """the model family: currently supports llama, gptneox, and bloom."""
 
     family_info = {
-        'llama': {'module': "bigdl.llm.ggml.model.llama", 'class': "Llama"},
-        'bloom': {'module': "bigdl.llm.ggml.model.bloom", 'class': "Bloom"},
-        'gptneox': {'module': "bigdl.llm.ggml.model.gptneox", 'class': "Gptneox"},
+        'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
+        'bloom': {'module': "bigdl.llm.models", 'class': "Bloom"},
+        'gptneox': {'module': "bigdl.llm.models", 'class': "Gptneox"},
     }  #: :meta private:
     """info necessary for different model family initiation and configure"""
 
@@ -133,8 +133,9 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
         # For backwards compatibility, only include if non-null.
         if values["n_gpu_layers"] is not None:
             model_params["n_gpu_layers"] = values["n_gpu_layers"]
-
-
+        if values["n_threads"] is None:
+            model_params["n_threads"] = 2
+            
         model_family = values["model_family"].lower()
         if model_family not in list(values["family_info"].keys()):
             raise ValueError("Model family '%s' is not supported. Valid" \
