@@ -2,6 +2,9 @@
 
 # Default values
 model_family=""
+threads=8
+n_predict=128
+
 
 llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
 lib_dir="$llm_dir/libs"
@@ -24,26 +27,28 @@ function display_help {
   echo "usage: ./llm-cli.sh -x MODEL_FAMILY [-h] [args]"
   echo ""
   echo "options:"
-  echo "  -h, --help  show this help message"
+  echo "  -h, --help           show this help message"
   echo "  -x, --model_family {llama,bloom,gptneox}"
-  echo "              family name of model"
-  echo "  args        parameters passed to the specified model function"
+  echo "                       family name of model"
+  echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
+  echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
+  echo "  args                 parameters passed to the specified model function"
 }
 
 function llama {
-  command="$lib_dir/main-llama_$avx_flag ${filteredArguments[*]}"
+  command="$lib_dir/main-llama_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
 
 function bloom {
-  command="$lib_dir/main-bloom_$avx_flag ${filteredArguments[*]}"
+  command="$lib_dir/main-bloom_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
 
 function gptneox {
-  command="$lib_dir/main-gptneox_$avx_flag ${filteredArguments[*]}"
+  command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
   echo "$command"
   eval "$command"
 }
@@ -57,8 +62,16 @@ while [[ $# -gt 0 ]]; do
     filteredArguments+=("'$1'")
     shift
     ;;
-  -x | --model_family)
+  -x | --model_family | --model-family)
     model_family="$2"
+    shift 2
+    ;;
+  -t | --threads)
+    threads="$2"
+    shift 2
+    ;;
+  -n | --n_predict | --n-predict)
+    n_predict="$2"
     shift 2
     ;;
   *)
