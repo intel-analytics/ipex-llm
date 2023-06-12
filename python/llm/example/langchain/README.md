@@ -29,7 +29,7 @@ python ./streamchat.py -m MODEL_PATH -x MODEL_FAMILY -t THREAD_NUM -q "What is A
 ```
 arguments info:
 - `-m MODEL_PATH`: path to the converted model
-- `-x MODEL_FAMILY`: the model family of the model specified in `-m`, available options are `llama`, `gptneox`,`bloom`,  
+- `-x MODEL_FAMILY`: the model family of the model specified in `-m`, available options are `llama`, `gptneox`
 - `-q QUESTION `: question to ask. Default  is `What is AI?`.
 - `-t THREAD_NUM`: required argument defining the number of threads to use for inference. Default is `2`.
 
@@ -39,7 +39,7 @@ python ./docqa.py --t THREAD_NUM -m -x
 ```
 arguments info:
 - `-m CONVERTED_MODEL_PATH`: path to the converted model in above step
-- `-x MODEL_FAMILY`: the model family of the model specified in `-m` 
+- `-x MODEL_FAMILY`: the model family of the model specified in `-m`, available options are `llama`, `gptneox`
 - `-q QUESTION `: question to ask, default question is `What is AI?`.
 - `-t THREAD_NUM`: required argument defining the number of threads to use for inference. Default is `2`.
 
