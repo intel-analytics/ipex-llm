@@ -539,6 +539,50 @@ bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/mo
 ```
 And the decrypt result is under folder `/opt/occlum_spark/data/decryptEhsm`.
 
+## BigDL PySpark SimpleQuery e2e Example using Simple KMS
+
+You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e APP_ID=123456654321 \
+-e API_KEY=123456654321 \
+```
+
+Start run BigDL PySpark SimpleQuery e2e example:
+
+1.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY = `123456654321` for simple KMS.
+The primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`.
+```
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
+```
+4.To encrypt input data. For example, you mount a file called people.csv. It will be encrypted in `/opt/occlum_spark/data/encryptEhsm`.
+```
+bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+```
+5.To run the BigDL SimpleQuery e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh pysql_e2e
+```
+6.You can find encrypted result under folder `/opt/occlum_spark/data/model`. And decrypt the result by:
+```
+bash /opt/ehsm_entry.sh  decrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/model
+```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple`.
+
 ## BigDL MultiPartySparkQuery e2e Example
 
 You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)

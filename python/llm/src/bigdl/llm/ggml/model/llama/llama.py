@@ -55,6 +55,7 @@ import multiprocessing
 from typing import List, Optional, Union, Generator, Sequence, Iterator, Deque, Tuple
 from collections import deque, OrderedDict
 from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.ggml.model.generation import GenerationMixin
 from . import llama_cpp
 from .llama_types import *
 
@@ -119,7 +120,7 @@ class LlamaState:
         self.llama_state_size = llama_state_size
 
 
-class Llama:
+class Llama(GenerationMixin):
     """High-level Python wrapper for a llama.cpp model."""
 
     def __init__(
@@ -136,7 +137,7 @@ class Llama:
         use_mmap: bool = True,
         use_mlock: bool = False,
         embedding: bool = False,
-        n_threads: Optional[int] = None,
+        n_threads: Optional[int] = 2,
         n_batch: int = 512,
         last_n_tokens_size: int = 64,
         lora_base: Optional[str] = None,
@@ -157,8 +158,7 @@ class Llama:
             use_mmap: Use mmap if possible.
             use_mlock: Force the system to keep the model in RAM.
             embedding: Embedding mode only.
-            n_threads: Number of threads to use. If None, the number of threads is
-            automatically determined.
+            n_threads: Number of threads to use. Default to be 2.
             n_batch: Maximum number of prompt tokens to batch together when calling llama_eval.
             last_n_tokens_size: Maximum number of tokens to keep in the last_n_tokens deque.
             lora_base: Optional path to base model, useful if using a quantized base model and
@@ -193,7 +193,7 @@ class Llama:
 
         self.cache: Optional[LlamaCache] = None
 
-        self.n_threads = n_threads or max(multiprocessing.cpu_count() // 2, 1)
+        self.n_threads = n_threads
 
         self.lora_base = lora_base
         self.lora_path = lora_path
@@ -249,7 +249,7 @@ class Llama:
         self._token_nl = Llama.token_nl()
         self._token_eos = Llama.token_eos()
 
-    def tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
+    def _tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
         """Tokenize a string.
 
         Args:
@@ -515,7 +515,7 @@ class Llama:
             penalize_nl=penalize_nl,
         )
 
-    def generate(
+    def _generate(
         self,
         tokens: Sequence[int],
         top_k: int = 40,
@@ -730,7 +730,7 @@ class Llama:
 
         finish_reason = "length"
         multibyte_fix = 0
-        for token in self.generate(
+        for token in self._generate(
             prompt_tokens,
             top_k=top_k,
             top_p=top_p,

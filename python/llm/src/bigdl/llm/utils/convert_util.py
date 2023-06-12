@@ -64,10 +64,10 @@ from pathlib import Path
 from typing import (IO, TYPE_CHECKING, Any, Callable, Dict, Iterable, List,
                     Literal, Optional, Sequence, Tuple, TypeVar, Union)
 import numpy as np
-import torch
 from sentencepiece import SentencePieceProcessor
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from bigdl.llm.utils.common import invalidInputError
+import os
+from pathlib import Path
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -1238,6 +1238,8 @@ def bytes_to_unicode():
 
 
 def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import torch
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  torch_dtype=torch.float16
@@ -1248,7 +1250,8 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
         p.requires_grad = False
     hparams = model.config.to_dict()
 
-    fn_out = outfile_dir + f"/ggml-{model_path.split('/')[-1]}-{outtype}.bin"
+    filestem = Path(model_path).stem
+    fn_out = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
     fout = open(fn_out, "wb")
 
     ggml_file_magic = 0x67676d66  # 0x67676d6c is unversioned
@@ -1317,6 +1320,8 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
 
 
 def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
+    from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+    import torch
     conv_map = {'word_embeddings': 'tok_embeddings',
                 'word_embeddings_layernorm': 'norm',
                 'input_layernorm': 'attention_norm',
@@ -1337,7 +1342,8 @@ def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
                                                  if outtype == "f16" else torch.float32,
                                                  low_cpu_mem_usage=True)
 
-    fn_out = outfile_dir + f"/ggml-model-{model_path.split('/')[-1]}-{outtype}.bin"
+    filestem = Path(model_path).stem
+    fn_out = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
     fout = open(fn_out, "wb")
 
     if outtype == "f16":

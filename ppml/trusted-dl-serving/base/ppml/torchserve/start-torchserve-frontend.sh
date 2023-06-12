@@ -3,6 +3,9 @@ configFile=""
 core=""
 SGX_ENABLED=$SGX_ENABLED
 ATTESTATION=$ATTESTATION
+TEMP_CMD_PATH=/ppml/tmp/torchserve-frontend
+TEMP_CMD_FILE=$TEMP_CMD_PATH/temp_command_file
+mkdir -p $TEMP_CMD_PATH
 while getopts ":f:c:XA" opt
 do
     case $opt in
@@ -29,9 +32,10 @@ cd /ppml || exit
 
 if [[ $SGX_ENABLED == "false" ]]; then
     if [ "$ATTESTATION" = "true" ]; then
-        rm /ppml/temp_command_file || true
-        bash attestation.sh
-        bash temp_command_file
+        cd $TEMP_CMD_PATH
+        rm $TEMP_CMD_FILE || true
+        bash /ppml/attestation.sh
+        bash $TEMP_CMD_FILE
     fi
     taskset -c "$core" /opt/jdk11/bin/java \
             -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
@@ -62,26 +66,29 @@ else
             -ncs"
     if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
-          rm /ppml/temp_command_file || true
-          bash attestation.sh
+          cd $TEMP_CMD_PATH
+          rm $TEMP_CMD_FILE || true
+          bash /ppml/attestation.sh
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             echo "[INFO] Distributed encrypted file system is enabled"
-            bash encrypted-fsd.sh
+            bash /ppml/encrypted-fsd.sh
           fi
-          echo $sgx_command >>temp_command_file
-          export sgx_command="bash temp_command_file"
+          echo $sgx_command >>$TEMP_CMD_FILE
+          export sgx_command="bash $TEMP_CMD_FILE"
     else
           # ATTESTATION is false
           if [ "$ENCRYPTED_FSD" == "true" ]; then
             # ATTESTATION false, encrypted-fsd true
-            rm /ppml/temp_command_file || true
+            cd $TEMP_CMD_PATH
+            rm $TEMP_CMD_FILE || true
             echo "[INFO] Distributed encrypted file system is enabled"
-            bash encrypted-fsd.sh
-            echo $sgx_command >>temp_command_file
-            export sgx_command="bash temp_command_file"
+            bash /ppml/encrypted-fsd.sh
+            echo $sgx_command >>$TEMP_CMD_FILE
+            export sgx_command="bash $TEMP_CMD_FILE"
           fi
     fi
+    cd /ppml || exit
     taskset -c "$core" gramine-sgx bash 2>&1 | tee frontend-sgx.log
-    rm /ppml/temp_command_file || true
+    rm $TEMP_CMD_FILE || true
 fi
 

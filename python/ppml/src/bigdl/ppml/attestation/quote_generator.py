@@ -16,6 +16,7 @@
 
 import ctypes
 import base64
+import os
 
 def generate_tdx_quote(user_report_data):
     # Define the uuid data structure
@@ -67,3 +68,19 @@ def generate_tdx_quote(user_report_data):
     else:
         quote = ctypes.string_at(p_quote, quote_size.value)
         return quote
+
+def generate_gramine_quote(user_report_data):
+    USER_REPORT_PATH = "/dev/attestation/user_report_data"
+    QUOTE_PATH = "/dev/attestation/quote"
+    if not os.path.isfile(USER_REPORT_PATH):
+        print(f"File {USER_REPORT_PATH} not found.")
+        return ""
+    if not os.path.isfile(QUOTE_PATH):
+        print(f"File {QUOTE_PATH} not found.")
+        return ""
+    with open(USER_REPORT_PATH, 'w') as out:
+        out.write(user_report_data)
+    with open(QUOTE_PATH, "rb") as f:
+        quote = f.read()
+    return quote
+
