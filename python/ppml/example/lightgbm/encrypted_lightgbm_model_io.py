@@ -56,9 +56,9 @@ classificationModel = LightGBMClassifier(featuresCol = "features",
     maxBin = 255).fit(train)
 
 # save the trained model in ciphertext
-sc.saveLightGBMModel(classificationModel, args["output_path"], "AES/CBC/PKCS5Padding")
+sc.saveLightGBMModel(classificationModel, args["output_path"], args["output_encrypt_mode"])
 
 # load the encrypted model and use it to predict
-reloadedModel = sc.loadLightGBMClassificationModel(args["output_path"], "AES/CBC/PKCS5Padding")
+reloadedModel = sc.loadLightGBMClassificationModel(args["output_path"], args["input_encrypt_mode"])
 predictions = reloadedModel.transform(test)
 predictions.show(10)
