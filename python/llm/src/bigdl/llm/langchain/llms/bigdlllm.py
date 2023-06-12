@@ -110,9 +110,8 @@ class BigdlLLM(LLM):
     use_mlock: bool = Field(False, alias="use_mlock")
     """Force system to keep model in RAM."""
 
-    n_threads: Optional[int] = Field(None, alias="n_threads")
-    """Number of threads to use.
-    If None, the number of threads is automatically determined."""
+    n_threads: Optional[int] = Field(2, alias="n_threads")
+    """Number of threads to use."""
 
     n_batch: Optional[int] = Field(8, alias="n_batch")
     """Number of tokens to process in parallel.
@@ -181,9 +180,6 @@ class BigdlLLM(LLM):
         # For backwards compatibility, only include if non-null.
         if values["n_gpu_layers"] is not None:
             model_params["n_gpu_layers"] = values["n_gpu_layers"]
-        if values["n_threads"] is None:
-            model_params["n_threads"] = 2
-
 
         model_family = values["model_family"].lower()
         if model_family not in list(values["family_info"].keys()):
