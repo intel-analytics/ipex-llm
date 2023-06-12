@@ -2,7 +2,7 @@
 
 In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM transformers-like API.
 
-**Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, and BLOOM.
+> **Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, and BLOOM.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -26,7 +26,7 @@ arguments info:
   - When model family is `'gptneox'`, it is default to be `'togethercomputer/RedPajama-INCITE-7B-Chat'`.
   - When model family is `'bloom'`, it is default to be `'bigscience/bloomz-7b1'`.
 
-  Please note that `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
+  > **Note** `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: What is CPU? A:'`.
 
 ## Sample Output for Inference
