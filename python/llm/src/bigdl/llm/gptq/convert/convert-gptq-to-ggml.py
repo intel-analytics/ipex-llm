@@ -28,67 +28,8 @@ import torch
 from sentencepiece import SentencePieceProcessor
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
-if len(sys.argv) != 4:
-    print("Usage: convert-gptq-to-ggml.py llamaXXb-4bit.pt tokenizer.model out.bin\n")
-    sys.exit(1)
 
-fname_model = sys.argv[1]
-fname_tokenizer = sys.argv[2]
-dir_out = sys.argv[3]
-invalidInputError(fname_model.endswith(".pt"), "only support pytorch's .pt format now.")
-
-model = torch.load(fname_model, map_location="cpu")
-
-n_vocab, n_embd = model['model.embed_tokens.weight'].shape
-n_layer = 1 + max(int(m.group(1)) for name in model
-                  if (m: =re.match(r'model\.layers\.([0-9]+)', name)))
-
-# hardcoded:
-n_mult = 256
-n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
-
-tokenizer = SentencePieceProcessor(fname_tokenizer)
-
-invalidInputError(tokenizer.vocab_size() == n_vocab, "vocab size not match.")
-
-fname_out = sys.argv[3]
-
-fout = open(fname_out, "wb")
-
-fout.write(b"ggjt"[::-1])  # magic: ggmf in hex
-values = [3,  # file version
-          n_vocab,
-          n_embd,
-          n_mult,
-          n_head,
-          n_layer,
-          n_embd // n_head,  # rot (obsolete)
-          4,
-]
-fout.write(struct.pack("i" * len(values), *values))
-
-
-# This loop unchanged from convert-pth-to-ggml.py:
-for i in range(tokenizer.vocab_size()):
-    if tokenizer.is_unknown(i):
-        text = " \u2047 ".encode("utf-8")
-    elif tokenizer.is_control(i):
-        text = b""
-    elif tokenizer.is_byte(i):
-        piece = tokenizer.id_to_piece(i)
-        if len(piece) != 6:
-            print(f"Invalid token: {piece}")
-            sys.exit(1)
-        byte_value = int(piece[3:-1], 16)
-        text = struct.pack("B", byte_value)
-    else:
-        text = tokenizer.id_to_piece(i).replace("\u2581", " ").encode("utf-8")
-    fout.write(struct.pack("i", len(text)))
-    fout.write(text)
-    fout.write(struct.pack("f", tokenizer.get_score(i)))
-
-
-def write_header(shape, dst_name, ftype_cur):
+def write_header(fout, shape, dst_name, ftype_cur):
     sname = dst_name.encode('utf-8')
     fout.write(struct.pack("iii", len(shape), len(sname), ftype_cur))
     fout.write(struct.pack("i" * len(shape), *shape[::-1]))
@@ -96,7 +37,7 @@ def write_header(shape, dst_name, ftype_cur):
     fout.seek((fout.tell() + 31) & -32)
 
 
-def convert_non_q4(src_name, dst_name):
+def convert_non_q4(src_name, dst_name, model, fout):
     v = model[src_name]
     shape = v.shape
     print("Processing non-Q4 variable: " + src_name + " with shape: ", shape, " and type: ", v.dtype)
@@ -107,7 +48,7 @@ def convert_non_q4(src_name, dst_name):
     ftype_cur = {torch.float16: 1, torch.float32: 0}[v.dtype]
 
     # header
-    write_header(shape, dst_name, ftype_cur)
+    write_header(fout, shape, dst_name, ftype_cur)
 
     # data
     v.numpy().tofile(fout)
@@ -145,7 +86,7 @@ def qzeros_to_zeros(qzeros, bits=4):
     return zeros
 
 
-def convert_q4(src_name, dst_name, permute=False):
+def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     qzeros = model[f"{src_name}.qzeros"].numpy()
     zeros = qzeros_to_zeros(qzeros).T
     scales = model[f"{src_name}.scales"].numpy().T
@@ -207,35 +148,99 @@ def convert_q4(src_name, dst_name, permute=False):
                 .reshape(blob.shape))
 
     # header
-    write_header(shape, dst_name, ftype) # ftype = Q4_1
+    write_header(fout, shape, dst_name, ftype) # ftype = Q4_1
 
     # data
     blob.tofile(fout)
 
+def convert_gptq2ggml(model_path, tokenizer_path, output_path):
+    model = torch.load(model_path, map_location="cpu")
+    
+    n_vocab, n_embd = model['model.embed_tokens.weight'].shape
+    n_layer = 1 + max(int(m.group(1)) for name in model
+                      if (m:=re.match(r'model\.layers\.([0-9]+)', name)))
+    
+    # hardcoded:
+    n_mult = 256
+    n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
+    
+    tokenizer = SentencePieceProcessor(tokenizer_path)
+    
+    invalidInputError(tokenizer.vocab_size() == n_vocab, "vocab size not match.")
+    
+    fout = open(output_path, "wb")
+    
+    fout.write(b"ggjt"[::-1])  # magic: ggmf in hex
+    values = [3,  # file version
+              n_vocab,
+              n_embd,
+              n_mult,
+              n_head,
+              n_layer,
+              n_embd // n_head,  # rot (obsolete)
+              4,
+    ]
+    fout.write(struct.pack("i" * len(values), *values))
+    
+    
+    # This loop unchanged from convert-pth-to-ggml.py:
+    for i in range(tokenizer.vocab_size()):
+        if tokenizer.is_unknown(i):
+            text = " \u2047 ".encode("utf-8")
+        elif tokenizer.is_control(i):
+            text = b""
+        elif tokenizer.is_byte(i):
+            piece = tokenizer.id_to_piece(i)
+            if len(piece) != 6:
+                print(f"Invalid token: {piece}")
+                sys.exit(1)
+            byte_value = int(piece[3:-1], 16)
+            text = struct.pack("B", byte_value)
+        else:
+            text = tokenizer.id_to_piece(i).replace("\u2581", " ").encode("utf-8")
+        fout.write(struct.pack("i", len(text)))
+        fout.write(text)
+        fout.write(struct.pack("f", tokenizer.get_score(i)))
 
-convert_non_q4("model.embed_tokens.weight", "tok_embeddings.weight")
-convert_non_q4("model.norm.weight", "norm.weight")
-convert_non_q4("lm_head.weight", "output.weight")
+    convert_non_q4("model.embed_tokens.weight", "tok_embeddings.weight", model, fout)
+    convert_non_q4("model.norm.weight", "norm.weight", model, fout)
+    convert_non_q4("lm_head.weight", "output.weight", model, fout)
+    
+    for i in range(n_layer):
+        convert_q4(f"model.layers.{i}.self_attn.q_proj",
+                   f"layers.{i}.attention.wq.weight", model, fout, n_head, permute=True)
+        convert_q4(f"model.layers.{i}.self_attn.k_proj",
+                   f"layers.{i}.attention.wk.weight", model, fout, n_head, permute=True)
+        convert_q4(f"model.layers.{i}.self_attn.v_proj",
+                   f"layers.{i}.attention.wv.weight", model, fout, n_head)
+        convert_q4(f"model.layers.{i}.self_attn.o_proj",
+                   f"layers.{i}.attention.wo.weight", model, fout, n_head)
+        convert_q4(f"model.layers.{i}.mlp.gate_proj",
+                   f"layers.{i}.feed_forward.w1.weight", model, fout, n_head)
+        convert_q4(f"model.layers.{i}.mlp.down_proj",
+                   f"layers.{i}.feed_forward.w2.weight", model, fout, n_head)
+        convert_q4(f"model.layers.{i}.mlp.up_proj",
+                   f"layers.{i}.feed_forward.w3.weight", model, fout, n_head)
+    
+        convert_non_q4(f"model.layers.{i}.input_layernorm.weight",
+                       f"layers.{i}.attention_norm.weight", model, fout)
+        convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight",
+                       f"layers.{i}.ffn_norm.weight", model, fout)
+    
+    
+    fout.close()
+    
+    print("Done. Output file: " + fname_out)
+    print("")
 
-for i in range(n_layer):
-    convert_q4(f"model.layers.{i}.self_attn.q_proj",
-               f"layers.{i}.attention.wq.weight", permute=True)
-    convert_q4(f"model.layers.{i}.self_attn.k_proj",
-               f"layers.{i}.attention.wk.weight", permute=True)
-    convert_q4(f"model.layers.{i}.self_attn.v_proj", f"layers.{i}.attention.wv.weight")
-    convert_q4(f"model.layers.{i}.self_attn.o_proj", f"layers.{i}.attention.wo.weight")
 
-    convert_q4(f"model.layers.{i}.mlp.gate_proj", f"layers.{i}.feed_forward.w1.weight")
-    convert_q4(f"model.layers.{i}.mlp.down_proj", f"layers.{i}.feed_forward.w2.weight")
-    convert_q4(f"model.layers.{i}.mlp.up_proj",   f"layers.{i}.feed_forward.w3.weight")
-
-    convert_non_q4(f"model.layers.{i}.input_layernorm.weight",
-                   f"layers.{i}.attention_norm.weight")
-    convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight",
-                   f"layers.{i}.ffn_norm.weight")
-
-
-fout.close()
-
-print("Done. Output file: " + fname_out)
-print("")
+if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        print("Usage: convert-gptq-to-ggml.py llamaXXb-4bit.pt tokenizer.model out.bin\n")
+        sys.exit(1)
+    
+    fname_model = sys.argv[1]
+    fname_tokenizer = sys.argv[2]
+    out_path = sys.argv[3]
+    invalidInputError(fname_model.endswith(".pt"), "only support pytorch's .pt format now.")
+    convert_gptq2ggml(fname_model, fname_tokenizer, out_path)
