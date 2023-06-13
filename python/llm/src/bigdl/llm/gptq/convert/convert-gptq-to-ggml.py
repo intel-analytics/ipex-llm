@@ -15,7 +15,8 @@
 #
 #
 # Convert a GPTQ quantized LLaMA model to a ggml compatible file
-# Based on: https://github.com/ggerganov/llama.cpp/blob/20a1a4e09c522a80e2a0db51643d25fa38326065/convert-gptq-to-ggml.py
+# Based on: https://github.com/ggerganov/llama.cpp
+#           /blob/20a1a4e09c522a80e2a0db51643d25fa38326065/convert-gptq-to-ggml.py
 # Current supported GPTQ model: 4bits, no act-order, no safetensors.
 #
 import os
@@ -40,7 +41,8 @@ def write_header(fout, shape, dst_name, ftype_cur):
 def convert_non_q4(src_name, dst_name, model, fout):
     v = model[src_name]
     shape = v.shape
-    print("Processing non-Q4 variable: " + src_name + " with shape: ", shape, " and type: ", v.dtype)
+    print("Processing non-Q4 variable: " + src_name + \
+          " with shape: ", shape, " and type: ", v.dtype)
     if len(shape) == 1:
         print("  Converting to float32")
         v = v.to(torch.float32)
@@ -91,7 +93,7 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     zeros = qzeros_to_zeros(qzeros).T
     scales = model[f"{src_name}.scales"].numpy().T
     g_idx = model[f"{src_name}.g_idx"].numpy()
-    qweight = model[f"{src_name}.qweight"].numpy().T # transpose
+    qweight = model[f"{src_name}.qweight"].numpy().T  # transpose
 
     # Q4_1 does not support bias; good thing the bias is always all zeros.
     # assert not np.any(g_idx)
@@ -153,23 +155,24 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     # data
     blob.tofile(fout)
 
+
 def convert_gptq2ggml(model_path, tokenizer_path, output_path):
     model = torch.load(model_path, map_location="cpu")
-    
+
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     n_layer = 1 + max(int(m.group(1)) for name in model
                       if (m:=re.match(r'model\.layers\.([0-9]+)', name)))
-    
+
     # hardcoded:
     n_mult = 256
     n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
-    
+
     tokenizer = SentencePieceProcessor(tokenizer_path)
-    
+
     invalidInputError(tokenizer.vocab_size() == n_vocab, "vocab size not match.")
-    
+
     fout = open(output_path, "wb")
-    
+
     fout.write(b"ggjt"[::-1])  # magic: ggmf in hex
     values = [3,  # file version
               n_vocab,
@@ -181,8 +184,8 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
               4,
     ]
     fout.write(struct.pack("i" * len(values), *values))
-    
-    
+
+
     # This loop unchanged from convert-pth-to-ggml.py:
     for i in range(tokenizer.vocab_size()):
         if tokenizer.is_unknown(i):
@@ -205,7 +208,7 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
     convert_non_q4("model.embed_tokens.weight", "tok_embeddings.weight", model, fout)
     convert_non_q4("model.norm.weight", "norm.weight", model, fout)
     convert_non_q4("lm_head.weight", "output.weight", model, fout)
-    
+
     for i in range(n_layer):
         convert_q4(f"model.layers.{i}.self_attn.q_proj",
                    f"layers.{i}.attention.wq.weight", model, fout, n_head, permute=True)
@@ -221,15 +224,15 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
                    f"layers.{i}.feed_forward.w2.weight", model, fout, n_head)
         convert_q4(f"model.layers.{i}.mlp.up_proj",
                    f"layers.{i}.feed_forward.w3.weight", model, fout, n_head)
-    
+
         convert_non_q4(f"model.layers.{i}.input_layernorm.weight",
                        f"layers.{i}.attention_norm.weight", model, fout)
         convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight",
                        f"layers.{i}.ffn_norm.weight", model, fout)
-    
-    
+
+
     fout.close()
-    
+
     print("Done. Output file: " + fname_out)
     print("")
 
@@ -238,7 +241,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: convert-gptq-to-ggml.py llamaXXb-4bit.pt tokenizer.model out.bin\n")
         sys.exit(1)
-    
+
     fname_model = sys.argv[1]
     fname_tokenizer = sys.argv[2]
     out_path = sys.argv[3]
