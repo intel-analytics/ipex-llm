@@ -12,9 +12,6 @@ jobs:
     environment: internal-dev
     steps:
       - name: Set up FTP Settings
-#         with:
-#           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
         env:
           FTP_URI_USER: ${{ secrets.FTP_USER }}
           FTP_URI_PSD: ${{ secrets.FTP_PSD }}
@@ -23,13 +20,11 @@ jobs:
               echo "FTP_URI_USER is set to: $FTP_URI_USER"
           else
               echo "FTP_URI_USER is not set, use bigdl"
-              FTP_URI_USER="bigdl"
           fi
           if [ -n "$FTP_URI_PSD" ]; then
               echo "FTP_URI_PSD is set to: $FTP_URI_PSD"
           else
               echo "FTP_URI_PSD is not set, use 1234qwer"
-              FTP_URI_PSD="1234qwer"
           fi
           #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
           #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
