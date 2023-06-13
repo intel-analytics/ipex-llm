@@ -75,8 +75,6 @@ class MPIRunner:
         mpi_config = "-np {} -ppn {} -l ".format(
             self.processes_per_node * len(self.hosts),
             self.processes_per_node)
-        if mpi_options:
-            mpi_config += mpi_options
         mpi_env = os.environ.copy()
         mpi_env.update(self.env)
         if "I_MPI_PIN_DOMAIN" in mpi_env:
@@ -85,6 +83,8 @@ class MPIRunner:
             mpi_config += "-genv OMP_NUM_THREADS={} ".format(mpi_env["OMP_NUM_THREADS"])
         if len(self.remote_hosts) > 0:
             mpi_config += "-hosts {}".format(",".join(self.hosts))
+        if mpi_options:
+            mpi_config += mpi_options
         cmd.extend(mpi_config.split())
         # cmd.append("ls")
         cmd.append(sys.executable)
