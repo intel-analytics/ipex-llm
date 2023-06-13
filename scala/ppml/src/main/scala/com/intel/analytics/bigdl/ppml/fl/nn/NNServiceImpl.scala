@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.ppml.fl.nn
 
-import com.intel.analytics.bigdl.ckks.CKKS
 import java.util
 import java.util.Map
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
@@ -49,18 +48,6 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     aggregatorMap.asScala.foreach(entry => {
       entry._2.setClientNum(clientNum)
     })
-  }
-
-  def initCkksAggregator(secretPath: String): Unit = {
-    val secret = CKKS.loadSecret(secretPath)
-    initCkksAggregator(secret)
-  }
-  def initCkksAggregator(secret: Array[Array[Byte]]): Unit = {
-    val ckks = new CKKS()
-    val ckksCommonInstance = ckks.createCkksCommon(secret)
-    val ckksAggregator = new VFLNNAggregatorCkks(ckksCommonInstance)
-    ckksAggregator.setClientNum(clientNum)
-    aggregatorMap.put("vfl_logistic_regression_ckks", ckksAggregator)
   }
 
   override def train(request: TrainRequest,
