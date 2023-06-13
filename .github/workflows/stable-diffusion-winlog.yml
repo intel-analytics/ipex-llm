@@ -12,15 +12,16 @@ jobs:
     environment: Internal_dev
     steps:
     - name: "stable-diffusion-win"
-      #env:
-        #FTP_URI_USER: ${{ secrets.FTP_USER }}
-        #FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
+      env:
+        FTP_URI_USER: ${{ secrets.FTP_USER }}
+        FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
         #FTP_URI_SERVER_URL: ${{ secrets.FTP_SERVER_URL }}
         #FTP_URI_SERVER_PORT: ${{ secrets.FTP_SERVER_PORT }}
       run: |
         #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
         #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
-        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USER }} --ftp-password=${{ secrets.FTP_PASSWORD }}
+        #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USER }} --ftp-password=${{ secrets.FTP_PASSWORD }}
+        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
         #cat ui-test.log
         # rm ui-test.log
