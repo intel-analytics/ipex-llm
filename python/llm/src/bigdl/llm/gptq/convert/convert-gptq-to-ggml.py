@@ -41,7 +41,7 @@ def write_header(fout, shape, dst_name, ftype_cur):
 def convert_non_q4(src_name, dst_name, model, fout):
     v = model[src_name]
     shape = v.shape
-    print("Processing non-Q4 variable: " + src_name +\
+    print("Processing non-Q4 variable: " + src_name +
           " with shape: ", shape, " and type: ", v.dtype)
     if len(shape) == 1:
         print("  Converting to float32")
@@ -160,7 +160,7 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     n_layer = 1 + max(int(m.group(1)) for name in model
-                      if (m:=re.match(r'model\.layers\.([0-9]+)', name)))
+                      if (m := re.match(r'model\.layers\.([0-9]+)', name)))
 
     # hardcoded:
     n_mult = 256
