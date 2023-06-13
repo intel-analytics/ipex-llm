@@ -11,7 +11,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
     - name: "stable-diffusion-win"
-      env:
+      #env:
         #FTP_URI_USER: ${{ secrets.FTP_USER }}
         #FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
         #FTP_URI_SERVER_URL: ${{ secrets.FTP_SERVER_URL }}
