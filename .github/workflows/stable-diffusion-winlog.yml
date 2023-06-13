@@ -14,16 +14,11 @@ jobs:
       - name: Set up FTP Settings
 #         with:
 #           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }
+#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
         env:
           FTP_URI_USER: ${{ secrets.FTP_USER }}
           FTP_URI_PSD: ${{ secrets.FTP_PSD }}
         run: |
-          if [ -n "$FTP_URI_USER" ]; then
-              echo "FTP_USER is set to: $FTP_URI_USER"
-          else
-              echo "FTP_URI_USER is not set, use ~/.cache/huggingface/hub"
-          fi
           #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
           #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
           #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
