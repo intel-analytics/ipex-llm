@@ -11,7 +11,7 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     environment: internal-dev
     steps:
-    - name: "stable-diffusion-win"
+    - name: Installation
       env:
         FTP_URI_USER: ${{ secrets.FTP_USER }}
         FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
@@ -22,6 +22,7 @@ jobs:
         #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USER }} --ftp-password=${{ secrets.FTP_PASSWORD }}
+        echo $FTP_URI_USER
         wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
         #cat ui-test.log
         # rm ui-test.log
