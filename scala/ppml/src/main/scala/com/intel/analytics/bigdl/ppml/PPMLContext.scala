@@ -29,6 +29,10 @@ import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyMan
 KeyManagementService, SimpleKeyManagementService, BigDLKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import org.apache.hadoop.fs.Path
+import com.intel.analytics.bigdl.ppml.model.lightgbm.LightGBMModel
+import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMModelMethods, LightGBMClassificationModel, LightGBMRegressionModel, LightGBMRankerModel, LightGBMClassifier}
+import com.microsoft.azure.synapse.ml.lightgbm.booster.LightGBMBooster
+import org.apache.spark.ml.util.Identifiable
 
 /**
  * PPMLContext who wraps a SparkSession and provides read functions to
@@ -52,22 +56,69 @@ class PPMLContext {
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
                cryptoMode: CryptoMode = PLAIN_TEXT,
-               primaryKeyName: String = "defaultKey"): RDD[String] = {
+               primaryKeyName: String = ""): RDD[String] = {
     cryptoMode match {
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case _ =>
-        val dataKeyPlainText = primaryKeyName match {
-          case "" =>
-            keyLoaderManagement.retrieveKeyLoader(defaultKey)
-                               .retrieveDataKeyPlainText(path)
-          case _ =>
-            keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
-                               .retrieveDataKeyPlainText(path)
-        }
+        val dataKeyPlainText = loadDataKeyPlainText(path, primaryKeyName)
         PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
                              cryptoMode, minPartitions)
     }
+  }
+
+  def loadLightGBMClassificationModel(
+    modelPath: String,
+    cryptoMode: CryptoMode = PLAIN_TEXT,
+    primaryKeyName: String = ""): LightGBMClassificationModel = {
+      if (cryptoMode != PLAIN_TEXT) {
+        loadDataKeyPlainText(modelPath, primaryKeyName)
+      }
+      val lightGBMBooster = LightGBMModel.loadLightGBMBooster(modelPath)
+      val actualNumClasses = lightGBMBooster.numClasses
+      new LightGBMClassificationModel(
+        Identifiable.randomUID(LightGBMModel.CLASSIFICATION)
+      ).setLightGBMBooster(lightGBMBooster)
+       .setActualNumClasses(actualNumClasses)
+  }
+
+  def loadLightGBMRegressionModel(
+    modelPath: String,
+    cryptoMode: CryptoMode = PLAIN_TEXT,
+    primaryKeyName: String = ""): LightGBMRegressionModel = {
+      if (cryptoMode != PLAIN_TEXT) {
+        loadDataKeyPlainText(modelPath, primaryKeyName)
+      }
+      val lightGBMBooster = LightGBMModel.loadLightGBMBooster(modelPath)
+      new LightGBMRegressionModel(
+        Identifiable.randomUID(LightGBMModel.REGRESSION)
+      ).setLightGBMBooster(lightGBMBooster)
+  }
+
+  def loadLightGBMRankerModel(
+    modelPath: String,
+    cryptoMode: CryptoMode = PLAIN_TEXT,
+    primaryKeyName: String = ""): LightGBMRankerModel = {
+      if (cryptoMode != PLAIN_TEXT) {
+        loadDataKeyPlainText(modelPath, primaryKeyName)
+      }
+      val lightGBMBooster = LightGBMModel.loadLightGBMBooster(modelPath)
+      new LightGBMRankerModel(
+        Identifiable.randomUID(LightGBMModel.RANKER)
+      ).setLightGBMBooster(lightGBMBooster)
+  }
+
+  def saveLightGBMModel[LightGBMModel <: LightGBMModelMethods](
+    model: LightGBMModel,
+    path: String,
+    cryptoMode: CryptoMode = PLAIN_TEXT,
+    primaryKeyName: String = ""): Unit = {
+      val lightGBMBooster = model.getNativeModel
+      val sc = sparkSession
+      import sc.implicits._
+      val boosterDF = sparkSession.sparkContext
+        .parallelize(Seq((lightGBMBooster))).toDF
+      write(boosterDF, cryptoMode, primaryKeyName).text(path)
   }
 
   /**
@@ -114,6 +165,19 @@ class PPMLContext {
    */
   def getSparkSession(): SparkSession = {
     sparkSession
+  }
+
+  private def loadDataKeyPlainText(dirPath: String,
+    primaryKeyName: String): String = {
+    val dataKeyPlainText = primaryKeyName match {
+      case "" =>
+        keyLoaderManagement.retrieveKeyLoader(defaultKey)
+          .retrieveDataKeyPlainText(dirPath)
+      case _ =>
+        keyLoaderManagement.retrieveKeyLoader(primaryKeyName)
+          .retrieveDataKeyPlainText(dirPath)
+    }
+    dataKeyPlainText
   }
 
   def sql(sqlText: String): DataFrame = {

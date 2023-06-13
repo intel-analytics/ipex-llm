@@ -28,9 +28,8 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.util
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
-
-
-
+import com.microsoft.azure.synapse.ml.lightgbm.{LightGBMModelMethods, LightGBMClassificationModel, LightGBMRegressionModel, LightGBMRankerModel, LightGBMClassifier}
+import com.microsoft.azure.synapse.ml.lightgbm.booster.LightGBMBooster
 
 object PPMLContextPython {
   def ofFloat: PPMLContextPython[Float] = new PPMLContextPython[Float]()
@@ -55,7 +54,7 @@ class PPMLContextPython[T]() {
   }
 
   def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String,
-    primaryKeyName: String = "defaultKey"): EncryptedDataFrameWriter = {
+    primaryKeyName: String = ""): EncryptedDataFrameWriter = {
     logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.write(dataFrame, cryptoMode, primaryKeyName)
@@ -63,7 +62,7 @@ class PPMLContextPython[T]() {
 
   def textFile(sc: PPMLContext, path: String,
     minPartitions: Int, cryptoModeStr: String,
-    primaryKeyName: String = "defaultKey"): RDD[String] = {
+    primaryKeyName: String = ""): RDD[String] = {
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.textFile(path, minPartitions, cryptoMode, primaryKeyName)
   }
@@ -71,6 +70,66 @@ class PPMLContextPython[T]() {
   def sql(sc: PPMLContext, sqlText: String): DataFrame = {
     logger.debug("running spark sql " + sqlText)
     sc.sql(sqlText)
+  }
+
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMClassificationModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMRegressionModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def saveLightGBMModel(sc: PPMLContext,
+    model: LightGBMRankerModel,
+    path: String,
+    cryptoStr: String,
+    primaryKeyName: String): Unit = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      sc.saveLightGBMModel(model, path, cryptoMode, primaryKeyName)
+  }
+
+  def loadLightGBMClassificationModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMClassificationModel = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      val model = sc.loadLightGBMClassificationModel(modelPath,
+        cryptoMode, primaryKeyName)
+      model
+  }
+
+  def loadLightGBMRegressionModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMRegressionModel = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      val model = sc.loadLightGBMRegressionModel(modelPath,
+        cryptoMode, primaryKeyName)
+      model
+  }
+
+  def loadLightGBMRankerModel(
+    sc: PPMLContext,
+    modelPath: String,
+    cryptoStr: String,
+    primaryKeyName: String = ""): LightGBMRankerModel = {
+      val cryptoMode = CryptoMode.parse(cryptoStr)
+      val model = sc.loadLightGBMRankerModel(modelPath,
+        cryptoMode, primaryKeyName)
+      model
   }
 
   /**
@@ -81,8 +140,8 @@ class PPMLContextPython[T]() {
              key: String, value: String): EncryptedDataFrameReader = {
     encryptedDataFrameReader.option(key, value)
   }
-  import net.razorvine.pickle.objects.ClassDict
 
+  import net.razorvine.pickle.objects.ClassDict
   def schema(encryptedDataFrameReader: EncryptedDataFrameReader,
              value: ClassDict): EncryptedDataFrameReader = {
     val classDictMap: util.HashMap[String, Object] =
