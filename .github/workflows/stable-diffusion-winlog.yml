@@ -20,6 +20,6 @@ jobs:
         #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
         #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
-        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
+        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USER }} --ftp-password=${{ secrets.FTP_PASSWORD }}
         #cat ui-test.log
         # rm ui-test.log
