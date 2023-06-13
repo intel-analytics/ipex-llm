@@ -11,11 +11,10 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     #environment: internal-dev
     steps:
-    - name: Use ftp
-      uses: sebastianpopp/ftp-action@releases/v2
+    - name: Set up FTP Settings
       with:
-        user: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
+        "username": ${{ secrets.FTP_USERNAME }}
+        "password": ${{ secrets.FTP_PASSWORD }
     - name: Installation
       #env:
         #FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
