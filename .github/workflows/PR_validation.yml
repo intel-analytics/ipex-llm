@@ -313,7 +313,7 @@ jobs:
       if: ${{ always() }}
       uses: ./.github/actions/remove-env
 
-  Orca-Pytest-Ray-Py38-Spark3:
+  Orca-Pytest-Ray-TF2-V12-Spark3:
     needs: changes
     if: ${{ needs.changes.outputs.orca-pytest == 'true' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
