@@ -41,7 +41,7 @@ def write_header(fout, shape, dst_name, ftype_cur):
 def convert_non_q4(src_name, dst_name, model, fout):
     v = model[src_name]
     shape = v.shape
-    print("Processing non-Q4 variable: " + src_name + \
+    print("Processing non-Q4 variable: " + src_name +\
           " with shape: ", shape, " and type: ", v.dtype)
     if len(shape) == 1:
         print("  Converting to float32")
@@ -96,7 +96,6 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     qweight = model[f"{src_name}.qweight"].numpy().T  # transpose
 
     # Q4_1 does not support bias; good thing the bias is always all zeros.
-    # assert not np.any(g_idx)
     invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]),
                       "Act-order is not supported, please use a no act-order model.")
     ftype = 3  # Q4_1
@@ -150,7 +149,7 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
                 .reshape(blob.shape))
 
     # header
-    write_header(fout, shape, dst_name, ftype) # ftype = Q4_1
+    write_header(fout, shape, dst_name, ftype)  # ftype = Q4_1
 
     # data
     blob.tofile(fout)
@@ -181,10 +180,8 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
               n_head,
               n_layer,
               n_embd // n_head,  # rot (obsolete)
-              4,
-    ]
+              4]
     fout.write(struct.pack("i" * len(values), *values))
-
 
     # This loop unchanged from convert-pth-to-ggml.py:
     for i in range(tokenizer.vocab_size()):
@@ -229,11 +226,8 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
                        f"layers.{i}.attention_norm.weight", model, fout)
         convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight",
                        f"layers.{i}.ffn_norm.weight", model, fout)
-
-
     fout.close()
-
-    print("Done. Output file: " + fname_out)
+    print("Done. Output file: " + output_path)
     print("")
 
 
