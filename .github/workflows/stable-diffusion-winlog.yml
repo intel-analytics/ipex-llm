@@ -24,6 +24,6 @@ jobs:
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USER }} --ftp-password=${{ secrets.FTP_PASSWORD }}
         echo $FTP_URI_USER
         echo $FTP_URI_PSD
-        #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
+        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
         #cat ui-test.log
         # rm ui-test.log
