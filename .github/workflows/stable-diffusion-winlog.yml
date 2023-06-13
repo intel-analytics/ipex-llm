@@ -9,7 +9,7 @@ on:
 jobs:
   stable-diffusion-win:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-    environment: Internal_dev
+    environment: internal-dev
     steps:
     - name: "stable-diffusion-win"
       env:
