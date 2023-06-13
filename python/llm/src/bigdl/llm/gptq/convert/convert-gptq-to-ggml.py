@@ -35,14 +35,13 @@ if len(sys.argv) != 4:
 fname_model = sys.argv[1]
 fname_tokenizer = sys.argv[2]
 dir_out = sys.argv[3]
-invalidInputError(fname_model.endswith(".pt"),
-    "only support pytorch's .pt format now.")
+invalidInputError(fname_model.endswith(".pt"), "only support pytorch's .pt format now.")
 
 model = torch.load(fname_model, map_location="cpu")
 
 n_vocab, n_embd = model['model.embed_tokens.weight'].shape
 n_layer = 1 + max(int(m.group(1)) for name in model
-                  if (m := re.match(r'model\.layers\.([0-9]+)', name)))
+                  if (m: =re.match(r'model\.layers\.([0-9]+)', name)))
 
 # hardcoded:
 n_mult = 256
@@ -50,22 +49,21 @@ n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
 
 tokenizer = SentencePieceProcessor(fname_tokenizer)
 
-assert tokenizer.vocab_size() == n_vocab
+invalidInputError(tokenizer.vocab_size() == n_vocab, "vocab size not match.")
 
 fname_out = sys.argv[3]
 
 fout = open(fname_out, "wb")
 
-fout.write(b"ggjt"[::-1]) # magic: ggmf in hex
-values = [
-            3,  # file version
-            n_vocab,
-            n_embd,
-            n_mult,
-            n_head,
-            n_layer,
-            n_embd // n_head,  # rot (obsolete)
-            4,
+fout.write(b"ggjt"[::-1])  # magic: ggmf in hex
+values = [3,  # file version
+          n_vocab,
+          n_embd,
+          n_mult,
+          n_head,
+          n_layer,
+          n_embd // n_head,  # rot (obsolete)
+          4,
 ]
 fout.write(struct.pack("i" * len(values), *values))
 
@@ -146,7 +144,8 @@ def qzeros_to_zeros(qzeros, bits=4):
         col += 1
     return zeros
 
-def convert_q4_with_groupsize(src_name, dst_name, permute=False):
+
+def convert_q4(src_name, dst_name, permute=False):
     qzeros = model[f"{src_name}.qzeros"].numpy()
     zeros = qzeros_to_zeros(qzeros).T
     scales = model[f"{src_name}.scales"].numpy().T
@@ -155,11 +154,9 @@ def convert_q4_with_groupsize(src_name, dst_name, permute=False):
 
     # Q4_1 does not support bias; good thing the bias is always all zeros.
     # assert not np.any(g_idx)
-    invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]), "Act-order is not supported, please use a no act-order model.")
-    if not np.any(zeros):
-        ftype = 2  # Q4_0
-    else:
-        ftype = 3  # Q4_1
+    invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]),
+                      "Act-order is not supported, please use a no act-order model.")
+    ftype = 3  # Q4_1
 
     # Each int32 item is actually 8 int4 items packed together, and it's transposed.
     shape = (qweight.shape[0], qweight.shape[1] * 8)
@@ -177,7 +174,7 @@ def convert_q4_with_groupsize(src_name, dst_name, permute=False):
     # the columns in a row, so we end up wasting quite a bit of memory with
     # repeated scales and addends.
 
-    addends = -zeros * scales # flip sign
+    addends = -zeros * scales  # flip sign
 
     # Since the output format is mixed between integers and floats, we have
     # to hackily view the floats as int32s just so numpy will let us
@@ -195,13 +192,12 @@ def convert_q4_with_groupsize(src_name, dst_name, permute=False):
         addends_rep = np.atleast_3d(addends_view)
         scales_rep = np.atleast_3d(scales_view)
     else:
-        addends_rep = np.atleast_3d(addends_view).repeat(grouped.shape[1] // addends_view.shape[1], axis=1)
-        scales_rep = np.atleast_3d(scales_view).repeat(grouped.shape[1] // scales_view.shape[1], axis=1)
+        addends_rep = np.atleast_3d(addends_view)\
+            .repeat(grouped.shape[1] // addends_view.shape[1], axis=1)
+        scales_rep = np.atleast_3d(scales_view)\
+            .repeat(grouped.shape[1] // scales_view.shape[1], axis=1)
 
-    if ftype == 2:
-        blob = np.concatenate([scales_rep, grouped], axis=2, casting='no')
-    else:
-        blob = np.concatenate([scales_rep, addends_rep, grouped], axis=2, casting='no')
+    blob = np.concatenate([scales_rep, addends_rep, grouped], axis=2, casting='no')
 
     if permute:
         # Permute some rows to undo the permutation done by convert_llama_weights_to_hf.py.
@@ -222,17 +218,21 @@ convert_non_q4("model.norm.weight", "norm.weight")
 convert_non_q4("lm_head.weight", "output.weight")
 
 for i in range(n_layer):
-    convert_q4_with_groupsize(f"model.layers.{i}.self_attn.q_proj", f"layers.{i}.attention.wq.weight", permute=True)
-    convert_q4_with_groupsize(f"model.layers.{i}.self_attn.k_proj", f"layers.{i}.attention.wk.weight", permute=True)
-    convert_q4_with_groupsize(f"model.layers.{i}.self_attn.v_proj", f"layers.{i}.attention.wv.weight")
-    convert_q4_with_groupsize(f"model.layers.{i}.self_attn.o_proj", f"layers.{i}.attention.wo.weight")
+    convert_q4(f"model.layers.{i}.self_attn.q_proj",
+               f"layers.{i}.attention.wq.weight", permute=True)
+    convert_q4(f"model.layers.{i}.self_attn.k_proj",
+               f"layers.{i}.attention.wk.weight", permute=True)
+    convert_q4(f"model.layers.{i}.self_attn.v_proj", f"layers.{i}.attention.wv.weight")
+    convert_q4(f"model.layers.{i}.self_attn.o_proj", f"layers.{i}.attention.wo.weight")
 
-    convert_q4_with_groupsize(f"model.layers.{i}.mlp.gate_proj", f"layers.{i}.feed_forward.w1.weight")
-    convert_q4_with_groupsize(f"model.layers.{i}.mlp.down_proj", f"layers.{i}.feed_forward.w2.weight")
-    convert_q4_with_groupsize(f"model.layers.{i}.mlp.up_proj",   f"layers.{i}.feed_forward.w3.weight")
+    convert_q4(f"model.layers.{i}.mlp.gate_proj", f"layers.{i}.feed_forward.w1.weight")
+    convert_q4(f"model.layers.{i}.mlp.down_proj", f"layers.{i}.feed_forward.w2.weight")
+    convert_q4(f"model.layers.{i}.mlp.up_proj",   f"layers.{i}.feed_forward.w3.weight")
 
-    convert_non_q4(f"model.layers.{i}.input_layernorm.weight", f"layers.{i}.attention_norm.weight")
-    convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight", f"layers.{i}.ffn_norm.weight")
+    convert_non_q4(f"model.layers.{i}.input_layernorm.weight",
+                   f"layers.{i}.attention_norm.weight")
+    convert_non_q4(f"model.layers.{i}.post_attention_layernorm.weight",
+                   f"layers.{i}.ffn_norm.weight")
 
 
 fout.close()
