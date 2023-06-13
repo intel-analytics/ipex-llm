@@ -11,15 +11,13 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     environment: internal-dev
     steps:
-      - shell: bash
       - name: Set up FTP Settings
-        with:
-          FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-          FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }
-#       env:
-#         FTP_URI_USER: ${{ secrets.FTP_USER }}
-#         FTP_URI_PSD: ${{ secrets.FTP_PSD }}
-      - name: Run FTP
+#         with:
+#           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
+#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }
+        env:
+          FTP_URI_USER: ${{ secrets.FTP_USER }}
+          FTP_URI_PSD: ${{ secrets.FTP_PSD }}
         run: |
           if [ -n "$FTP_URI_USER" ]; then
               echo "FTP_USER is set to: $FTP_URI_USER"
