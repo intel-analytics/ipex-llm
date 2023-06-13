@@ -302,7 +302,7 @@ class Bloom(GenerationMixin):
     def free(self):
         bloom_free(self.ctx)
 
-    def _tokenize(self, text: bytes, add_bos: bool = True) -> List[int]:
+    def _tokenize(self, text: bytes, add_bos: bool = False) -> List[int]:
         """Tokenize a string.
 
         Args:
@@ -315,7 +315,7 @@ class Bloom(GenerationMixin):
             A list of tokens.
         """
         invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
-        return bloom_tokenize(self.ctx, text, add_bos)
+        return bloom_tokenize(self.ctx, text, False)
 
     def detokenize(self, tokens: List[int]) -> bytes:
         """Detokenize a list of tokens.
@@ -327,10 +327,10 @@ class Bloom(GenerationMixin):
             The detokenized string.
         """
         invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
-        output = b""
+        output = ""
         for token in tokens:
             output += bloom_detokenize(self.ctx, token)
-        return output
+        return output.encode('utf-8')
 
     def forward(self, input_ids: List[int]) -> int:
         return bloom_forward(ctx=self.ctx,
