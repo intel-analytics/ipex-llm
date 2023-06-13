@@ -30,7 +30,7 @@ schema = StructType([StructField("sepal length", DoubleType(), True),
     StructField("class", StringType(), True)])
 
 # read data for training
-df = sc.read("plain_text").schema(schema).csv(args["input_path"])
+df = sc.read(args["input_encrypt_mode"]).schema(schema).csv(args["input_path"])
 
 stringIndexer = StringIndexer()\
     .setInputCol("class")\
@@ -59,6 +59,6 @@ classificationModel = LightGBMClassifier(featuresCol = "features",
 sc.saveLightGBMModel(classificationModel, args["output_path"], args["output_encrypt_mode"])
 
 # load the encrypted model and use it to predict
-reloadedModel = sc.loadLightGBMClassificationModel(args["output_path"], args["input_encrypt_mode"])
+reloadedModel = sc.loadLightGBMClassificationModel(args["output_path"], args["output_encrypt_mode"])
 predictions = reloadedModel.transform(test)
 predictions.show(10)
