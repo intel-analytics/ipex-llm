@@ -11,16 +11,20 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     #environment: internal-dev
     steps:
+    - name: Use ftp
+      uses: sebastianpopp/ftp-action@releases/v2
+      with:
+        user: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
     - name: Installation
-      env:
-        FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-        FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
+      #env:
+        #FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
+        #FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
       run: |
         #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
         #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
         #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
-        echo $FTP_URI_USER
-        echo $FTP_URI_PSD
-        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
+        #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
+        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USERNAME }} --ftp-password=${{ secrets.FTP_PASSWORD }}
         cat ui-test.log
         rm ui-test.log
