@@ -94,5 +94,6 @@ def quantize(input_path: str, output_path: str,
     p = subprocess.run(quantize_args.split(), capture_output=True)
     error_message = p.stderr
     invalidInputError(not p.returncode,
-                      "Fail to quantize {}, error message is {}.".format(str(input_path), error_message))
+                      "Fail to quantize {}, error message is {}.".format(str(input_path),
+                                                                         error_message))
     return str(output_path)
