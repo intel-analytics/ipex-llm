@@ -1,7 +1,7 @@
 name: stable-diffusion-win
 on:
-#  pull_request:
-#    branchs: [ main ]
+  pull_request:
+    branchs: [ main ]
   schedule:
     - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
   workflow_dispatch:
@@ -11,10 +11,14 @@ jobs:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
     - name: "stable-diffusion-win"
-#      env:
-#        FTP_URII_PSD: ${{ secrets.FTP_PASSWORD }}
+      env:
+        FTP_URI_USER: ${{ secrets.FTP_USER }}
+        FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
+        FTP_URI_SERVER_URL: ${{ secrets.FTP_SERVER_URL }}
+        FTP_URI_SERVER_PORT: ${{ secrets.FTP_SERVER_PORT }}
       run: |
-        export FTP_URI=export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
-        wget  $FTP_URI/stable-diffusion/ui-test.log
-        cat ui-test.log
-        rm ui-test.log
+        #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
+        #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
+        wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
+        #cat ui-test.log
+        # rm ui-test.log
