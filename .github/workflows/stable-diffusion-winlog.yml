@@ -19,7 +19,7 @@ jobs:
 #           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
 #           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
       - name: Echo a secret  
-        run: echo "your secret token is ${{ secrets.FTP_USERNAME }}"
+        run: echo "your secret token is ${{secrets.FTP_USERNAME}}"
       - name: Download log
 #         env:
 #           FTP_URI_USER: ${{ secrets.FTP_USER }}
