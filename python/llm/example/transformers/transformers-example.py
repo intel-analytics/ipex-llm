@@ -18,7 +18,7 @@ import time
 import argparse
 
 
-def convert_and_load(repo_id_or_model_path, model_family, n_threads):
+def convert_and_load(repo_id_or_model_path, model_family, n_threads, dtype='int4'):
 
     from bigdl.llm.ggml.transformers import AutoModelForCausalLM
 
@@ -32,7 +32,7 @@ def convert_and_load(repo_id_or_model_path, model_family, n_threads):
     llm = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=repo_id_or_model_path,
         model_family=model_family,
-        dtype='int4',
+        dtype=dtype,
         cache_dir='./',
         n_threads=n_threads)
 
@@ -46,7 +46,7 @@ def convert_and_load(repo_id_or_model_path, model_family, n_threads):
     # output_ckpt_path = convert_model(
     #     input_path=model_path,
     #     output_path='./',
-    #     dtype='int4',
+    #     dtype=dtype,
     #     model_family=model_family)
     #
     # llm = AutoModelForCausalLM.from_pretrained(
@@ -103,7 +103,7 @@ def inference(llm, repo_id_or_model_path, model_family, prompt):
         st = time.time()
 
         output = llm(prompt, # please note that the prompt here can ONLY be a string
-                    max_tokens=32)
+                     max_tokens=32)
 
         print(f'Inference time (fast forward): {time.time()-st} s')
         print(f'Output:\n{output}')
@@ -121,6 +121,8 @@ def main():
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Q: What is CPU? A:',
                         help='Prompt to infer')
+    parser.add_argument('--precision', type=str, default='int4', choices=['int4', 'int8'],
+                        help="Quantization precision (supported option: 'int4', 'int8')")
     args = parser.parse_args()
 
     repo_id_or_model_path = args.repo_id_or_model_path
@@ -135,7 +137,8 @@ def main():
     # Step 1: convert and load int4 model
     llm = convert_and_load(repo_id_or_model_path=repo_id_or_model_path,
                            model_family=args.model_family,
-                           n_threads=args.thread_num)
+                           n_threads=args.thread_num,
+                           dtype=args.precision)
 
     # Step 2: conduct inference
     inference(llm=llm,

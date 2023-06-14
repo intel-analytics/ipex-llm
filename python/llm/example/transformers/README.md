@@ -1,6 +1,6 @@
-# INT4 Inference Pipeline for Large Language Model using BigDL-LLM Transformers-like API
+# INT4/INT8 Inference Pipeline for Large Language Model using BigDL-LLM Transformers-like API
 
-In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM transformers-like API.
+In this example, we show a pipeline to convert a large language model to low precision (INT4 or INT8), and then conduct inference on the converted low precision model, using BigDL-LLM transformers-like API.
 
 > **Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, and BLOOM.
 
@@ -15,7 +15,7 @@ pip install --pre --upgrade bigdl-llm[all]
 
 ## Run Example
 ```bash
-python ./int4_pipeline.py --thread-num THREAD_NUM --model-family MODEL_FAMILY
+python ./transformer-example.py --thread-num THREAD_NUM --model-family MODEL_FAMILY --precision PRECISION
 ```
 arguments info:
 - `--thread-num THREAD_NUM`: **required** argument defining the number of threads to use for inference. It is default to be `2`.
@@ -28,8 +28,9 @@ arguments info:
 
   > **Note** `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: What is CPU? A:'`.
+- `--precision PRECISION`: optional argument defining the quantization precision. It is default to be `int4` and we only support `int4` and `int8` now.
 
-## Sample Output for Inference
+## INT4 Sample Output for Inference
 ### Model family LLaMA
 ```log
 --------------------  HuggingFace transformers tokenizer  --------------------
