@@ -93,7 +93,7 @@ Finally, user can get the best learned model and the best hyper-parameters for f
 best_model = auto_est.get_best_model() # a `torch.nn.Module` object
 best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names and values.
 ```
-View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/automl.html#orca-automl-auto-estimator) for more details.
 
 ### 3. TensorFlow/Keras AutoEstimator
 Users can create an `AutoEstimator` for TensorFlow Keras from a `tf.keras` model (using a *Model Creator Function*). For example:
@@ -130,14 +130,14 @@ Finally, user can get the best learned model and the best hyper-parameters for f
 best_model = auto_est.get_best_model() # a `torch.nn.Module` object
 best_config = auto_est.get_best_config() # a dictionary of hyper-parameter names and values.
 ```
-View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/automl.html#orca-automl-auto-estimator) for more details.
 
 ### 4. Search Space and Search Algorithms
 For Hyper-parameter Optimization, user should define the search space of various hyper-parameter values for neural network training, as well as how to search through the chosen hyper-parameter space.
 
 #### 4.1 Basic Search Algorithms
 
-For basic search algorithms like **Grid Search** and **Random Search**, we provide several sampling functions with `automl.hp`. See [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-hp) for more details.
+For basic search algorithms like **Grid Search** and **Random Search**, we provide several sampling functions with `automl.hp`. See [API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/automl.html#orca-automl-hp) for more details.
 
 `AutoEstimator` requires a dictionary for the `search_space` argument in `fit`.
 In the dictionary, the keys are the hyper-parameter names, and the values specify how to sample the search spaces for the hyper-parameters.
@@ -180,7 +180,7 @@ auto_estimator.fit(
     search_alg="bayesopt",
 )
 ```
-See [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/AutoML/automl.html#orca-automl-auto-estimator) for more details.
+See [API Doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Orca/automl.html#orca-automl-auto-estimator) for more details.
 
 ### 5. Scheduler
 *Scheduler* can stop/pause/tweak the hyper-parameters of running trials, making the hyper-parameter tuning process much efficient.
