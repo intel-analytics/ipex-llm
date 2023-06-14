@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-torchserve-frontend-service
+  labels:
+    app: torchserve-frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: inference-port
+      port: {{ .Values.inferencePort }}
+      targetPort: {{ .Values.inferencePort }}
+    - name: management-port
+      port: {{ .Values.managementPort }}
+      targetPort: {{ .Values.managementPort }}
+    - name: metrics-port
+      port: {{ .Values.metricsPort }}
+      targetPort: {{ .Values.metricsPort }}
+  selector:
+    app: torchserve-frontend
+  externalIPs:
+  - {{ .Values.frontendIP }}

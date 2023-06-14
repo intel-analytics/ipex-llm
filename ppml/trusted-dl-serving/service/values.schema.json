@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "required": [
+        "imageName",
+        "TEEMode",
+	"PCCSUrl",
+        "attestation",
+        "backendNum",
+        "modelName",
+        "frontendIP",
+        "inferencePort",
+        "managementPort",
+        "metricsPort",
+        "backendPort"
+    ],
+    "properties": {
+      "imageName": {
+        "type": "string"
+      },
+      "TEEMode": {
+        "type": "string",
+        "pattern": "^(sgx|tdx)$"
+      },
+      "PCCSUrl": {
+	"type": "string",
+        "format": "uri"
+      },
+      "attestation": {
+        "type": "string",
+        "pattern": "^(true|false)$"
+      },
+      "backendNum": {
+        "type": "number"
+      },
+      "frontendIP": {
+        "type": "string",
+        "format": "ip-address"
+      },
+      "managementPort": {
+        "type": "number"
+      },
+      "metricsPort": {
+        "type": "number"
+      },
+      "backendPort": {
+        "type": "number"
+      }
+    }
+}

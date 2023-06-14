@@ -1,0 +1,11 @@
+imageName: intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref:2.4.0-SNAPSHOT
+TEEMode: sgx
+attestation: true
+PCCSUrl: your_pccs_url
+backendNum: 10
+modelName: BERT_LARGE
+frontendIP: an_available_ip_in_your_cluster_subnetwork
+inferencePort: 8085
+managementPort: 8081
+metricsPort: 8082
+backendPort: 9000
