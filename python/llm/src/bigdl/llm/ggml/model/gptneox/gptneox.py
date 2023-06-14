@@ -132,7 +132,7 @@ class Gptneox(GenerationMixin):
         n_ctx: int = 512,
         n_parts: int = -1,
         n_gpu_layers: int = 0,
-        seed: int = 1337,
+        seed: int = -1,
         f16_kv: bool = True,
         logits_all: bool = False,
         vocab_only: bool = False,
@@ -153,7 +153,7 @@ class Gptneox(GenerationMixin):
             n_ctx: Maximum context size.
             n_parts: Number of parts to split the model into. If -1,
             the number of parts is automatically determined.
-            seed: Random seed. 0 for random.
+            seed: Random seed. For default value -1, current timestamp is used as seed.
             f16_kv: Use half-precision for key/value cache.
             logits_all: Return logits for all tokens, not just the last token.
             vocab_only: Only load the vocabulary no weights.
