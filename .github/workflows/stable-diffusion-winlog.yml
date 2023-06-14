@@ -15,9 +15,9 @@ jobs:
         with: # Set the secret as an input
           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
-        env: # Or as an environment variable
-          FTP_URI_USER: ${{ secrets.SuperSecret }}
-          FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
+#         env: # Or as an environment variable
+#           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
+#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
       - name: Download log
 #         env:
 #           FTP_URI_USER: ${{ secrets.FTP_USER }}
