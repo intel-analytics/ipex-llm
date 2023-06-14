@@ -13,8 +13,8 @@ jobs:
     steps:
       - name: Hello world action
         with: # Set the secret as an input
-          FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-          FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
+          ftp_user: ${{ secrets.FTP_USERNAME }}
+          ftp_psd: ${{ secrets.FTP_PASSWORD }}
 #         env: # Or as an environment variable
 #           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
 #           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
