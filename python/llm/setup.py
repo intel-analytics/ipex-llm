@@ -65,13 +65,13 @@ def get_llm_packages():
 def obtain_lib_urls():
     base_url = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/"
     windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
-                    "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
-                    "main-llama.exe", "main-gptneox.exe", "main-bloom.exe"]
+                       "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
+                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
-                    "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
-                    "quantize-llama", "quantize-gptneox", "quantize-bloom",
-                    "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
-                    "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512"]
+                     "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
+                     "quantize-llama", "quantize-gptneox", "quantize-bloom",
+                     "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
+                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512"]
 
     def get_date_urls(base_url):
         # obtain all urls based on date(format: xxxx-xx-xx)
