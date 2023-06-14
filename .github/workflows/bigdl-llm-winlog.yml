@@ -1,0 +1,17 @@
+name: bigdl-llm-win
+on:
+#   pull_request:
+#     branchs: [ main ]
+  schedule:
+    - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
+  workflow_dispatch:
+
+jobs:
+  stable-diffusion-win:
+    runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
+    steps:
+      - name: Download log
+        run: |
+          wget ftp://10.112.231.51:8821/llm/win_llm_test.log --ftp-user=${{ secrets.FTP_USERNAME }} --ftp-password=${{ secrets.FTP_PASSWORD }}
+          cat win_llm_test.log
+          rm win_llm_test.log
