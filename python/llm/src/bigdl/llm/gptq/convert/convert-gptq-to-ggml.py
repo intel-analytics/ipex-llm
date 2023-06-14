@@ -160,8 +160,8 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     layer_re = r'model\.layers\.([0-9]+)'
-    layer_list = int(m.group(1)) for name in model if m:=re.match(layer_re, name)  # noqa: E231
-    n_layer = 1 + max(layer_list)
+    n_layer = 1 + max(int(re.match(layer_re, name).group(1)) for name in model
+                      if re.match(layer_re, name))
 
     # hardcoded:
     n_mult = 256
