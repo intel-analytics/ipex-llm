@@ -6,7 +6,7 @@ spec:
   containers:
   - name: bigdl-torchserve-frontend-pod
     image: {{ .Values.imageName }}
-    args: ["bash /ppml/torchserve/start-torchserve-frontend-k8s.sh -c $configFile"]
+    command: ['sh' , '-c', 'bash /ppml/torchserve/torchserve-frontend-entrypoint.sh']
     imagePullPolicy: IfNotPresent
     volumeMounts:
     - mountPath: /tmp
