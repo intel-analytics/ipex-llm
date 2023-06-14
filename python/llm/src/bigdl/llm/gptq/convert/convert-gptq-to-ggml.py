@@ -159,8 +159,9 @@ def convert_gptq2ggml(model_path, tokenizer_path, output_path):
     model = torch.load(model_path, map_location="cpu")
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
-    n_layer = 1 + max(int(m.group(1)) for name in model  # noqa
-                      if m := re.match(r'model\.layers\.([0-9]+)', name))  # noqa: E231
+    layer_re = r'model\.layers\.([0-9]+)'
+    layer_list = int(m.group(1)) for name in model if m:=re.match(layer_re, name)  # noqa: E231
+    n_layer = 1 + max(layer_list)
 
     # hardcoded:
     n_mult = 256
