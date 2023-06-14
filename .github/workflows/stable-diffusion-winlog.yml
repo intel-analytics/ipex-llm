@@ -1,7 +1,7 @@
 name: stable-diffusion-win
 on:
-  pull_request:
-    branchs: [ main ]
+#   pull_request:
+#     branchs: [ main ]
   schedule:
     - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
   workflow_dispatch:
@@ -9,40 +9,9 @@ on:
 jobs:
   stable-diffusion-win:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
-#     environment: internal-dev
     steps:
-#       - name: Hello world action
-#         with: # Set the secret as an input
-#           ftp_user: ${{ secrets.FTP_USERNAME }}
-#           ftp_psd: ${{ secrets.FTP_PASSWORD }}
-#         env: # Or as an environment variable
-#           FTP_URI_USER: ${{ secrets.FTP_USERNAME }}
-#           FTP_URI_PSD: ${{ secrets.FTP_PASSWORD }}
-#       - name: Echo a secret  
-#         run: echo "your secret token is ${{secrets.FTP_USERNAME}}"
-
       - name: Download log
-#         env:
-#           FTP_URI_USER: ${{ vars.FTP_USER }} 
-#           FTP_URI_PSD: ${{ vars.FTP_PSD }}
-#           FTP_URI_USER: ${{ secrets.FTP_USER }}
-#           FTP_URI_PSD: ${{ secrets.FTP_PSD }}
         run: |
-          if [ -n "$FTP_URI_USER" ]; then
-              echo "FTP_URI_USER is set to: $FTP_URI_USER"
-          else
-              echo "FTP_URI_USER is not set, use bigdl"
-          fi
-          if [ -n "$FTP_URI_PSD" ]; then
-              echo "FTP_URI_PSD is set to: $FTP_URI_PSD"
-          else
-              echo "FTP_URI_PSD is not set, use 1234qwer"
-          fi
-          #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=$FTP_URI_USER --ftp-password=$FTP_URI_PSD
-          #export FTP_URI=ftp://bigdl:1234qwer@10.112.231.51:8821
-          #wget  $FTP_URI/stable-diffusion/ui-test-20230607.log
-          #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=bigdl --ftp-password=1234qwer
-          #wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user="$FTP_URI_USER" --ftp-password="$FTP_URI_PSD"
-          wget ftp://10.112.231.51:8821/stable-diffusion/ui-test-20230607.log --ftp-user=${{ secrets.FTP_USERNAME }} --ftp-password=${{ secrets.FTP_PASSWORD }}
-          #cat ui-test.log
-          #rm ui-test.log
+          wget ftp://10.112.231.51:8821/stable-diffusion/ui-test.log --ftp-user=${{ secrets.FTP_USERNAME }} --ftp-password=${{ secrets.FTP_PASSWORD }}
+          cat ui-test.log
+          rm ui-test.log
