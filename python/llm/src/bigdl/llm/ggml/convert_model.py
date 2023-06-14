@@ -73,9 +73,9 @@ def convert_model(input_path: str,
     elif dtype == 'int8':
         dtype = 'q8_0'
         invalidInputError(model_family in ['llama', 'gptneox'],
-                      "Now we only support int8 quantization of model \
-                       family('llama', 'gptneox')",
-                      "{} is not in the list.".format(model_family))
+                          "Now we only support int8 quantization of model \
+                          family('llama', 'gptneox')",
+                          "{} is not in the list.".format(model_family))
 
     if tmp_path is not None:
         model_name = Path(input_path).stem
