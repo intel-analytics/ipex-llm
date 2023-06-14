@@ -104,7 +104,6 @@ def _load_shared_library(lib_base_name: str):
     for _lib_path in _lib_paths:
         if _lib_path.exists():
             try:
-                print("_lib_path:", _lib_path)
                 return ctypes.CDLL(str(_lib_path))
             except Exception as e:
                 invalidInputError(False,
