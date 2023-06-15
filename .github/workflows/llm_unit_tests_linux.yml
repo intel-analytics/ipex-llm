@@ -64,21 +64,21 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Download original models
-        env:
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }} 
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
+          llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
+          llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
+          llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
           if [ ! -d $LLAMA_ORIGIN_PATH ]; then
             echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 --ftp-user=$FTP_USERNAME --ftp-password=$FTP_PASSWORD ftp://10.112.231.51:8821/llm/llama-7b-hf -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/llama-7b-hf -P $ORIGIN_DIR
           fi
           if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
             echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 --ftp-user=$FTP_USERNAME --ftp-password=$FTP_PASSWORD ftp://10.112.231.51:8821/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
           fi
           if [ ! -d $BLOOM_ORIGIN_PATH ]; then
             echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 --ftp-user=$FTP_USERNAME --ftp-password=$FTP_PASSWORD ftp://10.112.231.51:8821/llm/bloomz-7b1 -P $ORIGIN_DIR
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/bloomz-7b1 -P $ORIGIN_DIR
           fi
       
       - name: Run LLM basic test (native install & convert)
