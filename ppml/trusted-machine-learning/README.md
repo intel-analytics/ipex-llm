@@ -189,11 +189,13 @@ regressionModel = sc.loadLightGBMRegressionModel(...)
 rankerModel = sc.loadLightGBMRankerModel(...)
 ```
 
+**Mechanism:** BigDL PPML extract `Boosters` inside LightGBM models, serially convert them to `DataFrames` on Spark JVM, and encrypt them transparently through `codec in Hadoop IO compression`. The decryption is the deserialization process against it.
+
 Now, it is time to **submit the spark job and start the LightGBM application**:
 
 ```bash
 java \
--cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*:${BIGDL_HOME}/jars/*" \
+-cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*" \
 -Xmx512m \
 org.apache.spark.deploy.SparkSubmit \
 /ppml/examples/encrypted_lightgbm_model_io.py \
