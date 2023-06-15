@@ -137,3 +137,15 @@ Chronos can be simply installed using pip on native Windows, you could use the s
 2. `intel_extension_for_pytorch (ipex)` is unavailable for Windows now, so the related feature is not supported.
 
 For some known issues when installing and using Chronos on native Windows, you could refer to [windows_guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html).
+
+##### Install Chronos along with specific Tensorflow
+
+Currently, the default Tensorflow version of Chronos is 2.7. But Chronos is also validated on Tensorflow 2.8-2.12. If you want to use specific Tensorflow, please follow the table below to find the extra install command after installing Chronos.
+
+| TF version | Install CMD |
+| :-----: | :-----: |
+| 2.8 | pip install tensorflow==2.8.0 intel-tensorflow==2.8.0 |
+| 2.9 | pip install tensorflow==2.9.0 intel-tensorflow==2.9.1 |
+| 2.10 | pip install tensorflow==2.10.0 intel-tensorflow==2.10.0 |
+| 2.11 | pip install tensorflow==2.11.0 intel-tensorflow==2.11.0 |
+| 2.12 | pip install tensorflow==2.12.0 intel-tensorflow==2.12.0 protobuf==3.20.3 |
