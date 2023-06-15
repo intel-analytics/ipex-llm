@@ -146,7 +146,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev python3-pip libpython3-dev && \
     apt-get install -y libssl-dev && \
 # Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference]==2.2.0b20221226 vit_pytorch && \
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch_112,inference] vit_pytorch && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
