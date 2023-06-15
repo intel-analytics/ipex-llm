@@ -1,11 +1,13 @@
 name: bigdl-llm-win
+
 on:
-  push:
-    paths:
-      - 'python/llm'
-      - '.github/workflows/bigdl-llm-winlog.yml'
-  pull_request:
-    branchs: [ main ]
+  pull_request_target:
+  # push:
+  #   paths:
+  #     - 'python/llm'
+  #     - '.github/workflows/bigdl-llm-winlog.yml'
+  # pull_request:
+  #   branchs: [ main ]
   schedule:
     - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
   workflow_dispatch:
