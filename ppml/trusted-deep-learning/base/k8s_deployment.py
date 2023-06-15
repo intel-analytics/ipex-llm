@@ -298,7 +298,8 @@ def main(myargs=None):
     args = _parse_args(myargs)
     #/ppml/test/mnist.ipynb
     import os
-    os.system('jupyter nbconvert --to script '+ args.main_script + ' > /dev/null 2>&1')
+    if (args.main_script.endswith(".ipynb")):
+        os.system('jupyter nbconvert --to script '+ args.main_script + ' > /dev/null 2>&1')
 
     my_main_script=args.main_script.replace(".ipynb", ".py")
     print(args.main_script)

@@ -68,6 +68,10 @@ class PPMLConf:
         self.init_k8s_conf()
         print("init")
 
+    def exit(self):
+        import sys
+        sys.exit("success")
+
     def set(self, key, value, value1=None):
         if key.startswith("bigdl"):
             keys = key.split(".")
@@ -120,12 +124,11 @@ class PPMLConf:
     def conf_to_args(self):
         args = []
         if self.k8s_enabled == True:
-            import ipyparams
-            main_script = ipyparams.notebook_name
+            main_script = self.conf["main_script"]
             if (main_script == ""):
-                raise ValueError("jupyter init empty error, just try again")
+                raise ValueError("main_script is empty, just try again")
             current_dir = os.getcwd()
-            self.set("main_script", current_dir + "/" + ipyparams.notebook_name)
+            self.set("main_script", current_dir + "/" + main_script + ".ipynb")
             self.set("main_script_args", "--test 2")
             for key, value in self.k8s_conf.items():
                 args.append("--" + key)

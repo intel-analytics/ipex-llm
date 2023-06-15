@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     args1=local_conf.conf_to_args()
     main(args1)
-    sys.exit()
+    local_conf.exit()
 
 # +
 import ppml_context
@@ -173,7 +173,8 @@ k8s_conf = ppml_context.PPMLConf(k8s_enabled = True, sgx_enabled=False) \
     .set("bigdl.ppml.k8s.conf.nnodes", "2") \
     .set("bigdl.ppml.k8s.conf.pod_cpu", "13") \
     .set("bigdl.ppml.k8s.conf.pod_memory", "64G") \
-    .set("bigdl.ppml.k8s.conf.pod_epc_memory", "68719476736")
+    .set("bigdl.ppml.k8s.conf.pod_epc_memory", "68719476736") \
+    .set("main_script", "mnist-simple")
 
 # set("bigdl.ppml.k8s.volume_nfs.volume_name,host_path")
 # set("bigdl.ppml.k8s.volume_nfs.volume_name, nfs_server, nfs_path")
