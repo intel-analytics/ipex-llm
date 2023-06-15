@@ -1,7 +1,7 @@
 name: stable-diffusion-win
 on:
-#   pull_request:
-#     branchs: [ main ]
+  pull_request:
+    branches: [ main ]
   pull_request_target:
     branches: [ main ]
   schedule:
