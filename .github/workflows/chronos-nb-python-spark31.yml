@@ -16,7 +16,7 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  chronos-NB-tensorflow2.8-inference-automl-distributed-test:
+  chronos-NB-tensorflow28-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -62,7 +62,7 @@ jobs:
         run: |
           conda remove -n chronos-nb-env -y --all
 
-  chronos-NB-tensorflow2.9-inference-automl-distributed-test:
+  chronos-NB-tensorflow29-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -108,7 +108,7 @@ jobs:
         run: |
           conda remove -n chronos-nb-env -y --all
 
-  chronos-NB-tensorflow2.10-inference-automl-distributed-test:
+  chronos-NB-tensorflow210-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -154,7 +154,7 @@ jobs:
         run: |
           conda remove -n chronos-nb-env -y --all
 
-  chronos-NB-tensorflow2.11-inference-automl-distributed-test:
+  chronos-NB-tensorflow211-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
@@ -200,7 +200,7 @@ jobs:
         run: |
           conda remove -n chronos-nb-env -y --all
 
-  chronos-NB-tensorflow2.12-inference-automl-distributed-test:
+  chronos-NB-tensorflow212-inference-automl-distributed-test:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
