@@ -6,7 +6,7 @@ runs:
     - name: Activate environment
       shell: bash
       run: |
-        source $CONDA_HOME/bin/activate bigdl-llm-cli-ut
+        source $CONDA_HOME/bin/activate bigdl-init-llm
         $CONDA_HOME/bin/conda info
 
     - name: Test llama llm-cli
