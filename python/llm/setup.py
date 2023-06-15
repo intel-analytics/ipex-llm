@@ -99,7 +99,9 @@ def obtain_lib_urls():
             for binary in binarys:
                 if binary in binary_url:
                     continue
-                if binary in text:
+                # Filename hard matching
+                match_pattern = "\"name\":\"{}\"".format(binary)
+                if match_pattern in text:
                     lib_url = url + binary
                     binary_url[binary] = lib_url
                     download_num -= 1
