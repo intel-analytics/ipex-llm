@@ -2,8 +2,6 @@ name: stable-diffusion-win
 on:
   pull_request:
 #     branchs: [ main ]
-    types:
-      - closed
 #   pull_request_target:
 #     branchs: [ main ]
   schedule:
