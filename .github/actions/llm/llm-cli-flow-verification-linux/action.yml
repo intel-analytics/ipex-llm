@@ -1,0 +1,50 @@
+name: 'llm-cli Flow Verification (Linux)'
+description: 'Verify the llm-cli flow on linux'
+runs:
+  using: "composite"
+  steps:
+    - name: Activate environment
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-cli-ut
+        $CONDA_HOME/bin/conda info
+
+    - name: Test llama llm-cli
+      shell: bash
+      run: |
+        llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
+        
+        timeout 30s llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
+        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
+        
+        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
+          ;
+        else
+          exit 1
+        fi
+        rm test.out
+
+    - name: Test gptneox llm-cli
+      shell: bash
+      run: |
+        llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
+        
+        timeout 30s llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
+        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
+        
+        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
+          ;
+        else
+          exit 1
+        fi
+        rm test.out
+
+    - name: Test bloom llm-cli
+      shell: bash
+      run: |
+        llm-cli -t 16 -n 256 -x llama -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
+
+    - name: Clean workspace
+      shell: bash
+      run: |
+        $CONDA_HOME/bin/conda deactivate

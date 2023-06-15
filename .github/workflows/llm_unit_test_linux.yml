@@ -95,7 +95,18 @@ jobs:
           pip install pytest
           bash python/llm/test/run-llm-basic-tests.sh
           source $CONDA_HOME/bin/deactivate
-          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run LLM cli test
+        uses: ./.github/actions/llm/llm-cli-flow-verification-linux
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
