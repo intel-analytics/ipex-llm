@@ -12,16 +12,16 @@ on:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+      - '.github/workflows/llm_unit_tests_linux.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+      - '.github/workflows/llm_unit_tests_linux.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-unit-test-basic-linux:
+  llm-unit-test-linux:
     runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false

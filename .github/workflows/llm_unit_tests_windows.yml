@@ -12,16 +12,16 @@ on:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_windows.yml'
+      - '.github/workflows/llm_unit_tests_windows.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_windows.yml'
+      - '.github/workflows/llm_unit_tests_windows.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-unit-test-basic-windows:
+  llm-unit-test-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
-      - name: Run LLM naive installation test
+      - name: Run LLM basic test (naive installation)
         shell: bash
         run: |
           pip install requests
