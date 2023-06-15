@@ -43,6 +43,7 @@ jobs:
       - name: Run LLM-init test
         shell: bash
         run: |
+          pip install requests
           bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
         env:
@@ -51,6 +52,7 @@ jobs:
       - name: Run LLM naive installation test
         shell: bash
         run: |
+          pip install requests
           bash python/llm/dev/release_default_windows.sh default false
           whl_name=$(ls python/llm/dist)
           pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
