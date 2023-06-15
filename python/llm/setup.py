@@ -31,6 +31,8 @@ import platform
 import shutil
 import sys
 import urllib.request
+import requests
+import re
 
 from setuptools import setup
 
@@ -60,35 +62,60 @@ def get_llm_packages():
     return llm_packages
 
 
-lib_urls = {}
-lib_urls["Windows"] = [
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/llama.dll",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/gptneox.dll",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/bloom.dll",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom.exe",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox.exe",
-]
-lib_urls["Linux"] = [
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx2.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libllama_avx512.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-llama",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx2.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libgptneox_avx512.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-gptneox",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx2.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/libbloom_avx512.so",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx2",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx2",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx2",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-llama_avx512",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-bloom_avx512",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/main-gptneox_avx512",
-    "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/quantize-bloom",
-]
+def obtain_lib_urls():
+    base_url = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/"
+    windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
+                       "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
+                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe"]
+    linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
+                     "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
+                     "quantize-llama", "quantize-gptneox", "quantize-bloom",
+                     "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
+                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512"]
+
+    def get_date_urls(base_url):
+        # obtain all urls based on date(format: xxxx-xx-xx)
+        text = ''
+        try:
+            text = requests.get(base_url).text
+        except Exception as e:
+            print("error - > ",base_url,e)
+            pass
+        reg = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}/"
+        urls =  re.findall(reg, text)
+        return urls
+
+    def get_urls_for_binary(date_urls, binarys):
+        # Sort by time from near to far
+        date_urls = sorted(date_urls, reverse=True)
+        binary_url = {}
+        download_num = len(binarys)
+        for url in date_urls:
+            try:
+                text = requests.get(url).text
+            except Exception as e:
+                print("error - > ", url, e)
+                continue
+            for binary in binarys:
+                if binary in binary_url:
+                    continue
+                if binary in text:
+                    lib_url = url + binary
+                    binary_url[binary] = lib_url
+                    download_num -= 1
+                    if download_num == 0:
+                        break
+            if download_num == 0:
+                break
+        return binary_url
+
+    lib_urls = {}
+    date_urls = get_date_urls(base_url)
+    windows_binary_urls = get_urls_for_binary(date_urls, windows_binarys)
+    lib_urls["Windows"] = list(windows_binary_urls.values())
+    linux_binary_urls = get_urls_for_binary(date_urls, linux_binarys)
+    lib_urls["Linux"] = list(linux_binary_urls.values())
+    return lib_urls
 
 
 def download_libs(url: str, change_permission=False):
@@ -153,6 +180,8 @@ def setup_package():
         print(f"Deleting existing libs_dir {libs_dir} ....")
         shutil.rmtree(libs_dir)
     os.makedirs(libs_dir, exist_ok=True)
+
+    lib_urls = obtain_lib_urls()
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)

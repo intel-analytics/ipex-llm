@@ -46,6 +46,7 @@ jobs:
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source $CONDA_HOME/bin/activate bigdl-init-llm
           $CONDA_HOME/bin/conda info
+          pip install requests
           bash python/llm/dev/release_default_linux.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
           source $CONDA_HOME/bin/deactivate
@@ -60,6 +61,7 @@ jobs:
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
           source $CONDA_HOME/bin/activate bigdl-init-llm
           $CONDA_HOME/bin/conda info
+          pip install requests
           bash python/llm/dev/release_default_linux.sh default false
           whl_name=$(ls python/llm/dist)
           pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
