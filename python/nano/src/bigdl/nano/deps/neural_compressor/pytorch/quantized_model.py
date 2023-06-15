@@ -57,6 +57,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         # only ipex quantization saves this file
         if os.path.exists(os.path.join(path, "best_configure.json")):
             ipex_quantization = True
+            import intel_extension_for_pytorch as ipex
         if ipex_quantization:
             invalidInputError(example_inputs is not None,
                               "For INC ipex quantizated model, you need to set input_sample "

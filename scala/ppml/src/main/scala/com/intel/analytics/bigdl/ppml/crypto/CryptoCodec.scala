@@ -141,6 +141,11 @@ object CryptoCodec {
       decompressed.copyToArray(b, 0)
       decompressed.length
     }
+
+    override def resetState(): Unit = {
+      bigdlEncrypt.reset
+      headerVerified = false
+    }
   }
 
   object CryptoDecompressStream{

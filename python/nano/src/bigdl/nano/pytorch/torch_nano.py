@@ -275,7 +275,7 @@ class TorchNano(LightningLite):
         # which is not supported by ddp currently,
         # so add IPEX 1.11's optimization after `_setup_model`
         if self.use_ipex:
-            ret = ipex_optimize(model, optimizers=optimizers, inplace=False, dtype=self.dtype)
+            ret = ipex_optimize(model, optimizers=optimizers, inplace=True, dtype=self.dtype)
             if isinstance(ret, tuple):
                 model, optimizers = ret[0], [ret[1]]
             else:

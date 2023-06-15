@@ -45,6 +45,64 @@ or:
   --device=/dev/sgx/provision
 ```
 
+## Spark 3.1.3 Pi example client mode
+
+Client mode means that driver is running in the docker container, and executors are running in the k8s pods. So need to prepare the k8s environment first.
+
+To run Spark Pi example in client mode:
+
+1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
+And add to mount executor.yaml to /opt/k8s. For example:
+```
+-v ./kubernetes:/opt/k8s \   # to mount executor.yaml to /opt/k8s
+-v /root/.kube:/root.kube \  # mount /root/.kube
+-e KUBECONFIG=/root/.kube/admin.conf \ # make sure KUBECONFIG is in /root/.kube
+```
+2.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+3.Run the spark pi example in client model
+``` bash
+bash /opt/run_spark_on_occlum_glibc.sh pi_client
+```
+
+You can see executors by 'kubectl get pods | grep pi', and see Pi result in the container's log.
+
+```bash
+Pi is roughly 3.1436957184785923
+```
+
+## Spark 3.1.3 Pi example cluster mode
+
+Cluster mode means that driver and executors are running in the k8s pods. So need to prepare the k8s environment first.
+
+To run Spark Pi example in cluster mode:
+
+1.Add config `KUBECONFIG`, if `KUBECONFIG` is't in /root/.kube/, copy it to /root/.kube, the dir /root/.kube will be mounted to the docker container.
+And add to mount driver.yaml and executor.yaml to /opt/k8s.
+```
+-v ./kubernetes:/opt/k8s \   # to mount executor.yaml and driver.yaml and  to /opt/k8s
+-v /root/.kube:/root.kube \  # mount /root/.kube
+-e KUBECONFIG=/root/.kube/admin.conf \ # make sure KUBECONFIG is in /root/.kube
+```
+2.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+3.Run the spark pi example in cluster model
+``` bash
+bash /opt/run_spark_on_occlum_glibc.sh pi_cluster
+```
+
+You can see driver and executors by 'kubectl get pods | grep pi', and see Pi result in the docker pod's log.
+
+```bash
+Pi is roughly 3.1436957184785923
+```
+
 ## Spark 3.1.3 Pi example
 
 To run Spark Pi example, start the docker container with:
@@ -480,6 +538,50 @@ bash /opt/run_spark_on_occlum_glibc.sh sql_e2e
 bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/model
 ```
 And the decrypt result is under folder `/opt/occlum_spark/data/decryptEhsm`.
+
+## BigDL PySpark SimpleQuery e2e Example using Simple KMS
+
+You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e APP_ID=123456654321 \
+-e API_KEY=123456654321 \
+```
+
+Start run BigDL PySpark SimpleQuery e2e example:
+
+1.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY = `123456654321` for simple KMS.
+The primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`.
+```
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
+```
+4.To encrypt input data. For example, you mount a file called people.csv. It will be encrypted in `/opt/occlum_spark/data/encryptEhsm`.
+```
+bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+```
+5.To run the BigDL SimpleQuery e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh pysql_e2e
+```
+6.You can find encrypted result under folder `/opt/occlum_spark/data/model`. And decrypt the result by:
+```
+bash /opt/ehsm_entry.sh  decrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/model
+```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple`.
 
 ## BigDL MultiPartySparkQuery e2e Example
 

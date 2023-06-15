@@ -58,35 +58,6 @@ object ProtoUtils {
     builder.build()
   }
 
-  def ckksProtoToBytes(storage: Storage[TensorMap]): (
-        Array[Array[Byte]], Array[Byte], Array[Int], Array[Int]) = {
-    // TODO: impl
-    val arrayBuffer = new ArrayBuffer[Array[Byte]](storage.clientData.size())
-    var targetBytes: Array[Byte] = null
-    var shapeGrad: Array[Int] = null
-    var shapeLoss: Array[Int] = null
-    storage.clientData.values().asScala.foreach(clientMap => {
-      val tensorMap = clientMap.getEncryptedTensorMapMap().asScala
-      if (tensorMap.contains("target")) {
-        Log4Error.invalidOperationError(targetBytes == null, "Target already exists")
-        targetBytes = tensorMap.get("target").get.getTensor.toByteArray
-      }
-      if (shapeGrad == null) {
-        shapeGrad = tensorMap.get("output").get.getShapeList.asScala.toArray.map(_.toInt)
-        shapeLoss = Array(shapeGrad(0))
-      }
-      arrayBuffer.append(tensorMap.get("output").get.getTensor.toByteArray)
-    })
-    (arrayBuffer.toArray, targetBytes, shapeGrad, shapeLoss)
-  }
-
-  def bytesToCkksProto(
-        bytes: Array[Byte],
-        shape: Array[Int]): EncryptedTensor = {
-    EncryptedTensor.newBuilder().setTensor(ByteString.copyFrom(bytes))
-      .addAllShape(shape.map(new Integer(_)).toIterable.asJava).build()
-  }
-
   def tableProtoToOutputTarget(storage: Storage[TensorMap]): (DllibTable, Tensor[Float]) = {
     val aggData = protoTableMapToTensorIterableMap(storage.clientData)
     val target = Tensor[Float]()

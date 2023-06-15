@@ -82,7 +82,7 @@ runs:
         pip install ray[default]==1.13.0 prometheus_client==0.13.0
 
         # required by Automl test
-        pip install ConfigSpace optuna
+        pip install ConfigSpace 'optuna<=3.1.1'
 
         # required by NoteBook and Tutorial test
         pip install tensorflow-datasets==4.8.0 jinja2 jupyter nbconvert nbmake

@@ -70,6 +70,9 @@ class AzureAttestationService(maaProviderURL: String, apiVersion: String, userRe
   // Respone keys
   val RES_TOKEN = "token"
 
+  override def getNonce(): String = ""
+  var nonce = ""
+
   override def register(appID: String): String = "true"
 
   override def getPolicy(appID: String): String = "true"

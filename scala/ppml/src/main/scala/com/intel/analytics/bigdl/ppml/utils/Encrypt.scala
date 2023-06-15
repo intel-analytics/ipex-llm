@@ -18,8 +18,12 @@ package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{Dataset, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, PLAIN_TEXT}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
+import java.net.URI
 
 object Encrypt extends Supportive {
 
@@ -28,21 +32,46 @@ object Encrypt extends Supportive {
         case Some(arguments) => arguments
         case None => argumentsParser.failure("miss args, please see the usage info"); null
     }
-    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action) = (
+    val (inputDataSourcePath, outputDataSinkPath, cryptoMode, dataSourceType, action,
+    header, nPartition) = (
         arguments.inputDataSourcePath,
         arguments.outputDataSinkPath,
         CryptoMode.parse(arguments.cryptoMode),
         arguments.dataSourceType,
-        arguments.action
+        arguments.action,
+        arguments.header.toLowerCase(),
+        arguments.nPartition
     )
+    var partition: Int = 0
+    if (nPartition == 0) {
+//      use default partition number: file_size / block_size + 1
+      val hadoopConfig =
+        if (SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration != null) {
+          SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration
+        } else {
+          new Configuration()
+        }
+      val filePath = new Path(inputDataSourcePath)
+      val fs: FileSystem = FileSystem.get(new URI(filePath.toString), hadoopConfig)
+      val fileStatus = fs.getFileStatus(filePath)
+      val fileSize = fileStatus.getLen()
+      val blockSize = fs.getDefaultBlockSize(filePath)
+      print("fileSize:" + fileSize)
+      print("default blockSize:" + blockSize)
+      partition = (fileSize / (blockSize + 1024) + 1).toInt
+      print("partition number" + partition)
+    } else {
+      partition = nPartition
+    }
 
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val sc: PPMLContext = PPMLContext.initPPMLContext(sparkSession)
     if (action.equals("encrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(PLAIN_TEXT).csv(inputDataSourcePath)
-          sc.write(df, cryptoMode).csv(outputDataSinkPath)
+          val df = sc.read(PLAIN_TEXT).option("header", header).
+              csv(inputDataSourcePath).repartition(partition)
+          sc.write(df, cryptoMode).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(PLAIN_TEXT).json(inputDataSourcePath)
           sc.write(df, cryptoMode).json(outputDataSinkPath)
@@ -59,8 +88,8 @@ object Encrypt extends Supportive {
     } else if (action.equals("decrypt")) {
       dataSourceType match {
         case "csv" =>
-          val df = sc.read(cryptoMode).csv(inputDataSourcePath)
-          sc.write(df, PLAIN_TEXT).csv(outputDataSinkPath)
+          val df = sc.read(cryptoMode).option("header", header).csv(inputDataSourcePath)
+          sc.write(df, PLAIN_TEXT).option("header", header).csv(outputDataSinkPath)
         case "json" =>
           val df = sc.read(cryptoMode).json(inputDataSourcePath)
           sc.write(df, PLAIN_TEXT).json(outputDataSinkPath)
@@ -97,6 +126,12 @@ object Encrypt extends Supportive {
       opt[String]('a', "action")
         .action((x, c) => c.copy(action = x))
         .text("action type of encrypt or decrypt file, default is encrypt")
+      opt[String]('h', "header")
+        .action((x, c) => c.copy(header = x))
+        .text("whether to write header to the csv file, default is false")
+      opt[Int]('p', "partition")
+        .text("number of partitions, default is 0, and will repartition file_size/block_size+1")
+        .action((x, c) => c.copy(nPartition = x))
     }
 }
 
@@ -104,6 +139,9 @@ case class EncryptArguments(inputDataSourcePath: String = "input_data_path",
                             outputDataSinkPath: String = "output_save_path",
                             cryptoMode: String = "aes/cbc/pkcs5padding",
                             dataSourceType: String = "csv",
-                            action: String = "encrypt")
+                            action: String = "encrypt",
+                            header: String = "false",
+                            nPartition: Int = 0
+                           )
 
 

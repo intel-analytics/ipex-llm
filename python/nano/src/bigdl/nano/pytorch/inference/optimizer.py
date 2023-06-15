@@ -591,7 +591,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  logging: bool = True,
                  inplace: bool = False,
                  weights_prepack: Optional[bool] = None,
-                 enable_onednn: bool = True,
+                 enable_onednn: bool = False,
                  q_config=None,
                  output_tensors: bool = True,
                  example_kwarg_inputs=None,
@@ -722,7 +722,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 parameter to ``False``.
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
                               which provides a flexible API for aggressive fusion. Default to
-                              ``True``, only valid when accelerator='jit', otherwise will
+                              ``False``, only valid when accelerator='jit', otherwise will
                               be ignored. For more details, please refer https://github.com/
                               pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
                               onednn#pytorch---onednn-graph-api-bridge.
@@ -1029,7 +1029,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
               logging: bool = True,
               inplace: bool = False,
               weights_prepack: Optional[bool] = None,
-              enable_onednn: bool = True,
+              enable_onednn: bool = False,
               output_tensors: bool = True,
               strict_check: bool = True,
               example_kwarg_inputs=None,
@@ -1099,7 +1099,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                 parameter to ``False``.
         :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
                               which provides a flexible API for aggressive fusion. Default to
-                              ``True``, only valid when accelerator='jit', otherwise will be
+                              ``False``, only valid when accelerator='jit', otherwise will be
                               ignored. For more details, please refer https://github.com/pytorch/
                               pytorch/tree/master/torch/csrc/jit/codegen/
                               onednn#pytorch---onednn-graph-api-bridge.

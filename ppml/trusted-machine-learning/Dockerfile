@@ -72,7 +72,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     apt-get install libssl-dev  && \
-    bash /ppml/make-lgbm.sh
+    bash /ppml/make-lgbm.sh && \
+    pip install synapseml==0.11.1
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars

@@ -163,7 +163,13 @@ RUN cd /opt && \
 ADD ./install_python_with_conda.sh /opt
 RUN cd /opt && bash ./install_python_with_conda.sh
 
-FROM occlum/occlum:0.29.5-ubuntu20.04 as ppml
+#add jindo sdk to support oss
+RUN cd /opt && \
+    wget https://jindodata-binary.oss-cn-shanghai.aliyuncs.com/release/4.6.8/jindosdk-4.6.8-linux.tar.gz && \
+    tar -zxvf jindosdk-4.6.8-linux.tar.gz && \
+    rm /opt/jindosdk-4.6.8-linux/lib/jindo-core-linux*
+
+FROM occlum/occlum:0.29.6-ubuntu20.04 as ppml
 
 MAINTAINER The BigDL Authors https://github.com/intel-analytics/BigDL
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT
@@ -187,6 +193,8 @@ RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 
 COPY --from=tini /usr/local/bin/tini /sbin/tini
 
+RUN echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu focal main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list && \
+    wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
 # Install occlum from package
 # RUN apt-get update && \
 #     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -279,5 +287,20 @@ RUN chmod a+x /opt/entrypoint.sh && \
 ADD ./python-glibc.yaml /opt/python-glibc.yaml
 COPY --from=bigdl /opt/python-occlum /opt/python-occlum
 ADD ./py-examples /opt/py-examples
+
+# Add jindo lib
+COPY --from=bigdl /opt/jindosdk-4.6.8-linux/lib/*.jar $SPARK_HOME/jars/
+
+# Prepare Bigdl python libs
+RUN unzip -o $BIGDL_HOME/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib && \
+    unzip -o $BIGDL_HOME/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip -d $BIGDL_HOME/python-lib
+
+RUN cd $BIGDL_HOME/python-lib/ && \
+    zip -r bigdl.zip ./bigdl && \
+    mv bigdl.zip /opt/py-examples/
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
