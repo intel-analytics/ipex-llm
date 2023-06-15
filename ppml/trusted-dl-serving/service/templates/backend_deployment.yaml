@@ -31,6 +31,8 @@ spec:
           value: "{{ .Values.PCCSUrl }}"
         - name: FRONTEND_IP
           value: {{ .Values.frontendIP }}
+        - name: FRONTEND_MANAGEMENT_PORT
+          value: {{ .Values.managementPort }}
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"
