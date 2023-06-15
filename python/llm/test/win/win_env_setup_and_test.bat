@@ -18,22 +18,25 @@
 @REM python .\win_test.py
 
 echo The current directory is %CD%
+set base_dir=%1
+echo %base_dir%
 
 @REM Pull the latest code
-@REM cd C:\Users\obe\bigdl-llm-test\BigDL
-cd ..\..\..\..\
+cd %base_dir%\BigDL
 git pull
 
 @REM Build and install bigdl-llm
 pip uninstall bigdl-llm -y
 pip uninstall numpy torch transformers sentencepiece accelerate -y
-@REM cd C:\Users\obe\bigdl-llm-test\BigDL\python\llm
+pip install numpy torch transformers sentencepiece accelerate
+pip install requests
 cd python\llm
-pip install .[all] --use-pep517
+@REM pip install .[all] --use-pep517
+python setup.py clean --all install
+
 
 @REM Run pytest
 mkdir converted_models
-@REM python C:\Users\obe\bigdl-llm-test\BigDL\python\llm\test\win\test_llama.py
 python .\test\win\test_llama.py
 
 @REM Clean up
@@ -45,7 +48,6 @@ rmdir /s /q C:\Users\obe\bigdl-llm-test\BigDL\python\llm\src\bigdl\llm\libs
 
 @REM Upload the log file
 echo "Uploading the test logs to ftp..."
-@REM ftp -s:C:\Users\obe\bigdl-llm-test\ftp.txt
 ftp -s:..\..\..\ftp.txt
 
 exit 0
