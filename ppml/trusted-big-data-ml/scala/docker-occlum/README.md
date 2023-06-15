@@ -794,6 +794,23 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 hdfs  crypto -listZones
 ```
 
+## How to read and write aliyun OSS data using jindo sdk on spark
+We have supported the reading and writing of aliyun OSS in spark through jindo sdk, you can follow these steps to test:
+1. Apply for an OSS resource, get the related conf.
+2. Set conf when submitting spark tasks, for examples:
+```
+--conf spark.hadoop.fs.oss.impl=com.aliyun.jindodata.oss.JindoOssFileSystem \
+--conf spark.hadoop.fs.AbstractFileSystem.oss.impl=com.aliyun.jindodata.oss.JindoOSS \
+--conf spark.hadoop.fs.oss.endpoint=oss-cn-shanghai-internal.aliyuncs.com \
+--conf spark.hadoop.fs.oss.accessKeyId=$accessKeyId \
+--conf spark.hadoop.fs.oss.accessKeySecret=$accessKeySecret \
+```
+3. read and write OSS like reading and writing hdfs, for example on PySpark submit:
+```
+hdfs://IP:PORT/tpch/files/main.py
+# or oss://test-dev/tpch/files/main.py
+```
+
 ## Using BigDL Orca pytorch and tensorflow in SGX
 Introduction to [BigDL-Orca](https://bigdl.readthedocs.io/en/latest/doc/Orca/index.html).
 Using a new image to test,and Occlum instance is already built in it. image_name:intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production-customer:orca-test-build.
