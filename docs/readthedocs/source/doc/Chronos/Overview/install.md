@@ -142,12 +142,13 @@ For some known issues when installing and using Chronos on native Windows, you c
 
 Currently, the default Tensorflow version of Chronos is 2.7. But Chronos is also validated on Tensorflow 2.8-2.12. If you want to use specific Tensorflow, please follow the table below to find the extra install command after installing Chronos.
 
-.. eval_rst::
+```eval_rst
 
-    +--------+---------+---------+
+    +--------+---------+
     | TF version | Install CMD |
-    +========+=========+=========+
+    +========+=========+
     | 2.8 | pip install tensorflow==2.8.0 intel-tensorflow==2.8.0 |
-    +--------+---------+---------+
+    +--------+---------+
     | 2.9 | pip install tensorflow==2.9.0 intel-tensorflow==2.9.1 |
-    +--------+---------+---------+
+    +--------+---------+
+```
