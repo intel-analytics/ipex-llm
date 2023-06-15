@@ -3,7 +3,6 @@ on:
 #   pull_request:
 #     branchs: [ main ]
   pull_request_target:
-    types: [assigned, opened, synchronize, reopened]
 #     branchs: [ main ]
   schedule:
     - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
