@@ -36,16 +36,25 @@ A python function and a command line tool `llm_convert` is provided to transform
 
 Here is an example to use `llm_convert` command line tool.
 ```bash
+# pth model
 llm_convert -m pth -i "/path/to/llama-7b-hf/" -o "/path/to/llama-7b-int4/" -x "llama"
+# gptq model
+llm_convert -m gptq -i "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" -o "/path/to/out.bin" -k "/path/to/tokenizer.model" -x "llama"
 ```
 
 Here is an example to use `llm_convert` python API.
 ```bash
 from bigdl.llm import llm_convert
-
-llm_convert(input_path="/path/to/llama-7b-hf/",
-            output_path="/path/to/llama-7b-int4/",
-            model_type="pth",
+# pth model
+llm_convert(model="/path/to/llama-7b-hf/",
+            outfile="/path/to/llama-7b-int4/",
+            model_format="pth",
+            model_family="llama")
+# gptq model
+llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt",
+            outfile="/path/to/out.bin",
+            model_format="gptq",
+            tokenizer_path="/path/to/tokenizer.model",
             model_family="llama")
 ```
 

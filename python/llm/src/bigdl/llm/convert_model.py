@@ -34,7 +34,7 @@ def _special_kwarg_check(kwargs, check_args):
 def llm_convert(model,
                 outfile,
                 model_family,
-                dtype='int4',
+                outtype='int4',
                 model_format="pth",
                 **kwargs):
     if model_format == "pth":
@@ -44,12 +44,12 @@ def llm_convert(model,
         ggml_convert_model(input_path=model,
                            output_path=outfile,
                            model_family=model_family,
-                           dtype=dtype,
+                           dtype=outtype,
                            **_used_args,
                            )
     elif model_format == "gptq":
         invalidInputError(model.endswith(".pt"), "only support pytorch's .pt format now.")
-        invalidInputError(model_family == "llama" and dtype == 'int4',
+        invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
         check, _used_args = _special_kwarg_check(kwargs=kwargs,

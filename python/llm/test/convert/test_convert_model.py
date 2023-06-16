@@ -34,7 +34,7 @@ class TestConvertModel(TestCase):
                                            outfile=output_dir,
                                            model_family='llama',
                                            model_format="pth",
-                                           dtype='int4')
+                                           outtype='int4')
         assert os.path.isfile(converted_model_path)
 
     def test_convert_gptneox(self):
@@ -42,7 +42,7 @@ class TestConvertModel(TestCase):
                                            outfile=output_dir,
                                            model_family='gptneox',
                                            model_format="pth",
-                                           dtype='int4')
+                                           outtype='int4')
         assert os.path.isfile(converted_model_path)
 
     def test_convert_bloom(self):
@@ -50,7 +50,7 @@ class TestConvertModel(TestCase):
                                            outfile=output_dir,
                                            model_family='bloom',
                                            model_format="pth",
-                                           dtype='int4')
+                                           outtype='int4')
         assert os.path.isfile(converted_model_path)
 
 if __name__ == '__main__':
