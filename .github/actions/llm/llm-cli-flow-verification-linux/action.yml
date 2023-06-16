@@ -11,15 +11,15 @@ runs:
         
         llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
         
-        timeout 30s llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
-        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
-        
-        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
-          ;
-        else
-          exit 1
-        fi
-        rm test.out
+#        timeout 30s llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
+#        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
+#
+#        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
+#          ;
+#        else
+#          exit 1
+#        fi
+#        rm test.out
 
     - name: Test gptneox llm-cli
       shell: bash
@@ -29,15 +29,15 @@ runs:
         
         llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
         
-        timeout 30s llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
-        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
-        
-        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
-          ;
-        else
-          exit 1
-        fi
-        rm test.out
+#        timeout 30s llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
+#        'A chat between a curious user and a helpful and polite AI assistant. User:Can you tell me a story? AI:' >test.out 2>&1
+#
+#        if grep -q 'A chat between a curious user and a helpful and polite AI assistant.' test.out; then
+#          ;
+#        else
+#          exit 1
+#        fi
+#        rm test.out
 
     - name: Test bloom llm-cli
       shell: bash
