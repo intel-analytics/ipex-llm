@@ -60,7 +60,7 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
       - name: Run LLM install (all) test
-        shell: bash 
+        shell: bash
         run: |
           $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
