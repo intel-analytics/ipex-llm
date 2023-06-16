@@ -32,21 +32,21 @@ A standard procedure for using `bigdl-llm` contains 3 steps:
 3. Inference using `llm-cli`, transformers like API, or `langchain`.
 
 ### Convert your model
-A python function and a command line tool `convert_model` is provided to transform the model from huggingface format to GGML format.
+A python function and a command line tool `llm_convert` is provided to transform the model from huggingface format to GGML format.
 
-Here is an example to use `convert_model` command line tool.
+Here is an example to use `llm_convert` command line tool.
 ```bash
-convert_model -m pth -i "/path/to/llama-7b-hf/" -o "/path/to/llama-7b-int4/" -x "llama"
+llm_convert -m pth -i "/path/to/llama-7b-hf/" -o "/path/to/llama-7b-int4/" -x "llama"
 ```
 
-Here is an example to use `convert_model` python API.
+Here is an example to use `llm_convert` python API.
 ```bash
-from bigdl.llm import convert_model
+from bigdl.llm import llm_convert
 
-convert_model(input_path="/path/to/llama-7b-hf/",
-              output_path="/path/to/llama-7b-int4/",
-              model_type="pth",
-              model_family="llama")
+llm_convert(input_path="/path/to/llama-7b-hf/",
+            output_path="/path/to/llama-7b-int4/",
+            model_type="pth",
+            model_family="llama")
 ```
 
 ### Inferencing
