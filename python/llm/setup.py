@@ -176,7 +176,7 @@ def setup_package():
         include_package_data=True,
         entry_points={
             "console_scripts": [
-                'convert_model=bigdl.llm.ggml.convert_model:main'
+                'convert_model=bigdl.llm.convert_model:main'
             ]
         },
         extras_require={"all": all_requires},

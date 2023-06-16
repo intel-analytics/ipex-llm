@@ -155,8 +155,8 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     blob.tofile(fout)
 
 
-def convert_gptq2ggml(model_path, tokenizer_path, output_path):
-    model = torch.load(model_path, map_location="cpu")
+def convert_gptq2ggml(input_path, tokenizer_path, output_path):
+    model = torch.load(input_path, map_location="cpu")
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     layer_re = r'model\.layers\.([0-9]+)'
