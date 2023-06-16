@@ -17,10 +17,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     git clone https://github.com/analytics-zoo/pytorch-serve.git && \
-    cd pytorch-serve/frontend && \
-    ./gradlew clean assemble && \
+    cd pytorch-serve && \
+    python setup.py install && \
     mkdir -p /ppml/torchserve && \
-    mv server/build/libs/server-1.0.jar /ppml/torchserve/frontend.jar
+    mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar
+    
 
 # Stage.2 Tritonserver
 From ubuntu:20.04 as tritonserver
@@ -128,8 +129,9 @@ RUN mkdir /ppml/examples && \
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 ADD ./entrypoint.sh /opt/entrypoint.sh
 
-# COPY frontend.jar
+# Torchserve
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
@@ -150,16 +152,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip3 install --no-cache-dir torchserve==0.6.1 torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    pip3 install --no-cache-dir torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    sed -i '/MAX_FAILURE_THRESHOLD = 5/ios.environ\[\"MPLCONFIGDIR\"\]=\"\/tmp\/matplotlib\"' /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py && \
-    sed -i '/import abc/iimport sys' /usr/local/lib/python3.9/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i '/module = importlib.import_module/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.9/dist-packages/ts/torch_handler/base_handler.py && \
-    sed -i 's/SOCKET_ACCEPT_TIMEOUT = 30.0/SOCKET_ACCEPT_TIMEOUT = 3000.0/' /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py && \
-    sed -i '/os.path.join/i\ \ \ \ \ \ \ \ sys.path.append(model_dir)' /usr/local/lib/python3.9/dist-packages/ts/model_loader.py && \
-    sed -i '/import json/iimport sys' /usr/local/lib/python3.9/dist-packages/ts/model_loader.py && \
     cp /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml /ppml && \
     chmod +x /ppml/torchserve/start-torchserve-backend.sh && \
     chmod +x /ppml/torchserve/start-torchserve-frontend.sh && \
