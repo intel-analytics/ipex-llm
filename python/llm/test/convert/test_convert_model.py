@@ -36,19 +36,19 @@ class TestConvertModel(TestCase):
                                              dtype='int4')
         assert os.path.isfile(converted_model_path)
 
-    # def test_convert_gptneox(self):
-    #     converted_model_path = convert_model(input_path=gptneox_model_path,
-    #                                          output_path=output_dir,
-    #                                          model_family='gptneox',
-    #                                          dtype='int4')
-    #     assert os.path.isfile(converted_model_path)
+    def test_convert_gptneox(self):
+        converted_model_path = convert_model(input_path=gptneox_model_path,
+                                             output_path=output_dir,
+                                             model_family='gptneox',
+                                             dtype='int4')
+        assert os.path.isfile(converted_model_path)
 
-    # def test_convert_bloom(self):
-    #     converted_model_path = convert_model(input_path=bloom_model_path,
-    #                                          output_path=output_dir,
-    #                                          model_family='bloom',
-    #                                          dtype='int4')
-    #     assert os.path.isfile(converted_model_path)
+    def test_convert_bloom(self):
+        converted_model_path = convert_model(input_path=bloom_model_path,
+                                             output_path=output_dir,
+                                             model_family='bloom',
+                                             dtype='int4')
+        assert os.path.isfile(converted_model_path)
 
 if __name__ == '__main__':
     pytest.main([__file__])
