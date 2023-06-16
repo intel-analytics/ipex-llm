@@ -1,3 +1,20 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
 from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
 from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
 from bigdl.llm.utils.common import invalidInputError
@@ -31,8 +48,8 @@ def convert_model(input_path,
                            )
     elif model_type=="gptq":
         invalidInputError(input_path.endswith(".pt"), "only support pytorch's .pt format now.")
-        invalidInputError(model_family=="llama" and dtype=='int4s',
-                          "Convert GPTQ models should always"
+        invalidInputError(model_family=="llama" and dtype=='int4',
+                          "Convert GPTQ models should always "
                           "specify `--model_family llama --dtype int4` in the command line.")
         check, _used_args =_special_kwarg_check(kwargs=kwargs,
                                                 check_args=["tokenizer_path"])
@@ -57,13 +74,11 @@ def main():
     parser.add_argument('-x', '--model_family', type=str, required=True,
                         help=("model_family: Which model family your input model belongs to."
                               "Now only `llama`/`bloom`/`gptneox` are supported."))
-    parser.add_argument('-m', '--model', type=str, required=True,
+    parser.add_argument('-m', '--model_type', type=str, required=True,
                         help=("The model type to be convert to a ggml compatible file."
                               "Now only `pth`/`gptq` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
-    parser.add_argument('-c', '--model_type', type=str, default="pth",
-                        help="Which input model type to be converted.")
 
     # pth specific args
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
@@ -75,5 +90,4 @@ def main():
                         help="tokenizer_path, a path of tokenizer.model")
     args = parser.parse_args()
     params = vars(args)
-    print(params)
     convert_model(**params)
