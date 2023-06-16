@@ -52,12 +52,12 @@ class Test_Models_Basics(TestCase):
 
     def test_gptneox_completion_success(self):
         llm = Gptneox(self.gptneox_model_path)
-        output = llm("What is the capital of France?", max_tokens=32, stream=False)
+        output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=False)
         assert "Paris" in output['choices'][0]['text']
 
     def test_gptneox_completion_with_stream_success(self):
         llm = Gptneox(self.gptneox_model_path)
-        output = llm("What is the capital of France?", max_tokens=32, stream=True)
+        output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=True)
 
 
 if __name__ == '__main__':
