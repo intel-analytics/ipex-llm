@@ -1276,8 +1276,13 @@ def _convert_gptneox_hf_to_ggml(model_path, outfile_dir, outtype):
     fout.write(struct.pack("i", ftype))
 
     dot_token = tokenizer.encode(".")[0]
+    vocab = tokenizer.vocab
+    id2token = {v: k for k, v in vocab.items()}
     for i in range(hparams["vocab_size"]):
-        text = tokenizer.decode([i]).encode('utf-8')
+        if i in id2token:
+            text = id2token[i].encode('utf-8')
+        else:
+            text = tokenizer.decode([i]).encode('utf-8')
         fout.write(struct.pack("i", len(text)))
         fout.write(text)
 
