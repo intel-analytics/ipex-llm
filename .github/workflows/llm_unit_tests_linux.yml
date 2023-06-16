@@ -76,18 +76,6 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run LLM cli test
-        uses: ./.github/actions/llm/llm-cli-flow-verification-linux
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Clean up test environment
-        shell: bash
-        run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
       - name: Download ckpt models
         run: |
           llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
@@ -107,3 +95,15 @@ jobs:
           fi
 
       # new test steps should be added here
+
+      - name: Run LLM cli test
+        uses: ./.github/actions/llm/llm-cli-flow-verification-linux
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
