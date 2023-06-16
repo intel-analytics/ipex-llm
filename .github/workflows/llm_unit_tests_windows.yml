@@ -1,4 +1,4 @@
-name: LLM Unit Tests Basic on Linux
+name: LLM Unit Tests on Windows
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
@@ -12,20 +12,21 @@ on:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+      - '.github/workflows/llm_unit_tests_windows.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'python/llm/**'
-      - '.github/workflows/llm_unit_tests_basic_linux.yml'
+      - '.github/workflows/llm_unit_tests_windows.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  llm-unit-test-basic-linux:
-    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+  llm-unit-test-windows:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: ["windows-latest"]
         python-version: ["3.9"]
     steps:
       - uses: actions/checkout@v2
@@ -42,30 +43,20 @@ jobs:
       - name: Run LLM-init test
         shell: bash
         run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
-          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          bash python/llm/dev/release_default_linux.sh default false
+          pip install requests
+          bash python/llm/dev/release_default_windows.sh default false
           pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
-          source $CONDA_HOME/bin/deactivate
-          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
-      - name: Run LLM naive installation test
+      - name: Run LLM install (all) test
         shell: bash
         run: |
-          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
-          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
-          source $CONDA_HOME/bin/activate bigdl-init-llm
-          $CONDA_HOME/bin/conda info
-          bash python/llm/dev/release_default_linux.sh default false
+          pip install requests
+          bash python/llm/dev/release_default_windows.sh default false
           whl_name=$(ls python/llm/dist)
           pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
           pip install pytest
-          bash python/llm/test/run-llm-basic-tests.sh
-          source $CONDA_HOME/bin/deactivate
-          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
+          bash python/llm/test/run-llm-install-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

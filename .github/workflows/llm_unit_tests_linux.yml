@@ -1,0 +1,98 @@
+name: LLM Unit Tests on Linux
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_linux.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_linux.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-unit-test-linux:
+    runs-on: [ self-hosted, Gondolin, ubuntu-20.04-lts ]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    env:
+      INT4_CKPT_DIR: ./llm/ggml-actions/stable
+      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
+      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
+      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run LLM-init test
+        shell: bash
+        run: |
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
+          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          source $CONDA_HOME/bin/activate bigdl-init-llm
+          $CONDA_HOME/bin/conda info
+          pip install requests
+          bash python/llm/dev/release_default_linux.sh default false
+          pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
+          source $CONDA_HOME/bin/deactivate
+          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Run LLM install (all) test
+        shell: bash
+        run: |
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
+          $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4 -c ${GONDOLIN_CONDA_CHANNEL} --override-channels
+          source $CONDA_HOME/bin/activate bigdl-init-llm
+          $CONDA_HOME/bin/conda info
+          pip install requests
+          bash python/llm/dev/release_default_linux.sh default false
+          whl_name=$(ls python/llm/dist)
+          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
+          pip install pytest
+          bash python/llm/test/run-llm-install-tests.sh
+          source $CONDA_HOME/bin/deactivate
+          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Download ckpt models
+        run: |
+          llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
+          llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
+          llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
+          if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
+            echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $llm_ftp_url/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
+            echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $llm_ftp_url/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
+            echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $llm_ftp_url/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+
+      # new test steps should be added here

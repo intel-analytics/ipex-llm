@@ -49,6 +49,7 @@ COPY --from=bigdata  /usr/local/bin/gosu /usr/local/bin/gosu
 ADD ./bash.manifest.template /ppml
 ADD ./SparkML/bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
 ADD ./SparkML/scripts /ppml/scripts
+ADD ./LightGBM/examples/encrypted_lightgbm_model_io.py /ppml/examples
 ADD ./SparkML/spark-executor-template.yaml /ppml/spark-executor-template.yaml
 ADD ./SparkML/spark-driver-template.yaml /ppml/spark-driver-template.yaml
 ADD ./SparkML/entrypoint.sh /opt/entrypoint.sh
@@ -69,14 +70,16 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     cp /sbin/tini /usr/bin/tini && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $sgx_command' > /ppml/secured_argvs && \
     wget -P $SPARK_HOME/jars https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
-#LGBM 
+#LightGBM
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     apt-get install libssl-dev  && \
     bash /ppml/make-lgbm.sh && \
-    pip install synapseml==0.11.1
+    pip install synapseml==0.11.1 && \
+    cp /ppml/jars/*.jar ${SPARK_HOME}/jars && \
+    rm -rf ${SPARK_HOME}/jars/lightgbmlib* && \
+    cp ${LGBM_HOME}/build/lightgbmlib.jar ${SPARK_HOME}/jars/
 
-
-RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
-
+COPY --from=bigdata /ppml/bigdl-ppml/src /ppml/bigdl-ppml/src
+ENV PYTHONPATH   /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages:/ppml/bigdl-ppml/src
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
