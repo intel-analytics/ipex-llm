@@ -3,18 +3,11 @@ description: 'Verify the llm-cli flow on linux'
 runs:
   using: "composite"
   steps:
-    - name: Activate environment
+    - name: Test llama llm-cli
       shell: bash
       run: |
         source $CONDA_HOME/bin/activate bigdl-init-llm
         $CONDA_HOME/bin/conda info
-        pip list | grep 'bigdl-llm'
-
-    - name: Test llama llm-cli
-      shell: bash
-      run: |
-        $CONDA_HOME/bin/conda info
-        pip list | grep 'bigdl-llm'
         
         llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
         
@@ -31,6 +24,9 @@ runs:
     - name: Test gptneox llm-cli
       shell: bash
       run: |
+        source $CONDA_HOME/bin/activate bigdl-init-llm
+        $CONDA_HOME/bin/conda info
+        
         llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
         
         timeout 30s llm-cli -t 16 -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -i -p \
@@ -46,9 +42,7 @@ runs:
     - name: Test bloom llm-cli
       shell: bash
       run: |
+        source $CONDA_HOME/bin/activate bigdl-init-llm
+        $CONDA_HOME/bin/conda info
+        
         llm-cli -t 16 -n 256 -x llama -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
-
-    - name: Clean workspace
-      shell: bash
-      run: |
-        $CONDA_HOME/bin/conda deactivate
