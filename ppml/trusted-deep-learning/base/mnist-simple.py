@@ -179,13 +179,11 @@ k8s_conf = ppml_context.PPMLConf(k8s_enabled = True, sgx_enabled=False) \
 # set("bigdl.ppml.k8s.volume_nfs.volume_name,host_path")
 # set("bigdl.ppml.k8s.volume_nfs.volume_name, nfs_server, nfs_path")
 # set("bigdl.ppml.k8s.volume_mount.mount_path,volume_name")
-k8s_conf \
-    .set("bigdl.ppml.k8s.volume_nfs.source-code", "172.168.0.205","/mnt/sdb/disk1/nfsdata/wangjian/idc") \
-    .set("bigdl.ppml.k8s.volume_mount.source-code", "/ppml/notebook/nfs") \
-    .set("bigdl.ppml.k8s.volume_nfs.nfs-data", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/hf") \
-    .set("bigdl.ppml.k8s.volume_mount.nfs-data", "/root/.cache") \
-    .set("bigdl.ppml.k8s.volume_nfs.nfs-model", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/model/chinese-pert-base") \
-    .set("bigdl.ppml.k8s.volume_mount.nfs-model", "/ppml/model")
+# k8s_conf \
+#     .set("bigdl.ppml.k8s.volume_nfs.nfs-data", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/hf") \
+#     .set("bigdl.ppml.k8s.volume_mount.nfs-data", "/root/.cache") \
+#     .set("bigdl.ppml.k8s.volume_nfs.nfs-model", "172.168.0.205", "/mnt/sdb/disk1/nfsdata/guancheng/model/chinese-pert-base") \
+#     .set("bigdl.ppml.k8s.volume_mount.nfs-model", "/ppml/model")
 
 k8s_conf.run_k8s()
 # -

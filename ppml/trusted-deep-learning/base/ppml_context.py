@@ -183,13 +183,19 @@ class PPMLConf:
                 .set("bigdl.ppml.k8s.volume_host.aesm-socket", "/var/run/aesmd/aesm.socket") \
                 .set("bigdl.ppml.k8s.volume_mount.aesm-socket", "/var/run/aesmd/aesm.socket")
 
+            image = str(os.environ.get("imageName", "intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.4.0-SNAPSHOT"))
+            nfs_ip = str(os.environ.get("nfs_server_ip", ""))
+            nfs_path = str(os.environ.get("nfs_path", ""))
+
             # set conf
             self.set("bigdl.ppml.k8s.env.http_proxy", "http://child-prc.intel.com:913/") \
                 .set("bigdl.ppml.k8s.env.https_proxy", "http://child-prc.intel.com:913/") \
                 .set("bigdl.ppml.k8s.env.no_proxy", "10.239.45.10:8081,10.112.231.51,10.239.45.10,172.168.0.*") \
                 .set("bigdl.ppml.k8s.conf.namespace", "default") \
-                .set("bigdl.ppml.k8s.conf.image", "intelanalytics/bigdl-ppml-trusted-deep-learning-gramine-ref:2.4.0-SNAPSHOT") \
-                .set("bigdl.ppml.k8s.conf.driver_port", "29500")
+                .set("bigdl.ppml.k8s.conf.image", image) \
+                .set("bigdl.ppml.k8s.conf.driver_port", "29500") \
+                .set("bigdl.ppml.k8s.volume_nfs.source-code", nfs_ip, nfs_path) \
+                .set("bigdl.ppml.k8s.volume_mount.source-code", "/ppml/jupyter/example")
 
 
         if self.sgx_enabled:

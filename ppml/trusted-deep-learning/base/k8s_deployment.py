@@ -212,7 +212,8 @@ def _create_pod(pod_name: str,
     volumes = [_deserialize_volume_object(
         json_str, api_client) for json_str in volume_strs]
 
-    node_selector = {"icx-1": "true"}
+    # node_selector = {"icx-1": "true"}
+    node_selector = { }
 
     pod_spec = client.V1PodSpec(containers=[container],
                                 restart_policy="Never",

@@ -28,6 +28,16 @@ ADD ./load_save_encryption_ex.py /ppml/examples/load_save_encryption_ex.py
 # Patch for datasets
 ADD ./filelock.patch             /filelock.patch
 
+# Install jupyter
+RUN pip install jupyter jupyterlab jupytext ipyparams && \
+        python3 -m ipykernel.kernelspec
+
+# Add jupyter examples
+ADD ./ppml_context.py            /ppml/jupyter/examples/ppml_context.py
+ADD ./k8s_deployment.py          /ppml/jupyter/examples/k8s_deployment.py
+ADD ./mnist-simple.py            /ppml/jupyter/examples/mnist-simple.py
+ADD ./pert-simple.ipynb          /ppml/jupyter/examples/pert-simple.ipynb
+
 
 # PyTorch Dependencies
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
