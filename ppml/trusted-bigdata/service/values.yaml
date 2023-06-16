@@ -2,7 +2,7 @@
 
 nfsServerIp: your_nfs_server_ip
 nfsPath: a_nfs_shared_folder_path_on_the_server
-imageName: bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT # or replace with custom image of user
+imageName: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT # or replace with custom image of user
 TEEMode: sgx # sgx or tdx
 jupyterPort: 12345
 k8sMasterURL: your_k8s_master_url # get this by: echo k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
