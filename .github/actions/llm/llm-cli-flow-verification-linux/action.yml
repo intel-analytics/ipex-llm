@@ -8,10 +8,14 @@ runs:
       run: |
         source $CONDA_HOME/bin/activate bigdl-init-llm
         $CONDA_HOME/bin/conda info
+        pip list | grep 'bigdl-llm'
 
     - name: Test llama llm-cli
       shell: bash
       run: |
+        $CONDA_HOME/bin/conda info
+        pip list | grep 'bigdl-llm'
+        
         llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
         
         timeout 30s llm-cli -t 16 -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -i -p \
