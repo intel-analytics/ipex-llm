@@ -20,10 +20,11 @@ from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
 from bigdl.llm.utils.common import invalidInputError
 import argparse
 
+
 def _special_kwarg_check(kwargs, check_args):
     _used_args = {}
     for arg in check_args:
-        if not arg in kwargs:
+        if arg not in kwargs:
             return False, {arg, kwargs[arg]}
         else:
             _used_args[arg] = kwargs[arg]
@@ -36,9 +37,9 @@ def convert_model(input_path,
                   dtype='int4',
                   model_type="pth",
                   **kwargs):
-    if model_type=="pth":
-        check, _used_args =_special_kwarg_check(kwargs=kwargs,
-                                                check_args=["tmp_path"])
+    if model_type == "pth":
+        check, _used_args = _special_kwarg_check(kwargs=kwargs,
+                                                 check_args=["tmp_path"])
         invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
         ggml_convert_model(input_path=input_path,
                            output_path=output_path,
@@ -46,13 +47,13 @@ def convert_model(input_path,
                            dtype=dtype,
                            **_used_args,
                            )
-    elif model_type=="gptq":
+    elif model_type == "gptq":
         invalidInputError(input_path.endswith(".pt"), "only support pytorch's .pt format now.")
-        invalidInputError(model_family=="llama" and dtype=='int4',
+        invalidInputError(model_family == "llama" and dtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model_family llama --dtype int4` in the command line.")
-        check, _used_args =_special_kwarg_check(kwargs=kwargs,
-                                                check_args=["tokenizer_path"])
+        check, _used_args = _special_kwarg_check(kwargs=kwargs,
+                                                 check_args=["tokenizer_path"])
         invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
         invalidInputError("tokenizer_path" in _used_args,
                           "The GPT-Q model requires the `tokenizer_path` parameter to be provided."
@@ -64,6 +65,7 @@ def convert_model(input_path,
                           output_path=output_path)
     else:
         invalidInputError(False, f"Unsupported input model_type: {model_type}")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
