@@ -20,7 +20,10 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd pytorch-serve && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
-    mv /usr/local/lib/python3.9/dist-packages/torchserve*/ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
+    ll /usr/local/lib/python3.9/dist-packages/torchserve* && \
+    ll /usr/local/lib/python3.9/dist-packages/torchserve*/ts && \
+    ll /usr/local/lib/python3.9/dist-packages/torchserve*/ts/frontend && \
+    mv /usr/local/lib/python3.9/dist-packages/torchserve*/ts/frontend/model-server.jar /ppml/torchserve/frontend.jar
     
 
 # Stage.2 Tritonserver
