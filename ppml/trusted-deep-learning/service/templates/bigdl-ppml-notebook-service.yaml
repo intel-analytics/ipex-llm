@@ -7,8 +7,8 @@ metadata:
     app: bigdl-ppml-notebook
 spec:
   ports:
-    - port: {{ .Values.jupyterPort }}
-      targetPort: {{ .Values.jupyterPort }}
+  - port: {{ .Values.jupyterPort }}
+    targetPort: {{ .Values.jupyterPort }}
   type: NodePort
   selector:
     app: bigdl-ppml-notebook
