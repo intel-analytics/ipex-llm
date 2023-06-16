@@ -39,7 +39,8 @@ def convert_model(input_path,
         invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
         invalidInputError("tokenizer_path" in _used_args,
                           "The GPT-Q model requires the `tokenizer_path` parameter to be provided."
-                          "Usage: convert-model --model_family llama llamaXXb-4bit.pt"
+                          "Usage: convert-model --model_type gptq"
+                          "--model_family llama --input_path llamaXXb-4bit.pt"
                           "--tokenizer_path tokenizer.model --output_path out.bin")
         convert_gptq2ggml(input_path=input_path,
                           tokenizer_path=_used_args["tokenizer_path"],
@@ -61,6 +62,8 @@ def main():
                               "Now only `pth`/`gptq` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
+    parser.add_argument('-c', '--model_type', type=str, default="pth",
+                        help="Which input model type to be converted.")
 
     # pth specific args
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
