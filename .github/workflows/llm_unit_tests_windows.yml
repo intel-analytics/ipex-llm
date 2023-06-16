@@ -1,4 +1,4 @@
-name: LLM Unit Tests Basic on Windows
+name: LLM Unit Tests on Windows
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:

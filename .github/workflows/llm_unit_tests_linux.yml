@@ -1,4 +1,4 @@
-name: LLM Unit Tests Basic on Linux
+name: LLM Unit Tests on Linux
 
 # Cancel previous runs in the PR when you push new commits
 concurrency:
