@@ -19,7 +19,7 @@ import pytest
 import os
 from unittest import TestCase
 
-from bigdl.llm.ggml import convert_model
+from bigdl.llm import convert_model
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
@@ -33,6 +33,7 @@ class TestConvertModel(TestCase):
         converted_model_path = convert_model(input_path=llama_model_path,
                                              output_path=output_dir,
                                              model_family='llama',
+                                             model_type="pth",
                                              dtype='int4')
         assert os.path.isfile(converted_model_path)
 
@@ -40,6 +41,7 @@ class TestConvertModel(TestCase):
         converted_model_path = convert_model(input_path=gptneox_model_path,
                                              output_path=output_dir,
                                              model_family='gptneox',
+                                             model_type="pth",
                                              dtype='int4')
         assert os.path.isfile(converted_model_path)
 
@@ -47,6 +49,7 @@ class TestConvertModel(TestCase):
         converted_model_path = convert_model(input_path=bloom_model_path,
                                              output_path=output_dir,
                                              model_family='bloom',
+                                             model_type="pth",
                                              dtype='int4')
         assert os.path.isfile(converted_model_path)
 
