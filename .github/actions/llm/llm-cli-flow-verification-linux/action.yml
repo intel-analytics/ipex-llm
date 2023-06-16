@@ -45,4 +45,4 @@ runs:
         source $CONDA_HOME/bin/activate bigdl-init-llm
         $CONDA_HOME/bin/conda info
         
-        llm-cli -t 16 -n 256 -x llama -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
+        llm-cli -t 16 -n 256 -x bloom -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
