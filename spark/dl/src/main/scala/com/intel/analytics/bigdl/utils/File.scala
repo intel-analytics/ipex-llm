@@ -22,10 +22,13 @@ import java.net.URI
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
+import org.apache.spark.SparkContext
+import org.apache.spark.deploy.SparkHadoopUtil
 
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
   private[bigdl] val s3aPrefix: String = "s3a:"
+  private[bigdl] val ossPrefix: String = "oss:"
 
   /**
    * Load torch object from a torch binary file
@@ -54,12 +57,22 @@ object File {
   }
 
   /**
-   * Save scala object into a local/hdfs/s3 path
+   * Save scala object into a local/hdfs/s3/AliyunOSS path
    *
-   * Notice: S3 path should be like s3a://bucket/xxx.
+   * Notice: {{{
+   * S3 path should be like s3a://bucket/xxx.
    *
-   * See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
-   * for details, if you want to save model to s3.
+   *  See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
+   *  for details, if you want to save model to s3.
+   *
+   * AliyunOSS path should be like oss://bucket/xxx.
+   *
+   *  See (hadoop aliyun)[
+   *  https://hadoop.apache.org/docs/current/hadoop-aliyun/tools/hadoop-aliyun/index.html]
+   *  for details, if you want to save model to AliyunOSS.
+   *
+   * You can also configure s3/OSS in sparkConf, with prefix(spark.hadoop.).
+   * }}}
    *
    * @param obj object to be saved.
    * @param fileName local/hdfs output path.
@@ -104,8 +117,12 @@ object File {
   }
 
   private[bigdl] def getConfiguration(fileName: String): Configuration = {
-    if (fileName.startsWith(File.hdfsPrefix) || fileName.startsWith(s3aPrefix)) {
+    if (fileName.startsWith(File.hdfsPrefix)) {
       new Configuration()
+    } else if (fileName.startsWith(s3aPrefix) || fileName.startsWith(File.ossPrefix)) {
+      val sparkConf = SparkContext.getOrCreate().getConf
+      val hadoopConf = SparkHadoopUtil.get.newConfiguration(sparkConf)
+      hadoopConf
     } else {
       new Configuration(false)
     }
@@ -164,12 +181,22 @@ object File {
   }
 
   /**
-   * Load a scala object from a local/hdfs/s3 path.
+   * Load a scala object from a local/hdfs/s3/AliyunOSS path.
    *
-   * Notice: S3 path should be like s3a://bucket/xxx.
+   * Notice: {{{
+   * S3 path should be like s3a://bucket/xxx.
    *
-   * See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
-   * for details, if you want to load model from s3.
+   *  See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
+   *  for details, if you want to load model from s3.
+   *
+   * AliyunOSS path should be like oss://bucket/xxx.
+   *
+   *  See (hadoop aliyun)[
+   *  https://hadoop.apache.org/docs/current/hadoop-aliyun/tools/hadoop-aliyun/index.html]
+   *  for details, if you want to load model from AliyunOSS.
+   *
+   * You can also configure s3/OSS in sparkConf, with prefix(spark.hadoop.).
+   * }}}
    *
    * @param fileName file name.
    */
