@@ -38,17 +38,17 @@ object LocalOptimizer {
 /**
  * Optimize a model on a single machine
  *
- * @param model model to be optimized
- * @param dataset data set
- * @param criterion criterion to be used
+ * @param _model model to be optimized
+ * @param _dataset data set
+ * @param _criterion criterion to be used
  */
 class LocalOptimizer[T: ClassTag] (
-  model: Module[T],
-  dataset: LocalDataSet[MiniBatch[T]],
-  criterion: Criterion[T]
+  _model: Module[T],
+  _dataset: LocalDataSet[MiniBatch[T]],
+  _criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
-    model, dataset, criterion) {
+    _model, _dataset, _criterion) {
 
   import LocalOptimizer._
   import Optimizer.{header, saveModel, saveState, checkSubModules, getHyperParameterLog}
@@ -114,8 +114,9 @@ class LocalOptimizer[T: ClassTag] (
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
 
     dataset.shuffle()
-    val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
-    var iter = dataset.data(train = true)
+    val _dataset = dataset.asInstanceOf[LocalDataSet[MiniBatch[T]]]
+    val numSamples = _dataset.data(train = false).map(_.size()).reduce(_ + _)
+    var iter = _dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()
