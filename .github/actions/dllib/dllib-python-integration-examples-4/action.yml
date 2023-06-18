@@ -1,0 +1,48 @@
+name: 'Run Dllib Python Integration ExampleTest 4'
+description: 'Run Dllib Python Integration ExampleTest 4'
+runs:
+  using: "composite"
+  steps:
+    - name: Run Test
+      shell: bash
+      run: |
+        export _JAVA_OPTIONS="-XX:MaxPermSize=3G -Xmx50G"
+        export MAVEN_OPTS="-XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=3G -Xmx50G"
+        export HADOOP_CONF_DIR="/opt/work/hadoop-2.7.2/etc/hadoop"
+        
+        export JAVA_HOME=/opt/work/jdk8
+        export CLASSPATH=.:${JAVA_HOME}/lib:${JAVA_HOME}/jre/lib:${JAVA_HOME}/lib/tools.jar:${JAVA_HOME}/lib/dt.jar
+        export PATH=${JAVA_HOME}/bin/:${JAVA_HOME}/jre/bin:${PATH}
+
+        export PYSPARK_DRIVER_PYTHON=/usr/bin/python3.4
+        export PYSPARK_PYTHON=/usr/bin/python3.4
+        export http_proxy="http://child-prc.intel.com:913/"
+        export https_proxy="http://child-prc.intel.com:913/"
+        export PATH=/opt/work/apache-maven-3.6.3/bin:$PATH
+
+        curDir=$(pwd)
+        cp /opt/work/hadoop-2.7.2/etc/hadoop/core-site.xml $curDir/scala/dllib/src/test/resources/
+        robot -v public_hdfs_master:hdfs://$hdfs_server \
+        -t 4 \
+        -v cifar_data_source:hdfs://$hdfs_server:9000/cifar \
+        -v mnist_data_source:hdfs://$hdfs_server:9000/mnist \
+        -v imagenet_test_data_source:hdfs://$hdfs_server:9000/imagenet-mini \
+        -v public_hdfs_host:$hdfs_server \
+        -v mnist:mnist \
+        -v imagenet:imagenet \
+        -v cifar:cifar \
+        -v hdfs_272_master:hdfs://$hdfs_server:9000 \
+        -v spark_22_master:spark://$spark_2_server:7077 \
+        -v spark_30_master:spark://$spark_3_server:7077 \
+        -v jar_dir:/var/jenkins_home \
+        -v curdir:${WORKSPACE} \
+        -v http_proxy:http://child-prc.intel.com:913 \
+        -v https_proxy:https://child-prc.intel.com:913 \
+        -v tiny_shakespeare:$tiny_shakespeare \
+        -v s3a_path:s3a://bigdl-integration-test/bigdl \
+        -v simple_example:$simple_example \
+        scala/dllib/src/test/integration-test.robot
+        
+      env:
+        BIGDL_ROOT: ${{ github.workspace }}
+        ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
