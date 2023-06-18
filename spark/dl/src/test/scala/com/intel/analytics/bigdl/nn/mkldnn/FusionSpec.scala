@@ -439,4 +439,100 @@ class FusionSpec extends FlatSpec with Matchers {
 
     System.clearProperty("bigdl.mkldnn.fusion")
   }
+
+  "conv sum fusion" should "skip branched previous conv and work" in {
+    val inputShape = Array(1, 96, 224, 224)
+    val input_m1 = Input(inputShape, Memory.Format.nchw).inputs()
+    val conv1_m1 = SpatialConvolution(96, 24, 1, 1).setName("conv1").inputs(input_m1)
+    val conv2_m1 = SpatialConvolution(96, 24, 1, 1).setName("conv2").inputs(input_m1)
+    val conv3_m1 = SpatialConvolution(24, 48, 1, 1).setName("conv3").inputs(conv1_m1)
+    val id1_m1 = Identity().setName("id1").inputs(conv1_m1)
+    val id2_m1 = Identity().setName("id2").inputs(conv2_m1)
+    val cadd_m1 = CAddTable().setName("cadd").inputs(id1_m1, id2_m1)
+    val output1_m1 = Output(Memory.Format.nchw).inputs(conv3_m1)
+    val output2_m1 = Output(Memory.Format.nchw).inputs(cadd_m1)
+
+    val model1 = DnnGraph(Seq(input_m1), Seq(output1_m1, output2_m1))
+    val fused1 = model1.cloneModule()
+
+    model1.evaluate()
+    fused1.evaluate()
+
+    val tensor = Tensor[Float](inputShape).rand(-1, 1)
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model1.compile(InferencePhase)
+    model1.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused1.compile(InferencePhase)
+    fused1.forward(tensor)
+
+    Equivalent.nearequals(model1.output.toTable[Tensor[Float]](1),
+      fused1.output.toTable[Tensor[Float]](1), 1e-7)
+    Equivalent.nearequals(model1.output.toTable[Tensor[Float]](2),
+      fused1.output.toTable[Tensor[Float]](2), 1e-7)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+
+    val input_m2 = Input(inputShape, Memory.Format.nchw).inputs()
+    val conv1_m2 = SpatialConvolution(96, 24, 1, 1).setName("conv1").inputs(input_m2)
+    val conv2_m2 = SpatialConvolution(96, 24, 1, 1).setName("conv2").inputs(input_m2)
+    val id1_m2 = Identity().setName("id1").inputs(conv1_m2)
+    val id2_m2 = Identity().setName("id2").inputs(conv2_m2)
+    val conv3_m2 = SpatialConvolution(24, 48, 1, 1).setName("conv3").inputs(id1_m2)
+    val cadd_m2 = CAddTable().setName("cadd").inputs(id1_m2, id2_m2)
+    val output1_m2 = Output(Memory.Format.nchw).inputs(conv3_m2)
+    val output2_m2 = Output(Memory.Format.nchw).inputs(cadd_m2)
+
+    val model2 = DnnGraph(Seq(input_m2), Seq(output1_m2, output2_m2))
+    val fused2 = model2.cloneModule()
+
+    model2.evaluate()
+    fused2.evaluate()
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model2.compile(InferencePhase)
+    model2.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused2.compile(InferencePhase)
+    fused2.forward(tensor)
+
+    Equivalent.nearequals(model2.output.toTable[Tensor[Float]](1),
+      fused2.output.toTable[Tensor[Float]](1), 1e-7)
+    Equivalent.nearequals(model2.output.toTable[Tensor[Float]](2),
+      fused2.output.toTable[Tensor[Float]](2), 1e-7)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+
+    val input_m3 = Input(inputShape, Memory.Format.nchw).inputs()
+    val conv1_m3 = SpatialConvolution(96, 24, 1, 1).setName("conv1").inputs(input_m3)
+    val conv2_m3 = SpatialConvolution(96, 24, 1, 1).setName("conv2").inputs(input_m3)
+    val conv3_m3 = SpatialConvolution(24, 48, 1, 1).setName("conv3").inputs(conv1_m3)
+    val cadd_m3 = CAddTable().setName("cadd").inputs(conv1_m3, conv2_m3)
+    val output1_m3 = Output(Memory.Format.nchw).inputs(conv3_m3)
+    val output2_m3 = Output(Memory.Format.nchw).inputs(cadd_m3)
+
+    val model3 = DnnGraph(Seq(input_m3), Seq(output1_m3, output2_m3))
+    val fused3 = model3.cloneModule()
+
+    model3.evaluate()
+    fused3.evaluate()
+
+    System.setProperty("bigdl.mkldnn.fusion", "false")
+    model3.compile(InferencePhase)
+    model3.forward(tensor)
+
+    System.setProperty("bigdl.mkldnn.fusion", "true")
+    fused3.compile(InferencePhase)
+    fused3.forward(tensor)
+
+    Equivalent.nearequals(model3.output.toTable[Tensor[Float]](1),
+      fused3.output.toTable[Tensor[Float]](1), 1e-7)
+    Equivalent.nearequals(model3.output.toTable[Tensor[Float]](2),
+      fused3.output.toTable[Tensor[Float]](2), 1e-7)
+
+    System.clearProperty("bigdl.mkldnn.fusion")
+  }
 }
