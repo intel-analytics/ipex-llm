@@ -70,11 +70,11 @@ def llm_convert(model,
 def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
     parser.add_argument('-i', '--model', type=str, required=True,
-                        help=("input_path, a path to a *directory* containing model weights"))
+                        help=("model, a path to a *directory* containing model weights"))
     parser.add_argument('-o', '--outfile', type=str, required=True,
-                        help=("output_path,save path of output quantized model."))
+                        help=("outfile,save path of output quantized model."))
     parser.add_argument('-x', '--model-family', type=str, required=True,
-                        help=("model_family: Which model family your input model belongs to."
+                        help=("--model-family: Which model family your input model belongs to."
                               "Now only `llama`/`bloom`/`gptneox` are supported."))
     parser.add_argument('-f', '--model-format', type=str, required=True,
                         help=("The model type to be convert to a ggml compatible file."
