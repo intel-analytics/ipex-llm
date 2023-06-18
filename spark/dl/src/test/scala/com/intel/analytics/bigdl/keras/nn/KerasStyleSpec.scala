@@ -294,6 +294,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     graph.asInstanceOf[StaticGraph[Float]].setOutputFormats(Seq(Memory.Format.nc))
     val ir = graph.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
 
+    graph.parameters()._1 should be(ir.parameters()._1)
+
     val tensor = Tensor[Float](Array(3, 20, 100)).rand()
     val outputBlas = graph.forward(tensor)
     val output = ir.forward(tensor)
