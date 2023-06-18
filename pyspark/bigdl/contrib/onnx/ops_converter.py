@@ -252,5 +252,5 @@ def unsqueeze(inputs, prev_modules, attrs, outputs):
 	for idx in axes:
 		out_tensor_shape.insert(idx, 1)
 	out_tensor_shape = tuple(out_tensor_shape)
-	module = Unsqueeze(axes[0], len(data_tensor_shape))(prev_modules)
+	module = Unsqueeze(list(map(lambda x: x + 1, axes)), len(data_tensor_shape))(prev_modules)
 	return module, [out_tensor_shape]
