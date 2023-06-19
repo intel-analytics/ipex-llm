@@ -5,10 +5,10 @@ export HF_TOKEN=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
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export BLOOM_ORIGIN_PATH=${ANALYTICS_ZOO_ROOT}/models/bloom-560m
-# export LLAMA_ORIGIN_PATH=''
+export LLAMA_ORIGIN_PATH=${ANALYTICS_ZOO_ROOT}/models/llama-7b-hf
 # export GPTNEOX_ORIGIN_PATH=''
 export INT4_CKPT_DIR=${ANALYTICS_ZOO_ROOT}/models/converted_models
-# export LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin
+export LLAMA_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_llama_7b_q4_0.bin
 # export GPTNEOX_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_redpajama_7b_q4_0.bin
 export BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin
 
@@ -25,7 +25,7 @@ echo "Models downloaded in:$time seconds"
 echo "# Start testing convert model"
 start=$(date "+%s")
 
-python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/llm/test/convert/test_convert_model.py -k 'test_convert_bloom'
+python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/llm/test/convert/test_convert_model.py -k 'test_convert_bloom or test_convert_llama'
 
 now=$(date "+%s")
 time=$((now-start))
