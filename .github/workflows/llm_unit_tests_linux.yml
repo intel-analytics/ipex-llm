@@ -94,6 +94,16 @@ jobs:
             wget --no-verbose $llm_ftp_url/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
           fi
 
+      - name: Run LLM inference test
+        shell: bash
+        run: |
+          source $CONDA_HOME/bin/activate bigdl-init-llm
+          $CONDA_HOME/bin/conda info
+          bash python/llm/test/run-llm-inference-tests.sh
+          source $CONDA_HOME/bin/deactivate
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       # new test steps should be added here
 
       - name: Run LLM cli test
