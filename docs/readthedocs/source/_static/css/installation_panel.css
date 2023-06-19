@@ -16,7 +16,7 @@
     table-layout: fixed; /* make cells have even width */
 }
 
-.installation-panel-table tr td{
+.installation-panel-table tr, .installation-panel-table td{
     padding: 0.5rem;
     background-color: var(--pst-color-on-surface);
 }
