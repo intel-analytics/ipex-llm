@@ -36,14 +36,14 @@ def convert_and_load(repo_id_or_model_path, model_family, n_threads):
         cache_dir='./',
         n_threads=n_threads)
 
-    # if you want to explicitly convert the pre-trained model, you can use the `convert_model` API 
+    # if you want to explicitly convert the pre-trained model, you can use the `llm_convert` API 
     # to convert the downloaded Huggungface checkpoint first,
     # and then load the binary checkpoint directly.
     #
-    # from bigdl.llm.ggml import convert_model
+    # from bigdl.llm.ggml import llm_convert
     #
     # model_path = repo_id_or_model_path
-    # output_ckpt_path = convert_model(
+    # output_ckpt_path = llm_convert(
     #     input_path=model_path,
     #     output_path='./',
     #     dtype='int4',
