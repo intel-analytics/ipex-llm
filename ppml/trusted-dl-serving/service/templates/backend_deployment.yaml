@@ -33,6 +33,8 @@ spec:
           value: {{ .Values.frontendIP }}
         - name: FRONTEND_MANAGEMENT_PORT
           value: {{ .Values.managementPort }}
+        - name: MODEL_NAME
+          value: "{{ .Values.modelName }}"
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"

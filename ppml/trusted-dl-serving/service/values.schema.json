@@ -23,8 +23,16 @@
         "pattern": "^(sgx|tdx)$"
       },
       "PCCSUrl": {
-	"type": "string",
-        "format": "uri"
+	"anyOf": [ 
+          { 
+	    "type": "string",
+            "maxLength": 0
+          }, 
+          {
+	    "type": "string",
+            "format": "uri"
+	  }
+	]
       },
       "attestation": {
         "type": "string",
