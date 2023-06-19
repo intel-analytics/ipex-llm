@@ -113,11 +113,11 @@ class BigdlLLM(LLM):
     n_threads: Optional[int] = Field(2, alias="n_threads")
     """Number of threads to use."""
 
-    n_batch: Optional[int] = Field(8, alias="n_batch")
+    n_batch: Optional[int] = Field(512, alias="n_batch")
     """Number of tokens to process in parallel.
     Should be a number between 1 and n_ctx."""
 
-    n_gpu_layers: Optional[int] = Field(None, alias="n_gpu_layers")
+    n_gpu_layers: Optional[int] = Field(0, alias="n_gpu_layers")
     """Number of layers to be loaded into gpu memory. Default None."""
 
     suffix: Optional[str] = Field(None)
