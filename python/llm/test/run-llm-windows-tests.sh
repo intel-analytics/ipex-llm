@@ -15,6 +15,7 @@ export BLOOM_INT4_CKPT_PATH=${INT4_CKPT_DIR}/bigdl_llm_bloom_q4_0.bin
 echo "# Download the models"
 start=$(date "+%s")
 
+echo ${ANALYTICS_ZOO_ROOT}
 python ${ANALYTICS_ZOO_ROOT}/python/llm/test/windows/download_from_huggingface.py
 
 now=$(date "+%s")
