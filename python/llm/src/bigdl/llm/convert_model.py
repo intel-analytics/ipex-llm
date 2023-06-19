@@ -67,6 +67,7 @@ def llm_convert(model,
     else:
         invalidInputError(False, f"Unsupported input model_type: {model_format}")
 
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
