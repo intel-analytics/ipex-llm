@@ -41,13 +41,12 @@ def llm_convert(model,
         check, _used_args = _special_kwarg_check(kwargs=kwargs,
                                                  check_args=["tmp_path"])
         invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
-        ggml_convert_model(input_path=model,
-                           output_path=outfile,
-                           model_family=model_family,
-                           dtype=outtype,
-                           **_used_args,
-                           )
-        return outfile
+        return ggml_convert_model(input_path=model,
+                                  output_path=outfile,
+                                  model_family=model_family,
+                                  dtype=outtype,
+                                  **_used_args,
+                                  )
     elif model_format == "gptq":
         invalidInputError(model.endswith(".pt"), "only support pytorch's .pt format now.")
         invalidInputError(model_family == "llama" and outtype == 'int4',
@@ -68,6 +67,7 @@ def llm_convert(model,
     else:
         invalidInputError(False, f"Unsupported input model_type: {model_format}")
 
+    return None
 
 def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
