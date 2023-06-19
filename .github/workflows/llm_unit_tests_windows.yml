@@ -65,6 +65,8 @@ jobs:
         shell: bash
         run: |
           bash python/llm/test/run-llm-windows-tests.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Clean up
         shell: bash
