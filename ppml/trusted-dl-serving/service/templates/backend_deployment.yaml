@@ -15,7 +15,7 @@ spec:
       containers:
       - name: bigdl-torchserve-backend-pod
         image: {{ .Values.imageName }}
-        command: ['sh' , '-c', 'bash /ppml/torchserve/torchserve-backend-entrypoint.sh']
+        command: ['sh' , '-c', 'bash /ppml/torchserve/backend-entrypoint.sh']
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /ppml/work/data

@@ -2,11 +2,13 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: torchserve-frontend
+  labels:
+    app: torchserve-frontend
 spec:
   containers:
   - name: bigdl-torchserve-frontend-pod
     image: {{ .Values.imageName }}
-    command: ['sh' , '-c', 'bash /ppml/torchserve/torchserve-frontend-entrypoint.sh']
+    command: ['sh' , '-c', 'bash /ppml/torchserve/frontend-entrypoint.sh']
     imagePullPolicy: IfNotPresent
     volumeMounts:
     - mountPath: /tmp
