@@ -23,9 +23,9 @@ import argparse
 
 def _special_kwarg_check(kwargs, check_args):
     _used_args = {}
-    for arg in check_args:
-        if arg not in kwargs:
-            return False, {arg, kwargs[arg]}
+    for arg in kwargs:
+        if arg not in check_args:
+            return False, {arg: kwargs[arg]}
         else:
             _used_args[arg] = kwargs[arg]
     return True, _used_args
@@ -47,6 +47,7 @@ def llm_convert(model,
                            dtype=outtype,
                            **_used_args,
                            )
+        return outfile
     elif model_format == "gptq":
         invalidInputError(model.endswith(".pt"), "only support pytorch's .pt format now.")
         invalidInputError(model_family == "llama" and outtype == 'int4',
@@ -63,6 +64,7 @@ def llm_convert(model,
         convert_gptq2ggml(input_path=model,
                           tokenizer_path=_used_args["tokenizer_path"],
                           output_path=outfile)
+        return outfile
     else:
         invalidInputError(False, f"Unsupported input model_type: {model_format}")
 
