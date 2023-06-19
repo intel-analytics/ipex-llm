@@ -211,13 +211,13 @@ class Starcoder(GenerationMixin):
         # assume the average length of words is less than 20 bytes
         buf = bytes((len(prompt) + max_tokens) * 20)
         ret = starcoder_run(ctx=self.ctx,
-                        seed=self.seed,
-                        n_threads=self.n_threads,
-                        n_batch=self.n_batch,
-                        n_predict=max_tokens,
-                        match_str=match_str,
-                        prompt=bytes(prompt, encoding='utf-8'),
-                        buf=buf)
+                            seed=self.seed,
+                            n_threads=self.n_threads,
+                            n_batch=self.n_batch,
+                            n_predict=max_tokens,
+                            match_str=match_str,
+                            prompt=bytes(prompt, encoding='utf-8'),
+                            buf=buf)
         s = str(buf, encoding='utf-8').rstrip("\x00")
 
         text = s.split(prompt)[1]

@@ -71,7 +71,8 @@ def obtain_lib_urls():
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
                      "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
-                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512"]
+                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512",
+                     "libstarcoder_avx512.so", "quantize-starcoder", "main-starcoder_avx512"]
 
     def get_date_urls(base_url):
         # obtain all urls based on date(format: xxxx-xx-xx)
@@ -153,12 +154,15 @@ def setup_package():
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
         "libs/quantize-bloom",
+        "libs/libstarcoder_avx512.so",
+        "libs/quantize-starcoder",
         "libs/main-bloom_avx2",
         "libs/main-bloom_avx512",
         "libs/main-gptneox_avx2",
         "libs/main-gptneox_avx512",
         "libs/main-llama_avx2",
         "libs/main-llama_avx512",
+        "libs/main-starcoder_avx512",
     ]
 
     platform_name = None
