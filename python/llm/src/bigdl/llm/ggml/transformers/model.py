@@ -50,10 +50,10 @@ class AutoModelForCausalLM:
                3. a str for huggingface hub repo id.
 
         :param model_family: the model family of the pretrained checkpoint.
-               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"``.
+               Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"`` and ``"starcoder"``.
         :param dtype: Which quantized precision will be converted.
                 Now only `int4` and `int8` are supported, and `int8` only works for `llama`
-                and `gptneox`.
+                , `gptneox` and `starcoder`.
         :param cache_dir: (optional) this parameter will only be used when
                ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo id.
                It indicates the saving path for the converted low precision model.
@@ -63,9 +63,9 @@ class AutoModelForCausalLM:
 
         :return: a model instance
         """
-        invalidInputError(model_family in ['llama', 'gptneox', 'bloom'],
-                          "Now we only support model family: 'llama', 'gptneox', 'bloom', "
-                          "'{}' is not in the list.".format(model_family))
+        invalidInputError(model_family in ['llama', 'gptneox', 'bloom', 'starcoder'],
+                          "Now we only support model family: 'llama', 'gptneox', 'bloom',"
+                          " 'starcoder', '{}' is not in the list.".format(model_family))
         invalidInputError(dtype.lower() in ['int4', 'int8'],
                           "Now we only support int4 and int8 as date type for weight")
 
@@ -110,3 +110,6 @@ class AutoModelForCausalLM:
         elif model_family == 'bloom':
             from bigdl.llm.ggml.model.bloom import Bloom
             return Bloom(model_path=ggml_model_path, **kwargs)
+        elif model_family == 'starcoder':
+            from bigdl.llm.ggml.model.starcoder import Starcoder
+            return Starcoder(model_path=ggml_model_path, **kwargs)
