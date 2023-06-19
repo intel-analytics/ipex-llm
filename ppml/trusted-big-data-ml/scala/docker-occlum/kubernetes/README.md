@@ -179,6 +179,12 @@ error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
 error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
 ```
 
+## Run PySpark LGBM model encrypt example
+Use the same steps as the previous LGBM example to generate ssl keys and select a KMS to use like [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md#bigdl-pyspark-simplequery-e2e-example-using-simple-kms). The source code is [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum/py-examples/encrypted_lightgbm_model_io.py)
+```bash
+./run_spark_lgbm_encrypt_io.sh
+```
+
 ## Run Spark LightGBMClassifier example using CriteoClickLogsDataset
 
 ### Download data
