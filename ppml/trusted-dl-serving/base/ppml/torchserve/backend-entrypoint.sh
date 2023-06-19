@@ -3,7 +3,7 @@ port=$BACKEND_PORT
 SGX_ENABLED=$SGX_ENABLED
 ATTESTATION=$ATTESTATION
 FRONTEND_IP=$FRONTEND_IP
-FRONTEND_MANAGEMENT_PORT=$FRONTEND_MANAGEMENT_PORT
+FRONTEND_PORT=$FRONTEND_PORT
 MODEL_NAME=$MODEL_NAME
 local_pod_ip=$( hostname -I | awk '{print $1}' )
 
@@ -20,9 +20,9 @@ if [[ $SGX_ENABLED == "false" ]]; then
         bash attestation.sh
         bash temp_command_file
     fi
-    /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-management-port $FRONTEND_MANAGEMENT_PORT --model-name $MODEL_NAME
+    /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME
 else
-    export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-management-port $FRONTEND_MANAGEMENT_PORT --model-name $MODEL_NAME"
+    export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME"
     if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
           rm /ppml/temp_command_file || true

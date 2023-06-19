@@ -126,8 +126,6 @@ RUN mkdir /ppml/examples && \
     mkdir /opt/nvidia
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-ADD ./torchserve/backend-entrypoint.sh /ppml/torchserve/backend-entrypoint.sh
-ADD ./torchserve/frontend-entrypoint.sh /ppml/torchserve/frontend-entrypoint.sh
 
 # COPY frontend.jar
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar

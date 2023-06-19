@@ -31,7 +31,7 @@ spec:
           value: "{{ .Values.PCCSUrl }}"
         - name: FRONTEND_IP
           value: {{ .Values.frontendIP }}
-        - name: FRONTEND_MANAGEMENT_PORT
+        - name: FRONTEND_PORT
           value: {{ .Values.managementPort }}
         - name: MODEL_NAME
           value: "{{ .Values.modelName }}"
