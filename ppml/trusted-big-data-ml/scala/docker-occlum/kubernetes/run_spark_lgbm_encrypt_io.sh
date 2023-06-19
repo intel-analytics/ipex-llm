@@ -25,7 +25,7 @@ ${SPARK_HOME}/bin/spark-submit \
     local:/py-examples/encrypted_lightgbm_model_io.py \
     --app_id 123456654321 \
     --api_key 123456654321 \
-    --primary_key_material /opt/occlum_spark/data/key/simple_encrypted_primary_key \
+    --primary_key_material /host/data/key/simple_encrypted_primary_key \
     --input_path /host/data/iris.data \
     --output_path /host/data/model \
     --input_encrypt_mode plain_text \
