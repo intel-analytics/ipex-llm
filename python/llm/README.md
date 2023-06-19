@@ -37,9 +37,9 @@ A python function and a command line tool `llm-convert` is provided to transform
 Here is an example to use `llm-convert` command line tool.
 ```bash
 # pth model
-llm-convert -m pth -i "/path/to/llama-7b-hf/" -o "/path/to/llama-7b-int4/" -x "llama"
+llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
 # gptq model
-llm-convert -m gptq -i "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" -o "/path/to/out.bin" -k "/path/to/tokenizer.model" -x "llama"
+llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" --model-format gptq -outfile "/path/to/out.bin" --tokenizer-path "/path/to/tokenizer.model" --model-family "llama"
 ```
 
 Here is an example to use `llm_convert` python API.

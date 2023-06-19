@@ -69,7 +69,7 @@ def llm_convert(model,
 
 def main():
     parser = argparse.ArgumentParser(description='Model Convert Parameters')
-    parser.add_argument('-i', '--model', type=str, required=True,
+    parser.add_argument('model', type=str,
                         help=("model, a path to a *directory* containing model weights"))
     parser.add_argument('-o', '--outfile', type=str, required=True,
                         help=("outfile,save path of output quantized model."))
