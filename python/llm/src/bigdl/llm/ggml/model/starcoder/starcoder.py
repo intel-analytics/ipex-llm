@@ -46,7 +46,8 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .starcoder_cpp import starcoder_load, starcoder_free, starcoder_run
-from .starcoder_cpp import starcoder_tokenize, starcoder_detokenize, starcoder_forward, starcoder_eval
+from .starcoder_cpp import starcoder_tokenize, starcoder_detokenize
+from .starcoder_cpp import starcoder_forward, starcoder_eval
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.model.generation import GenerationMixin
 from typing import List, Optional, Generator, Sequence, Union
@@ -334,18 +335,18 @@ class Starcoder(GenerationMixin):
 
     def forward(self, input_ids: List[int]) -> int:
         return starcoder_forward(ctx=self.ctx,
-                             input_ids=input_ids,
-                             seed=self.seed,
-                             n_threads=self.n_threads,
-                             n_batch=self.n_batch)
+                                 input_ids=input_ids,
+                                 seed=self.seed,
+                                 n_threads=self.n_threads,
+                                 n_batch=self.n_batch)
 
     def eval(self, input_ids: List[int]) -> List[List[float]]:
         """Only used for testing accuracy"""
         return starcoder_eval(ctx=self.ctx,
-                          input_ids=input_ids,
-                          seed=self.seed,
-                          n_threads=self.n_threads,
-                          n_batch=len(input_ids))
+                              input_ids=input_ids,
+                              seed=self.seed,
+                              n_threads=self.n_threads,
+                              n_batch=len(input_ids))
 
     def _generate(
         self,
@@ -407,7 +408,7 @@ class Starcoder(GenerationMixin):
         """Only used for langchain"""
         input_ids = self.tokenize(prompt)
         return starcoder_embed(ctx=self.ctx,
-                           input_ids=input_ids,
-                           seed=self.seed,
-                           n_threads=self.n_threads,
-                           n_batch=len(input_ids))
+                               input_ids=input_ids,
+                               seed=self.seed,
+                               n_threads=self.n_threads,
+                               n_batch=len(input_ids))
