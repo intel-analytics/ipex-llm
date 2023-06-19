@@ -26,9 +26,6 @@ def _special_kwarg_check(kwargs, check_args):
     for arg in kwargs:
         if arg not in check_args:
             return False, {arg: kwargs[arg]}
-    for arg in kwargs:
-        if arg not in check_args:
-            return False, {arg: kwargs[arg]}
         else:
             _used_args[arg] = kwargs[arg]
     return True, _used_args
