@@ -46,7 +46,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .bloom_cpp import bloom_load, bloom_free, bloom_run
-from .bloom_cpp import bloom_tokenize, bloom_detokenize, bloom_forward, bloom_eval
+from .bloom_cpp import bloom_tokenize, bloom_detokenize, bloom_forward, bloom_eval, bloom_embed
 from bigdl.llm.utils.common import invalidInputError
 from bigdl.llm.ggml.model.generation import GenerationMixin
 from typing import List, Optional, Generator, Sequence, Union
@@ -127,7 +127,7 @@ class Bloom(GenerationMixin):
         # TODO: Some parameters are temporarily not supported
         unsupported_arg = {'n_parts': -1, 'n_gpu_layers': 0, 'f16_kv': True, 'logits_all': False,
                            'vocab_only': False, 'use_mmap': True, 'use_mlock': False,
-                           'embedding': False, 'last_n_tokens_size': 64, 'lora_base': None,
+                           'last_n_tokens_size': 64, 'lora_base': None,
                            'lora_path': None, 'verbose': True}
         for arg in unsupported_arg.keys():
             invalidInputError(getattr(self, arg) == unsupported_arg[arg], f"The parameter {arg}"
@@ -403,9 +403,11 @@ class Bloom(GenerationMixin):
             if tokens_or_none is not None:
                 tokens.extend(tokens_or_none)
 
-    def embed(self, prompt: Union[str, bytes]) -> List[float]:
+    def embed(self, input: str) -> List[float]:
         """Only used for langchain"""
-        input_ids = self.tokenize(prompt)
+        invalidInputError(self.embedding,
+                          "Bloom model must be created with embedding=True to call this method.")
+        input_ids = self.tokenize(input)
         return bloom_embed(ctx=self.ctx,
                            input_ids=input_ids,
                            seed=self.seed,
