@@ -1,5 +1,20 @@
 # Trusted Big Data ML with Occlum
 
+## BigDL PPML Occlum features
+
+## Python Libs Whitelist
+
+|              | support | version |
+|--------------|---------|---------|
+| numpy        | yes     | 1.21.5  |
+| scipy        | yes     | 1.7.3   |
+| scikit-learn | yes     | 1.0     |
+| pandas       | yes     | 1.3     |
+| torch        | yes     | latest  |
+| torchvision  | yes     | latest  |
+| datasets     | yes     | latest  |
+| transformers | yes     | latest  |
+
 ## Resource Configuration Guide
 These configuration values must be tuned on a per-application basis.
 You can refer to [here](https://github.com/occlum/occlum/blob/master/docs/resource_config_guide.md?plain=1) for more information.
