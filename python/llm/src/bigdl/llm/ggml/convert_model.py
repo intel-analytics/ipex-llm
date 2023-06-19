@@ -39,7 +39,7 @@ def convert_model(input_path: str,
     :param output_path: Save path of output quantized model. You must pass a *directory* to
             save all related output.
     :param model_family: Which model family your input model belongs to.
-            Now only `llama`/`bloom`/`gptneox` are supported.
+            Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param dtype: Which quantized precision will be converted.
             Now only `int4` and `int8` are supported, and `int8` only works for `llama`
             and `gptneox`.
@@ -53,9 +53,9 @@ def convert_model(input_path: str,
     # make sure directory exists
     os.makedirs(output_path, exist_ok=True)
     # check input value
-    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloom', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isdir(output_path),
                       "The output_path {} was not a directory".format(output_path))
@@ -72,9 +72,9 @@ def convert_model(input_path: str,
         dtype = 'q4_0'
     elif dtype == 'int8':
         dtype = 'q8_0'
-        invalidInputError(model_family in ['llama', 'gptneox'],
+        invalidInputError(model_family in ['llama', 'gptneox', 'starcoder'],
                           "Now we only support int8 quantization of model \
-                          family('llama', 'gptneox')",
+                          family('llama', 'gptneox', 'starcoder')",
                           "{} is not in the list.".format(model_family))
 
     if tmp_path is not None:
@@ -110,7 +110,7 @@ def main():
                         help=("output_path,save path of output quantized model."))
     parser.add_argument('-x', '--model_family', type=str, required=True,
                         help=("model_family: Which model family your input model belongs to."
-                              "Now only `llama`/`bloom`/`gptneox` are supported."))
+                              "Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported."))
     parser.add_argument('-t', '--dtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
     parser.add_argument('-p', '--tmp_path', type=str, default=None,
