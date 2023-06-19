@@ -39,7 +39,7 @@ Here is an example to use `llm-convert` command line tool.
 # pth model
 llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
 # gptq model
-llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" --model-format gptq -outfile "/path/to/out.bin" --tokenizer-path "/path/to/tokenizer.model" --model-family "llama"
+llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" --model-format gptq --outfile "/path/to/out.bin" --tokenizer-path "/path/to/tokenizer.model" --model-family "llama"
 ```
 
 Here is an example to use `llm_convert` python API.
