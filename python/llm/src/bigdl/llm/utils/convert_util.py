@@ -87,7 +87,8 @@ __all__ = ['Params',
            'load_vocab',
            'default_outfile',
            '_convert_gptneox_hf_to_ggml',
-           '_convert_bloom_hf_to_ggml']
+           '_convert_bloom_hf_to_ggml',
+           '_convert_starcoder_hf_to_ggml']
 
 
 @dataclass(frozen=True)
@@ -1423,9 +1424,9 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
     hparams = config.to_dict()
-    model = AutoModelForCausalLM.from_pretrained(model_name, config=config,
+    model = AutoModelForCausalLM.from_pretrained(model_path, config=config,
                                                  torch_dtype=torch.float16
-                                                 if use_f16 else torch.float32,
+                                                 if outtype == "f16" else torch.float32,
                                                  low_cpu_mem_usage=True,
                                                  trust_remote_code=True,
                                                  offload_state_dict=True)
@@ -1445,7 +1446,7 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
     else:
         ftype = 0
 
-    fout.write(struct.pack("i", 0x67676d6c)) # magic: ggml in hex
+    fout.write(struct.pack("i", 0x67676d6c))  # magic: ggml in hex
     vocab_size = hparams["vocab_size"]
     fout.write(struct.pack("i", vocab_size))
     # fout.write(struct.pack("i", len(encoder)))
@@ -1456,7 +1457,7 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
     fout.write(struct.pack("i", ftype))
 
     byte_encoder = bytes_to_unicode()
-    byte_decoder = {v:k for k, v in byte_encoder.items()}
+    byte_decoder = {v: k for k, v in byte_encoder.items()}
 
     fout.write(struct.pack("i", vocab_size))
 
@@ -1473,7 +1474,6 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
         fout.write(struct.pack("i", len(text)))
         fout.write(text)
         counter += 1
-    # assert counter == config.vocab_size
 
     for name in list_vars.keys():
         data = list_vars[name].squeeze().numpy()
@@ -1534,15 +1534,19 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
             print("  Skipping variable: " + name)
             continue
 
-        n_dims = len(data.shape);
+        n_dims = len(data.shape)
 
+        ftype_cur = 0
         if ftype == 1:
-            if (name == "model/wte" or name == "model/lm_head" or name[-2:] == "/g" or name[-2:] == "/w") and n_dims == 2:
+            if (name == "model/wte" or name == "model/lm_head" or name[-2:] == "/g" or
+                    name[-2:] == "/w") and n_dims == 2:
                 print("  Converting to float16")
                 data = data.astype(np.float16)
+                ftype_cur = 1
             else:
                 print("  Converting to float32")
                 data = data.astype(np.float32)
+                ftype_cur = 0
 
         "model/h.*/attn/c_attn/w"
         "model/h.*/attn/c_proj/w"
@@ -1555,23 +1559,28 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
             head_dim = embed_dim // hparams["n_head"]
 
             # ((n_heads + 2) * head_dim, hidden_dim) -> (3 * n_heads * head_dim, hidden_dim)
-            q, k ,v = np.split(data, (hparams["n_head"] * head_dim, (hparams["n_head"] + 1) * head_dim), axis=0)
-            # duplicate k, v along the first axis (head_dim, hidden_dim) -> (n_heads * head_dim, hidden_dim)
+            q, k, v = np.split(data,
+                               (hparams["n_head"] * head_dim,
+                                (hparams["n_head"] + 1) * head_dim),
+                               axis=0)
+            # duplicate k, v along the first axis (head_dim, hidden_dim) ->
+            # (n_heads * head_dim, hidden_dim)
             if len(k.shape) == 2:
                 k = np.tile(k, (hparams["n_head"], 1))
                 v = np.tile(v, (hparams["n_head"], 1))
             elif len(k.shape) == 1:
                 k = np.tile(k, (hparams["n_head"]))
                 v = np.tile(v, (hparams["n_head"]))
-            # concat q, k, v along the first axis (n_heads * head_dim, hidden_dim) -> (3 * n_heads * head_dim, hidden_dim)
+            # concat q, k, v along the first axis (n_heads * head_dim, hidden_dim) ->
+            # (3 * n_heads * head_dim, hidden_dim)
             data = np.concatenate((q, k, v), axis=0)
 
         # header
         str = name.encode('utf-8')
-        fout.write(struct.pack("iii", n_dims, len(str), ftype))
+        fout.write(struct.pack("iii", n_dims, len(str), ftype_cur))
         for i in range(n_dims):
             fout.write(struct.pack("i", data.shape[n_dims - 1 - i]))
-        fout.write(str);
+        fout.write(str)
 
         # data
         data.tofile(fout)
