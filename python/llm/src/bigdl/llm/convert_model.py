@@ -39,20 +39,21 @@ def llm_convert(model,
     This function is able to:
 
         1. Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
-           original model to lower precision in BigDL-LLM optimized GGML format
-        2. Convert GPTQ format llama-like model to BigDL-LLM optimized GGML format
+           original model to lower precision in BigDL-LLM optimized GGML format.
+        2. Convert Hugging Face GPTQ format llama-like model to BigDL-LLM optimized
+           GGML format.
 
     :param model: Path to a **directory**:
 
            1. If ``model_format='pth'``, the folder should be a huggingface checkpoint 
-              that are directly pulled from huggingface hub, for example ``./llama-7b-hf``.
+              that is directly pulled from huggingface hub, for example ``./llama-7b-hf``.
               This should be a dir path that contains: weight bin, tokenizer config,
               tokenizer.model (required for llama) and added_tokens.json (if applied).
               For lora finetuned model, the path should be pointed to a merged weight.
-           2. If ``model_format='gptq'``, the folder should contains weights in
-              pytorch's .pt format, and ``tokenizer.model``
+           2. If ``model_format='gptq'``, the folder should be be a huggingface checkpoint
+              that contains weights in pytorch's .pt format, and ``tokenizer.model``.
 
-    :param outfile: Save path of output quantized model. You must pass a *directory* to
+    :param outfile: Save path of output quantized model. You must pass a **directory** to
            save all related output.
     :param model_family: Which model family your input model belongs to.
            Now ``llama``/``bloom``/``gptneox``/``starcoder`` has been supported.
