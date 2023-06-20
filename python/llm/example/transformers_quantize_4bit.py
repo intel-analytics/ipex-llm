@@ -3,16 +3,14 @@ from transformers import LlamaTokenizer, LlamaForCausalLM
 
 if __name__ == '__main__':
     model_path = 'decapoda-research/llama-7b-hf'
-    model = LlamaForCausalLM.from_pretrained(
-    model_path,
-    device_map='cpu',
-    torch_dtype=torch.float32,
-    )
+    model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.float32)
 
+    ###### Quantize model into ggml q4_0 format ######
     from bigdl.llm.transformers import quantize_4bit
-
     model = quantize_4bit(model)
     print(model)
+    ###################################################
+
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
     input_str = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
