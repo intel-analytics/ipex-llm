@@ -46,7 +46,7 @@ def llm_convert(model,
 
     :param model: Path to a **directory**:
 
-           1. If ``model_format='pth'``, the folder should be a huggingface checkpoint 
+           1. If ``model_format='pth'``, the folder should be a huggingface checkpoint
               that is directly pulled from huggingface hub, for example ``./llama-7b-hf``.
               This should be a dir path that contains: weight bin, tokenizer config,
               tokenizer.model (required for llama) and added_tokens.json (if applied).
@@ -66,7 +66,7 @@ def llm_convert(model,
     :param model_format: Specify the model format to be converted. ``pth`` is for
            original model checkpoint from Hugging Face. ``gptq`` is for GPTQ format model.
     :param **kwargs: Supported keyword arguments includes:
-           
+
            * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
              that stores the intermediate model during the conversion process.
            * ``tokenizer_path``: Valid when ``model_format='gptq'``. It refers to the path

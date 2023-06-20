@@ -42,17 +42,17 @@ class AutoModelForCausalLM:
         """
         :param pretrained_model_name_or_path: We support 3 kinds of pretrained model checkpoint
 
-               1. Path to directory for Hugging Face checkpoint that are directly pulled from 
+               1. Path to directory for Hugging Face checkpoint that are directly pulled from
                   Hugging Face hub.
 
-                  If ``model_format='pth'``, the folder should contain: weight bin, tokenizer config,
-                  tokenizer.model (required for llama) and added_tokens.json (if applied).
+                  If ``model_format='pth'``, the folder should contain: weight bin, tokenizer
+                  config, tokenizer.model (required for llama) and added_tokens.json (if applied).
                   For lora fine tuned model, the path should be pointed to a merged weight.
 
                   If ``model_format='gptq'``, the folder should be be a Hugging Face checkpoint
                   that contains weights in pytorch's .pt format, and ``tokenizer.model``.
 
-               2. Path for converted BigDL-LLM optimized ggml binary checkpoint. 
+               2. Path for converted BigDL-LLM optimized ggml binary checkpoint.
                   The checkpoint should be converted by ``bigdl.llm.llm_convert``.
                3. A str for Hugging Face hub repo id.
 
