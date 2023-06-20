@@ -93,7 +93,7 @@ def llm_convert(model,
                                              check_args=["tokenizer_path"])
 
         output_filename = "bigdl_llm_{}_{}_from_gptq.bin".format(model_family,
-                                                       outtype.lower())
+                                                                 outtype.lower())
         outfile = os.path.join(outfile, output_filename)
 
         if "tokenizer_path" in _used_args:
