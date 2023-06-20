@@ -40,7 +40,7 @@ def convert_and_load(repo_id_or_model_path, model_family, n_threads):
     # to convert the downloaded Huggungface checkpoint first,
     # and then load the binary checkpoint directly.
     #
-    # from bigdl.llm.ggml import llm_convert
+    # from bigdl.llm import llm_convert
     #
     # model_path = repo_id_or_model_path
     # output_ckpt_path = llm_convert(
