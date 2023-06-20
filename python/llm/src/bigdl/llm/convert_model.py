@@ -92,13 +92,18 @@ def llm_convert(model,
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tokenizer_path"])
 
-        output_filename = "bigdl_llm_{}_{}.bin".format(model_family,
+        output_filename = "bigdl_llm_{}_{}_from_gptq.bin".format(model_family,
                                                        outtype.lower())
         outfile = os.path.join(outfile, output_filename)
 
+        if "tokenizer_path" in _used_args:
+            gptq_tokenizer_path = _used_args["tokenizer_path"]
+        else:
+            gptq_tokenizer_path = None
+
         convert_gptq2ggml(input_path=model,
                           output_path=outfile,
-                          tokenizer_path=_used_args["tokenizer_path"],
+                          tokenizer_path=gptq_tokenizer_path,
                           )
         return outfile
     else:
