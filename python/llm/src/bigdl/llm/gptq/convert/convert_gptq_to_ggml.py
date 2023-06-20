@@ -167,6 +167,7 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
 def convert_gptq2ggml(input_path, output_path, tokenizer_path=None):
     input_models = find_pt_files(input_path)
     invalidInputError(len(input_models) == 1,
+                      "Only support pytorch's .pt format now."
                       f"There should be only one .pt under {input_path}, "
                       f"but found {len(input_models)} file(s).")
     model = torch.load(input_models[0], map_location="cpu")

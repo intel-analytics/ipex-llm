@@ -45,7 +45,6 @@ def llm_convert(model,
                                   **_used_args,
                                   )
     elif model_format == "gptq":
-        invalidInputError(model.endswith(".pt"), "only support pytorch's .pt format now.")
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
