@@ -30,6 +30,15 @@ from sentencepiece import SentencePieceProcessor
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
 
+def find_pt_files(directory):
+    pt_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".pt"):
+                pt_files.append(os.path.join(root, file))
+    return pt_files
+
+
 def write_header(fout, shape, dst_name, ftype_cur):
     sname = dst_name.encode('utf-8')
     fout.write(struct.pack("iii", len(shape), len(sname), ftype_cur))
@@ -155,8 +164,13 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     blob.tofile(fout)
 
 
-def convert_gptq2ggml(input_path, tokenizer_path, output_path):
-    model = torch.load(input_path, map_location="cpu")
+def convert_gptq2ggml(input_path, output_path, tokenizer_path=None):
+    input_models = find_pt_files(input_path)
+    invalidInputError(len(input_models) == 1,
+                      "Only support pytorch's .pt format now."
+                      f"There should be only one .pt under {input_path}, "
+                      f"but found {len(input_models)} file(s).")
+    model = torch.load(input_models[0], map_location="cpu")
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     layer_re = r'model\.layers\.([0-9]+)'
@@ -166,6 +180,12 @@ def convert_gptq2ggml(input_path, tokenizer_path, output_path):
     # hardcoded:
     n_mult = 256
     n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
+
+    if not tokenizer_path:
+        tokenizer_path = os.path.join(input_path, "tokenizer.model")
+        invalidInputError(os.path.isfile(tokenizer_path),
+                          f"tokenizer.model was not found under {tokenizer_path}."
+                          f"Please specify the tokenizer-path")
 
     tokenizer = SentencePieceProcessor(tokenizer_path)
 
@@ -241,4 +261,4 @@ if __name__ == "__main__":
     fname_tokenizer = sys.argv[2]
     out_path = sys.argv[3]
     invalidInputError(fname_model.endswith(".pt"), "only support pytorch's .pt format now.")
-    convert_gptq2ggml(fname_model, fname_tokenizer, out_path)
+    convert_gptq2ggml(fname_model, out_path, tokenizer_path=fname_tokenizer)
