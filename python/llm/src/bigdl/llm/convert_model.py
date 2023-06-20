@@ -46,13 +46,14 @@ def llm_convert(model,
 
     :param model: Path to a **directory**:
 
-           1. If ``model_format='pth'``, the folder should be a huggingface checkpoint
-              that is directly pulled from huggingface hub, for example ``./llama-7b-hf``.
+           1. If ``model_format='pth'``, the folder should be a Hugging Face checkpoint
+              that is directly pulled from Hugging Face hub, for example ``./llama-7b-hf``.
               This should be a dir path that contains: weight bin, tokenizer config,
               tokenizer.model (required for llama) and added_tokens.json (if applied).
               For lora finetuned model, the path should be pointed to a merged weight.
-           2. If ``model_format='gptq'``, the folder should be be a huggingface checkpoint
-              that contains weights in pytorch's .pt format, and ``tokenizer.model``.
+           2. If ``model_format='gptq'``, the folder should be be a Hugging Face checkpoint
+              in GPTQ format, which contains weights in pytorch's .pt format,
+              and ``tokenizer.model``.
 
     :param outfile: Save path of output quantized model. You must pass a **directory** to
            save all related output.

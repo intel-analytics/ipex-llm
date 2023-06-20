@@ -50,7 +50,8 @@ class AutoModelForCausalLM:
                   For lora fine tuned model, the path should be pointed to a merged weight.
 
                   If ``model_format='gptq'``, the folder should be be a Hugging Face checkpoint
-                  that contains weights in pytorch's .pt format, and ``tokenizer.model``.
+                  in GPTQ format, which contains weights in pytorch's .pt format,
+                  and ``tokenizer.model``.
 
                2. Path for converted BigDL-LLM optimized ggml binary checkpoint.
                   The checkpoint should be converted by ``bigdl.llm.llm_convert``.
