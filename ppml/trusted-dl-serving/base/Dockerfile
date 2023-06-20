@@ -127,7 +127,6 @@ RUN mkdir /ppml/examples && \
     mkdir /opt/nvidia
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
-ADD ./entrypoint.sh /opt/entrypoint.sh
 
 # Torchserve
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
@@ -157,13 +156,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     cp /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml /ppml && \
-    chmod +x /ppml/torchserve/start-torchserve-backend.sh && \
-    chmod +x /ppml/torchserve/start-torchserve-frontend.sh && \
-    chmod +x /ppml/torchserve/start-torchserve.sh && \
 # generate secured_argvs
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
-    chmod +x /opt/entrypoint.sh && \
+    chmod +x /ppml/torchserve/frontend-entrypoint.sh && \
+    chmod +x /ppml/torchserve/backtend-entrypoint.sh && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
@@ -171,4 +168,4 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     ls /opt/tritonserver/backends/pytorch && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+ENTRYPOINT [ "/ppml/torchserve/frontend-entrypoint.sh" ]

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-torchserve-frontend-service
+  namespace: bigdl-ppml-serving
+  labels:
+    app: torchserve-serving
+spec:
+  type: ClusterIP
+  ports:
+    - name: inference-port
+      port: {{ .Values.inferencePort }}
+      targetPort: {{ .Values.inferencePort }}
+    - name: management-port
+      port: {{ .Values.managementPort }}
+      targetPort: {{ .Values.managementPort }}
+    - name: metrics-port
+      port: {{ .Values.metricsPort }}
+      targetPort: {{ .Values.metricsPort }}
+  selector:
+    app: torchserve-serving

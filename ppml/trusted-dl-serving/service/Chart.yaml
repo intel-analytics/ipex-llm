@@ -1,0 +1,6 @@
+apiVersion: v2
+name: trusted-dl-serving-service
+description: A Helm chart for BigDL PPML Trusted DL Serving Service on Kubernetes
+type: application
+version: 1.1.27
+appVersion: "1.16.0"
