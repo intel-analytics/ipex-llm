@@ -20,7 +20,7 @@ spec:
         command: ['sh' , '-c', 'bash /ppml/torchserve/backend-entrypoint.sh']
         imagePullPolicy: IfNotPresent
         volumeMounts:
-        - mountPath: /ppml/work/data
+        - mountPath: /tmp
           name: nfs-storage
         {{- if eq .Values.TEEMode "sgx" }}
         - name: device-plugin
