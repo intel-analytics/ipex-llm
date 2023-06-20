@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  stable-diffusion-win:
+  bigdl-llm-win:
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
     steps:
       - name: Download log
