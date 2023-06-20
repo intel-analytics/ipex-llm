@@ -16,10 +16,26 @@
 
 @REM Usage: call win_test_starter.bat %base_dir%
 @REM Example: win_test_starter.bat C:\Users\obe\bigdl-llm-test
+@REM 
+@REM base_dir
+@REM ├───BigDL
+@REM ├───logs
+@REM │   └───previous_logs
+@REM ├───models
+@REM │   ├───bloomz-7b1
+@REM │   ├───gpt4all-7b-hf
+@REM │   └───gptneox-7b-redpajama-bf16
+@REM ├───ftp.txt
+@REM └───ftp-get-stable-ckpts.txt
 
 echo The current directory is %CD%
 set base_dir=%1
 echo %base_dir%
+
+@REM Download stable int4 ckpt from ftp...
+set stable_ckpt_path=%base_dir%\stable_ckpts
+mkdir %stable_ckpt_path%
+ftp -s:%base_dir%\ftp-get-stable-ckpts.txt
 
 @REM Pull the latest code
 cd %base_dir%\BigDL
@@ -34,16 +50,16 @@ cd python\llm
 @REM pip install .[all] --use-pep517
 python setup.py clean --all install
 
-
 @REM Run pytest
-mkdir converted_models
+mkdir %base_dir%\converted_models
+mkdir %base_dir%\stable_ckpts
 set BLOOM_ORIGIN_PATH=%base_dir%\models\bloomz-7b1
 set LLAMA_ORIGIN_PATH=%base_dir%\models\gpt4all-7b-hf
 set GPTNEOX_ORIGIN_PATH=%base_dir%\models\gptneox-7b-redpajama-bf16
 set INT4_CKPT_DIR=%base_dir%\converted_models
-set LLAMA_INT4_CKPT_PATH=%INT4_CKPT_DIR%\bigdl_llm_llama_q4_0.bin
-set GPTNEOX_INT4_CKPT_PATH=%INT4_CKPT_DIR%\bigdl_llm_gptneox_q4_0.bin
-set BLOOM_INT4_CKPT_PATH=%INT4_CKPT_DIR%/bigdl_llm_bloom_q4_0.bin
+set LLAMA_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_llama_7b_q4_0.bin
+set GPTNEOX_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_gptneox_7b_q4_0.bin
+set BLOOM_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_bloom_7b_q4_0.bin
 
 echo "Running the convert models tests..."
 python -m pytest -s .\test\convert\test_convert_model.py
@@ -55,6 +71,7 @@ python -m pytest -s .\test\inference\test_call_models.py
 pip uninstall bigdl-llm -y
 pip uninstall numpy torch transformers sentencepiece accelerate -y
 echo "Removing the quantized models and libs..."
+rmdir /s /q %stable_ckpt_path%
 rmdir /s /q %INT4_CKPT_DIR%
 rmdir /s /q %base_dir%\BigDL\python\llm\src\bigdl\llm\libs
 
