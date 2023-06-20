@@ -5,10 +5,8 @@
         "imageName",
         "TEEMode",
 	"PCCSUrl",
-        "attestation",
         "backendNum",
         "modelName",
-        "frontendIP",
         "inferencePort",
         "managementPort",
         "metricsPort",
@@ -20,7 +18,7 @@
       },
       "TEEMode": {
         "type": "string",
-        "pattern": "^(sgx|tdx)$"
+        "pattern": "^(sgx|tdx|native)$"
       },
       "PCCSUrl": {
 	"anyOf": [ 
@@ -34,16 +32,8 @@
 	  }
 	]
       },
-      "attestation": {
-        "type": "string",
-        "pattern": "^(true|false)$"
-      },
       "backendNum": {
         "type": "number"
-      },
-      "frontendIP": {
-        "type": "string",
-        "format": "ip-address"
       },
       "managementPort": {
         "type": "number"

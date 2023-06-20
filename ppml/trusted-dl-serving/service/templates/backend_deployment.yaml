@@ -2,15 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bigdl-torchserve-backend-deployment
+  namespace: bigdl-ppml-serving
 spec:
   selector:
     matchLabels:
-      app: torchserve-backend
+      backend: torchserve
   replicas: {{ .Values.backendNum }}
   template:
     metadata:
       labels:
-        app: torchserve-backend
+        backend: torchserve
+        app: torchserve-serving
     spec:
       containers:
       - name: bigdl-torchserve-backend-pod
@@ -30,9 +32,9 @@ spec:
         - name: PCCS_URL
           value: "{{ .Values.PCCSUrl }}"
         - name: FRONTEND_IP
-          value: {{ .Values.frontendIP }}
+          value: "bigdl-torchserve-frontend-service.default.svc.cluster.local"
         - name: FRONTEND_PORT
-          value: {{ .Values.managementPort }}
+          value: "{{ .Values.managementPort }}"
         - name: MODEL_NAME
           value: "{{ .Values.modelName }}"
         - name: SGX_ENABLED
@@ -40,9 +42,13 @@ spec:
           value: "true"
         {{- else }}
           value: "false"
-        {{- end }} 
+        {{- end }}
         - name: ATTESTATION
-          value: "{{ .Values.attestation }}"
+        {{- if eq .Values.TEEMode "native" }}
+          value: "false"
+        {{- else }}
+          value: "true"
+        {{- end }}
         - name: BACKEND_PORT
           value: "{{ .Values.backendPort }}"
         {{- if eq .Values.TEEMode "sgx" }}
@@ -60,16 +66,16 @@ spec:
             sgx.intel.com/enclave: 1
             sgx.intel.com/provision: 1
         {{- end }} 
-        volumes:
-        - name: nfs-storage
-          persistentVolumeClaim:
-          claimName: nfsvolumeclaim
-        {{- if eq .Values.TEEMode "sgx" }}
-        - name: device-plugin
-          hostPath:
-            path: /var/lib/kubelet/device-plugins
-        - name: aesm-socket
-          hostPath:
-            path: /var/run/aesmd/aesm.socket
-        {{- end }}
+      volumes:
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfs-pvc
+      {{- if eq .Values.TEEMode "sgx" }}
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+      {{- end }}
 

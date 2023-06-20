@@ -2,8 +2,9 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: torchserve-frontend
+  namespace: bigdl-ppml-serving
   labels:
-    app: torchserve-frontend
+    app: torchserve-serving
 spec:
   containers:
   - name: bigdl-torchserve-frontend-pod
@@ -29,7 +30,11 @@ spec:
     - name: PCCS_URL
       value: "{{ .Values.PCCSUrl }}"
     - name: ATTESTATION
-      value: "{{ .Values.attestation }}"
+    {{- if eq .Values.TEEMode "native" }}
+      value: "false"
+    {{- else }}
+      value: "true"
+    {{- end }}
     - name: INFERENCE_PORT
       value: "{{ .Values.inferencePort }}"
     - name: MANAGEMENT_PORT
@@ -58,7 +63,7 @@ spec:
   volumes:
   - name: nfs-storage
     persistentVolumeClaim:
-      claimName: nfsvolumeclaim
+      claimName: nfs-pvc
   {{- if eq .Values.TEEMode "sgx" }}
   - name: device-plugin
     hostPath:
