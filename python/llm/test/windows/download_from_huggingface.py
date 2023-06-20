@@ -25,13 +25,13 @@ if __name__ == '__main__':
 
 
     # Download bigscience/bloom-560m
-    snapshot_download(repo_id="bigscience/bloom-560m", local_dir="models/bloom-560m",
-                      local_dir_use_symlinks=False, ignore_patterns="*.safetensors")
+    # snapshot_download(repo_id="bigscience/bloom-560m", local_dir="models/bloom-560m",
+    #                   local_dir_use_symlinks=False, ignore_patterns="*.safetensors")
     
     # # Download decapoda-research/llama-7b-hf
     # snapshot_download(repo_id="decapoda-research/llama-7b-hf", local_dir="models/llama-7b-hf",
     #                   local_dir_use_symlinks=False, ignore_patterns="*.safetensors")
 
-    # Download togethercomputer/RedPajama-INCITE-Base-3B-v1
-    snapshot_download(repo_id="togethercomputer/RedPajama-INCITE-Base-3B-v1", local_dir="models/redpajama-3b",
+    # Download togethercomputer/RedPajama-INCITE-Chat-3B-v1
+    snapshot_download(repo_id="togethercomputer/RedPajama-INCITE-Chat-3B-v1", local_dir="models/redpajama-3b",
                       local_dir_use_symlinks=False, ignore_patterns="*.safetensors")
