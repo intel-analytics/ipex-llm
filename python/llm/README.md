@@ -39,8 +39,9 @@ Here is an example to use `llm-convert` command line tool.
 # pth model
 llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
 # gptq model
-llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/" --model-format gptq --outfile "/path/to/out.bin" --model-family "llama"
+llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/" --model-format gptq --outfile "/path/to/vicuna-13B-int4/" --model-family "llama"
 ```
+> An example GPTQ model can be found [here](https://huggingface.co/TheBloke/vicuna-13B-1.1-GPTQ-4bit-128g/tree/main)
 
 Here is an example to use `llm_convert` python API.
 ```bash
