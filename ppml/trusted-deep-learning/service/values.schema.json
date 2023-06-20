@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "required": [
+    "imageName",
+    "TEEMode",
+    "nfsServerIp",
+    "nfsPath",
+    "jupyterPort"
+  ],
+  "properties": {
+    "imageName": {
+      "type": "string"
+    },
+    "TEEMode": {
+      "type": "string",
+      "pattern": "^(sgx|tdx|native)$"
+    },
+    "jupyterPort": {
+      "type": "number"
+    },
+    "nfsServerIp": {
+      "type": "string",
+      "format": "ip-address"
+    },
+    "nfsPath": {
+      "type": "string"
+    },
+    "jupyterIP": {
+      "type": "string",
+      "format": "ip-address"
+    }
+  }
+}

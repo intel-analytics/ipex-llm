@@ -220,7 +220,8 @@ def _create_pod(pod_name: str,
                                 volumes=volumes,
                                 dns_policy="ClusterFirst",
                                 node_selector=node_selector,
-                                host_network=False)
+                                host_network=False,
+                                service_account_name="bigdl-ppml-sa")
     pod_body = client.V1Pod(api_version='v1',
                             metadata=metadata,
                             kind='Pod',

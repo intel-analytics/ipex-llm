@@ -12,3 +12,5 @@ spec:
   type: NodePort
   selector:
     app: bigdl-ppml-notebook
+  externalIPs:
+    - {{ .Values.jupyterIP }}
