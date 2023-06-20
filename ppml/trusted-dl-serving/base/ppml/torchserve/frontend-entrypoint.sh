@@ -3,7 +3,7 @@ SGX_ENABLED=$SGX_ENABLED
 ATTESTATION=$ATTESTATION
 
 export config_file_path="/ppml/config.yaml"
-bash /ppml/make-config.sh
+bash /ppml/torchserve/make-config.sh
 
 # Set PCCS conf
 if [ "$PCCS_URL" != "" ] ; then
