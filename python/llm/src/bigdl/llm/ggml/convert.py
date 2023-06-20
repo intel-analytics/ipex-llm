@@ -72,6 +72,10 @@ def _convert_bloom(model_path, outfile_dir, outtype):
     _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype)
 
 
+def _convert_starcoder(model_path, outfile_dir, outtype):
+    _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype)
+
+
 def _convert_to_ggml(model_path: str, outfile_dir: str,
                      model_family: str = 'llama', outtype: str="fp16"):
     """
@@ -84,12 +88,12 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
             For lora finetuned model, the path should be pointed to a merged weight.
     :param outfile_dir: str, the directory to save ggml compatible file, for example `./models`.
     :param model_family: Which model family your input model belongs to. Default to `llama`.
-            Now only `llama`/`bloom`/`gptneox` are supported.
+            Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param outtype: specify the output format. Defalut to `fp16`. Now `fp32`/`fp16` are supported.
     """
-    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloom', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.exists(model_path),
                       "The file {} was not found".format(model_path))
@@ -108,3 +112,5 @@ def _convert_to_ggml(model_path: str, outfile_dir: str,
         _convert_gptneox(model_path, outfile_dir, outtype)
     if model_family == 'bloom':
         _convert_bloom(model_path, outfile_dir, outtype)
+    if model_family == 'starcoder':
+        _convert_starcoder(model_path, outfile_dir, outtype)

@@ -87,7 +87,8 @@ __all__ = ['Params',
            'load_vocab',
            'default_outfile',
            '_convert_gptneox_hf_to_ggml',
-           '_convert_bloom_hf_to_ggml']
+           '_convert_bloom_hf_to_ggml',
+           '_convert_starcoder_hf_to_ggml']
 
 
 @dataclass(frozen=True)
@@ -1403,6 +1404,176 @@ def _convert_bloom_hf_to_ggml(model_path, outfile_dir, outtype):
         if ftype == 1 and n_dims > 1:
             data = data.astype(np.float16)
             ftype_cur = 1
+
+        # header
+        str = name.encode('utf-8')
+        fout.write(struct.pack("iii", n_dims, len(str), ftype_cur))
+        for i in range(n_dims):
+            fout.write(struct.pack("i", data.shape[n_dims - 1 - i]))
+        fout.write(str)
+
+        # data
+        data.tofile(fout)
+
+    fout.close()
+
+
+def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
+    from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+    import torch
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    config = AutoConfig.from_pretrained(model_path, trust_remote_code=True)
+    hparams = config.to_dict()
+    model = AutoModelForCausalLM.from_pretrained(model_path, config=config,
+                                                 torch_dtype=torch.float16
+                                                 if outtype == "f16" else torch.float32,
+                                                 low_cpu_mem_usage=True,
+                                                 trust_remote_code=True,
+                                                 offload_state_dict=True)
+
+    list_vars = model.state_dict()
+
+    encoder = tokenizer.vocab
+    # Add added_tokens (special tokens) to the encoder
+    encoder.update(tokenizer.get_added_vocab())
+
+    filestem = Path(model_path).stem
+    fn_out = os.path.join(outfile_dir, f"ggml-{filestem}-{outtype}.bin")
+    fout = open(fn_out, "wb")
+
+    if outtype == "f16":
+        ftype = 1
+    else:
+        ftype = 0
+
+    fout.write(struct.pack("i", 0x67676d6c))  # magic: ggml in hex
+    vocab_size = hparams["vocab_size"]
+    fout.write(struct.pack("i", vocab_size))
+    # fout.write(struct.pack("i", len(encoder)))
+    fout.write(struct.pack("i", hparams["n_positions"]))
+    fout.write(struct.pack("i", hparams["n_embd"]))
+    fout.write(struct.pack("i", hparams["n_head"]))
+    fout.write(struct.pack("i", hparams["n_layer"]))
+    fout.write(struct.pack("i", ftype))
+
+    byte_encoder = bytes_to_unicode()
+    byte_decoder = {v: k for k, v in byte_encoder.items()}
+
+    fout.write(struct.pack("i", vocab_size))
+
+    counter = 0
+    # sort by value
+    for key in sorted(encoder, key=encoder.get):
+        text = bytearray([byte_decoder[c] for c in key])
+        fout.write(struct.pack("i", len(text)))
+        fout.write(text)
+        counter += 1
+
+    # TODO: Repeat last token until vocab_size
+    while counter < vocab_size:
+        fout.write(struct.pack("i", len(text)))
+        fout.write(text)
+        counter += 1
+
+    for name in list_vars.keys():
+        data = list_vars[name].squeeze().numpy()
+        print("Processing variable: " + name + " with shape: ", data.shape)
+
+        # rename headers to keep compatibility
+        if name == "transformer.ln_f.weight":
+            name = "model/ln_f/g"
+        elif name == "transformer.ln_f.bias":
+            name = "model/ln_f/b"
+        elif name == "transformer.wte.weight":
+            name = "model/wte"
+        elif name == "transformer.wpe.weight":
+            name = "model/wpe"
+        elif name == "lm_head.weight":
+            name = "model/lm_head"
+        elif re.match(r"transformer.h\.\d+\.ln_1\.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/ln_1/g"
+        elif re.match(r"transformer.h\.\d+\.ln_1\.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/ln_1/b"
+        elif re.match(r"transformer.h\.\d+\.attn\.c_attn\.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/attn/c_attn/w"
+        elif re.match(r"transformer.h\.\d+\.attn\.c_attn\.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/attn/c_attn/b"
+        elif re.match(r"transformer.h\.\d+\.attn\.c_proj\.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/attn/c_proj/w"
+        elif re.match(r"transformer.h.\d+.attn.c_proj.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/attn/c_proj/b"
+        elif re.match(r"transformer.h.\d+.ln_2.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/ln_2/g"
+        elif re.match(r"transformer.h.\d+.ln_2.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/ln_2/b"
+        elif re.match(r"transformer.h.\d+.mlp.c_fc.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/mlp/c_fc/w"
+        elif re.match(r"transformer.h.\d+.mlp.c_fc.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/mlp/c_fc/b"
+        elif re.match(r"transformer.h.\d+.mlp.c_proj.weight", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/mlp/c_proj/w"
+        elif re.match(r"transformer.h.\d+.mlp.c_proj.bias", name):
+            i = re.findall("\d+", name)[0]
+            name = f"model/h{i}/mlp/c_proj/b"
+        else:
+            print("Unrecognized variable name. %s", name)
+
+        # we don't need these
+        if name.endswith("attn.masked_bias") or name.endswith(".attn.bias"):
+            print("  Skipping variable: " + name)
+            continue
+
+        n_dims = len(data.shape)
+
+        ftype_cur = 0
+        if ftype == 1:
+            if (name == "model/wte" or name == "model/lm_head" or name[-2:] == "/g" or
+                    name[-2:] == "/w") and n_dims == 2:
+                print("  Converting to float16")
+                data = data.astype(np.float16)
+                ftype_cur = 1
+            else:
+                print("  Converting to float32")
+                data = data.astype(np.float32)
+                ftype_cur = 0
+
+        "model/h.*/attn/c_attn/w"
+        "model/h.*/attn/c_proj/w"
+        "model/h.*/mlp/c_fc/w"
+        "model/h.*/mlp/c_proj/w"
+        if name[-14:] == "/attn/c_attn/w" or name[-14:] == "/attn/c_attn/b":
+            print("  Duplicate K,V heads to use MHA instead of MQA")
+
+            embed_dim = hparams["n_embd"]
+            head_dim = embed_dim // hparams["n_head"]
+
+            # ((n_heads + 2) * head_dim, hidden_dim) -> (3 * n_heads * head_dim, hidden_dim)
+            q, k, v = np.split(data,
+                               (hparams["n_head"] * head_dim,
+                                (hparams["n_head"] + 1) * head_dim),
+                               axis=0)
+            # duplicate k, v along the first axis (head_dim, hidden_dim) ->
+            # (n_heads * head_dim, hidden_dim)
+            if len(k.shape) == 2:
+                k = np.tile(k, (hparams["n_head"], 1))
+                v = np.tile(v, (hparams["n_head"], 1))
+            elif len(k.shape) == 1:
+                k = np.tile(k, (hparams["n_head"]))
+                v = np.tile(v, (hparams["n_head"]))
+            # concat q, k, v along the first axis (n_heads * head_dim, hidden_dim) ->
+            # (3 * n_heads * head_dim, hidden_dim)
+            data = np.concatenate((q, k, v), axis=0)
 
         # header
         str = name.encode('utf-8')
