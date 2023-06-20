@@ -953,6 +953,52 @@ def llama_print_system_info() -> bytes:
 _lib.llama_print_system_info.argtypes = []
 _lib.llama_print_system_info.restype = c_char_p
 
+
+## GGML API
+def ggml_quantize_q4_0(
+    src,  # type: ctypes.Array[ctypes.c_float] # type: ignore
+    dst: ctypes.c_void_p,
+    n: ctypes.c_int,
+    k: ctypes.c_int,
+    hist,  # type: ctypes.Array[ctypes.c_int64] # type: ignore
+) -> int:
+    return _lib.ggml_quantize_q4_0(src, dst, n, k, hist)
+
+
+_lib.ggml_quantize_q4_0.argtypes = [
+    ctypes.POINTER(ctypes.c_float),
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int64),
+]
+_lib.ggml_quantize_q4_0.restype = ctypes.c_size_t
+
+
+def ggml_compute_forward_mul_mat_q_fp32(src_0_ne, # type: ctypes.Array[ctypes.c_int64] # type: ignore
+                                        src_0_data, # type: ctypes.c_void_p # type: ignore
+                                        src_1_ne, # type: ctypes.Array[ctypes.c_int64] # type: ignore
+                                        src_1_data, # type: ctypes.c_void_p # type: ignore
+                                        result, # type: ctypes.c_void_p # type: ignore
+                                        ) -> None:
+
+    # ctx = ctx.context
+    # src_0_ne = (ctypes.c_int64 * 2)(*src_0_ne)
+    # src_0_data = ctypes.c_void_p(src_0_data)
+    # src_1_ne = (ctypes.c_int64 * 2)(*src_1_ne)
+    # src_1_data = ctypes.c_void_p(src_1_data)
+    # result = ctypes.c_void_p(result)
+
+    return _lib.ggml_compute_forward_mul_mat_q_fp32(src_0_ne, src_0_data, src_1_ne, src_1_data, result)
+
+
+_lib.ggml_compute_forward_mul_mat_q_fp32.argtypes = [
+                                                    ctypes.POINTER(ctypes.c_int64),
+                                                    ctypes.c_void_p,
+                                                    ctypes.POINTER(ctypes.c_int64),
+                                                    ctypes.c_void_p,
+                                                    ctypes.c_void_p]
+_lib.ggml_compute_forward_mul_mat_q_fp32.restype = None
 ###################################################################################################
 
 
