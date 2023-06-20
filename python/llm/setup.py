@@ -66,7 +66,8 @@ def obtain_lib_urls():
     base_url = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/"
     windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
                        "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
-                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe"]
+                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe",
+                       "starcoder.dll", "quantize-starcoder.exe", "main-starcoder.exe"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
@@ -143,6 +144,9 @@ def setup_package():
         "libs/main-bloom.exe",
         "libs/main-gptneox.exe",
         "libs/main-llama.exe",
+        "libs/main-starcoder.exe",
+        "libs/starcoder.dll",
+        "libs/quantize-starcoder.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
