@@ -35,6 +35,43 @@ def llm_convert(model,
                 outtype='int4',
                 model_format="pth",
                 **kwargs):
+    """
+    This function is able to:
+
+        1. Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
+           original model to lower precision in BigDL-LLM optimized GGML format
+        2. Convert GPTQ format llama-like model to BigDL-LLM optimized GGML format
+
+    :param model: Path to a **directory**:
+
+           1. If ``model_format='pth'``, the folder should be a huggingface checkpoint 
+              that are directly pulled from huggingface hub, for example ``./llama-7b-hf``.
+              This should be a dir path that contains: weight bin, tokenizer config,
+              tokenizer.model (required for llama) and added_tokens.json (if applied).
+              For lora finetuned model, the path should be pointed to a merged weight.
+           2. If ``model_format='gptq'``, the folder should contains weights in
+              pytorch's .pt format, and ``tokenizer.model``
+
+    :param outfile: Save path of output quantized model. You must pass a *directory* to
+           save all related output.
+    :param model_family: Which model family your input model belongs to.
+           Now ``llama``/``bloom``/``gptneox``/``starcoder`` has been supported.
+           If ``model_format='gptq'``, only ``llama`` is supported.
+    :param dtype: Which quantized precision will be converted.
+           If ``model_format='pth'``, `int4` and `int8` are supported,
+           meanwhile `int8` only works for `llama` and `gptneox`.
+           If ``model_format='gptq'``, only ``int4`` is supported.
+    :param model_format: Specify the model format to be converted. ``pth`` is for
+           original model checkpoint from Hugging Face. ``gptq`` is for GPTQ format model.
+    :param **kwargs: Supported keyword arguments includes:
+           
+           * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
+             that stores the intermediate model during the conversion process.
+           * ``tokenizer_path``: Valid when ``model_format='gptq'``. It refers to the path
+             where ``tokenizer.model`` is located (if it is not in the ``model`` directory)
+
+    :return: the path string to the converted lower precision checkpoint.
+    """
     if model_format == "pth":
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tmp_path"])
