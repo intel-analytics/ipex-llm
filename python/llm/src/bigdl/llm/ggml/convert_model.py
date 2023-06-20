@@ -29,17 +29,18 @@ def convert_model(input_path: str,
                   dtype: str = 'int4',
                   tmp_path: str = None):
     """
-    Convert Hugging Face llama-like / gpt-neox-like / bloom-like model to lower precision
+    Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
+    PyTorch model to lower precision
 
-    :param input_path: Path to a *directory*  for huggingface checkpoint that are directly
+    :param input_path: Path to a **directory** for huggingface checkpoint that is directly
             pulled from huggingface hub, for example `./llama-7b-hf`. This should be a dir
             path that contains: weight bin, tokenizer config, tokenizer.model (required for
             llama) and added_tokens.json (if applied).
             For lora finetuned model, the path should be pointed to a merged weight.
-    :param output_path: Save path of output quantized model. You must pass a *directory* to
+    :param output_path: Save path of output quantized model. You must pass a **directory** to
             save all related output.
     :param model_family: Which model family your input model belongs to.
-            Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
+            Now only ``llama``/``bloom``/``gptneox``/``starcoder`` are supported.
     :param dtype: Which quantized precision will be converted.
             Now only `int4` and `int8` are supported, and `int8` only works for `llama`
             and `gptneox`.

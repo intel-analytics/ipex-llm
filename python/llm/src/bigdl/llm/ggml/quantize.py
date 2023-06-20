@@ -74,9 +74,9 @@ def quantize(input_path: str, output_path: str,
                        family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
-                      "The file {} was not found".format(input_path))
+                      "The file {} is not found".format(input_path))
     invalidInputError(os.path.isdir(output_path),
-                      "The output_path {} was not a directory".format(output_path))
+                      "The output_path {} is not a directory".format(output_path))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
     output_filename = "bigdl_llm_{}_{}.bin".format(model_family,
