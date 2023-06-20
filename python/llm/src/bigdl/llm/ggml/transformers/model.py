@@ -33,6 +33,7 @@ class AutoModelForCausalLM:
     @classmethod
     def from_pretrained(cls,
                         pretrained_model_name_or_path: str,
+                        model_format: str = 'pth',
                         model_family: str = 'llama',
                         dtype: str = 'int4',
                         cache_dir: str = './',
@@ -41,20 +42,28 @@ class AutoModelForCausalLM:
         """
         :param pretrained_model_name_or_path: We support 3 kinds of pretrained model checkpoint
 
-               1. path for huggingface checkpoint that are directly pulled from huggingface hub.
-                  This should be a dir path that contains: weight bin, tokenizer config,
+               1. Path to directory for Hugging Face checkpoint that are directly pulled from 
+                  Hugging Face hub.
+
+                  If ``model_format='pth'``, the folder should contain: weight bin, tokenizer config,
                   tokenizer.model (required for llama) and added_tokens.json (if applied).
                   For lora fine tuned model, the path should be pointed to a merged weight.
-               2. path for converted ggml binary checkpoint. The checkpoint should be converted by
-                  ``bigdl.llm.ggml.convert_model``.
-               3. a str for huggingface hub repo id.
 
-        :param model_family: the model family of the pretrained checkpoint.
+                  If ``model_format='gptq'``, the folder should be be a Hugging Face checkpoint
+                  that contains weights in pytorch's .pt format, and ``tokenizer.model``.
+
+               2. Path for converted BigDL-LLM optimized ggml binary checkpoint. 
+                  The checkpoint should be converted by ``bigdl.llm.llm_convert``.
+               3. A str for Hugging Face hub repo id.
+
+        :param model_format: Specify the model format to be converted. ``pth`` is for
+               original model checkpoint from Hugging Face. ``gptq`` is for GPTQ format model.
+        :param model_family: The model family of the pretrained checkpoint.
                Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"`` and ``"starcoder"``.
         :param dtype: Which quantized precision will be converted.
                 Now only `int4` and `int8` are supported, and `int8` only works for `llama`
                 , `gptneox` and `starcoder`.
-        :param cache_dir: (optional) this parameter will only be used when
+        :param cache_dir: (optional) This parameter will only be used when
                ``pretrained_model_name_or_path`` is a hugginface checkpoint or hub repo id.
                It indicates the saving path for the converted low precision model.
         :param tmp_path: (optional) Which path to store the intermediate fp16 model during the
@@ -73,7 +82,7 @@ class AutoModelForCausalLM:
         # if not, it is likely that the user wants to pass in the repo id.
         if not os.path.exists(pretrained_model_name_or_path):
             try:
-                # download from huggingface based on repo id
+                # download from Hugging Face based on repo id
                 from huggingface_hub import snapshot_download
                 pretrained_model_name_or_path = snapshot_download(
                     repo_id=pretrained_model_name_or_path)
@@ -82,24 +91,26 @@ class AutoModelForCausalLM:
                 # if downloading fails, it could be the case that repo id is invalid,
                 # or the user pass in the wrong path for checkpoint
                 invalidInputError(False,
-                                  "Downloadng from huggingface repo id {} failed. "
-                                  "Please input valid huggingface hub repo id, "
-                                  "or provide the valid path to huggingface / "
-                                  "ggml binary checkpoint, for pretrained_model_name_or_path"
+                                  "Downloadng from Hugging Face repo id {} failed. "
+                                  "Please input valid Hugging Face hub repo id, "
+                                  "or provide the valid path to Hugging Face / "
+                                  "BigDL-LLM optimized ggml binary checkpoint, "
+                                  "for pretrained_model_name_or_path"
                                   .format(pretrained_model_name_or_path))
 
         ggml_model_path = pretrained_model_name_or_path
         # check whether pretrained_model_name_or_path is a file.
         # if not, it is likely that pretrained_model_name_or_path
-        # points to a huggingface checkpoint
+        # points to a Hugging Face checkpoint
         if not os.path.isfile(pretrained_model_name_or_path):
-            # huggingface checkpoint
-            from bigdl.llm.ggml import convert_model
-            ggml_model_path = convert_model(input_path=pretrained_model_name_or_path,
-                                            output_path=cache_dir,
-                                            model_family=model_family,
-                                            dtype=dtype,
-                                            tmp_path=tmp_path)
+            # Hugging Face checkpoint
+            from bigdl.llm import llm_convert
+            ggml_model_path = llm_convert(model=pretrained_model_name_or_path,
+                                          outfile=cache_dir,
+                                          model_family=model_family,
+                                          outtype=dtype,
+                                          model_format=model_format,
+                                          tmp_path=tmp_path)
 
         if model_family == 'llama':
             from bigdl.llm.ggml.model.llama import Llama
