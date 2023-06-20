@@ -86,7 +86,8 @@ def llm_convert(model,
                 from bigdl.llm.utils.lora_util import merge_and_export_lora_model
                 if "tmp_path" in kwargs:
                     tmp_path = kwargs.get("tmp_path")
-                    lora_name = Path(lora_id_or_path).stem if os.path.exists(lora_id_or_path) else lora_id_or_path.replace("/", "-")
+                    lora_name = Path(lora_id_or_path).stem if os.path.exists(lora_id_or_path) \
+                        else lora_id_or_path.replace("/", "-")
                     merged_dir = os.path.join(tmp_path, f'merged_{lora_name}_{int(time.time())}')
                 else:
                     merged_dir = tmp_merged_dir
@@ -95,7 +96,7 @@ def llm_convert(model,
                                                     lora_id_or_path=lora_id_or_path,
                                                     output_path=merged_dir)
             _, _used_args = _special_kwarg_check(kwargs=kwargs,
-                                                check_args=["tmp_path"])
+                                                 check_args=["tmp_path"])
             return ggml_convert_model(input_path=model,
                                       output_path=outfile,
                                       model_family=model_family,
@@ -146,7 +147,7 @@ def main():
                               "Now only `pth`/`gptq` are supported."))
     parser.add_argument('-t', '--outtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
-    parser.add_argument("--lora-id-or-path", type=str, default=None, 
+    parser.add_argument("--lora-id-or-path", type=str, default=None,
                         help="hugging face lora model name or a path to a *directory* "
                              "containing lora model weights.")
 
@@ -161,3 +162,6 @@ def main():
     args = parser.parse_args()
     params = vars(args)
     llm_convert(**params)
+
+if __name__ == "__main__":
+    main()

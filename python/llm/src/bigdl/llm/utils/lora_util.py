@@ -34,8 +34,10 @@
 
 import torch
 from peft import PeftModel
+from bigdl.llm.utils import invalidInputError
 from transformers.models.auto.tokenization_auto import get_tokenizer_config
 from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer  # noqa: F402
+
 
 def merge_and_export_lora_model(base_model, lora_id_or_path, output_path="./hf_ckpt"):
     config = get_tokenizer_config(base_model)
@@ -66,7 +68,8 @@ def merge_and_export_lora_model(base_model, lora_id_or_path, output_path="./hf_c
         0
     ].self_attn.q_proj.weight
 
-    assert torch.allclose(first_weight_old, first_weight)
+    invalidInputError(torch.allclose(first_weight_old, first_weight),
+                      errMsg="Model weights should be same.")
 
     # merge weights - new merging method from peft
     lora_model = lora_model.merge_and_unload()
@@ -75,8 +78,10 @@ def merge_and_export_lora_model(base_model, lora_id_or_path, output_path="./hf_c
     lora_first_weight = lora_model.model.layers[0].self_attn.q_proj.weight
 
     # did we do anything?
-    assert not torch.allclose(first_weight_old, first_weight)
-    assert torch.allclose(lora_first_weight, first_weight)
+    invalidInputError(not torch.allclose(first_weight_old, first_weight),
+                      errMsg="Lora weights should be different.")
+    invalidInputError(torch.allclose(lora_first_weight, first_weight),
+                      errMsg="lora_model's weights should be same as base model.")
 
     lora_model.save_pretrained(output_path)
     tokenizer.save_pretrained(output_path)
