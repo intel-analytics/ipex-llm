@@ -57,7 +57,8 @@ class AutoModelForCausalLM:
                3. A str for Hugging Face hub repo id.
 
         :param model_format: Specify the model format to be converted. ``pth`` is for
-               original model checkpoint from Hugging Face. ``gptq`` is for GPTQ format model.
+               PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
+               model from Hugging Face.
         :param model_family: The model family of the pretrained checkpoint.
                Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"`` and ``"starcoder"``.
         :param dtype: Which quantized precision will be converted.

@@ -40,7 +40,7 @@ def llm_convert(model,
     This function is able to:
 
         1. Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
-           original model to lower precision in BigDL-LLM optimized GGML format.
+           PyTorch model to lower precision in BigDL-LLM optimized GGML format.
         2. Convert Hugging Face GPTQ format llama-like model to BigDL-LLM optimized
            GGML format.
 
@@ -64,7 +64,8 @@ def llm_convert(model,
            meanwhile `int8` only works for `llama` and `gptneox`.
            If ``model_format='gptq'``, only ``int4`` is supported.
     :param model_format: Specify the model format to be converted. ``pth`` is for
-           original model checkpoint from Hugging Face. ``gptq`` is for GPTQ format model.
+           PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
+           model from Hugging Face.
     :param **kwargs: Supported keyword arguments includes:
 
            * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
@@ -88,7 +89,7 @@ def llm_convert(model,
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
         invalidInputError(os.path.isdir(outfile),
-                          "The output_path {} was not a directory".format(outfile))
+                          "The output_path {} is not a directory".format(outfile))
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tokenizer_path"])
 

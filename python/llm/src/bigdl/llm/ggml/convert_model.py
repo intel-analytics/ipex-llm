@@ -30,7 +30,7 @@ def convert_model(input_path: str,
                   tmp_path: str = None):
     """
     Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
-    original model to lower precision
+    PyTorch model to lower precision
 
     :param input_path: Path to a **directory** for huggingface checkpoint that is directly
             pulled from huggingface hub, for example `./llama-7b-hf`. This should be a dir
