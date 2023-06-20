@@ -14,8 +14,8 @@
 @REM # limitations under the License.
 @REM #
 
-@REM Usage: Start directory should be BigDL\python\llm\test\win
-@REM python .\win_test.py
+@REM Usage: call win_test_starter.bat %base_dir%
+@REM Example: win_test_starter.bat C:\Users\obe\bigdl-llm-test
 
 echo The current directory is %CD%
 set base_dir=%1
