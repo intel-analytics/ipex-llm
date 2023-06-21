@@ -70,9 +70,9 @@ def llm_convert(model,
            PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
            model from Hugging Face.
     :param lora_id_or_path: The name of the Lora configuration to use. Can be either:
-           A string, the model id of a Lora configuration hosted inside a model repo on the 
+           A string, the model id of a Lora configuration hosted inside a model repo on the
            Hugging Face Hub.
-           A path to a directory a Lora configuration file saved using the save_pretrained 
+           A path to a directory a Lora configuration file saved using the save_pretrained
            method.
     :param **kwargs: Supported keyword arguments includes:
 
