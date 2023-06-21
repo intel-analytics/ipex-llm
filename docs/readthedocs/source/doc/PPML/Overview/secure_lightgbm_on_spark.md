@@ -18,16 +18,16 @@ Here, We illustrate the progress with a Pyspark demo, and Scala is also supporte
 ### Overall
 
 
-In the following example, a **PPMLContext** (entry for kinds of distributed APIs) is initialized first, and it will read CSV-ciphertext dataset with a schema specified in code, where encrypted data will be decrypted automatically and load into memory as DataFrame.
+- In the following example, a **PPMLContext** (entry for kinds of distributed APIs) is initialized first, and it will read CSV-ciphertext dataset with a schema specified in code, where encrypted data will be decrypted automatically and load into memory as DataFrame.
 
 
-Next, `transform` etc. APIs provided by **SparkML** kit are applied to do preprocessing like feature transformation and dataset splitting.
+- Next, `transform` etc. APIs provided by **SparkML** kit are applied to do preprocessing like feature transformation and dataset splitting.
 
 
-Then, processed dataframe is feeded to **LightGBMClassifier**, and a training is invoked by `fit`.
+- Then, processed dataframe is feeded to **LightGBMClassifier**, and a training is invoked by `fit`.
 
 
-Finally, trained classification model is saved in ciphertext on disk, and we demonstrate that by loading the encrypted model into memory (and decrypted automatically) and using the reloaded model to predict on test set. The whole encryption/decryption process here applies the key specified by user configurations when submitting this Spark job.
+- Finally, trained classification model is saved in ciphertext on disk, and we demonstrate that by loading the encrypted model into memory (and decrypted automatically) and using the reloaded model to predict on test set. The whole encryption/decryption process here applies the key specified by user configurations when submitting this Spark job.
 
 
 ### Start the Example
