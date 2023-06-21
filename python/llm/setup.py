@@ -66,12 +66,15 @@ def obtain_lib_urls():
     base_url = "https://sourceforge.net/projects/analytics-zoo/files/bigdl-llm/"
     windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
                        "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
-                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe"]
+                       "main-llama.exe", "main-gptneox.exe", "main-bloom.exe",
+                       "starcoder.dll", "quantize-starcoder.exe", "main-starcoder.exe"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
                      "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
-                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512"]
+                     "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512",
+                     "libstarcoder_avx512.so", "main-starcoder_avx512", "quantize-starcoder", 
+                     "libstarcoder_avx2.so", "main-starcoder_avx2"]
 
     def get_date_urls(base_url):
         # obtain all urls based on date(format: xxxx-xx-xx)
@@ -142,6 +145,9 @@ def setup_package():
         "libs/main-bloom.exe",
         "libs/main-gptneox.exe",
         "libs/main-llama.exe",
+        "libs/main-starcoder.exe",
+        "libs/starcoder.dll",
+        "libs/quantize-starcoder.exe",
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
@@ -153,12 +159,17 @@ def setup_package():
         "libs/libbloom_avx2.so",
         "libs/libbloom_avx512.so",
         "libs/quantize-bloom",
+        "libs/libstarcoder_avx512.so",
+        "libs/libstarcoder_avx2.so",
+        "libs/quantize-starcoder",
         "libs/main-bloom_avx2",
         "libs/main-bloom_avx512",
         "libs/main-gptneox_avx2",
         "libs/main-gptneox_avx512",
         "libs/main-llama_avx2",
         "libs/main-llama_avx512",
+        "libs/main-starcoder_avx512",
+        "libs/main-starcoder_avx2",
     ]
 
     platform_name = None

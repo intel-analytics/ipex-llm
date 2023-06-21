@@ -19,7 +19,4 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
-from bigdl.llm.ggml.model.llama import Llama
-from bigdl.llm.ggml.model.gptneox import Gptneox
-from bigdl.llm.ggml.model.bloom import Bloom
-from bigdl.llm.ggml.model.starcoder import Starcoder
+from .starcoder import Starcoder
