@@ -151,21 +151,37 @@ And you can find the source code [here](https://github.com/intel-analytics/BigDL
 --modelSavePath hdfs://IP/input/output/iris
 ```
 
-### Generate SSL keys and ertificate
-You can get bash from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate-ssl.sh).
-Then generate your ssl key and certificate in /ppml/keys, and mount it to `/opt/occlum_spark/image/ppml` in pods.
-If you run this examples in local node, you can mount like the `data-exchange`.
-Or you can use nfs server to mount:
+### Generate SSL keys and certificate
+You can get bash `generate-keys.sh` and `generate-password.sh` from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts).
+Make sure to add `${JAVA_HOME}/bin` to `$PATH` to avoid `keytool: command not found error`.
+
+Run the script to generate **keys/keys.yaml** and **password/password.yaml**
+  ```bash
+  sudo bash generate-keys.sh
+  sudo bash generate-password.sh YOUR_PASSWORD
+  ```
+
+Deploy **keys/keys.yaml** and **password/password.yaml** as secrets for Kubernetes
+  ```
+  kubectl apply -f keys/keys.yaml
+  kubectl apply -f password/password.yaml
+  ```
+Then mount them to `/opt/occlum_spark/image/ppml` in pods. For example, in *.yaml:
 ```
-#driver.yaml  and executor.yaml
+#driver.yaml and executor.yaml
 volumeMounts:
-- name: nfs-data
-  mountPath: /opt/occlum_spark/image/ppml
+- name: ssl-keys
+  mountPath: /opt/occlum_spark/image/ppml/keys
+- name: ssl-password
+  mountPath: /opt/occlum_spark/image/ppml/password
+
 volumes:
-  - name: nfs-data
-    nfs:
-      server: your_IP
-      path: /ppml
+  - name: ssl-keys
+    secret:
+      secretName: ssl-keys
+  - name: ssl-password
+    secret:
+      secretName: ssl-password
 ```
 
 Then:
