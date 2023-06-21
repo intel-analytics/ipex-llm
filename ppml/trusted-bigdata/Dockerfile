@@ -178,7 +178,8 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
     mkdir -p /ppml/apps && \
-    mkdir -p /ppml/notebook
+    mkdir -p /ppml/notebook && \
+    mkdir -p /root/.jupyter
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
