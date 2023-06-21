@@ -158,7 +158,7 @@ class Starcoder(GenerationMixin):
         # TODO: Some parameters are temporarily not supported
         # Unsupported parameters are checked in `_supported_call`
         return self._supported_call(prompt, max_tokens, stream, stop, echo, model,
-                                    suffix, temperature, top_p, logprobs, echo, frequency_penalty,
+                                    suffix, temperature, top_p, logprobs, frequency_penalty,
                                     presence_penalty, repeat_penalty, top_k, tfs_z, mirostat_mode,
                                     mirostat_tau, mirostat_eta)
 
