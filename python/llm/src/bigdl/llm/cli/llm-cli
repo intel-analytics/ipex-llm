@@ -53,6 +53,12 @@ function gptneox {
   eval "$command"
 }
 
+function starcoder {
+  command="$lib_dir/main-starcoder_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
 # Remove model_family/x parameter
 filteredArguments=()
 while [[ $# -gt 0 ]]; do
@@ -91,6 +97,8 @@ elif [[ "$model_family" == "bloom" ]]; then
   bloom
 elif [[ "$model_family" == "gptneox" ]]; then
   gptneox
+elif [[ "$model_family" == "starcoder" ]]; then
+  starcoder
 else
   echo "Invalid model_family: $model_family"
   display_help
