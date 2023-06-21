@@ -60,7 +60,7 @@ llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/",
 
 #### Convert your model with lora adapter
 ##### Precondition
-1. The base model should in **the huggingface format**, you can use this [script](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/convert_llama_weights_to_hf.py) from transformers to convert.
+1. The base model should be in **the huggingface format**, you can use this [script](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/convert_llama_weights_to_hf.py) from transformers to convert.
 2. The lora model should contains `adapter_config.json` and `adapter_model.bin`.
 
 ##### Usage
