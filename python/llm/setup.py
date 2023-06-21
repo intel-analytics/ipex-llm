@@ -45,7 +45,7 @@ BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-CONVERT_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece', 'accelerate']
+CONVERT_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece', 'accelerate', 'peft']
 
 
 def get_llm_packages():

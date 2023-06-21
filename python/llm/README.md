@@ -59,6 +59,33 @@ llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt",
             model_family="llama")
 ```
 
+#### Convert your model with lora adapter
+##### Precondition
+1. The base model should in **the huggingface format**, you can use this [script](https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/convert_llama_weights_to_hf.py) from transformers to convert.
+2. The lora model should contains `adapter_config.json` and `adapter_model.bin`.
+
+##### Usage
+Pass the **lora model id** to the llm-convert cli or llm_convert function.
+A **lora model id** is the name of the Lora configuration to use. Can be either:
+- A string, the model id of a Lora configuration hosted inside a model repo on the 
+  Hugging Face Hub.
+- A path to a directory a Lora configuration file saved using the PEFT save_pretrained 
+  method.
+
+Here is an example to use `llm-convert` command line tool.
+```bash
+llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama" --lora-id-or-path /path/to/gpt4all-lora
+```
+Here is an example to use `llm_convert` python API.
+```python
+from bigdl.llm import llm_convert
+llm_convert(model="/path/to/llama-7b-hf/",
+            outfile="/path/to/llama-7b-int4/",
+            model_format="pth",
+            lora_id_or_path="/path/to/gpt4all-lora",
+            model_family="llama")
+```
+
 ### Inferencing
 
 #### llm-cli command line
