@@ -1427,7 +1427,7 @@ def _convert_starcoder_hf_to_ggml(model_path, outfile_dir, outtype):
     model = AutoModelForCausalLM.from_pretrained(model_path, config=config,
                                                  torch_dtype=torch.float16
                                                  if outtype == "f16" else torch.float32,
-                                                 low_cpu_mem_usage=True,
+                                                 # low_cpu_mem_usage=True,
                                                  trust_remote_code=True,
                                                  offload_state_dict=True)
 
