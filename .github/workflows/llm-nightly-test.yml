@@ -43,7 +43,6 @@ jobs:
 
       - name: Download original models
         run: |
-          pwd
           llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
           llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
           llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
@@ -55,14 +54,14 @@ jobs:
             echo "Directory $GPT4ALL_LORA_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/lora/gpt4all-lora -P $ORIGIN_DIR
           fi
-          # if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
-          #   echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
-          #   wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
-          # fi
-          # if [ ! -d $BLOOM_ORIGIN_PATH ]; then
-          #   echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
-          #   wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/bloomz-7b1 -P $ORIGIN_DIR
-          # fi
+          if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
+            echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+          fi
+          if [ ! -d $BLOOM_ORIGIN_PATH ]; then
+            echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/bloomz-7b1 -P $ORIGIN_DIR
+          fi
       
       - name: Run LLM convert test
         shell: bash
@@ -82,12 +81,12 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      # - name: Upload ckpt to ftp
-      #   run: |
-      #     apt-get update && apt install tnftp
-      #     llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
-      #     llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
-      #     llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
-      #     tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
-      #     tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
-      #     tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
+      - name: Upload ckpt to ftp
+        run: |
+          apt-get update && apt install tnftp
+          llm_ftp_user=${RUNNER_REPOSITORY_URL:35}
+          llm_ftp_user=$(echo $llm_ftp_user | tr '[:upper:]' '[:lower:]')
+          llm_ftp_url=${FTP_URI:0:6}${llm_ftp_user}${FTP_URI:9}:8821
+          tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
+          tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
+          tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH

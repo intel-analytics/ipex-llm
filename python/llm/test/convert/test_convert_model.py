@@ -30,29 +30,29 @@ output_dir = os.environ.get('INT4_CKPT_DIR')
 
 class TestConvertModel(TestCase):
     
-    # def test_convert_llama(self):
-    #     converted_model_path = llm_convert(model=llama_model_path,
-    #                                        outfile=output_dir,
-    #                                        model_family='llama',
-    #                                        model_format="pth",
-    #                                        outtype='int4')
-    #     assert os.path.isfile(converted_model_path)
+    def test_convert_llama(self):
+        converted_model_path = llm_convert(model=llama_model_path,
+                                           outfile=output_dir,
+                                           model_family='llama',
+                                           model_format="pth",
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
 
-    # def test_convert_gptneox(self):
-    #     converted_model_path = llm_convert(model=gptneox_model_path,
-    #                                        outfile=output_dir,
-    #                                        model_family='gptneox',
-    #                                        model_format="pth",
-    #                                        outtype='int4')
-    #     assert os.path.isfile(converted_model_path)
+    def test_convert_gptneox(self):
+        converted_model_path = llm_convert(model=gptneox_model_path,
+                                           outfile=output_dir,
+                                           model_family='gptneox',
+                                           model_format="pth",
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
 
-    # def test_convert_bloom(self):
-    #     converted_model_path = llm_convert(model=bloom_model_path,
-    #                                        outfile=output_dir,
-    #                                        model_family='bloom',
-    #                                        model_format="pth",
-    #                                        outtype='int4')
-    #     assert os.path.isfile(converted_model_path)
+    def test_convert_bloom(self):
+        converted_model_path = llm_convert(model=bloom_model_path,
+                                           outfile=output_dir,
+                                           model_family='bloom',
+                                           model_format="pth",
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
 
     def test_convert_llama_with_lora(self):
         converted_model_path = llm_convert(model=llama_model_path,
