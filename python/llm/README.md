@@ -55,7 +55,6 @@ llm_convert(model="/path/to/llama-7b-hf/",
 llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/",
             outfile="/path/to/vicuna-13B-int4/",
             model_format="gptq",
-            tokenizer_path="/path/to/tokenizer.model",
             model_family="llama")
 ```
 
