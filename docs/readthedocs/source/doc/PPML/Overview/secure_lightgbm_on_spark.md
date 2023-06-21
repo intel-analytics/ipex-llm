@@ -1,4 +1,4 @@
-## Secure LightGBM on Spark
+# Secure LightGBM on Spark
 
 
 we provide an option to combine the two ML kits (SparkML and LightGBM), that seamlessly runs LighGBM applications on existing Spark cluster.
@@ -10,12 +10,12 @@ In such a scenario, LightGBM will utilize DataFrame etc. distribution abstractio
 The Spark and LightGBM dependencies have already been installed in the custom image prepared in previous steps. For Occlum users, please use [trusted-big-data-ml occlum](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#trusted-big-data-ml-with-occlum).
 
 
-### End-to-End Fitting and Predication Examples of LightGBM on Spark
+## End-to-End Fitting and Predication Examples of LightGBM on Spark
 
 
 Here, We illustrate the progress with a Pyspark demo, and Scala is also supported. 
 
-#### Overall
+### Overall
 
 
 In the following example, a **PPMLContext** (entry for kinds of distributed APIs) is initialized first, and it will read CSV-ciphertext dataset with a schema specified in code, where encrypted data will be decrypted automatically and load into memory as DataFrame.
