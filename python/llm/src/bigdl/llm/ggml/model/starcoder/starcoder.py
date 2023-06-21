@@ -310,7 +310,7 @@ class Starcoder(GenerationMixin):
                         "usage":
                             {
                                 "prompt_tokens": prompt_len
-                            }
+                        }
                     }
 
     def free(self):
