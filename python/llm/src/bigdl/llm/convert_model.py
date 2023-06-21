@@ -15,8 +15,6 @@
 #
 
 
-from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
-from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
 from bigdl.llm.utils.common import invalidInputError
 import argparse
 import os
@@ -77,6 +75,7 @@ def llm_convert(model,
     :return: the path string to the converted lower precision checkpoint.
     """
     if model_format == "pth":
+        from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
                                              check_args=["tmp_path"])
         return ggml_convert_model(input_path=model,
@@ -86,6 +85,7 @@ def llm_convert(model,
                                   **_used_args,
                                   )
     elif model_format == "gptq":
+        from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
