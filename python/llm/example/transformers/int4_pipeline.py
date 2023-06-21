@@ -96,9 +96,9 @@ def inference(llm, repo_id_or_model_path, model_family, prompt):
         print(f'Inference time: {time.time()-st} s')
         print(f'Output:\n{output}')
 
-    if model_family in ['llama', 'gptneox', 'bloom']:
+    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder']:
         # Option 3: fast forward
-        # note that currently Bloom family model only supports the fast forward inference method
+        # note that currently Bloom/Starcoder family model only supports the fast forward inference method
         print('-'*20, ' fast forward ', '-'*20)
         st = time.time()
 
@@ -115,7 +115,7 @@ def main():
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
                         help="The model family of the large language model (supported option: 'llama', "
-                             "'gptneox', 'bloom')")
+                             "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str,
                         help='The huggingface repo id for the larga language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
@@ -131,6 +131,8 @@ def main():
             repo_id_or_model_path = 'togethercomputer/RedPajama-INCITE-7B-Chat'
         elif args.model_family == 'bloom':
             repo_id_or_model_path = 'bigscience/bloomz-7b1'
+        elif args.model_family == 'starcoder':
+            repo_id_or_model_path = 'bigcode/santacoder'
 
     # Step 1: convert and load int4 model
     llm = convert_and_load(repo_id_or_model_path=repo_id_or_model_path,
