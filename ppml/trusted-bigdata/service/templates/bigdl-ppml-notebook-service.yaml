@@ -6,9 +6,12 @@ metadata:
   labels:
     app: bigdl-ppml-notebook
 spec:
+  type: LoadBalancer
   ports:
   - port: {{ .Values.jupyterPort }}
     targetPort: {{ .Values.jupyterPort }}
-  type: NodePort
   selector:
     app: bigdl-ppml-notebook
+  sessionAffinity: ClientIP
+  externalIPs:
+  - {{ .Values.notebookExternalIP }}
