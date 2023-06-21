@@ -38,6 +38,7 @@ ADD ./k8s_deployment.py          /ppml/jupyter/examples/k8s_deployment.py
 ADD ./mnist-simple.py            /ppml/jupyter/examples/mnist-simple.py
 ADD ./pert-simple.ipynb          /ppml/jupyter/examples/pert-simple.ipynb
 ADD ./start-notebook.sh          /ppml/jupyter/examples/start-notebook.sh
+RUN chmod a+x /ppml/jupyter/examples/start-notebook.sh
 
 
 # PyTorch Dependencies
