@@ -33,7 +33,7 @@ spec:
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"
         {{- else }}
-          value: "true"
+          value: "false"
         {{- end }}
         - name: JUPYTER_PORT
           value: "{{ .Values.jupyterPort }}"
