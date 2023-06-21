@@ -12,7 +12,6 @@ spec:
     metadata:
       labels:
         backend: torchserve
-        app: torchserve-serving
     spec:
       containers:
       - name: bigdl-torchserve-backend-pod
