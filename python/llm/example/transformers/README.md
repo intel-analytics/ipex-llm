@@ -25,7 +25,7 @@ arguments info:
   - When model family is `'llama'`, it is default to be `'decapoda-research/llama-7b-hf'`.
   - When model family is `'gptneox'`, it is default to be `'togethercomputer/RedPajama-INCITE-7B-Chat'`.
   - When model family is `'bloom'`, it is default to be `'bigscience/bloomz-7b1'`.
-  - When model family is `'starcoder'`, it is default to be `'bigcode/santacoder'`.
+  - When model family is `'starcoder'`, it is default to be `'bigcode/gpt_bigcode-santacoder'`.
 
   > **Note** `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: What is CPU? A:'`.

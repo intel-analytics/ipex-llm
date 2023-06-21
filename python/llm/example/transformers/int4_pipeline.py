@@ -132,7 +132,7 @@ def main():
         elif args.model_family == 'bloom':
             repo_id_or_model_path = 'bigscience/bloomz-7b1'
         elif args.model_family == 'starcoder':
-            repo_id_or_model_path = 'bigcode/santacoder'
+            repo_id_or_model_path = 'bigcode/gpt_bigcode-santacoder'
 
     # Step 1: convert and load int4 model
     llm = convert_and_load(repo_id_or_model_path=repo_id_or_model_path,
