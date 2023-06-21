@@ -295,23 +295,23 @@ class Starcoder(GenerationMixin):
                     print('\n')
                 else:
                     yield {
-                    "id": completion_id,
-                    "object": "text_completion",
-                    "created": created,
-                    "model": model_name,
-                    "choices": [
-                        {
-                            "text": text,
-                            "index": 0,
-                            "logprobs": None,
-                            "finish_reason": None,
-                        }
-                    ],
-                    "usage":
-                        {
-                            "prompt_tokens": prompt_len
-                        }
-                }
+                        "id": completion_id,
+                        "object": "text_completion",
+                        "created": created,
+                        "model": model_name,
+                        "choices": [
+                            {
+                                "text": text,
+                                "index": 0,
+                                "logprobs": None,
+                                "finish_reason": None,
+                            }
+                        ],
+                        "usage":
+                            {
+                                "prompt_tokens": prompt_len
+                            }
+                    }
 
     def free(self):
         starcoder_free(self.ctx)
@@ -328,7 +328,8 @@ class Starcoder(GenerationMixin):
         Returns:
             A list of tokens.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Starcoder` object is None.")
+        invalidInputError(self.ctx is not None,
+                          "The attribute `ctx` of `Starcoder` object is None.")
         return starcoder_tokenize(self.ctx, text, False)
 
     def detokenize(self, tokens: List[int]) -> bytes:
@@ -340,7 +341,8 @@ class Starcoder(GenerationMixin):
         Returns:
             The detokenized string.
         """
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Starcoder` object is None.")
+        invalidInputError(self.ctx is not None,
+                          "The attribute `ctx` of `Starcoder` object is None.")
         output = ""
         for token in tokens:
             output += starcoder_detokenize(self.ctx, token)
@@ -409,7 +411,8 @@ class Starcoder(GenerationMixin):
                               f"The parameter {unsupported_arg[index]} is temporarily "
                               "unsupported, please use the default value.")
 
-        invalidInputError(self.ctx is not None, "The attribute `ctx` of `Starcoder` object is None.")
+        invalidInputError(self.ctx is not None,
+                          "The attribute `ctx` of `Starcoder` object is None.")
         while True:
             token = self.forward(tokens)
             tokens_or_none = yield token
@@ -420,7 +423,8 @@ class Starcoder(GenerationMixin):
     def embed(self, input: str) -> List[float]:
         """Only used for langchain"""
         invalidInputError(self.embedding,
-                          "Starcoder model must be created with embedding=True to call this method.")
+                          "Starcoder model must be created with embedding=True"
+                          "to call this method.")
         input_ids = self.tokenize(input)
         return starcoder_embed(ctx=self.ctx,
                                input_ids=input_ids,
