@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# Some parts of this file is adapted from 
+# Some parts of this file is adapted from
 # https://github.com/TimDettmers/bitsandbytes/blob/0.39.1/bitsandbytes/nn/modules.py
 # which is licensed under the MIT license:
 #
@@ -55,9 +55,10 @@ import bigdl.llm.ggml.model.llama.llama_cpp as ggml
 import torch
 import ctypes
 
-QK = 64 # todo read this value from libllama.so
+QK = 64  # todo read this value from libllama.so
 scale_size_in_bytes = 4
 block_size_in_bytes = QK // 2 + scale_size_in_bytes
+
 
 def ggml_convert_int4(tensor: torch.Tensor):
 

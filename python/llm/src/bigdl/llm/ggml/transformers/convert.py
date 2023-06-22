@@ -15,7 +15,7 @@
 #
 
 
-# Some parts of this file is adapted from 
+# Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/utils/bitsandbytes.py
 # which is licensed under Apache License 2.0:
 #
@@ -40,12 +40,8 @@ from accelerate import init_empty_weights
 from bigdl.llm.ggml.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
-def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_name=None):
-    """
-    Private method that wraps the recursion for module replacement.
 
-    Returns the converted model and a boolean that indicates if the conversion has been successfull or not.
-    """
+def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_name=None):
     has_been_replaced = False
     for name, module in model.named_children():
         if current_key_name is None:
@@ -64,9 +60,9 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
 
                     # Copy the weights
                     new_linear._parameters['weight'] = ParamsInt4(data=module.weight.data,
-                                                   requires_grad=False,
-                                                   quantized=False,
-                                                   _shape=None).to("cpu")
+                                                                  requires_grad=False,
+                                                                  quantized=False,
+                                                                  _shape=None).to("cpu")
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
 
