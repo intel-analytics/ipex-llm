@@ -41,7 +41,7 @@ from bigdl.llm.ggml.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
 
-def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_name=None):
+def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_name=None):
     has_been_replaced = False
     for name, module in model.named_children():
         if current_key_name is None:
@@ -73,7 +73,7 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_4bit_linear(
+            _, has_been_replaced = _replace_with_int4_linear(
                 module,
                 modules_to_not_convert,
                 current_key_name,
@@ -83,12 +83,12 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
 
 def ggml_convert_int4(model):
     modules_to_not_convert = ["lm_head"]
-    model, has_been_replaced = _replace_with_4bit_linear(
+    model, has_been_replaced = _replace_with_int4_linear(
         model, modules_to_not_convert, None
     )
     if not has_been_replaced:
         warnings.warn(
-            "You are loading your model in 8bit or 4bit but no linear modules were found in "
+            "No linear modules were found in "
             "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
             "instead of Linear layers. Please double check your model architecture, or submit "
             "an issue on github if you think this is a bug."
