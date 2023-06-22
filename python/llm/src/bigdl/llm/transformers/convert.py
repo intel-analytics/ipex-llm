@@ -37,7 +37,7 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.ggml.transformers.linear_int4 import LinearInt4, ParamsInt4
+from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
 
