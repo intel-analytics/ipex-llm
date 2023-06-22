@@ -94,7 +94,7 @@ class ParamsInt4(torch.nn.Parameter):
         self._shape = _shape
         return self
 
-    def cuda(self, device):
+    def quantize(self, device):
         if not self.quantized:
             w = self.data.contiguous().float()
             # self.old_data = self.data
@@ -124,7 +124,7 @@ class ParamsInt4(torch.nn.Parameter):
         device, dtype, non_blocking, convert_to_format = torch._C._nn._parse_to(*args, **kwargs)
 
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
-            return self.cuda(device)
+            return self.quantize(device)
         else:
             new_param = ParamsInt4(super().to(device=device,
                                               dtype=dtype,
