@@ -42,6 +42,7 @@
 
 
 from typing import Optional, TypeVar, Union, overload
+from bigdl.llm.utils.common import invalidInputError
 
 import torch
 import torch.nn.functional as F
@@ -60,36 +61,36 @@ block_size_in_bytes = QK // 2 + scale_size_in_bytes
 
 def ggml_convert_int4(tensor: torch.Tensor):
 
-    assert tensor.dtype == torch.float
+    invalidInputError(tensor.dtype == torch.float,
+                      "Input tensor must be float32")
     src = tensor.data.data_ptr()
     src = ctypes.cast(src, ctypes.POINTER(ctypes.c_float))
     n = tensor.numel()
-    assert n % QK == 0
+    invalidInputError(n % QK == 0,
+                      "Input tensor size must be multiple of 64")
     k = tensor.shape[-1]
-    assert k % QK == 0
+    invalidInputError(k % QK == 0,
+                      "Last dim of input tensor must be multiple of 64")
 
     dst_size = (n // QK) * block_size_in_bytes
     dst_tensor = torch.empty(dst_size, dtype=torch.uint8)
     dst = ctypes.c_void_p(dst_tensor.data.data_ptr())
 
     hist = (ctypes.c_int64 * 16)()
-    
+
     ggml.ggml_quantize_q4_0(src, dst, n, k, hist)
     return dst_tensor
+
 
 class ParamsInt4(torch.nn.Parameter):
     def __new__(cls, data=None, requires_grad=True, old_data=None, quantized=False, _shape=None):
         if data is None:
             data = torch.empty(0)
-        
-        if data.dtype == torch.uint8:
-            raise ValueError("data must be float32, but got uint8")
 
         self = torch.Tensor._make_subclass(cls, data, requires_grad)
         self.data = data
         self.quantized = quantized
         self._shape = _shape
-        # self.old_data = old_data
         return self
 
     def cuda(self, device):
@@ -106,15 +107,16 @@ class ParamsInt4(torch.nn.Parameter):
         return self._shape
 
     @overload
-    def to(self: T, device: Optional[Union[int, device]] = ..., dtype: Optional[Union[dtype, str]] = ..., non_blocking: bool = ...,) -> T:
+    def to(self: T, device: Optional[Union[int, device]]=...,
+           dtype: Optional[Union[dtype, str]]=..., non_blocking: bool=...,) -> T:
         ...
 
     @overload
-    def to(self: T, dtype: Union[dtype, str], non_blocking: bool = ...) -> T:
+    def to(self: T, dtype: Union[dtype, str], non_blocking: bool=...) -> T:
         ...
 
     @overload
-    def to(self: T, tensor: Tensor, non_blocking: bool = ...) -> T:
+    def to(self: T, tensor: Tensor, non_blocking: bool=...) -> T:
         ...
 
     def to(self, *args, **kwargs):
@@ -123,13 +125,15 @@ class ParamsInt4(torch.nn.Parameter):
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
             return self.cuda(device)
         else:
-            new_param = ParamsInt4(super().to(device=device, dtype=dtype, non_blocking=non_blocking),
-                                  requires_grad=self.requires_grad,
-                                #   old_data=self.old_data,
+            new_param = ParamsInt4(super().to(device=device,
+                                              dtype=dtype,
+                                              non_blocking=non_blocking),
+                                   requires_grad=self.requires_grad,
                                    quantized=self.quantized,
                                    _shape=self._shape)
 
             return new_param
+
 
 def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape: torch.Size):
     if src1.dtype != torch.float32:
@@ -164,6 +168,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape
 
     return result_t
 
+
 class LinearInt4(nn.Linear):
     def __init__(self, input_features, output_features, bias=True):
         super().__init__(input_features, output_features, bias)
@@ -183,7 +188,6 @@ class LinearInt4(nn.Linear):
         x = x.view(-1, x_shape[-1])
 
         x0 = self.weight.data
-        
 
         result = ggml_matmul_src1_x_src0_t(x0, x, self.weight_shape)
         new_shape = x_shape[:-1] + (self.out_len,)

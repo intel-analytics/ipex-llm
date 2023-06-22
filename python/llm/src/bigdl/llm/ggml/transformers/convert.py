@@ -74,7 +74,7 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
                     has_been_replaced = True
                     # Force requires grad to False to avoid unexpected errors
                     model._modules[name].requires_grad_(False)
-                    
+
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
             _, has_been_replaced = _replace_with_4bit_linear(
@@ -92,9 +92,9 @@ def ggml_convert_int4(model):
     )
     if not has_been_replaced:
         warnings.warn(
-            "You are loading your model in 8bit or 4bit but no linear modules were found in your model."
-            " this can happen for some architectures such as gpt2 that uses Conv1D instead of Linear layers."
-            " Please double check your model architecture, or submit an issue on github if you think this is"
-            " a bug."
+            "You are loading your model in 8bit or 4bit but no linear modules were found in "
+            "your model. This can happen for some architectures such as gpt2 that uses Conv1D "
+            "instead of Linear layers. Please double check your model architecture, or submit "
+            "an issue on github if you think this is a bug."
         )
     return model
