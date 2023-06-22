@@ -82,7 +82,7 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
 
 
 def ggml_convert_int4(model):
-    modules_to_not_convert = ["lm_head"]
+    modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_int4_linear(
         model, modules_to_not_convert, None
     )
