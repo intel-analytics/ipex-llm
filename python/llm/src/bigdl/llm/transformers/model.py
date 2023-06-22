@@ -16,6 +16,8 @@
 
 import transformers
 import torch
+
+
 class _BaseAutoModelClass:
 
     HF_MODEL = None
