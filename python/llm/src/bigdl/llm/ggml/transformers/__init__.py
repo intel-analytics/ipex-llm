@@ -20,3 +20,4 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 from .model import AutoModelForCausalLM
+from .convert import ggml_convert_int4

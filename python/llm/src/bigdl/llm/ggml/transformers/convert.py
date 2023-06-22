@@ -37,7 +37,7 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
+from bigdl.llm.ggml.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
 def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_name=None):
@@ -85,7 +85,7 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
     return model, has_been_replaced
 
 
-def quantize_4bit(model):
+def ggml_convert_int4(model):
     modules_to_not_convert = ["lm_head"]
     model, has_been_replaced = _replace_with_4bit_linear(
         model, modules_to_not_convert, None

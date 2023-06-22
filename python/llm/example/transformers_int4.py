@@ -22,8 +22,8 @@ if __name__ == '__main__':
     model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.float32)
 
     ###### Quantize model into ggml q4_0 format ######
-    from bigdl.llm.transformers import quantize_4bit
-    model = quantize_4bit(model)
+    from bigdl.llm.transformers import ggml_convert_int4
+    model = ggml_convert_int4(model)
     print(model)
     ###################################################
 
