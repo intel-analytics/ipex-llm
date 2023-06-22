@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from bigdl.llm.transformers.quantize import quantize_4bit
+from bigdl.llm.transformers.convert import quantize_4bit

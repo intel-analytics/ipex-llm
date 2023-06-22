@@ -37,7 +37,7 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.transformers.linear_4bit import Linear4bit, Params4bit
+from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
 def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_name=None):
@@ -56,14 +56,14 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
 
-                    new_linear = Linear4bit(
+                    new_linear = LinearInt4(
                         module.in_features,
                         module.out_features,
                         module.bias is not None,
                     )
 
                     # Copy the weights
-                    new_linear._parameters['weight'] = Params4bit(data=module.weight.data,
+                    new_linear._parameters['weight'] = ParamsInt4(data=module.weight.data,
                                                    requires_grad=False,
                                                    quantized=False,
                                                    _shape=None).to("cpu")

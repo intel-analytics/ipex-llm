@@ -54,12 +54,11 @@ import bigdl.llm.ggml.model.llama.llama_cpp as ggml
 import torch
 import ctypes
 
-QK = 32
-QK = 64 # read this value from libllama.so
+QK = 64 # todo read this value from libllama.so
 scale_size_in_bytes = 4
 block_size_in_bytes = QK // 2 + scale_size_in_bytes
 
-def ggml_quantize(tensor: torch.Tensor):
+def ggml_convert_int4(tensor: torch.Tensor):
 
     assert tensor.dtype == torch.float
     src = tensor.data.data_ptr()
@@ -78,7 +77,7 @@ def ggml_quantize(tensor: torch.Tensor):
     ggml.ggml_quantize_q4_0(src, dst, n, k, hist)
     return dst_tensor
 
-class Params4bit(torch.nn.Parameter):
+class ParamsInt4(torch.nn.Parameter):
     def __new__(cls, data=None, requires_grad=True, old_data=None, quantized=False, _shape=None):
         if data is None:
             data = torch.empty(0)
@@ -97,7 +96,7 @@ class Params4bit(torch.nn.Parameter):
         if not self.quantized:
             w = self.data.contiguous().float()
             # self.old_data = self.data
-            w_4bit = ggml_quantize(w)
+            w_4bit = ggml_convert_int4(w)
             self.data = w_4bit
             self.quantized = True
             self._shape = w.shape
@@ -124,7 +123,7 @@ class Params4bit(torch.nn.Parameter):
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
             return self.cuda(device)
         else:
-            new_param = Params4bit(super().to(device=device, dtype=dtype, non_blocking=non_blocking),
+            new_param = ParamsInt4(super().to(device=device, dtype=dtype, non_blocking=non_blocking),
                                   requires_grad=self.requires_grad,
                                 #   old_data=self.old_data,
                                    quantized=self.quantized,
@@ -165,10 +164,10 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape
 
     return result_t
 
-class Linear4bit(nn.Linear):
+class LinearInt4(nn.Linear):
     def __init__(self, input_features, output_features, bias=True):
         super().__init__(input_features, output_features, bias)
-        self.weight = Params4bit(self.weight.data, requires_grad=False,
+        self.weight = ParamsInt4(self.weight.data, requires_grad=False,
                                  old_data=self.weight.data,
                                  quantized=False, _shape=None)
         self.in_len = input_features
