@@ -67,6 +67,8 @@ def _replace_with_4bit_linear(model, modules_to_not_convert=None, current_key_na
                                                    requires_grad=False,
                                                    quantized=False,
                                                    _shape=None).to("cpu")
+                    if module.bias is not None:
+                        new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
 
                     model._modules[name] = new_linear
                     has_been_replaced = True
