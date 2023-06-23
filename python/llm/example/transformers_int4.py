@@ -22,8 +22,8 @@ from transformers import LlamaTokenizer
 if __name__ == '__main__':
     model_path = 'decapoda-research/llama-7b-hf'
 
-    # load_in_4bit=True in bigdl.llm.transformers will convert the model into
-    # ggml int4 format, which can directly run on intel CPUs.
+    # load_in_4bit=True in bigdl.llm.transformers will convert
+    # the relevant layers in the model into int4 format
     model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True)
     tokenizer = LlamaTokenizer.from_pretrained(model_path)
 

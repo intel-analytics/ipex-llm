@@ -16,4 +16,3 @@
 
 from .convert import ggml_convert_int4
 from .model import AutoModelForCausalLM, AutoModel
-from transformers import AutoTokenizer
