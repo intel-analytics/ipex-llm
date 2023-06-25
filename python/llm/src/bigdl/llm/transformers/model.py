@@ -43,3 +43,4 @@ class AutoModelForCausalLM(_BaseAutoModelClass):
 
 class AutoModel(_BaseAutoModelClass):
     HF_Model = transformers.AutoModel
+
