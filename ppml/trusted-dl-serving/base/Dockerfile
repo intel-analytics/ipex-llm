@@ -160,7 +160,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
     chmod +x /sbin/tini && \
     chmod +x /ppml/torchserve/frontend-entrypoint.sh && \
-    chmod +x /ppml/torchserve/backtend-entrypoint.sh && \
+    chmod +x /ppml/torchserve/backend-entrypoint.sh && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
