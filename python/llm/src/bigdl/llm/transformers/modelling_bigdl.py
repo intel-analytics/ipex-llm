@@ -35,7 +35,7 @@ class BigdlForCausalLM:
                         dtype: str = 'int4',
                         **kwargs):
         """
-        :param pretrained_model_name_or_path: Path for converted BigDL-LLM optimized ggml 
+        :param pretrained_model_name_or_path: Path for converted BigDL-LLM optimized ggml
                binary checkpoint. The checkpoint should be converted by ``bigdl.llm.llm_convert``.
         :param model_family: The model family of the pretrained checkpoint.
                Currently we support ``"llama"``, ``"bloom"``, ``"gptneox"`` and ``"starcoder"``.
