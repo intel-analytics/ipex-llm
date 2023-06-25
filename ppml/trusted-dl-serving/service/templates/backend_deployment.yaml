@@ -12,7 +12,6 @@ spec:
     metadata:
       labels:
         backend: torchserve
-        app: torchserve-serving
     spec:
       containers:
       - name: bigdl-torchserve-backend-pod
@@ -32,7 +31,7 @@ spec:
         - name: PCCS_URL
           value: "{{ .Values.PCCSUrl }}"
         - name: FRONTEND_IP
-          value: "bigdl-torchserve-frontend-service.default.svc.cluster.local"
+          value: "bigdl-torchserve-frontend-service.bigdl-ppml-serving.svc.cluster.local"
         - name: FRONTEND_PORT
           value: "{{ .Values.managementPort }}"
         - name: MODEL_NAME

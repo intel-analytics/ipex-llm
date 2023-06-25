@@ -4,7 +4,7 @@ metadata:
   name: bigdl-torchserve-frontend-service
   namespace: bigdl-ppml-serving
   labels:
-    app: torchserve-serving
+    app: torchserve-frontend
 spec:
   type: ClusterIP
   ports:
@@ -18,4 +18,4 @@ spec:
       port: {{ .Values.metricsPort }}
       targetPort: {{ .Values.metricsPort }}
   selector:
-    app: torchserve-serving
+    app: torchserve-frontend

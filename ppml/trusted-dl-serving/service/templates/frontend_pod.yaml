@@ -4,7 +4,7 @@ metadata:
   name: torchserve-frontend
   namespace: bigdl-ppml-serving
   labels:
-    app: torchserve-serving
+    app: torchserve-frontend
 spec:
   containers:
   - name: bigdl-torchserve-frontend-pod
