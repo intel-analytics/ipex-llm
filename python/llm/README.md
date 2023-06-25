@@ -1,140 +1,137 @@
-# BigDL LLM
-`bigdl-llm` is an SDK for large language model (LLM). It helps users develop AI applications that contains LLM on Intel XPU by using less computing and memory resources.`bigdl-llm` utilize a highly optimized GGML on Intel XPU.
+## BigDL-LLM
 
-Users could use `bigdl-llm` to
-- Convert their model to lower precision
-- Use command line tool like `llama.cpp` to run the model inference
-- Use transformers like API to run the model inference
-- Integrate the model in `langchain` pipeline
+**`bigdl-llm`** is a library for running ***LLM*** (language language model) on your Intel ***laptop*** using INT4. *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [ggml](https://github.com/ggerganov/ggml), [llama-cpp-python](https://github.com/abetlen/llama-cpp-python), [gptq_for_llama](https://github.com/qwopqwop200/GPTQ-for-LLaMa), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), [redpajama.cpp](https://github.com/togethercomputer/redpajama.cpp), [gptneox.cpp](https://github.com/byroneverson/gptneox.cpp), [bloomz.cpp](https://github.com/NouamaneTazi/bloomz.cpp/), etc.)*
 
-Currently `bigdl-llm` has supported
-- Precision: INT4
-- Model Family: llama, gptneox, bloom
-- Platform: Ubuntu 20.04 or later, CentOS 7 or later, Windows 10/11
-- Device: CPU
-- Python: 3.9 (recommended) or later 
+### Demos
+See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.3`, and `starcoder-15b` models on a 12th Gen Intel Core CPU below.
 
-## Installation
-BigDL-LLM is a self-contained SDK library for model loading and inferencing. Users could directly
-```bash
-pip install --pre --upgrade bigdl-llm
-```
-While model conversion procedure will rely on some 3rd party libraries. Add `[all]` option for installation to prepare environment.
+[Placeholder for screen video capture]
+
+### Working with `bigdl-llm`
+
+#### Install
+You may install **`bigdl-llm`** as follows:
 ```bash
 pip install --pre --upgrade bigdl-llm[all]
 ```
+#### Download Model
 
-## Usage
-A standard procedure for using `bigdl-llm` contains 3 steps:
+You may download any PyTorch model in Hugging Face *Transformers* format (including *FP16* or *FP32* and *GPTQ-4bit*).
 
-1. Download model from huggingface hub
-2. Convert model from huggingface format to GGML format
-3. Inference using `llm-cli`, transformers like API, or `langchain`.
+#### Run Model
+ 
+You may run the models using **`bigdl-llm`** through one of the following APIs:
+1. [CLI (command line interface) Tool](#cli-tools)
+2. [Hugging Face `transformer`-style API](#hugging-face-transformers-style-api)
+3. LangChain API
+4. `llama-cpp-python`-style API
 
-### Convert your model
-A python function and a command line tool `llm-convert` is provided to transform the model from huggingface format to GGML format.
+#### CLI Tools
+Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformer`-style or LangChain APIs.
 
-Here is an example to use `llm-convert` command line tool.
-```bash
-# pth model
-llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
-# gptq model
-llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/" --model-format gptq --outfile "/path/to/vicuna-13B-int4/" --model-family "llama"
-```
-> An example GPTQ model can be found [here](https://huggingface.co/TheBloke/vicuna-13B-1.1-GPTQ-4bit-128g/tree/main)
+ - ##### Convert model
+ 
+    You may convert the downloaded model into native INT4 format using `llm-convert`.
+    
+   ```bash
+   #convert PyTorch (fp16 or fp32) model; 
+   #llama/bloom/gptneox/starcoder model family is currently supported
+   lm-convert "/path/to/model/" --model-format pth --model-family "llama" --outfile "/path/to/output/"
 
-Here is an example to use `llm_convert` python API.
-```bash
-from bigdl.llm import llm_convert
-# pth model
-llm_convert(model="/path/to/llama-7b-hf/",
-            outfile="/path/to/llama-7b-int4/",
-            model_format="pth",
-            model_family="llama")
-# gptq model
-llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/",
-            outfile="/path/to/vicuna-13B-int4/",
-            model_format="gptq",
-            model_family="llama")
-```
+   #convert GPTQ-4bit model
+   #only llama model family is currently supported
+   llm-convert "/path/to/model/" --model-format gptq --model-family "llama" --outfile "/path/to/output/"
+   ```  
+  
+ - ##### Run model
+   
+   You may run the converted model using `llm-cli` (*built on top of `main.cpp` in [llama.cpp](https://github.com/ggerganov/llama.cpp)*)
 
-### Inferencing
+   ```bash
+   #help
+   #llama/bloom/gptneox/starcoder model family is currently supported
+   llm-cli -x llama -h
 
-#### llm-cli command line
-llm-cli is a command-line interface tool that follows the interface as the main program in `llama.cpp`.
+   #text completion
+   #llama/bloom/gptneox/starcoder model family is currently supported
+   llm-cli -t 16 -x llama -m "/path/to/output/model.bin" -p 'Once upon a time,'
+   ```
+   
+#### Hugging Face `transformers`-style API
+You may run the models using `transformers`-style API in `bigdl-llm`
 
-```bash
-# text completion
-llm-cli -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -p 'Once upon a time,'
+- ##### Using native INT4 format
 
-# chatting
-llm-cli -t 16 -x llama -m "/path/to/llama-7b-int4/bigdl-llm-xxx.bin" -i --color
+   You may convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows. (Currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported; for other models, you may use the [Hugging Face `transformers` format](hugging-face-transformers-style-api)).
 
-# help information
-llm-cli -x llama -h
-```
+   ```python
+  #convert the model
+  from bigdl.llm import llm_convert
+  bigdl_llm_path = llm_convert(model='/path/to/model/',
+      outfile='/path/to/output/', outtype='int4', model_family="llama")
 
-#### Transformers like API
-You can also load the converted model using `BigdlForCausalLM` with a transformer like API, 
+  #load the converted model
+  from bigdl.llm.transformers import BigdlForCausalLM
+  llm = BigdlForCausalLM.from_pretrained("/path/to/output/model.bin",...)
+   
+  #run the converted  model
+  input_ids = llm.tokenize(prompt)
+  output_ids = llm.generate(input_ids, ...)
+  output = llm.batch_decode(output_ids)
+  ``` 
+
+  See the example here.
+
+- ##### Using Hugging Face `transformers` format
+
+  You may apply INT4 optimizations to any Hugging Face *Transformers* models as follows.
+
+  ```python
+  #load Hugging Face Transformers model with INT4 optimizations
+  from bigdl.llm.transformers import AutoModelForCausalLM
+  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+
+  #run the optimized model
+  from transformers import LlamaTokenizer
+  tokenizer = LlamaTokenizer.from_pretrained(model_path)
+  input_ids = tokenizer.encode(input_str, ...)
+  output_ids = model.generate(input_ids, ...)
+  output = tokenizer.decode(output_ids, ...)
+  ```
+
+  See the example here.
+
+#### LangChain API
+You may convert Hugging Face *Transformers* models into native INT4 format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
+
 ```python
-from bigdl.llm.transformers import BigdlForCausalLM
-llm = BigdlForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
-                                           model_family="llama")
-prompt="What is AI?"
+from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
+from langchain.chains.question_answering import load_qa_chain
+
+embeddings = BigdlLLMEmbeddings(model_path='/path/to/converted/model.bin',
+                                model_family="llama",...)
+bigdl_llm = BigdlLLM(model_path='/path/to/converted/model.bin',
+                     model_family="llama",...)
+
+doc_chain = load_qa_chain(bigdl_llm, ...)
+doc_chain.run(...)
 ```
-and simply do inference end-to-end like
-```python
-output = llm(prompt, max_tokens=32)
-```
-If you need to seperate the tokenization and generation, you can also do inference like
-```python
-tokens_id = llm.tokenize(prompt)
-output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-output = llm.batch_decode(output_tokens_id)
-```
+See the example here.
 
+#### `llama-cpp-python`-style API
 
-Alternatively, you can load huggingface model directly using `AutoModelForCausalLM.from_pretrained`. 
-
-```python
-from bigdl.llm.transformers import AutoModelForCausalLM
-
-# option 1: load huggingface checkpoint
-llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-hf/",
-                                           model_family="llama")
-
-# option 2: load from huggingface hub repo
-llm = AutoModelForCausalLM.from_pretrained("decapoda-research/llama-7b-hf",
-                                           model_family="llama")
-```
-
-You can then use the the model the same way as you use transformers.
-```python
-# Use transformers tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
-tokens = tokenizer("what is ai").input_ids
-tokens_id = llm.generate(tokens, max_new_tokens=32)
-tokenizer.batch_decode(tokens_id)
-```
-
-#### llama-cpp-python like API
-`llama-cpp-python` has become a popular pybinding for `llama.cpp` program. Some users may be familiar with this API so `bigdl-llm` reserve this API and extend it to other model families (e.g., gptneox, bloom)
+You may also run the converted models using the `llama-cpp-python`-style API in `bigdl-llm` as follows.
 
 ```python
 from bigdl.llm.models import Llama, Bloom, Gptneox
 
-llm = Llama("/path/to/llama-7b-int4/bigdl-llm-xxx.bin", n_threads=4)
+llm = Llama("/path/to/converted/model.bin", n_threads=4)
 result = llm("what is ai")
 ```
 
-#### langchain integration
-TODO
-
-## Examples
-We prepared several examples in https://github.com/intel-analytics/BigDL/tree/main/python/llm/example
-
-## Dynamic library BOM
-To avoid difficaulties during the installtion. `bigdl-llm` release the C implementation by dynamic library or executive file. The compilation details are stated below. **These information is only for reference, no compilation procedure is needed for our users.** `GLIBC` version may affect the compatibility.
+### `bigdl-llm` Dependence 
+The native code/lib in `bigdl-llm` has been built using the following tools; in particular, lower  `LIBC` version on your Linux system may be incompatible with `bigdl-llm`.
 
 | Model family | Platform | Compiler           | GLIBC |
 | ------------ | -------- | ------------------ | ----- |
