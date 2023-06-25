@@ -20,7 +20,6 @@ if [[ $SGX_ENABLED == "false" ]]; then
         bash temp_command_file
     fi
     /opt/jdk11/bin/java \
-            -DBackends_IP=$backends_IP \
             -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
@@ -35,7 +34,6 @@ if [[ $SGX_ENABLED == "false" ]]; then
             -ncs
 else
     export sgx_command="/opt/jdk11/bin/java \
-            -DBackends_IP=$backends_IP \
             -Dmodel_server_home=/usr/local/lib/python3.9/dist-packages \
             -cp .:/ppml/torchserve/* \
             -Xmx1g \
