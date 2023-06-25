@@ -64,7 +64,7 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
     """
 
     model_family: str = "llama"
-    """the model family: currently supports llama, gptneox, and bloom."""
+    """the model family"""
 
     family_info = {
         'llama': {'module': "bigdl.llm.models", 'class': "Llama"},
@@ -86,7 +86,7 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
     seed: int = Field(-1, alias="seed")
     """Seed. If -1, a random seed is used."""
 
-    f16_kv: bool = Field(False, alias="f16_kv")
+    f16_kv: bool = Field(True, alias="f16_kv")
     """Use half-precision for key/value cache."""
 
     logits_all: bool = Field(False, alias="logits_all")
@@ -101,11 +101,11 @@ class BigdlLLMEmbeddings(BaseModel, Embeddings):
     n_threads: Optional[int] = Field(2, alias="n_threads")
     """Number of threads to use."""
 
-    n_batch: Optional[int] = Field(8, alias="n_batch")
+    n_batch: Optional[int] = Field(512, alias="n_batch")
     """Number of tokens to process in parallel.
     Should be a number between 1 and n_ctx."""
 
-    n_gpu_layers: Optional[int] = Field(None, alias="n_gpu_layers")
+    n_gpu_layers: Optional[int] = Field(0, alias="n_gpu_layers")
     """Number of layers to be loaded into gpu memory. Default None."""
 
     class Config:
