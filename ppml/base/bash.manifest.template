@@ -6,6 +6,7 @@ loader.insecure__use_host_env = true
 loader.env.LD_PRELOAD  = ""
 
 sys.enable_extra_runtime_domain_names_conf = true
+sys.insecure__allow_eventfd = true
 
 #loader.insecure__use_cmdline_argv = true
 loader.insecure_disable_aslr = true
