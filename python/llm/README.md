@@ -141,3 +141,5 @@ The native code/lib in `bigdl-llm` has been built using the following tools; in 
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
 | bloom        | Linux    | GCC 9.4.0          | 2.31  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
+| starcoder    | Linux    | GCC 9.4.0          | 2.31  |
+| starcoder    | Windows  | MSVC 19.36.32532.0 |       |
