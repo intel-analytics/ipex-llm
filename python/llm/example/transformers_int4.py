@@ -23,12 +23,13 @@ from transformers import LlamaTokenizer, AutoTokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example')
-    parser.add_argument('--repo-id-or-model-path', type=str,
+    parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
+                        choices=['decapoda-research/llama-7b-hf', 'THUDM/chatglm-6b'],
                         help='The huggingface repo id for the larga language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     args = parser.parse_args()
-    repo_id_or_model_path = args.repo_id_or_model_path
-    if repo_id_or_model_path == 'decapoda-research/llama-7b-hf':
+    model_path = args.repo_id_or_model_path
+    if model_path == 'decapoda-research/llama-7b-hf':
         # load_in_4bit=True in bigdl.llm.transformers will convert
         # the relevant layers in the model into int4 format
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True)
@@ -44,7 +45,7 @@ if __name__ == '__main__':
             end = time.time()
         print(output_str)
         print(f'Inference time: {end-st} s')
-    elif repo_id_or_model_path == 'THUDM/chatglm-6b':
+    elif model_path == 'THUDM/chatglm-6b':
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
