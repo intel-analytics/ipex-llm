@@ -42,32 +42,7 @@ def load(model_path, model_family, n_threads):
 def inference(llm, repo_id_or_model_path, model_family, prompt):
 
     if model_family in ['llama', 'gptneox']:
-        # Option 1: Use HuggingFace transformers tokenizer
-        print('-'*20, ' HuggingFace transformers tokenizer ', '-'*20)
-        
-        # print('Please note that the loading of HuggingFace transformers tokenizer may take some time.\n')
-        # here is only a workaround for default example model 'decapoda-research/llama-7b-hf' in LLaMA family,
-        # due to its out-of-date 'tokenizer_class' defined in its tokenizer_config.json.
-        #
-        # for most cases, you could use `AutoTokenizer`.
-        # if model_family == 'llama':
-        #     from transformers import LlamaTokenizer
-        #     tokenizer = LlamaTokenizer.from_pretrained(repo_id_or_model_path)
-        # else:
-        #     from transformers import AutoTokenizer
-        #     tokenizer = AutoTokenizer.from_pretrained(repo_id_or_model_path)
-
-        # st = time.time()
-
-        # # please note that the prompt here can either be a string or a list of string
-        # tokens_id = tokenizer(prompt).input_ids
-        # output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
-        # output = tokenizer.batch_decode(output_tokens_id)
-
-        # print(f'Inference time: {time.time()-st} s')
-        # print(f'Output:\n{output}')
-
-        # Option 2: Use bigdl-llm based tokenizer
+        # ------ Option 1: Use bigdl-llm based tokenizer
         print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
         st = time.time()
 
@@ -75,9 +50,35 @@ def inference(llm, repo_id_or_model_path, model_family, prompt):
         tokens_id = llm.tokenize(prompt)
         output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
         output = llm.batch_decode(output_tokens_id)
+        
+        print(f'Inference time: {time.time()-st} s')
+        print(f'Output:\n{output}')
+        
+        # ------- Option 2: Use HuggingFace transformers tokenizer
+        print('-'*20, ' HuggingFace transformers tokenizer ', '-'*20)
+        
+        print('Please note that the loading of HuggingFace transformers tokenizer may take some time.\n')
+        # here is only a workaround for default example model 'decapoda-research/llama-7b-hf' in LLaMA family,
+        # due to its out-of-date 'tokenizer_class' defined in its tokenizer_config.json.
+        
+        # for most cases, you could use `AutoTokenizer`.
+        if model_family == 'llama':
+            from transformers import LlamaTokenizer
+            tokenizer = LlamaTokenizer.from_pretrained(repo_id_or_model_path)
+        else:
+            from transformers import AutoTokenizer
+            tokenizer = AutoTokenizer.from_pretrained(repo_id_or_model_path)
+
+        st = time.time()
+
+        # please note that the prompt here can either be a string or a list of string
+        tokens_id = tokenizer(prompt).input_ids
+        output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
+        output = tokenizer.batch_decode(output_tokens_id)
 
         print(f'Inference time: {time.time()-st} s')
         print(f'Output:\n{output}')
+
 
     if model_family in ['llama', 'gptneox', 'bloom']:
         # Option 3: fast forward
