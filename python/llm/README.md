@@ -102,40 +102,46 @@ llm-cli -x llama -h
 ```
 
 #### Transformers like API
-Users could load converted model or even the unconverted huggingface model directly by `AutoModelForCausalLM.from_pretrained`.
+You can also load the converted model using `BigdlForCausalLM` with a transformer like API, 
+```python
+from bigdl.llm.transformers import BigdlForCausalLM
+llm = BigdlForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
+                                           model_family="llama")
+prompt="What is AI?"
+```
+and simply do inference end-to-end like
+```python
+output = llm(prompt, max_tokens=32)
+```
+If you need to seperate the tokenization and generation, you can also do inference like
+```python
+tokens_id = llm.tokenize(prompt)
+output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
+output = llm.batch_decode(output_tokens_id)
+```
+
+
+Alternatively, you can load huggingface model directly using `AutoModelForCausalLM.from_pretrained`. 
 
 ```python
-from bigdl.llm.ggml.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModelForCausalLM
 
-# option 1: load converted model
-llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
-                                           model_family="llama")
-
-# option 2: load huggingface checkpoint
+# option 1: load huggingface checkpoint
 llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-hf/",
                                            model_family="llama")
 
-# option 3: load from huggingface hub repo
+# option 2: load from huggingface hub repo
 llm = AutoModelForCausalLM.from_pretrained("decapoda-research/llama-7b-hf",
                                            model_family="llama")
 ```
 
-Users could use llm to do the inference. Apart from end-to-end fast forward, we also support split the tokenization and model inference in our API.
-
+You can then use the the model the same way as you use transformers.
 ```python
-# end-to-end fast forward w/o spliting the tokenization and model inferencing
-result = llm("what is ai")
-
 # Use transformers tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 tokens = tokenizer("what is ai").input_ids
 tokens_id = llm.generate(tokens, max_new_tokens=32)
 tokenizer.batch_decode(tokens_id)
-
-# Use bigdl-llm tokenizer
-tokens = llm.tokenize("what is ai")
-tokens_id = llm.generate(tokens, max_new_tokens=32)
-decoded = llm.batch_decode(tokens_id)
 ```
 
 #### llama-cpp-python like API
