@@ -89,6 +89,7 @@ def llm_convert(model,
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
+        os.makedirs(outfile, exist_ok=True)
         invalidInputError(os.path.isdir(outfile),
                           "The output_path {} is not a directory".format(outfile))
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
