@@ -7,7 +7,7 @@ we provide an option to combine the two ML kits (SparkML and LightGBM), that sea
 In such a scenario, LightGBM will utilize DataFrame etc. distribution abstractions to read and process big datasets in parallel, and ML pipeline etc. tools to do preprocessing and feature engineering efficiently. Meanwhile, Intel SGX, Gramine/Occlum LibOS, Key Management Service, and SSL/TLS etc. security tools are applied to protect key steps in cluster computing, such as parameter synchronization in training, model and data storage, and container runtime.
 
 
-The Spark and LightGBM dependencies have already been installed in the custom image prepared in previous steps. For Occlum users, please use [trusted-big-data-ml occlum](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#trusted-big-data-ml-with-occlum).
+The Spark and LightGBM dependencies have already been installed in the custom image prepared in previous steps. For Gramine user, please use [trusted-machine-learning image](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-machine-learning#gramine-machine-learning-toolkit), and [trusted-big-data-ml occlum](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#trusted-big-data-ml-with-occlum) for Occlum user.
 
 
 ## End-to-End Fitting and Predication Examples of LightGBM on Spark
