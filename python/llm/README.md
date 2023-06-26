@@ -34,7 +34,7 @@ A standard procedure for using `bigdl-llm` contains 3 steps:
 ### Convert your model
 A python function and a command line tool `llm-convert` is provided to transform the model from huggingface format to GGML format.
 
-**Note: If you want to convert your model with lora adapter, please make sure the base model is in the huggingface format and the lora model should contains `adapter_config.json` and `adapter_model.bin`(saved using the PEFT save_pretrained function). If these conditions are not met, please follow the readme privoded by the LoRA you are using and merge it with the base model before converting.**
+**Note: If you want to convert your model with lora adapter, please make sure the base model is in the huggingface format and the lora model should contains `adapter_config.json` and `adapter_model.bin`(The PEFT format). If these conditions are not met, please follow the readme privoded by the LoRA you are using and merge it with the base model before converting.**
 
 Here is an example to use `llm-convert` command line tool.
 ```bash
