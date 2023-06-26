@@ -893,8 +893,8 @@
             <id>scala_2.12</id>
             <properties>
                 <scala.major.version>2.12</scala.major.version>
-                <scala.version>2.12.10</scala.version>
-                <scala.macros.version>2.1.0</scala.macros.version>
+                <scala.version>2.12.15</scala.version>
+                <scala.macros.version>2.1.1</scala.macros.version>
             </properties>
         </profile>
         <profile>
