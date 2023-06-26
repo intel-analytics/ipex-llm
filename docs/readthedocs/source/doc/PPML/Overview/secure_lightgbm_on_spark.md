@@ -50,7 +50,7 @@ model = an instance of LightGBMClassficationModel/LightGBMRegressionModel/LightG
 sc.saveLightGBMModel(
     lightgbm_model = model,
     path = ...,
-    crypto_mode = "PLAIN_TEXT"/"AES/CBC/PKCS5Padding"
+    crypto_mode = "PLAIN_TEXT" / "AES/CBC/PKCS5Padding"
 )
 
 # load model from file
