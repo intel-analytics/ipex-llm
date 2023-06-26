@@ -70,6 +70,3 @@ def merge_and_export_lora_model(base_model, lora_id_or_path, output_path="./hf_c
     lora_model.save_pretrained(output_path)
     tokenizer.save_pretrained(output_path)
     return output_path
-
-if __name__ == '__main__':
-    merge_and_export_lora_model("huggyllama/llama-7b", "tloen/alpaca-lora-7b", "./hf_ckpt")
