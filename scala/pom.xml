@@ -815,7 +815,7 @@
                 <spark.version>3.4.1</spark.version>
                 <scala.major.version>2.12</scala.major.version>
                 <scala.version>2.12.15</scala.version>
-                <scala.macros.version>2.1.0</scala.macros.version>
+                <scala.macros.version>2.1.1</scala.macros.version>
                 <lightgbm.scope>compile</lightgbm.scope>
                 <maven.compiler.source>${java.version}</maven.compiler.source>
                 <maven.compiler.target>${java.version}</maven.compiler.target>
