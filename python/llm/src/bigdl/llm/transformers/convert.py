@@ -71,6 +71,8 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
                     # Force requires grad to False to avoid unexpected errors
                     model._modules[name].requires_grad_(False)
 
+                    module.weight = None
+
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
             _, has_been_replaced = _replace_with_int4_linear(

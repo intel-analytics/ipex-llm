@@ -31,9 +31,8 @@ class _BaseAutoModelClass:
 
         if load_in_4bit:
             from .convert import ggml_convert_int4
-            model = model.to("cpu", torch.float32)
+            model = model.to("cpu")
             model = ggml_convert_int4(model)
-
         return model
 
 
