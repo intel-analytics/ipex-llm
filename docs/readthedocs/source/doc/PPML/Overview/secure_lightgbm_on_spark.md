@@ -10,12 +10,12 @@ In such a scenario, LightGBM will utilize DataFrame etc. distribution abstractio
 The Spark and LightGBM dependencies have already been installed in the custom image prepared in previous steps. For Gramine user, please use [trusted-machine-learning image](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-machine-learning#gramine-machine-learning-toolkit), and [trusted-big-data-ml occlum](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#trusted-big-data-ml-with-occlum) for Occlum user.
 
 
-## End-to-End Fitting and Predication Examples of LightGBM on Spark
+## End-to-End LightGBM Fitting and Predication on Spark
 
 
 Here, We illustrate the progress with a Pyspark demo, and Scala is also supported. 
 
-### Overall
+### 1. Overall
 
 
 - In the following example, a **PPMLContext** (entry for kinds of distributed APIs) is initialized first, and it will read CSV-ciphertext dataset with a schema specified in code, where encrypted data will be decrypted automatically and load into memory as DataFrame.
@@ -30,7 +30,7 @@ Here, We illustrate the progress with a Pyspark demo, and Scala is also supporte
 - Finally, trained classification model is saved in ciphertext on disk, and we demonstrate that by loading the encrypted model into memory (and decrypted automatically) and using the reloaded model to predict on test set. The whole encryption/decryption process here applies the key specified by user configurations when submitting this Spark job.
 
 
-### Start the Example
+### 2. Start Pyspark Example
 
 
 For full-link protection, follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext) to deploy a KMS (Key Management Service) where you have many kinds of implementation type to choose, and generate a primary key firstly (the below uses `SimpleKeyManagementService`).
@@ -88,5 +88,36 @@ org.apache.spark.deploy.SparkSubmit \
 
 Parameter `--output_encrypt_mode` means how you want to save the trained model, and `--input_encrypt_mode` is the status of input dataset. Finally, you will get predications output from Spark driver, and find an encrypted classification model file saved on disk.
 
+### 3. Start Scala Example
 
-You can also submit a similar [Scala example](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/EncryptedLightGBMModelIO.scala) using **bigdl-ppml-submit.sh** mentioned before.
+You can also submit a similar [Scala example](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/EncryptedLightGBMModelIO.scala), which has the same logic as the Pyspark one, using [PPML CLI](https://github.com/intel-analytics/BigDL/blob/main/ppml/docs/submit_job.md#ppml-cli) like below:
+
+```shell
+bash bigdl-ppml-submit.sh \
+ --master local[2] \
+ --sgx-enabled false \
+ --driver-memory 16g \
+ --driver-cores 1 \
+ --executor-memory 16g \
+ --executor-cores 2 \
+ --num-executors 8 \
+ --conf spark.cores.max=8 \
+ --conf spark.network.timeout=10000000 \
+ --conf spark.executor.heartbeatInterval=10000000 \
+ --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+ --conf spark.bigdl.primaryKey.defaultPK.plainText=<a_base64_256b_AES_key_string> \
+ --class com.intel.analytics.bigdl.ppml.examples.EncryptedLightGBMModelIO \
+ --jars ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+ local://${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+<path_to_iris.csv>
+```
+
+For demo purpose, we directly apply a plaintext data key `spark.bigdl.primaryKey.defaultPK.plainText`, you can simply generate such a string by:
+
+```shell
+openssl enc -aes-256-cbc -k secret -P -md sha1
+# you will get a key, and copy it to below field
+echo <key_generated_above> | base64
+```
+
+Otherwise, only more safe key configurations are allowed in production environment, and please refer to [advanced Crypto in PPMLContext](https://github.com/intel-analytics/BigDL/tree/main/ppml#configurations-of-key-and-kms-in-ppmlcontext).
