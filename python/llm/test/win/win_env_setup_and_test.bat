@@ -32,10 +32,12 @@ echo The current directory is %CD%
 set base_dir=%1
 echo %base_dir%
 
-@REM Download stable int4 ckpt from ftp...
+@REM Download stable int4 ckpt from ftp... 
+@REM ---- Disabled since the downloaded file will cause windowsError 0xe06d7363
+@REM ---- Should be downloaded manually
 set stable_ckpt_path=%base_dir%\stable_ckpts
-mkdir %stable_ckpt_path%
-ftp -s:%base_dir%\ftp-get-stable-ckpts.txt
+@REM mkdir %stable_ckpt_path%
+@REM ftp -s:%base_dir%\ftp-get-stable-ckpts.txt
 
 @REM Pull the latest code
 cd %base_dir%\BigDL
@@ -43,12 +45,14 @@ git pull
 
 @REM Build and install bigdl-llm
 pip uninstall bigdl-llm -y
-pip uninstall numpy torch transformers sentencepiece accelerate -y
-pip install numpy torch transformers sentencepiece accelerate
+pip uninstall numpy torch transformers sentencepiece accelerate peft -y
 pip install requests pytest
 cd python\llm
 @REM pip install .[all] --use-pep517
-python setup.py clean --all install
+python setup.py clean --all bdist_wheel
+for %%x in (%base_dir%\BigDL\python\llm\dist\*.whl) do set whl_name=%%x
+pip install -i https://pypi.python.org/simple "%whl_name%[all]"
+
 
 @REM Run pytest
 mkdir %base_dir%\converted_models
@@ -58,7 +62,7 @@ set LLAMA_ORIGIN_PATH=%base_dir%\models\gpt4all-7b-hf
 set GPTNEOX_ORIGIN_PATH=%base_dir%\models\gptneox-7b-redpajama-bf16
 set INT4_CKPT_DIR=%base_dir%\converted_models
 set LLAMA_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_llama_7b_q4_0.bin
-set GPTNEOX_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_gptneox_7b_q4_0.bin
+set GPTNEOX_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_redpajama_7b_q4_0.bin
 set BLOOM_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_bloom_7b_q4_0.bin
 
 echo "Running the convert models tests..."
@@ -69,11 +73,11 @@ python -m pytest -s .\test\inference\test_call_models.py
 
 @REM Clean up
 pip uninstall bigdl-llm -y
-pip uninstall numpy torch transformers sentencepiece accelerate -y
+pip uninstall numpy torch transformers sentencepiece accelerate peft -y
 echo "Removing the quantized models and libs..."
-rmdir /s /q %stable_ckpt_path%
 rmdir /s /q %INT4_CKPT_DIR%
 rmdir /s /q %base_dir%\BigDL\python\llm\src\bigdl\llm\libs
+rmdir /s /q %base_dir%\BigDL\python\llm\dist
 
 @REM Upload the log file
 echo "Uploading the test logs to ftp..."
