@@ -32,6 +32,7 @@ jobs:
       LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_llama_7b_q4_0.bin
       GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
       BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
+      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -92,6 +93,10 @@ jobs:
           if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
             echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $llm_ftp_url/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
+            echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $llm_ftp_url/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
           fi
 
       - name: Run LLM inference test
