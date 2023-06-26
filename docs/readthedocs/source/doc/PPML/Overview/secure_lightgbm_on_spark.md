@@ -30,16 +30,16 @@ Here, We illustrate the progress with a Pyspark demo, and Scala is also supporte
 - Finally, trained classification model is saved in ciphertext on disk, and we demonstrate that by loading the encrypted model into memory (and decrypted automatically) and using the reloaded model to predict on test set. The whole encryption/decryption process here applies the key specified by user configurations when submitting this Spark job.
 
 
-### 2. Start Pyspark Example
-
-
 For full-link protection, follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext) to deploy a KMS (Key Management Service) where you have many kinds of implementation type to choose, and generate a primary key firstly (the below uses `SimpleKeyManagementService`).
 
 
 Next, before start training, download dataset [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/lightGBM#uci-irisdata).
 
 
-Moving on, there is an application to fit a LightGBM classification model, and save the trained model in cipher text, and then reload the encrypted model to predict. The source code can be seen [here](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/lightgbm/encrypted_lightgbm_model_io.py), and you can follow the APIs to write your own privacy-preserving applications:
+### 2. Start Pyspark Example
+
+
+Moving on, there is an application to fit a LightGBM classification model, and save the trained model in ciphertext, and then reload the encrypted model to predict. The source code can be seen [here](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/lightgbm/encrypted_lightgbm_model_io.py), and you can follow the APIs to write your own privacy-preserving applications:
 
 
 ```python
