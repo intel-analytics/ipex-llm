@@ -46,7 +46,7 @@ runs:
           kubectl logs $pi_driver | egrep 'Pi is roughly 3'
           status_1_spark_pi=$(echo $?)
           if [ "`kubectl get pods | grep spark-pi-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-pi-test | awk '{print $1}'`
+            kubectl delete pods $pi_driver
           fi
         fi
 
@@ -60,7 +60,7 @@ runs:
           kubectl logs $lr_driver | egrep 'Training data results'
           status_2_spark_lr=$(echo $?)
           if [ "`kubectl get pods | grep spark-lr-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-lr-test | awk '{print $1}'`
+            kubectl delete pods $lr_driver
           fi
         fi
 
@@ -74,7 +74,7 @@ runs:
           kubectl logs $sql_driver | egrep 'Name: Michael'
           status_3_spark_sql=$(echo $?)
           if [ "`kubectl get pods | grep spark-sql-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-sql-test | awk '{print $1}'`
+            kubectl delete pods $sql_driver
           fi
         fi
 
@@ -88,7 +88,7 @@ runs:
           kubectl logs $gbt_example_driver | egrep 'Training data results'
           status_4_spark_gbt=$(echo $?)
           if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`
+            kubectl delete pods $gbt_driver
           fi
         fi
         
@@ -102,7 +102,7 @@ runs:
           kubectl logs $gbt_criteo_driver | egrep 'end time is'
           status_5_spark_gbt_criteo=$(echo $?)
           if [ "`kubectl get pods | grep spark-gbt-criteo-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-gbt-criteo-test | grep driver | awk '{print $1}'`
+            kubectl delete pods $gbt_criteo_driver
           fi
         fi
         
@@ -116,7 +116,7 @@ runs:
           kubectl logs $tpch_driver | egrep '22 finished-'
           status_6_spark_tpch=$(echo $?)
           if [ "`kubectl get pods | grep spark-tpch-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-tpch-test | awk '{print $1}'`
+            kubectl delete pods $tpch_driver
           fi
         fi
         
@@ -130,7 +130,7 @@ runs:
           kubectl logs $sklearn_driver | egrep 'mean_squared_error'
           status_7_pyspark_sklearn=$(echo $?)
           if [ "`kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep pyspark-sklearn-test | awk '{print $1}' | grep driver`
+            kubectl delete pods $sklearn_driver
           fi
         fi
         
@@ -144,7 +144,7 @@ runs:
           kubectl logs $sql_driver | egrep 'Example API finished'
           status_8_pyspark_sql=$(echo $?)
           if [ "`kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep pyspark-pysql-test | awk '{print $1}'`
+            kubectl delete pods $sql_driver
           fi
         fi
         
@@ -158,7 +158,7 @@ runs:
           kubectl logs $pytpch_driver | egrep 'total time is'
           status_9_pyspark_tpch=$(echo $?)
           if [ "`kubectl get pods | grep pyspark-tpch-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep pyspark-tpch-test | awk '{print $1}'`
+            kubectl delete pods $pytpch_driver
           fi
         fi
         
@@ -172,7 +172,7 @@ runs:
           kubectl logs $lgbm_driver | egrep 'acc:'
           status_10_spark_lgbm=$(echo $?)
           if [ "`kubectl get pods | grep spark-lgbm-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods `kubectl get pods | grep spark-lgbm-test | awk '{print $1}'`
+            kubectl delete pods $lgbm_driver
           fi
         fi
 
