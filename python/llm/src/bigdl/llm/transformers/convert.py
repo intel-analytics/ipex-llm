@@ -95,4 +95,6 @@ def ggml_convert_int4(model):
             "instead of Linear layers. Please double check your model architecture, or submit "
             "an issue on github if you think this is a bug."
         )
+    else:
+        model.to(torch.float32)
     return model
