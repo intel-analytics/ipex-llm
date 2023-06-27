@@ -99,9 +99,11 @@ Output:
 ### Model family StarCoder
 ```log
 bigdl-llm: mem per token =   313912 bytes
-bigdl-llm:     load time =   479.41 ms
-bigdl-llm:   sample time =    34.29 ms
-bigdl-llm:  predict time =  1365.27 ms / 19.50 ms per token
-bigdl-llm:    total time =  1928.46 ms
-
+bigdl-llm:     load time =   xxxx ms
+bigdl-llm:   sample time =   xxxx ms
+bigdl-llm:  predict time =   xxxx ms / xxxx ms per token
+bigdl-llm:    total time =   xxxx ms
+Inference time (fast forward): xxxx s
+Output:
+{'id': 'cmpl-c2358898-cad0-47f4-af5b-84bb575eb942', 'object': 'text_completion', 'created': 1687864692, 'model': './output_starcoder/bigdl_llm_starcoder_q4_0.bin', 'choices': [{'text': ' %s" % cpu)\n    print("Q: What is RAM? A: %s GB" % ram)\n    print("Q: What is BAT? A: %s" % bat)\n    print("Q: What is the number of CPU\'s? A: %s" % ncpus)', 'index': 0, 'logprobs': None, 'finish_reason': None}], 'usage': {'prompt_tokens': 8, 'completion_tokens': 64, 'total_tokens': 72}}
 ```
