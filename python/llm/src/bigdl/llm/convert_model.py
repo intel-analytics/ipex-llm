@@ -104,8 +104,8 @@ def llm_convert(model,
         else:
             gptq_tokenizer_path = None
 
-        convert_gptq2ggml(input_path=model,
-                          output_path=outfile,
+        convert_gptq2ggml(model,
+                          outfile,
                           tokenizer_path=gptq_tokenizer_path,
                           )
         return outfile
