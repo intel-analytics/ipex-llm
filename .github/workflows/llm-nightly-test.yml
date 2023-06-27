@@ -24,10 +24,12 @@ jobs:
       LLAMA_ORIGIN_PATH: ./llm/models/llama-7b-hf
       GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
       BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
+      STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
       INT4_CKPT_DIR: ./llm/ggml-actions/nightly
       LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
       GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
       BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
+      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -57,6 +59,10 @@ jobs:
             echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
             wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/bloomz-7b1 -P $ORIGIN_DIR
           fi
+          if [ ! -d $STARCODER_ORIGIN_PATH ]; then
+            echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $llm_ftp_url/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
+          fi
       
       - name: Run LLM convert test
         shell: bash
@@ -85,3 +91,4 @@ jobs:
           tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
           tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
           tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
+          tnftp -u ${llm_ftp_url}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH

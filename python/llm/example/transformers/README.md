@@ -2,7 +2,7 @@
 
 In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM transformers-like API.
 
-> **Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, and BLOOM.
+> **Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -19,12 +19,13 @@ python ./int4_pipeline.py --thread-num THREAD_NUM --model-family MODEL_FAMILY
 ```
 arguments info:
 - `--thread-num THREAD_NUM`: **required** argument defining the number of threads to use for inference. It is default to be `2`.
-- `--model-family MODEL_FAMILY`: **required** argument defining the model family of the large language model (supported option: `'llama'`, `'gptneox'`, `'bloom'`). It is default to be `'llama'`.
+- `--model-family MODEL_FAMILY`: **required** argument defining the model family of the large language model (supported option: `'llama'`, `'gptneox'`, `'bloom'`, `'starcoder'`). It is default to be `'llama'`.
 - `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: optional argument defining the huggingface repo id from which the large language model is downloaded, or the path to the huggingface checkpoint folder for the model.
 
   - When model family is `'llama'`, it is default to be `'decapoda-research/llama-7b-hf'`.
   - When model family is `'gptneox'`, it is default to be `'togethercomputer/RedPajama-INCITE-7B-Chat'`.
   - When model family is `'bloom'`, it is default to be `'bigscience/bloomz-7b1'`.
+  - When model family is `'starcoder'`, it is default to be `'bigcode/gpt_bigcode-santacoder'`.
 
   > **Note** `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: What is CPU? A:'`.
@@ -93,4 +94,16 @@ inference:       total time =     xxxx ms
 Inference time (fast forward): xxxx s
 Output:
 {'id': 'cmpl-a0ab2953-e08c-449c-b476-e21ad5bb84b0', 'object': 'text_completion', 'created': 1686557434, 'model': './bigdl_llm_bloom_q4_0.bin', 'choices': [{'text': 'Q: What is CPU? A: central processing unit</s>', 'index': 0, 'logprobs': None, 'finish_reason': None}], 'usage': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None}}
+```
+
+### Model family StarCoder
+```log
+bigdl-llm: mem per token =   313912 bytes
+bigdl-llm:     load time =   xxxx ms
+bigdl-llm:   sample time =   xxxx ms
+bigdl-llm:  predict time =   xxxx ms / xxxx ms per token
+bigdl-llm:    total time =   xxxx ms
+Inference time (fast forward): xxxx s
+Output:
+{'id': 'cmpl-c2358898-cad0-47f4-af5b-84bb575eb942', 'object': 'text_completion', 'created': 1687864692, 'model': './output_starcoder/bigdl_llm_starcoder_q4_0.bin', 'choices': [{'text': ' %s" % cpu)\n    print("Q: What is RAM? A: %s GB" % ram)\n    print("Q: What is BAT? A: %s" % bat)\n    print("Q: What is the number of CPU\'s? A: %s" % ncpus)', 'index': 0, 'logprobs': None, 'finish_reason': None}], 'usage': {'prompt_tokens': 8, 'completion_tokens': 64, 'total_tokens': 72}}
 ```
