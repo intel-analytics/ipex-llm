@@ -41,7 +41,7 @@ def load(model_path, model_family, n_threads):
 
 def inference(llm, repo_id_or_model_path, model_family, prompt):
 
-    if model_family in ['llama', 'gptneox']:
+    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder']:
         # ------ Option 1: Use bigdl-llm based tokenizer
         print('-'*20, ' bigdl-llm based tokenizer ', '-'*20)
         st = time.time()
@@ -79,15 +79,12 @@ def inference(llm, repo_id_or_model_path, model_family, prompt):
         print(f'Inference time: {time.time()-st} s')
         print(f'Output:\n{output}')
 
-
-    if model_family in ['llama', 'gptneox', 'bloom', 'starcoder']:
         # Option 3: fast forward
-        # note that currently Bloom/Starcoder family model only supports the fast forward inference method
         print('-'*20, ' fast forward ', '-'*20)
         st = time.time()
 
         output = llm(prompt, # please note that the prompt here can ONLY be a string
-                    max_tokens=32)
+                     max_tokens=32)
 
         print(f'Inference time (fast forward): {time.time()-st} s')
         print(f'Output:\n{output}')
