@@ -190,7 +190,7 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
     n_head = {32: 32, 40: 40, 60: 52, 80: 64}[n_layer]
 
     if not tokenizer_path:
-        tokenizer_path = os.path.join(input_path, "tokenizer.model")
+        tokenizer_path = os.path.join(model_path, "tokenizer.model")
         invalidInputError(os.path.isfile(tokenizer_path),
                           f"tokenizer.model was not found under {tokenizer_path}."
                           f"Please specify the tokenizer-path")
