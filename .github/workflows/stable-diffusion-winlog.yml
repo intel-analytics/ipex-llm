@@ -16,7 +16,7 @@ jobs:
           cat ui-test.log
           content=$( cat "ui-test.log" )
           rm ui-test.log
-          if [[ " $content " =~ "6 passed"]]
+          if [[ " $content " =~ "6 passed" ]]
             then
               echo "All tests passed"
               exit 0
