@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
 	    <artifactId>hadoop-client</artifactId>
-	    <version>3.3.5</version>
+	    <version>${hadoop.version}</version>
             <scope>${spark-scope}</scope>
             <exclusions>
                 <exclusion>
@@ -234,6 +234,10 @@
                 <exclusion>
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -283,6 +287,12 @@
         <dependency>
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-column</artifactId>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+	    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+	    <version>3.7.0-M5</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
