@@ -10,7 +10,8 @@
         "inferencePort",
         "managementPort",
         "metricsPort",
-        "backendPort"
+        "backendPort",
+	"istioTLSEnabled"
     ],
     "properties": {
       "imageName": {
@@ -43,6 +44,9 @@
       },
       "backendPort": {
         "type": "number"
+      },
+      "istioTLSEnabled": {
+	"type": "boolean"
       }
     }
 }
