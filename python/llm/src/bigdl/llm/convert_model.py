@@ -98,6 +98,7 @@ def llm_convert(model,
                                                                  outtype.lower())
         outfile = os.path.join(outfile, output_filename)
 
+        # TODO: delete this when support AutoTokenizer
         if "tokenizer_path" in _used_args:
             gptq_tokenizer_path = _used_args["tokenizer_path"]
         else:
