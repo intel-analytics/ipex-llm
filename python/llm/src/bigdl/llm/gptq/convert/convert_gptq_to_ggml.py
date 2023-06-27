@@ -28,6 +28,7 @@ import struct
 import numpy as np
 import torch
 from sentencepiece import SentencePieceProcessor
+from pathlib import Path
 from bigdl.llm.utils.common.log4Error import invalidInputError
 
 
@@ -158,13 +159,14 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
 
 
 def find_quantized_model_file(model_path):
+    model_path = Path(model_path)
     for ext in ['.safetensors', '.pt']:
         found = list(model_path.glob(f"*{ext}"))
         if len(found) > 0:
             if len(found) != 1:
                 warnings.warn(f'Detected {len(found)} {ext} model, use the first one {found[0]}.')
             print(f"Detected model file {found[0]}")
-            return found[0]
+            return str(found[0])
 
 
 def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
