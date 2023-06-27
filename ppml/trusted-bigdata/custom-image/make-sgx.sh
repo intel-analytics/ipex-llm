@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sed -i '/{ path = "\/ppml", uri = "file:\/ppml" }/a\{ path = "/root/.jupyter", uri = "file:/root/.jupyter" },' bash.manifest.template
-
 echo SGX_MEM_SIZE:$SGX_MEM_SIZE
 echo SGX_LOG_LEVEL:$SGX_LOG_LEVEL
 echo ENABLE_DCAP_ATTESTATION:$ENABLE_DCAP_ATTESTATION
