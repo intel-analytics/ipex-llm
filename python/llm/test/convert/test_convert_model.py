@@ -25,7 +25,7 @@ from bigdl.llm import llm_convert
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
 gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
-gpt4all_llama_lora_path = os.path.join(os.getcwd(), os.environ.get('GPT4ALL_LORA_PATH'))
+gpt4all_llama_lora_path = os.path.join(os.environ.get('GPT4ALL_LORA_PATH'))
 starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
