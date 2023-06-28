@@ -59,11 +59,13 @@ mkdir %base_dir%\converted_models
 mkdir %base_dir%\stable_ckpts
 set BLOOM_ORIGIN_PATH=%base_dir%\models\bloomz-7b1
 set LLAMA_ORIGIN_PATH=%base_dir%\models\gpt4all-7b-hf
+set STARCODER_ORIGIN_PATH=%base_dir%\models\gpt_bigcode-santacoder
 set GPTNEOX_ORIGIN_PATH=%base_dir%\models\gptneox-7b-redpajama-bf16
 set INT4_CKPT_DIR=%base_dir%\converted_models
 set LLAMA_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_llama_7b_q4_0.bin
 set GPTNEOX_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_redpajama_7b_q4_0.bin
 set BLOOM_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_bloom_7b_q4_0.bin
+set STARCODER_INT4_CKPT_PATH=%stable_ckpt_path%\bigdl_llm_santacoder_1b_q4_0.bin
 
 echo "Running the convert models tests..."
 python -m pytest -s .\test\convert\test_convert_model.py
