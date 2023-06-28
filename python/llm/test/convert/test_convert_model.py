@@ -26,6 +26,7 @@ llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
 gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
 gpt4all_llama_lora_path = os.path.join(os.getcwd(), os.environ.get('GPT4ALL_LORA_PATH'))
+starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
 class TestConvertModel(TestCase):
@@ -53,6 +54,15 @@ class TestConvertModel(TestCase):
                                            model_format="pth",
                                            outtype='int4')
         assert os.path.isfile(converted_model_path)
+    
+    def test_convert_starcoder(self):
+        converted_model_path = llm_convert(model=starcoder_model_path,
+                                           outfile=output_dir,
+                                           model_family='starcoder',
+                                           model_format="pth",
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
+
 
     def test_convert_llama_with_lora(self):
         converted_model_path = llm_convert(model=llama_model_path,

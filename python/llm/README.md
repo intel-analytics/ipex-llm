@@ -9,7 +9,7 @@ Users could use `bigdl-llm` to
 
 Currently `bigdl-llm` has supported
 - Precision: INT4
-- Model Family: llama, gptneox, bloom
+- Model Family: llama, gptneox, bloom, starcoder
 - Platform: Ubuntu 20.04 or later, CentOS 7 or later, Windows 10/11
 - Device: CPU
 - Python: 3.9 (recommended) or later 
@@ -124,7 +124,7 @@ tokenizer.batch_decode(tokens_id)
 `llama-cpp-python` has become a popular pybinding for `llama.cpp` program. Some users may be familiar with this API so `bigdl-llm` reserve this API and extend it to other model families (e.g., gptneox, bloom)
 
 ```python
-from bigdl.llm.models import Llama, Bloom, Gptneox
+from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
 
 llm = Llama("/path/to/llama-7b-int4/bigdl-llm-xxx.bin", n_threads=4)
 result = llm("what is ai")
@@ -147,3 +147,5 @@ To avoid difficaulties during the installtion. `bigdl-llm` release the C impleme
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
 | bloom        | Linux    | GCC 9.4.0          | 2.31  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
+| starcoder    | Linux    | GCC 9.4.0          | 2.31  |
+| starcoder    | Windows  | MSVC 19.36.32532.0 |       |

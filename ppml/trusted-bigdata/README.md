@@ -827,7 +827,24 @@ Below is an explanation of these security configurations, Please refer to [Spark
 
 #### 3 env MALLOC_ARENA_MAX explanations
 
-env MALLOC_ARENA_MAX can reduce EPC usage but may cause some errors especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+The default value of MALLOC_ARENA_MAX in linux is the number of CPU cores * 8, and it will cost most MALLOC_ARENA_MAX * 128M EPC in SGX.
+
+So we set MALLOC_ARENA_MAX=4 by default to reduce EPC usage, and this has no noticeable impact on performance.
+
+After multiple experiments, setting MALLOC_ARENA_MAX=4 is sufficient in most instances. But in case of PySpark, you may need to set a value greater than 4.
+
+If you run applications locally, you can set it by this:
+
+```bash
+export MALLOC_ARENA_MAX=8
+```
+
+If you use k8s to run spark distributedly, you can set it by this:
+
+```bash
+--conf spark.kubernetes.driverEnv.MALLOC_ARENA_MAX=12 \
+--conf spark.executorEnv.MALLOC_ARENA_MAX=16 \
+```
 
 You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
 
