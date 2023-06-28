@@ -25,7 +25,7 @@ To deploy an actual workload with TDX-VM, you need to prepare the environment fi
    ```
    After rpm packages installed, refer to sections 2.5.2, 2.5.3 and 2.5.4 in [780133 Linux* Stacks for Intel® Trust Domain Extension 1.0](https://www.intel.com/content/www/us/en/content-details/780133/whitepaper-linux-stacks-for-intel-trust-domain-extension-1-0.html) to configure grub, default kernel and reboot.
    
-5. Launch TD Guests
+3. Launch TD Guests
    It is time to launch TD guest. First you can try to launch one VM to give it a try. To launch a TDVM via libvirt, first download ubuntu guest image, guest kernel and OVMF.
    ```
    download guest image from https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/guest-images/td-guest-ubuntu-22.04.qcow2.tar.xz
@@ -48,7 +48,7 @@ To deploy an actual workload with TDX-VM, you need to prepare the environment fi
 
    Or you can orchestrate multiple VMs through bash scripts. Execute `./scripts/orchestrate-tdxvm.sh <Number of VMs> <Absolute path to store kernel & image>` to launch multiple tdxvms. You can edit orchestrate-tdxvm.sh to specify memory, vcpus, sockets, threads, and cores.
     
-7. (Optional) Deploy Kubernetes cluster on tdvms
+4. (Optional) Deploy Kubernetes cluster on tdvms
     Execute `./scripts/install-k8s-components.sh` on each tdvm and `./scripts/deploy-k8s-cluster.sh` on master node to get a Kubernetes cluster. 
 
 
