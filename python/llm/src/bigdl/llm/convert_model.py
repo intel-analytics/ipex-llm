@@ -17,7 +17,10 @@
 
 from bigdl.llm.utils.common import invalidInputError
 import argparse
+import tempfile
 import os
+import time
+from pathlib import Path
 
 
 def _special_kwarg_check(kwargs, check_args):
@@ -33,6 +36,7 @@ def llm_convert(model,
                 model_family,
                 outtype='int4',
                 model_format="pth",
+                lora_id_or_path=None,
                 **kwargs):
     """
     This function is able to:
@@ -65,6 +69,11 @@ def llm_convert(model,
     :param model_format: Specify the model format to be converted. ``pth`` is for
            PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
            model from Hugging Face.
+    :param lora_id_or_path: The name of the Lora configuration to use. Can be either:
+           A string, the model id of a Lora configuration hosted inside a model repo on the
+           Hugging Face Hub.
+           A path to a directory a Lora configuration file saved using the save_pretrained
+           method.
     :param **kwargs: Supported keyword arguments includes:
 
            * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
@@ -76,15 +85,30 @@ def llm_convert(model,
     """
     if model_format == "pth":
         from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
-        _, _used_args = _special_kwarg_check(kwargs=kwargs,
-                                             check_args=["tmp_path"])
-        return ggml_convert_model(input_path=model,
-                                  output_path=outfile,
-                                  model_family=model_family,
-                                  dtype=outtype,
-                                  **_used_args,
-                                  )
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            if lora_id_or_path:
+                from bigdl.llm.utils.lora_util import merge_and_export_lora_model
+                if "tmp_path" in kwargs:
+                    tmp_path = kwargs.get("tmp_path")
+                    lora_name = Path(lora_id_or_path).stem if os.path.exists(lora_id_or_path) \
+                        else lora_id_or_path.replace("/", "-")
+                    merged_dir = os.path.join(tmp_path, f'merged_{lora_name}_{int(time.time())}')
+                else:
+                    merged_dir = tmp_merged_dir
+                print("Merging lora with the base model....")
+                model = merge_and_export_lora_model(base_model=model,
+                                                    lora_id_or_path=lora_id_or_path,
+                                                    output_path=merged_dir)
+            _, _used_args = _special_kwarg_check(kwargs=kwargs,
+                                                 check_args=["tmp_path"])
+            return ggml_convert_model(input_path=model,
+                                      output_path=outfile,
+                                      model_family=model_family,
+                                      dtype=outtype,
+                                      **_used_args,
+                                      )
     elif model_format == "gptq":
+        # TODO: support lora?
         from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
@@ -130,6 +154,9 @@ def main():
                               "Now only `pth`/`gptq` are supported."))
     parser.add_argument('-t', '--outtype', type=str, default="int4",
                         help="Which quantized precision will be converted.")
+    parser.add_argument("--lora-id-or-path", type=str, default=None,
+                        help="hugging face lora model name or a path to a *directory* "
+                             "containing lora model weights.")
 
     # pth specific args
     parser.add_argument('-p', '--tmp-path', type=str, default=None,

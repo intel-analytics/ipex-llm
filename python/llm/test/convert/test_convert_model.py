@@ -25,6 +25,7 @@ from bigdl.llm import llm_convert
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
 gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
+gpt4all_llama_lora_path = os.path.join(os.environ.get('GPT4ALL_LORA_PATH'))
 starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
@@ -62,6 +63,15 @@ class TestConvertModel(TestCase):
                                            outtype='int4')
         assert os.path.isfile(converted_model_path)
 
+
+    def test_convert_llama_with_lora(self):
+        converted_model_path = llm_convert(model=llama_model_path,
+                                           outfile=os.path.join(output_dir, "gpt4all"),
+                                           model_family='llama',
+                                           model_format="pth",
+                                           lora_id_or_path=gpt4all_llama_lora_path,
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
 
 if __name__ == '__main__':
     pytest.main([__file__])

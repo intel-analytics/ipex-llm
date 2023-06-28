@@ -34,10 +34,12 @@ A standard procedure for using `bigdl-llm` contains 3 steps:
 ### Convert your model
 A python function and a command line tool `llm-convert` is provided to transform the model from huggingface format to GGML format.
 
+**Note: If you want to convert your model with lora adapter, please make sure the base model is in the huggingface format and the lora model should contains `adapter_config.json` and `adapter_model.bin`(The PEFT format). If these conditions are not met, please follow the readme privoded by the LoRA you are using and merge it with the base model before converting.**
+
 Here is an example to use `llm-convert` command line tool.
 ```bash
 # pth model
-llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
+llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama" --lora-id-or-path /path/to/gpt4all-lora
 # gptq model
 llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/" --model-format gptq --outfile "/path/to/vicuna-13B-int4/" --model-family "llama"
 ```
@@ -50,6 +52,7 @@ from bigdl.llm import llm_convert
 llm_convert(model="/path/to/llama-7b-hf/",
             outfile="/path/to/llama-7b-int4/",
             model_format="pth",
+            lora_id_or_path="/path/to/gpt4all-lora",
             model_family="llama")
 # gptq model
 llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/",
