@@ -13,7 +13,7 @@ jobs:
       name: Spellcheck
       with:
         config_path: .github/actions/spellingAction/.spellcheck.yml
-        source_files: README.md
+        source_files: '^.+?\.md$'
         task_name: Markdown
         output_file: spellcheck-output.txt
     - uses: actions/upload-artifact@v3
