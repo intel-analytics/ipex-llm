@@ -139,22 +139,6 @@
                 <exclusion>
                     <groupId>com.google.protobuf</groupId>
                     <artifactId>protobuf-java</artifactId>
-	        </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-ast_${scala.major.version}</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-core_${scala.major.version}</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-scalap_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
