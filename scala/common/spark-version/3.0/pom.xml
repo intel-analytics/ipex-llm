@@ -96,6 +96,10 @@
                     <groupId>org.codehaus.jettison</groupId>
                     <artifactId>jettison</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -156,6 +160,10 @@
                     <groupId>org.json4s</groupId>
                     <artifactId>json4s-scalap_${scala.major.version}</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -199,6 +207,10 @@
                 <exclusion>
                     <groupId>org.scala-lang.modules</groupId>
                     <artifactId>scala-parser-combinators_${scala.major.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
