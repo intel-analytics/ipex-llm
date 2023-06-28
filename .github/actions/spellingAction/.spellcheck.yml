@@ -8,7 +8,11 @@ matrix:
     encoding: utf-8
   pipeline:
   - pyspelling.filters.markdown:
-    code_blocks: flase
+  - pyspelling.filters.html:
+      comments: false
+      ignores:
+      - code
+      - pre
   sources:
   - '**/*.md'
   default_encoding: utf-8
