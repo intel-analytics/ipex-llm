@@ -13,6 +13,7 @@ matrix:
       ignores:
       - code
       - pre
+  glob_flags: N|G|B
   sources:
   - '**/*.md'
   default_encoding: utf-8
