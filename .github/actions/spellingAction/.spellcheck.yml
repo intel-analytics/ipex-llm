@@ -1,0 +1,14 @@
+matrix:
+- name: Markdown
+  aspell:
+    lang: en
+  dictionary:
+    wordlists:
+    - .github/actions/spellingAction/.wordlist.txt
+    encoding: utf-8
+  pipeline:
+  - pyspelling.filters.markdown:
+    code_blocks: flase
+  sources:
+  - '**/*.md'
+  default_encoding: utf-8
