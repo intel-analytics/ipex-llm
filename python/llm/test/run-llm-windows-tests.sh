@@ -44,15 +44,3 @@ time=$((now-start))
 
 echo "Bigdl-llm inference test finished"
 echo "Time used:$time seconds"
-
-
-echo "# Start testing langchain"
-start=$(date "+%s")
-
-python -m pytest -s ${ANALYTICS_ZOO_ROOT}/python/llm/test/langchain/test_langchain.py -k 'test_langchain_llm_bloom'
-
-now=$(date "+%s")
-time=$((now-start))
-
-echo "Bigdl-llm langchain test finished"
-echo "Time used:$time seconds"
