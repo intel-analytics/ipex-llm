@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-torchserve-backend-deployment
+  namespace: bigdl-ppml-serving
+spec:
+  selector:
+    matchLabels:
+      backend: torchserve
+  replicas: {{ .Values.backendNum }}
+  template:
+    metadata:
+      labels:
+        backend: torchserve
+    spec:
+      containers:
+      - name: bigdl-torchserve-backend-pod
+        image: {{ .Values.imageName }}
+        command: ['sh' , '-c', 'bash /ppml/torchserve/backend-entrypoint.sh']
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /tmp
+          name: nfs-storage
+        {{- if eq .Values.TEEMode "sgx" }}
+        - name: device-plugin
+          mountPath: /var/lib/kubelet/device-plugins
+        - name: aesm-socket
+          mountPath: /var/run/aesmd/aesm.socket
+        {{- end }}
+        env:
+        - name: PCCS_URL
+          value: "{{ .Values.PCCSUrl }}"
+        - name: FRONTEND_IP
+          value: "bigdl-torchserve-frontend-service.bigdl-ppml-serving.svc.cluster.local"
+        - name: FRONTEND_PORT
+          value: "{{ .Values.managementPort }}"
+        - name: MODEL_NAME
+          value: "{{ .Values.modelName }}"
+        - name: SGX_ENABLED
+        {{- if eq .Values.TEEMode "sgx" }}
+          value: "true"
+        {{- else }}
+          value: "false"
+        {{- end }}
+        - name: ATTESTATION
+        {{- if eq .Values.TEEMode "native" }}
+          value: "false"
+        {{- else }}
+          value: "true"
+        {{- end }}
+        - name: BACKEND_PORT
+          value: "{{ .Values.backendPort }}"
+        {{- if eq .Values.TEEMode "sgx" }}
+        resources:
+          requests:
+            cpu: 1
+            memory: 10Gi
+            sgx.intel.com/epc: 21474836280
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+          limits:
+            cpu: 1
+            memory: 10Gi
+            sgx.intel.com/epc: 21474836280
+            sgx.intel.com/enclave: 1
+            sgx.intel.com/provision: 1
+        {{- end }} 
+      volumes:
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: nfs-pvc
+      {{- if eq .Values.TEEMode "sgx" }}
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+      {{- end }}
+

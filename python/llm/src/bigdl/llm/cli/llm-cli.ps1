@@ -40,6 +40,13 @@ function gptneox
     Invoke-Expression $command
 }
 
+function starcoder
+{
+    $command = "$lib_dir/main-starcoder.exe -t $threads -n $n_predict $filteredArguments"
+    Write-Host "$command"
+    Invoke-Expression $command
+}
+
 # Remove model_family/x parameter
 $filteredArguments = @()
 for ($i = 0; $i -lt $args.Length; $i++) {
@@ -78,6 +85,9 @@ switch ($model_family)
     }
     "gptneox" {
         gptneox
+    }
+    "starcoder" {
+        starcoder
     }
     default {
         Write-Host "Invalid model_family: $model_family"

@@ -23,15 +23,17 @@ spec:
         - containerPort: {{ .Values.jupyterPort }}
           hostPort: {{ .Values.jupyterPort }}
         env:
+        - name: PCCS_URL
+          value: "{{ .Values.PCCSUrl }}"
         - name: RUNTIME_K8S_SPARK_IMAGE
           value: {{ .Values.imageName }}
         - name: RUNTIME_SPARK_MASTER
           value: {{ .Values.k8sMasterURL }}
         - name: SGX_ENABLED
-        {{- if eq .Values.TEEMode "tdx" }}
-          value: "false"
-        {{- else }}
+        {{- if eq .Values.TEEMode "sgx" }}
           value: "true"
+        {{- else }}
+          value: "false"
         {{- end }}
         - name: JUPYTER_PORT
           value: "{{ .Values.jupyterPort }}"
@@ -49,7 +51,7 @@ spec:
           mountPath: /var/lib/kubelet/device-plugins
         - name: aesm-socket
           mountPath: /var/run/aesmd/aesm.socket
-      resources:
+        resources:
           requests:
             cpu: 8
             memory: 32Gi

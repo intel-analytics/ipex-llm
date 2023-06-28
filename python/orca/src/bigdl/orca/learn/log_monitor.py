@@ -137,7 +137,10 @@ class LogMonitor:
         logger_thread.join()
         thread_stopped.clear()
         if os.path.exists(log_path):
-            os.remove(log_path)
+            try:
+                os.remove(log_path)
+            except Exception as e:
+                print(e)
 
 
 def start_log_server(ip, port):

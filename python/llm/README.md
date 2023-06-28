@@ -9,7 +9,7 @@ Users could use `bigdl-llm` to
 
 Currently `bigdl-llm` has supported
 - Precision: INT4
-- Model Family: llama, gptneox, bloom
+- Model Family: llama, gptneox, bloom, starcoder
 - Platform: Ubuntu 20.04 or later, CentOS 7 or later, Windows 10/11
 - Device: CPU
 - Python: 3.9 (recommended) or later 
@@ -39,8 +39,9 @@ Here is an example to use `llm-convert` command line tool.
 # pth model
 llm-convert "/path/to/llama-7b-hf/" --model-format pth --outfile "/path/to/llama-7b-int4/" --model-family "llama"
 # gptq model
-llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt" --model-format gptq --outfile "/path/to/out.bin" --tokenizer-path "/path/to/tokenizer.model" --model-family "llama"
+llm-convert "/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/" --model-format gptq --outfile "/path/to/vicuna-13B-int4/" --model-family "llama"
 ```
+> An example GPTQ model can be found [here](https://huggingface.co/TheBloke/vicuna-13B-1.1-GPTQ-4bit-128g/tree/main)
 
 Here is an example to use `llm_convert` python API.
 ```bash
@@ -51,10 +52,9 @@ llm_convert(model="/path/to/llama-7b-hf/",
             model_format="pth",
             model_family="llama")
 # gptq model
-llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g.pt",
-            outfile="/path/to/out.bin",
+llm_convert(model="/path/to/vicuna-13B-1.1-GPTQ-4bit-128g/",
+            outfile="/path/to/vicuna-13B-int4/",
             model_format="gptq",
-            tokenizer_path="/path/to/tokenizer.model",
             model_family="llama")
 ```
 
@@ -75,47 +75,53 @@ llm-cli -x llama -h
 ```
 
 #### Transformers like API
-Users could load converted model or even the unconverted huggingface model directly by `AutoModelForCausalLM.from_pretrained`.
+You can also load the converted model using `BigdlForCausalLM` with a transformer like API, 
+```python
+from bigdl.llm.transformers import BigdlForCausalLM
+llm = BigdlForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
+                                           model_family="llama")
+prompt="What is AI?"
+```
+and simply do inference end-to-end like
+```python
+output = llm(prompt, max_tokens=32)
+```
+If you need to seperate the tokenization and generation, you can also do inference like
+```python
+tokens_id = llm.tokenize(prompt)
+output_tokens_id = llm.generate(tokens_id, max_new_tokens=32)
+output = llm.batch_decode(output_tokens_id)
+```
+
+
+Alternatively, you can load huggingface model directly using `AutoModelForCausalLM.from_pretrained`. 
 
 ```python
-from bigdl.llm.ggml.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModelForCausalLM
 
-# option 1: load converted model
-llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-int4/bigdl-llm-xxx.bin",
-                                           model_family="llama")
-
-# option 2: load huggingface checkpoint
+# option 1: load huggingface checkpoint
 llm = AutoModelForCausalLM.from_pretrained("/path/to/llama-7b-hf/",
                                            model_family="llama")
 
-# option 3: load from huggingface hub repo
+# option 2: load from huggingface hub repo
 llm = AutoModelForCausalLM.from_pretrained("decapoda-research/llama-7b-hf",
                                            model_family="llama")
 ```
 
-Users could use llm to do the inference. Apart from end-to-end fast forward, we also support split the tokenization and model inference in our API.
-
+You can then use the the model the same way as you use transformers.
 ```python
-# end-to-end fast forward w/o spliting the tokenization and model inferencing
-result = llm("what is ai")
-
 # Use transformers tokenizer
 tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
 tokens = tokenizer("what is ai").input_ids
 tokens_id = llm.generate(tokens, max_new_tokens=32)
 tokenizer.batch_decode(tokens_id)
-
-# Use bigdl-llm tokenizer
-tokens = llm.tokenize("what is ai")
-tokens_id = llm.generate(tokens, max_new_tokens=32)
-decoded = llm.batch_decode(tokens_id)
 ```
 
 #### llama-cpp-python like API
 `llama-cpp-python` has become a popular pybinding for `llama.cpp` program. Some users may be familiar with this API so `bigdl-llm` reserve this API and extend it to other model families (e.g., gptneox, bloom)
 
 ```python
-from bigdl.llm.models import Llama, Bloom, Gptneox
+from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
 
 llm = Llama("/path/to/llama-7b-int4/bigdl-llm-xxx.bin", n_threads=4)
 result = llm("what is ai")
@@ -138,3 +144,5 @@ To avoid difficaulties during the installtion. `bigdl-llm` release the C impleme
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
 | bloom        | Linux    | GCC 9.4.0          | 2.31  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
+| starcoder    | Linux    | GCC 9.4.0          | 2.31  |
+| starcoder    | Windows  | MSVC 19.36.32532.0 |       |

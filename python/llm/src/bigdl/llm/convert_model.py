@@ -15,18 +15,15 @@
 #
 
 
-from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
-from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
 from bigdl.llm.utils.common import invalidInputError
 import argparse
+import os
 
 
 def _special_kwarg_check(kwargs, check_args):
     _used_args = {}
     for arg in kwargs:
-        if arg not in check_args:
-            return False, {arg: kwargs[arg]}
-        else:
+        if arg in check_args:
             _used_args[arg] = kwargs[arg]
     return True, _used_args
 
@@ -37,10 +34,50 @@ def llm_convert(model,
                 outtype='int4',
                 model_format="pth",
                 **kwargs):
+    """
+    This function is able to:
+
+        1. Convert Hugging Face llama-like / gpt-neox-like / bloom-like / starcoder-like
+           PyTorch model to lower precision in BigDL-LLM optimized GGML format.
+        2. Convert Hugging Face GPTQ format llama-like model to BigDL-LLM optimized
+           GGML format.
+
+    :param model: Path to a **directory**:
+
+           1. If ``model_format='pth'``, the folder should be a Hugging Face checkpoint
+              that is directly pulled from Hugging Face hub, for example ``./llama-7b-hf``.
+              This should be a dir path that contains: weight bin, tokenizer config,
+              tokenizer.model (required for llama) and added_tokens.json (if applied).
+              For lora finetuned model, the path should be pointed to a merged weight.
+           2. If ``model_format='gptq'``, the folder should be be a Hugging Face checkpoint
+              in GPTQ format, which contains weights in pytorch's .pt format,
+              and ``tokenizer.model``.
+
+    :param outfile: Save path of output quantized model. You must pass a **directory** to
+           save all related output.
+    :param model_family: Which model family your input model belongs to.
+           Now ``llama``/``bloom``/``gptneox``/``starcoder`` has been supported.
+           If ``model_format='gptq'``, only ``llama`` is supported.
+    :param dtype: Which quantized precision will be converted.
+           If ``model_format='pth'``, `int4` and `int8` are supported,
+           meanwhile `int8` only works for `llama` and `gptneox`.
+           If ``model_format='gptq'``, only ``int4`` is supported.
+    :param model_format: Specify the model format to be converted. ``pth`` is for
+           PyTorch model checkpoint from Hugging Face. ``gptq`` is for GPTQ format
+           model from Hugging Face.
+    :param **kwargs: Supported keyword arguments includes:
+
+           * ``tmp_path``: Valid when ``model_format='pth'``. It refers to the path
+             that stores the intermediate model during the conversion process.
+           * ``tokenizer_path``: Valid when ``model_format='gptq'``. It refers to the path
+             where ``tokenizer.model`` is located (if it is not in the ``model`` directory)
+
+    :return: the path string to the converted lower precision checkpoint.
+    """
     if model_format == "pth":
-        check, _used_args = _special_kwarg_check(kwargs=kwargs,
-                                                 check_args=["tmp_path"])
-        invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
+        from bigdl.llm.ggml.convert_model import convert_model as ggml_convert_model
+        _, _used_args = _special_kwarg_check(kwargs=kwargs,
+                                             check_args=["tmp_path"])
         return ggml_convert_model(input_path=model,
                                   output_path=outfile,
                                   model_family=model_family,
@@ -48,21 +85,30 @@ def llm_convert(model,
                                   **_used_args,
                                   )
     elif model_format == "gptq":
-        invalidInputError(model.endswith(".pt"), "only support pytorch's .pt format now.")
+        from bigdl.llm.gptq.convert.convert_gptq_to_ggml import convert_gptq2ggml
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
-        check, _used_args = _special_kwarg_check(kwargs=kwargs,
-                                                 check_args=["tokenizer_path"])
-        invalidInputError(check, f"Invaid input kwargs found: {_used_args}")
-        invalidInputError("tokenizer_path" in _used_args,
-                          "The GPT-Q model requires the `tokenizer_path` parameter to be provided."
-                          "Usage: convert-model --model-type gptq"
-                          "--model-family llama --input-path llamaXXb-4bit.pt"
-                          "--tokenizer-path tokenizer.model --output-path out.bin")
-        convert_gptq2ggml(input_path=model,
-                          tokenizer_path=_used_args["tokenizer_path"],
-                          output_path=outfile)
+        os.makedirs(outfile, exist_ok=True)
+        invalidInputError(os.path.isdir(outfile),
+                          "The output_path {} is not a directory".format(outfile))
+        _, _used_args = _special_kwarg_check(kwargs=kwargs,
+                                             check_args=["tokenizer_path"])
+
+        output_filename = "bigdl_llm_{}_{}_from_gptq.bin".format(model_family,
+                                                                 outtype.lower())
+        outfile = os.path.join(outfile, output_filename)
+
+        # TODO: delete this when support AutoTokenizer
+        if "tokenizer_path" in _used_args:
+            gptq_tokenizer_path = _used_args["tokenizer_path"]
+        else:
+            gptq_tokenizer_path = None
+
+        convert_gptq2ggml(model_path=model,
+                          output_path=outfile,
+                          tokenizer_path=gptq_tokenizer_path,
+                          )
         return outfile
     else:
         invalidInputError(False, f"Unsupported input model_type: {model_format}")
