@@ -8,11 +8,6 @@ matrix:
     encoding: utf-8
   pipeline:
   - pyspelling.filters.markdown:
-  - pyspelling.filters.html:
-      comments: false
-      ignores:
-      - code
-      - pre
   glob_flags: N|G|B
   sources:
   - '**/*.md'
