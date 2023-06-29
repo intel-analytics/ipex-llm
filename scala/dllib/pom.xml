@@ -70,6 +70,10 @@
                 <exclusion>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-common</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -118,7 +122,11 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
-                </exclusion>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+	        </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -175,6 +183,10 @@
                 <exclusion>
                     <groupId>joda-time</groupId>
                     <artifactId>joda-time</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
                 </exclusion>
             </exclusions>
     	</dependency>
@@ -258,6 +270,10 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -291,6 +307,22 @@
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-compress</artifactId>
 	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-ast_${scala.major.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-core_${scala.major.version}</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-scalap_${scala.major.version}</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -314,8 +346,14 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.7</version>
             <scope>${spark-scope}</scope>
-        </dependency>
+    	</dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+	<dependency>
             <groupId>org.json4s</groupId>
 	    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
 	    <version>${json4s.version}</version>
@@ -338,8 +376,8 @@
             <artifactId>json4s-scalap_${scala.major.version}</artifactId>
             <version>${json4s.version}</version>
             <scope>${spark-scope}</scope>
-        </dependency>
-        <dependency>
+	</dependency>
+	<dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
