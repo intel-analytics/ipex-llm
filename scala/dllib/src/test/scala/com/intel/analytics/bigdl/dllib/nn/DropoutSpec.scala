@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class DropoutSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     RNG.setSeed(100)
     val dropout = Dropout[Float]().setName("dropout")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(dropout, input)
   }
 }

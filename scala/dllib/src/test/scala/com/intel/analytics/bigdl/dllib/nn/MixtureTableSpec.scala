@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class MixtureTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mixTureTable = MixtureTable[Float]().setName("mixTureTable")
-    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2

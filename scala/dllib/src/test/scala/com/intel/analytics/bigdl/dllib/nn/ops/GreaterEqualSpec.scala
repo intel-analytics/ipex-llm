@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class GreaterEqualSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val greaterEqual = GreaterEqual[Float]().setName("greaterEqual")
-    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input1 = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     val input = T(input1, input2)
     runSerializationTest(greaterEqual, input, greaterEqual
       .asInstanceOf[ModuleToOperation[Float]].module.getClass)

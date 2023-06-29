@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class ExpSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val exp = Exp[Float, Float]().setName("expOps")
-    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(exp, input)
   }
 }

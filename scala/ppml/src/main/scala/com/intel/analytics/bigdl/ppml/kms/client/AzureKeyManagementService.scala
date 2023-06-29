@@ -21,6 +21,7 @@ import java.util.Base64
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
 import scala.util.Random
+import java.security.SecureRandom
 
 import org.apache.hadoop.conf.Configuration
 import com.azure.identity.{DefaultAzureCredential, DefaultAzureCredentialBuilder}
@@ -57,7 +58,7 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
   def retrievePrimaryKey(primaryKeySavePath: String = "", config: Configuration = null): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
-    val keyName = "key-" + (1 to 4).map(x => Random.nextInt(10)).mkString
+    val keyName = "key-" + (1 to 4).map(x => new SecureRandom().nextInt(10)).mkString
     val primaryKey = keyClient.createKey(keyName, KeyType.RSA)
     val keyId = primaryKey.getId()
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, keyId, config)
@@ -72,7 +73,7 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     val cryptoClient = getCryptoClient(primaryKeyId)
     // create aes data key
     val aesKey = new Array[Byte](32)
-    Random.nextBytes(aesKey)
+    new SecureRandom().nextBytes(aesKey)
     val keyString = Base64.getEncoder.encodeToString(aesKey)
     // wrap data key content.
     val wrapResult: WrapResult = cryptoClient.wrapKey(KeyWrapAlgorithm.RSA_OAEP, aesKey)

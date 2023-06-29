@@ -20,14 +20,15 @@ import com.intel.analytics.bigdl.dllib.nn.SoftSign
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SoftSignSpec extends TorchSpec {
     "A SoftSign 3D input" should "generate correct output and grad" in {
     torchCheck()
     val layer = new SoftSign[Double]()
-    val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -53,8 +54,8 @@ class SoftSignSpec extends TorchSpec {
   "A SoftSign 4D input" should "generate correct output and grad" in {
     torchCheck()
     val layer = new SoftSign[Double]()
-    val input = Tensor[Double](5, 4, 3, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 4, 3, 2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](5, 4, 3, 2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5, 4, 3, 2).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)

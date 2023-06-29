@@ -39,6 +39,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.Random
+import java.security.SecureRandom
 
 abstract class Session[T: ClassTag] {
 

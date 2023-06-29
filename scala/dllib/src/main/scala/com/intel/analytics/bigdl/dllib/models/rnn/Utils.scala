@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.util.Random
+import java.security.SecureRandom
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 

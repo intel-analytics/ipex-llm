@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class MeanSpec extends FlatSpec with Matchers {
 
@@ -54,7 +55,7 @@ class MeanSpec extends FlatSpec with Matchers {
 class MeanSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mean = Mean[Float](2).setName("mean")
-    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(mean, input)
   }
 }

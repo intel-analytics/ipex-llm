@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
 import scala.collection.Iterator
 import scala.util.Random
+import java.security.SecureRandom
 
 object ColorJitter {
   def apply(): ColorJitter = {

@@ -30,6 +30,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -667,7 +668,7 @@ class MultiRNNCellSerialTest extends ModuleSerializationTest {
       .add(rec
         .add(multiRNNCell)).setName("multiRNNCell")
 
-    val input = Tensor[Float](batchSize, inputSize, 10, 10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](batchSize, inputSize, 10, 10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(model, input, multiRNNCell.getClass)
   }
 }

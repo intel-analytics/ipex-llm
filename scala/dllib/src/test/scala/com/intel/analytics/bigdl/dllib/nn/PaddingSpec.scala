@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class PaddingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val padding = Padding[Float](1, -1, 4, -0.8999761, 14).setName("padding")
-    val input = Tensor[Float](3, 13, 11).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](3, 13, 11).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(padding, input)
   }
 }

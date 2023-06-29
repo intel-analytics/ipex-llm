@@ -49,6 +49,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
 
 import scala.util.Random
+import java.security.SecureRandom
 import scala.util.parsing.json._
 
 import com.intel.analytics.bigdl.ppml.attestation._
@@ -107,7 +108,7 @@ class AmberAttestationService(attestationServerURL: String, apiKey: String, user
 
   def getQuoteFromServer(challenge: String): String = {
     val userReportData = new Array[Byte](16)
-    Random.nextBytes(userReportData)
+    new SecureRandom().nextBytes(userReportData)
     new String(userReportData)
   }
 

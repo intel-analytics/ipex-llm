@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class SReLUSpec extends KerasBaseSpec {
   "SReLU without share axes" should "same as keras" in {
@@ -87,7 +88,7 @@ class SReLUSpec extends KerasBaseSpec {
 class SReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val srelu = SReLU[Float](shape = Array(4)).setName("srelu")
-    val input = Tensor[Float](3, 4).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](3, 4).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(srelu, input)
   }
 }

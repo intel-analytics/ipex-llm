@@ -19,13 +19,14 @@ import com.intel.analytics.bigdl.dllib.nn.ClassSimplexCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class ClassSimplexCriterionSpec extends TorchSpec {
     "A ClassSimplexCriterion " should "generate correct output and grad with " in {
     torchCheck()
     val criterion = new ClassSimplexCriterion[Double](5)
-    val input = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 5).apply1(e => new SecureRandom().nextDouble())
     val target = Tensor[Double](2)
     target(Array(1)) = 2.0
     target(Array(2)) = 1.0

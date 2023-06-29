@@ -19,14 +19,15 @@ import com.intel.analytics.bigdl.dllib.nn.MarginCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class MarginCriterionSpec extends TorchSpec {
     "A MarginCriterion " should "generate correct output and grad" in {
     torchCheck()
     val mse = new MarginCriterion[Double]
-    val input = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
-    val target = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 2, 2).apply1(e => new SecureRandom().nextDouble())
+    val target = Tensor[Double](2, 2, 2).apply1(e => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = mse.forward(input, target)

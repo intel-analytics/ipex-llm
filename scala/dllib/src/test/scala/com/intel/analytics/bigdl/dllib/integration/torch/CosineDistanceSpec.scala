@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class CosineDistanceSpec extends TorchSpec {
@@ -30,9 +31,9 @@ class CosineDistanceSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](3).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](3).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](1).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](3).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](3).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](1).apply1(e => new SecureRandom().nextDouble())
 
     val input = new Table()
     input(1.0) = input1

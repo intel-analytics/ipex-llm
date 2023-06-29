@@ -22,6 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class ReverseSpec extends FlatSpec with Matchers {
@@ -109,7 +110,7 @@ class ReverseSpec extends FlatSpec with Matchers {
 class ReverseSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val reverse = Reverse[Float]().setName("reverse")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(reverse, input)
   }
 }

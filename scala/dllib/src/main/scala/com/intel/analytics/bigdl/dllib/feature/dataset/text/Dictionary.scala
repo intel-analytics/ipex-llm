@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
 import scala.util.Random
+import java.security.SecureRandom
 
 /**
  * Class that help build a dictionary
@@ -88,8 +89,8 @@ class Dictionary()
    */
   def getWord(index: Int): String = {
     _index2word.getOrElse(index,
-      if (_discardSize > 0) _discardVocab(Random.nextInt(_discardSize))
-      else getWord(Random.nextInt(_vocabSize)))
+      if (_discardSize > 0) _discardVocab(new SecureRandom().nextInt(_discardSize))
+      else getWord(new SecureRandom().nextInt(_vocabSize)))
   }
 
   /**

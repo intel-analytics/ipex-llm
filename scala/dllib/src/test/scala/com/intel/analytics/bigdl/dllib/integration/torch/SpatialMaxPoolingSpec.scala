@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.math._
 import scala.util.Random
+import java.security.SecureRandom
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
@@ -76,7 +77,7 @@ class SpatialMaxPoolingSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = new SpatialMaxPooling[Double](2, 2)
-    val input = Tensor[Double](1, 3, 3).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](1, 3, 3).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)

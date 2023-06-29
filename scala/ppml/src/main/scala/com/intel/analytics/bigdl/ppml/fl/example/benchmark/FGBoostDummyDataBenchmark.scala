@@ -22,7 +22,9 @@ import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.utils.TimingSupportive
 import scopt.OptionParser
 
+import java.security.SecureRandom
 import scala.util.Random
+import java.security.SecureRandom
 
 
 object FGBoostDummyDataBenchmark extends TimingSupportive {
@@ -43,7 +45,7 @@ object FGBoostDummyDataBenchmark extends TimingSupportive {
     val param = parser.parse(args, Params()).get
 
     FLContext.initFLContext(1)
-    val random = new Random()
+    val random = new SecureRandom()
     val data = (0 until param.dataSize).map(_ => Tensor[Float](param.dataDim).rand()).toArray
     val label = (0 until param.dataSize).map(_ => random.nextFloat()).toArray
     val fGBoostRegression = new FGBoostRegression()

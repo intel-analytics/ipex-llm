@@ -19,13 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class StaticGraphSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val linear = Linear[Float](10, 2).inputs()
     val graph = Graph[Float](linear, linear).setName("graph")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(graph, input)
   }
 }

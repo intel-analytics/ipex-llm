@@ -35,6 +35,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class DataConverterSpec extends FlatSpec with Matchers{
@@ -175,7 +176,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "Tensor conversion" should "work properly" in {
-    val tensor = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val tensor = Tensor(5, 5).apply1(e => new SecureRandom().nextFloat())
     val attriBulder = AttrValue.newBuilder
     map.clear()
     DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType),
@@ -222,7 +223,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "Two tensors to the same object conversion" should "work properly" in {
-    val tensor1 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val tensor1 = Tensor(5, 5).apply1(e => new SecureRandom().nextFloat())
     val tensor2 = tensor1
 
     map.clear()
@@ -573,8 +574,8 @@ class DataConverterSpec extends FlatSpec with Matchers{
   }
 
   "Array of Tensor conversion" should "work properly" in {
-    val tensor1 = Tensor(2, 3).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor(2, 3).apply1(_ => Random.nextFloat())
+    val tensor1 = Tensor(2, 3).apply1(_ => new SecureRandom().nextFloat())
+    val tensor2 = Tensor(2, 3).apply1(_ => new SecureRandom().nextFloat())
     val tensorArray = Array(tensor1, tensor2)
     val attriBulder = AttrValue.newBuilder
     map.clear()

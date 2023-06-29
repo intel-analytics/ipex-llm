@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class SequentialSpec extends FlatSpec with Matchers {
   "A Sequential Container" should "not contain operation" in {
@@ -59,7 +60,7 @@ class SequentialSerialTest extends ModuleSerializationTest {
     val sequential = Sequential[Float]().setName("sequential")
     val linear = Linear[Float](10, 2)
     sequential.add(linear)
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(sequential, input)
   }
 }

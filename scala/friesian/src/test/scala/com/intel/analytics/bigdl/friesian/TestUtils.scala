@@ -22,6 +22,7 @@ import org.apache.spark.ml.linalg.DenseVector
 
 import scala.collection.mutable
 import scala.util.Random
+import java.security.SecureRandom
 
 object TestUtils {
   def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
@@ -33,7 +34,7 @@ object TestUtils {
   def generateRankingInput(length: Int, dim: Int): Table = {
     T.array(
       Array.fill(length)(
-        Tensor[Float](Array.fill(dim)(Random.nextFloat()), Array(dim))))
+        Tensor[Float](Array.fill(dim)(new SecureRandom().nextFloat()), Array(dim))))
   }
 
   def toFloatArray(obj: Any): Array[Float] = {

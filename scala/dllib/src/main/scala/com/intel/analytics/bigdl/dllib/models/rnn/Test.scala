@@ -31,6 +31,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.util.Random
+import java.security.SecureRandom
 
 object Test {
   Configurator.setLevel("org", Level.ERROR)

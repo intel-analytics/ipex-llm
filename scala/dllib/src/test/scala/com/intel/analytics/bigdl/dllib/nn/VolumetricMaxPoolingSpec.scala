@@ -19,13 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class VolumetricMaxPoolingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val volumetricMaxPooling = VolumetricMaxPooling[Float](2, 2, 2, 1, 1, 1, 0, 0, 0).
       setName("volumetricMaxPooling")
-    val input = Tensor[Float](1, 2, 3, 3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 2, 3, 3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(volumetricMaxPooling, input)
   }
 }

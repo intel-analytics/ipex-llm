@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class NormalizeSpec extends FlatSpec with Matchers {
   "Normalize with 4d" should "work properly" in {
@@ -124,7 +125,7 @@ class NormalizeSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val layer = Normalize[Double](2)
-    val input = Tensor[Double](3, 3, 8, 8).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 3, 8, 8).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer(layer, input, 1e-3) should be(true)
@@ -134,7 +135,7 @@ class NormalizeSpec extends FlatSpec with Matchers {
 class NormalizeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val normalizer = Normalize[Float](2).setName("normalizer")
-    val input = Tensor[Float](2, 3, 4, 4).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 4, 4).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(normalizer, input)
   }
 }

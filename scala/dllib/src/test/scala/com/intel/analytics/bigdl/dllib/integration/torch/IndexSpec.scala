@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class IndexSpec extends TorchSpec {
@@ -30,13 +31,13 @@ class IndexSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](3).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](3).apply1(e => new SecureRandom().nextDouble())
     val input2 = Tensor[Double](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2
     input2(Array(3)) = 2
     input2(Array(4)) = 3
-    val gradOutput = Tensor[Double](4).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](4).apply1(e => new SecureRandom().nextDouble())
 
     val input = new Table()
     input(1.toDouble) = input1
@@ -73,14 +74,14 @@ class IndexSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](3, 3).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](3, 3).apply1(e => new SecureRandom().nextDouble())
     val input2 = Tensor[Double](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2
     input2(Array(3)) = 3
     input2(Array(4)) = 1
 
-    val gradOutput = Tensor[Double](3, 4).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](3, 4).apply1(e => new SecureRandom().nextDouble())
 
     val input = new Table()
     input(1.toDouble) = input1

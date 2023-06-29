@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
+import java.security.SecureRandom
 import com.intel.analytics.bigdl._
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -215,7 +216,7 @@ class LinearSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val linear = new Linear[Double](5, 2)
-    val input = Tensor[Double](3, 5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 5).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](linear, input, 1e-3) should be(true)
@@ -226,7 +227,7 @@ class LinearSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val linear = new Linear[Double](5, 2)
-    val input = Tensor[Double](3, 5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 5).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](linear, input, 1e-3) should be(true)

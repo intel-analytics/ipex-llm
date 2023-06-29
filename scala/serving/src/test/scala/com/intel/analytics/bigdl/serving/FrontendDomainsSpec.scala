@@ -25,10 +25,11 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.util.Random
+import java.security.SecureRandom
 
 class FrontendDomainsSpec extends FlatSpec with Matchers with BeforeAndAfter with Supportive {
 
-  val random = new Random()
+  val random = new SecureRandom()
 
   "ServingError" should "serialized as json" in {
     val message = "contentType not supported"

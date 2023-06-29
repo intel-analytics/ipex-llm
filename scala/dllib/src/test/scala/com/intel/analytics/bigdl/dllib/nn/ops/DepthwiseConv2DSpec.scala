@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, T}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class DepthwiseConv2DSpec extends BigDLSpecHelper {
   "DepthwiseConv2D" should "be able to save and load" in {
@@ -49,8 +50,8 @@ class DepthwiseConv2DSpec extends BigDLSpecHelper {
 class DepthwiseConv2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val depWIseConv2d = DepthwiseConv2D[Float](1, 1, 0, 0).setName("depWIseConv2d")
-    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
-      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()))
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => new SecureRandom().nextFloat()),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => new SecureRandom().nextFloat()))
     runSerializationTest(depWIseConv2d, input)
   }
 }

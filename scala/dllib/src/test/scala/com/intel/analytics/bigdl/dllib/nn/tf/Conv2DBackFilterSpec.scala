@@ -22,14 +22,15 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class Conv2DBackFilterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val conv2dBackFilter = Conv2DBackFilter[Float](2, 2, -1, -1, DataFormat.NHWC).
       setName("conv2dBackFilter")
-    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => new SecureRandom().nextFloat())
     val kernelSize = Tensor[Int](T(2, 2, 3, 3))
-    val grad = Tensor[Float](1, 2, 2, 3).apply1(_ => Random.nextFloat())
+    val grad = Tensor[Float](1, 2, 2, 3).apply1(_ => new SecureRandom().nextFloat())
     val input = T(inputTensor, kernelSize, grad)
     runSerializationTest(conv2dBackFilter, input)
   }

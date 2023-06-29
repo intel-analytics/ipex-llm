@@ -19,14 +19,15 @@ import com.intel.analytics.bigdl.dllib.nn.Normalize
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class NormalizeSpec extends TorchSpec {
     "A Normalize Module" should "generate correct output and grad with input one dimension" in {
     torchCheck()
     val p = 1.5
-    val input = Tensor[Double](9).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](9).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](9).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](9).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Normalize(" + p + ")\n" +
       "output = module:forward(input)\n" +
@@ -53,8 +54,8 @@ class NormalizeSpec extends TorchSpec {
 
   "A Normalize Module" should "generate correct output and grad with input two dimensions" in {
     torchCheck()
-    val input = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 9).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 9).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Normalize(math.huge)\n" +
       "output = module:forward(input)\n" +
@@ -82,8 +83,8 @@ class NormalizeSpec extends TorchSpec {
   "A Normalize Module multiple time" should "generate correct" +
     " output and grad with input two dimensions" in {
     torchCheck()
-    val input = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 9).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 9).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Normalize(math.huge)\n" +
       "output = module:forward(input)\n" +

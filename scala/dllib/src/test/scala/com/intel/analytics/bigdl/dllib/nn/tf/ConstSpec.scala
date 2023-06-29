@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class ConstSpec extends FlatSpec with Matchers {
   "Const forward tensor" should "be correct" in {
@@ -41,9 +42,9 @@ class ConstSpec extends FlatSpec with Matchers {
 
 class ConstSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val value = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val value = Tensor[Float](3).apply1(_ => new SecureRandom().nextFloat())
     val const = Const[Float, Float](value).setName("const")
-    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(const, input)
   }
 }

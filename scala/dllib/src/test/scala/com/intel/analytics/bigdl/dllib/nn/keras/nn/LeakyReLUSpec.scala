@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class LeakyReLUSpec extends KerasBaseSpec{
 
@@ -64,7 +65,7 @@ class LeakyReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = LeakyReLU[Float](1.27, inputShape = Shape(8, 24))
     layer.build(Shape(2, 8, 24))
-    val input = Tensor[Float](2, 8, 24).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 8, 24).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

@@ -20,15 +20,16 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class NarrowTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val narrowTable = NarrowTable[Float](1, 1)
     val input = T()
-    input(1.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-    input(2.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-    input(3.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    input(1.0) = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    input(2.0) = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    input(3.0) = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(narrowTable, input)
   }
 }

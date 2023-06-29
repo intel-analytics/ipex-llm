@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class AttentionSpec  extends FlatSpec with Matchers {
 
@@ -274,9 +275,9 @@ class AttentionSpec  extends FlatSpec with Matchers {
 class AttentionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val attention = new Attention[Float](8, 4, 1.0f).setName("attention")
-    val inputX = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    val inputX = Tensor[Float](2, 3, 8).apply1(_ => new SecureRandom().nextFloat())
     val inputY = inputX.clone()
-    val inputBias = Tensor[Float](2, 4, 3, 3).apply1(_ => Random.nextFloat())
+    val inputBias = Tensor[Float](2, 4, 3, 3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(attention, T(inputX, inputY, inputBias))
   }
 }

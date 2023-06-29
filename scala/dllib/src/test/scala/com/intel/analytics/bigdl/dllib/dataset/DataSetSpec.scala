@@ -34,6 +34,7 @@ import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends SparkContextLifeCycle with Matchers {
@@ -375,7 +376,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     val data = new Array[Sample[Float]](count)
     var i = 1
     while (i <= count) {
-      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val input = Tensor[Float](3, 28, 28).apply1(e => new SecureRandom().nextFloat())
       val target = Tensor[Float](1).fill(i.toFloat)
       data(i-1) = Sample(input, target)
       i += 1
@@ -416,7 +417,7 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     val data = new Array[Sample[Float]](count)
     var i = 1
     while (i <= count) {
-      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val input = Tensor[Float](3, 28, 28).apply1(e => new SecureRandom().nextFloat())
       val target = Tensor[Float](1).fill(i.toFloat)
       data(i-1) = Sample(input, target)
       i += 1

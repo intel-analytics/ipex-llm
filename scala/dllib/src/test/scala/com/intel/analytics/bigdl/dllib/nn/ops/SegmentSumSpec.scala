@@ -20,12 +20,13 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class SegmentSumSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val sgSum = SegmentSum[Float].setName("segmentSum")
-    val input = T(Tensor[Float](10, 3).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](10, 3).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Int](T(0, 0, 0, 1, 2, 3, 3, 4, 4, 4)))
     runSerializationTest(sgSum, input)
   }

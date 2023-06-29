@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.DistKLDivCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class DistKLDivCriterionSpec extends TorchSpec {
@@ -27,8 +28,8 @@ class DistKLDivCriterionSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
-    val target = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
+    val target = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.DistKLDivCriterion(true)\n" +

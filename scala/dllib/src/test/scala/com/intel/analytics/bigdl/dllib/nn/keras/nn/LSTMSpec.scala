@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class LSTMSpec extends KerasBaseSpec {
 
@@ -98,7 +99,7 @@ class LSTMSerialTest extends ModuleSerializationTest {
     val layer = LSTM[Float](8, returnSequences = true,
       innerActivation = "sigmoid", inputShape = Shape(32, 32))
     layer.build(Shape(3, 32, 32))
-    val input = Tensor[Float](3, 32, 32).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 32, 32).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

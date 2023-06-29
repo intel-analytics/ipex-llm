@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class ZeroPadding3DSpec extends KerasBaseSpec {
 
@@ -79,7 +80,7 @@ class ZeroPadding3DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ZeroPadding3D[Float]((1, 1, 1), inputShape = Shape(5, 6, 7, 8))
     layer.build(Shape(2, 5, 6, 7, 8))
-    val input = Tensor[Float](2, 5, 6, 7, 8).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 6, 7, 8).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

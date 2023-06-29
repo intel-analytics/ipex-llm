@@ -35,6 +35,7 @@ import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.reflect.ClassTag
 import scala.util.Random
+import java.security.SecureRandom
 import org.scalatest.{FlatSpec, Matchers}
 
 class DynamicGraphSpec  extends FlatSpec with Matchers {
@@ -627,10 +628,10 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
   }
 
   "Autoencoder graph" should "be correct" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 28 * 28).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 784).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 28 * 28).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 784).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = Autoencoder(32)
@@ -648,10 +649,10 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
   }
 
   "Lenet graph" should "be correct" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 28*28).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 28*28).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = LeNet5(10)
@@ -669,10 +670,10 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
   }
 
   "VggForCifar10 graph" should "be correct" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 32, 32).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 32, 32).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 10).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = VggForCifar10(10, false)
@@ -689,10 +690,10 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
   }
 
   "Vgg_16 graph" should "be correct" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 1
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = Vgg_16(1000, false)
@@ -709,10 +710,10 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
   }
 
   "Vgg_19 graph" should "be correct" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 1
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = Vgg_19(1000, false)
@@ -1400,7 +1401,7 @@ class DynamicGraphSerialTest extends ModuleSerializationTest {
     val variables = Some(Array(linearWeight), Array(linearBias))
     val graphWithVariable = Graph.dynamic[Float](Array(linearNode), Array(linearNode),
       variables, false).setName("graphWithVariable")
-    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(graphWithVariable, input)
   }
 }

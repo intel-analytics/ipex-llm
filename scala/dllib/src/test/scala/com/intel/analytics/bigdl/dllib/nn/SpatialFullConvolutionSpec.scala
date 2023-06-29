@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
@@ -174,8 +175,8 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
       kW, kH, dW, dH, padW, padH)
     val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
       .setScaleW(0.5).setScaleB(2.0)
-    Random.setSeed(100)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output1 = layer.forward(input)
     val output2 = layer2.forward(input)
     output1 should be(output2)
@@ -202,8 +203,8 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
-    Random.setSeed(100)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
 
     // this two operations should not change layer's behavior
     layer.forward(input)
@@ -237,7 +238,7 @@ class SpatialFullConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialFullConvolution = SpatialFullConvolution[Float](1, 1,
       2, 2, 1, 1, 0, 0).setName("spatialFullConvolution")
-    val input = Tensor[Float](1, 3, 3).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](1, 3, 3).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(spatialFullConvolution, input)
   }
 }

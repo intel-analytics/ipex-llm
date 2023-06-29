@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class L2LossSpec extends FlatSpec with Matchers {
   "L2Loss Double operation" should "works correctly" in {
@@ -55,7 +56,7 @@ class L2LossSpec extends FlatSpec with Matchers {
 class L2LossSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val l2loss = L2Loss[Float]().setName("l2loss")
-    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(l2loss, input,
       l2loss.asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

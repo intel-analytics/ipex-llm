@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class ConvLSTM2DSpec extends KerasBaseSpec {
 
@@ -77,7 +78,7 @@ class ConvLSTM2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ConvLSTM2D[Float](32, 4, inputShape = Shape(8, 40, 40, 32))
     layer.build(Shape(2, 8, 40, 40, 32))
-    val input = Tensor[Float](2, 8, 40, 40, 32).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 8, 40, 40, 32).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

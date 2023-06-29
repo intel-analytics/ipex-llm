@@ -20,14 +20,15 @@ import com.intel.analytics.bigdl.dllib.nn.L1Cost
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class L1CostSpec extends TorchSpec {
     "A L1Cost" should "generate correct output and grad" in {
     torchCheck()
     val layer = new L1Cost[Double]()
-    val input = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
-    val target = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
+    val target = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input, target)

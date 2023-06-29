@@ -20,11 +20,12 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class BiRecurrentSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
+    val input = Tensor[Float](1, 5, 6).apply1(e => new SecureRandom().nextFloat()).transpose(1, 2)
     RNG.setSeed(100)
     val biRecurrent = BiRecurrent[Float]().add(RnnCell[Float](6, 4,
       Sigmoid[Float]())).setName("biRecurrent")

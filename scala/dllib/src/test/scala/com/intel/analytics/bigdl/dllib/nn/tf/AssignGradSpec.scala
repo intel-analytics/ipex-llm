@@ -20,12 +20,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class AssignGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val grad = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val grad = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     val assignGrad = new AssignGrad[Float](grad).setName("assignGrad")
-    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(assignGrad, input)
   }
 }

@@ -22,14 +22,15 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class MaxPoolGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val maxPoolGrad = MaxPoolGrad[Float](2, 1, 1, 1, 0, 0, DataFormat.NCHW).
       setName("maxPoolGrad")
-    val input = T(Tensor[Float](1, 3, 3).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](1, 3, 3).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Float](),
-      Tensor[Float](1, 1, 1).apply1(_ => Random.nextFloat()))
+      Tensor[Float](1, 1, 1).apply1(_ => new SecureRandom().nextFloat()))
     runSerializationTest(maxPoolGrad, input)
   }
 }

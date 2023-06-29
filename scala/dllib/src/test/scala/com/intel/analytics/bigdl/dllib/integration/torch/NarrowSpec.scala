@@ -19,13 +19,14 @@ import com.intel.analytics.bigdl.dllib.nn.Narrow
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class NarrowSpec extends TorchSpec {
     "A Narrow Module " should "generate correct output and grad with length < 0" in {
     torchCheck()
-    val input = Tensor[Double](9, 4, 14).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 4, 14).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](9, 4, 14).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5, 4, 14).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Narrow(1, 3, -3)\n" +
       "output = module:forward(input)\n" +
@@ -52,8 +53,8 @@ class NarrowSpec extends TorchSpec {
 
   "A Narrow Module " should "generate correct output and grad with dimension < 0" in {
     torchCheck()
-    val input = Tensor[Double](3, 10, 4).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](3, 3, 4).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 10, 4).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](3, 3, 4).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Narrow(-2, 5, -4)\n" +
       "output = module:forward(input)\n" +

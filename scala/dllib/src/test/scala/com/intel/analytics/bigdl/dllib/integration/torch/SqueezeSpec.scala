@@ -20,14 +20,15 @@ import com.intel.analytics.bigdl.dllib.nn.Squeeze
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SqueezeSpec extends TorchSpec {
     "A Squeeze(2)" should "generate correct output and grad" in {
     torchCheck()
     val layer = Squeeze[Double](2)
-    val input = Tensor[Double](2, 1, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 1, 2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -53,8 +54,8 @@ class SqueezeSpec extends TorchSpec {
   "A Squeeze()" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Squeeze[Double]()
-    val input = Tensor[Double](1, 1, 2, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](1, 1, 2, 2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -80,8 +81,8 @@ class SqueezeSpec extends TorchSpec {
   "A Squeeze(2, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = Squeeze[Double](2, 3)
-    val input = Tensor[Double](1, 1, 2, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](1, 1, 2, 2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -107,8 +108,8 @@ class SqueezeSpec extends TorchSpec {
   "A Squeeze(Array(2, 3), true)" should "generate correct output and grad" in {
     torchCheck()
     val layer = Squeeze[Double](Array(2, 3), true)
-    val input = Tensor[Double](2, 2, 1, 1).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 2, 1, 1).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => new SecureRandom().nextDouble())
 
     val output = layer.forward(input)
     val gradInput = layer.backward(input, gradOutput)

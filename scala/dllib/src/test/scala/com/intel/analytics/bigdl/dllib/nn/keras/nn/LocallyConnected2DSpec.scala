@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class LocallyConnected2DSpec extends KerasBaseSpec {
 
@@ -104,7 +105,7 @@ class LocallyConnected2DSerialTest extends ModuleSerializationTest {
     val layer = LocallyConnected2D[Float](32, 2, 2, activation = "relu",
       inputShape = Shape(12, 24, 24))
     layer.build(Shape(2, 12, 24, 24))
-    val input = Tensor[Float](2, 12, 24, 24).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 12, 24, 24).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

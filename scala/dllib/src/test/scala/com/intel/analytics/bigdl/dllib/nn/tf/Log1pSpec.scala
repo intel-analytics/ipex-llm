@@ -19,11 +19,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class Log1pSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val log1p = Log1p[Float, Float]().setName("log1p")
-    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(log1p, input)
   }
 }

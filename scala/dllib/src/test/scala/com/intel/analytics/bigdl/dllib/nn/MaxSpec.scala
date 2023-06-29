@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class MaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val max = new Max[Float](2).setName("max")
-    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 4).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(max, input)
   }
 }

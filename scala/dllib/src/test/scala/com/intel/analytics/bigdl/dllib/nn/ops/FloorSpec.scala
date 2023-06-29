@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class FloorSpec extends FlatSpec with Matchers {
   "Floor Float operation" should "works correctly" in {
@@ -57,7 +58,7 @@ class FloorSpec extends FlatSpec with Matchers {
 class FloorSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val floor = Floor[Float]().setName("floor")
-    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(floor, input, floor.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

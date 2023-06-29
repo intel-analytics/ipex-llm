@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.CSubTable
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class CSubTableSpec extends TorchSpec {
@@ -31,9 +32,9 @@ class CSubTableSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new CSubTable[Double]()
 
-    val input1 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
     val input = new Table()
     input(1.toDouble) = input1
     input(2.toDouble) = input2

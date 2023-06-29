@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class MaxPoolSpec extends FlatSpec with Matchers {
   "MaxPool operation VALID padding" should "works correctly" in {
@@ -126,7 +127,7 @@ class MaxPoolSerialTest extends ModuleSerializationTest {
       Array(1, 2, 3, 1),
       Array(1, 2, 1, 1),
       "VALID").setName("maxPool")
-    val input = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 4, 3, 3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(maxPool, input, maxPool.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

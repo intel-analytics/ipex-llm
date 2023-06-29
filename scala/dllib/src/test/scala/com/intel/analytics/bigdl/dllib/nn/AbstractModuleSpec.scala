@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class AbstractModuleSpec extends FlatSpec with Matchers {
   "Get name" should "find the module if it exists" in {
@@ -379,7 +380,7 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0f, 0.1f)
 
-    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat())
     val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize)).rand()
     val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize)).rand()
     val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
@@ -405,7 +406,7 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0f, 0.1f)
 
-    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat())
 
     val input2 = input.clone()
 

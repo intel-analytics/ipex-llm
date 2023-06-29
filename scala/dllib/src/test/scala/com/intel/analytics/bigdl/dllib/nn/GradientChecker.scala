@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils
 
 import scala.reflect.ClassTag
 import scala.util.Random
+import java.security.SecureRandom
 
 sealed trait modelCheck
 case class PartCheck(data : Int) extends modelCheck
@@ -81,7 +82,7 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
     var scalaTime: Long = 0
     while (j <= length) {
-      i = Random.nextInt(input.nElement()) + 1
+      i = new SecureRandom().nextInt(input.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
@@ -134,7 +135,7 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
     var scalaTime: Long = 0
     while (j <= length) {
-      i = Random.nextInt(input.nElement()) + 1
+      i = new SecureRandom().nextInt(input.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = criterion.forward(input, target)
@@ -192,7 +193,7 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     } else weights.nElement()
 
     while (j <= length) {
-      i = Random.nextInt(weights.nElement()) + 1
+      i = new SecureRandom().nextInt(weights.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1

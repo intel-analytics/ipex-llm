@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class FPNSpec extends FlatSpec with Matchers {
   "FPN updateOutput with None TopBlocks" should "work correctly" in {
@@ -929,9 +930,9 @@ class FPNSpec extends FlatSpec with Matchers {
 class FPNSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = T()
-    val feature1 = Tensor[Float](1, 1, 8, 8).apply1(_ => Random.nextFloat())
-    val feature2 = Tensor[Float](1, 2, 4, 4).apply1(_ => Random.nextFloat())
-    val feature3 = Tensor[Float](1, 4, 2, 2).apply1(_ => Random.nextFloat())
+    val feature1 = Tensor[Float](1, 1, 8, 8).apply1(_ => new SecureRandom().nextFloat())
+    val feature2 = Tensor[Float](1, 2, 4, 4).apply1(_ => new SecureRandom().nextFloat())
+    val feature3 = Tensor[Float](1, 4, 2, 2).apply1(_ => new SecureRandom().nextFloat())
     input(1.0f) = feature1
     input(2.0f) = feature2
     input(3.0f) = feature3

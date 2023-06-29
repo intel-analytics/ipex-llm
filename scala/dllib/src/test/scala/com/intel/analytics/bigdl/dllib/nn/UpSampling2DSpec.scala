@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class UpSampling2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val upsampling = UpSampling2D[Float](Array(2, 3)).setName("upsampling")
-    val input = Tensor[Float](2, 3, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(upsampling, input)
   }
 }

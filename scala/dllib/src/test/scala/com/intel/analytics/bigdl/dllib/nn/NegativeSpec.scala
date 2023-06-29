@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class NegativeSpec extends FlatSpec with Matchers {
   "Negative forward" should "be correct" in {
@@ -40,7 +41,7 @@ class NegativeSpec extends FlatSpec with Matchers {
 class NegativeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val negative = Negative[Float]().setName("negative")
-    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(negative, input)
   }
 }

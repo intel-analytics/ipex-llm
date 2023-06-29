@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class TileSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val tile = Tile[Float](1).setName("tile")
-    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(tile, input)
   }
 }

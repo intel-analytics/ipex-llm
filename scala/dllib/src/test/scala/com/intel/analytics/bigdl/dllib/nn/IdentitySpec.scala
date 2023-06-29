@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
   /**
   * Created by yao on 9/20/16.
@@ -50,7 +51,7 @@ class IdentitySpec extends FlatSpec with Matchers {
 class IdentitySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val identity = Identity[Float]().setName("identity")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(identity, input)
   }
 }

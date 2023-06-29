@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.{LayerException, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ReshapeSpec extends FlatSpec {
@@ -149,7 +150,7 @@ class ReshapeSpec extends FlatSpec {
 class ReshapeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val reshape = Reshape[Float](Array(1, 4, 5)).setName("reshape")
-    val input = Tensor[Float](2, 2, 5).apply1( _ => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 5).apply1( _ => new SecureRandom().nextFloat())
     runSerializationTest(reshape, input)
   }
 }

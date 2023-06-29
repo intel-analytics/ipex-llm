@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
   /**
   * Unit test for GaussianNoise
@@ -79,7 +80,7 @@ class GaussianNoiseSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     RNG.setSeed(1000)
     val gaussianNoise = GaussianNoise[Float](0.5).setName("gaussianNoise")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(gaussianNoise, input)
   }
 }

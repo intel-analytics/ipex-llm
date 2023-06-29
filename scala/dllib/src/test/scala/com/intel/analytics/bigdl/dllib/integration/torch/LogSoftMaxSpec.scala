@@ -22,14 +22,15 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class LogSoftMaxSpec extends TorchSpec {
     "A LogSoftMax Module " should "generate correct output and grad with input 2D" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
     val data = Tensor[Double](4, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
@@ -57,8 +58,8 @@ class LogSoftMaxSpec extends TorchSpec {
   "A LogSoftMax Module " should "generate correct output and grad with input 1D" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](10).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](10).apply1(e => new SecureRandom().nextDouble())
     val data = Tensor[Double](20).randn()
     val gradOutput = data.narrow(1, 1, 10)
 
@@ -86,8 +87,8 @@ class LogSoftMaxSpec extends TorchSpec {
   "A LogSoftMax Module " should "generate correct output and grad tiwh input 1*N" in {
     torchCheck()
     val module = new LogSoftMax[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](1, 10).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](1, 10).apply1(e => new SecureRandom().nextDouble())
     val data = Tensor[Double](1, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
@@ -117,7 +118,7 @@ class LogSoftMaxSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = new LogSoftMax[Double]()
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)
@@ -126,9 +127,9 @@ class LogSoftMaxSpec extends TorchSpec {
   "LogSoftMax float module" should "return good result" in {
     torchCheck()
     val module = new LogSoftMax[Float]()
-    Random.setSeed(100)
-    val input = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 10)
-    val gradOutput = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 10)
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Float](2, 5).apply1(e => new SecureRandom().nextFloat() + 10)
+    val gradOutput = Tensor[Float](2, 5).apply1(e => new SecureRandom().nextFloat() + 10)
 
     val start = System.nanoTime()
     val output = module.forward(input)

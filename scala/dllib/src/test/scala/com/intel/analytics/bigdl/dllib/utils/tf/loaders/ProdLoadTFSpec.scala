@@ -20,12 +20,13 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class ProdLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val prodLoadTF = new ProdLoadTF[Float]().setName("prodLoadTF")
-    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](5, 5, 5).apply1(_ => new SecureRandom().nextFloat()),
       Tensor.scalar[Int](1))
     runSerializationTest(prodLoadTF, input)
   }

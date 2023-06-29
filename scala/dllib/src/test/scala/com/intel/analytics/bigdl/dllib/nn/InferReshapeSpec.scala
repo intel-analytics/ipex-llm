@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class InferReshapeSpec extends FlatSpec {
   "A InferReshape Module with infer" should "generate correct output and grad" in {
@@ -188,7 +189,7 @@ class InferReshapeSpec extends FlatSpec {
 class InferReshapeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val inferReshape = InferReshape[Float](Array(-1, 2, 0, 5)).setName("inferReshape")
-    val input = Tensor[Float](2, 5, 2, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 2, 2).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(inferReshape, input)
   }
 }

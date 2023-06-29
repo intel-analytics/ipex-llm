@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class PredictionServiceSpec extends FlatSpec with Matchers {
 
@@ -90,7 +91,7 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
     // test with double keys
     table = T()
     (1 to 5).foreach(_ =>
-      table.update(Random.nextDouble(), Tensor[Double](3, 5).randn()))
+      table.update(new SecureRandom().nextDouble(), Tensor[Double](3, 5).randn()))
     bytes = PredictionService.serializeActivity(table)
     table2 = PredictionService.deSerializeActivity(bytes)
     table shouldEqual table2

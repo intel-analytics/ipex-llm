@@ -25,6 +25,7 @@ import scopt.OptionParser
 
 import scala.io.Source
 import scala.util.Random
+import java.security.SecureRandom
 
 
 object FGBoostRealDataBenchmark extends TimingSupportive {

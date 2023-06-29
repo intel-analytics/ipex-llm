@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class CAddSpec extends FlatSpec with Matchers {
@@ -95,7 +96,7 @@ class CAddSpec extends FlatSpec with Matchers {
 
 class CAddSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](5, 1).apply1(e => new SecureRandom().nextFloat())
     val cadd = CAdd[Float](Array(5, 1)).setName("cadd")
     runSerializationTest(cadd, input)
   }

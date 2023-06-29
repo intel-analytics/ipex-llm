@@ -20,6 +20,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import java.io.{FileOutputStream, FileInputStream, BufferedInputStream, BufferedOutputStream}
 import scala.io.Source
 import scala.util.Random
+import java.security.SecureRandom
 import sys.env
 
 class GramineQuoteGeneratorImplSpec extends FlatSpec with Matchers {
@@ -36,7 +37,7 @@ class GramineQuoteGeneratorImplSpec extends FlatSpec with Matchers {
       val gramineQuoteGenerator = new GramineQuoteGeneratorImpl()
       // generate a random userReportData.
       val userReportData = new Array[Byte](32)
-      Random.nextBytes(userReportData)
+      new SecureRandom().nextBytes(userReportData)
       val quote = gramineQuoteGenerator.getQuote(userReportData)
       val quoteWriter = new FileOutputStream("gramine-quote-dump")
       quoteWriter.write(quote)

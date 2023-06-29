@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class CMulSpec extends FlatSpec with Matchers {
@@ -86,7 +87,7 @@ class CMulSpec extends FlatSpec with Matchers {
 
 class CMulSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](5, 1).apply1(e => new SecureRandom().nextFloat())
     val cmul = CMul[Float](Array(5, 1)).setName("cmul")
     runSerializationTest(cmul, input)
   }

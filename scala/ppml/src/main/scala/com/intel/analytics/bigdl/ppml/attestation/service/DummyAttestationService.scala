@@ -22,8 +22,10 @@ import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
 import scala.util.Random
-
+import java.security.SecureRandom
 import com.intel.analytics.bigdl.ppml.attestation._
+
+import java.security.SecureRandom
 
 
 /**
@@ -49,7 +51,7 @@ class DummyAttestationService extends AttestationService {
      */
     def getQuoteFromServer(challenge: String): String = {
         val userReportData = new Array[Byte](16)
-        Random.nextBytes(userReportData)
+        new SecureRandom().nextBytes(userReportData)
         new String(userReportData)
     }
 
@@ -73,7 +75,7 @@ class DummyAttestationService extends AttestationService {
             response.put("nonce", nonce)
             val verifyQuoteResult = quote.indexOf("true") >= 0
             response.put("result", verifyQuoteResult)
-            val sign = (1 to 16).map(x => Random.nextInt(10)).mkString
+            val sign = (1 to 16).map(x => new SecureRandom().nextInt(10)).mkString
             response.put("sign", sign)
             (verifyQuoteResult, response.toString)
         }

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialContrastiveNormalizationSpec extends TorchSpec {
@@ -33,11 +34,11 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](1, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](1, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -71,11 +72,11 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 1, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 1, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -109,11 +110,11 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -143,15 +144,15 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val kernel = Tensor[Double](7).apply1(e => Random.nextDouble())
+    val kernel = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
 
     val model = new SpatialContrastiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 14, 14).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 4, 14, 14).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -180,15 +181,15 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val kernel = Tensor[Double](7).apply1(e => Random.nextDouble())
+    val kernel = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
 
     val model = new SpatialContrastiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](4, 14, 14).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](4, 14, 14).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -221,12 +222,12 @@ class SpatialContrastiveNormalizationSpec extends TorchSpec {
 
     val model = new SpatialContrastiveNormalization[Double](1, kernel.clone())
 
-    Random.setSeed(3)
-    val input1 = Tensor[Double](4, 3, 14, 14).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input1 = Tensor[Double](4, 3, 14, 14).apply1(e => new SecureRandom().nextDouble())
     val input = input1.narrow(2, 1, 1)
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 

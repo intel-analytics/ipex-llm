@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class MaxPooling3DSpec extends KerasBaseSpec {
 
@@ -49,7 +50,7 @@ class MaxPooling3DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = MaxPooling3D[Float](inputShape = Shape(3, 20, 15, 35))
     layer.build(Shape(2, 3, 20, 15, 35))
-    val input = Tensor[Float](2, 3, 20, 15, 35).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 20, 15, 35).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

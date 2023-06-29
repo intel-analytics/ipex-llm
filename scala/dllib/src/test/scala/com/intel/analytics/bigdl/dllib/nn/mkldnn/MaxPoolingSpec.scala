@@ -27,12 +27,13 @@ import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class MaxPoolingSpec extends BigDLSpecHelper {
   "Max Pooling test1" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => new SecureRandom().nextFloat())
 
     val pad = -1
     RNG.setSeed(100)
@@ -73,8 +74,8 @@ class MaxPoolingSpec extends BigDLSpecHelper {
   "Max Pooling with NHWC format" should "be correct" in {
     Engine.setEngineType(MklDnn)
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 28, 28, 480).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 14, 14, 480).apply1(e => new SecureRandom().nextFloat())
 
     val pad = -1
     RNG.setSeed(100)
@@ -104,8 +105,8 @@ class MaxPoolingSpec extends BigDLSpecHelper {
 
   "Convert max pooling with ceilMode to dnn layer" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 480, 28, 28).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(100)
     val layer = SpatialMaxPooling[Float](3, 3, 2, 2).ceil()
@@ -144,8 +145,8 @@ class MaxPoolingSpec extends BigDLSpecHelper {
 
   "Max Pooling test2" should "be correct" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 64, 112, 112).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 480, 14, 14).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(100)
     val pool = MaxPooling(3, 3, 2, 2)

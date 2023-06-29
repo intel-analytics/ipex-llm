@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class ScaleSpec extends FlatSpec with Matchers{
   val input = Tensor(Storage(Array(
@@ -198,7 +199,7 @@ class ScaleSpec extends FlatSpec with Matchers{
 class ScaleSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val scale = Scale[Float](Array(1, 4, 1, 1)).setName("scale")
-    val input = Tensor[Float](1, 4, 5, 6).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 4, 5, 6).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(scale, input)
   }
 }

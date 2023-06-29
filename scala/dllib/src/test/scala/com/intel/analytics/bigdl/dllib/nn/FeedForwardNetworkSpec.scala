@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class FeedForwardNetworkSpec extends FlatSpec with Matchers {
   val input : Tensor[Float] = Tensor(T(T(
@@ -152,7 +153,7 @@ class FeedForwardNetworkSpec extends FlatSpec with Matchers {
 class FeedForwardNetworkSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val ffn = new FeedForwardNetwork[Float](8, 4, 1.0f)
-    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 8).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(ffn, input)
   }
 }

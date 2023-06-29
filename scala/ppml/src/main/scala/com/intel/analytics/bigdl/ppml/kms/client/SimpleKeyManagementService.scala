@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
+import java.security.SecureRandom
 import org.apache.hadoop.conf.Configuration
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
@@ -42,7 +43,7 @@ class SimpleKeyManagementService protected(
         enrollMap(_appId) == _apiKey, "appid and apikey do not match!")
       Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
         "primaryKeySavePath should be specified")
-      val suffix = (1 to 4).map { x => Random.nextInt(10) }.mkString
+      val suffix = (1 to 4).map { x => new SecureRandom().nextInt(10) }.mkString
       val encryptedPrimaryKey = _appId + suffix
       keyReaderWriter.writeKeyToFile(primaryKeySavePath, encryptedPrimaryKey, config)
     }
@@ -58,7 +59,7 @@ class SimpleKeyManagementService protected(
       val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(primaryKeyPath, config)
       Log4Error.invalidInputError(primaryKeyPlaintext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      val randVect = (1 to 16).map { x => Random.nextInt(10) }
+      val randVect = (1 to 16).map { x => new SecureRandom().nextInt(10) }
       val dataKeyPlaintext = randVect.mkString
       var dataKeyCiphertext = ""
       for(i <- 0 until 16) {
@@ -111,8 +112,8 @@ class SimpleKeyManagementService protected(
 
 object SimpleKeyManagementService {
   def apply(): SimpleKeyManagementService = {
-    val appid = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val apikey = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appid = (1 to 12).map(x => new SecureRandom().nextInt(10)).mkString
+    val apikey = (1 to 12).map(x => new SecureRandom().nextInt(10)).mkString
     new SimpleKeyManagementService(appid, apikey)
   }
 

@@ -19,12 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class SquareSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val square = Square[Float]().setName("square")
-    val input = Tensor[Float](10).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](10).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(square, input)
   }
 }

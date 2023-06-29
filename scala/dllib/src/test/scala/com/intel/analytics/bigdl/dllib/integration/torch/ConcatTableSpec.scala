@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class ConcatTableSpec extends TorchSpec {
@@ -34,9 +35,9 @@ class ConcatTableSpec extends TorchSpec {
     ctable.zeroGradParameters()
     ctable.add(new Linear(5, 2))
     ctable.add(new Linear(5, 3))
-    val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
-    val gradOutput1 = Tensor[Double](2).apply1(_ => Random.nextDouble())
-    val gradOutput2 = Tensor[Double](3).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](5).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput1 = Tensor[Double](2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput2 = Tensor[Double](3).apply1(_ => new SecureRandom().nextDouble())
 
     val output = ctable.forward(input)
 

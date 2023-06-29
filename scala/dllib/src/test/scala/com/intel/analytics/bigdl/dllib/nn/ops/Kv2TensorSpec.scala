@@ -22,13 +22,14 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
+import java.security.SecureRandom
 
 class Kv2TensorSpec extends FlatSpec with Matchers {
 
   protected def randDoubles(length: Int,
                             lp: Double = 0.0,
                             up: Double = 1.0): Array[Double] = {
-    (1 to length).map(_ => lp + (up - lp) * Random.nextDouble()).toArray
+    (1 to length).map(_ => lp + (up - lp) * new SecureRandom().nextDouble()).toArray
   }
 
   protected def randKVMap(size: Int,

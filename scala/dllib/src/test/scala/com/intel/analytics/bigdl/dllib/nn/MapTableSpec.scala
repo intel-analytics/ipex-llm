@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MapTableSpec  extends FlatSpec with Matchers {
@@ -93,8 +94,8 @@ class MapTableSerialTest extends ModuleSerializationTest {
     val linear = Linear[Float](2, 2)
     val mapTable = new MapTable[Float]().setName("mapTable")
     mapTable.add(linear)
-    val input1 = Tensor[Float](2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    val input1 = Tensor[Float](2).apply1(_ => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](2).apply1(_ => new SecureRandom().nextFloat())
     val input = T()
     input(1.0.toFloat) = input1
     input(2.0.toFloat) = input2

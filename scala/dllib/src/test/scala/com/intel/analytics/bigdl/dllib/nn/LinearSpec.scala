@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -416,7 +417,7 @@ class LinearSpec extends FlatSpec with Matchers {
 class LinearSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val linear = Linear[Float](10, 2).setName("linear")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(linear, input)
   }
 }

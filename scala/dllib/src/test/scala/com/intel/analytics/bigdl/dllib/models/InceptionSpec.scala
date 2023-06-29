@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class InceptionSpec extends FlatSpec with Matchers {
@@ -80,8 +81,8 @@ class InceptionSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val graphModel = Inception_v1_NoAuxClassifier.graph(1000, false)
 
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -115,8 +116,8 @@ class InceptionSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val graphModel = Inception_v1.graph(1000, false)
 
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => new SecureRandom().nextFloat())
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -171,8 +172,8 @@ class InceptionSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val graphModel = Inception_v2_NoAuxClassifier.graph(1000)
 
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -206,8 +207,8 @@ class InceptionSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val graphModel = Inception_v2.graph(1000)
 
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 3000).apply1(e => new SecureRandom().nextFloat())
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]

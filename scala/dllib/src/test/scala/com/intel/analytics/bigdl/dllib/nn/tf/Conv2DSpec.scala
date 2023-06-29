@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class Conv2DSpec extends FlatSpec with Matchers {
   "Add operation" should "works correctly" in {
@@ -92,8 +93,8 @@ class Conv2DSpec extends FlatSpec with Matchers {
 class Conv2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val conv2d = Conv2D[Float](2, 1, -1, -1).setName("conv2d")
-    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
-    val filter = Tensor[Float](4, 3, 3, 2).apply1(_ => Random.nextFloat())
+    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => new SecureRandom().nextFloat())
+    val filter = Tensor[Float](4, 3, 3, 2).apply1(_ => new SecureRandom().nextFloat())
     val input = T(inputTensor, filter)
     runSerializationTest(conv2d, input)
   }

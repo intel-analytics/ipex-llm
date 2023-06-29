@@ -21,13 +21,14 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class SelectTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val selectTable = SelectTable[Float](2).setName("selectTable")
-    val input1 = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    val input3 = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input1 = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input3 = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     val input = T(1.0 -> input1, 2.0 -> input2, 3.0 -> input3)
     runSerializationTest(selectTable, input)
   }

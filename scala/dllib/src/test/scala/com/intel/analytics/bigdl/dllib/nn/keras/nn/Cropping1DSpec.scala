@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class Cropping1DSpec extends KerasBaseSpec {
 
@@ -49,7 +50,7 @@ class Cropping1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = Cropping1D[Float](inputShape = Shape(5, 6))
     layer.build(Shape(2, 5, 6))
-    val input = Tensor[Float](2, 5, 6).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 6).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

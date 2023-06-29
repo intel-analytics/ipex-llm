@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class VolumetricFullConvolutionSpec extends TorchSpec {
@@ -44,8 +45,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val layer = new VolumetricFullConvolution[Double](nInputPlane, nOutputPlane,
       kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](3, 3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](3, 3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     layer.updateOutput(input)
     val output = layer.updateOutput(input)
 
@@ -90,8 +91,8 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val layer = new VolumetricFullConvolution[Double](nInputPlane, nOutputPlane,
       kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](1, nInputPlane, 10, 20, 30).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](1, nInputPlane, 10, 20, 30).apply1(e => new SecureRandom().nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -137,11 +138,11 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, nInputPlane, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     var output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     var gradInput = model.backward(input, gradOutput)
     output = model.updateOutput(input).toTensor[Double]
@@ -207,11 +208,11 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](nInputPlane, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -273,11 +274,11 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, nInputPlane, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, nInputPlane, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -334,13 +335,13 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val layer = new VolumetricFullConvolution[Double](nInputPlane, nOutputPlane,
       kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
-    Random.setSeed(3)
-    val input1 = Tensor[Double](nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](nInputPlane, 6, 6).apply1(e => Random.nextInt(dH))
+    new SecureRandom().setSeed(3)
+    val input1 = Tensor[Double](nInputPlane, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](nInputPlane, 6, 6).apply1(e => new SecureRandom().nextInt(dH))
     val input = T(input1, input2)
     val output = layer.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = layer.backward(input, gradOutput)
 
@@ -401,11 +402,11 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val dH = 1
     val layer = new VolumetricFullConvolution[Double](nInputPlane, nOutputPlane,
       kT, kW, kH, dT, dW, dH)
-    Random.setSeed(3)
-    val input = Tensor[Double](6, nInputPlane, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](6, nInputPlane, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = layer.forward(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
@@ -466,16 +467,16 @@ class VolumetricFullConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](6, nInputPlane, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, nInputPlane, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](6, nInputPlane, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
     val gradInput = model.backward(input, gradOutput)
 
     model.zeroGradParameters()
     val output2 = model.updateOutput(input2).toTensor[Double]
-    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => Random.nextDouble())
+    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => new SecureRandom().nextDouble())
     val gradInput2 = model.backward(input2, gradOutput2)
 
     val code = "torch.manualSeed(" + seed + ")\n" +

@@ -21,12 +21,13 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 class EluGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val eluGrad = EluGrad[Float, Float]().setName("eluGrad")
-    val inputTensor = Tensor[Float](5).apply1(_ => Random.nextFloat())
-    val grad = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val inputTensor = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
+    val grad = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     val input = T(inputTensor, grad)
     runSerializationTest(eluGrad, input)
   }

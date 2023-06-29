@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class TopKV2LoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val topkv2LoadTF = new TopKV2LoadTF[Float](false, "Float").
       setName("topkv2LoadTF")
-    val input = T(Tensor[Float](3, 3).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](3, 3).apply1(_ => new SecureRandom().nextFloat()),
       Tensor.scalar[Int](2)
     )
     runSerializationTest(topkv2LoadTF, input)

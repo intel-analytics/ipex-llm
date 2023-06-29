@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MulSpec extends FlatSpec with Matchers {
@@ -31,8 +32,8 @@ class MulSpec extends FlatSpec with Matchers {
     val inputN = 5
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](1, 5).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](1, 5).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
     val layer1 = new Mul[Double]()
     val layer2 = new Mul[Double]()
     val (weights, grad) = layer1.getParameters()
@@ -54,7 +55,7 @@ class MulSpec extends FlatSpec with Matchers {
 class MulSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mul = Mul[Float]().setName("mul")
-    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10, 10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(mul, input)
   }
 }

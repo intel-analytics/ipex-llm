@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class CosineSpec extends FlatSpec with Matchers {
@@ -31,8 +32,8 @@ class CosineSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](1).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](1).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2).apply1(_ => new SecureRandom().nextDouble())
 
     val layer1 = new Cosine[Double](1, 2)
     val layer2 = new Cosine[Double](1, 2)
@@ -56,7 +57,7 @@ class CosineSpec extends FlatSpec with Matchers {
 class CosineSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val cosine = Cosine[Float](5, 5).setName("cosine")
-    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(cosine, input)
   }
 }

@@ -20,13 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
+import java.security.SecureRandom
 
 
 class CosineDistanceSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val cosineDistance = CosineDistance[Float]().setName("cosineDistance")
-    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

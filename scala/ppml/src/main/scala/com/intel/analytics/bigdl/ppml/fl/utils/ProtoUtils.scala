@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
+import java.security.SecureRandom
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLClient
@@ -147,7 +148,7 @@ object ProtoUtils {
   def randomSplit[T: ClassTag](weight: Array[Float],
                                data: Array[T],
                                seed: Int = 1): Array[Array[T]] = {
-    val random = new Random(seed = seed)
+    val random = new SecureRandom(seed = seed)
     val lens = weight.map(v => (v * data.length).toInt)
     lens(lens.length - 1) = data.length - lens.slice(0, lens.length - 1).sum
     val splits = lens.map(len => new Array[T](len))

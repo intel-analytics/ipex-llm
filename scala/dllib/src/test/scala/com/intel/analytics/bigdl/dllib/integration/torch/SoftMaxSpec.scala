@@ -20,12 +20,13 @@ import com.intel.analytics.bigdl.dllib.nn.SoftMax
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SoftMaxSpec extends TorchSpec {
   "A SoftMax with narrowed input" should "generate correct output" in {
     val layer = new SoftMax[Double]()
-    val input = Tensor[Double](4, 6).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](4, 6).apply1(_ => new SecureRandom().nextDouble())
 
     val in1 = input.narrow(1, 1, 2)
     val in2 = input.narrow(1, 3, 2)
