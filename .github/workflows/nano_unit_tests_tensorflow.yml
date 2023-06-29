@@ -53,7 +53,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-          sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
+          sudo apt-get update && apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 
       - name: Run TensorFlow unit tests (train)
         shell: bash
@@ -114,7 +114,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install dependencies
         run: |
-          sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
+          sudo apt-get update && apt-get install openmpi-bin openmpi-doc libopenmpi-dev
 
       - name: Run TensorFlow unit tests (Horovod)
         shell: bash
