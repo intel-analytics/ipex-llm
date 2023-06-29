@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, T, Table}
 
-
 import java.security.SecureRandom
 
 class MergeSpec extends KerasBaseSpec {

@@ -21,10 +21,8 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
-
 import java.security.SecureRandom
 import com.intel.analytics.bigdl.ppml.attestation._
-
 import java.security.SecureRandom
 
 

@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-
 import java.security.SecureRandom
 
 class BiasAddGradSerialTest extends ModuleSerializationTest {

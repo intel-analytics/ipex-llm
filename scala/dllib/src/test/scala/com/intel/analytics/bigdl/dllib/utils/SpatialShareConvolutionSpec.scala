@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.dllib.models.vgg.{Vgg_16}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.dllib.optim.{DummyDataSet, SGD, Top1Accuracy}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
 import java.security.SecureRandom
 
 class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {

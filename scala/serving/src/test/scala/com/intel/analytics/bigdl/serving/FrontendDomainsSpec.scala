@@ -24,7 +24,6 @@ import com.intel.analytics.zoo.serving.http._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
-
 import java.security.SecureRandom
 
 class FrontendDomainsSpec extends FlatSpec with Matchers with BeforeAndAfter with Supportive {

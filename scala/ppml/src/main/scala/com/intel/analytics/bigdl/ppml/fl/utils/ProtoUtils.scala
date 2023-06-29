@@ -30,7 +30,6 @@ import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.{BoostEva
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
-
 import java.security.SecureRandom
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error

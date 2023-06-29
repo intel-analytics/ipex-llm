@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

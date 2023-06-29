@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
 import scala.collection.mutable.HashMap
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

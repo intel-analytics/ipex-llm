@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
 import scala.collection.Iterator
-
 import java.security.SecureRandom
 
 object ColorJitter {

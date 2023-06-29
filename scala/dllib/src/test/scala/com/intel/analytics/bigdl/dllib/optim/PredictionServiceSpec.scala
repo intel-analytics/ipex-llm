@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 class PredictionServiceSpec extends FlatSpec with Matchers {

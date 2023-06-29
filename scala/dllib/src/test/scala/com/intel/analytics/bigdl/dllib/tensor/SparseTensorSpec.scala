@@ -19,7 +19,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

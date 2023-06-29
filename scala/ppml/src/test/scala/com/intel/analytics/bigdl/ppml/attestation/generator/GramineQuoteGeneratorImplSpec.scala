@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.ppml.attestation.generator
 import org.scalatest.{FlatSpec, Matchers}
 import java.io.{FileOutputStream, FileInputStream, BufferedInputStream, BufferedOutputStream}
 import scala.io.Source
-
 import java.security.SecureRandom
 import sys.env
 

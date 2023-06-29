@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.dllib.nn.SoftMin
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Engine
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

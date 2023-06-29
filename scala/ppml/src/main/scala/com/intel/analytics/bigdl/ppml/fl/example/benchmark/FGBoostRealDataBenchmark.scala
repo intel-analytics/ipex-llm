@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.ppml.fl.utils.{DataFrameUtils, TimingSupportive
 import scopt.OptionParser
 
 import scala.io.Source
-
 import java.security.SecureRandom
 
 

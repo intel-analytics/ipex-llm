@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 class SequentialSpec extends FlatSpec with Matchers {

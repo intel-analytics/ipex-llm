@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.MultiMarginCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

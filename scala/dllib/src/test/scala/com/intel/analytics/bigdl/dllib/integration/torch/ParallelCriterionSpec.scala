@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.Engine
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

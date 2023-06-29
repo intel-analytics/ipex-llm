@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 
 import scala.math._
-
 import java.security.SecureRandom
 
 class AlexNetSpec extends TorchSpec {

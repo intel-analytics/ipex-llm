@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {

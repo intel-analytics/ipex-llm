@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.dllib.utils._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

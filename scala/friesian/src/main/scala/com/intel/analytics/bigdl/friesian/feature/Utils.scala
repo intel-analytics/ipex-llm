@@ -24,7 +24,6 @@ import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.collection.mutable
 import scala.collection.mutable.WrappedArray
-
 import java.security.SecureRandom
 
 private[friesian] object Utils {

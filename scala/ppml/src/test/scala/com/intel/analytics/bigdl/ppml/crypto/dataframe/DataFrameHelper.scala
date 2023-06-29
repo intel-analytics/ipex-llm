@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import org.apache.spark.{SparkConf, SparkContext}
 
 import java.io.FileWriter
-
 import java.security.SecureRandom
 
 class DataFrameHelper extends BigDLSpecHelper {

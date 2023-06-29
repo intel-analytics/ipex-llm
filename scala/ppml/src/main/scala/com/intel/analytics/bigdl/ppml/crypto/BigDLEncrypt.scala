@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
-
 import java.security.SecureRandom
 
 /**

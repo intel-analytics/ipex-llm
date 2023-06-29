@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.nn.CMulTable
 
 import scala.collection.mutable.HashMap
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

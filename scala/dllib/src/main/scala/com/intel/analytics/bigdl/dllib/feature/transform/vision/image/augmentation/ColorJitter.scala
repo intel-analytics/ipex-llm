@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentat
 
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
-
 import scala.util.Random
 
 /**

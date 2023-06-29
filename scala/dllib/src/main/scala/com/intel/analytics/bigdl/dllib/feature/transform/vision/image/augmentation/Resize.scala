@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
-
 import java.security.SecureRandom
 
 /**

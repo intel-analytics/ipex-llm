@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 class ResizeBilinearSpec extends FlatSpec with Matchers {

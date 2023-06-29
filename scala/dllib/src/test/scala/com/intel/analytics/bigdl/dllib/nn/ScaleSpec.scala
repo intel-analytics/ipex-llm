@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 class ScaleSpec extends FlatSpec with Matchers{

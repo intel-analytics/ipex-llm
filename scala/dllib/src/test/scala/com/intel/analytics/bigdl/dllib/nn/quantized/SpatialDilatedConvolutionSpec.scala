@@ -21,7 +21,6 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-
 import java.security.SecureRandom
 
 class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {

@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

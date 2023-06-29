@@ -30,7 +30,6 @@ import com.intel.analytics.bigdl.dllib.utils.caffe.{CaffeConversionException, Ca
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-
 import java.security.SecureRandom
 
 

@@ -30,7 +30,6 @@ import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-
 import java.security.SecureRandom
 
 object Test {

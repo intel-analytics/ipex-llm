@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape}
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

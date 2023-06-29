@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
-
 import java.security.SecureRandom
 
 /**

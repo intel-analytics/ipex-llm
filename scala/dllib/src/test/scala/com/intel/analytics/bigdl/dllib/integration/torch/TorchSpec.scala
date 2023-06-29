@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.scalatest._
 
-
 import java.security.SecureRandom
 
 case class TestCaseIdentity(value: String) {

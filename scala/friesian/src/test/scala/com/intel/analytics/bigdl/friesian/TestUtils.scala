@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import org.apache.spark.ml.linalg.DenseVector
 
 import scala.collection.mutable
-
 import java.security.SecureRandom
 
 object TestUtils {

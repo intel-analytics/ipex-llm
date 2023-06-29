@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
-
 import java.security.SecureRandom
 
 class InceptionSpec extends TorchSpec {

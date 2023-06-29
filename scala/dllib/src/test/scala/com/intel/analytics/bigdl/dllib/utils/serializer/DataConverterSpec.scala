@@ -34,7 +34,6 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
-
 import java.security.SecureRandom
 
 

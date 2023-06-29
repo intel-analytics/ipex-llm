@@ -19,7 +19,6 @@ import com.intel.analytics.bigdl.dllib.nn.Padding
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

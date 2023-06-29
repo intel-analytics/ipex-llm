@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, Shape}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-
 import java.security.SecureRandom
 
 class InputSpec extends BigDLSpecHelper {

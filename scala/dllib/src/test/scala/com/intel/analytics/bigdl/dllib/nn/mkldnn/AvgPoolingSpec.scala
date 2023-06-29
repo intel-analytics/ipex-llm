@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
-
 import java.security.SecureRandom
 
 class AvgPoolingSpec extends BigDLSpecHelper {

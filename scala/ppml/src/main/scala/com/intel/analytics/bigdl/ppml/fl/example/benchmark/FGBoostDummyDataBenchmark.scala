@@ -21,9 +21,7 @@ import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.utils.TimingSupportive
 import scopt.OptionParser
-
 import java.security.SecureRandom
-
 import java.security.SecureRandom
 
 

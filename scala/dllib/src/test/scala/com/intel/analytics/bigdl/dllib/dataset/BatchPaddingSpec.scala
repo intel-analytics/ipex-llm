@@ -26,7 +26,6 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
-
 import java.security.SecureRandom
 
 class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {

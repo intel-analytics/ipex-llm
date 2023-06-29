@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 
-
 import java.security.SecureRandom
 
 class PoolerSpec extends FlatSpec with Matchers {

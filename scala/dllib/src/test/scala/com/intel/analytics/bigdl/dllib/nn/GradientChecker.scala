@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.lang.StringUtils
 
 import scala.reflect.ClassTag
-
 import java.security.SecureRandom
 
 sealed trait modelCheck

@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRToDnn}
 import org.apache.commons.lang3.SerializationUtils
 
-
 import java.security.SecureRandom
 
 class MaxPoolingSpec extends BigDLSpecHelper {
