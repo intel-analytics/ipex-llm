@@ -22,6 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import java.security.SecureRandom
+import scala.util.Random
 
 class Kv2TensorSpec extends FlatSpec with Matchers {
 
