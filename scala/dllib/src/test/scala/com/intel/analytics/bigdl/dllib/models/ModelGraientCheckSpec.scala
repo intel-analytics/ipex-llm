@@ -28,12 +28,13 @@ import java.security.SecureRandom
 class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   private val checkModel = true
-
+  val random = new SecureRandom()
+  random.setSeed(100)
   "GoogleNet_v1 model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
     val model = GoogleNet_v1_test(1000)
     model.zeroGradParameters()
 
@@ -47,7 +48,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
     val model = GoogleNet_v1_test(1000)
     model.zeroGradParameters()
 
@@ -60,9 +61,9 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "GoogleNet_v1 model" should "init right" in {
     val seed = 100
     RNG.setSeed(seed)
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
-    val labels = Tensor[Double](4).apply1(e => new SecureRandom().nextInt(1000))
+    random.setSeed(seed)
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
+    val labels = Tensor[Double](4).apply1(e => random.nextInt(1000))
     val criterion = new ClassNLLCriterion[Double]()
     val model = GoogleNet_v1_test(1000)
     val output = model.forward(input)
@@ -75,7 +76,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
     val model = GoogleNet_v2_test(1000)
     model.zeroGradParameters()
 
@@ -89,7 +90,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => random.nextDouble())
     val model = GoogleNet_v2_test.applyNoBn(1000)
     model.zeroGradParameters()
 
@@ -103,7 +104,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 3, 32, 32).apply1(e => random.nextDouble())
     val model = VggLike_test(10)
     model.zeroGradParameters()
 
@@ -117,7 +118,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 3, 32, 32).apply1(e => random.nextDouble())
     val model = VggLike_test(10)
     model.zeroGradParameters()
 
@@ -131,7 +132,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 1, 28, 28).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => random.nextDouble())
     val model = LeNet5_test(10)
     model.zeroGradParameters()
 
@@ -145,7 +146,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 1, 28, 28).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => random.nextDouble())
     val model = LeNet5_test(10)
     model.zeroGradParameters()
 
@@ -159,7 +160,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 1, 28, 28).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => random.nextDouble())
     val model = SimpleCNN_test(10)
     model.zeroGradParameters()
 
@@ -173,7 +174,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val start = System.nanoTime()
-    val input = Tensor[Double](8, 1, 28, 28).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => random.nextDouble())
     val model = SimpleCNN_test(10)
     model.zeroGradParameters()
 
