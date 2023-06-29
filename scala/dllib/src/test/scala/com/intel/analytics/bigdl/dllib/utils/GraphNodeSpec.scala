@@ -166,7 +166,8 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val hiddenSize = 12
     val input = T(Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()),
       Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()))
-    val gradOutput = T(Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()),
+    val gradOutput = T(Tensor[Float](batchSize, hiddenSize)
+      .apply1(e => new SecureRandom().nextFloat()),
       Tensor[Float](batchSize, hiddenSize).apply1(e => new SecureRandom().nextFloat()))
 
     val seed = 100

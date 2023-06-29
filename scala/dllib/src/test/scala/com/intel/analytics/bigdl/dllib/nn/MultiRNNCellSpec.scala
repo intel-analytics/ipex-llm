@@ -668,7 +668,8 @@ class MultiRNNCellSerialTest extends ModuleSerializationTest {
       .add(rec
         .add(multiRNNCell)).setName("multiRNNCell")
 
-    val input = Tensor[Float](batchSize, inputSize, 10, 10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](batchSize, inputSize, 10, 10)
+      .apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(model, input, multiRNNCell.getClass)
   }
 }

@@ -442,7 +442,8 @@ class SpatialFullConvolutionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     val output2 = model.updateOutput(input2).toTensor[Double]
-    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput2 = Tensor[Double]().resizeAs(output2)
+      .apply1(e => new SecureRandom().nextDouble())
     val gradInput2 = model.backward(input2, gradOutput2)
 
     val code = "torch.manualSeed(" + seed + ")\n" +

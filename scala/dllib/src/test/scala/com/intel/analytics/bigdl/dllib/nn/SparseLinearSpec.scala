@@ -107,7 +107,8 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 5" in {
     val gradOutput = Tensor(4, 2).rand()
-    val input = Tensor(4, 10).apply1(_ => new SecureRandom().nextInt(10) / 9 * new SecureRandom().nextFloat())
+    val input = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 9 * new SecureRandom().nextFloat())
     val sl = SparseLinear(10, 2, backwardStart = 5, backwardLength = 5)
     val l = Linear(10, 2)
     l.weight.copy(sl.weight)
@@ -124,8 +125,10 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 6" in {
     val gradOutput = Tensor(4, 2).rand()
-    val input = Tensor(4, 3).apply1(_ => new SecureRandom().nextInt(5) / 4 * new SecureRandom().nextFloat())
-    val input2 = Tensor(4, 2).apply1(_ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
+    val input = Tensor(4, 3).apply1(
+      _ => new SecureRandom().nextInt(5) / 4 * new SecureRandom().nextFloat())
+    val input2 = Tensor(4, 2).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
     val sl = SparseLinear(5, 2, backwardStart = 1, backwardLength = 5)
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
