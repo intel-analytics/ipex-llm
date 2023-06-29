@@ -96,16 +96,13 @@ def enable_multi_fs_save(save_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-
-            try:
+            with tempfile.gettempdir() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 if "overwrite" in kwargs:
                     put_local_file_to_remote(temp_path, path, over_write=kwargs['overwrite'])
                 else:
                     put_local_file_to_remote(temp_path, path)
-            finally:
-                os.remove(temp_path)
             return result
 
     return save_mult_fs
@@ -119,12 +116,10 @@ def enable_multi_fs_load_static(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.gettempdir() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return multi_fs_load
 
@@ -138,12 +133,10 @@ def enable_multi_fs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.gettempdir() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return multi_fs_load
 
@@ -157,24 +150,18 @@ def enable_hdfs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                         stdout=subprocess.PIPE).communicate()[0]
-            os.environ["CLASSPATH"] = classpath.decode("utf-8")
-            import pyarrow.fs as pafs
-            import pyarrow as pa
-            hdfs = pa.hdfs.connect()
-            if not hdfs.isfile(path):
-                os.mkdir(temp_path)
-            pafs.copy_files(path, temp_path)
-            try:
+            with tempfile.gettempdir() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
+                                             stdout=subprocess.PIPE).communicate()[0]
+                os.environ["CLASSPATH"] = classpath.decode("utf-8")
+                import pyarrow.fs as pafs
+                import pyarrow as pa
+                hdfs = pa.hdfs.connect()
+                if not hdfs.isfile(path):
+                    os.mkdir(temp_path)
+                pafs.copy_files(path, temp_path)
                 return load_func(temp_path, *args, **kwargs)
-            finally:
-                if os.path.isdir(temp_path):
-                    import shutil
-                    shutil.rmtree(temp_path)
-                else:
-                    os.remove(temp_path)
 
     return multi_fs_load
 
