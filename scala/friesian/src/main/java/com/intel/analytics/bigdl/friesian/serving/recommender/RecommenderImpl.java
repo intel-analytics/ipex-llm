@@ -62,21 +62,21 @@ public class RecommenderImpl {
                 try {
                     recallChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.warn(e.getMessage());
                 }
             }
             if (featureChannel != null) {
                 try {
                     featureChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.warn(e.getMessage());
                 }
             }
             if (rankingChannel != null) {
                 try {
                     rankingChannel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.warn(e.getMessage());
                 }
             }
         }));
@@ -100,7 +100,7 @@ public class RecommenderImpl {
         try {
             candidates = this.searchCandidates(id, canK);
         } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.UNAVAILABLE,
                     "recall service unavailable cause: " + e.getCause().toString() +
                             ", message: " + e.getMessage());
@@ -110,7 +110,7 @@ public class RecommenderImpl {
         try {
             userFeature = this.getUserFeature(id);
         } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.UNAVAILABLE,
                     "feature service unavailable cause: " + e.getCause().toString() +
                     ", message: " + e.getMessage());
@@ -120,7 +120,7 @@ public class RecommenderImpl {
         try {
             itemFeature = this.getItemFeatures(candidates);
         } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.UNAVAILABLE,
                     "feature service unavailable cause: " + e.getCause().toString() +
                     ", message: " + e.getMessage());
@@ -130,7 +130,7 @@ public class RecommenderImpl {
         try {
             itemInputTuple = this.buildRankingInput(userFeature, itemFeature);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.FAILED_PRECONDITION, e.getMessage());
         }
 
@@ -138,12 +138,12 @@ public class RecommenderImpl {
         try {
             idProbList = this.inferenceAndRanking(itemInputTuple, k);
         } catch (StatusRuntimeException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.UNAVAILABLE,
                     "ranking service unavailable cause: " + e.getCause().toString() +
                     ", message: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             return new IDProbList(Status.Code.UNAVAILABLE, e.getMessage());
         }
 
@@ -226,7 +226,7 @@ public class RecommenderImpl {
             topKIDProbsTuple = RecommenderUtils.getTopK(result,
                     itemIDArr, k);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
             logger.warn("Ranking encounter an error: "+ e.getMessage());
             throw e;
         }
@@ -282,7 +282,6 @@ public class RecommenderImpl {
             sb.append(infMetrics).append("\n\n");
             return sb.toString();
         } catch (Exception e) {
-            e.printStackTrace();
             logger.warn("GetClientMetrics encounter an error: "+ e.getMessage());
             return "{'errorMessage': " + e.getCause().toString() + "}";
         }
