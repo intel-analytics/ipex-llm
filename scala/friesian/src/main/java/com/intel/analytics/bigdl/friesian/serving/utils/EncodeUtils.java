@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.friesian.serving.utils;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +26,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.regex.Pattern;
 
+
 public class EncodeUtils {
+    private static final Logger logger = LogManager.getLogger(EncodeUtils.class.getName());
     public static byte[] objToBytes(Object o) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream out = null;
