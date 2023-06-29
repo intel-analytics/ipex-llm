@@ -25,6 +25,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import java.security.SecureRandom
+
 class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
   private var sc: SparkContext = _
   private val nodeNumber = 1
