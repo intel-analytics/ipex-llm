@@ -181,5 +181,5 @@ def pa_fs(path):
 def decode_imagebytes2PIL(image_btyes):
     from PIL import Image
     from io import BytesIO
-    imagebs = BytesIO(image_btyes)
-    return Image.open(imagebs)
+    with BytesIO(image_btyes) as imagebs:
+        return Image.open(imagebs)
