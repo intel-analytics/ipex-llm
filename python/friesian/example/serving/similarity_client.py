@@ -22,7 +22,22 @@ import pandas as pd
 import argparse
 import time
 import threading
+from urllib.parse import urlparse
+from os.path import exists
 
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    # Check if the scheme is empty or 'file'
+    if parsed_uri.scheme and parsed_uri.scheme != 'file':
+        raise Exception("Not Local File!")
+
+    # Check if the network location is empty or 'localhost'
+    if parsed_uri.netloc and parsed_uri.netloc.lower() != 'localhost':
+        raise Exception("Not Local File!")
+
+    if not exists(parsed_uri.path):
+        raise Exception("File Not Exist!")
 
 if 'http_proxy' in os.environ:
     del os.environ['http_proxy']
@@ -94,6 +109,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename="client.log", level=logging.INFO)
     args = parser.parse_args()
 
+    is_local_and_existing_uri(args.data_dir)
     df = pd.read_parquet(args.data_dir)
     id_list = df["tweet_id"].unique()
     n_thread = 4

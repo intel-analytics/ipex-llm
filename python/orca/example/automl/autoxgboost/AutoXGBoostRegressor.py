@@ -21,7 +21,22 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from bigdl.orca.automl import hp
+from urllib.parse import urlparse
+from os.path import exists
 
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    # Check if the scheme is empty or 'file'
+    if parsed_uri.scheme and parsed_uri.scheme != 'file':
+        raise Exception("Not Local File!")
+
+    # Check if the network location is empty or 'localhost'
+    if parsed_uri.netloc and parsed_uri.netloc.lower() != 'localhost':
+        raise Exception("Not Local File!")
+
+    if not exists(parsed_uri.path):
+        raise Exception("File Not Exist!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -53,6 +68,7 @@ if __name__ == '__main__':
         init_orca_context(cluster_mode=opt.cluster_mode, cores=opt.cores, init_ray_on_spark=True)
 
     import pandas as pd
+    is_local_and_existing_uri(opt.path)
     df = pd.read_csv(opt.path, encoding='latin-1')
     df.rename(
         columns={

@@ -21,7 +21,22 @@ import time
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.data_utils import *
 from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from urllib.parse import urlparse
+from os.path import exists
 
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    # Check if the scheme is empty or 'file'
+    if parsed_uri.scheme and parsed_uri.scheme != 'file':
+        raise Exception("Not Local File!")
+
+    # Check if the network location is empty or 'localhost'
+    if parsed_uri.netloc and parsed_uri.netloc.lower() != 'localhost':
+        raise Exception("Not Local File!")
+
+    if not exists(parsed_uri.path):
+        raise Exception("File Not Exist!")
 
 
 if __name__ == '__main__':
@@ -45,6 +60,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     init_fl_context()
+    is_local_and_existing_uri(args.train_path)
     df_train = pd.read_csv(args.train_path)
     fgboost_regression = FGBoostRegression()
     
@@ -65,6 +81,7 @@ if __name__ == '__main__':
                            y_stacked.reshape(-1, y_stacked.shape[-1]),
                            num_round=args.num_round)
     
+    is_local_and_existing_uri(args.test_path)
     df_test = pd.read_csv(args.test_path)
     result = fgboost_regression.predict(df_test, feature_columns=df_x.columns)
     
