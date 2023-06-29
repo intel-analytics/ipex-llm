@@ -36,7 +36,8 @@ class _BaseAutoModelClass:
             old_param = bnb.nn.Params4bit
             bnb.nn.Linear4bit = LinearInt4
             bnb.nn.Params4bit = ParamsInt4
-            kwargs["torch_dtype"] = torch.float32
+            if "torch_dtype" not in kwargs:
+                kwargs["torch_dtype"] = torch.float32
             kwargs["device_map"] = "cpu"
             # workaround HF transformers issue
             kwargs["llm_int8_skip_modules"] = []
