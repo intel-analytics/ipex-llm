@@ -27,18 +27,20 @@ import java.util.regex.Pattern;
 public class EncodeUtils {
     public static byte[] objToBytes(Object o) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = null;
         try {
-            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out = new ObjectOutputStream(bos);
             out.writeObject(o);
             out.flush();
             return bos.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         } finally {
             try {
+                out.close();
                 bos.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.warn(e.getMessage());
             }
         }
         return new byte[0];
@@ -57,12 +59,13 @@ public class EncodeUtils {
             in.accept("[*");
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         } finally {
             try {
+                in.close();
                 bis.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.warn(e.getMessage());
             }
         }
         return null;

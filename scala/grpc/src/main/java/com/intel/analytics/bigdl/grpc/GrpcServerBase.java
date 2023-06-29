@@ -118,7 +118,7 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
                 try {
                     GrpcServerBase.this.stop();
                 } catch (InterruptedException e) {
-                    e.printStackTrace(System.err);
+                    logger.error(e.getMessage());
                 }
                 System.err.println("*** server shut down");
             }

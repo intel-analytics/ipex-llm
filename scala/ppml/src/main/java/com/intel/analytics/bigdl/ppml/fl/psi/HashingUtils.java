@@ -134,7 +134,7 @@ public class HashingUtils {
             try {
                 this.generator = MessageDigest.getInstance("SHA-" + shaLength);
             } catch (NoSuchAlgorithmException nsae) {
-                nsae.printStackTrace();
+                logger.warn(nsae.getMessage());
                 throw new RuntimeException(nsae);
             }
         }
