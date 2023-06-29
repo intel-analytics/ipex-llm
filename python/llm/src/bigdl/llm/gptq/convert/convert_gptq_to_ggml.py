@@ -94,13 +94,14 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     qzeros = model[f"{src_name}.qzeros"].numpy()
     zeros = qzeros_to_zeros(qzeros).T
     scales = model[f"{src_name}.scales"].numpy().T
-    g_idx = model[f"{src_name}.g_idx"].numpy()
     qweight = model[f"{src_name}.qweight"].numpy().T  # transpose
 
     # Q4_1 does not support bias; good thing the bias is always all zeros.
     # Act-order is not supported.
-    invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]),
-                      "Act-order is not supported, please use a no act-order model.")
+    if f"{src_name}.g_idx" in model:
+        g_idx = model[f"{src_name}.g_idx"].numpy()
+        invalidInputError(np.all(g_idx[:-1] <= g_idx[1:]),
+                          "Act-order is not supported, please use a no act-order model.")
     ftype = 3  # Q4_1
 
     # Each int32 item is actually 8 int4 items packed together, and it's transposed.
@@ -182,6 +183,8 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
 
     n_vocab, n_embd = model['model.embed_tokens.weight'].shape
     layer_re = r'model\.layers\.([0-9]+)'
+    # n_vocab, n_embd = model['transformer.word_embeddings.weight'].shape
+    # layer_re = r'transformer\.h\.([0-9]+)'
     n_layer = 1 + max(int(re.match(layer_re, name).group(1)) for name in model
                       if re.match(layer_re, name))
 
@@ -191,16 +194,18 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
 
     if not tokenizer_path:
         tokenizer_path = os.path.join(model_path, "tokenizer.model")
-        invalidInputError(os.path.isfile(tokenizer_path),
-                          f"tokenizer.model was not found under {tokenizer_path}."
-                          f"Please specify the tokenizer-path")
 
-    tokenizer = SentencePieceProcessor(tokenizer_path)
-    vocab_size = tokenizer.vocab_size()
+    if os.path.isfile(tokenizer_path):
+        tokenizer = SentencePieceProcessor(tokenizer_path)
+        vocab_size = tokenizer.vocab_size()
+        autoToken = False
+    else:
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        vocab_size = tokenizer.vocab_size
+        autoToken = True
+
     # TODO: Support AutoTokenizer
-    # from transformers import AutoTokenizer
-    # tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
-    # vocab_size = tokenizer.vocab_size
 
     invalidInputError(vocab_size <= n_vocab, "vocab size not match.")
 
@@ -217,9 +222,10 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
               4]
     fout.write(struct.pack("i" * len(values), *values))
 
-    # This loop unchanged from convert-pth-to-ggml.py:
     for i in range(vocab_size):
-        if tokenizer.is_unknown(i):
+        if autoToken:
+            text = tokenizer.decode([i]).encode('utf-8')
+        elif tokenizer.is_unknown(i):
             text = " \u2047 ".encode("utf-8")
         elif tokenizer.is_control(i):
             text = b""
@@ -234,7 +240,8 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
             text = tokenizer.id_to_piece(i).replace("\u2581", " ").encode("utf-8")
         fout.write(struct.pack("i", len(text)))
         fout.write(text)
-        fout.write(struct.pack("f", tokenizer.get_score(i)))
+        if not autoToken:
+            fout.write(struct.pack("f", tokenizer.get_score(i)))
 
     convert_non_q4("model.embed_tokens.weight", "tok_embeddings.weight", model, fout)
     convert_non_q4("model.norm.weight", "norm.weight", model, fout)
