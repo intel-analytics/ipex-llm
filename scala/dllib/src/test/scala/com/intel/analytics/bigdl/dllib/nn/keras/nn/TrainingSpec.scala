@@ -37,9 +37,9 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     data = sc.range(0, 16, 1).map { _ =>
       val featureTensor = Tensor[Float](10)
-      featureTensor.apply1(_ => scala.util.new SecureRandom().nextFloat())
+      featureTensor.apply1(_ => new SecureRandom().nextFloat())
       val labelTensor = Tensor[Float](1)
-      labelTensor(Array(1)) = Math.round(scala.util.new SecureRandom().nextFloat())
+      labelTensor(Array(1)) = Math.round(new SecureRandom().nextFloat())
       Sample[Float](featureTensor, labelTensor)
     }
 
@@ -77,9 +77,9 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "compile, fit with validation, evaluate and predict" should "work properly" in {
     val testData = sc.range(0, 8, 1).map { _ =>
       val featureTensor = Tensor[Float](10)
-      featureTensor.apply1(_ => scala.util.new SecureRandom().nextFloat())
+      featureTensor.apply1(_ => new SecureRandom().nextFloat())
       val labelTensor = Tensor[Float](1)
-      labelTensor(Array(1)) = Math.round(scala.util.new SecureRandom().nextFloat())
+      labelTensor(Array(1)) = Math.round(new SecureRandom().nextFloat())
       Sample[Float](featureTensor, labelTensor)
     }
     val model = Sequential[Float]()
