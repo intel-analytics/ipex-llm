@@ -595,7 +595,7 @@ def save_pkl(data, path):
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
