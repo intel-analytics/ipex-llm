@@ -1,0 +1,15 @@
+# DestinationRule defines how outbound traffic from frontend is handled
+{{- if eq .Values.istioTLSEnabled true }}
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: bigdl-torchserve-frontend-destination-rule
+  namespace: bigdl-ppml-serving
+spec:
+  host: bigdl-torchserve-frontend-service.bigdl-ppml-serving.svc.cluster.local
+  trafficPolicy: # Apply to all ports
+    loadBalancer:
+      simple: ROUND_ROBIN
+    tls:
+      mode: ISTIO_MUTUAL
+{{- end }}

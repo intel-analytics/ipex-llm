@@ -1,0 +1,12 @@
+# frontend sidecar encrypts outcoming TCP connection from frontend to backend
+{{- if eq .Values.istioTLSEnabled true }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: bigdl-torchserve-frontend-sidecar
+  namespace: bigdl-ppml-serving
+spec:
+  egress:
+  - hosts:
+    - "bigdl-ppml-serving/bigdl-torchserve-frontend-service.bigdl-ppml-serving.svc.cluster.local"
+{{- end }}
