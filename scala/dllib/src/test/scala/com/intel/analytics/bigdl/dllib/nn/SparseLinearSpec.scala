@@ -151,7 +151,8 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 7" in {
     RandomGenerator.RNG.setSeed(10)
-    val rnd = new SecureRandom(10)
+    val rnd = new SecureRandom()
+    rnd.setSeed(10)
     val gradOutput = Tensor(4, 2).rand()
     val input = Tensor(4, 1023213).apply1(_ => rnd.nextInt(100000) / 99999 * rnd.nextFloat())
     val input2 = Tensor(4, 50).apply1(_ => rnd.nextInt(2) * rnd.nextFloat())
