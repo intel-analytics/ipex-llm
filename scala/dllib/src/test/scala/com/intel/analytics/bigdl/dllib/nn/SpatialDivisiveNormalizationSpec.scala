@@ -19,13 +19,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SpatialDivisiveNormalizationSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialDivisiveNormalization = SpatialDivisiveNormalization[Float]().
       setName("spatialDivisiveNormalization")
-    val input = Tensor[Float](1, 5, 5).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](1, 5, 5).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(spatialDivisiveNormalization, input)
   }
 }

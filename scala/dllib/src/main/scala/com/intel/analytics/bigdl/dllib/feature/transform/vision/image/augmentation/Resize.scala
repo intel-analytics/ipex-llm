@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
-import scala.util.Random
+import java.security.SecureRandom
 
 /**
  * Resize image
@@ -46,7 +46,7 @@ class Resize(resizeH: Int, resizeW: Int,
 
   override def transformMat(feature: ImageFeature): Unit = {
     val interpMethod = if (resizeMode == -1) {
-      interpMethods(new Random().nextInt(interpMethods.length))
+      interpMethods(new SecureRandom().nextInt(interpMethods.length))
     } else {
       resizeMode
     }
@@ -152,7 +152,7 @@ class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
   maxSize: Int = 1000) extends FeatureTransformer {
 
   override def transformMat(feature: ImageFeature): Unit = {
-    val scaleTo = scales(Random.nextInt(scales.length))
+    val scaleTo = scales(new SecureRandom().nextInt(scales.length))
     val (height, width) = AspectScale.getHeightWidthAfterRatioScale(feature.opencvMat(),
       scaleTo, maxSize, scaleMultipleOf)
     Resize.transform(feature.opencvMat(), feature.opencvMat(), width, height)

@@ -23,16 +23,18 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SparseJoinTableSpec  extends FlatSpec with Matchers {
 
   "Sparse JoinTable" should "return the same result" in {
-    Random.setSeed(2)
+    new SecureRandom().setSeed(2)
     RandomGenerator.RNG.setSeed(1)
-    val input = Tensor(4, 3).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input = Tensor(4, 3).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
     println(input)
-    val input2 = Tensor(4, 2).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input2 = Tensor(4, 2).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
     println(input2)
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
@@ -49,11 +51,13 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
   }
 
   "Sparse JoinTable" should "return the same result 2" in {
-    Random.setSeed(2)
+    new SecureRandom().setSeed(2)
     RandomGenerator.RNG.setSeed(1)
-    val input = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 9 * Random.nextFloat())
+    val input = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 9 * new SecureRandom().nextFloat())
     println(input)
-    val input2 = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 9 * Random.nextFloat())
+    val input2 = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 9 * new SecureRandom().nextFloat())
     println(input2)
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
@@ -70,11 +74,13 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
   }
 
   "Sparse JoinTable on narrowed table" should "return the same result" in {
-    Random.setSeed(2)
+    new SecureRandom().setSeed(2)
     RandomGenerator.RNG.setSeed(1)
-    val input = Tensor(8, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    val input = Tensor(8, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 5 * new SecureRandom().nextFloat())
     println(input)
-    val input2 = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    val input2 = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 5 * new SecureRandom().nextFloat())
     println(input2)
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
@@ -90,10 +96,12 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
   }
 
   "Sparse JoinTable on narrowed table" should "return the same result 2" in {
-    Random.setSeed(2)
+    new SecureRandom().setSeed(2)
     RandomGenerator.RNG.setSeed(1)
-    val input = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
-    val input2 = Tensor(8, 10).apply1(_ => Random.nextInt(10) / 5 * Random.nextFloat())
+    val input = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 5 * new SecureRandom().nextFloat())
+    val input2 = Tensor(8, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 5 * new SecureRandom().nextFloat())
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
     val denseInput = Tensor(4, 20)
@@ -141,8 +149,10 @@ class SparseJoinTableSerialTest extends ModuleSerializationTest {
     val sparseModel = Sequential[Float]().
       add(ParallelTable[Float]().add(Identity[Float]()).add(Identity[Float]()))
       .add(sparseJoinTable)
-    val input1 = Tensor[Float](4, 3).apply1(_ => Random.nextInt(2) * Random.nextFloat())
-    val input2 = Tensor[Float](4, 2).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input1 = Tensor[Float](4, 3).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](4, 2).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
     val sparseInput = T(Tensor.sparse(input1), Tensor.sparse(input2))
     runSerializationTest(sparseJoinTable, sparseInput)
   }

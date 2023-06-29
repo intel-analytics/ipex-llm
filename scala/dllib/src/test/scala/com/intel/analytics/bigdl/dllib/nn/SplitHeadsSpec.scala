@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SplitHeadsSpec extends FlatSpec with Matchers {
     val inputX : Tensor[Float] = Tensor(
@@ -178,7 +178,7 @@ class SplitHeadsSpec extends FlatSpec with Matchers {
 class SplitHeadsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = new SplitHeads[Float](8, 4, mul = true).setName("splitheads")
-    val input = Tensor[Float](2, 3, 8).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 8).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.apache.logging.log4j.LogManager
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class ResNetSpec extends FlatSpec with Matchers {
@@ -90,8 +90,8 @@ class ResNetSpec extends FlatSpec with Matchers {
     val batchSize = 4
     val classNum = 1000
     val depth = 18
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
@@ -147,8 +147,8 @@ class ResNetSpec extends FlatSpec with Matchers {
     val batchSize = 4
     val classNum = 1000
     val depth = 50
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
@@ -178,8 +178,8 @@ class ResNetSpec extends FlatSpec with Matchers {
     val batchSize = 4
     val classNum = 10
     val depth = 20
-    val input = Tensor[Float](batchSize, 3, 32, 32).apply1( e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, classNum).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 32, 32).apply1( e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, classNum).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,

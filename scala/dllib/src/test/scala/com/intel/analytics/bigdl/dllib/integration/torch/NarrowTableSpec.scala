@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.HashMap
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class NarrowTableSpec extends TorchSpec {
@@ -29,13 +29,13 @@ class NarrowTableSpec extends TorchSpec {
     val module = new NarrowTable[Double](1, 2)
 
     val input = T()
-    input(1.0) = Tensor[Double](2, 3).apply1(e => Random.nextDouble())
-    input(2.0) = Tensor[Double](2, 1).apply1(e => Random.nextDouble())
-    input(3.0) = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    input(1.0) = Tensor[Double](2, 3).apply1(e => new SecureRandom().nextDouble())
+    input(2.0) = Tensor[Double](2, 1).apply1(e => new SecureRandom().nextDouble())
+    input(3.0) = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
 
     val gradOutput = T()
-    gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
-    gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
+    gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
+    gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.NarrowTable(1, 2)\n" +
       "local i = 0\n" +
@@ -75,14 +75,14 @@ class NarrowTableSpec extends TorchSpec {
     val module = new NarrowTable[Double](2, -2)
 
     val input = T()
-    input(1.0) = Tensor[Double](2, 3).apply1(e => Random.nextDouble())
-    input(2.0) = Tensor[Double](2, 1).apply1(e => Random.nextDouble())
-    input(3.0) = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
-    input(4.0) = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    input(1.0) = Tensor[Double](2, 3).apply1(e => new SecureRandom().nextDouble())
+    input(2.0) = Tensor[Double](2, 1).apply1(e => new SecureRandom().nextDouble())
+    input(3.0) = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
+    input(4.0) = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
 
     val gradOutput = T()
-    gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
-    gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
+    gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
+    gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     var i = 0

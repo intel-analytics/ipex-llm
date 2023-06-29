@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class CrossEntropyCriterionSpec extends TorchSpec {
@@ -29,7 +29,7 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new CrossEntropyCriterion[Double]()
 
-    val input = Tensor[Double](3, 3).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](3, 3).apply1(_ => new SecureRandom().nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 1
     target(Array(2)) = 2
@@ -66,7 +66,7 @@ class CrossEntropyCriterionSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new CrossEntropyCriterion[Double](sizeAverage = false)
 
-    val input = Tensor[Double](3, 3).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](3, 3).apply1(_ => new SecureRandom().nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 1
     target(Array(2)) = 2

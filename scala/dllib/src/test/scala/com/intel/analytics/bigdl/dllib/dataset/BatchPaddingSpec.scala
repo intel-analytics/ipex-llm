@@ -26,7 +26,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
-import scala.util.Random
+import java.security.SecureRandom
 
 class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -39,11 +39,11 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batchSize = 3
     val dictionaryLength = 5
 
-    val input2 = Tensor[Float](3, dictionaryLength).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target2 = Tensor(Storage(Array(2.0f)), 1, Array(1))
-    val input1 = Tensor[Float](4, dictionaryLength).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](4, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target1 = Tensor(Storage(Array(1.0f, 1.0f)), 1, Array(2))
-    val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
+    val input3 = Tensor[Float](2, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 2.0f)), 1, Array(3))
 
     val sample1 = Sample[Float](input1, target1)
@@ -93,11 +93,11 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batchSize = 3
     val dictionaryLength = 5
 
-    val input1 = Tensor[Float](3, dictionaryLength).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](3, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target1 = Tensor(Storage(Array(2.0f)), 1, Array(1))
-    val input2 = Tensor[Float](4, dictionaryLength).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](4, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target2 = Tensor(Storage(Array(1.0f, 1.0f, 10.0f, 4.0f, 2.0f)), 1, Array(5))
-    val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
+    val input3 = Tensor[Float](2, dictionaryLength).apply1(e => new SecureRandom().nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 4.0f)), 1, Array(3))
 
     val sample1 = Sample[Float](input1, target1)
@@ -162,8 +162,8 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainData = new Array[Sample[Float]](totalCount)
     var i = 0
     while (i < totalCount) {
-      val input = Tensor[Float](3, 224, 224).apply1(e => Random.nextFloat())
-      val label = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+      val input = Tensor[Float](3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+      val label = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
       trainData(i) = Sample[Float](input, label)
       i += 1
     }

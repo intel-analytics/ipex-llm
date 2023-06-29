@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class SpatialDropout1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialDropout1D = SpatialDropout1D[Float]()
-    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(spatialDropout1D, input)
   }
 }

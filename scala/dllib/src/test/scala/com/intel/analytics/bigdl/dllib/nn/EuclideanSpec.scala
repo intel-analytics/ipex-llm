@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class EuclideanSpec extends FlatSpec with Matchers {
@@ -32,8 +32,8 @@ class EuclideanSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](7).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](7).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
 
     val layer1 = new Euclidean[Double](7, 7)
     val layer2 = new Euclidean[Double](7, 7)
@@ -60,8 +60,8 @@ class EuclideanSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](8, 7).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](8, 7).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](8, 7).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](8, 7).apply1(e => new SecureRandom().nextDouble())
 
     val layer1 = new Euclidean[Double](7, 7)
     val layer2 = layer1.cloneModule().asInstanceOf[Euclidean[Double]]
@@ -82,7 +82,7 @@ class EuclideanSpec extends FlatSpec with Matchers {
 class EuclideanSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val euclidean = Euclidean[Float](7, 7).setName("euclidean")
-    val input = Tensor[Float](8, 7).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](8, 7).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(euclidean, input)
   }
 }

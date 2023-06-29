@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class HighwaySpec extends KerasBaseSpec {
 
@@ -78,7 +78,7 @@ class HighwaySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = Highway[Float](activation = "tanh", bias = false, inputShape = Shape(4))
     layer.build(Shape(3, 4))
-    val input = Tensor[Float](3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 4).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class ProdSpec extends FlatSpec with Matchers {
   "Prod operation" should "works correctly" in {
@@ -42,7 +42,7 @@ class ProdSpec extends FlatSpec with Matchers {
 class ProdSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val prod = Prod[Float](-1, false).setName("prod")
-    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(prod, input, prod.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

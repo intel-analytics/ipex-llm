@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class BilinearSpec extends TorchSpec {
@@ -101,9 +101,9 @@ class BilinearSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 2).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](5, 5).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5, 2).apply1(e => new SecureRandom().nextDouble())
 
     var input = new Table()
     input(1.toDouble) = input1

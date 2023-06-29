@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ReLUSpec extends FlatSpec {
@@ -138,7 +138,7 @@ class ReLUSpec extends FlatSpec {
 class ReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val relu = ReLU[Float]().setName("relu")
-    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(relu, input)
   }
 }

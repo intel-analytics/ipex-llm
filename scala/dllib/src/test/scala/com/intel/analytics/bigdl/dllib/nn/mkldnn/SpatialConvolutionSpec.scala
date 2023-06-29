@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
@@ -42,8 +42,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val padH = 0
     var (dilationH, dilationW) = (1, 1)
 
-    var input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    var gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    var input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    var gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => new SecureRandom().nextFloat())
 
 
     def compareHelper(input: Tensor[Float], gradOutput: Tensor[Float],
@@ -96,8 +96,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     dilationH = 2
     dilationW = 2
-    input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    gradOutput = Tensor[Float](2, 4, 5, 5).apply1(e => Random.nextFloat())
+    input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    gradOutput = Tensor[Float](2, 4, 5, 5).apply1(e => new SecureRandom().nextFloat())
 
     compareHelper(input, gradOutput, dilationH, dilationW)
 
@@ -113,8 +113,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val padW = 0
     val padH = 0
 
-    val input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => new SecureRandom().nextFloat())
     RNG.setSeed(100)
     val conv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
     RNG.setSeed(100)
@@ -162,8 +162,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val padW = -1
     val padH = -1
 
-    val input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => new SecureRandom().nextFloat())
     RNG.setSeed(100)
     val conv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
     RNG.setSeed(100)
@@ -212,8 +212,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val padH = 0
     val ngroup = 2
 
-    val input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => new SecureRandom().nextFloat())
     RNG.setSeed(100)
     val conv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, ngroup)
@@ -262,8 +262,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val padH = 0
     val ngroup = 2
 
-    val input = Tensor[Float](2, 2, 23, 23).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 23, 23).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](2, 4, 6, 6).apply1(e => new SecureRandom().nextFloat())
     RNG.setSeed(100)
     val conv = SpatialConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, ngroup)
     RNG.setSeed(100)

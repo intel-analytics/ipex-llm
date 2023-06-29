@@ -19,13 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class TransposeLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val transposeLoadTF = new TransposeLoadTF[Float]().setName("transposeLoadTF")
-    val input = T(Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](1, 6, 2).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Int](T(0, 1))
     )
     runSerializationTest(transposeLoadTF, input)

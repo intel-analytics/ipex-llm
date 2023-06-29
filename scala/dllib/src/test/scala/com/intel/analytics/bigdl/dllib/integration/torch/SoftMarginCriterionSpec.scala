@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.SoftMarginCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SoftMarginCriterionSpec extends TorchSpec {
     "A SoftMarginCriterion Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new SoftMarginCriterion[Double]()
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
     val target = Tensor[Double](4, 10).randn()
 
     val start = System.nanoTime()
@@ -55,8 +55,8 @@ class SoftMarginCriterionSpec extends TorchSpec {
     "correct output and grad" in {
     torchCheck()
     val module = new SoftMarginCriterion[Double](false)
-    Random.setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
     val target = Tensor[Double](4, 10).randn()
 
     val start = System.nanoTime()

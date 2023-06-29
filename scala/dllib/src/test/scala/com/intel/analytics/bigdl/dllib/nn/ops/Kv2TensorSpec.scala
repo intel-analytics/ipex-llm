@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import java.security.SecureRandom
 import scala.util.Random
 
 class Kv2TensorSpec extends FlatSpec with Matchers {
@@ -28,7 +29,7 @@ class Kv2TensorSpec extends FlatSpec with Matchers {
   protected def randDoubles(length: Int,
                             lp: Double = 0.0,
                             up: Double = 1.0): Array[Double] = {
-    (1 to length).map(_ => lp + (up - lp) * Random.nextDouble()).toArray
+    (1 to length).map(_ => lp + (up - lp) * new SecureRandom().nextDouble()).toArray
   }
 
   protected def randKVMap(size: Int,

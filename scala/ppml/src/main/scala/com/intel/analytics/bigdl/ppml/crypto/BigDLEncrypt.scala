@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
-import scala.util.Random
+import java.security.SecureRandom
 
 /**
  * BigDL general crypto for encrypt and decrypt data.
