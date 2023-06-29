@@ -20,6 +20,7 @@ import os
 import sys
 from shutil import copyfile, copytree, rmtree
 from setuptools import setup
+import subprocess
 
 long_description = '''
 BigDL DLlib is a distributed deep learning library for Apache Spark 
@@ -32,14 +33,9 @@ for more information.
 TEMP_PATH = "bigdl/share/dllib"
 dllib_src_path = os.path.abspath(__file__ + "/..")
 
-try:
-    exec(open(dllib_src_path + "/bigdl/dllib/version.py").read())
-except IOError:
-    print("Failed to load bigdl-dllib version file for packaging. "
-          "You need to run the release script instead.")
-    sys.exit(-1)
+command = open(os.path.join(dllib_src_path, "/bigdl/dllib/version.py"), 'r').read().strip()
+VERSION = command.split("=")[-1].strip("'")
 
-VERSION = __version__  # noqa
 PYSPARK_VERSION = '2.4.6'
 
 building_error_msg = """
