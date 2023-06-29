@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.models
 
 import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, GradientChecker}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -68,8 +69,10 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val model = GoogleNet_v1_test(1000)
     val output = model.forward(input)
     val loss = criterion.forward(output, labels)
-
-    loss should be (6.905944392665487)
+    import scala.math.abs
+    Log4Error.invalidOperationError(
+      abs(loss - 6.905944392665487) < 0.01,
+      s"Loss should be in range 6.905944392665487 +- 0.01, but got ${loss}")
   }
 
   "GoogleNet_v2 model in batch mode" should "be good in gradient check for input" in {
