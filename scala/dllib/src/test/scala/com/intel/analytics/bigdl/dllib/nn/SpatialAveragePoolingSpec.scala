@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

@@ -33,7 +33,7 @@ import javax.imageio.ImageIO
 import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

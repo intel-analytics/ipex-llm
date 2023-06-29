@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class TimeDistributedSpec extends FlatSpec with Matchers {

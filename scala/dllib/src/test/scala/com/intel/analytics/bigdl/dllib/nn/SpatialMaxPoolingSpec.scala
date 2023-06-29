@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel

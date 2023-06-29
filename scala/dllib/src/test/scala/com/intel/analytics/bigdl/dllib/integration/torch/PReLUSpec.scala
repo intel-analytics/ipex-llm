@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.PReLU
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.math._
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

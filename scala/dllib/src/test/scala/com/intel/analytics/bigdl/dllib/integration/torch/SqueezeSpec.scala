@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.Squeeze
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

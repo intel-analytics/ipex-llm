@@ -34,7 +34,7 @@ import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
 
-import scala.util.Random
+
 import java.security.SecureRandom
 import scala.util.parsing.json._
 

@@ -20,7 +20,7 @@ import java.util.Base64
 
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
-import scala.util.Random
+
 import java.security.SecureRandom
 
 import org.apache.hadoop.conf.Configuration

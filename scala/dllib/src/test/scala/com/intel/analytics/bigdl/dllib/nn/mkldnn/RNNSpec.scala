@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils._
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class RNNSpec extends FlatSpec with Matchers{

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{LayerException, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class InferReshapeSpec extends FlatSpec {

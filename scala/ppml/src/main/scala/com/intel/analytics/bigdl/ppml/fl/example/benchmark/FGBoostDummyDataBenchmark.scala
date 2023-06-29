@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.ppml.fl.utils.TimingSupportive
 import scopt.OptionParser
 
 import java.security.SecureRandom
-import scala.util.Random
+
 import java.security.SecureRandom
 
 

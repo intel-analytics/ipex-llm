@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.kms
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.HashMap
-import scala.util.Random
+
 import java.security.SecureRandom
 import org.apache.hadoop.conf.Configuration
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter

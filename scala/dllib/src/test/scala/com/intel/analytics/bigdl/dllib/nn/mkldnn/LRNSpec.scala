@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import org.apache.commons.lang3.SerializationUtils
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class LRNSpec extends BigDLSpecHelper {

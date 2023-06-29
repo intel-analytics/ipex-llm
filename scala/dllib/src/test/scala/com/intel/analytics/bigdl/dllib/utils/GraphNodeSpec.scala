@@ -27,7 +27,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class GraphNodeSpec extends FlatSpec with Matchers {

@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.Shape
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial

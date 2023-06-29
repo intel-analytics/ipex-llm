@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class Kv2TensorSpec extends FlatSpec with Matchers {

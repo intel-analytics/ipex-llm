@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{GradientChecker, Linear, MSECriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+
 import java.security.SecureRandom
 import com.intel.analytics.bigdl._
 

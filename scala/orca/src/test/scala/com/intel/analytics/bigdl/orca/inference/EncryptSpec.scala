@@ -21,7 +21,7 @@ import java.io.File
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 
 import java.util.Base64
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class EncryptSpec extends FunSuite with Matchers with BeforeAndAfterAll

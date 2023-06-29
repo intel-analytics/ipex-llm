@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, T}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class DepthwiseConv2DSpec extends BigDLSpecHelper {

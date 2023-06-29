@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.typeAttr
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class ReshapeSpec extends TensorflowSpecHelper {

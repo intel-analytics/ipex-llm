@@ -48,7 +48,7 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
 
-import scala.util.Random
+
 import java.security.SecureRandom
 import scala.util.parsing.json._
 

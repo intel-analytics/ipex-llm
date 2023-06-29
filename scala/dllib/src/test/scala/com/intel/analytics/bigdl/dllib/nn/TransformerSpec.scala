@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.apache.zookeeper.ZooDefs.Ids
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class TransformerLayerSpec extends FlatSpec with Matchers {

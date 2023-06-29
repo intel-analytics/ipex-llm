@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class AbstractModuleSpec extends FlatSpec with Matchers {

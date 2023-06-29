@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class RoiPoolingSpec extends FlatSpec with Matchers {

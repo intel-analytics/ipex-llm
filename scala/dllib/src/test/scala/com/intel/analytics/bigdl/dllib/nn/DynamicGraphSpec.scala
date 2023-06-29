@@ -34,7 +34,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.reflect.ClassTag
-import scala.util.Random
+
 import java.security.SecureRandom
 import org.scalatest.{FlatSpec, Matchers}
 

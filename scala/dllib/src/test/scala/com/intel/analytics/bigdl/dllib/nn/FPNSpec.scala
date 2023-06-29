@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class FPNSpec extends FlatSpec with Matchers {

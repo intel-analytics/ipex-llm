@@ -31,7 +31,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import redis.clients.jedis.Jedis
 
 import scala.concurrent.{Await, ExecutionContextExecutor}
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class FrontendActorsSpec extends FlatSpec with Matchers with BeforeAndAfter with Supportive {

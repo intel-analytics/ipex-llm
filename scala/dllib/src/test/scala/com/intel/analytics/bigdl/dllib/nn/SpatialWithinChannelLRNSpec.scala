@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+
 import java.security.SecureRandom
 
 class SpatialWithinChannelLRNSpec extends FlatSpec with Matchers{
