@@ -49,7 +49,7 @@ class Test_Models_Basics(TestCase):
         llm = BigdlLLM(
             model_path=self.llama_model_path, 
             max_tokens=32,
-            n_threads=22)
+            n_threads=2)
         question = "What is AI?"
         result = llm(question)
         
@@ -58,7 +58,7 @@ class Test_Models_Basics(TestCase):
             model_path=self.gptneox_model_path,
             model_family="gptneox", 
             max_tokens=32,
-            n_threads=22)
+            n_threads=2)
         question = "What is AI?"
         result = llm(question)
         
@@ -67,7 +67,7 @@ class Test_Models_Basics(TestCase):
             model_path=self.bloom_model_path, 
             model_family="bloom",
             max_tokens=32,
-            n_threads=22)
+            n_threads=2)
         question = "What is AI?"
         result = llm(question)
         
