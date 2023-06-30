@@ -188,7 +188,7 @@
         <data-store-url>http://download.tensorflow.org</data-store-url>
         <lightgbm.scope>provided</lightgbm.scope>
         <grpc.version>1.48.1</grpc.version>
-        <parquet.version>1.12.2</parquet.version>
+        <parquet.version>1.12.3</parquet.version>
 
     </properties>
 
