@@ -88,7 +88,7 @@ runs:
           kubectl logs $gbt_example_driver | egrep 'Training data results'
           status_4_spark_gbt=$(echo $?)
           if [ "`kubectl get pods | grep spark-gbt-example-test | awk '{print $1}'`" != "" ]; then
-            kubectl delete pods $gbt_driver
+            kubectl delete pods $gbt_example_driver
           fi
         fi
         
