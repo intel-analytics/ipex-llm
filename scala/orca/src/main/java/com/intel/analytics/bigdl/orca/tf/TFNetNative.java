@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
+import com.nimbusds.jose.util.Resource;
+
 public class TFNetNative {
 
     private static final boolean DEBUG =
@@ -94,7 +96,9 @@ public class TFNetNative {
                         System.out.println("got shared path");
                         System.load(shareLibFile.getPath());
                     } else {
-                        System.load(extractResource(getResource(resourceName), libName, tempDirectory));
+                        InputStream resource = getResource(resourceName);
+                        System.load(extractResource(resource, libName, tempDirectory));
+                        resource.close();
                     }
                 }
             } catch (Exception e) {

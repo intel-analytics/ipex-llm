@@ -73,7 +73,7 @@ public class Client {
                 max_wait--;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         } finally{
             // ManagedChannels use resources like threads and TCP connections. To prevent leaking these
             // resources the channel should be shut down when it will no longer be used. If it may be used
