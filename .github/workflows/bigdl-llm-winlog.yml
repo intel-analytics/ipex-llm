@@ -8,7 +8,7 @@ on:
   # pull_request:
   #   branchs: [ main ]
   schedule:
-    - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
+    - cron: '0 19 * * *' # GMT time, 19:00 GMT == 3:00 China Everyday
   workflow_dispatch:
 
 jobs:
