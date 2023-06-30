@@ -1,3 +1,7 @@
+# Gramine Machine Learning Toolkit
+
+This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
+
 - [Gramine Machine Learning Toolkit](#gramine-machine-learning-toolkit)
   - [Before Running Code](#before-running-code)
     - [1. Build Docker Images](#1-build-docker-images)
@@ -13,11 +17,6 @@
   - [3. Run LightGBM Application](#3-run-lightgbm-application)
     - [3.1 LightGBM Training on Kubernetes](#31-lightgbm-training-on-kubernetes)
     - [3.2 LightGBM on Spark](#32-lightgbm-on-spark)
-
-
-# Gramine Machine Learning Toolkit
-
-This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
 
 ## Before Running Code
 ### 1. Build Docker Images
