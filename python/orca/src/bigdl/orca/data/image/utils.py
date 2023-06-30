@@ -142,9 +142,9 @@ def dict_to_row(schema, row_dict):
                 img_bytes = f.read()
             row[k] = bytearray(img_bytes)
         elif schema_field.feature_type == FeatureType.NDARRAY:
-            memfile = BytesIO()
-            np.savez_compressed(memfile, arr=v)
-            row[k] = bytearray(memfile.getvalue())
+            with BytesIO() as memfile:
+                np.savez_compressed(memfile, arr=v)
+                row[k] = bytearray(memfile.getvalue())
         else:
             row[k] = v
     return pyspark.Row(**row)
@@ -167,9 +167,9 @@ def chunks(iterable: List[Dict[str, Union[str, int, float, "ndarray"]]],
 def pa_fs(path):
     import pyarrow as pa
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        fs = pa.hdfs.connect()
-        path = path[len("hdfs://"):]
-        return path, fs
+        with pa.hdfs.connect() as fs:
+            path = path[len("hdfs://"):]
+            return path, fs
     elif path.startswith("s3"):
         invalidInputError(False, "aws s3 is not supported for now")
     else:  # Local path
