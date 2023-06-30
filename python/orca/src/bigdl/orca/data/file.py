@@ -436,14 +436,14 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
             logger.error("Cannot upload file {} to {}: error: {}"
-                            .format(local_path, remote_path, p.stderr))
+                         .format(local_path, remote_path, p.stderr))
             return -1
         if filemode:
             chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
             p = subprocess.run(chmod_cmd, capture_output=True)
             if p.returncode != 0:
                 logger.error("Cannot upload file {} to {}: error: {}"
-                                .format(local_path, remote_path, p.stderr))
+                             .format(local_path, remote_path, p.stderr))
                 return -1
         return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
