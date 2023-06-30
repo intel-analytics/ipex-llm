@@ -436,14 +436,14 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
             logger.error("Cannot upload file {} to {}: error: {}"
-                         .format(local_path, remote_path, p.stderr))
+                         .format(local_path, remote_path, str(p.stderr)))
             return -1
         if filemode:
             chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
             p = subprocess.run(chmod_cmd, capture_output=True)
             if p.returncode != 0:
                 logger.error("Cannot upload file {} to {}: error: {}"
-                             .format(local_path, remote_path, p.stderr))
+                             .format(local_path, remote_path, str(p.stderr)))
                 return -1
         return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
@@ -484,7 +484,7 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
         cmd = 'hdfs dfs -put -f {}* {}'.format(local_path_prefix, remote_dir)
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
-            logger.error("Error: {}".format(p.stderr))
+            logger.error("Error: {}".format(str(p.stderr)))
             return -1
         return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
@@ -521,7 +521,7 @@ def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
         cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
-            logger.error("Error: {}".format(p.stderr))
+            logger.error("Error: {}".format(str(p.stderr)))
             return -1
         return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
@@ -552,7 +552,7 @@ def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
         cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
-            logger.error("Error: {}".format(p.stderr))
+            logger.error("Error: {}".format(str(p.stderr)))
             return -1
         return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
@@ -589,7 +589,7 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
         cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
         p = subprocess.run(cmd, capture_output=True)
         if p.returncode != 0:
-            logger.error("Error: {}".format(p.stderr))
+            logger.error("Error: {}".format(str(p.stderr)))
             return -1
         return 0
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
