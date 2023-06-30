@@ -78,6 +78,7 @@ def setup_package():
                                 'grpcio<=1.51.1',
                                 'pmdarima==1.8.5',
                                 'prophet==1.1.0',
+                                'holidays==0.24',
                                 'tsfresh==0.17.0',
                                 'pyarrow==6.0.1',
                                 'matplotlib',
