@@ -393,7 +393,7 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
         cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
         process = subprocess.run(cmd, capture_output=True)
         if process.returncode != 0:
-            logger.error("Error: {}".format(process.stderr))
+            logger.error("Error: {}".format(str(process.stderr)))
             return -1
         return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
