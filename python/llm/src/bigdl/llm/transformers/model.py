@@ -26,14 +26,28 @@ class _BaseAutoModelClass:
     def from_pretrained(cls,
                         *args,
                         **kwargs):
-        load_in_4bit = kwargs.pop("load_in_4bit", False)
-        model = cls.HF_Model.from_pretrained(*args, **kwargs)
-
+        load_in_4bit = kwargs.get("load_in_4bit", False)
+        # if load_in_4bit:
+        #     kwargs["low_cpu_mem_usage"] = True
         if load_in_4bit:
-            from .convert import ggml_convert_int4
-            model = model.to("cpu", torch.float32)
-            model = ggml_convert_int4(model)
+            from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
+            import bitsandbytes as bnb
+            old_linear = bnb.nn.Linear4bit
+            old_param = bnb.nn.Params4bit
+            bnb.nn.Linear4bit = LinearInt4
+            bnb.nn.Params4bit = ParamsInt4
+            if "torch_dtype" not in kwargs:
+                kwargs["torch_dtype"] = torch.float32
+            kwargs["device_map"] = "cpu"
+            # workaround HF transformers issue
+            kwargs["llm_int8_skip_modules"] = []
+            kwargs["tie_word_embeddings"] = False
 
+            try:
+                model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            finally:
+                bnb.nn.Linear4bit = old_linear
+                bnb.nn.Params4bit = old_param
         return model
 
 

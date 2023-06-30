@@ -171,7 +171,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape
 
 
 class LinearInt4(nn.Linear):
-    def __init__(self, input_features, output_features, bias=True):
+    def __init__(self, input_features, output_features, bias=True, *args, **kwargs):
         super().__init__(input_features, output_features, bias)
         self.weight = ParamsInt4(self.weight.data, requires_grad=False,
                                  old_data=self.weight.data,
@@ -181,7 +181,6 @@ class LinearInt4(nn.Linear):
         self.weight_shape = (self.out_len, self.in_len)
 
     def forward(self, x: torch.Tensor):
-        # weights are cast automatically as Int8Params, but the bias has to be cast manually
         if self.bias is not None and self.bias.dtype != x.dtype:
             self.bias.data = self.bias.data.to(x.dtype)
 
@@ -197,4 +196,4 @@ class LinearInt4(nn.Linear):
         if self.bias is not None:
             result += self.bias
 
-        return result
+        return result.to(x.dtype)
