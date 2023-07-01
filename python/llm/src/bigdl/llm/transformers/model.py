@@ -27,13 +27,14 @@ class _BaseAutoModelClass:
                         *args,
                         **kwargs):
         load_in_4bit = kwargs.pop("load_in_4bit", False)
+        if load_in_4bit:
+            kwargs["low_cpu_mem_usage"] = True
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
 
         if load_in_4bit:
             from .convert import ggml_convert_int4
-            model = model.to("cpu", torch.float32)
+            model = model.to("cpu")
             model = ggml_convert_int4(model)
-
         return model
 
 
