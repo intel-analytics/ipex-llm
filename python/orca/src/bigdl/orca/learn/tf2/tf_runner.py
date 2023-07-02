@@ -518,7 +518,7 @@ class TFRunner:
             else:
                 filepath = self.load_params["filepath"]
                 file_name = os.path.basename(filepath)
-                with tempfile.mkdtemp() as tempdir:
+                with tempfile.gettempdir() as tempdir:
                     temp_path = os.path.join(tempdir, file_name)
                     if is_file(filepath):
                         # h5 format
@@ -588,7 +588,7 @@ class TFRunner:
 
     def save_model(self, filepath, overwrite, include_optimizer, save_format, signatures, options):
         file_name = os.path.basename(filepath)
-        with tempfile.mkdtemp() as temp_dir:
+        with tempfile.gettempdir() as temp_dir:
             temp_path = os.path.join(temp_dir, file_name)
             self.model.save(filepath=temp_path, overwrite=overwrite, save_format=save_format,
                             include_optimizer=include_optimizer, signatures=signatures,
@@ -634,7 +634,7 @@ class TFRunner:
             options=options
         )
         file_name = os.path.basename(filepath)
-        with tempfile.mkdtemp() as tempdir:
+        with tempfile.gettempdir() as tempdir:
             temp_path = os.path.join(tempdir, file_name)
             if is_file(filepath):
                 # h5 format
@@ -654,7 +654,7 @@ class TFRunner:
 
     def save_weights(self, filepath, overwrite, save_format, options):
         file_name = os.path.basename(filepath)
-        with tempfile.mkdtemp() as temp_dir:
+        with tempfile.gettempdir() as temp_dir:
             temp_path = os.path.join(temp_dir, file_name)
             self.model.save_weights(temp_path, overwrite, save_format, options)
             if self.rank == 0:
@@ -676,7 +676,7 @@ class TFRunner:
     def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
         file_name = os.path.basename(filepath)
-        with tempfile.mkdtemp() as temp_dir:
+        with tempfile.gettempdir() as temp_dir:
             if is_file(filepath):
                 # h5 format
                 temp_path = os.path.join(temp_dir, file_name)

@@ -62,7 +62,7 @@ def open_text(path: str) -> List[str]:
         if path.startswith("file://"):
             path = path[len("file://"):]
         lines = []
-        with open(path, 'rb') as f:
+        with open(path) as f:
             for line in f:
                 lines.append(line)
     return [line.strip() for line in lines]
@@ -97,9 +97,7 @@ def open_image(path: str) -> "JpegImageFile":
         key = "/".join(path_parts)
         data = s3_client.get_object(Bucket=bucket, Key=key)
         with BytesIO(data["Body"].read()) as f:
-            image = Image.open(f)
-            image.load()
-        return image
+            return Image.open(f)
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -391,9 +389,9 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
                     logger.warning(err.decode('utf-8'))
                     return -1
         cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
-        process = subprocess.run(cmd, capture_output=True)
-        if process.returncode != 0:
-            logger.error("Error: {}".format(str(process.stderr)))
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
             return -1
         return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
