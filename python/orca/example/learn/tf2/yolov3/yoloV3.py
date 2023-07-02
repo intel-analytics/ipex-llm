@@ -626,7 +626,7 @@ def main():
         return model
 
     # prepare data
-    with open(options.names, 'rb') as f:
+    with open(options.names) as f:
         class_map = {name: idx for idx, name in enumerate(f.read().splitlines())}
     dataset_path = os.path.join(options.data_dir, "VOCdevkit")
     voc_train_path = os.path.join(options.output_data, "train_dataset")
