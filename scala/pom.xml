@@ -162,7 +162,7 @@
 
         <hadoop.version>3.3.4</hadoop.version>
 	<guava.version>32.0.1-jre</guava.version>
-	<json4s.version>3.7.0-M5</json4s.version>
+	<json4s.version>3.7.0-M11</json4s.version>
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>

@@ -121,8 +121,12 @@
 	        </exclusion>
 		<exclusion>
                     <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-text</artifactId>
-		</exclusion>
+		    <artifactId>commons-text</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -247,18 +251,6 @@
                     <groupId>org.json4s</groupId>
                     <artifactId>json4s-jackson_${scala.major.version}</artifactId>
 	        </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-ast_${scala.major.version}</artifactId>
-	        </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-		    <artifactId>json4s-core_${scala.major.version}</artifactId>
-	        </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-scalap_${scala.major.version}</artifactId>
-                </exclusion>
 		<exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
@@ -303,18 +295,6 @@
                     <groupId>org.json4s</groupId>
                     <artifactId>json4s-jackson_${scala.major.version}</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-ast_${scala.major.version}</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-core_${scala.major.version}</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.json4s</groupId>
-                    <artifactId>json4s-scalap_${scala.major.version}</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -350,24 +330,9 @@
 	    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
 	    <version>${json4s.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-ast_${scala.major.version}</artifactId>
-            <version>${json4s.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-core_${scala.major.version}</artifactId>
-            <version>${json4s.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-scalap_${scala.major.version}</artifactId>
-            <version>${json4s.version}</version>
-	</dependency>
 	<dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
-            <artifactId>${spark-version.project}</artifactId>
+	    <artifactId>${spark-version.project}</artifactId>
             <version>${project.version}</version>
     	</dependency>
         <dependency>
