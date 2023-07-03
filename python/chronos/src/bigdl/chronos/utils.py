@@ -91,3 +91,39 @@ class LazyImport:
         module = importlib.import_module(module_name, package=self.pkg)
         function = getattr(module, function_name)
         return function(*args, **kwargs)
+
+
+# Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
+# To safely use python pickle
+class SafePickle:
+    """
+    Example:
+        >>> from bigdl.chronos.utils import SafePickle
+        >>> with open(file_path, 'wb') as file:
+        >>>     signature = SafePickle.dump(data, file)
+        >>> with open(file_path, 'rb') as file:
+        >>>     data = SafePickle.load(file, signature)
+    """
+    @classmethod
+    def dump(self, obj, file, *args, **kwargs):
+        import pickle
+        import hmac, hashlib
+        pickle.dump(obj, file, *args, **kwargs)
+        try:
+            pickled_data = pickle.dumps(obj)
+            digest = hmac.new(b'shared-key', pickled_data, hashlib.sha1).hexdigest()
+            return digest
+        except Exception:
+            return None
+
+    @classmethod
+    def load(self, file, digest=None, *args, **kwargs):
+        import pickle
+        import hmac, hashlib
+        if digest:
+            content = file.read()
+            new_digest = hmac.new(b'shared-key', content, hashlib.sha1).hexdigest()
+            if digest != new_digest:
+                warnings.warn('Pickle safe check failed')
+            file.seek(0)
+        return pickle.load(file, *args, **kwargs)
