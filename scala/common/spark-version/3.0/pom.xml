@@ -100,10 +100,10 @@
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
 	    	</exclusion>
-                <exclusion>
+		<exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-text</artifactId>
-                </exclusion>
+		</exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -164,14 +164,14 @@
                     <groupId>org.json4s</groupId>
                     <artifactId>json4s-scalap_${scala.major.version}</artifactId>
                 </exclusion>
-                <exclusion>
+		<exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
 	    	</exclusion>
-                <exclusion>
+		<exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-text</artifactId>
-                </exclusion>
+		</exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -216,10 +216,10 @@
                     <groupId>org.scala-lang.modules</groupId>
                     <artifactId>scala-parser-combinators_${scala.major.version}</artifactId>
                 </exclusion>
-                <exclusion>
+		<exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-lang3</artifactId>
-                </exclusion>
+		</exclusion>
             </exclusions>
         </dependency>
         <dependency>
