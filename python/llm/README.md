@@ -15,6 +15,19 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
 
 ### Working with `bigdl-llm`
 
+<details><summary>Table of Contents</summary>
+
+- [Install](#install)
+- [Download Model](#download-model)
+- [Run Model](#run-model)
+  - [CLI Tool](#cli-tool)
+  - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
+  - [LangChain API](#langchain-api)
+  - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
+- [`bigdl-llm` Dependence](#bigdl-llm-dependence)
+
+</details>
+
 #### Install
 You may install **`bigdl-llm`** as follows:
 ```bash
