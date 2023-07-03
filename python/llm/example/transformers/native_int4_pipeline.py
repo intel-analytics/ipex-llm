@@ -97,9 +97,8 @@ def main():
     parser.add_argument('--model-family', type=str, default='llama', required=True,
                         help="The model family of the large language model (supported option: 'llama', "
                              "'gptneox', 'bloom', 'starcoder')")
-    parser.add_argument('--repo-id-or-model-path', type=str,
-                        help='The huggingface repo id for the larga language model to be downloaded'
-                             ', or the path to the huggingface checkpoint folder')
+    parser.add_argument('--repo-id-or-model-path', type=str, required=True,
+                        help='The path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default='Q: What is CPU? A:',
                         help='Prompt to infer')
     parser.add_argument('--tmp-path', type=str, default='/tmp',
@@ -107,20 +106,11 @@ def main():
     args = parser.parse_args()
 
     repo_id_or_model_path = args.repo_id_or_model_path
-    if args.repo_id_or_model_path is None:
-        if args.model_family == 'llama':
-            repo_id_or_model_path = 'decapoda-research/llama-7b-hf'
-        elif args.model_family == 'gptneox':
-            repo_id_or_model_path = 'togethercomputer/RedPajama-INCITE-7B-Chat'
-        elif args.model_family == 'bloom':
-            repo_id_or_model_path = 'bigscience/bloomz-7b1'
-        elif args.model_family == 'starcoder':
-            repo_id_or_model_path = 'bigcode/gpt_bigcode-santacoder'
 
     # Step 1: convert original model to BigDL llm model
     bigdl_llm_path = convert(repo_id_or_model_path=repo_id_or_model_path,
-                               model_family=args.model_family,
-                               tmp_path=args.tmp_path)
+                             model_family=args.model_family,
+                             tmp_path=args.tmp_path)
     
     
     # Step 2: load int4 model
