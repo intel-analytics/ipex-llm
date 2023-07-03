@@ -2,8 +2,8 @@ name: Nightly Test
 
 on:
 
-  pull_request:
-    branchs: [ main ]
+  #pull_request:
+    #branches: [ main ]
 
   schedule:
     - cron: '30 15 * * *' # GMT time, 15:30 GMT == 23:30 China
@@ -371,7 +371,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-ExampleTest-Ray-Py37-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py37-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -400,7 +400,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-ExampleTest-Ray-Py38-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py38-Spark3' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
@@ -429,7 +429,7 @@ jobs:
         runner-hosted-on: 'Shanghai'
 
   Orca-ExampleTest-Ray-Py39-Spark3:
-    #if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py39-Spark3' || github.event.inputs.artifact == 'all' }} 
+    if: ${{ github.event.schedule || github.event.inputs.artifact == 'Orca-ExampleTest-Ray-Py39-Spark3' || github.event.inputs.artifact == 'all' }} 
     runs-on: [self-hosted, Gondolin, ubuntu-20.04-lts]
 
     steps:
