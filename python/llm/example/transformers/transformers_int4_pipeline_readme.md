@@ -1,4 +1,4 @@
-# INT4 Inference Pipeline for Large Language Model using BigDL-LLM Transformers Style API
+# BigDL-LLM Transformers INT4 Inference Pipeline for Large Language Model
 
 In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM transformers style API.
 

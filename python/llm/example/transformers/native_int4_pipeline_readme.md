@@ -1,8 +1,8 @@
-# INT4 Inference Pipeline for Large Language Model using BigDL-LLM Native API
+# BigDL-LLM Native INT4 Inference Pipeline for Large Language Model
 
-In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM native API.
+In this example, we show a pipeline to convert a large language model to BigDL-LLM native INT4 format, and then run inference on the converted INT4 model.
 
-> **Note**: BigDL-LLM native API currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
+> **Note**: BigDL-LLM native INT4 format currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
