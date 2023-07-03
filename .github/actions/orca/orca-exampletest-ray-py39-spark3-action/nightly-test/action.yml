@@ -11,6 +11,8 @@ runs:
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-orca-spark3[ray]
 
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} tensorflow==2.9.0
+#       torch 1.7.1 is tensorboard summary incompatible with pillow>=10.0.0
+        pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} pillow<10.0.0
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torch==1.7.1
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchvision==0.8.2
         pip install -i ${GONDOLIN_PIP_MIRROR} --trusted-host ${GONDOLIN_TRUSTED_HOST} torchmetrics==0.10.0
