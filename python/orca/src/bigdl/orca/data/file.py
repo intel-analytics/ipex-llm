@@ -638,7 +638,7 @@ def enable_multi_fs_load_static(load_func: Callable) -> Callable:
                 if is_file(path):
                     get_remote_file_to_local(path, temp_path)
                 else:
-                    os.mkdir(temp_path)
+                    os.makedirs(temp_path)
                     get_remote_dir_to_local(path, temp_path)
                 return load_func(temp_path, *args, **kwargs)
     return fs_load

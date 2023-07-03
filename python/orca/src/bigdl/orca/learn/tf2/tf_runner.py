@@ -525,11 +525,11 @@ class TFRunner:
                         get_remote_file_to_local(filepath, temp_path)
                     else:
                         # savemodel format
-                        if os.path.exists(temp_path):
-                            os.makedirs(temp_path)
+                        os.makedirs(temp_path)
                         get_remote_dir_to_local(filepath, temp_path)
                     self.load_params["filepath"] = temp_path
                     local_model = self.process_model_load(**self.load_params)
+                    self.load_params["filepath"] = filepath
             try:
                 local_model.set_weights(self.model.get_weights())
             except Exception:
@@ -599,6 +599,7 @@ class TFRunner:
                     put_local_file_to_remote(temp_path, filepath)
                 else:
                     # savemodel format
+                    os.makedirs(temp_path)
                     put_local_dir_tree_to_remote(temp_path, filepath)
 
     def process_model_load(self, filepath, custom_objects, compile, options):
@@ -641,8 +642,7 @@ class TFRunner:
                 get_remote_file_to_local(filepath, temp_path)
             else:
                 # savemodel format
-                if os.path.exists(temp_path):
-                    os.makedirs(temp_path)
+                os.makedirs(temp_path)
                 get_remote_dir_to_local(filepath, temp_path)
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
