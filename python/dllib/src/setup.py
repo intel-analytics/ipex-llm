@@ -20,7 +20,6 @@ import os
 import sys
 from shutil import copyfile, copytree, rmtree
 from setuptools import setup
-import subprocess
 
 long_description = '''
 BigDL DLlib is a distributed deep learning library for Apache Spark 
