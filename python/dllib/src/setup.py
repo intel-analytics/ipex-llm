@@ -31,10 +31,10 @@ for more information.
 '''
 
 TEMP_PATH = "bigdl/share/dllib"
+bigdl_home = os.path.abspath(__file__ + "/../../../..")
 dllib_src_path = os.path.abspath(__file__ + "/..")
 
-command = open(os.path.join(dllib_src_path, "/bigdl/dllib/version.py"), 'r').read().strip()
-VERSION = command.split("=")[-1].strip("'")
+VERSION = open(os.path.join(bigdl_home, 'python/version.txt'), 'r').read().strip()
 
 PYSPARK_VERSION = '2.4.6'
 
