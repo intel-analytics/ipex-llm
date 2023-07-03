@@ -58,6 +58,7 @@ case class SGXReportDataPolicy(appID: String, reportData: String) extends Policy
 
 case class TDXMRTDPolicy(appID: String, mrTD: String) extends Policy
 case class TDXReportDataPolicy(appID: String, reportData: String) extends Policy
+case class TDXLaunchTimePolicy(appID: String, mrTD: String, rtmr: String) extends Policy
 
 case class Quote(quote: String)
 
@@ -170,6 +171,16 @@ object BigDLRemoteAttestationService {
           case Some(TDXReportDataPolicy(policyAppID, policyReportData)) =>
             val reportData = AttestationUtil.getReportDataFromTDXQuote(quote)
             if (appID == policyAppID && reportData == policyReportData) {
+              val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
+              complete(200, res)
+            } else {
+              val res = "{\"result\": -1}"
+              complete(400, res)
+            }
+          case Some(TDXLaunchTimePolicy(policyAppID, policyMRTD, policyRTMR)) =>
+            val mrTD = AttestationUtil.getMRTDFromQuote(quote)
+            val rtmr = AttestationUtil.getRTMRFromQuote(quote)
+            if (appID == policyAppID && mrTD == policyMRTD && rtmr == policyRTMR) {
               val res = "{\"result\":\"" + verifyQuoteResult.toString() + "\"}"
               complete(200, res)
             } else {
