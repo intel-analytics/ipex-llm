@@ -289,7 +289,7 @@ private[bigdl] object zooUtils {
       path
     }
     val fs = getFileSystem(updatedPath)
-    fs.delete(updatedPathPath, true)
+    fs.delete(updatedPath, true)
   }  
 
   /**
