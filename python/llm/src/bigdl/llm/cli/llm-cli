@@ -34,6 +34,8 @@ function display_help {
   echo "                       family name of model"
   echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
   echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
+  echo "  -i, --interactive    run the program in interactive mode, allowing you to provide input directly and receive real-time responses."
+  echo "  -ins, --instruct     run the program in instruction mode, which is particularly useful when working with Alpaca models."
   echo "  args                 parameters passed to the specified model function"
 }
 
@@ -75,8 +77,8 @@ function create_prompt_file {
         -e "s/\[\[DATE_YEAR\]\]/$DATE_YEAR/g" \
         $PROMPT_TEMPLATE > $PROMPT_FILE
     filteredArguments+=('--color' '--file' "'$PROMPT_FILE'" '--reverse-prompt' "'$USER_NAME:'" '--in-prefix' "' '")
-  elif [[ ! "$interactive" && "$ins" ]]; then
-    filteredArguments+=('-p' 'Below is an instruction that describes a task. Write a response that appropriately completes the request.')
+  elif [[ "$interactive" && "$ins" ]]; then
+    filteredArguments+=('--color' '-p' "'Below is an instruction that describes a task. Write a response that appropriately completes the request.'")
   fi
 }
 

@@ -17,14 +17,17 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
 
 <details><summary>Table of Contents</summary>
 
-- [Install](#install)
-- [Download Model](#download-model)
-- [Run Model](#run-model)
-  - [CLI Tool](#cli-tool)
-  - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
-  - [LangChain API](#langchain-api)
-  - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
-- [`bigdl-llm` Dependence](#bigdl-llm-dependence)
+- [BigDL-LLM](#bigdl-llm)
+  - [Demos](#demos)
+  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
+    - [Install](#install)
+    - [Download Model](#download-model)
+    - [Run Model](#run-model)
+    - [CLI Tool](#cli-tool)
+    - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
+    - [LangChain API](#langchain-api)
+    - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
+  - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
 
 </details>
 
@@ -40,10 +43,17 @@ You may download any PyTorch model in Hugging Face *Transformers* format (includ
 #### Run Model
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
-1. [CLI (command line interface) Tool](#cli-tool)
-2. [Hugging Face `transformer`-style API](#hugging-face-transformers-style-api)
-3. [LangChain API](#langchain-api)
-4. [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
+- [BigDL-LLM](#bigdl-llm)
+  - [Demos](#demos)
+  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
+    - [Install](#install)
+    - [Download Model](#download-model)
+    - [Run Model](#run-model)
+    - [CLI Tool](#cli-tool)
+    - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
+    - [LangChain API](#langchain-api)
+    - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
+  - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
 
 #### CLI Tool
 Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformer`-style or LangChain APIs.
@@ -74,6 +84,13 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    #text completion
    #llama/bloom/gptneox/starcoder model family is currently supported
    llm-cli -t 16 -x gptneox -m "/path/to/output/model.bin" -p 'Once upon a time,'
+
+   #interactive mode
+   #Note: The interactive mode only support LLaMA (e.g., *vicuna*), GPT-NeoX (e.g., *redpajama*) for now.
+   llm-cli -m "/path/to/output/model.bin" -x llama -i
+
+   #instruction mode with Alpaca under interactive mode
+   llm-cli -m "/path/to/output/model.bin" -x llama -i --ins
    ```
    
 #### Hugging Face `transformers`-style API
