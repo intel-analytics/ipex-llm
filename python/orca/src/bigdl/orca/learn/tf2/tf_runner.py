@@ -599,7 +599,6 @@ class TFRunner:
                     put_local_file_to_remote(temp_path, filepath)
                 else:
                     # savemodel format
-                    os.makedirs(temp_path)
                     put_local_dir_tree_to_remote(temp_path, filepath)
 
     def process_model_load(self, filepath, custom_objects, compile, options):
