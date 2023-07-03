@@ -290,7 +290,7 @@ private[bigdl] object zooUtils {
     }
     val fs = getFileSystem(updatedPath)
     fs.delete(new Path(updatedPath), true)
-  }  
+  }
 
   /**
    * Save bytes into given path (local or remote file system).
