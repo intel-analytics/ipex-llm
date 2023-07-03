@@ -22,7 +22,6 @@ import functools
 import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import invalidOperationError
-from bigdl.dllib.utils import file_utils
 
 from typing import TYPE_CHECKING, List, Callable, Union, Optional
 if TYPE_CHECKING:
@@ -168,7 +167,13 @@ def exists(path: str) -> bool:
             invalidOperationError(False, str(ex), cause=ex)
         return True
     elif path.startswith("hdfs://"):
-        return file_utils.exists(path)
+        cmd = 'hdfs dfs -test -e {}; echo $?'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1] == '0'
+        else:
+            invalidOperationError(False, result[1])
+        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -187,7 +192,13 @@ def listdir(path: str) -> List[str]:
         invalidOperationError(False, "not implement")
         return []
     elif path.startswith("hdfs://"):
-        return file_utils.get_file_list(path)
+        cmd = 'hdfs dfs -ls -C {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1].split('\n')[:-1]
+        else:
+            invalidOperationError(False, result[1])
+        return []
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -214,7 +225,10 @@ def makedirs(path: str) -> None:
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        return file_utils.mkdirs(path)
+        cmd = 'hdfs dfs -mkdir {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] != 0:
+            invalidOperationError(False, result[1])
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -232,7 +246,10 @@ def rmdir(path: str) -> None:
     if path.startswith("s3"):  # s3://bucket/file_path
         invalidOperationError(False, "not implement")
     elif path.startswith("hdfs://"):
-        file_utils.rmdir(path)
+        cmd = 'hdfs dfs -rm -r {}'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] != 0:
+            invalidOperationError(False, result[1])
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -306,7 +323,13 @@ def is_file(path: str) -> bool:
             invalidOperationError(False, str(ex), cause=ex)
             return False
     elif path.startswith("hdfs://"):
-        return file_utils.is_file(path)
+        cmd = 'hdfs dfs -test -f {}; echo $?'.format(path)
+        result = subprocess.getstatusoutput(cmd)
+        if result[0] == 0:
+            return result[1] == '0'
+        else:
+            invalidOperationError(False, result[1])
+        return False
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -349,12 +372,27 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
         copy_tree(local_dir, remote_dir)
 
 
-def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str,
-                                 over_write: Optional[bool] = False):
+def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_dir_tree_to_remote(local_dir=local_dir,
-                                                remote_dir=remote_dir,
-                                                over_write=over_write)
+        test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
+        process = subprocess.Popen(test_cmd, shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        if process.returncode != 0:
+            if 'No such file or directory' in err.decode('utf-8'):
+                mkdir_cmd = 'hdfs dfs -mkdir -p {}'.format(remote_dir)
+                mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
+                ret = mkdir_process.wait()
+                if ret != 0:
+                    return ret
+            else:
+                # ls remote dir error
+                logger.warning(err.decode('utf-8'))
+                return -1
+        cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -389,12 +427,21 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str,
 
 
 def put_local_file_to_remote(local_path: str, remote_path: str,
-                             filemode: Optional[int] = None,
-                             over_write: Optional[bool] = False) -> int:
+                             filemode: Optional[int] = None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_file_to_remote(local_path=local_path,
-                                            remote_path=remote_path,
-                                            over_write=over_write)
+        try:
+            cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
+            process = subprocess.Popen(cmd, shell=True)
+            process.wait()
+            if filemode:
+                chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
+                process = subprocess.Popen(chmod_cmd, shell=True)
+                process.wait()
+        except Exception as e:
+            logger.error("Cannot upload file {} to {}: error: {}"
+                         .format(local_path, remote_path, str(e)))
+            return -1
+        return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -427,13 +474,12 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         return 0
 
 
-def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: str,
-                                          over_write: Optional[bool] = False) -> int:
+def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: str) -> int:
     file_list = glob.glob(local_path_prefix + "*")
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_files_with_prefix_to_remote(local_path_prefix=local_path_prefix,
-                                                         remote_dir=remote_dir,
-                                                         over_write=over_write)
+        cmd = 'hdfs dfs -put -f {}* {}'.format(local_path_prefix, remote_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -463,12 +509,11 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
         return 0
 
 
-def get_remote_file_to_local(remote_path: str, local_path: str,
-                             over_write: Optional[bool] = False) -> int:
+def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.get_remote_file_to_local(remote_path=remote_path,
-                                            local_path=local_path,
-                                            over_write=over_write)
+        cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -494,8 +539,9 @@ def get_remote_file_to_local(remote_path: str, local_path: str,
 
 def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.get_remote_dir_to_local(remote_dir=remote_dir,
-                                           local_dir=local_dir)
+        cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -526,9 +572,10 @@ def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
 def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
                                           local_dir: str) -> Union[str, int]:
     prefix = os.path.basename(remote_path_prefix)
-    if remote_path_prefix.startswith("hdfs"):  # hdfs://(url:port/file_path
-        file_utils.get_remote_files_with_prefix_to_local(remote_path_prefix=remote_path_prefix,
-                                                         local_dir=local_dir)
+    if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
+        cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
+        process = subprocess.Popen(cmd, shell=True)
+        return process.wait()
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]

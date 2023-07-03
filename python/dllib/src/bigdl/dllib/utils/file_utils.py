@@ -68,6 +68,11 @@ def exists(path):
 def mkdirs(path):
     callZooFunc("float", "mkdirs", path)
 
+def rm_dir(path):
+    callZooFunc("float", "rmdir", path)
+
+def is_file(path):
+    callZooFunc("float", "isFile", path)
 
 def is_local_path(path):
     if path.startswith("/dbfs"):
