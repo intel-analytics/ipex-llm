@@ -107,7 +107,8 @@ class SafePickle:
     @classmethod
     def dump(self, obj, file, *args, **kwargs):
         import pickle
-        import hmac, hashlib
+        import hmac
+        import hashlib
         pickle.dump(obj, file, *args, **kwargs)
         try:
             pickled_data = pickle.dumps(obj)
@@ -119,7 +120,8 @@ class SafePickle:
     @classmethod
     def load(self, file, digest=None, *args, **kwargs):
         import pickle
-        import hmac, hashlib
+        import hmac
+        import hashlib
         if digest:
             content = file.read()
             new_digest = hmac.new(b'shared-key', content, hashlib.sha1).hexdigest()
