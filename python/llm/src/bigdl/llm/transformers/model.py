@@ -15,7 +15,6 @@
 #
 
 import transformers
-import torch
 
 
 class _BaseAutoModelClass:
@@ -47,4 +46,4 @@ class AutoModel(_BaseAutoModelClass):
 
 
 class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
-    HF_MODEL = transformers.AutoModelForSeq2SeqLM
+    HF_Model = transformers.AutoModelForSeq2SeqLM
