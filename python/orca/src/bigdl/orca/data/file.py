@@ -633,7 +633,7 @@ def enable_multi_fs_load_static(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 if is_file(path):
                     get_remote_file_to_local(path, temp_path)
@@ -657,7 +657,7 @@ def enable_multi_fs_save(save_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 put_local_file_to_remote(temp_path, path)
@@ -679,7 +679,7 @@ def enable_multi_fs_load(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
