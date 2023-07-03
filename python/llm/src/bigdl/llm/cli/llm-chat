@@ -3,11 +3,15 @@
 # Default values
 model_family=""
 threads=8
-n_predict=128
+# Number of tokens to predict (made it larger than default because we want a long interaction)
+n_predict=512
+model_path=""
 
+EXTRA_ARGS=()
 
 llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
 lib_dir="$llm_dir/libs"
+prompts_dir="$llm_dir/cli/prompts"
 
 function get_avx_flags() {
   avx="avx2"
@@ -24,11 +28,11 @@ function get_avx_flags() {
 
 # Function to display help message
 function display_help {
-  echo "usage: ./llm-cli.sh -x MODEL_FAMILY [-h] [args]"
+  echo "usage: ./llm-chat -x MODEL_FAMILY [-h] [args]"
   echo ""
   echo "options:"
   echo "  -h, --help           show this help message"
-  echo "  -x, --model_family {llama,bloom,gptneox}"
+  echo "  -x, --model_family   {llama,gptneox}"
   echo "                       family name of model"
   echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
   echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
@@ -36,27 +40,30 @@ function display_help {
 }
 
 function llama {
-  command="$lib_dir/main-llama_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
-  echo "$command"
-  eval "$command"
-}
-
-function bloom {
-  command="$lib_dir/main-bloom_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-llama_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]} ${EXTRA_ARGS[*]}"
   echo "$command"
   eval "$command"
 }
 
 function gptneox {
-  command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]} ${EXTRA_ARGS[*]}"
   echo "$command"
   eval "$command"
 }
 
-function starcoder {
-  command="$lib_dir/main-starcoder_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
-  echo "$command"
-  eval "$command"
+function create_prompt_file {
+  PROMPT_TEMPLATE="$prompts_dir/chat-with-ai.txt"
+  USER_NAME="${USER_NAME:-USER}"
+  DATE_TIME=$(date +%H:%M)
+  DATE_YEAR=$(date +%Y)
+  PROMPT_FILE=$(mktemp -t cpp_prompt.XXXXXXX.txt)
+  
+  sed -e "s/\[\[USER_NAME\]\]/$USER_NAME/g" \
+      -e "s/\[\[AI_NAME\]\]/$AI_NAME/g" \
+      -e "s/\[\[DATE_TIME\]\]/$DATE_TIME/g" \
+      -e "s/\[\[DATE_YEAR\]\]/$DATE_YEAR/g" \
+      $PROMPT_TEMPLATE > $PROMPT_FILE
+  EXTRA_ARGS+=('--color' '-i' '--file' "'$PROMPT_FILE'" '--reverse-prompt' "'$USER_NAME:'" '--in-prefix' "' '")
 }
 
 # Remove model_family/x parameter
@@ -65,7 +72,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
   -h | --help)
     display_help
-    filteredArguments+=("'$1'")
     shift
     ;;
   -x | --model_family | --model-family)
@@ -92,14 +98,14 @@ echo "AVX Flags: $avx_flag"
 
 # Perform actions based on the model_family
 if [[ "$model_family" == "llama" ]]; then
+  AI_NAME="${AI_NAME:-ChatLLaMa}"
+  create_prompt_file
   llama
-elif [[ "$model_family" == "bloom" ]]; then
-  bloom
 elif [[ "$model_family" == "gptneox" ]]; then
+  AI_NAME="${AI_NAME:-ChatGPTNeoX}"
+  create_prompt_file
   gptneox
-elif [[ "$model_family" == "starcoder" ]]; then
-  starcoder
 else
-  echo "Invalid model_family: $model_family"
+  echo "llm-chat does not support model_family $model_family for now."
   display_help
 fi
