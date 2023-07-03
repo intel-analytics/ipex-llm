@@ -17,17 +17,14 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
 
 <details><summary>Table of Contents</summary>
 
-- [BigDL-LLM](#bigdl-llm)
-  - [Demos](#demos)
-  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
-    - [Install](#install)
-    - [Download Model](#download-model)
-    - [Run Model](#run-model)
-    - [CLI Tool](#cli-tool)
-    - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
-    - [LangChain API](#langchain-api)
-    - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
-  - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
+- [Install](#install)
+- [Download Model](#download-model)
+- [Run Model](#run-model)
+  - [CLI Tool](#cli-tool)
+  - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
+  - [LangChain API](#langchain-api)
+  - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
+- [`bigdl-llm` Dependence](#bigdl-llm-dependence)
 
 </details>
 
@@ -43,17 +40,10 @@ You may download any PyTorch model in Hugging Face *Transformers* format (includ
 #### Run Model
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
-- [BigDL-LLM](#bigdl-llm)
-  - [Demos](#demos)
-  - [Working with `bigdl-llm`](#working-with-bigdl-llm)
-    - [Install](#install)
-    - [Download Model](#download-model)
-    - [Run Model](#run-model)
-    - [CLI Tool](#cli-tool)
-    - [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
-    - [LangChain API](#langchain-api)
-    - [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
-  - [`bigdl-llm` Dependence](#bigdl-llm-dependence)
+1. [CLI (command line interface) Tool](#cli-tool)
+2. [Hugging Face `transformer`-style API](#hugging-face-transformers-style-api)
+3. [LangChain API](#langchain-api)
+4. [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
 
 #### CLI Tool
 Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformer`-style or LangChain APIs.

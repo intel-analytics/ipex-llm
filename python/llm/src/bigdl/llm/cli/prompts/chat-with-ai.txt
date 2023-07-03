@@ -2,6 +2,6 @@ A chat between a curious human ("[[USER_NAME]]") and an artificial intelligence 
 
 [[USER_NAME]]: Hello, [[AI_NAME]].
 [[AI_NAME]]: Hello. How may I help you today?
-[[USER_NAME]]: Please tell me the largest city in Europe.
-[[AI_NAME]]: Sure. The largest city in Europe is Moscow, the capital of Russia.
+[[USER_NAME]]: Please tell me the largest city in China.
+[[AI_NAME]]: Certainly! Beijing is the largest city in China with a population of over 21 million people.
 [[USER_NAME]]:
