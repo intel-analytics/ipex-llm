@@ -179,7 +179,6 @@ export CUSTOM_IMAGE=YOUR_CUSTOM_IMAGE_BUILT_BEFORE
 export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
 
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --cpus=5 \
     --oom-kill-disable \
@@ -246,8 +245,6 @@ In the container, execute `verify-attestation-service.sh` to verify the attestat
   spec:
     containers:
     - name: spark-driver
-      securityContext:
-        privileged: true
       env:
         - name: ATTESTATION
           value: true
@@ -293,7 +290,6 @@ export KUBECONFIG_PATH=/YOUR_DIR/config
 export LOCAL_IP=$LOCAL_IP
 export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --name=gramine-bigdata \
     --cpuset-cpus=10 \
@@ -858,8 +854,8 @@ You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. 
 docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT
 ```bash
 export NFS_INPUT_PATH=your_nfs_path
-sudo docker run -itd --net=host \
-    --privileged \
+sudo docker run -itd \
+    --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube/config:/root/.kube/config \
     -v $NFS_INPUT_PATH:/bigdl/nfsdata \
@@ -892,8 +888,6 @@ kind: Pod
 spec:
   containers:
   - name: spark-driver
-    securityContext:
-      privileged: true
     env:
       - name: ATTESTATION
         value: true 
