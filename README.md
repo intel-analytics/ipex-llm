@@ -7,6 +7,18 @@ _**Fast, Distributed, Secure AI for Big Data**_
 </div>
 
 ---
+## Latest News
+
+- **Try the latest [`bigdl-llm`](python/llm) for running LLM (language language model) on your Intel laptop using INT4 with very low latency!** *(It is built on top of the excellent work of [llama.cpp](https://github.com/ggerganov/llama.cpp), [gptq](https://github.com/IST-DASLab/gptq), [bitsandbytes](https://github.com/TimDettmers/bitsandbytes), etc.)*
+
+<p align="center">
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-7b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-13b.gif" width='30%' /> <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-15b5.gif" width='30%' />
+            <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models.png" width='76%'/>
+</p>
+
+
+---
+## Overview
 
 BigDL seamlessly scales your data analytics & AI applications from laptop to cloud, with the following libraries:
 

@@ -55,7 +55,7 @@ def list_s3_file(file_path, env):
     s3_client = boto3.Session(
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key,
-    ).client('s3', verify=False)
+    ).client('s3')
     # file
     if os.path.splitext(file_path)[1] != '':
         return ["s3://" + file_path]
@@ -318,7 +318,7 @@ def read_pd_s3_file_list(iterator, file_type, **kwargs):
     s3_client = boto3.Session(
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key,
-    ).client('s3', verify=False)
+    ).client('s3')
     dfs = []
     for x in iterator:
         path_parts = x.split("://")[1].split('/')

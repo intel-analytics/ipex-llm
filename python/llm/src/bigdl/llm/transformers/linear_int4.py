@@ -197,4 +197,4 @@ class LinearInt4(nn.Linear):
         if self.bias is not None:
             result += self.bias
 
-        return result
+        return result.to(x.dtype)

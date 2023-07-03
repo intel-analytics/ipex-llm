@@ -132,7 +132,7 @@ class TestFile:
             import boto3
             s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+                aws_secret_access_key=secret_access_key).client('s3')
             s3_client.delete_object(Bucket='analytics-zoo-data', Key='temp/abc/')
 
     def test_rmdir_local(self):
@@ -171,7 +171,7 @@ class TestFile:
             import boto3
             s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+                aws_secret_access_key=secret_access_key).client('s3')
             s3_client.delete_object(Bucket='analytics-zoo-data', Key='test.txt')
 
     def test_multi_fs_load_local(self):
