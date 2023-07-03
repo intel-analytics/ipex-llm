@@ -44,3 +44,7 @@ class AutoModelForCausalLM(_BaseAutoModelClass):
 
 class AutoModel(_BaseAutoModelClass):
     HF_Model = transformers.AutoModel
+
+
+class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
+    HF_MODEL = transformers.AutoModelForSeq2SeqLM
