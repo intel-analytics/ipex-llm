@@ -96,7 +96,7 @@ def enable_multi_fs_save(save_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 if "overwrite" in kwargs:
@@ -116,7 +116,7 @@ def enable_multi_fs_load_static(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 get_remote_file_to_local(path, temp_path)
                 return load_func(temp_path, *args, **kwargs)
@@ -133,7 +133,7 @@ def enable_multi_fs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
@@ -150,7 +150,7 @@ def enable_hdfs_load(load_func):
         else:
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            with tempfile.gettempdir() as tmpdir:
+            with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
                                              stdout=subprocess.PIPE).communicate()[0]
