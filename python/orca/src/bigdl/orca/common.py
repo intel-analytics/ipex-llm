@@ -207,6 +207,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=None, memory="2g
     :param init_ray_on_spark: Whether to launch Ray services across the cluster.
            Default to be False and in this case the Ray cluster would be launched lazily when
            Ray is involved in Project Orca.
+    :param init_executor_gateway: Whether to launch Java gateway on executor. Default to be True.
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any.
 
