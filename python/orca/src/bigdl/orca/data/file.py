@@ -352,7 +352,7 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
 def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str,
                                  over_write: Optional[bool] = False):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_dir_tree_to_remote(local_dir=local_dir,
+        return file_utils.put_local_dir_tree_to_remote(local_dir=local_dir,
                                                 remote_dir=remote_dir,
                                                 over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
@@ -392,7 +392,7 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
                              filemode: Optional[int] = None,
                              over_write: Optional[bool] = False) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_file_to_remote(local_path=local_path,
+        return file_utils.put_local_file_to_remote(local_path=local_path,
                                             remote_path=remote_path,
                                             over_write=over_write)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
@@ -431,7 +431,7 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
                                           over_write: Optional[bool] = False) -> int:
     file_list = glob.glob(local_path_prefix + "*")
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.put_local_files_with_prefix_to_remote(local_path_prefix=local_path_prefix,
+        return file_utils.put_local_files_with_prefix_to_remote(local_path_prefix=local_path_prefix,
                                                          remote_dir=remote_dir,
                                                          over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
@@ -466,7 +466,7 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
 def get_remote_file_to_local(remote_path: str, local_path: str,
                              over_write: Optional[bool] = False) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.get_remote_file_to_local(remote_path=remote_path,
+        return file_utils.get_remote_file_to_local(remote_path=remote_path,
                                             local_path=local_path,
                                             over_write=over_write)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
@@ -494,7 +494,7 @@ def get_remote_file_to_local(remote_path: str, local_path: str,
 
 def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        file_utils.get_remote_dir_to_local(remote_dir=remote_dir,
+        return file_utils.get_remote_dir_to_local(remote_dir=remote_dir,
                                            local_dir=local_dir)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -527,8 +527,9 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
                                           local_dir: str) -> Union[str, int]:
     prefix = os.path.basename(remote_path_prefix)
     if remote_path_prefix.startswith("hdfs"):  # hdfs://(url:port/file_path
-        file_utils.get_remote_files_with_prefix_to_local(remote_path_prefix=remote_path_prefix,
-                                                         local_dir=local_dir)
+        return file_utils.get_remote_files_with_prefix_to_local(
+            remote_path_prefix=remote_path_prefix,
+            local_dir=local_dir)
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
