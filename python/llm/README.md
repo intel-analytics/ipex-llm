@@ -77,29 +77,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    ```
    
 #### Hugging Face `transformers`-style API
-You may run the models using `transformers`-style API in `bigdl-llm`
-
-- ##### Using native INT4 format
-
-   You may convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
-
-  *(Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the [Hugging Face `transformers` INT4 format](#using-hugging-face-transformers-int4-format)).*
-
-   ```python
-  #convert the model
-  from bigdl.llm import llm_convert
-  bigdl_llm_path = llm_convert(model='/path/to/model/',
-      outfile='/path/to/output/', outtype='int4', model_family="llama")
-
-  #load the converted model
-  from bigdl.llm.transformers import BigdlForCausalLM
-  llm = BigdlForCausalLM.from_pretrained("/path/to/output/model.bin",...)
-   
-  #run the converted  model
-  input_ids = llm.tokenize(prompt)
-  output_ids = llm.generate(input_ids, ...)
-  output = llm.batch_decode(output_ids)
-  ``` 
+You may run the models using `transformers`-style API in `bigdl-llm`.
 
 - ##### Using Hugging Face `transformers` INT4 format
 
@@ -118,6 +96,32 @@ You may run the models using `transformers`-style API in `bigdl-llm`
   output = tokenizer.batch_decode(output_ids)
   ```
 
+  See the complete example [here](example/transformers/transformers_int4_pipeline.py). 
+  
+  - ##### Using native INT4 format
+
+  You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
+
+  *(Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).*
+
+   ```python
+  #convert the model
+  from bigdl.llm import llm_convert
+  bigdl_llm_path = llm_convert(model='/path/to/model/',
+      outfile='/path/to/output/', outtype='int4', model_family="llama")
+
+  #load the converted model
+  from bigdl.llm.transformers import BigdlForCausalLM
+  llm = BigdlForCausalLM.from_pretrained("/path/to/output/model.bin",...)
+   
+  #run the converted  model
+  input_ids = llm.tokenize(prompt)
+  output_ids = llm.generate(input_ids, ...)
+  output = llm.batch_decode(output_ids)
+  ``` 
+
+  See the complete example [here](example/transformers/native_int4_pipeline.py). 
+
 #### LangChain API
 You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
 
@@ -134,6 +138,8 @@ bigdl_llm = BigdlLLM(model_path='/path/to/converted/model.bin',
 doc_chain = load_qa_chain(bigdl_llm, ...)
 doc_chain.run(...)
 ```
+
+See the examples [here](example/langchain).
 
 #### `llama-cpp-python`-style API
 
