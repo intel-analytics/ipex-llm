@@ -72,11 +72,6 @@ class TSPipeline:
         self.loss_creator = loss_creator
         self.optimizer_creator = optimizer_creator
 
-        # for safely pickle
-        self.model_init_signature = None
-        self.data_process_signature = None
-        self.best_config_signature = None
-
     def evaluate(self, data, metrics=['mse'], multioutput="uniform_average",
                  batch_size=32, quantize=False):
         '''
@@ -393,11 +388,11 @@ class TSPipeline:
         data_process = {"scaler": self._scaler,
                         "scaler_index": self._scaler_index}
         with open(model_init_path, "wb") as f:
-            self.model_init_signature = SafePickle.dump(model_init, f)
+            SafePickle.dump(model_init, f)
         with open(data_process_path, "wb") as f:
-            self.data_process_signature = SafePickle.dump(data_process, f)
+            SafePickle.dump(data_process, f)
         with open(best_config_path, "wb") as f:
-            self.best_config_signature = SafePickle.dump(self._best_config, f)
+            SafePickle.dump(self._best_config, f)
         # self._best_model.save(model_path)
         torch.save(self._best_model.model.state_dict(), model_path)
 
@@ -414,11 +409,11 @@ class TSPipeline:
         data_process_path = os.path.join(file_path, DEFAULT_DATA_PROCESS_DIR)
         best_config_path = os.path.join(file_path, DEFAULT_BEST_CONFIG_DIR)
         with open(model_init_path, "rb") as f:
-            model_init = SafePickle.load(f, self.model_init_signature)
+            model_init = SafePickle.load(f)
         with open(data_process_path, "rb") as f:
-            data_process = SafePickle.load(f, self.data_process_signature)
+            data_process = SafePickle.load(f)
         with open(best_config_path, "rb") as f:
-            best_config = SafePickle.load(f, self.best_config_signature)
+            best_config = SafePickle.load(f)
 
         model_creator = model_init["model_creator"]
         optimizer_creator = model_init["optimizer_creator"]
