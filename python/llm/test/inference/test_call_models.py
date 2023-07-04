@@ -29,7 +29,11 @@ class Test_Models_Basics(TestCase):
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
         self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
-        self.n_threads = os.environ.get('THREAD_NUM')
+        thread_num = os.environ.get('THREAD_NUM')
+        if thread_num is not None:
+            self.n_threads = int(thread_num)
+        else:
+            self.n_threads = 2         
 
     def test_llama_completion_success(self):
         llm = Llama(self.llama_model_path, n_threads=self.n_threads)

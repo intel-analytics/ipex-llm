@@ -27,7 +27,12 @@ class Test_Models_Basics(TestCase):
         self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
-        self.n_threads = os.environ.get('THREAD_NUM')
+        thread_num = os.environ.get('THREAD_NUM')
+        if thread_num is not None:
+            self.n_threads = int(thread_num)
+        else:
+            self.n_threads = 2         
+
         
     def test_langchain_llm_embedding_llama(self):
         bigdl_embeddings = BigdlLLMEmbeddings(
