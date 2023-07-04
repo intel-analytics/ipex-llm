@@ -23,26 +23,8 @@ from bigdl.chronos.autots.model.auto_prophet import AutoProphet
 from bigdl.orca.common import init_orca_context, stop_orca_context
 
 
-from urllib.parse import urlparse
-from os.path import exists
-from bigdl.dllib.utils import log4Error
-
-
-def is_local_and_existing_uri(uri):
-    parsed_uri = urlparse(uri)
-
-    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
-                                "Not Local File!")
-
-    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
-                                "Not Local File!")
-
-    log4Error.invalidInputError(exists(parsed_uri.path),
-                                "File Not Exist!")
-
 def get_data(args):
     dataset = args.datadir if args.datadir else args.url
-    is_local_and_existing_uri(dataset)
     df = pd.read_csv(dataset, parse_dates=[0])
     return df
 
