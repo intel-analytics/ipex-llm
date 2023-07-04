@@ -34,6 +34,25 @@ from bigdl.orca.data import XShards
 from bigdl.orca.learn.tf.estimator import Estimator
 
 
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
+
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
+
+
+
 def load_data_from_zip(file_path, file):
     with zipfile.ZipFile(os.path.join(file_path, file), "r") as zip_ref:
         unzipped_file = zip_ref.namelist()[0]
@@ -62,6 +81,7 @@ def main(cluster_mode, max_epoch, file_path, batch_size, platform, non_interacti
     label_dir = os.path.join(file_path, "train_masks")
 
     # Here we only take the first 1000 files for simplicity
+    is_local_and_existing_uri(os.path.join(file_path, 'train_masks.csv'))
     df_train = pd.read_csv(os.path.join(file_path, 'train_masks.csv'))
     ids_train = df_train['img'].map(lambda s: s.split('.')[0])
     ids_train = ids_train[:1000]
