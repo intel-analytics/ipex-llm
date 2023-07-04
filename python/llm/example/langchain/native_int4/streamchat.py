@@ -33,7 +33,6 @@ def main(args):
     model_path = args.model_path
     model_family = args.model_family
     n_threads = args.thread_num
-    
     template ="""{question}"""
 
     prompt = PromptTemplate(template=template, input_variables=["question"])

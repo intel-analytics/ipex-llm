@@ -20,7 +20,7 @@
 # only search the first bigdl package and end up finding only one sub-package.
 
 # This file is adapted from
-# https://github.com/hwchase17/langchain/blob/master/langchain/llms/huggingface_pipeline.py
+# https://github.com/hwchase17/langchain/blob/master/langchain/embeddings/llamacpp.py
 
 # The MIT License
 
@@ -44,43 +44,37 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+"""Wrapper around BigdlLLM embedding models."""
+from typing import Any, Dict, List, Optional
+import numpy as np
 
-import importlib.util
-import logging
-from typing import Any, List, Mapping, Optional
+from pydantic import BaseModel, Extra, Field
 
-from pydantic import Extra
+from langchain.embeddings.base import Embeddings
 
-from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain.llms.base import LLM
-from langchain.llms.utils import enforce_stop_tokens
-
-DEFAULT_MODEL_ID = "gpt2"
+DEFAULT_MODEL_NAME = "gpt2"
 
 
-class TransformersLLM(LLM):
-    """Wrapper around the BigDL-LLM Transformer-INT4 model
+class TransformersEmbeddings(BaseModel, Embeddings):
+    """Wrapper around bigdl-llm transformers embedding models.
+
+    To use, you should have the ``transformers`` python package installed.
 
     Example:
         .. code-block:: python
 
-            from langchain.llms import TransformersLLM
-            llm = TransformersLLM(model_id="THUDM/chatglm-6b")
+            from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+            embeddings = TransformersEmbeddings.from_model_id(model_id)
     """
 
-    model_id: str = DEFAULT_MODEL_ID
-    """Model name or model path to use."""
-    model_kwargs: Optional[dict] = None
-    """Key word arguments passed to the model."""
     model: Any  #: :meta private:
-    """BigDL-LLM Transformer-INT4 model."""
     tokenizer: Any  #: :meta private:
-    """Huggingface tokenizer model."""
-
-    class Config:
-        """Configuration for this pydantic object."""
-
-        extra = Extra.forbid
+    model_id: str = DEFAULT_MODEL_NAME
+    """Model id to use."""
+    model_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    """Key word arguments to pass to the model."""
+    encode_kwargs: Dict[str, Any] = Field(default_factory=dict)
+    """Key word arguments to pass when calling the `encode` method of the model."""
 
     @classmethod
     def from_model_id(
@@ -88,14 +82,10 @@ class TransformersLLM(LLM):
         model_id: str,
         model_kwargs: Optional[dict] = None,
         **kwargs: Any,
-    ) -> LLM:
+    ):
         """Construct object from model_id"""
         try:
-            from bigdl.llm.transformers import (
-                AutoModel,
-                AutoModelForCausalLM,
-                # AutoModelForSeq2SeqLM,
-            )
+            from bigdl.llm.transformers import AutoModel
             from transformers import AutoTokenizer, LlamaTokenizer
 
         except ImportError:
@@ -111,11 +101,7 @@ class TransformersLLM(LLM):
         except:
             tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
-        # TODO: may refactore this code in the future
-        try:
-            model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
-        except:
-            model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
+        model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
@@ -130,30 +116,47 @@ class TransformersLLM(LLM):
             **kwargs,
         )
 
-    @property
-    def _identifying_params(self) -> Mapping[str, Any]:
-        """Get the identifying parameters."""
-        return {
-            "model_id": self.model_id,
-            "model_kwargs": self.model_kwargs,
-        }
+    class Config:
+        """Configuration for this pydantic object."""
 
-    @property
-    def _llm_type(self) -> str:
-        return "BigDL-llm"
+        extra = Extra.forbid
+    
+    def embed(self, text: str):
+        """Compute doc embeddings using a HuggingFace transformer model.
 
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> str:
-        input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-        output = self.model.generate(input_ids, **kwargs)
-        text = self.tokenizer.decode(output[0], skip_special_tokens=True)[len(prompt) :]
-        if stop is not None:
-            # This is a bit hacky, but I can't figure out a better way to enforce
-            # stop tokens when making calls to huggingface_hub.
-            text = enforce_stop_tokens(text, stop)
-        return text
+        Args:
+            texts: The list of texts to embed.
+
+        Returns:
+            List of embeddings, one for each text.
+        """
+        input_ids = self.tokenizer.encode(text, return_tensors="pt")  # shape: [1, T]
+        embeddings = self.model(input_ids, return_dict=False)[0]  # shape: [1, T, N]
+        embeddings = embeddings.squeeze(0).detach().numpy()
+        embeddings = np.mean(embeddings, axis=0)
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """Compute doc embeddings using a HuggingFace transformer model.
+
+        Args:
+            texts: The list of texts to embed.
+
+        Returns:
+            List of embeddings, one for each text.
+        """
+        texts = list(map(lambda x: x.replace("\n", " "), texts))
+        embeddings = [self.embed(text, **self.encode_kwargs).tolist() for text in texts]
+        return embeddings
+
+    def embed_query(self, text: str) -> List[float]:
+        """Compute query embeddings using a bigdl-llm transformer model.
+
+        Args:
+            text: The text to embed.
+
+        Returns:
+            Embeddings for the text.
+        """
+        text = text.replace("\n", " ")
+        embedding = self.embed(text, **self.encode_kwargs)
+        return embedding.tolist()

@@ -60,14 +60,14 @@ DEFAULT_TASK = "text-generation"
 VALID_TASKS = ("text2text-generation", "text-generation", "summarization")
 
 
-class BigdlPipelineLLM(LLM):
+class TransformersPipelineLLM(LLM):
     """Wrapper around the BigDL-LLM Transformer-INT4 model in Transformer.pipeline()
 
     Example:
         .. code-block:: python
 
-            from langchain.llms import BigdlPipelineLLM
-            llm = BigdlPipelineLLM(model_id="decapoda-research/llama-7b-hf")
+            from langchain.llms import TransformersPipelineLLM
+            llm = TransformersPipelineLLM(model_id="decapoda-research/llama-7b-hf")
     """
 
     pipeline: Any  #: :meta private:
