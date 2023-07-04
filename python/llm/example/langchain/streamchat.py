@@ -56,7 +56,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Streaming Chat Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,

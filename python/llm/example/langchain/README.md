@@ -25,22 +25,22 @@ Follow the instructions in [bigdl-llm docs: Convert Models]().
 ### 1. Streaming Chat
 
 ```bash
-python ./streamchat.py -m MODEL_PATH -x MODEL_FAMILY -t THREAD_NUM -q "What is AI?"
+python ./streamchat.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -q QUESTION -t THREAD_NUM
 ```
 arguments info:
-- `-m MODEL_PATH`: path to the converted model
-- `-x MODEL_FAMILY`: the model family of the model specified in `-m`, available options are `llama`, `gptneox`
-- `-q QUESTION `: question to ask. Default  is `What is AI?`.
-- `-t THREAD_NUM`: required argument defining the number of threads to use for inference. Default is `2`.
+- `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model
+- `-x MODEL_FAMILY`: **required**, the model family of the model specified in `-m`, available options are `llama`, `gptneox` and `bloom`
+- `-q QUESTION`: question to ask. Default is `What is AI?`.
+- `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
 
 ### 2. Question Answering over Docs
 ```bash
-python ./docqa.py --t THREAD_NUM -m -x
+python ./docqa.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -i DOC_PATH -q QUESTION -c CONTEXT_SIZE -t THREAD_NUM
 ```
 arguments info:
-- `-m CONVERTED_MODEL_PATH`: path to the converted model in above step
-- `-x MODEL_FAMILY`: the model family of the model specified in `-m`, available options are `llama`, `gptneox`
-- `-q QUESTION `: question to ask, default question is `What is AI?`.
-- `-t THREAD_NUM`: required argument defining the number of threads to use for inference. Default is `2`.
-
-
+- `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model in above step
+- `-x MODEL_FAMILY`: **required**, the model family of the model specified in `-m`, available options are `llama`, `gptneox` and `bloom`
+- `-i DOC_PATH`: **required**, path to the input document
+- `-q QUESTION`: question to ask. Default is `What is AI?`.
+- `-c CONTEXT_SIZE`: specify the maximum context size. Default is `2048`.
+- `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.

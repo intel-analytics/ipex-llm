@@ -36,6 +36,9 @@ def main(args):
     if model_family == "gptneox": 
         from bigdl.llm.models import Gptneox  
         modelclass = Gptneox
+    if model_family == "starcoder":   
+        from bigdl.llm.models import Starcoder
+        modelclass = Starcoder
         
     model = modelclass(model_path, n_threads=n_threads)
     response=model(prompt)

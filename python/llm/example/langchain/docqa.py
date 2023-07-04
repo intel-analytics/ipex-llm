@@ -71,17 +71,17 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Question Answering over Docs Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
-    parser.add_argument('-i', '--input-path', type=str,
+    parser.add_argument('-i', '--input-path', type=str, required=True,
                         help='the path to the input doc.')
     parser.add_argument('-q', '--question', type=str, default='What is AI?',
                         help='qustion you want to ask.')
     parser.add_argument('-c','--n-ctx', type=int, default=2048,
-                        help='number of threads to use for inference')
+                        help='the maximum context size')
     parser.add_argument('-t','--thread-num', type=int, default=2,
                         help='number of threads to use for inference')
     args = parser.parse_args()
