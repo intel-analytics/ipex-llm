@@ -23,20 +23,20 @@ from bigdl.orca.automl.xgboost import AutoXGBRegressor
 from bigdl.orca.automl import hp
 from urllib.parse import urlparse
 from os.path import exists
+from bigdl.dllib.utils import log4Error
+
 
 def is_local_and_existing_uri(uri):
     parsed_uri = urlparse(uri)
 
-    # Check if the scheme is empty or 'file'
-    if parsed_uri.scheme and parsed_uri.scheme != 'file':
-        raise Exception("Not Local File!")
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+        "Not Local File!")
 
-    # Check if the network location is empty or 'localhost'
-    if parsed_uri.netloc and parsed_uri.netloc.lower() != 'localhost':
-        raise Exception("Not Local File!")
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+        "Not Local File!")
 
-    if not exists(parsed_uri.path):
-        raise Exception("File Not Exist!")
+    log4Error.invalidInputError(exists(parsed_uri.path),
+        "File Not Exist!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
