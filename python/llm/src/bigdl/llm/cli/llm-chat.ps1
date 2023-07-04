@@ -1,10 +1,11 @@
 $llm_dir = (Split-Path -Parent (python -c "import bigdl.llm;print(bigdl.llm.__file__)"))
 $lib_dir = Join-Path $llm_dir "libs"
-$prompt_dir = Join-Path $llm_dir "prompts"
+$prompt_dir = Join-Path $llm_dir "cli/prompts"
 
 $model_family = ""
 $threads = 8
-$n_predict = 128
+# Number of tokens to predict (made it larger than default because we want a long interaction)
+$n_predict = 512
 
 # Function to display help message
 function Display-Help
@@ -22,7 +23,8 @@ function Display-Help
 
 function llama
 {
-    $command = "$lib_dir/main-llama.exe -t $threads -n $n_predict -f $prompts_dir/chat-with-ai.txt -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
+    $prompt_file = Join-Path $prompt_dir "chat-with-ai.txt"
+    $command = "$lib_dir/main-llama.exe -t $threads -n $n_predict -f $prompt_file -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
@@ -71,7 +73,7 @@ switch ($model_family)
         gptneox
     }
     default {
-        Write-Host "Invalid model_family: $model_family"
+        Write-Host "llm-chat does not support model_family $model_family for now."
         Display-Help
     }
 }
