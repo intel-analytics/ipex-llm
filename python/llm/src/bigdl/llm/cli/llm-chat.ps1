@@ -23,7 +23,7 @@ function Display-Help
 
 function llama
 {
-    $prompt_file = Join-Path $prompt_dir "chat-with-ai.txt"
+    $prompt_file = Join-Path $prompt_dir "chat-with-llm.txt"
     $command = "$lib_dir/main-llama.exe -t $threads -n $n_predict -f $prompt_file -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
@@ -31,6 +31,7 @@ function llama
 
 function gptneox
 {
+    # TODO
     $command = "$lib_dir/main-gptneox.exe -t $threads -n $n_predict $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command

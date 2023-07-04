@@ -1,5 +1,0 @@
-A chat between a curious human USER and an artificial intelligence assistant ChatLLaMa. The assistant gives helpful, detailed, and polite answers to the human's questions.
-
-USER: Hello, ChatLLaMa.
-ChatLLaMa: Hello. 
-USER:
