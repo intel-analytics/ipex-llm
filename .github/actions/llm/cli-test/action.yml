@@ -7,7 +7,7 @@ runs:
     - name: Test llama llm-cli
       shell: bash
       run: |
-        source $CONDA_HOME/bin/activate bigdl-init-llm
+        source $CONDA_HOME/bin/activate bigdl-llm-test
         $CONDA_HOME/bin/conda info
         
         llm-cli -t $THREAD_NUM -n 256 -x llama -m $LLAMA_INT4_CKPT_PATH -p 'Once upon a time,'
@@ -25,7 +25,7 @@ runs:
     - name: Test gptneox llm-cli
       shell: bash
       run: |
-        source $CONDA_HOME/bin/activate bigdl-init-llm
+        source $CONDA_HOME/bin/activate bigdl-llm-test
         $CONDA_HOME/bin/conda info
         
         llm-cli -t $THREAD_NUM -n 256 -x gptneox -m $GPTNEOX_INT4_CKPT_PATH -p 'Once upon a time,'
@@ -43,7 +43,7 @@ runs:
     - name: Test bloom llm-cli
       shell: bash
       run: |
-        source $CONDA_HOME/bin/activate bigdl-init-llm
+        source $CONDA_HOME/bin/activate bigdl-llm-test
         $CONDA_HOME/bin/conda info
         
         llm-cli -t $THREAD_NUM -n 256 -x bloom -m $BLOOM_INT4_CKPT_PATH -p 'Once upon a time,'
