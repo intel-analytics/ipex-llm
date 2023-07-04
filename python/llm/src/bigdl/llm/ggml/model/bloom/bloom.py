@@ -359,7 +359,7 @@ class Bloom(GenerationMixin):
                           input_ids=input_ids,
                           seed=self.seed,
                           n_threads=self.n_threads,
-                          n_batch=len(input_ids))
+                          n_batch=self.n_batch)
 
     def _generate(
         self,
@@ -426,4 +426,4 @@ class Bloom(GenerationMixin):
                            input_ids=input_ids,
                            seed=self.seed,
                            n_threads=self.n_threads,
-                           n_batch=len(input_ids))
+                           n_batch=self.n_batch)
