@@ -52,7 +52,6 @@ def is_local_and_existing_uri(uri):
                                 "File Not Exist!")
 
 
-
 def load_data_from_zip(file_path, file):
     with zipfile.ZipFile(os.path.join(file_path, file), "r") as zip_ref:
         unzipped_file = zip_ref.namelist()[0]
