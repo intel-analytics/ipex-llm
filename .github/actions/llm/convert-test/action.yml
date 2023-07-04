@@ -1,0 +1,53 @@
+name: 'BigDL-LLM convert tests'
+description: 'BigDL-LLM convert test, including downloading original models'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download original models & test convert (LLaMA)
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-test
+        if [ ! -d $LLAMA_ORIGIN_PATH ]; then
+          echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/llama-7b-hf -P $ORIGIN_DIR
+        fi
+        bash python/llm/test/run-llm-convert-tests.sh llama
+        rm -rf $LLAMA_ORIGIN_PATH
+        source $CONDA_HOME/bin/deactivate
+
+    - name: Download original models & test convert (GPT-NeoX)
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-test
+        if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
+          echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+        fi
+        bash python/llm/test/run-llm-convert-tests.sh gptneox
+        rm -rf $GPTNEOX_ORIGIN_PATH
+        source $CONDA_HOME/bin/deactivate
+
+    - name: Download original models & test convert (BLOOM)
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-test
+        if [ ! -d $BLOOM_ORIGIN_PATH ]; then
+          echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/bloomz-7b1 -P $ORIGIN_DIR
+        fi
+        bash python/llm/test/run-llm-convert-tests.sh bloom
+        rm -rf $BLOOM_ORIGIN_PATH
+        source $CONDA_HOME/bin/deactivate
+
+    - name: Download original models & test convert (StarCoder)
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-test
+        if [ ! -d $STARCODER_ORIGIN_PATH ]; then
+          echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
+          wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
+        fi
+        bash python/llm/test/run-llm-convert-tests.sh starcoder
+        rm -rf $STARCODER_ORIGIN_PATH
+        source $CONDA_HOME/bin/deactivate
