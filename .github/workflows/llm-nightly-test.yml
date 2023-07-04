@@ -106,7 +106,6 @@ jobs:
       - name: Clean up test environment
         shell: bash
         run: |
-          source $CONDA_HOME/bin/deactivate
           $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

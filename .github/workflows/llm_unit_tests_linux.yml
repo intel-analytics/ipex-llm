@@ -33,6 +33,7 @@ jobs:
       GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_redpajama_7b_q4_0.bin
       BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
       STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
+      THREAD_NUM: 6
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
