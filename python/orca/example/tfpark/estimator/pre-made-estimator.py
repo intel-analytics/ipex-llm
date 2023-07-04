@@ -43,6 +43,7 @@ def is_local_and_existing_uri(uri):
     log4Error.invalidInputError(exists(parsed_uri.path),
                                 "File Not Exist!")
 
+
 def make_input_fn(data_df, label_df, mode, batch_size=-1, batch_per_thread=-1):
     if mode == tf.estimator.ModeKeys.TRAIN:
         def input_function():
