@@ -64,7 +64,6 @@ def generate_spark_df(dataset_path):
 
 
 def get_csv(args):
-    is_local_and_existing_uri(args.datadir)
     dataset_path = args.datadir
     if args.datadir is None:
         with requests.get(args.url) as r:
@@ -76,6 +75,7 @@ def get_csv(args):
                 csv_writer.writerow(row)
             f.close()
             dataset_path = 'nyc_taxi.csv'
+    is_local_and_existing_uri(dataset_path)
     return dataset_path
 
 
