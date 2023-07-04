@@ -59,7 +59,7 @@ if __name__ == '__main__':
                         help='The boosting rounds.')
     args = parser.parse_args()
 
-    init_fl_context()
+    init_fl_context(1)
     is_local_and_existing_uri(args.train_path)
     df_train = pd.read_csv(args.train_path)
     fgboost_regression = FGBoostRegression()
