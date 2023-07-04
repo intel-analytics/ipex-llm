@@ -30,13 +30,13 @@ def is_local_and_existing_uri(uri):
     parsed_uri = urlparse(uri)
 
     log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
-        "Not Local File!")
+                                "Not Local File!")
 
     log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
-        "Not Local File!")
+                                "Not Local File!")
 
     log4Error.invalidInputError(exists(parsed_uri.path),
-        "File Not Exist!")
+                                "File Not Exist!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
