@@ -14,7 +14,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-nightly-convert-test:
-    runs-on: [ llm, AVX512, ubuntu-20.04-lts ]
+    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
@@ -45,9 +45,6 @@ jobs:
       - name: Install BigDL-LLM
         shell: bash
         run: |
-          touch test.txt
-          apt-get update && apt install tnftp
-          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/test.txt test.txt
           $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
           $CONDA_HOME/bin/conda create -n bigdl-init-llm -y python==3.9 setuptools==58.0.4
           source $CONDA_HOME/bin/activate bigdl-init-llm

@@ -22,7 +22,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-unit-test-linux-avx512:
-    runs-on: [ llm, AVX512, ubuntu-20.04-lts ]
+    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
     strategy:
       fail-fast: false
       matrix:
