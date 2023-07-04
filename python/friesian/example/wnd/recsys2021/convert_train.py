@@ -36,6 +36,7 @@ def is_local_and_existing_uri(uri):
     log4Error.invalidInputError(exists(parsed_uri.path),
                                 "File Not Exist!")
 
+
 def _parse_args():
     parser = ArgumentParser()
 
