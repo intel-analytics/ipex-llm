@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example')
     parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
                         choices=['decapoda-research/llama-7b-hf', 'THUDM/chatglm-6b'],
-                        help='The huggingface repo id for the larga language model to be downloaded'
+                        help='The huggingface repo id for the large language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
@@ -43,7 +43,8 @@ if __name__ == '__main__':
             output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             end = time.time()
-        print(output_str)
+        print('Prompt:', input_str)
+        print('Output:', output_str)
         print(f'Inference time: {end-st} s')
     elif model_path == 'THUDM/chatglm-6b':
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
@@ -57,5 +58,6 @@ if __name__ == '__main__':
             output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
             output_str = tokenizer.decode(output[0], skip_special_tokens=True)
             end = time.time()
-        print(output_str)
+        print('Prompt:', input_str)
+        print('Output:', output_str)
         print(f'Inference time: {end-st} s')
