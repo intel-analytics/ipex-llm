@@ -5,7 +5,6 @@ model_family=""
 threads=8
 # Number of tokens to predict (made it larger than default because we want a long interaction)
 n_predict=512
-model_path=""
 
 EXTRA_ARGS=()
 
@@ -53,17 +52,8 @@ function gptneox {
 
 function create_prompt_file {
   PROMPT_TEMPLATE="$prompts_dir/chat-with-ai.txt"
-  USER_NAME="${USER_NAME:-USER}"
-  DATE_TIME=$(date +%H:%M)
-  DATE_YEAR=$(date +%Y)
-  PROMPT_FILE=$(mktemp -t cpp_prompt.XXXXXXX.txt)
-  
-  sed -e "s/\[\[USER_NAME\]\]/$USER_NAME/g" \
-      -e "s/\[\[AI_NAME\]\]/$AI_NAME/g" \
-      -e "s/\[\[DATE_TIME\]\]/$DATE_TIME/g" \
-      -e "s/\[\[DATE_YEAR\]\]/$DATE_YEAR/g" \
-      $PROMPT_TEMPLATE > $PROMPT_FILE
-  EXTRA_ARGS+=('--color' '-i' '--file' "'$PROMPT_FILE'" '--reverse-prompt' "'$USER_NAME:'" '--in-prefix' "' '")
+  USER_NAME="USER"
+  EXTRA_ARGS+=('--color' '-i' '--file' "'$PROMPT_TEMPLATE'" '--reverse-prompt' "'$USER_NAME:'" '--in-prefix' "' '")
 }
 
 # Remove model_family/x parameter

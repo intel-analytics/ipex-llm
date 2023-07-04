@@ -228,8 +228,8 @@ def setup_package():
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: Implementation :: CPython'],
         scripts={
-            'Linux': ['src/bigdl/llm/cli/llm-cli'],
-            'Windows': ['src/bigdl/llm/cli/llm-cli.ps1'],
+            'Linux': ['src/bigdl/llm/cli/llm-cli', 'src/bigdl/llm/cli/llm-chat'],
+            'Windows': ['src/bigdl/llm/cli/llm-cli.ps1', 'src/bigdl/llm/cli/llm-chat.ps1'],
         }[platform_name],
         platforms=['windows']
     )

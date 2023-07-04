@@ -75,14 +75,11 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    #llama/bloom/gptneox/starcoder model family is currently supported
    llm-cli -t 16 -x gptneox -m "/path/to/output/model.bin" -p 'Once upon a time,'
 
-   #interactive mode
-   #Note: The interactive mode only support LLaMA (e.g., *vicuna*), GPT-NeoX (e.g., *redpajama*) for now.
-   llm-cli -m "/path/to/output/model.bin" -x llama -i
-
-   #instruction mode with Alpaca under interactive mode
-   llm-cli -m "/path/to/output/model.bin" -x llama -i --ins
+   #chat mode
+   #Note: The chat mode only support LLaMA (e.g., *vicuna*), GPT-NeoX (e.g., *redpajama*)for now.
+   llm-chat -m "/path/to/output/model.bin" -x llama
    ```
-   
+
 #### Hugging Face `transformers`-style API
 You may run the models using `transformers`-style API in `bigdl-llm`
 
