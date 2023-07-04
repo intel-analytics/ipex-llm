@@ -41,27 +41,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
-
-      - name: Download original models
-        run: |
-          if [ ! -d $LLAMA_ORIGIN_PATH ]; then
-            echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/llama-7b-hf -P $ORIGIN_DIR
-          fi
-          if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
-            echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
-          fi
-          if [ ! -d $BLOOM_ORIGIN_PATH ]; then
-            echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/bloomz-7b1 -P $ORIGIN_DIR
-          fi
-          if [ ! -d $STARCODER_ORIGIN_PATH ]; then
-            echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
-            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
-          fi
       
-      - name: Run LLM convert test
+      - name: Install BigDL-LLM
         shell: bash
         run: |
           $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
@@ -73,9 +54,44 @@ jobs:
           whl_name=$(ls python/llm/dist)
           pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
           pip install pytest
-          bash python/llm/test/run-llm-convert-tests.sh
           source $CONDA_HOME/bin/deactivate
-          $CONDA_HOME/bin/conda remove -n bigdl-init-llm --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Download original models & convert 
+        shell: bash
+        run: |
+          source $CONDA_HOME/bin/activate bigdl-init-llm
+
+          if [ ! -d $LLAMA_ORIGIN_PATH ]; then
+            echo "Directory $LLAMA_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/llama-7b-hf -P $ORIGIN_DIR
+          fi
+          bash python/llm/test/run-llm-convert-tests.sh llama
+          rm -rf $LLAMA_ORIGIN_PATH
+
+          if [ ! -d $GPTNEOX_ORIGIN_PATH ]; then
+            echo "Directory $GPTNEOX_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gptneox-7b-redpajama-bf16 -P $ORIGIN_DIR
+          fi
+          bash python/llm/test/run-llm-convert-tests.sh gptneox
+          rm -rf $GPTNEOX_ORIGIN_PATH
+
+          if [ ! -d $BLOOM_ORIGIN_PATH ]; then
+            echo "Directory $BLOOM_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/bloomz-7b1 -P $ORIGIN_DIR
+          fi
+          bash python/llm/test/run-llm-convert-tests.sh bloom
+          rm -rf $BLOOM_ORIGIN_PATH
+
+          if [ ! -d $STARCODER_ORIGIN_PATH ]; then
+            echo "Directory $STARCODER_ORIGIN_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=1 $LLM_FTP_URL/llm/gpt_bigcode-santacoder -P $ORIGIN_DIR
+          fi
+          bash python/llm/test/run-llm-convert-tests.sh starcoder
+          rm -rf $STARCODER_ORIGIN_PATH
+
+          source $CONDA_HOME/bin/deactivate
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
@@ -86,3 +102,11 @@ jobs:
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          source $CONDA_HOME/bin/deactivate
+          $CONDA_HOME/bin/conda env remove -y -n bigdl-init-llm || true
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
