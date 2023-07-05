@@ -21,6 +21,7 @@ import sys
 import pickle
 import hmac
 import hashlib
+from bigdl.nano.utils.common import invalidInputError
 
 
 def deprecated(message=""):
@@ -124,6 +125,6 @@ class SafePickle:
             content = file.read()
             new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
             if digest != new_digest:
-                raise Exception('Pickle safe check failed')
+                invalidInputError(False, 'Pickle safe check failed')
             file.seek(0)
         return pickle.load(file, *args, **kwargs)
