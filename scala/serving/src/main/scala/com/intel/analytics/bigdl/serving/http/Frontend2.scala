@@ -21,6 +21,7 @@ import java.security.{KeyStore, SecureRandom}
 import java.util
 import java.util.UUID
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
+import java.net.URI
 
 import javax.net.ssl.{KeyManagerFactory, SSLContext, TrustManagerFactory}
 import akka.actor.{ActorRef, ActorSystem, Props}
@@ -50,6 +51,13 @@ object Frontend2 extends Supportive with EncryptSupportive {
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
+
+  def isLocalURI(path: String): Boolean = {
+    val uri = new URI(path)
+    val scheme = uri.getScheme
+    if (scheme != null && !scheme.equalsIgnoreCase("file"))
+      logger.error(s"$path isn't a local file")
+  }
 
   def main(args: Array[String]): Unit = {
     timing(s"$name started successfully.")() {
@@ -162,6 +170,7 @@ object Frontend2 extends Supportive with EncryptSupportive {
         }
       }
       if (arguments.httpsEnabled) {
+        isLocalURI(arguments.httpsKeyStorePath)
         val serverContext = defineServerContext(arguments.httpsKeyStoreToken,
           arguments.httpsKeyStorePath)
         Http().bindAndHandle(route, arguments.interface, port = arguments.securePort,
