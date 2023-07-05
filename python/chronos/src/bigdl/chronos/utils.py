@@ -18,6 +18,9 @@ import warnings
 from functools import wraps
 import importlib
 import sys
+import pickle
+import hmac
+import hashlib
 
 
 def deprecated(message=""):
@@ -96,6 +99,7 @@ class LazyImport:
 # Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
 # To safely use python pickle
 class SafePickle:
+    key = b'shared-key'
     """
     Example:
         >>> from bigdl.chronos.utils import SafePickle
@@ -106,25 +110,19 @@ class SafePickle:
     """
     @classmethod
     def dump(self, obj, file, *args, **kwargs):
-        import pickle
-        import hmac
-        import hashlib
         pickle.dump(obj, file, *args, **kwargs)
         try:
             pickled_data = pickle.dumps(obj)
-            digest = hmac.new(b'shared-key', pickled_data, hashlib.sha1).hexdigest()
+            digest = hmac.new(self.key, pickled_data, hashlib.sha1).hexdigest()
             return digest
         except Exception:
             return None
 
     @classmethod
     def load(self, file, digest=None, *args, **kwargs):
-        import pickle
-        import hmac
-        import hashlib
         if digest:
             content = file.read()
-            new_digest = hmac.new(b'shared-key', content, hashlib.sha1).hexdigest()
+            new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
             if digest != new_digest:
                 warnings.warn('Pickle safe check failed')
             file.seek(0)
