@@ -52,11 +52,14 @@ object Frontend2 extends Supportive with EncryptSupportive {
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
 
-  def isLocalURI(path: String): Boolean = {
+  def isLocalURI(path: String): Unit = {
     val uri = new URI(path)
     val scheme = uri.getScheme
-    if (scheme != null && !scheme.equalsIgnoreCase("file"))
+    if (scheme != null && !scheme.equalsIgnoreCase("file")) {
       logger.error(s"$path isn't a local file")
+    } else {
+      logger.info(s"$path is a local file")
+    }
   }
 
   def main(args: Array[String]): Unit = {
