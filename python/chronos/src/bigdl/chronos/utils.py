@@ -104,19 +104,19 @@ class SafePickle:
     Example:
         >>> from bigdl.chronos.utils import SafePickle
         >>> with open(file_path, 'wb') as file:
-        >>>     signature = SafePickle.dump(data, file)
+        >>>     signature = SafePickle.dump(data, file, return_digest=True)
         >>> with open(file_path, 'rb') as file:
         >>>     data = SafePickle.load(file, signature)
     """
     @classmethod
-    def dump(self, obj, file, *args, **kwargs):
-        pickle.dump(obj, file, *args, **kwargs)
-        try:
+    def dump(self, obj, file, return_digest=False, *args, **kwargs):
+        if return_digest:
             pickled_data = pickle.dumps(obj)
+            file.write(pickled_data)
             digest = hmac.new(self.key, pickled_data, hashlib.sha1).hexdigest()
             return digest
-        except Exception:
-            return None
+        else:
+            pickle.dump(obj, file, *args, **kwargs)
 
     @classmethod
     def load(self, file, digest=None, *args, **kwargs):
@@ -124,6 +124,6 @@ class SafePickle:
             content = file.read()
             new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
             if digest != new_digest:
-                warnings.warn('Pickle safe check failed')
+                raise Exception('Pickle safe check failed')
             file.seek(0)
         return pickle.load(file, *args, **kwargs)
