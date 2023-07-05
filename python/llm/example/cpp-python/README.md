@@ -14,7 +14,7 @@ pip install --pre --upgrade bigdl-llm[all]
 ```
 
 ## Convert Models using bigdl-llm
-Follow the instructions in [bigdl-llm docs: Convert Models]().
+Follow the instructions in [Convert model](https://github.com/intel-analytics/BigDL/tree/main/python/llm#convert-model).
 
 
 ## Run the example

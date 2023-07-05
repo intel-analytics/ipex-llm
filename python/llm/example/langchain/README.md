@@ -3,7 +3,7 @@
 The examples here shows how to use langchain with `bigdl-llm`.
 
 ## Install bigdl-llm
-Follow the instructions in  [bigdl-llm docs: Install]().
+Follow the instructions in [Install](https://github.com/intel-analytics/BigDL/tree/main/python/llm#install).
 
 ## Install Required Dependencies for langchain examples. 
 
@@ -17,7 +17,7 @@ Note that typing_extensions==4.5.0 is required, or you may encounter error `Type
 
 
 ## Convert Models using bigdl-llm
-Follow the instructions in [bigdl-llm docs: Convert Models]().
+Follow the instructions in [Convert model](https://github.com/intel-analytics/BigDL/tree/main/python/llm#convert-model).
 
 
 ## Run the examples
