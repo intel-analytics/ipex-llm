@@ -82,16 +82,16 @@ object FrontEndApp extends Supportive with EncryptSupportive {
                  modelMetaDataList:
                  - !<ClusterServingMetaData>
                     modelName: "1"
-                    modelVersion:"1.0"
+                    modelVersion: "1.0"
                     redisHost: "localhost"
                     redisPort: "6381"
                     redisInputQueue: "serving_stream2"
                     redisOutputQueue: "cluster-serving_serving_stream2:"
-                 - !<InflerenceModelMetaData>
+                 - !<InferenceModelMetaData>
                     modelName: "1"
-                    modelVersion:"1.0"
-                    modelPath:"/"
-                    modelType:"OpenVINO"
+                    modelVersion: "1.0"
+                    modelPath: "/"
+                    modelType: "OpenVINO"
                     features:
                       - "a"
                       - "b"
