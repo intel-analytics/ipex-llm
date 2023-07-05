@@ -38,13 +38,25 @@ class _BaseAutoModelClass:
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
                                         if len(args) == 0 else args[0]
 
+        # For huggingface transformers cls.HF_Model.from_pretrained could only restore the model
+        # in the original format, which is not quantized,
+        # we can convert the model to quantized later.
         model = None
         if load_convert_pretrained:
-            kwargs["ignore_mismatched_sizes"] = True    
+            # Avoid KeyError
+            kwargs["ignore_mismatched_sizes"] = True
+
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
+
+        # Note that the ggml_matmul_src1_x_src0_t operation cannot currently
+        # be recorded in AutoConfig,
+        # and this operation is not included in the core Hugging Face infrastructure.
         if load_convert_pretrained:
             from .convert import ggml_convert_int4
+            # We forcefully modify the model's definition
+            # and the tensor shape of int4 weights without quantization.
             model = ggml_convert_int4(model, convert_shape_only=True)
+            # Load the quantized model at last.
             archive_file = extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant)
             state_dict = load_state_dict(archive_file)
             load(model, state_dict)

@@ -15,5 +15,5 @@
 #
 
 from .convert import ggml_convert_int4
-from .model import AutoModelForCausalLM, AutoModel, AutoModelForSeq2SeqLM
+from .model import AutoModelForCausalLM, AutoModel
 from .modelling_bigdl import BigdlForCausalLM
