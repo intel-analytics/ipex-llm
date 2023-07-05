@@ -41,7 +41,7 @@ from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
 import warnings
 
 
-def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_name=None):
+def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_name=None, convert_shape_only=False):
     has_been_replaced = False
     for name, module in model.named_children():
         if current_key_name is None:
@@ -62,6 +62,7 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
                     new_linear._parameters['weight'] = ParamsInt4(data=module.weight.data,
                                                                   requires_grad=False,
                                                                   quantized=False,
+                                                                  convert_shape_only=convert_shape_only,
                                                                   _shape=None).to("cpu")
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
@@ -83,10 +84,10 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
     return model, has_been_replaced
 
 
-def ggml_convert_int4(model):
+def ggml_convert_int4(model, convert_shape_only=False):
     modules_to_not_convert = []  # ["lm_head"]
     model, has_been_replaced = _replace_with_int4_linear(
-        model, modules_to_not_convert, None
+        model, modules_to_not_convert, None, convert_shape_only=convert_shape_only
     )
     if not has_been_replaced:
         warnings.warn(
