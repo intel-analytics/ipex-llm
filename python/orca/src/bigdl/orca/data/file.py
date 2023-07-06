@@ -496,8 +496,8 @@ def get_remote_dir_to_local(remote_dir: str, local_dir: str,
                             over_write: Optional[bool] = False) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         return file_utils.get_remote_dir_tree_to_local(remote_dir=remote_dir,
-                                                  local_dir=local_dir,
-                                                  over_write=over_write)
+                                                       local_dir=local_dir,
+                                                       over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
