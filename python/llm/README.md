@@ -55,7 +55,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    ```bash
    #convert PyTorch (fp16 or fp32) model; 
    #llama/bloom/gptneox/starcoder model family is currently supported
-   lm-convert "/path/to/model/" --model-format pth --model-family "bloom" --outfile "/path/to/output/"
+   llm-convert "/path/to/model/" --model-format pth --model-family "bloom" --outfile "/path/to/output/"
 
    #convert GPTQ-4bit model
    #only llama model family is currently supported
@@ -102,7 +102,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   See the complete example [here](example/transformers/transformers_int4_pipeline.py). 
   
-  - ##### Using native INT4 format
+- ##### Using native INT4 format
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
