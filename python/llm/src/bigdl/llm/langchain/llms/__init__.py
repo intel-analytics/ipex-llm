@@ -24,11 +24,17 @@ from typing import Dict, Type
 from langchain.llms.base import BaseLLM
 
 from .bigdlllm import BigdlNativeLLM
+from .transformersllm import TransformersLLM
+from .transformerspipelinellm import TransformersPipelineLLM
 
 __all__ = [
     "BigdlNativeLLM",
+    "TransformersLLM",
+    "TransformersPipelineLLM"
 ]
 
 type_to_cls_dict: Dict[str, Type[BaseLLM]] = {
     "BigdlNativeLLM": BigdlNativeLLM,
+    "TransformersPipelineLLM": TransformersPipelineLLM,
+    "TransformersLLM": TransformersLLM
 }
