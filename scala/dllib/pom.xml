@@ -316,7 +316,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.7</version>
+            <version>3.12.0</version>
             <scope>${spark-scope}</scope>
     	</dependency>
 	<dependency>
@@ -329,6 +329,12 @@
             <groupId>org.json4s</groupId>
 	    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
 	    <version>${json4s.version}</version>
+	    <exclusions>
+	        <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+	    </exclusions>
         </dependency>
 	<dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
