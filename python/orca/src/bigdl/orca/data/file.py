@@ -529,7 +529,7 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
                                           local_dir: str,
                                           over_write: Optional[bool] = False) -> Union[str, int]:
     prefix = os.path.basename(remote_path_prefix)
-    if remote_path_prefix.startswith("hdfs"):  # hdfs://(url:port/file_path
+    if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
         return file_utils.get_remote_files_with_prefix_to_local(
             remote_path_prefix=remote_path_prefix,
             local_dir=local_dir,
