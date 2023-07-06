@@ -293,7 +293,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
     zooUtils.rmdir(path)
   }
 
-  def isFile(path: String): Unit = {
+  def isFile(path: String): Boolean = {
     zooUtils.isFile(path)
   }
 
