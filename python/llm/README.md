@@ -64,7 +64,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
   
  - ##### Run model
    
-   You may run the converted model using `llm-cli` (*built on top of `main.cpp` in [llama.cpp](https://github.com/ggerganov/llama.cpp)*)
+   You may run the converted model using `llm-cli` or `llm-chat` (*built on top of `main.cpp` in [llama.cpp](https://github.com/ggerganov/llama.cpp)*)
 
    ```bash
    #help
