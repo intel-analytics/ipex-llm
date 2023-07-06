@@ -186,7 +186,7 @@
 	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
         <data-store-url>http://download.tensorflow.org</data-store-url>
         <lightgbm.scope>provided</lightgbm.scope>
-        <grpc.version>1.48.1</grpc.version>
+        <grpc.version>1.53.0</grpc.version>
         <parquet.version>1.12.2</parquet.version>
 
     </properties>
