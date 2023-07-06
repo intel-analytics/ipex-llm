@@ -44,3 +44,15 @@ arguments info:
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 - `-c CONTEXT_SIZE`: specify the maximum context size. Default is `2048`.
 - `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
+
+### 3. Voice Assistant
+> This example is adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant with only tiny code change.
+
+```bash
+python ./voiceassitant.py
+```
+
+When you see output says
+> listening now...
+
+Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.
