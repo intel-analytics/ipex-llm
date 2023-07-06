@@ -76,7 +76,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    llm-cli -t 16 -x gptneox -m "/path/to/output/model.bin" -p 'Once upon a time,'
 
    #chat mode
-   #Note: The chat mode only support LLaMA (e.g., *vicuna*), GPT-NeoX (e.g., *redpajama*)for now.
+   #llama/gptneox model family is currently supported
    llm-chat -m "/path/to/output/model.bin" -x llama
    ```
 
