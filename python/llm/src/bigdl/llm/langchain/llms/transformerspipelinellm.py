@@ -67,7 +67,7 @@ class TransformersPipelineLLM(LLM):
         .. code-block:: python
 
             from langchain.llms import TransformersPipelineLLM
-            llm = TransformersPipelineLLM(model_id="decapoda-research/llama-7b-hf")
+            llm = TransformersPipelineLLM.from_model_id(model_id="decapoda-research/llama-7b-hf")
     """
 
     pipeline: Any  #: :meta private:

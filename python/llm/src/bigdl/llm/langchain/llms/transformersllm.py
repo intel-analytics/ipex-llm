@@ -65,7 +65,7 @@ class TransformersLLM(LLM):
         .. code-block:: python
 
             from langchain.llms import TransformersLLM
-            llm = TransformersLLM(model_id="THUDM/chatglm-6b")
+            llm = TransformersLLM.from_model_id(model_id="THUDM/chatglm-6b")
     """
 
     model_id: str = DEFAULT_MODEL_ID
