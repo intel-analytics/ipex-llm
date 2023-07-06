@@ -27,6 +27,6 @@ with torch.inference_mode():
 ```
 Output will be like:
 ```bash
-=========First token cost 0.0518s=========
-=========Last token cost average 0.0316s (31 tokens in all)=========
+=========First token cost xx.xxxxs=========
+=========Last token cost average xx.xxxxs (31 tokens in all)=========
 ```
