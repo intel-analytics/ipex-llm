@@ -21,7 +21,7 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import BigdlTransformersLLM, BigdlPipelineLLM
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 from langchain import PromptTemplate, LLMChain
 from langchain import HuggingFacePipeline
 
@@ -34,13 +34,13 @@ def main(args):
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
-    # llm = BigdlPipelineLLM.from_model_id(
+    # llm = TransformersPipelineLLM.from_model_id(
     #     model_id=model_path,
     #     task="text-generation",
     #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
     # )
 
-    llm = BigdlTransformersLLM.from_model_id(
+    llm = TransformersLLM.from_model_id(
         model_id=model_path,
         model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
     )

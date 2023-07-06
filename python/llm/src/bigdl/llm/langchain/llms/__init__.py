@@ -24,8 +24,8 @@ from typing import Dict, Type
 from langchain.llms.base import BaseLLM
 
 from .bigdlllm import BigdlNativeLLM
-from .bigdltransformersllm import TransformersLLM
-from .bigdlpipelinellm import TransformersPipelineLLM
+from .transformersllm import TransformersLLM
+from .transformerspipelinellm import TransformersPipelineLLM
 
 __all__ = [
     "BigdlNativeLLM",

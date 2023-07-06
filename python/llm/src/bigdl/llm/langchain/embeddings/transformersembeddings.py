@@ -134,6 +134,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         embeddings = self.model(input_ids, return_dict=False)[0]  # shape: [1, T, N]
         embeddings = embeddings.squeeze(0).detach().numpy()
         embeddings = np.mean(embeddings, axis=0)
+        return embeddings
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         """Compute doc embeddings using a HuggingFace transformer model.
