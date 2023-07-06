@@ -277,7 +277,7 @@ private[bigdl] object zooUtils {
     }
   }
 
-  def isFile(path: String): Unit = {
+  def isFile(path: String): Boolean = {
     val updatedPath = if (path.startsWith("/")) {
       "file://" + path
     } else {
