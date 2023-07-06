@@ -41,12 +41,12 @@ You may download any PyTorch model in Hugging Face *Transformers* format (includ
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
 1. [CLI (command line interface) Tool](#cli-tool)
-2. [Hugging Face `transformer`-style API](#hugging-face-transformers-style-api)
+2. [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
 3. [LangChain API](#langchain-api)
 4. [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
 
 #### CLI Tool
-Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformer`-style or LangChain APIs.
+Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
 
  - ##### Convert model
  
