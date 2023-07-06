@@ -41,12 +41,12 @@ You may download any PyTorch model in Hugging Face *Transformers* format (includ
  
 You may run the models using **`bigdl-llm`** through one of the following APIs:
 1. [CLI (command line interface) Tool](#cli-tool)
-2. [Hugging Face `transformer`-style API](#hugging-face-transformers-style-api)
+2. [Hugging Face `transformers`-style API](#hugging-face-transformers-style-api)
 3. [LangChain API](#langchain-api)
 4. [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
 
 #### CLI Tool
-Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformer`-style or LangChain APIs.
+>**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
 
  - ##### Convert model
  
@@ -64,7 +64,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
   
  - ##### Run model
    
-   You may run the converted model using `llm-cli` (*built on top of `main.cpp` in [llama.cpp](https://github.com/ggerganov/llama.cpp)*)
+   You may run the converted model using `llm-cli` or `llm-chat` (*built on top of `main.cpp` in [llama.cpp](https://github.com/ggerganov/llama.cpp)*)
 
    ```bash
    #help
@@ -76,7 +76,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    llm-cli -t 16 -x gptneox -m "/path/to/output/model.bin" -p 'Once upon a time,'
 
    #chat mode
-   #Note: The chat mode only support LLaMA (e.g., *vicuna*), GPT-NeoX (e.g., *redpajama*)for now.
+   #llama/gptneox model family is currently supported
    llm-chat -m "/path/to/output/model.bin" -x llama
    ```
 
@@ -106,13 +106,13 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
-  *(Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).*
+  >**Note**: Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).
 
    ```python
   #convert the model
   from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
-      outfile='/path/to/output/', outtype='int4', model_family="llama")
+          outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
   from bigdl.llm.transformers import BigdlNativeForCausalLM
@@ -127,23 +127,46 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   See the complete example [here](example/transformers/native_int4_pipeline.py). 
 
 #### LangChain API
-You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
+You may run the models using the LangChain API in `bigdl-llm`.
 
-```python
-from bigdl.llm.langchain.llms import BigdlNativeLLM
-from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
-from langchain.chains.question_answering import load_qa_chain
+- **Using Hugging Face `transformers` INT4 format**
 
-embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
-                                model_family="llama",...)
-bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
-                     model_family="llama",...)
+  You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
-doc_chain = load_qa_chain(bigdl_llm, ...)
-doc_chain.run(...)
-```
+  ```python
+  from bigdl.llm.langchain.llms import TransformersLLM
+  from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+  from langchain.chains.question_answering import load_qa_chain
 
-See the examples [here](example/langchain).
+  embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
+  bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+
+  doc_chain = load_qa_chain(bigdl_llm, ...)
+  output = doc_chain.run(...)
+  ```
+  See the examples [here](example/langchain/transformers_int4).
+ 
+- **Using native INT4 format**
+
+  You may also convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API as follows.
+  
+  >**Note**: Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).
+
+  ```python
+  from bigdl.llm.langchain.llms import BigdlNativeLLM
+  from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+  from langchain.chains.question_answering import load_qa_chain
+
+  embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
+                            model_family="llama",...)
+  bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
+                       model_family="llama",...)
+
+  doc_chain = load_qa_chain(bigdl_llm, ...)
+  doc_chain.run(...)
+  ```
+
+  See the examples [here](example/langchain/native_int4).
 
 #### `llama-cpp-python`-style API
 
