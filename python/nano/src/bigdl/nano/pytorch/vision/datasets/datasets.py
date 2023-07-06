@@ -145,7 +145,7 @@ class SegmentationImageFolder:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if self.jpeg is not None and (mask_path.endswith(".jpg") or mask_path.endswith(".jpeg")):
-            with open(mask_path, 'rb'):
+            with open(mask_path, 'rb') as fd:
                 mask = self.jpeg.decode(fd.read(), pixel_format=TJPF_GRAY)
         else:
             mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
