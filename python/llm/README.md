@@ -46,7 +46,7 @@ You may run the models using **`bigdl-llm`** through one of the following APIs:
 4. [`llama-cpp-python`-style API](#llama-cpp-python-style-api)
 
 #### CLI Tool
-Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
+>**Note**: Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *redpajama*), *BLOOM* (e.g., *pheonix*) and *GPT2* (e.g., *starcoder*) model architecture; for other models, you may use the `transformers`-style or LangChain APIs.
 
  - ##### Convert model
  
@@ -106,7 +106,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
-  *(Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).*
+  >**Note**: Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).
 
    ```python
   #convert the model
@@ -127,7 +127,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   See the complete example [here](example/transformers/native_int4_pipeline.py). 
 
 #### LangChain API
-You may run the models using the LangChain API in `bigdl-llm` as follows:
+You may run the models using the LangChain API in `bigdl-llm`.
 
 - **Using Hugging Face `transformers` INT4 format**
 
@@ -149,6 +149,8 @@ You may run the models using the LangChain API in `bigdl-llm` as follows:
 - **Using native INT4 format**
 
   You may also convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API as follows.
+  
+  >**Note**: Currently only llama/bloom/gptneox/starcoder model family is supported; for other models, you may use the Transformers INT4 format as described above).
 
   ```python
   from bigdl.llm.langchain.llms import BigdlNativeLLM
