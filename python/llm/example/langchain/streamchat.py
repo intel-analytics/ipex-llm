@@ -21,7 +21,7 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.llms import BigdlNativeLLM
 from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -42,7 +42,7 @@ def main(args):
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
     
     # Verbose is required to pass to the callback manager
-    llm = BigdlLLM(
+    llm = BigdlNativeLLM(
         model_path=model_path,
         model_family=model_family,
         n_threads=n_threads,

@@ -55,7 +55,7 @@ Currently `bigdl-llm` CLI supports *LLaMA* (e.g., *vicuna*), *GPT-NeoX* (e.g., *
    ```bash
    #convert PyTorch (fp16 or fp32) model; 
    #llama/bloom/gptneox/starcoder model family is currently supported
-   lm-convert "/path/to/model/" --model-format pth --model-family "bloom" --outfile "/path/to/output/"
+   llm-convert "/path/to/model/" --model-format pth --model-family "bloom" --outfile "/path/to/output/"
 
    #convert GPTQ-4bit model
    #only llama model family is currently supported
@@ -102,7 +102,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   See the complete example [here](example/transformers/transformers_int4_pipeline.py). 
   
-  - ##### Using native INT4 format
+- ##### Using native INT4 format
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
 
@@ -115,8 +115,8 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
       outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
-  from bigdl.llm.transformers import BigdlForCausalLM
-  llm = BigdlForCausalLM.from_pretrained("/path/to/output/model.bin",...)
+  from bigdl.llm.transformers import BigdlNativeForCausalLM
+  llm = BigdlNativeForCausalLM.from_pretrained("/path/to/output/model.bin",...)
    
   #run the converted  model
   input_ids = llm.tokenize(prompt)
@@ -130,13 +130,13 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
 
 ```python
-from bigdl.llm.langchain.llms import BigdlLLM
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
-embeddings = BigdlLLMEmbeddings(model_path='/path/to/converted/model.bin',
+embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
                                 model_family="llama",...)
-bigdl_llm = BigdlLLM(model_path='/path/to/converted/model.bin',
+bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
                      model_family="llama",...)
 
 doc_chain = load_qa_chain(bigdl_llm, ...)

@@ -22,7 +22,7 @@
 from bigdl.llm.utils.common import invalidInputError
 
 
-class BigdlForCausalLM:
+class BigdlNativeForCausalLM:
     """
     A generic model class that mimics the behavior of
     ``transformers.LlamaForCausalLM.from_pretrained`` API
