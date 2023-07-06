@@ -17,7 +17,6 @@
 import torch
 from torch import nn
 import time
-import copy
 import sigfig
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping
@@ -481,7 +480,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         model(input_sample)
 
                 if option.ipex is True:
-                    # TODO: temp workaround for strange bad optional access of ipex quantization model
+                    # a temp workaround for strange bad optional access of ipex quantization model
                     # warm up two times before inside context manager
                     func_test(acce_model, input_sample)
                     func_test(acce_model, input_sample)
