@@ -115,8 +115,8 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
       outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
-  from bigdl.llm.transformers import BigdlForCausalLM
-  llm = BigdlForCausalLM.from_pretrained("/path/to/output/model.bin",...)
+  from bigdl.llm.transformers import BigdlNativeForCausalLM
+  llm = BigdlNativeForCausalLM.from_pretrained("/path/to/output/model.bin",...)
    
   #run the converted  model
   input_ids = llm.tokenize(prompt)
@@ -130,13 +130,13 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
 
 ```python
-from bigdl.llm.langchain.llms import BigdlLLM
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 
-embeddings = BigdlLLMEmbeddings(model_path='/path/to/converted/model.bin',
+embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
                                 model_family="llama",...)
-bigdl_llm = BigdlLLM(model_path='/path/to/converted/model.bin',
+bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
                      model_family="llama",...)
 
 doc_chain = load_qa_chain(bigdl_llm, ...)
