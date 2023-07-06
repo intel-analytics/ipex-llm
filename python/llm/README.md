@@ -110,10 +110,9 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
    ```python
   #convert the model
-  from bigdl.llm.langchain.llms import TransformersLLM
-  from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+  from bigdl.llm import llm_convert
   bigdl_llm_path = llm_convert(model='/path/to/model/',
-      outfile='/path/to/output/', outtype='int4', model_family="llama")
+          outfile='/path/to/output/', outtype='int4', model_family="llama")
 
   #load the converted model
   from bigdl.llm.transformers import BigdlNativeForCausalLM
@@ -157,9 +156,9 @@ You may run the models using the LangChain API in `bigdl-llm` as follows:
   from langchain.chains.question_answering import load_qa_chain
 
   embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
-                                     model_family="llama",...)
+                            model_family="llama",...)
   bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
-                             model_family="llama",...)
+                       model_family="llama",...)
 
   doc_chain = load_qa_chain(bigdl_llm, ...)
   doc_chain.run(...)
