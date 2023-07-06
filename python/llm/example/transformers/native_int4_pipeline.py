@@ -95,6 +95,7 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
+                        choices=["llama", "bloom", "gptneox", "starcoder"],
                         help="The model family of the large language model (supported option: 'llama', "
                              "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
