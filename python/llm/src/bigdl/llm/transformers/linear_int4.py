@@ -60,7 +60,6 @@ scale_size_in_bytes = 4
 block_size_in_bytes = QK // 2 + scale_size_in_bytes
 
 
-
 def ggml_convert_int4(tensor: torch.Tensor, convert_shape_only=False):
 
     invalidInputError(tensor.dtype == torch.float,
@@ -86,7 +85,8 @@ def ggml_convert_int4(tensor: torch.Tensor, convert_shape_only=False):
 
 
 class ParamsInt4(torch.nn.Parameter):
-    def __new__(cls, data=None, requires_grad=True, old_data=None, quantized=False, _shape=None, convert_shape_only=False):
+    def __new__(cls, data=None, requires_grad=True, old_data=None,
+                quantized=False, _shape=None, convert_shape_only=False):
         if data is None:
             data = torch.empty(0)
 

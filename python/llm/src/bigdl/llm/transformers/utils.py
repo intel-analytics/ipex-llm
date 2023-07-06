@@ -41,6 +41,7 @@
 # SOFTWARE.
 import os
 from transformers.modeling_utils import _add_variant
+from ..utils.common import invalidInputError
 from typing import Union
 import torch
 from torch import nn
@@ -48,9 +49,12 @@ from torch import nn
 
 WEIGHTS_NAME = "pytorch_model.bin"
 
+
 def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant):
     pretrained_model_name_or_path = str(pretrained_model_name_or_path)
-    print(os.path.join(pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant)))
+    print(os.path.join(pretrained_model_name_or_path,
+                       subfolder,
+                       _add_variant(WEIGHTS_NAME, variant)))
     if os.path.isfile(
         os.path.join(pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant))
     ):
@@ -60,27 +64,28 @@ def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant
         )
         return archive_file
     else:
-        raise EnvironmentError(
-            f"Error no file named {_add_variant(WEIGHTS_NAME, variant)}"
-            " found in directory"
-            f" {pretrained_model_name_or_path}."
-        )
+        invalidInputError(False,
+                          f"Error no file named {_add_variant(WEIGHTS_NAME, variant)}"
+                          " found in directory"
+                          f" {pretrained_model_name_or_path}.")
+
 
 def load_state_dict(checkpoint_file: Union[str, os.PathLike]):
     try:
         return torch.load(checkpoint_file, map_location="cpu")
     except Exception as e:
-        raise OSError(
-            f"Unable to load weights from pytorch checkpoint file for '{checkpoint_file}' "
-            f"at '{checkpoint_file}'. "
-        )
+        invalidInputError(False,
+                          f"Unable to load weights"
+                          "from pytorch checkpoint file for '{checkpoint_file}' "
+                          f"at '{checkpoint_file}'. ")
+
 
 # PyTorch's `_load_from_state_dict` does not copy parameters in a module's descendants
 # so we need to apply the function recursively.
 def load(module: nn.Module, state_dict, prefix=""):
     args = (state_dict, prefix, {}, True, [], [], [])
-    # Parameters of module and children will start with prefix. We can exit early if there are none in this
-    # state_dict
+    # Parameters of module and children will start with prefix.
+    # We can exit early if there are none in this state_dict
     if len([key for key in state_dict if key.startswith(prefix)]) > 0:
             module._load_from_state_dict(*args)
 
