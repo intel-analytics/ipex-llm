@@ -212,6 +212,14 @@ class RayServiceFuncGenerator(object):
     @staticmethod
     def start_ray_daemon(python_loc, pid_to_watch, pgid_to_kill):
         daemon_path = os.path.join(os.path.dirname(__file__), "ray_daemon.py")
+        invalidInputError(os.path.isdir(python_loc),
+                          "python_loc should be a valid directory path.")
+        invalidInputError(os.path.isdir(daemon_path),
+                          "daemon_path should be a valid directory path.")
+        invalidInputError(pid_to_watch > 0,
+                          "pid_to_watch should be a positive integer.")
+        invalidInputError(pgid_to_kill > 0,
+                          "pgid_to_kill should be a positive integer.")
         start_daemon_command = ['nohup', python_loc, daemon_path, str(pid_to_watch),
                                 str(pgid_to_kill)]
         # put ray daemon process in its children's process group to avoid being killed by spark.

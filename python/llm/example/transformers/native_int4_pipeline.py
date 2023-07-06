@@ -31,8 +31,8 @@ def convert(repo_id_or_model_path, model_family, tmp_path):
     return bigdl_llm_path
 
 def load(model_path, model_family, n_threads):
-    from bigdl.llm.transformers import BigdlForCausalLM
-    llm = BigdlForCausalLM.from_pretrained(
+    from bigdl.llm.transformers import BigdlNativeForCausalLM
+    llm = BigdlNativeForCausalLM.from_pretrained(
         pretrained_model_name_or_path=model_path,
         model_family=model_family,
         n_threads=n_threads)
@@ -95,6 +95,7 @@ def main():
     parser.add_argument('--thread-num', type=int, default=2, required=True,
                         help='Number of threads to use for inference')
     parser.add_argument('--model-family', type=str, default='llama', required=True,
+                        choices=["llama", "bloom", "gptneox", "starcoder"],
                         help="The model family of the large language model (supported option: 'llama', "
                              "'gptneox', 'bloom', 'starcoder')")
     parser.add_argument('--repo-id-or-model-path', type=str, required=True,
