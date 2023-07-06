@@ -15,8 +15,8 @@
 #
 
 from bigdl.llm.utils import get_avx_flags
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
-from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
 import pytest
 from unittest import TestCase
 import os
@@ -35,7 +35,7 @@ class Test_Models_Basics(TestCase):
 
         
     def test_langchain_llm_embedding_llama(self):
-        bigdl_embeddings = BigdlLLMEmbeddings(
+        bigdl_embeddings = BigdlNativeEmbeddings(
             model_path=self.llama_model_path,
             model_family="llama")
         text = "This is a test document."
@@ -43,7 +43,7 @@ class Test_Models_Basics(TestCase):
         doc_result = bigdl_embeddings.embed_documents([text])
     
     def test_langchain_llm_embedding_gptneox(self):
-        bigdl_embeddings = BigdlLLMEmbeddings(
+        bigdl_embeddings = BigdlNativeEmbeddings(
             model_path=self.gptneox_model_path,
             model_family="gptneox")
         text = "This is a test document."
@@ -51,7 +51,7 @@ class Test_Models_Basics(TestCase):
         doc_result = bigdl_embeddings.embed_documents([text])
         
     def test_langchain_llm_llama(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.llama_model_path, 
             max_tokens=32,
             n_threads=self.n_threads)
@@ -59,7 +59,7 @@ class Test_Models_Basics(TestCase):
         result = llm(question)
         
     def test_langchain_llm_gptneox(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.gptneox_model_path,
             model_family="gptneox", 
             max_tokens=32,
@@ -68,7 +68,7 @@ class Test_Models_Basics(TestCase):
         result = llm(question)
         
     def test_langchain_llm_bloom(self):
-        llm = BigdlLLM(
+        llm = BigdlNativeLLM(
             model_path=self.bloom_model_path, 
             model_family="bloom",
             max_tokens=32,

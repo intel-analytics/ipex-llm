@@ -23,12 +23,12 @@
 from typing import Dict, Type
 from langchain.llms.base import BaseLLM
 
-from .bigdlllm import BigdlLLM
+from .bigdlllm import BigdlNativeLLM
 
 __all__ = [
-    "BigdlLLM",
+    "BigdlNativeLLM",
 ]
 
 type_to_cls_dict: Dict[str, Type[BaseLLM]] = {
-    "BigdlLLM": BigdlLLM,
+    "BigdlNativeLLM": BigdlNativeLLM,
 }

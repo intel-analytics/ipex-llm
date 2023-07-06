@@ -31,8 +31,8 @@ def convert(repo_id_or_model_path, model_family, tmp_path):
     return bigdl_llm_path
 
 def load(model_path, model_family, n_threads):
-    from bigdl.llm.transformers import BigdlForCausalLM
-    llm = BigdlForCausalLM.from_pretrained(
+    from bigdl.llm.transformers import BigdlNativeForCausalLM
+    llm = BigdlNativeForCausalLM.from_pretrained(
         pretrained_model_name_or_path=model_path,
         model_family=model_family,
         n_threads=n_threads)
