@@ -36,6 +36,11 @@ class BaseContextManager(object):
     def __enter__(self):
         if self.thread_num is not None:
             torch.set_num_threads(self.thread_num)
+        if not hasattr(self, "infer_mode"):
+            if self.infer_mode_string == "inference_mode":
+                self.infer_mode = torch.inference_mode(mode=True)
+            else:
+                self.infer_mode = torch.no_grad()
         self.infer_mode.__enter__()
         if self.accelerator == "jit" and self.enable_onednn is True:
             if compare_version("torch", operator.ge, "1.12.0"):
@@ -56,13 +61,6 @@ class BaseContextManager(object):
         if 'infer_mode' in state.keys():
             del state['infer_mode']
         return state
-
-    def __setstate__(self, d):
-        self.__dict__ = d
-        if self.infer_mode_string == "inference_mode":
-            self.infer_mode = torch.inference_mode(mode=True)
-        else:
-            self.infer_mode = torch.no_grad()
 
 
 class AutocastContextManager(BaseContextManager):
