@@ -128,38 +128,44 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   See the complete example [here](example/transformers/native_int4_pipeline.py). 
 
 #### LangChain API
+You may run the models using the LangChain API in `bigdl-llm` as follows:
+
 - **Using Hugging Face `transformers` INT4 format**
-```python
-from bigdl.llm.langchain.llms import BigdlNativeLLM
-from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
-from langchain.chains.question_answering import load_qa_chain
 
-embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
-bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+  You may run any Hugging Face *Transformers* model (with INT4 optimiztions applied) using the LangChain API as follows:
 
-doc_chain = load_qa_chain(bigdl_llm, ...)
-output = doc_chain.run(...)
-```
-See the examples [here](example/langchain/transformers_int4).
+  ```python
+  from bigdl.llm.langchain.llms import TransformersLLM
+  from bigdl.llm.langchain.embeddings import TransformersEmbeddings
+  from langchain.chains.question_answering import load_qa_chain
+
+  embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
+  bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+
+  doc_chain = load_qa_chain(bigdl_llm, ...)
+  output = doc_chain.run(...)
+  ```
+  See the examples [here](example/langchain/transformers_int4).
  
 - **Using native INT4 format**
-You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
 
-```python
-from bigdl.llm.langchain.llms import BigdlNativeLLM
-from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
-from langchain.chains.question_answering import load_qa_chain
+  You may also convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API as follows.
 
-embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
-                                model_family="llama",...)
-bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
-                     model_family="llama",...)
+  ```python
+  from bigdl.llm.langchain.llms import BigdlNativeLLM
+  from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+  from langchain.chains.question_answering import load_qa_chain
 
-doc_chain = load_qa_chain(bigdl_llm, ...)
-doc_chain.run(...)
-```
+  embeddings = BigdlNativeEmbeddings(model_path='/path/to/converted/model.bin',
+                                     model_family="llama",...)
+  bigdl_llm = BigdlNativeLLM(model_path='/path/to/converted/model.bin',
+                             model_family="llama",...)
 
-See the examples [here](example/langchain/native_int4).
+  doc_chain = load_qa_chain(bigdl_llm, ...)
+  doc_chain.run(...)
+  ```
+
+  See the examples [here](example/langchain/native_int4).
 
 #### `llama-cpp-python`-style API
 
