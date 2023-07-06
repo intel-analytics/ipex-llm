@@ -110,7 +110,8 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
    ```python
   #convert the model
-  from bigdl.llm import llm_convert
+  from bigdl.llm.langchain.llms import TransformersLLM
+  from bigdl.llm.langchain.embeddings import TransformersEmbeddings
   bigdl_llm_path = llm_convert(model='/path/to/model/',
       outfile='/path/to/output/', outtype='int4', model_family="llama")
 
@@ -127,6 +128,21 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   See the complete example [here](example/transformers/native_int4_pipeline.py). 
 
 #### LangChain API
+- **Using Hugging Face `transformers` INT4 format**
+```python
+from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+from langchain.chains.question_answering import load_qa_chain
+
+embeddings = TransformersEmbeddings.from_model_id(model_id=model_path)
+bigdl_llm = TransformersLLM.from_model_id(model_id=model_path, ...)
+
+doc_chain = load_qa_chain(bigdl_llm, ...)
+output = doc_chain.run(...)
+```
+See the examples [here](example/langchain/transformers_int4).
+ 
+- **Using native INT4 format**
 You may convert Hugging Face *Transformers* models into *native INT4* format (currently only *llama*/*bloom*/*gptneox*/*starcoder* model family is supported), and then run the converted models using the LangChain API in `bigdl-llm` as follows.
 
 ```python
@@ -143,7 +159,7 @@ doc_chain = load_qa_chain(bigdl_llm, ...)
 doc_chain.run(...)
 ```
 
-See the examples [here](example/langchain).
+See the examples [here](example/langchain/native_int4).
 
 #### `llama-cpp-python`-style API
 
