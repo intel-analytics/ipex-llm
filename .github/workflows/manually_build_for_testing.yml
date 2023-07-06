@@ -93,6 +93,7 @@ jobs:
         echo "####### bigdl-ppml-trusted-dl-serving-gramine-base ###########"
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-gramine-base
+        docker pull ${base_image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base
         cd ppml/trusted-dl-serving/base
         sudo docker build \
@@ -123,6 +124,7 @@ jobs:
         echo "####### bigdl-ppml-trusted-dl-serving-gramine-ref ############"
         echo "##############################################################"
         export base_image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-base
+        docker pull ${base_image}:${TAG}
         export image=intelanalytics/bigdl-ppml-trusted-dl-serving-gramine-ref
         cd ppml/trusted-deep-learning/ref
         openssl genrsa -3 -out enclave-key.pem 3072
