@@ -69,7 +69,7 @@ def mkdirs(path):
     callZooFunc("float", "mkdirs", path)
 
 
-def rm_dir(path):
+def rmdir(path):
     callZooFunc("float", "rmdir", path)
 
 

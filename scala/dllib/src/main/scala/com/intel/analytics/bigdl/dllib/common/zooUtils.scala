@@ -278,8 +278,13 @@ private[bigdl] object zooUtils {
   }
 
   def isFile(path: String): Unit = {
-    val file = new File(path)
-    file.isFile
+    val updatedPath = if (path.startsWith("/")) {
+      "file://" + path
+    } else {
+      path
+    }
+    val fs = getFileSystem(updatedPath)
+    fs.isFile(new Path(updatedPath))
   }
 
   def rmdir(path: String): Unit = {
