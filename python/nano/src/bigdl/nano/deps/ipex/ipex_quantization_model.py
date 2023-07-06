@@ -113,8 +113,6 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
 
         # convert to static quantized model
         self.model = convert(self.model)
-        # todo: fix in optimize
-        jit_strict=False
         with torch.no_grad():
             self.model = jit_convert(self.model, input_sample,
                                      jit_method='trace',
@@ -135,7 +133,6 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
     def forward_step(self, *inputs):
         if self.channels_last is True:
             inputs = tuple(map(lambda x: x.to(memory_format=torch.channels_last), inputs))
-        print(*inputs)
         return self.model(*inputs)
 
     def on_forward_end(self, outputs):

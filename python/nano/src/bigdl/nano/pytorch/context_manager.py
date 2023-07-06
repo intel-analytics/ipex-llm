@@ -50,12 +50,13 @@ class BaseContextManager(object):
                 # onednn fusion be added to torch from version 1.12
                 torch.jit.enable_onednn_fusion(False)
         torch.set_num_threads(self.original_thread_num)
-    
+
     def __getstate__(self):
         state = self.__dict__
-        del state['infer_mode']
+        if 'infer_mode' in state.keys():
+            del state['infer_mode']
         return state
-    
+
     def __setstate__(self, d):
         self.__dict__ = d
         if self.infer_mode_string == "inference_mode":

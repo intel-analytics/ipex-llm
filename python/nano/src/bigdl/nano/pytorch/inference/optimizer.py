@@ -62,7 +62,8 @@ os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 class TorchAccelerationOption(AccelerationOption):
     def optimize(self, model, training_data=None, input_sample=None,
                  thread_num=None, dynamic_axes=True, logging=False,
-                 sample_size_for_pot=100, output_tensors=True):
+                 sample_size_for_pot=100, output_tensors=True,
+                 jit_strict=True):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
             if accelerator is None and self.ipex is False and \
@@ -79,7 +80,8 @@ class TorchAccelerationOption(AccelerationOption):
                                          dynamic_axes=dynamic_axes,
                                          # remove output of openvino
                                          logging=logging,
-                                         output_tensors=output_tensors)
+                                         output_tensors=output_tensors,
+                                         jit_strict=jit_strict)
         else:
             # quantize
             ort_method: str = self.method
@@ -97,7 +99,8 @@ class TorchAccelerationOption(AccelerationOption):
                                             sample_size=sample_size_for_pot,
                                             # remove output of openvino
                                             logging=logging,
-                                            output_tensors=output_tensors)
+                                            output_tensors=output_tensors,
+                                            jit_strict=jit_strict)
         return acce_model
 
 
@@ -167,6 +170,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  accelerator: Optional[Tuple[str]] = None,
                  precision: Optional[Tuple[str]] = None,
                  use_ipex: Optional[bool] = None,
+                 jit_strict: Optional[bool] = True,
                  search_mode: str = "default",
                  dynamic_axes: Union[bool, dict] = True,
                  logging: bool = False,
@@ -268,6 +272,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+               passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
+               ``jit_method='script'``, it will be ignored. Default to True.
         :param search_mode: Here are three modes for optimization:
 
                | 1. default: This mode only traverses a subset of all combinations. This subset
@@ -434,9 +441,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        # model._nano_context_manager = generate_context_manager(accelerator=None,
-        #                                                        precision="fp32",
-        #                                                        thread_num=thread_num)
+        model._nano_context_manager = generate_context_manager(accelerator=None,
+                                                               precision="fp32",
+                                                               thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -457,7 +464,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                  dynamic_axes=dynamic_axes,
                                                  logging=logging,
                                                  output_tensors=output_tensors,
-                                                 sample_size_for_pot=sample_size_for_pot)
+                                                 sample_size_for_pot=sample_size_for_pot,
+                                                 jit_strict=jit_strict)
                 except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
@@ -472,8 +480,13 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                     else:
                         model(input_sample)
 
+                if option.ipex is True:
+                    # TODO: temp workaround for strange bad optional access of ipex quantization model
+                    # warm up two times before inside context manager
+                    func_test(acce_model, input_sample)
+                    func_test(acce_model, input_sample)
+
                 with InferenceOptimizer.get_context(acce_model):
-                    import intel_extension_for_pytorch as ipex
                     try:
                         if no_cache:
                             result_map[method]["latency"], status =\
@@ -912,18 +925,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 elif framework != 'pytorch_ipex':
                     return inc_quantize(**inc_quantize_arguments)
                 else:
-                    # try:
-                    #     return inc_quantize(**inc_quantize_arguments)
-                    # except Exception:
-                    # use pure ipex quantization as a backup for inc ipex quantization
-                    return PytorchIPEXQuantizationModel(model,
-                                                        inc_calib_dataloader,
-                                                        q_config=q_config,
-                                                        input_sample=input_sample,
-                                                        channels_last=channels_last,
-                                                        thread_num=thread_num,
-                                                        inplace=inplace,
-                                                        jit_strict=jit_strict)
+                    try:
+                        return inc_quantize(**inc_quantize_arguments)
+                    except Exception:
+                        # use pure ipex quantization as a backup for inc ipex quantization
+                        return PytorchIPEXQuantizationModel(model,
+                                                            inc_calib_dataloader,
+                                                            q_config=q_config,
+                                                            input_sample=input_sample,
+                                                            channels_last=channels_last,
+                                                            thread_num=thread_num,
+                                                            inplace=inplace,
+                                                            jit_strict=jit_strict)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
