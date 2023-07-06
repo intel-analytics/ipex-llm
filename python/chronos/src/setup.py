@@ -75,7 +75,7 @@ def setup_package():
                                 'optuna<=2.10.1', 'configspace<=0.5.0', 'SQLAlchemy<=1.4.27',
                                 'bigdl-orca-spark3[automl]==' + VERSION +
                                 ';platform_system!="Windows"',
-                                'grpcio<=1.53.0',
+                                'grpcio=1.53.0',
                                 'pmdarima==1.8.5',
                                 'prophet==1.1.0',
                                 'holidays==0.24',
