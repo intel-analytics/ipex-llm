@@ -17,6 +17,7 @@
 import torch
 from torch import nn
 import time
+import copy
 import sigfig
 import multiprocessing as mp
 from typing import Dict, Callable, Tuple, Optional, List, Union, Sequence, Mapping
@@ -433,9 +434,9 @@ class InferenceOptimizer(BaseInferenceOptimizer):
             sample_size_for_pot = 100
 
         # patch context manager
-        model._nano_context_manager = generate_context_manager(accelerator=None,
-                                                               precision="fp32",
-                                                               thread_num=thread_num)
+        # model._nano_context_manager = generate_context_manager(accelerator=None,
+        #                                                        precision="fp32",
+        #                                                        thread_num=thread_num)
 
         print("==========================Start Optimization==========================")
         start_time = time.perf_counter()
@@ -449,7 +450,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 _precision = option.get_precision()
                 try:
-                    acce_model = option.optimize(model, training_data=training_data,
+                    acce_model = option.optimize(model,
+                                                 training_data=training_data,
                                                  input_sample=input_sample,
                                                  thread_num=thread_num,
                                                  dynamic_axes=dynamic_axes,
@@ -471,6 +473,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         model(input_sample)
 
                 with InferenceOptimizer.get_context(acce_model):
+                    import intel_extension_for_pytorch as ipex
                     try:
                         if no_cache:
                             result_map[method]["latency"], status =\
@@ -890,7 +893,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                inc_quantize_arguments = {"model": model,
+                                          "dataloader": inc_calib_dataloader,
                                           "eval_func": eval_func,
                                           "metric": metric, "thread_num": thread_num,
                                           "framework": framework, "conf": conf,
@@ -908,18 +912,18 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 elif framework != 'pytorch_ipex':
                     return inc_quantize(**inc_quantize_arguments)
                 else:
-                    try:
-                        return inc_quantize(**inc_quantize_arguments)
-                    except Exception:
-                        # use pure ipex quantization as a backup for inc ipex quantization
-                        return PytorchIPEXQuantizationModel(model,
-                                                            inc_calib_dataloader,
-                                                            q_config=q_config,
-                                                            input_sample=input_sample,
-                                                            channels_last=channels_last,
-                                                            thread_num=thread_num,
-                                                            inplace=inplace,
-                                                            jit_strict=jit_strict)
+                    # try:
+                    #     return inc_quantize(**inc_quantize_arguments)
+                    # except Exception:
+                    # use pure ipex quantization as a backup for inc ipex quantization
+                    return PytorchIPEXQuantizationModel(model,
+                                                        inc_calib_dataloader,
+                                                        q_config=q_config,
+                                                        input_sample=input_sample,
+                                                        channels_last=channels_last,
+                                                        thread_num=thread_num,
+                                                        inplace=inplace,
+                                                        jit_strict=jit_strict)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':

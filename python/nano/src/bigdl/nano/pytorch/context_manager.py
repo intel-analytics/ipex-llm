@@ -26,6 +26,7 @@ class BaseContextManager(object):
     This context manager is used for providing no_grad context only.
     """
     def __init__(self, thread_num=None, accelerator=None, enable_onednn=True):
+        self.infer_mode_string = "inference_mode"
         self.infer_mode = torch.inference_mode(mode=True)
         self.thread_num = thread_num
         self.accelerator = accelerator
@@ -49,6 +50,18 @@ class BaseContextManager(object):
                 # onednn fusion be added to torch from version 1.12
                 torch.jit.enable_onednn_fusion(False)
         torch.set_num_threads(self.original_thread_num)
+    
+    def __getstate__(self):
+        state = self.__dict__
+        del state['infer_mode']
+        return state
+    
+    def __setstate__(self, d):
+        self.__dict__ = d
+        if self.infer_mode_string == "inference_mode":
+            self.infer_mode = torch.inference_mode(mode=True)
+        else:
+            self.infer_mode = torch.no_grad()
 
 
 class AutocastContextManager(BaseContextManager):
@@ -64,6 +77,7 @@ class AutocastContextManager(BaseContextManager):
         if compare_version("torch", operator.lt, "1.13.0"):
             # In torch1.12, torch.inference_mode(mode=True) will cause bug for jit+bf16
             self.infer_mode = torch.no_grad()
+            self.infer_mode_string = "no_grad"
         self.autocast = torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16)
 
     def __enter__(self):

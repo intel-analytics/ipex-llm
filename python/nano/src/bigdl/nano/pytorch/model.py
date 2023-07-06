@@ -43,6 +43,8 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         super().train(mode)
 
     def forward_step(self, *inputs, **kwargs):
+        print(*inputs)
+        print(**kwargs)
         return self.model(*inputs, **kwargs)
 
     def on_forward_start_kwargs(self, **kwargs):
