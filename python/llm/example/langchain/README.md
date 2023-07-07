@@ -48,6 +48,15 @@ arguments info:
 ### 3. Voice Assistant
 > This example is adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant with only tiny code change.
 
+Some extra dependencies nees to be installed for this example.
+```bash
+pip install SpeechRecognition
+pip install pyttsx3
+pip install PyAudio
+pip install whisper.ai
+pip install soundfile
+```
+
 ```bash
 python ./test-voice.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
 ```
