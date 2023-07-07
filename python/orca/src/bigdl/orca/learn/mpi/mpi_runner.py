@@ -17,6 +17,7 @@
 import os
 import sys
 import subprocess
+import getpass
 from bigdl.dllib.utils.utils import get_node_ip
 from bigdl.dllib.utils.log4Error import *
 
@@ -59,7 +60,6 @@ class MPIRunner:
         print("Hosts: ", self.hosts)
         self.processes_per_node = processes_per_node
         self.env = env if env else {}
-        import getpass
         self.user = getpass.getuser()
 
     def run(self, file, mpi_options=None, **kwargs):

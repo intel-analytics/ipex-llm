@@ -145,7 +145,7 @@ class MPIEstimator:
         self.mpi_runner.run("{}/mpi_train.py".format(self.dir),
                             mpi_options=mpi_options,
                             pkl_path=self.dir)
-        if isinstance(data, DataFrame) or isinstance(data, RDD):
+        if isinstance(data, RDD):
             self.mpi_runner.shutdown_plasma()
 
     def shutdown(self):
