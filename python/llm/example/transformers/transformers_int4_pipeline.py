@@ -24,7 +24,7 @@ from transformers import LlamaTokenizer, AutoTokenizer
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example')
     parser.add_argument('--repo-id-or-model-path', type=str, default="decapoda-research/llama-7b-hf",
-                        choices=['decapoda-research/llama-7b-hf', 'THUDM/chatglm-6b'],
+                        choices=['decapoda-research/llama-7b-hf', 'THUDM/chatglm-6b', 'fnlp/moss-moon-003-sft'],
                         help='The huggingface repo id for the large language model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     args = parser.parse_args()
@@ -51,6 +51,22 @@ if __name__ == '__main__':
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
         input_str = "晚上睡不着应该怎么办"
+
+        with torch.inference_mode():
+            st = time.time()
+            input_ids = tokenizer.encode(input_str, return_tensors="pt")
+            output = model.generate(input_ids, do_sample=False, max_new_tokens=32)
+            output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+            end = time.time()
+        print('Prompt:', input_str)
+        print('Output:', output_str)
+        print(f'Inference time: {end-st} s')
+    elif model_path == 'fnlp/moss-moon-003-sft':
+        model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+
+        # fnlp/moss-moon-003-sft also has good English support
+        input_str = "五部值得推荐的科幻电影包括"
 
         with torch.inference_mode():
             st = time.time()
