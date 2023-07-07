@@ -69,6 +69,7 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         if from_load:
             self.channels_last = channels_last
             self.jit_strict = jit_strict
+            self.enable_onednn = enable_onednn
             self._nano_context_manager = generate_context_manager(accelerator="jit",
                                                                   precision="int8",
                                                                   thread_num=thread_num,
@@ -77,6 +78,7 @@ class PytorchIPEXQuantizationModel(AcceleratedLightningModule):
         self.channels_last = channels_last
         self.original_state_dict = model.state_dict()
         self.jit_strict = jit_strict
+        self.enable_onednn = enable_onednn
         self.original_model = model
         if self.channels_last:
             self.model = self.model.to(memory_format=torch.channels_last)
