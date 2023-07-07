@@ -21,6 +21,7 @@ from bigdl.nano.utils.common import invalidInputError
 
 # Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
 # To safely use python pickle
+
 class SafePickle:
     key = b'shared-key'
     """
