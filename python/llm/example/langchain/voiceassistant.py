@@ -22,51 +22,52 @@
 # Code adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant
 
 
-from langchain import ConversationChain, LLMChain, PromptTemplate
+from langchain import LLMChain, PromptTemplate
 from bigdl.llm.langchain.llms import BigdlLLM
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-
-
-# Use a easy prompt could bring good-enough result
-template = """
-{history}
-Q: {human_input}
-A:"""
-
-
-prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
-
-
-# We use our BigdlLLM to subsititute OpenAI web-required API
-callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-llm = BigdlLLM(
-        model_path='C:\\Users\\junweide\\Downloads\\bigdl_llm_llama_q4_0.bin',
-        model_family='llama',
-        n_threads=4,
-        callback_manager=callback_manager, 
-        verbose=True
-    )
-
-
-# Following code are complete the same as the use-case
-chatgpt_chain = LLMChain(
-    llm=llm,
-    prompt=prompt,
-    verbose=True,
-    memory=ConversationBufferWindowMemory(k=2),
-)
-
-
 import speech_recognition as sr
 import pyttsx3
+import argparse
 
 
-engine = pyttsx3.init()
+def prepare_chain(args):
+
+    model_path = args.model_path
+    model_family = args.model_family
+    n_threads = args.thread_num
+
+    # Use a easy prompt could bring good-enough result
+    template = """
+    {history}
+    Q: {human_input}
+    A:"""
+    prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
+
+    # We use our BigdlLLM to subsititute OpenAI web-required API
+    callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+    llm = BigdlLLM(
+            model_path=model_path,
+            model_family=model_family,
+            n_threads=n_threads,
+            callback_manager=callback_manager, 
+            verbose=True
+        )
+
+    # Following code are complete the same as the use-case
+    voiceassitant_chain = LLMChain(
+        llm=llm,
+        prompt=prompt,
+        verbose=True,
+        memory=ConversationBufferWindowMemory(k=2),
+    )
+
+    return voiceassitant_chain
 
 
-def listen():
+def listen(voiceassitant_chain):
+    engine = pyttsx3.init()
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Calibrating...")
@@ -96,10 +97,25 @@ def listen():
                 text = unrecognized_speech_text
             print(text)
 
-            response_text = chatgpt_chain.predict(human_input=text)
+            response_text = voiceassitant_chain.predict(human_input=text)
             print(response_text)
             engine.say(response_text)
             engine.runAndWait()
 
 
-listen()
+def main(args):
+    chain = prepare_chain(args)
+    listen(chain)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser.add_argument('-x','--model-family', type=str, required=True,
+                        help='the model family')
+    parser.add_argument('-m','--model-path', type=str, required=True,
+                        help='the path to the converted llm model')
+    parser.add_argument('-t','--thread-num', type=int, default=2,
+                        help='Number of threads to use for inference')
+    args = parser.parse_args()
+    
+    main(args)
