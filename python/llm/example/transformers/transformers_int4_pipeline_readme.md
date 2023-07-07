@@ -37,7 +37,7 @@ Output: 晚上睡不着应该怎么办 晚上睡不着可能会让人感到焦�
 Inference time: xxxx s
 ```
 
-### fnlp/moss-moon-003-sft' Model (16B)
+### 'fnlp/moss-moon-003-sft' Model (16B)
 Prompt: 五部值得推荐的科幻电影包括
 Output: 五部值得推荐的科幻电影包括《银翼杀手》、《星际穿越》、《黑客帝国》、《异形》和《第五元素》。这些电影都有着独特的风格和故事情节，值得一看。银翼
 Inference time: xxxx s

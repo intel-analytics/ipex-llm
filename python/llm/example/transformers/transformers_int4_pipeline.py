@@ -65,7 +65,7 @@ if __name__ == '__main__':
         model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-        # fnlp/moss-moon-003-sft also has good English support
+        # fnlp/moss-moon-003-sft also has good English support when loading in 4 bit
         input_str = "五部值得推荐的科幻电影包括"
 
         with torch.inference_mode():
