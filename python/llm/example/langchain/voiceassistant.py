@@ -23,7 +23,7 @@
 
 
 from langchain import LLMChain, PromptTemplate
-from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.llms import BigdlNativeLLM
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -45,9 +45,9 @@ def prepare_chain(args):
     A:"""
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-    # We use our BigdlLLM to subsititute OpenAI web-required API
+    # We use our BigdlNativeLLM to subsititute OpenAI web-required API
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    llm = BigdlLLM(
+    llm = BigdlNativeLLM(
             model_path=model_path,
             model_family=model_family,
             n_threads=n_threads,

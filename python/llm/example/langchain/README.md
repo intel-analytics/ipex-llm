@@ -49,8 +49,13 @@ arguments info:
 > This example is adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant with only tiny code change.
 
 ```bash
-python ./voiceassitant.py
+python ./test-voice.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
 ```
+
+arguments info:
+- `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model
+- `-x MODEL_FAMILY`: **required**, the model family of the model specified in `-m`, available options are `llama`, `gptneox` and `bloom`
+- `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
 
 When you see output says
 > listening now...
