@@ -167,9 +167,9 @@ def chunks(iterable: List[Dict[str, Union[str, int, float, "ndarray"]]],
 def pa_fs(path):
     import pyarrow as pa
     if path.startswith("hdfs"):  # hdfs://url:port/file_path
-        with pa.hdfs.connect() as fs:
-            path = path[len("hdfs://"):]
-            return path, fs
+        fs = pa.hdfs.connect()
+        path = path[len("hdfs://"):]
+        return path, fs
     elif path.startswith("s3"):
         invalidInputError(False, "aws s3 is not supported for now")
     else:  # Local path
