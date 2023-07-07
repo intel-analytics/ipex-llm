@@ -33,7 +33,7 @@ def download_news20(dest_dir):
         if not os.path.exists(extracted_to):
             print("Extracting %s to %s" % (file_abs_path, extracted_to))
             tar.extractall(dest_dir)
-        return extracted_to
+    return extracted_to
 
 
 def download_glove_w2v(dest_dir):
@@ -45,7 +45,7 @@ def download_glove_w2v(dest_dir):
         if not os.path.exists(extracted_to):
             print("Extracting %s to %s" % (file_abs_path, extracted_to))
             zip_ref.extractall(extracted_to)
-        return extracted_to
+    return extracted_to
 
 
 def get_news20(source_dir="./data/news20/"):

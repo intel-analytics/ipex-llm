@@ -119,7 +119,8 @@ def enable_multi_fs_load_static(load_func):
             with tempfile.TemporaryDirectory() as tmpdir:
                 temp_path = os.path.join(tmpdir, file_name)
                 get_remote_file_to_local(path, temp_path)
-                return load_func(temp_path, *args, **kwargs)
+                output = load_func(temp_path, *args, **kwargs)
+            return output
 
     return multi_fs_load
 
