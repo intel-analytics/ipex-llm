@@ -45,8 +45,8 @@ class _BaseAutoModelClass:
         # Read load_convert_pretrained from config.json
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
 
-        ggml_linear_int4_converted = config_dict.pop("ggml_linear_int4_converted", False)
-        if ggml_linear_int4_converted:
+        bigdl_linear_int4_converted = config_dict.pop("bigdl_linear_int4_converted", False)
+        if bigdl_linear_int4_converted:
             # Avoid KeyError
             kwargs["ignore_mismatched_sizes"] = True
 
@@ -55,7 +55,7 @@ class _BaseAutoModelClass:
         # Note that the ggml_matmul_src1_x_src0_t operation cannot currently
         # be recorded in AutoConfig,
         # and this operation is not included in the core Hugging Face infrastructure.
-        if ggml_linear_int4_converted:
+        if bigdl_linear_int4_converted:
             from .convert import ggml_convert_int4
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
@@ -71,7 +71,7 @@ class _BaseAutoModelClass:
             from .convert import ggml_convert_int4
             model = model.to("cpu")
             model = ggml_convert_int4(model)
-            model.config.update({"ggml_linear_int4_converted": True,
+            model.config.update({"bigdl_linear_int4_converted": True,
                                  "quantized": True})
 
         return model
