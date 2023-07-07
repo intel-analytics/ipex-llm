@@ -315,6 +315,7 @@ def plasma_data_creator(meta_data, object_store_address,
 
 def train(config, epochs, model, train_ld, train_batches, optimizer, loss, scheduler,
           validate_func, valid_ld, metrics, validate_batches, validate_steps):
+    import torch
     import time
     total_loss = 0
     total_samp = 0
@@ -323,6 +324,13 @@ def train(config, epochs, model, train_ld, train_batches, optimizer, loss, sched
     previous_iteration_time = None
     step = 0
     for i in range(epochs):
+        model.train()
+        if config['use_ipex']:
+            import intel_extension_for_pytorch as ipex
+            if config['bf16']:
+                model, optimizer = ipex.optimize(model, optimizer=optimizer, dtype=torch.bfloat16)
+            else:
+                model, optimizer = ipex.optimize(model, optimizer=optimizer)
         train_iter = iter(train_ld)
         for j in range(train_batches):
             # Iterate again from the beginning if running out of batches.
@@ -335,10 +343,17 @@ def train(config, epochs, model, train_ld, train_batches, optimizer, loss, sched
                 iteration_time = 0
             previous_iteration_time = current_time
             x, y = next(train_iter)
-            o = model(x, y)
-            l = loss(o, y)
-            l_np = l.detach().cpu().numpy()
-            y_np = y.detach().cpu().numpy()
+            if config['bf16']:
+                with torch.cpu.amp.autocast():
+                    o = model(x, y)
+                    l = loss(o, y)
+                    l_np = l.detach().cpu().numpy()
+                    y_np = y.detach().cpu().numpy()
+            else:
+                o = model(x, y)
+                l = loss(o, y)
+                l_np = l.detach().cpu().numpy()
+                y_np = y.detach().cpu().numpy()
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
@@ -373,62 +388,62 @@ def train(config, epochs, model, train_ld, train_batches, optimizer, loss, sched
                 validate_func(config, model, valid_ld, metrics, validate_batches)
 
 
-def train_epoch(config, model, train_ld, train_batches, optimizer, loss, scheduler,
-                validate_func, valid_ld, metrics, validate_batches, validate_steps):
-    import time
-    total_loss = 0
-    total_samp = 0
-    total_iter = 0
-    total_time = 0
-    previous_iteration_time = None
-    train_iter = iter(train_ld)
-    for j in range(train_batches):
-        # Iterate again from the beginning if running out of batches.
-        if j > 0 and j % len(train_ld) == 0:
-            train_iter = iter(train_ld)
-        current_time = time.time()
-        if previous_iteration_time:
-            iteration_time = current_time - previous_iteration_time
-        else:
-            iteration_time = 0
-        previous_iteration_time = current_time
-        x, y = next(train_iter)
-        o = model(x, y)
-        l = loss(o, y)
-        l_np = l.detach().cpu().numpy()
-        y_np = y.detach().cpu().numpy()
-        optimizer.zero_grad()
-        l.backward()
-        optimizer.step()
-        if scheduler:
-            scheduler.step()
-
-        batch_samples = y_np.shape[0]
-        total_time += iteration_time
-        total_loss += l_np * batch_samples
-        total_iter += 1
-        total_samp += batch_samples
-
-        should_print = ("print_freq" in config and ((j + 1) % config["print_freq"] == 0)) \
-                       or (j + 1 == train_batches)
-        if should_print:
-            average_batch_time = 1000.0 * total_time / total_iter
-            total_time = 0
-            average_loss = total_loss / total_samp
-            total_loss = 0
-
-            print(
-                "Finished training it {}/{} of epoch {}, {:.2f} ms/it, ".format(
-                    j + 1, train_batches, config["epoch"], average_batch_time)
-                + "loss {:.6f}, ".format(average_loss)
-            )
-            total_iter = 0
-            total_samp = 0
-
-        should_validate = valid_ld and ((validate_steps > 0 and (j + 1) % validate_steps == 0)
-                                        or (j + 1 == train_batches))
-        if should_validate:
-            validate_func(config, model, valid_ld, metrics, validate_batches)
+# def train_epoch(config, model, train_ld, train_batches, optimizer, loss, scheduler,
+#                 validate_func, valid_ld, metrics, validate_batches, validate_steps):
+#     import time
+#     total_loss = 0
+#     total_samp = 0
+#     total_iter = 0
+#     total_time = 0
+#     previous_iteration_time = None
+#     train_iter = iter(train_ld)
+#     for j in range(train_batches):
+#         # Iterate again from the beginning if running out of batches.
+#         if j > 0 and j % len(train_ld) == 0:
+#             train_iter = iter(train_ld)
+#         current_time = time.time()
+#         if previous_iteration_time:
+#             iteration_time = current_time - previous_iteration_time
+#         else:
+#             iteration_time = 0
+#         previous_iteration_time = current_time
+#         x, y = next(train_iter)
+#         o = model(x, y)
+#         l = loss(o, y)
+#         l_np = l.detach().cpu().numpy()
+#         y_np = y.detach().cpu().numpy()
+#         optimizer.zero_grad()
+#         l.backward()
+#         optimizer.step()
+#         if scheduler:
+#             scheduler.step()
+#
+#         batch_samples = y_np.shape[0]
+#         total_time += iteration_time
+#         total_loss += l_np * batch_samples
+#         total_iter += 1
+#         total_samp += batch_samples
+#
+#         should_print = ("print_freq" in config and ((j + 1) % config["print_freq"] == 0)) \
+#                        or (j + 1 == train_batches)
+#         if should_print:
+#             average_batch_time = 1000.0 * total_time / total_iter
+#             total_time = 0
+#             average_loss = total_loss / total_samp
+#             total_loss = 0
+#
+#             print(
+#                 "Finished training it {}/{} of epoch {}, {:.2f} ms/it, ".format(
+#                     j + 1, train_batches, config["epoch"], average_batch_time)
+#                 + "loss {:.6f}, ".format(average_loss)
+#             )
+#             total_iter = 0
+#             total_samp = 0
+#
+#         should_validate = valid_ld and ((validate_steps > 0 and (j + 1) % validate_steps == 0)
+#                                         or (j + 1 == train_batches))
+#         if should_validate:
+#             validate_func(config, model, valid_ld, metrics, validate_batches)
 
 
 # TODO: add loss
