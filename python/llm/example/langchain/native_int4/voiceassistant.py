@@ -109,7 +109,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Voice Assistant Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
@@ -117,5 +117,5 @@ if __name__ == '__main__':
     parser.add_argument('-t','--thread-num', type=int, default=2,
                         help='Number of threads to use for inference')
     args = parser.parse_args()
-    
+
     main(args)
