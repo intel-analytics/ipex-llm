@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.{Table}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ModuleSpec extends FlatSpec with Matchers {
@@ -111,7 +111,7 @@ class ModuleSpec extends FlatSpec with Matchers {
       subModule7.parameters()._2.foldLeft(0)(_ + _.nElement()) +
       subModule8.parameters()._2.foldLeft(0)(_ + _.nElement()))
 
-    val newValue = Random.nextDouble()
+    val newValue = new SecureRandom().nextDouble()
     weight.fill(newValue)
     subModule1.parameters()._1.map(t => t.apply1(e => {
       e should be(newValue);
@@ -123,7 +123,7 @@ class ModuleSpec extends FlatSpec with Matchers {
       e
     }))
 
-    val newValue2 = Random.nextDouble()
+    val newValue2 = new SecureRandom().nextDouble()
     weight(Array(1)) = newValue2
     subModule1.parameters()._1(0).storage().array()(0) should be(newValue2)
   }

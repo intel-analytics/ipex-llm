@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class SpatialShareConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialShareConvolution = SpatialShareConvolution[Float](1, 1, 2, 2, 1, 1).
       setName("spatialShareConvolution")
-    val input = Tensor[Float](3, 1, 3, 4).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](3, 1, 3, 4).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(spatialShareConvolution, input)
   }
 }

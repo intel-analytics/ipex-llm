@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SumSpec extends FlatSpec with Matchers {
   "Sum operation" should "works correctly" in {
@@ -43,7 +43,7 @@ class SumSpec extends FlatSpec with Matchers {
 class SumSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val sum = Sum[Float, Float]().setName("sumOps")
-    val input = T(Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](2, 2).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Float]())
     runSerializationTest(sum, input)
   }

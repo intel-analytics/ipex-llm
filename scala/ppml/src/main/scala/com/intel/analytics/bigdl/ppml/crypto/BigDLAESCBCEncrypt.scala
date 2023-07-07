@@ -29,6 +29,14 @@ import javax.crypto.Cipher
  */
 class BigDLAESCBCEncrypt extends BigDLEncrypt {
 
+  override def reset(): Unit = {
+    opMode = null
+    ivParameterSpec = null
+    encryptionKeySpec = null
+    cipher = null
+    encryptedDataKey = ""
+  }
+
   // Init a decrypter
   override def init(cryptoMode: CryptoMode, mode: OperationMode,
     dataKeyPlaintext: String, initializationVector: Array[Byte]): Unit = {

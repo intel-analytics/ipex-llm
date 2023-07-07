@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialCrossMapLRNSpec extends TorchSpec {
@@ -115,7 +115,7 @@ class SpatialCrossMapLRNSpec extends TorchSpec {
     RNG.setSeed(seed)
 
     val layer = new SpatialCrossMapLRN[Double](5, 1.0, 0.75, 1.0)
-    val input = Tensor[Double](4, 8, 32, 32).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4, 8, 32, 32).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-3)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)

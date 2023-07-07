@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.typeAttr
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class Expm1Spec extends TensorflowSpecHelper {
   "Expm1" should "be correct for float" in {
@@ -51,7 +51,7 @@ class Expm1Spec extends TensorflowSpecHelper {
 class ExpandDimsLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val expandDim = new ExpandDimsLoadTF[Float]().setName("expandDim")
-    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](1, 2).apply1(_ => new SecureRandom().nextFloat()),
       Tensor.scalar[Int](1))
     runSerializationTest(expandDim, input)
   }

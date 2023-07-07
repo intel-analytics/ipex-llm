@@ -17,73 +17,90 @@
 import os
 import subprocess
 from bigdl.llm.utils.common import invalidInputError
+import platform
+from pathlib import Path
 
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
-bin_dirname = os.path.dirname(dirname)
+libs_dirname = os.path.dirname(dirname)
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
-                        "q4_2": 5}
-_bloomz_quantize_type = {"q4_0": 2,
-                         "q4_1": 3}
+                        "q5_0": 8,
+                        "q5_1": 9,
+                        "q8_0": 7}
+_bloom_quantize_type = {"q4_0": 2,
+                        "q4_1": 3}
 _gptneox_quantize_type = {"q4_0": 2,
                           "q4_1": 3,
-                          "q4_2": 5,
                           "q5_0": 8,
                           "q5_1": 9,
                           "q8_0": 7}
+_starcoder_quantize_type = {"q4_0": 2,
+                            "q4_1": 3,
+                            "q5_0": 8,
+                            "q5_1": 9,
+                            "q8_0": 7}
 
 _quantize_type = {"llama": _llama_quantize_type,
-                  "bloomz": _bloomz_quantize_type,
-                  "gptneox": _gptneox_quantize_type}
-
-_valid_types = set(list(_llama_quantize_type.keys()) + list(_bloomz_quantize_type.keys()) +
-                   list(_gptneox_quantize_type.keys()))
+                  "bloom": _bloom_quantize_type,
+                  "gptneox": _gptneox_quantize_type,
+                  "starcoder": _starcoder_quantize_type}
 
 
-def quantize(input_path: str, output_path: str=None,
-             model_family: str = 'llama', dtype: str='q4_0'):
+def quantize(input_path: str, output_path: str,
+             model_family: str, dtype: str='q4_0'):
     """
     Quantize ggml file to lower precision.
 
     :param input_path: Path of input ggml file, for example `./ggml-model-f16.bin`.
-    :param output_path: Save path of output quantized model. Default to `None`.
-            If you don't specify this parameter, quantized model will be saved in
-            the same directory as the input and just replace precision with quantize_type
-            like `./ggml-model-q4_0.bin`.
-    :param model_family: Which model family your input model belongs to. Default to `llama`.
-            Now only `llama`/`bloomz`/`gptneox` are supported.
+    :param output_path: Save path of output quantized model. You must pass a directory to
+            save all related output. Filename of quantized model will be like
+            `bigdl_llm_llama_q4_0.bin`.
+    :param model_family: Which model family your input model belongs to.
+            Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param dtype: Quantization method which differs in the resulting model disk size and
-            inference speed. Defalut to `q4_0`. Difference model family may support different types,
-            now the supported list is:
+            inference speed. Defalut to `q4_0`. Difference model family may support
+            different types, now the supported list is:
             llama : "q4_0", "q4_1", "q4_2"
-            bloomz : "q4_0", "q4_1"
-            gptneox : "q4_0", "q4_1", "q4_2", "q5_0", "q5_1", "q8_0"
+            bloom : "q4_0", "q4_1"
+            gptneox : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
+            starcoder : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
+
+    :return: the path str to the converted ggml binary checkpoint
     """
-    invalidInputError(model_family in ['llama', 'bloomz', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloomz', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
-                      "The file {} was not found".format(input_path))
-    # TODO : multi input model path
-    if output_path is None:
-        output_path = input_path.replace("f16", dtype)
+                      "The file {} is not found".format(input_path))
+    invalidInputError(os.path.isdir(output_path),
+                      "The output_path {} is not a directory".format(output_path))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
-    invalidInputError(dtype in quantize_type_map, "{0} model just accept {1} now, \
+    output_filename = "bigdl_llm_{}_{}.bin".format(model_family,
+                                                   dtype.lower())
+    output_path = os.path.join(output_path, output_filename)
+    invalidInputError(dtype.lower() in quantize_type_map, "{0} model just accept {1} now, \
                       but you pass in {2}.".format(
                       model_family,
                       list(quantize_type_map.keys()),
                       dtype))
     quantize_type = quantize_type_map[dtype]
-    quantize_args = "{0}/bin/quantize-{1} {2} {3} {4}".format(bin_dirname,
-                                                              model_family,
-                                                              input_path,
-                                                              output_path,
-                                                              str(quantize_type))
-    p = subprocess.Popen(quantize_args.split())
-    p.communicate()
+    if platform.platform().startswith('Windows'):
+        suffix = '.exe'
+    else:
+        suffix = ''
+    quantize_args = "{0}/libs/quantize-{1}{2} {3} {4} {5}".format(libs_dirname,
+                                                                  model_family,
+                                                                  suffix,
+                                                                  input_path,
+                                                                  output_path,
+                                                                  str(quantize_type))
+    p = subprocess.run(quantize_args.split(), capture_output=True)
+    error_message = p.stderr
     invalidInputError(not p.returncode,
-                      "Fail to quantize {}.".format(str(input_path)))
+                      "Fail to quantize {}, error message is {}.".format(str(input_path),
+                                                                         error_message))
+    return str(output_path)

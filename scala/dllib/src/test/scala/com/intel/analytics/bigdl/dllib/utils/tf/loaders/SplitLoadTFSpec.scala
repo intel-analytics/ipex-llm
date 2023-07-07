@@ -19,13 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SplitLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val splitLoadTF = new SplitLoadTF[Float](1).setName("splitLoadTD")
     val input = T(Tensor[Int](T(1)),
-      Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat())
+      Tensor[Float](1, 6, 2).apply1(_ => new SecureRandom().nextFloat())
     )
     runSerializationTest(splitLoadTF, input)
   }

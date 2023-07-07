@@ -1,0 +1,7 @@
+open $HOST_IP $PORT
+ftp_username
+ftp_password
+prompt
+cd llm
+put path\\to\\file
+quit

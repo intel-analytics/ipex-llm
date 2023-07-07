@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Default values
+model_family=""
+threads=8
+n_predict=128
+
+
+llm_dir="$(dirname "$(python -c "import bigdl.llm;print(bigdl.llm.__file__)")")"
+lib_dir="$llm_dir/libs"
+
+function get_avx_flags() {
+  avx="avx2"
+  if command -v lscpu &>/dev/null; then
+    msg=$(lscpu)
+    if [[ $msg == *"avx512_vnni"* ]]; then
+      avx="avx512"
+    fi
+  else
+    echo "lscpu command not found. Please make sure it is installed."
+  fi
+  echo $avx
+}
+
+# Function to display help message
+function display_help {
+  echo "usage: ./llm-cli.sh -x MODEL_FAMILY [-h] [args]"
+  echo ""
+  echo "options:"
+  echo "  -h, --help           show this help message"
+  echo "  -x, --model_family {llama,bloom,gptneox}"
+  echo "                       family name of model"
+  echo "  -t N, --threads N    number of threads to use during computation (default: 8)"
+  echo "  -n N, --n_predict N  number of tokens to predict (default: 128, -1 = infinity)"
+  echo "  args                 parameters passed to the specified model function"
+}
+
+function llama {
+  command="$lib_dir/main-llama_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
+function bloom {
+  command="$lib_dir/main-bloom_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
+function gptneox {
+  command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
+function starcoder {
+  command="$lib_dir/main-starcoder_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]}"
+  echo "$command"
+  eval "$command"
+}
+
+# Remove model_family/x parameter
+filteredArguments=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    display_help
+    filteredArguments+=("'$1'")
+    shift
+    ;;
+  -x | --model_family | --model-family)
+    model_family="$2"
+    shift 2
+    ;;
+  -t | --threads)
+    threads="$2"
+    shift 2
+    ;;
+  -n | --n_predict | --n-predict)
+    n_predict="$2"
+    shift 2
+    ;;
+  *)
+    filteredArguments+=("'$1'")
+    shift
+    ;;
+  esac
+done
+
+avx_flag=$(get_avx_flags)
+echo "AVX Flags: $avx_flag"
+
+# Perform actions based on the model_family
+if [[ "$model_family" == "llama" ]]; then
+  llama
+elif [[ "$model_family" == "bloom" ]]; then
+  bloom
+elif [[ "$model_family" == "gptneox" ]]; then
+  gptneox
+elif [[ "$model_family" == "starcoder" ]]; then
+  starcoder
+else
+  echo "Invalid model_family: $model_family"
+  display_help
+fi

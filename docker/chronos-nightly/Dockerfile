@@ -45,9 +45,9 @@ RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc wget && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm /bin/sh && \
-    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    rm -rf /var/lib/apt/lists/*
+SHELL ["/bin/bash", "-c"]
+RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
     # Install Miniconda
     wget --progress=dot:giga --no-check-certificate https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh && \

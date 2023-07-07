@@ -28,15 +28,15 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
-import scala.util.Random
+import java.security.SecureRandom
 
 class InceptionSpec extends TorchSpec {
   "Inception+bn" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(4)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    new SecureRandom().setSeed(4)
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val labels = Tensor[Double](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val seed = 890
     RNG.setSeed(seed)
@@ -207,9 +207,9 @@ class InceptionSpec extends TorchSpec {
   "Inception" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(3)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val labels = Tensor[Double](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -408,9 +408,9 @@ class InceptionSpec extends TorchSpec {
   "load torch's Inception+bn" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(4)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    new SecureRandom().setSeed(4)
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val labels = Tensor[Double](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val seed = 890
     RNG.setSeed(seed)
@@ -582,9 +582,9 @@ class InceptionSpec extends TorchSpec {
   "load torch's Inception+bn float version" should "generate correct output" in {
     torchCheck()
 
-    Random.setSeed(3)
-    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val labels = Tensor[Float](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -746,10 +746,10 @@ class InceptionSpec extends TorchSpec {
   "Inception ModelCaffe" should "init right" in {
     RNG.setSeed(1024)
 
-    Random.setSeed(1024)
+    new SecureRandom().setSeed(1024)
 
-    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val labels = Tensor[Float](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val model = Inception.getModelCaffe[Float](1000)
 
@@ -766,10 +766,10 @@ class InceptionSpec extends TorchSpec {
   "InceptionV1 " should "init right" in {
     RNG.setSeed(1024)
 
-    Random.setSeed(1024)
+    new SecureRandom().setSeed(1024)
 
-    val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](4).apply1(e => Random.nextInt(1000))
+    val input = Tensor[Float](4, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val labels = Tensor[Float](4).apply1(e => new SecureRandom().nextInt(1000))
 
     val model = Inception_v1(1000)
 

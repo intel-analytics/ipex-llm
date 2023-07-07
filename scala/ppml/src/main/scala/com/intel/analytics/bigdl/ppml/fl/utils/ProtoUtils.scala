@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.{BoostEva
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
-import scala.util.Random
+import java.security.SecureRandom
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLClient
@@ -56,35 +56,6 @@ object ProtoUtils {
       builder.putTensorMap("target", targetTensor)
     }
     builder.build()
-  }
-
-  def ckksProtoToBytes(storage: Storage[TensorMap]): (
-        Array[Array[Byte]], Array[Byte], Array[Int], Array[Int]) = {
-    // TODO: impl
-    val arrayBuffer = new ArrayBuffer[Array[Byte]](storage.clientData.size())
-    var targetBytes: Array[Byte] = null
-    var shapeGrad: Array[Int] = null
-    var shapeLoss: Array[Int] = null
-    storage.clientData.values().asScala.foreach(clientMap => {
-      val tensorMap = clientMap.getEncryptedTensorMapMap().asScala
-      if (tensorMap.contains("target")) {
-        Log4Error.invalidOperationError(targetBytes == null, "Target already exists")
-        targetBytes = tensorMap.get("target").get.getTensor.toByteArray
-      }
-      if (shapeGrad == null) {
-        shapeGrad = tensorMap.get("output").get.getShapeList.asScala.toArray.map(_.toInt)
-        shapeLoss = Array(shapeGrad(0))
-      }
-      arrayBuffer.append(tensorMap.get("output").get.getTensor.toByteArray)
-    })
-    (arrayBuffer.toArray, targetBytes, shapeGrad, shapeLoss)
-  }
-
-  def bytesToCkksProto(
-        bytes: Array[Byte],
-        shape: Array[Int]): EncryptedTensor = {
-    EncryptedTensor.newBuilder().setTensor(ByteString.copyFrom(bytes))
-      .addAllShape(shape.map(new Integer(_)).toIterable.asJava).build()
   }
 
   def tableProtoToOutputTarget(storage: Storage[TensorMap]): (DllibTable, Tensor[Float]) = {
@@ -176,7 +147,8 @@ object ProtoUtils {
   def randomSplit[T: ClassTag](weight: Array[Float],
                                data: Array[T],
                                seed: Int = 1): Array[Array[T]] = {
-    val random = new Random(seed = seed)
+    val random = new SecureRandom()
+    random.setSeed(seed)
     val lens = weight.map(v => (v * data.length).toInt)
     lens(lens.length - 1) = data.length - lens.slice(0, lens.length - 1).sum
     val splits = lens.map(len => new Array[T](len))

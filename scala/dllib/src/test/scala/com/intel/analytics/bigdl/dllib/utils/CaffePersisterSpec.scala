@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.dllib.utils.caffe.{CaffeConversionException, Ca
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class CaffePersisterSpec extends FlatSpec with Matchers{
@@ -96,7 +96,7 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
 
   "A saved module" should "have same result as pre-saved one" in {
 
-    val input1 = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
+    val input1 = Tensor[Double](1, 3, 5, 5).apply1( e => new SecureRandom().nextDouble())
     val input2 = Tensor[Double]()
     input2.resizeAs(input1).copy(input1)
 

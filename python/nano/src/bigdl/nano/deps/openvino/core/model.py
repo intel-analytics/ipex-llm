@@ -57,7 +57,10 @@ class OpenVINOModel:
             # add inputs based on original order
             for arg in self.forward_args[args_length:]:
                 if arg in kwargs:
-                    flattened_inputs.append(kwargs[arg])
+                    if isinstance(kwargs[arg], (list, tuple)):
+                        flattened_inputs.extend(kwargs[arg])
+                    else:
+                        flattened_inputs.append(kwargs[arg])
         if len(self._forward_args) != len(flattened_inputs):
             # formatting a Tensor will cost much time,
             # so we put it in this `if` statement

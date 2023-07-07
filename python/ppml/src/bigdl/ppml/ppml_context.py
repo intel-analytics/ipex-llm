@@ -19,7 +19,7 @@ from bigdl.ppml.utils.log4Error import *
 from enum import Enum
 
 from pyspark.sql import SparkSession
-
+from pyspark.ml.wrapper import JavaParams
 
 def check(ppml_args, arg_name):
     try:
@@ -73,14 +73,14 @@ class PPMLContext(JavaValue):
         args = [self.spark._jsparkSession]
         super().__init__(None, self.bigdl_type, *args)
 
-    def read(self, crypto_mode, primary_key_name = "defaultKey"):
+    def read(self, crypto_mode, primary_key_name = ""):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
         df_reader = callBigDlFunc(self.bigdl_type, "read",
                                   self.value, crypto_mode, primary_key_name)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
-    def write(self, dataframe, crypto_mode, primary_key_name = "defaultKey"):
+    def write(self, dataframe, crypto_mode, primary_key_name = ""):
         if isinstance(crypto_mode, CryptoMode):
             crypto_mode = crypto_mode.value
         df_writer = callBigDlFunc(self.bigdl_type, "write", self.value,
@@ -88,7 +88,7 @@ class PPMLContext(JavaValue):
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
 
     def textfile(self, path, min_partitions=None,
-                 crypto_mode="plain_text", primary_key_name = "defaultKey"):
+                 crypto_mode = "plain_text", primary_key_name = ""):
         if min_partitions is None:
             min_partitions = self.spark.sparkContext.defaultMinPartitions
         if isinstance(crypto_mode, CryptoMode):
@@ -97,11 +97,54 @@ class PPMLContext(JavaValue):
                              self.value, path, min_partitions,
                              crypto_mode, primary_key_name)
 
+    def sql(self, sqlText):
+        return callBigDlFunc(self.bigdl_type, "sql",
+                             self.value, sqlText)
+
+    def saveLightGBMModel(self, lightgbm_model, path,
+            crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
+        return callBigDlFunc(self.bigdl_type, "saveLightGBMModel",
+                self.value, lightgbm_model._java_obj,
+                path, crypto_mode, primary_key_name)
+
+    def loadLightGBMClassificationModel(self, model_path,
+            crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
+        java_model = callBigDlFunc(self.bigdl_type,
+                "loadLightGBMClassificationModel",
+                self.value, model_path,
+                crypto_mode, primary_key_name)
+        return JavaParams._from_java(java_model)
+
+    def loadLightGBMRegressionModel(self, model_path,
+            crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
+        java_model = callBigDLFunc(self.bigdl_type,
+                "loadLightGBMRegressionModel", model_path,
+                crypto_mode, primary_key_name)
+        return JavaParams._from_java(java_model)
+
+    def loadLightGBMRankerModel(self, model_path,
+            crypto_mode = "plain_text", primary_key_name = ""):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
+        java_model = callBigDLFunc(self.bigdl_type,
+                "loadLightGBMRankerModel", model_path,
+                crypto_mode, primary_key_name)
+        return JavaParams._from_java(java_model)
 
 class EncryptedDataFrameReader:
     def __init__(self, bigdl_type, df_reader):
         self.bigdl_type = bigdl_type
         self.df_reader = df_reader
+
+    def schema(self, value):
+        self.df_reader = callBigDlFunc(self.bigdl_type, "schema", self.df_reader, value)
+        return self
 
     def option(self, key, value):
         self.df_reader = callBigDlFunc(self.bigdl_type, "option", self.df_reader, key, value)

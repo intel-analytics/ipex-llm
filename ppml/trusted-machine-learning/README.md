@@ -1,3 +1,7 @@
+# Gramine Machine Learning Toolkit
+
+This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
+
 - [Gramine Machine Learning Toolkit](#gramine-machine-learning-toolkit)
   - [Before Running Code](#before-running-code)
     - [1. Build Docker Images](#1-build-docker-images)
@@ -12,11 +16,7 @@
     - [2.3 Submit Spark Machine Learning job with Kubernetes](#23-submit-spark-machine-learning-job-with-kubernetes)
   - [3. Run LightGBM Application](#3-run-lightgbm-application)
     - [3.1 LightGBM Training on Kubernetes](#31-lightgbm-training-on-kubernetes)
-
-
-# Gramine Machine Learning Toolkit
-
-This image contains Gramine and some popular Machine Learning frameworks including Spark and LightGBM. 
+    - [3.2 LightGBM on Spark](#32-lightgbm-on-spark)
 
 ## Before Running Code
 ### 1. Build Docker Images
@@ -149,3 +149,64 @@ Finally, stop the trainer pods in consider of security:
 bash uninstall-lgbm-trainer-from-k8s.sh
 ```
 
+#### 3.2 LightGBM on Spark
+
+we also provide an option to combine the two ML kits (SparkML and LightGBM), that seamlessly runs LighGBM applications on existing Spark cluster.
+
+In such a scenario, LightGBM will utilize DataFrame etc. distribution abstractions to read and process big datasets in parallel, and ML pipeline etc. tools to do preprocessing and feature engineering efficiently. Meanwhile, Intel SGX, Gramine/Occlum LibOS, Key Management Service, and SSL/TLS etc. security tools are applied to protect key steps in cluster computing, such as parameter synchronization in training, model and data storage, and container runtime.
+
+The Spark and LightGBM dependencies have already been installed in the custom image prepared in previous steps. For Occlum users, please use [trusted-big-data-ml occlum](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum#trusted-big-data-ml-with-occlum).
+
+##### End-to-End Fitting and Predication Examples of LightGBM on Spark
+
+Here, We illustrate the progress with a Pyspark demo, and Scala is also supported.
+
+For full-link protection, follow [here](https://github.com/intel-analytics/BigDL/tree/main/ppml#41-create-ppmlcontext) to deploy a KMS (Key Management Service) where you have many kinds of implementation type to choose, and generate a primary key firstly (the below uses `SimpleKeyManagementService`).
+
+Next, before start training, download dataset [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/lightGBM#uci-irisdata).
+
+Moving on, there is an application to fit a LightGBM classification model, and save the trained model in cipher text, and then reload the encrypted model to predict. The source code can be seen [here](https://github.com/intel-analytics/BigDL/blob/main/python/ppml/example/lightgbm/encrypted_lightgbm_model_io.py), and you can follow the APIs to write your own privacy-preserving applications:
+
+```python
+sc = PPMLContext.init(...)
+model = an instance of LightGBMClassficationModel/LightGBMRegressionModel/LightGBMRankerModel
+
+# save trained model to file
+sc.saveLightGBMModel(
+    lightgbm_model = model,
+    path = ...,
+    crypto_mode = "PLAIN_TEXT"/"AES/CBC/PKCS5Padding"
+)
+
+# load model from file
+classficationModel = sc.loadLightGBMClassificationModel(
+    model_path = ...,
+    crypto_mode = "PLAIN_TEXT"/"AES/CBC/PKCS5Padding")
+
+regressionModel = sc.loadLightGBMRegressionModel(...)
+
+rankerModel = sc.loadLightGBMRankerModel(...)
+```
+
+**Mechanism:** BigDL PPML extract `Boosters` inside LightGBM models, serially convert them to `DataFrames` on Spark JVM, and encrypt them transparently through `codec in Hadoop IO compression`. The decryption is the deserialization process against it.
+
+Now, it is time to **submit the spark job and start the LightGBM application**:
+
+```bash
+java \
+-cp "${SPARK_HOME}/conf/:${SPARK_HOME}/jars/*" \
+-Xmx512m \
+org.apache.spark.deploy.SparkSubmit \
+/ppml/examples/encrypted_lightgbm_model_io.py \
+--app_id <your_simple_app_id> \
+--api_key <your_simple_api_key> \
+--primary_key_material <your_encrypted_primary_key_file_from_simple_kms> \
+--input_path <path_to_iris.csv> \
+--output_path <model_save_path> \
+--output_encrypt_mode AES/CBC/PKCS5Padding \
+--input_encrypt_mode PLAIN_TEXT
+```
+
+Parameter `--output_encrypt_mode` means how you want to save the trained model, and `--input_encrypt_mode` is the status of input dataset. Finally, you will get predications output from Spark driver, and find an encrypted classification model file saved on disk.
+
+You can also submit a similar [Scala example](https://github.com/intel-analytics/BigDL/blob/main/scala/ppml/src/main/scala/com/intel/analytics/bigdl/ppml/examples/EncryptedLightGBMModelIO.scala) using **bigdl-ppml-submit.sh** mentioned before.

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class TileSpec extends FlatSpec with Matchers {
   "Tile operation" should "works correctly" in {
@@ -75,7 +75,7 @@ class TileSpec extends FlatSpec with Matchers {
 class TileSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val tile = Tile[Float]().setName("tileOps")
-    val input = T(Tensor[Float](2, 3, 3).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](2, 3, 3).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Int](T(2, 1, 2)))
     runSerializationTest(tile, input, tile.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)

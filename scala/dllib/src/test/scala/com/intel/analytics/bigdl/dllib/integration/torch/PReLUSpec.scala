@@ -19,15 +19,15 @@ import com.intel.analytics.bigdl.dllib.nn.PReLU
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 import scala.math._
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class PReLUSpec extends TorchSpec {
     "A PReLU Module " should "generate correct output and grad not inplace" in {
     torchCheck()
     val module = new PReLU[Double]()
-    val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble() - 0.5)
-    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble() - 0.5)
+    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)
@@ -57,8 +57,8 @@ class PReLUSpec extends TorchSpec {
   "A PReLU(2)" should "generate correct output and grad not inplace" in {
     torchCheck()
     val module = new PReLU[Double](2)
-    val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble() - 0.5)
-    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble() - 0.5)
+    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)

@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.Shape
 
@@ -2921,13 +2921,13 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val layer2 = layer1.cloneModule().asInstanceOf[SpatialConvolution[Double]]
     layer2.setScaleW(2).setScaleB(0.5)
 
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
 
     val output1 = layer1.forward(input)
     val output2 = layer2.forward(input)
     output1 should be (output2)
 
-    val gradOutput = Tensor[Double]().resizeAs(output1).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output1).apply1(e => new SecureRandom().nextDouble())
     val gradInput1 = layer1.backward(input, gradOutput)
     val gradInput2 = layer2.backward(input, gradOutput)
     gradInput1 should be (gradInput2)
@@ -3048,7 +3048,7 @@ class SpatialConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialConvolution = SpatialConvolution[Float](3, 4, 2, 2).
       setName("spatialConvolution")
-    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(spatialConvolution, input)
   }
 }

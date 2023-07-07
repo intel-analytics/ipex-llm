@@ -20,14 +20,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.HashMap
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SelectTableSpec extends TorchSpec {
     "A SelectTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    new SecureRandom().setSeed(seed)
 
     val module = new SelectTable[Double](3)
     val input1 = Tensor[Double](10).randn()
@@ -80,7 +80,7 @@ class SelectTableSpec extends TorchSpec {
   "A SelectTable selects a table as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    new SecureRandom().setSeed(seed)
 
     val module = new SelectTable[Double](1)
     val embeddedInput1 = T(

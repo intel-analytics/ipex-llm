@@ -151,7 +151,6 @@ public class RecallServer extends GrpcServerBase {
             try {
                 candidates = search(request);
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.warn(e.getMessage());
                 responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
                         .asRuntimeException());

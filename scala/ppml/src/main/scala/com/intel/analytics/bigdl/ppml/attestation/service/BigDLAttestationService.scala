@@ -34,7 +34,7 @@ import javax.net.ssl.TrustManager
 import org.apache.http.util.EntityUtils
 import java.security.SecureRandom
 
-import scala.util.Random
+import java.security.SecureRandom
 import scala.util.parsing.json._
 
 import com.intel.analytics.bigdl.ppml.attestation._
@@ -71,6 +71,9 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
   // Respone keys
   val RES_RESULT = "result"
 
+  override def getNonce(): String = ""
+  var nonce = ""
+
   override def register(appID: String): String = "true"
 
   override def getPolicy(appID: String): String = "true"
@@ -79,7 +82,7 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
 
   def getQuoteFromServer(challenge: String): String = {
     val userReportData = new Array[Byte](16)
-    Random.nextBytes(userReportData)
+    new SecureRandom().nextBytes(userReportData)
     new String(userReportData)
   }
 

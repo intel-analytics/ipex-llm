@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
-import scala.util.Random
+import java.security.SecureRandom
 
 /**
  * BigDL general crypto for encrypt and decrypt data.
@@ -46,6 +46,20 @@ class BigDLEncrypt extends Crypto {
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
+
+  // reset state of BigDLEncrypt, for continuous reading one inputStream from multi dataSources,
+  // e.g. SELECT * FROM A UNION SELECT * FROM B
+  def reset(): Unit = {
+    cipher = null
+    opMode = null
+    initializationVector = null
+    ivParameterSpec = null
+    encryptionKeySpec = null
+    cipher = null
+    mac = null
+    encryptedDataKey = ""
+  }
+
   // Init an encrypter
   def init(cryptoMode: CryptoMode, mode: OperationMode,
            dataKeyPlaintext: String, dataKeyCipherText: String): Unit = {
@@ -265,7 +279,7 @@ class BigDLEncrypt extends Crypto {
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
-    val header = read(inputStream, 25)
+    val header = read(inputStream, 400)
     verifyHeader(header)
     while (inputStream.available() != 0) {
       val decrypted = decryptPart(inputStream, byteBuffer)

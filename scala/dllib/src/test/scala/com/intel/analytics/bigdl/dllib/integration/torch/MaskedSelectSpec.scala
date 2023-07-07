@@ -20,14 +20,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.collection.mutable.HashMap
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class MaskedSelectSpec extends TorchSpec {
     "A MaskedSelect Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new MaskedSelect[Double]()
-    val input1 = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](2, 2).apply1(e => new SecureRandom().nextDouble())
     val input2 = Tensor[Double](2, 2)
     input2(Array(1, 1)) = 1
     input2(Array(1, 2)) = 0
@@ -38,7 +38,7 @@ class MaskedSelectSpec extends TorchSpec {
     input(1.0) = input1
     input(2.0) = input2
 
-    val gradOutput = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.MaskedSelect()\n" +
       "mask = torch.ByteTensor({{1, 0}, {0, 1}})\n" +

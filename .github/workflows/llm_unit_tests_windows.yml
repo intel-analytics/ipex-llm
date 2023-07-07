@@ -1,0 +1,78 @@
+name: LLM Unit Tests on Windows
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_windows.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'python/llm/**'
+      - '.github/workflows/llm_unit_tests_windows.yml'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-unit-test-windows:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["windows-latest"]
+        python-version: ["3.9"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Run LLM-init test
+        shell: bash
+        run: |
+          pip install requests
+          bash python/llm/dev/release_default_windows.sh default false
+          pip install -i https://pypi.python.org/simple python/llm/dist/bigdl_llm*.whl
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+      
+      - name: Run LLM install (all) test
+        shell: bash
+        run: |
+          pip install requests
+          bash python/llm/dev/release_default_windows.sh default false
+          whl_name=$(ls python/llm/dist)
+          pip install -i https://pypi.python.org/simple "python/llm/dist/${whl_name}[all]"
+          pip install pytest
+          bash python/llm/test/run-llm-install-tests.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run LLM unittests
+        shell: bash
+        run: |
+          pip install pytest pydantic
+          pip install -U langchain==0.0.184
+          pip install -U chromadb==0.3.25
+          pip install -U typing_extensions==4.5.0
+          bash python/llm/test/run-llm-windows-tests.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Clean up
+        shell: bash
+        run: |
+          rm -rf models

@@ -19,12 +19,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class MeanLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val meanLoadTF = new MeanLoadTF[Float]("Float", false).setName("meanLoadTF")
-    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+    val input = T(Tensor[Float](1, 2).apply1(_ => new SecureRandom().nextFloat()),
       Tensor[Int](T(1, 1)))
     runSerializationTest(meanLoadTF, input)
   }

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SpatialDropout2DSpec extends KerasBaseSpec {
 
@@ -54,7 +54,7 @@ class SpatialDropout2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SpatialDropout2D[Float](0.5, "tf", inputShape = Shape(3, 64, 64))
     layer.build(Shape(2, 3, 64, 64))
-    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

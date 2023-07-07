@@ -52,7 +52,7 @@ def open_text(path: str) -> List[str]:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -90,7 +90,7 @@ def open_image(path: str) -> "JpegImageFile":
         from io import BytesIO
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -129,7 +129,7 @@ def load_numpy(path: str) -> "ndarray":
         from io import BytesIO
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -155,7 +155,7 @@ def exists(path: str) -> bool:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -219,7 +219,7 @@ def makedirs(path: str) -> None:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -278,7 +278,7 @@ def write_text(path: str, text: str) -> int:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -306,7 +306,7 @@ def is_file(path: str) -> bool:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -359,7 +359,7 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -399,7 +399,7 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -449,7 +449,7 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         try:
             s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+                aws_secret_access_key=secret_access_key).client('s3')
             path_parts = remote_path.split("://")[1].split('/')
             bucket = path_parts.pop(0)
             prefix = "/".join(path_parts)
@@ -486,7 +486,7 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -520,7 +520,7 @@ def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -548,7 +548,7 @@ def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -582,7 +582,7 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_path_prefix.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)

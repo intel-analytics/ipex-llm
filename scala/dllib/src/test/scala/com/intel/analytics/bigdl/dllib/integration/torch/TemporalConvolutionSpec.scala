@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class TemporalConvolutionSpec extends TorchSpec {
 
@@ -37,9 +37,9 @@ class TemporalConvolutionSpec extends TorchSpec {
     val dW = 2
     val layer = TemporalConvolution[Double](inputFrameSize, outputFrameSize, kW, dW)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](100, 10).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](48, 8).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](100, 10).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](48, 8).apply1(e => new SecureRandom().nextDouble())
 
     val output = layer.updateOutput(input)
     val gradInput = layer.updateGradInput(input, gradOutput)
@@ -79,9 +79,9 @@ class TemporalConvolutionSpec extends TorchSpec {
     val dW = 2
     val layer = TemporalConvolution[Double](inputFrameSize, outputFrameSize, kW, dW)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](10, 100, 10).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](10, 48, 8).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](10, 100, 10).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](10, 48, 8).apply1(e => new SecureRandom().nextDouble())
 
     val output = layer.updateOutput(input)
     val gradInput = layer.updateGradInput(input, gradOutput)
@@ -114,7 +114,7 @@ class TemporalConvolutionSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = TemporalConvolution[Double](10, 8, 5, 2)
-    val input = Tensor[Double](10, 100, 10).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](10, 100, 10).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer(layer, input, 1e-3) should be(true)
@@ -124,7 +124,7 @@ class TemporalConvolutionSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = TemporalConvolution[Double](10, 8, 5, 2)
-    val input = Tensor[Double](10, 100, 10).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](10, 100, 10).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight(layer, input, 1e-3) should be(true)

@@ -53,6 +53,12 @@ class HorovodBackend(Backend):
 
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
 
+            invalidInputError(os.path.isdir(cwd_path),
+                              "cwd_path should be a valid directory path.")
+            invalidInputError(os.path.isdir(temp_dir),
+                              "temp_dir should be a valid directory path.")
+            invalidInputError(nprocs > 0, "nprocs must be greater than 0")
+
             p = subprocess.Popen(["horovodrun", "-np", str(nprocs), "-H", f"localhost:{nprocs}",
                                   sys.executable, f"{cwd_path}/horovod_worker.py", temp_dir])
 

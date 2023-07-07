@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.T
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialDilatedConvolutionSpec extends TorchSpec {
@@ -126,8 +126,8 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     val layer = new SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -169,11 +169,11 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -231,11 +231,11 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -296,11 +296,11 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     model.zeroGradParameters()
     val gradInput = model.backward(input, gradOutput)

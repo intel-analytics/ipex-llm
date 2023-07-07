@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class ViewSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val view = View[Float](Array(2, 5)).setName("view")
-    val input = Tensor[Float](1, 10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(view, input)
   }
 }

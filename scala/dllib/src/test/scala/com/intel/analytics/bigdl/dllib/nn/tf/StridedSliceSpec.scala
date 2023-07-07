@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class StridedSliceSpec extends FlatSpec with Matchers {
@@ -70,7 +70,7 @@ class StridedSliceSpec extends FlatSpec with Matchers {
 class StridedSliceSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val stridedSlice = StridedSlice[Float, Float]().setName("stridedSlice")
-    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
     val begin = Tensor[Int](3).fill(1)
     val end = Tensor[Int](3).fill(3)
     end.setValue(1, 2)

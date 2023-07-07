@@ -9,24 +9,46 @@ TDX-based Trusted Big Data ML allows the user to run end-to-end big data analyti
 
 ## Prepare TDX-VM Environment
 
-To deploy an actual workload with TDX-VM, you need to prepare the environment first.
+To deploy an actual workload with TDX-VM, you need to prepare the environment first. 
 
-1. Configure Hardware
-    CPU and firmware need to be upgraded to the latest release version. Some jumpers must be set to enable TDX work on Archer City or Vulcan City board. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
 
-2. Configure BIOS
-    TDX should be enabled in BIOS. This step is required to be performed every time BIOS is flashed. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+1. Configure Hardware and BIOS
+    Boards (Archer City or Vulcan City) support TDX and it requires some hardware jumper settings and BIOS configurations to enable TDX on them. Please refer to sections 2.1 and 2.2 in [780133 Linux* Stacks for Intel® Trust Domain Extension 1.0](https://www.intel.com/content/www/us/en/content-details/780133/whitepaper-linux-stacks-for-intel-trust-domain-extension-1-0.html) to configure jumpers and BIOS. Generally, jumpers and BIOS only need to be configured for the first time.
 
-3. Build and install packages on TDX host
-    Packages of host kernel, guest kernel, qemu, libvirt should be built first. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
+2. Install/Upgrade TDX host kernel and other packages
+    To install/upgrade the Intel TDX host kernel and other needed packages (Intel TDX Qemu, Intel TDX Libvirt, and TDVF) to a specific version, you can choose to build host and guest repo manually and then install these packages from the host and guest repo. Or you can directly download rpm/debian packages to TDX host, then localinstall to get host kernel, Qemu, Libvirt, and TDVF. Here we introduce the latter approach, which is less error-prone.
+   ```
+   For RHEL 8.x host (here we update kernel)
+   download rpm packages under https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/mvp-tdx-stack-host-rhel-8/x86_64/
+   download rpm packages under https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/mvp-tdx-stack-host-rhel-8/noarch/
+   yum -y localinstall ./*.rpm
+   ```
+   After rpm packages installed, refer to sections 2.5.2, 2.5.3 and 2.5.4 in [780133 Linux* Stacks for Intel® Trust Domain Extension 1.0](https://www.intel.com/content/www/us/en/content-details/780133/whitepaper-linux-stacks-for-intel-trust-domain-extension-1-0.html) to configure grub, default kernel and reboot.
+   
+3. Launch TD Guests
+   It is time to launch TD guest. First you can try to launch one VM to give it a try. To launch a TDVM via libvirt, first download ubuntu guest image, guest kernel and OVMF.
+   ```
+   download guest image from https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/guest-images/td-guest-ubuntu-22.04.qcow2.tar.xz
+   download guest kernel from https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/guest-images/vmlinuz-jammy
+   download OVMF from https://<user>:<password>@ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww22/guest-images/OVMF.fd
+   create the final VM’s XML tdx.xml from the template https://github.com/intel/tdx-tools/blob/2023ww22/doc/tdx_libvirt_direct.ubuntu_host.xml.template, you must update the XML template to refer to the guest image, kernel image, and OVMF binary:
+    • Update OVMF binary
+    <loader>/path/to/OVMF.fd</loader>
+    • Update guest image
+    <source file="/path/to/guest-image.qcow2"/>
+    • Update kernel image (This is not needed when using grub boot template)
+    <kernel>/path/to/vmlinuz-jammy</kernel>
+   ```
+   ```
+   virsh define tdx.xml
+   virsh start <TD guest name>
+   # enter the TD guest console
+   virsh start <TD guest name>
+   ```
 
-4. Verify TDX Host Status
-    The Verify TDX Host Status section provides guidance on how to verify whether TDX is initializing on the host. Refer to [Getting_Started_External.pdf (2023ww01)](https://ubit-artifactory-or.intel.com/artifactory/linuxcloudstacks-or-local/tdx-stack/tdx-2023ww01/Getting_Started_External.pdf)
-
-5. Launch TD Guests
-    It is time to launch TD guests. Execute `./scripts/orchestrate-tdxvm.sh` to launch multiple tdvms based on images ppml provided.
+   Or you can orchestrate multiple VMs through bash scripts. Execute `./scripts/orchestrate-tdxvm.sh <Number of VMs> <Absolute path to store kernel & image>` to launch multiple tdxvms. You can edit orchestrate-tdxvm.sh to specify memory, vcpus, sockets, threads, and cores.
     
-6. Deploy Kubernetes cluster on tdvms
+4. (Optional) Deploy Kubernetes cluster on tdvms
     Execute `./scripts/install-k8s-components.sh` on each tdvm and `./scripts/deploy-k8s-cluster.sh` on master node to get a Kubernetes cluster. 
 
 

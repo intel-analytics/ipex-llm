@@ -20,13 +20,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class Relu6GradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val relu6Grad = Relu6Grad[Float, Float]().setName("relu6Grad")
-    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
-      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    val input = T(Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat()),
+      Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat()))
     runSerializationTest(relu6Grad, input)
   }
 }

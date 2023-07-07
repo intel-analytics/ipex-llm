@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class SpatialContrastiveNormalizationSerialTest extends ModuleSerializationTest {
@@ -27,7 +27,7 @@ class SpatialContrastiveNormalizationSerialTest extends ModuleSerializationTest 
     RNG.setSeed(100)
     val spatialContrastiveNorm = new SpatialContrastiveNormalization[Float]().
       setName("spatialContrastiveNorm")
-    val input = Tensor[Float](1, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(spatialContrastiveNorm, input)
   }
 }

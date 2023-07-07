@@ -25,7 +25,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
@@ -648,7 +648,7 @@ class RecurrentSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val recurrent = Recurrent[Float]().setName("recurrent")
       .add(RnnCell[Float](5, 4, Tanh[Float]()))
-    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(recurrent, input)
   }
 }

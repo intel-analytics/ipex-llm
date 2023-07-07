@@ -1,5 +1,20 @@
 # Trusted Big Data ML with Occlum
 
+## BigDL PPML Occlum features
+
+## Python Libs Whitelist
+
+|              | support | version |
+|--------------|---------|---------|
+| numpy        | yes     | 1.21.5  |
+| scipy        | yes     | 1.7.3   |
+| scikit-learn | yes     | 1.0     |
+| pandas       | yes     | 1.3     |
+| torch        | yes     | latest  |
+| torchvision  | yes     | latest  |
+| datasets     | yes     | latest  |
+| transformers | yes     | latest  |
+
 ## Resource Configuration Guide
 These configuration values must be tuned on a per-application basis.
 You can refer to [here](https://github.com/occlum/occlum/blob/master/docs/resource_config_guide.md?plain=1) for more information.
@@ -539,6 +554,50 @@ bash /opt/ehsm_entry.sh  decrypt ehsm $APP_ID $API_KEY /opt/occlum_spark/data/mo
 ```
 And the decrypt result is under folder `/opt/occlum_spark/data/decryptEhsm`.
 
+## BigDL PySpark SimpleQuery e2e Example using Simple KMS
+
+You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
+``` bash
+#start-spark-local.sh
+-e SGX_MEM_SIZE=20GB \
+-e SGX_THREAD=1024 \
+-e SGX_HEAP=1GB \
+-e SGX_KERNEL_HEAP=1GB \
+-e APP_ID=123456654321 \
+-e API_KEY=123456654321 \
+```
+
+Start run BigDL PySpark SimpleQuery e2e example:
+
+1.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. We have set the value of APP_ID and API_KEY = `123456654321` for simple KMS.
+The primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`.
+```
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To generate input data
+you can use [generate_people_csv.py](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate_people_csv.py). The usage command of the script is:
+```bash
+python generate_people_csv.py /opt/occlum_spark/data/people.csv <num_lines>
+```
+4.To encrypt input data. For example, you mount a file called people.csv. It will be encrypted in `/opt/occlum_spark/data/encryptEhsm`.
+```
+bash /opt/ehsm_entry.sh  encrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/people.csv
+```
+5.To run the BigDL SimpleQuery e2e Example.
+```
+bash /opt/run_spark_on_occlum_glibc.sh pysql_e2e
+```
+6.You can find encrypted result under folder `/opt/occlum_spark/data/model`. And decrypt the result by:
+```
+bash /opt/ehsm_entry.sh  decrypt simple $APP_ID $API_KEY /opt/occlum_spark/data/model
+```
+And the decrypt result is under folder `/opt/occlum_spark/data/decryptSimple`.
+
 ## BigDL MultiPartySparkQuery e2e Example
 
 You can set the configuration in [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh)
@@ -748,6 +807,23 @@ hdfs crypto -getFileEncryptionInfo -path /empty_zone/helloWorld
 5. Now only user_a and other users in group_a can use the file in the mykey’s encryption zone.view encrypted zone:
 ```bash
 hdfs  crypto -listZones
+```
+
+## How to read and write aliyun OSS data using jindo sdk on spark
+We have supported the reading and writing of aliyun OSS in spark through jindo sdk, you can follow these steps to test:
+1. Apply for an OSS resource, get the related conf.
+2. Set conf when submitting spark tasks, for examples:
+```
+--conf spark.hadoop.fs.oss.impl=com.aliyun.jindodata.oss.JindoOssFileSystem \
+--conf spark.hadoop.fs.AbstractFileSystem.oss.impl=com.aliyun.jindodata.oss.JindoOSS \
+--conf spark.hadoop.fs.oss.endpoint=oss-cn-shanghai-internal.aliyuncs.com \
+--conf spark.hadoop.fs.oss.accessKeyId=$accessKeyId \
+--conf spark.hadoop.fs.oss.accessKeySecret=$accessKeySecret \
+```
+3. read and write OSS like reading and writing hdfs, for example on PySpark submit:
+```
+hdfs://IP:PORT/tpch/files/main.py
+# or oss://test-dev/tpch/files/main.py
 ```
 
 ## Using BigDL Orca pytorch and tensorflow in SGX

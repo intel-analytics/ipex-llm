@@ -19,13 +19,13 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class IndexSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val index = Index[Float](1).setName("index")
-    val input1 = Tensor[Float](3).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](3).apply1(e => new SecureRandom().nextFloat())
     val input2 = Tensor[Float](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2

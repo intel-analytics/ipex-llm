@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
 import scala.collection.mutable.HashMap
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class CosineEmbeddingCriterionSpec extends TorchSpec {

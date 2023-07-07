@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SpatialWithinChannelLRNSpec extends FlatSpec with Matchers{
   "forward" should "work" in {
@@ -128,7 +128,7 @@ class SpatialWithinChannelLRNSpec extends FlatSpec with Matchers{
     val layer = SpatialWithinChannelLRN[Double](5, 5e-4, 0.75)
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 4, 4, 6).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4, 4, 4, 6).apply1(e => new SecureRandom().nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)
@@ -139,7 +139,7 @@ class SpatialWithinChannelLRNSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75).
       setName("spatialWithinChannelLRN")
-    val input = Tensor[Float](1, 4, 7, 6).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](1, 4, 7, 6).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(spatialWithinChannelLRN, input)
   }
 }

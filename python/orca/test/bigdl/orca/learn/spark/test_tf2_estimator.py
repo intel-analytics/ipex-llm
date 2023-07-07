@@ -350,7 +350,11 @@ class TestTF2Estimator(TestCase):
 
             # check optimizer weights
             pre_model = trainer.get_model(set_weights=True)
-            pre_opt_weights = pre_model.optimizer.get_weights()
+            if hasattr(pre_model.optimizer, "get_weights"):
+                pre_opt_weights = pre_model.optimizer.get_weights()
+            else:
+                pre_opt_weights = [
+                    var.numpy() for var in pre_model.optimizer.variables()]
             # save model as h5 format
             trainer.save(os.path.join(temp_dir, "saved_model.h5"))
             before_res = trainer.predict(df, feature_cols=["feature"]).collect()
@@ -366,7 +370,11 @@ class TestTF2Estimator(TestCase):
             est.load(os.path.join(temp_dir, "saved_model.h5"))
             # check optimizer weights
             after_model = est.get_model(set_weights=True)
-            after_opt_weights = after_model.optimizer.get_weights()
+            if hasattr(after_model.optimizer, "get_weights"):
+                after_opt_weights = after_model.optimizer.get_weights()
+            else:
+                after_opt_weights = [
+                    var.numpy() for var in after_model.optimizer.variables()]
             # test continous predicting
             after_res = est.predict(df, feature_cols=["feature"]).collect()
             pred_res = np.concatenate([part["prediction"] for part in after_res])
@@ -382,7 +390,11 @@ class TestTF2Estimator(TestCase):
                     validation_steps=1)
             # check optimizer weights
             new_model = est.get_model(set_weights=True)
-            new_opt_weights = new_model.optimizer.get_weights()
+            if hasattr(new_model.optimizer, "get_weights"):
+                new_opt_weights = new_model.optimizer.get_weights()
+            else:
+                new_opt_weights = [
+                    var.numpy() for var in new_model.optimizer.variables()]
             assert not np.array_equal(after_opt_weights, new_opt_weights)
             # test continuous evaluation
             res = est.evaluate(df, batch_size=4, num_steps=25, feature_cols=["feature"],
@@ -476,8 +488,12 @@ class TestTF2Estimator(TestCase):
                         validation_steps=1)
 
             trainer.save(os.path.join(temp_dir, "cifar10.h5"))
-            pre_model_weights = trainer.get_model().get_weights()
-
+            pre_model = trainer.get_model()
+            if hasattr(pre_model.optimizer, "get_weights"):
+                pre_model_weights = pre_model.optimizer.get_weights()
+            else:
+                pre_model_weights = [
+                    var.numpy() for var in pre_model.optimizer.variables()]
             after_res = trainer.predict(df, feature_cols=["feature"]).collect()
             expect_res = np.concatenate([part["prediction"] for part in after_res])
 
@@ -490,7 +506,12 @@ class TestTF2Estimator(TestCase):
                 backend="spark")
 
             est.load(os.path.join(temp_dir, "cifar10.h5"))
-            after_model_weights = est.get_model().get_weights()
+            after_model = est.get_model()
+            if hasattr(after_model.optimizer, "get_weights"):
+                after_model_weights = after_model.optimizer.get_weights()
+            else:
+                after_model_weights = [
+                    var.numpy() for var in after_model.optimizer.variables()]
             est.save(os.path.join(temp_dir, "cifar10_new.h5"))
 
             # continous predicting

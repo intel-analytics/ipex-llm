@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.ppml.utils.HTTPSUtil.postRequest
 import org.apache.http.conn.ssl.{AllowAllHostnameVerifier, SSLConnectionSocketFactory}
 import org.json.JSONObject
 import scopt.OptionParser
-
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.{SSLContext, TrustManager, X509TrustManager}

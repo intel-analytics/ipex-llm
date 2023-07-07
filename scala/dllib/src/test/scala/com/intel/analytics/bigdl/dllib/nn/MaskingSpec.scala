@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class MaskingSpec extends KerasBaseSpec {
 
@@ -71,7 +71,7 @@ class MaskingSpec extends KerasBaseSpec {
 class MaskingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val masking = Masking[Float](0.1).setName("masking")
-    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 4).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(masking, input)
   }
 }

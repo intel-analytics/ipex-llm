@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class ShapeSpec extends FlatSpec with Matchers {
 
@@ -47,7 +47,7 @@ class ShapeSpec extends FlatSpec with Matchers {
 class ShapeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val shape = Shape[Float]().setName("shape")
-    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(shape, input)
   }
 }

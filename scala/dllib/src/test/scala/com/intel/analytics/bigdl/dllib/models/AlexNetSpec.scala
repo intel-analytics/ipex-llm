@@ -22,15 +22,15 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class AlexNetSpec extends FlatSpec with Matchers {
   "ALexNet_OWT graph" should "be same with original one" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = AlexNet_OWT(1000, false, true)
@@ -56,10 +56,10 @@ class AlexNetSpec extends FlatSpec with Matchers {
   }
 
   "ALexNet graph" should "be same with original one" in {
-    Random.setSeed(1)
+    new SecureRandom().setSeed(1)
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 256, 256).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 256, 256).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(1000)
     val model = AlexNet(1000, false)

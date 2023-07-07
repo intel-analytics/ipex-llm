@@ -569,6 +569,8 @@ class TFRunner:
         return {
             "weights": self.model.get_weights(),
             "optimizer_weights": self.model.optimizer.get_weights()
+            if hasattr(self.model.optimizer, "get_weights")
+            else [var.numpy() for var in self.model.optimizer.variables()]  # type:ignore
         }
 
     def set_state(self, state, sample_input=None):
@@ -588,8 +590,9 @@ class TFRunner:
         temp_dir = tempfile.mkdtemp()
         temp_path = os.path.join(temp_dir, file_name)
         try:
-            self.model.save(temp_path, overwrite, include_optimizer, save_format, signatures,
-                            options)
+            self.model.save(filepath=temp_path, overwrite=overwrite, save_format=save_format,
+                            include_optimizer=include_optimizer, signatures=signatures,
+                            options=options)
             if self.rank == 0:
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
                     # hdf5 format
