@@ -25,7 +25,7 @@ class BaseContextManager(object):
 
     This context manager is used for providing no_grad context only.
     """
-    def __init__(self, thread_num=None, accelerator=None, enable_onednn=True):
+    def __init__(self, thread_num=None, accelerator=None, enable_onednn=False):
         self.infer_mode_string = "inference_mode"
         self.infer_mode = torch.inference_mode(mode=True)
         self.thread_num = thread_num
@@ -70,7 +70,7 @@ class AutocastContextManager(BaseContextManager):
     This context manager is used for providing no grad and autocast context,
     which is used for bf16 model.
     """
-    def __init__(self, thread_num=None, accelerator=None, enable_onednn=True):
+    def __init__(self, thread_num=None, accelerator=None, enable_onednn=False):
         super().__init__(thread_num=thread_num, accelerator=accelerator,
                          enable_onednn=enable_onednn)
         if compare_version("torch", operator.lt, "1.13.0"):
@@ -117,7 +117,7 @@ class XPUAutocastContextManager(AutocastContextManager):
 
 
 def generate_context_manager(accelerator=None, precision="fp32", thread_num=None,
-                             enable_onednn=True, use_xpu=False):
+                             enable_onednn=False, use_xpu=False):
     '''
     generate correct context manager according to different situation
     :param acclerator: str, the accelerator to use, we support "onnxruntime", "openvino",
@@ -126,7 +126,7 @@ def generate_context_manager(accelerator=None, precision="fp32", thread_num=None
     :param thread_num: int, the thread number to allocate, None for no limit.
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
-           ``True``, only valid when accelerator="jit", otherwise will be ignored.
+           ``False``, only valid when accelerator="jit", otherwise will be ignored.
     :param use_xpu: if xpu model is used.
     '''
     if (precision != "bf16" and use_xpu is False) or precision == "fp32":

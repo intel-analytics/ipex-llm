@@ -170,6 +170,7 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  precision: Optional[Tuple[str]] = None,
                  use_ipex: Optional[bool] = None,
                  jit_strict: Optional[bool] = True,
+                 enable_onednn: Optional[bool] = False,
                  search_mode: str = "default",
                  dynamic_axes: Union[bool, dict] = True,
                  logging: bool = False,
@@ -274,6 +275,12 @@ class InferenceOptimizer(BaseInferenceOptimizer):
         :param jit_strict: Whether recording your mutable container types. This parameter will be
                passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
                ``jit_method='script'``, it will be ignored. Default to True.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                which provides a flexible API for aggressive fusion. Default to
+                ``False``, only valid when accelerator='jit', otherwise will
+                be ignored. For more details, please refer https://github.com/
+                pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+                onednn#pytorch---onednn-graph-api-bridge.
         :param search_mode: Here are three modes for optimization:
 
                | 1. default: This mode only traverses a subset of all combinations. This subset
@@ -478,12 +485,6 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                         model(*input_sample)
                     else:
                         model(input_sample)
-
-                if option.ipex is True and _precision == 'int8':
-                    # a temp workaround for strange bad optional access of ipex quantizated model
-                    # warm up two times before inside context manager
-                    func_test(acce_model, input_sample)
-                    func_test(acce_model, input_sample)
 
                 with InferenceOptimizer.get_context(acce_model):
                     try:
@@ -935,7 +936,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             channels_last=channels_last,
                                                             thread_num=thread_num,
                                                             inplace=inplace,
-                                                            jit_strict=jit_strict)
+                                                            jit_strict=jit_strict,
+                                                            enable_onednn=enable_onednn)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':
