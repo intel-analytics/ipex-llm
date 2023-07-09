@@ -11,6 +11,7 @@ ARG http_proxy
 ARG https_proxy
 
 ADD utils.diff /opt/utils.diff
+ADD llm_cli.diff /opt/llm_cli.diff
 
 RUN pip3 install --pre --upgrade bigdl-llm[all] && \
     # Remove all dependencies from nvidia as we are supposed to run in SGX
@@ -25,9 +26,10 @@ RUN pip3 install --pre --upgrade bigdl-llm[all] && \
     cd /ppml && \
     # Patch subprocess call in bigdl-llm
     patch -R /opt/utils.diff /usr/local/lib/python3.9/dist-packages/bigdl/llm/utils/utils.py /opt/utils.diff && \
+    patch -R /usr/local/bin/llm-cli /opt/llm_cli.diff && \
     # Gramine commands
     gramine-argv-serializer bash -c 'export TF_MKL_ALLOC_MAX_BYTES=10737418240 && $sgx_command' > /ppml/secured_argvs && \
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1
+    pip3 install --no-cache markupsafe==2.0.1
 
 WORKDIR /ppml
 ENTRYPOINT [ "/bin/bash" ]
