@@ -46,6 +46,20 @@ class BigDLEncrypt extends Crypto {
   // If inputStream.available() > Int.maxValue, the return value is
   // -2147483162 in FSDataInputStream.
   protected val outOfSize = -2e9.toInt
+
+  // reset state of BigDLEncrypt, for continuous reading one inputStream from multi dataSources,
+  // e.g. SELECT * FROM A UNION SELECT * FROM B
+  def reset(): Unit = {
+    cipher = null
+    opMode = null
+    initializationVector = null
+    ivParameterSpec = null
+    encryptionKeySpec = null
+    cipher = null
+    mac = null
+    encryptedDataKey = ""
+  }
+
   // Init an encrypter
   def init(cryptoMode: CryptoMode, mode: OperationMode,
            dataKeyPlaintext: String, dataKeyCipherText: String): Unit = {

@@ -834,3 +834,12 @@ def get_driver_node_ip():
     """
     import ray
     return ray._private.services.get_node_ip_address()
+
+
+def get_partition_id():
+    from pyspark import BarrierTaskContext, TaskContext
+    if TaskContext.get():
+        partition_id = TaskContext.get().partitionId()
+    else:
+        partition_id = BarrierTaskContext().get().partitionId()
+    return partition_id

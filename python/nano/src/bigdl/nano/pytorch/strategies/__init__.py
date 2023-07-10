@@ -19,3 +19,11 @@ from .ddp_spawn import DDPSpawnStrategy
 from .ddp_subprocess import DDPSubprocessStrategy
 from bigdl.nano.deps.ray.ray_api import create_ray_strategy
 from .k8s import DDPK8sStrategy
+
+from bigdl.nano.utils.pytorch import LIGHTNING_VERSION_GREATER_2_0
+
+if LIGHTNING_VERSION_GREATER_2_0:
+    from lightning.fabric.strategies import STRATEGY_REGISTRY
+    IPEXStrategy.register_strategies(STRATEGY_REGISTRY)
+    DDPSpawnStrategy.register_strategies(STRATEGY_REGISTRY)
+    DDPSubprocessStrategy.register_strategies(STRATEGY_REGISTRY)

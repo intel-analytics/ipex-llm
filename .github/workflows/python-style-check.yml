@@ -100,6 +100,9 @@ jobs:
       - name: Serving style checking
         run: bash python/serving/dev/lint-python
 
+      - name: LLM style checking
+        run: bash python/llm/dev/test/lint-python
+
   create-workflow-badge:
     if: github.event.pull_request == ''
     runs-on: ubuntu-latest

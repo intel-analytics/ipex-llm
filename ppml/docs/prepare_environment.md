@@ -61,6 +61,20 @@ cd BigDL/ppml/
     kubectl config set-context spark-context --cluster=<cluster_name> --user=spark-user
     ```
 
+If spark service account secret is not auto-generated, please generate manually with the following command:
+
+```bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spark-secret
+  annotations:
+    kubernetes.io/service-account.name: spark
+type: kubernetes.io/service-account-token
+EOF
+```
+
 2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash
@@ -90,10 +104,10 @@ Key Management Service (KMS) helps you manage cryptographic keys for your servic
 
 Pull Docker image from Dockerhub
     ```
-    docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT
+    docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT
     ```
 
-**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine-reference:2.3.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
+**Note:** The above docker image `intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT` is only used for demo purposes. You are recommended to refer to the [Prepare your PPML image for production environment](./../README.md#step-1-prepare-your-ppml-image-for-production-environment) to use BigDL PPML image as a base image to build your own image and sign your image with your own enclave_key.
 
 ### (Optional) K8s Monitoring Setup
 https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md

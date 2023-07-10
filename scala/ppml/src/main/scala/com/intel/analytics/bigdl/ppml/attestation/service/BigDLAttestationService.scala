@@ -71,6 +71,9 @@ class BigDLAttestationService(attestationServerIP: String, attestationServerPort
   // Respone keys
   val RES_RESULT = "result"
 
+  override def getNonce(): String = ""
+  var nonce = ""
+
   override def register(appID: String): String = "true"
 
   override def getPolicy(appID: String): String = "true"

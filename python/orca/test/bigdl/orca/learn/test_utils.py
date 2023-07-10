@@ -81,7 +81,8 @@ class TestUtil(TestCase):
 
     def test_convert_predict_rdd_to_xshard(self):
         rdd = self.sc.range(0, 110).map(lambda x: np.array([x]*50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
+            lambda x: {"x": np.stack([list(i) for i in x])})  # convert chain to list
         shards = SparkXShards(shards)
         pred_rdd = self.sc.range(0, 110).map(lambda x: np.array([x]*50))
         result_shards = convert_predict_rdd_to_xshard(shards, pred_rdd)
@@ -92,7 +93,8 @@ class TestUtil(TestCase):
 
     def test_convert_predict_rdd_to_xshard_multi_output(self):
         rdd = self.sc.range(0, 110).map(lambda x: np.array([x]*50))
-        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(lambda x: {"x": np.stack(x)})
+        shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
+            lambda x: {"x": np.stack([list(i) for i in x])})  # convert chain to list
         shards = SparkXShards(shards)
         pred_rdd = self.sc.range(0, 110).map(lambda x: [np.array([x]*24), np.array([x]*26)])
         result_shards = convert_predict_rdd_to_xshard(shards, pred_rdd)
@@ -107,7 +109,7 @@ class TestUtil(TestCase):
         def get_xshards(key):
             rdd = self.sc.range(0, 110).map(lambda x: np.array([x] * 50))
             shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
-                lambda x: {key: np.stack(x)})
+                lambda x: {key: np.stack([list(i) for i in x])})  # convert chain to list
             shards = SparkXShards(shards)
             return shards
 
@@ -124,14 +126,15 @@ class TestUtil(TestCase):
         def get_data_xshards(key):
             rdd = self.sc.range(0, 110).map(lambda x: np.array([x] * 50))
             shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
-                lambda x: {key: np.stack(x)})
+                lambda x: {key: np.stack([list(i) for i in x])})  # convert chain to list
             shards = SparkXShards(shards)
             return shards
 
         def get_pred_xshards(key):
             rdd = self.sc.range(0, 110).map(lambda x: np.array([x] * 50))
             shards = rdd.mapPartitions(lambda iter: chunks(iter, 5)).map(
-                lambda x: {key: np.stack(x)}).map(lambda x: {key: [x[key][:, :24], x[key][:, 24:]]})
+                lambda x: {key: np.stack([list(i) for i in x])}).map(  # convert chain to list
+                lambda x: {key: [x[key][:, :24], x[key][:, 24:]]})
             shards = SparkXShards(shards)
             return shards
 

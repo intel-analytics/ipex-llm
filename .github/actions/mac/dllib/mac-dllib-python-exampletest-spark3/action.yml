@@ -15,7 +15,7 @@ runs:
         pip install -i https://pypi.python.org/simple --pre --upgrade bigdl-dllib
         python/dllib/examples/run-example-tests-pip.sh 
 
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

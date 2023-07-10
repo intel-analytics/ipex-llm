@@ -19,6 +19,7 @@ FROM ubuntu:20.04
 WORKDIR /opt/work
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
+SHELL ["/bin/bash", "-c"]
 
 # model: select from pytorch, tensorflow, prophet, arima, ml (default)
 ARG model=ml
@@ -37,23 +38,23 @@ ARG inference=n
 #            y (for yes) or n (default, for no)
 ARG extra_dep=n
 
-ADD ./docker/chronos-nightly/install-python-env.sh /opt
-ADD ./python/chronos/colab-notebook /opt/work/colab-notebook
-ADD ./python/chronos/use-case/AIOps /opt/work/use-case/AIOps
+COPY ./docker/chronos-nightly/install-python-env.sh /opt
+COPY ./python/chronos/colab-notebook /opt/work/colab-notebook
+COPY ./python/chronos/use-case/AIOps /opt/work/use-case/AIOps
 RUN chmod a+x /opt/install-python-env.sh
 
 RUN apt-get update && \
-    apt-get install -y gcc wget && \
-    rm /bin/sh && \
-    ln -sv /bin/bash /bin/sh && \
-    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    apt-get install -y --no-install-recommends gcc wget && \
+    rm -rf /var/lib/apt/lists/*
+SHELL ["/bin/bash", "-c"]
+RUN echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
-# Install Miniconda
-    wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
+    # Install Miniconda
+    wget --progress=dot:giga --no-check-certificate https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
     chmod +x Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
     ./Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -f -p /usr/local && \
     rm Miniconda3-py37_4.12.0-Linux-x86_64.sh && \
-# python
+    # python
     conda create -y -n chronos python=3.7 setuptools=58.0.4 && \
     /opt/install-python-env.sh ${model} ${auto_tuning} ${hardware} ${inference} ${extra_dep}
 

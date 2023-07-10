@@ -68,15 +68,18 @@ class FLClient(val _args: Array[String]) extends GrpcClientBase(_args) {
     fgbostStub = new FGBoostStub(channel, clientID)
   }
 
-  def initCkks(secret: Array[Array[Byte]]): Unit = {
-    nnStub = new NNStub(channel, clientID, secret)
-  }
-
   override def shutdown(): Unit = {
-    try channel.shutdown.awaitTermination(5, TimeUnit.SECONDS)
-    catch {
-      case e: InterruptedException =>
-        logger.error("Shutdown Client Error" + e.getMessage)
+    if (!channel.isTerminated()) {
+      try {
+        channel.shutdownNow()
+        if (!channel.awaitTermination(15, TimeUnit.SECONDS)) {
+          logger.warn(s"Time out forcefully shutting down connection: $channel")
+        }
+      } catch {
+        case e: Exception => logger.error(
+          s"Unexpected exception while waiting for channel termination: ${e.getMessage}")
+      }
     }
+
   }
 }

@@ -42,7 +42,7 @@ lib_urls = [
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.so",
     "https://github.com/analytics-zoo/jemalloc/releases/download/v5.3.0/libjemalloc.dylib",
     "https://github.com/analytics-zoo/libjpeg-turbo/releases/download/v2.1.4/libturbojpeg.so.0.2.0",
-    "https://github.com/analytics-zoo/tcmalloc/releases/download/v1/libtcmalloc.so"
+    "https://github.com/analytics-zoo/tcmalloc/releases/download/v2.10/libtcmalloc.so"
 ]
 
 
@@ -120,7 +120,7 @@ def setup_package():
     # ipex is only avaliable for linux now
     pytorch_20_requires = ["torch==2.0.0",
                            "torchvision==0.15.1",
-                           "intel_extension_for_pytorch==2.0.0;platform_system=='Linux'",
+                           "intel_extension_for_pytorch==2.0.100;platform_system=='Linux'",
                            "lightning==2.0.0"]
 
     pytorch_113_requires = ["torch==1.13.1",
@@ -154,7 +154,7 @@ def setup_package():
                                "opencv-python-headless",
                                "PyTurboJPEG",
                                "opencv-transforms",
-                               "cryptography==39.0.1"]
+                               "cryptography==41.0.0"]
 
     # default pytorch_dep
     pytorch_requires = pytorch_113_requires + pytorch_common_requires
@@ -168,10 +168,11 @@ def setup_package():
 
     inference_requires = ["onnx==1.12.0",
                           "onnxruntime==1.12.1",
-                          "onnxruntime-extensions==0.4.2; platform_system!='Darwin'",
+                          "onnxruntime-extensions==0.7.0; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
                           "openvino-dev==2022.3.0",
+                          "scipy<=1.10.1",
                           "neural-compressor==2.0; platform_system!='Windows'",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
                           "onnxsim==0.4.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \

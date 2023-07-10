@@ -1,5 +1,7 @@
 # Distributed pytorch on ImageNet dataset
 
+# Deprecated, please go to new API and example orca/example/learn/pytorch
+
 This is an example to show you how to use analytics-zoo to train a pytorch model on Spark. 
 
 # Requirements

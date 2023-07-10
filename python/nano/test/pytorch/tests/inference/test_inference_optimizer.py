@@ -20,6 +20,7 @@ from torch import nn
 import tempfile
 from unittest import TestCase
 import pytest
+import operator
 import torchvision.transforms as transforms
 from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch import InferenceOptimizer
@@ -620,6 +621,8 @@ class InferencePipeline:
         with InferenceOptimizer.get_context(model):
             pass
 
+    @pytest.mark.skipif(compare_version('intel_extension_for_pytorch', operator.ge, '2.0.100+cpu'),
+                        reason="inplace ipex optimization will lose weight of model")
     def test_inplace(self):
         class CannotCopyNet(Net):
             def __deepcopy__(self, memo):
@@ -630,8 +633,9 @@ class InferencePipeline:
         model = CannotCopyNet()
         ipex_model = inference_opt.trace(model, input_sample=self.train_loader, use_ipex=True, inplace=True)
 
-        inference_opt.save(ipex_model, "ipex")
-        ipex_model = inference_opt.load("ipex", model, inplace=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            inference_opt.save(ipex_model, tmpdir)
+            ipex_model = inference_opt.load(tmpdir, model, inplace=True)
 
     def test_multi_context_manager(self):
         inference_opt = InferenceOptimizer()
@@ -938,17 +942,6 @@ class InferencePipeline:
 
 
 TORCH_CLS = InferencePipeline
-
-
-class CaseWithoutAVX2:
-    def test_placeholder(self):
-        pass
-
-
-if not TORCH_VERSION_LESS_2_0 and not _avx2_checker():
-    print("Inference Optimizer Without AVX2")
-    # Intel® Extension for PyTorch* only works on machines with instruction sets equal or newer than AVX2
-    TORCH_CLS = CaseWithoutAVX2
 
 
 class TestInferencePipeline(TORCH_CLS, TestCase):

@@ -32,7 +32,7 @@ runs:
         
         chmod a+x python/orca/dev/test/run-pytests-ray.sh
         python/orca/dev/test/run-pytests-ray.sh
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

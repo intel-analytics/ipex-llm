@@ -46,6 +46,7 @@ import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.ClassTag
 
+@deprecated("don't use this, will be removed in the future")
 object PythonFeatureSet{
 
   private[bigdl] def python[T: ClassTag](
@@ -152,6 +153,7 @@ object PythonFeatureSet{
   }
 }
 
+@deprecated("don't use this, will be removed in the future")
 class PythonFeatureSet[T: ClassTag](
                                      dataset: Array[Byte],
                                      getLoader: (Int, Int, String) => String,

@@ -49,7 +49,7 @@ runs:
         # remove the model
         rm -rf ./distilbert-base-uncased
         rm -f ./distilbert-base-uncased.zip
-        source deactivate
+        conda deactivate
       env:
         BIGDL_ROOT: ${{ github.workspace }}
         ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

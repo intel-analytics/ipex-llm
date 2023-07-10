@@ -186,7 +186,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         local_init_params["log_to_driver"] = False
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
-            cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
         if self.model_creator:
@@ -294,7 +293,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         init_params = dict(
             mode="fit",
             state_dict=state_dict,
-            cluster_info=cluster_info)
+            cluster_info=cluster_info
+        )
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
@@ -457,13 +457,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
-        cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
 
         init_params = dict(
             mode="predict",
-            state_dict=state_dict,
-            cluster_info=cluster_info)
+            state_dict=state_dict)
         init_params.update(self.worker_init_params)
 
         callbacks = callbacks or []
@@ -561,12 +559,10 @@ class PyTorchPySparkEstimator(BaseEstimator):
                               "or load a saved model.")
 
         sc = OrcaContext.get_spark_context()
-        cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
             mode="evaluate",
-            state_dict=state_dict,
-            cluster_info=cluster_info)
+            state_dict=state_dict)
         init_params.update(self.worker_init_params)
 
         # Check uniqueness of the MainCallback
@@ -608,7 +604,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             res = data_rdd.barrier().mapPartitions(
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return PytorchPysparkWorker(**init_param).validate(**param)

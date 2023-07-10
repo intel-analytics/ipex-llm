@@ -24,16 +24,17 @@ export PYSPARK_DRIVER_PYTHON=python
 
 # If init bigdl-nano, unset `MALLOC_CONF` and `OMP_NUM_THREADS` to avoid process kill
 unset MALLOC_CONF
-unset OMP_NUM_THREADS
-
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
-fi
+export OMP_NUM_THREADS=2
 
 # ray stop -f
 
 OPTIONS=$1
 echo "Running chronos tests"
+if [ -z "$OMP_NUM_THREADS" ]; then
+    echo "OMP_NUM_THREADS is unset"
+else
+    echo $OMP_NUM_THREADS
+fi
 python -m pytest -v -m "${OPTIONS}" test/bigdl/chronos/autots \
                                     test/bigdl/chronos/data \
                                     test/bigdl/chronos/detector \

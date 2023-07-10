@@ -88,6 +88,7 @@ class SparkTFEstimator():
         self.model_weights = None
         self.optimizer_weights = None
         self.load_path = None
+        self.load_params = None
 
         if "batch_size" in self.config:
             invalidInputError(False,
@@ -201,6 +202,9 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
+        if self.load_params is not None:
+            init_params.update(self.load_params)
+
         params = dict(
             epochs=epochs,
             batch_size=batch_size,
@@ -251,7 +255,7 @@ class SparkTFEstimator():
                     param["data_creator"] = make_data_creator(partition_data)
                     return SparkRunner(**init_param).step(**param)
 
-                res = data.rdd.barrier().mapPartitions(
+                res = data.rdd.barrier().mapPartitions(  # type:ignore
                     lambda iter: transform_func(iter, init_params, params)).collect()
             else:
                 def transform_func(iter, init_param, param):
@@ -262,13 +266,14 @@ class SparkTFEstimator():
                     param["validation_data_creator"] = make_data_creator(valid_list)
                     return SparkRunner(**init_param).step(**param)
 
-                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
-                val_rdd = validation_data.rdd.mapPartitions(lambda iter: [list(iter)])
+                train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])  # type:ignore
+                val_rdd = validation_data.rdd.mapPartitions(  # type:ignore
+                    lambda iter: [list(iter)])
                 res = train_rdd.zip(val_rdd).barrier().mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
-            params["validation_data_creator"] = validation_data
+            params["data_creator"] = data  # type:ignore
+            params["validation_data_creator"] = validation_data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).step(**param)
@@ -356,6 +361,9 @@ class SparkTFEstimator():
             driver_port=self.port
         )
 
+        if self.load_params is not None:
+            init_params.update(self.load_params)
+
         params = dict(
             batch_size=batch_size,
             verbose=verbose,
@@ -374,10 +382,10 @@ class SparkTFEstimator():
                 param["data_creator"] = make_data_creator(partition_data)
                 return SparkRunner(**init_param).validate(**param)
 
-            res = data.rdd.barrier().mapPartitions(
+            res = data.rdd.barrier().mapPartitions(  # type:ignore
                 lambda iter: transform_func(iter, init_params, params)).collect()
         else:
-            params["data_creator"] = data
+            params["data_creator"] = data  # type:ignore
 
             def transform_func(iter, init_param, param):
                 return SparkRunner(**init_param).validate(**param)
@@ -446,6 +454,9 @@ class SparkTFEstimator():
             driver_ip=self.ip,
             driver_port=self.port
         )
+
+        if self.load_params is not None:
+            init_params.update(self.load_params)
 
         params = dict(
             verbose=verbose,
@@ -628,14 +639,19 @@ class SparkTFEstimator():
 
         """
         sc = OrcaContext.get_spark_context()
-        self.load_params = dict(
+        self.load_params = dict(  # type:ignore
             filepath=filepath,
             custom_objects=custom_objects,
             compile=compile
         )
-        model = load_model(**self.load_params)
+        model = load_model(**self.load_params)  # type:ignore
         self.model_weights = model.get_weights()
-        self.optimizer_weights = model.optimizer.get_weights()
+        if model.optimizer is not None:
+            if hasattr(model.optimizer, "get_weights"):
+                self.optimizer_weights = model.optimizer.get_weights()
+            else:
+                self.optimizer_weights = [  # type:ignore
+                    var.numpy() for var in model.optimizer.variables()]  # type:ignore
         if self.model_creator is None:
             self.load_path = filepath  # type:ignore
             if is_file(self.load_path):  # type:ignore
@@ -656,7 +672,11 @@ class SparkTFEstimator():
         if self.model_creator is not None:
             model = self.model_creator(self.config)
         else:
-            model = load_model(**self.load_params)
+            if self.load_params is not None:
+                model = load_model(**self.load_params)  # type:ignore
+            else:
+                invalidInputError(False,
+                                  "Please load a saved model when model_creator is None.")
 
         if set_weights:
             if self.optimizer_weights is not None:

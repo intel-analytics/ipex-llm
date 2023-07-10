@@ -39,12 +39,11 @@ runs:
         cd docker/friesian-serving
         docker tag "${IMAGE}:${TAG}" "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
         docker push "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
-        docker rmi -f "10.239.45.10/arda/$IMAGE:${TAG}-${TIMESTAMP}"
+        docker rmi -f ${IMAGE}:${TAG} 10.239.45.10/arda/${IMAGE}:${TAG}-${TIMESTAMP}
 
     - name: remove resources
       shell: bash
-      run:
+      run: |
         cd docker/friesian-serving
-        docker rmi -f $IMAGE:${TAG}
         rm -rf lib faiss-lib.zip
         rm -rf jersey jersey.tar.gz

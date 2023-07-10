@@ -4,7 +4,7 @@
 echo "orca test start"
 
 dir=${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/quickstart
-pytorchFiles=("pytorch_lenet_mnist_data_creator_func" "pytorch_lenet_mnist_bigdl" "pytorch_lenet_mnist_ray" "pytorch_lenet_mnist_spark" "autoestimator_pytorch_lenet_mnist" "autoxgboost_regressor_sklearn_boston")
+pytorchFiles=("pytorch_lenet_mnist_ray" "pytorch_lenet_mnist_spark" "autoestimator_pytorch_lenet_mnist" "autoxgboost_regressor_sklearn_boston")
 index=1
 
 set -e
@@ -52,7 +52,7 @@ done
 echo "orca examples test start"
 
 dir=${ANALYTICS_ZOO_HOME}/python/orca/colab-notebook/examples
-pytorchFiles=("fashion_mnist_bigdl" "super_resolution")
+pytorchFiles=()
 index=1
 
 set -e

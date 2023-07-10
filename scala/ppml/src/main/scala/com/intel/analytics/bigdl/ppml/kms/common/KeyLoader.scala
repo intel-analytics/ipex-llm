@@ -44,7 +44,12 @@ case class KeyLoader(val fromKms: Boolean,
     val META_FILE_NAME = ".meta"
     protected val CRYPTO_MODE = AES_CBC_PKCS5PADDING
     protected var encryptedDataKey: String = ""
-    protected val hadoopConfig = if (config != null) config else new Configuration()
+    protected val hadoopConfig =
+      if (SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration != null) {
+        SparkSession.builder().getOrCreate().sparkContext.hadoopConfiguration
+      } else {
+        new Configuration()
+      }
     protected val encrypterType = SparkSession.builder().getOrCreate()
       .sparkContext.hadoopConfiguration
       .get("spark.bigdl.encryter.type", BigDLEncrypt.COMMON).toLowerCase
@@ -135,7 +140,7 @@ case class KeyLoader(val fromKms: Boolean,
 
 class KeyLoaderManagement extends Serializable {
     // map from primaryKeyName to KeyLoader
-    var multiKeyLoaders = new HashMap[String, KeyLoader]
+    val multiKeyLoaders = new HashMap[String, KeyLoader]
     def addKeyLoader(primaryKeyName: String, keyLoader: KeyLoader): Unit = {
         Log4Error.invalidInputError(!(multiKeyLoaders.contains(primaryKeyName)),
                                     s"keyLoaders with name $primaryKeyName are replicated.")

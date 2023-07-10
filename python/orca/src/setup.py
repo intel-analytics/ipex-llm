@@ -108,7 +108,7 @@ def setup_package():
         url='https://github.com/intel-analytics/BigDL',
         packages=get_bigdl_packages(),
         install_requires=['packaging', 'filelock',
-                          'bigdl-tf==2.3.0.dev0', 'bigdl-math==2.3.0.dev0',
+                          'bigdl-tf==2.4.0.dev0', 'bigdl-math==2.4.0.dev0',
                           'bigdl-dllib=='+VERSION, 'pyzmq'],
         extras_require={'ray': RAY_DEP,
                         'automl': AUTOML_DEP,

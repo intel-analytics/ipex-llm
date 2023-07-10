@@ -76,6 +76,8 @@ PyTorch
 * `How to save and load optimized JIT model <Inference/PyTorch/pytorch_save_and_load_jit.html>`_
 * `How to save and load optimized IPEX model <Inference/PyTorch/pytorch_save_and_load_ipex.html>`_
 * `How to accelerate a PyTorch inference pipeline through multiple instances <Inference/PyTorch/multi_instance_pytorch_inference.html>`_
+* `How to accelerate a PyTorch inference pipeline using Intel ARC series dGPU <Inference/PyTorch/accelerate_pytorch_inference_gpu.html>`_
+* `How to accelerate PyTorch inference using async multi-stage pipeline <Inference/PyTorch/accelerate_pytorch_inference_async_pipeline.html>`_
 
 TensorFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~

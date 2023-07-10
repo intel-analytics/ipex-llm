@@ -429,3 +429,44 @@ class TestOpenVINO(TestCase):
             forward_model_numpy = test_openvino_model(x)
             assert isinstance(forward_model_numpy, np.ndarray)
             np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+        
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(openvino_model, tmp_dir_name)
+            load_model = InferenceOptimizer.load(tmp_dir_name)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            InferenceOptimizer.save(test_openvino_model, tmp_dir_name)
+            test_load_model = InferenceOptimizer.load(tmp_dir_name)
+
+        for x, y in dataloader:
+            forward_model_tensor = load_model(x).numpy()
+            forward_model_numpy = test_load_model(x)
+            assert isinstance(forward_model_numpy, np.ndarray)
+            np.testing.assert_almost_equal(forward_model_tensor, forward_model_numpy, decimal=5)
+
+    def test_openvino_quantize_keyword_argument(self):
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        # quantize directly
+        optimized_model = InferenceOptimizer.quantize(model,
+                                                      accelerator='openvino',
+                                                      precision='int8',
+                                                      calib_data=dataloader)
+        y_hat = optimized_model(x=x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x=x)
+        assert y_hat.shape == (10, 10)
+
+        # trace and then quantize
+        openvino_model = InferenceOptimizer.trace(model, accelerator='openvino', input_sample=x)
+        optimized_model = InferenceOptimizer.quantize(openvino_model, accelerator='openvino',
+                                                      calib_data=dataloader)
+        y_hat = optimized_model(x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x)
+        assert y_hat.shape == (10, 10)

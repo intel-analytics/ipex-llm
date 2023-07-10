@@ -127,6 +127,21 @@ class TestImagePreprocessing(TestCase):
                             isinstance(im[1], PIL.Image.Image))
         self.assertTrue(data_shard.rdd.count() == 5)
 
+    def test_read_voc(self):
+        from bigdl.orca.data.image.preprocessing import read_voc
+        image_path = os.path.join(self.resource_path, "VOCdevkit")
+        data_shard = read_voc(image_path,
+                              split_names=[(2007, "trainval")],
+                              max_samples=5)
+
+        collected = data_shard.collect()
+        print(collected)
+        for im in collected:
+            self.assertTrue(isinstance(im, tuple) and
+                            isinstance(im[0], PIL.Image.Image) and
+                            isinstance(im[1], np.ndarray))
+        self.assertTrue(data_shard.rdd.count() == 5)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

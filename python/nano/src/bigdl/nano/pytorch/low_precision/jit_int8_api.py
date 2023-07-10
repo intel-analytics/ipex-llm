@@ -18,7 +18,8 @@
 def PytorchJITINT8Model(model, calib_data, q_config=None,
                         input_sample=None, channels_last=False,
                         thread_num=None, jit_strict=True,
-                        jit_method=None, enable_onednn=False):
+                        jit_method=None, enable_onednn=False,
+                        example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform if from_load is False
            the accelerated model if from_load is True.
@@ -47,12 +48,17 @@ def PytorchJITINT8Model(model, calib_data, q_config=None,
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on
            oneDNN Graph API, which provides a flexible API for aggressive
            fusion. Default to ``False``.
+    :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
+           to ``torch.jit.trace``. Default to None. Either this argument or input_sample
+           should be specified when use_jit is ``True`` and torch > 2.0,
+           sotherwise will be ignored.
     '''
     from .jit_int8_model import PytorchJITINT8Model
     return PytorchJITINT8Model(model, calib_data, q_config=q_config,
                                input_sample=input_sample, channels_last=channels_last,
                                thread_num=thread_num, jit_strict=jit_strict,
-                               jit_method=jit_method, enable_onednn=enable_onednn)
+                               jit_method=jit_method, enable_onednn=enable_onednn,
+                               example_kwarg_inputs=example_kwarg_inputs)
 
 
 def load_pytorchjitint8_model(path):

@@ -47,7 +47,7 @@ init_instance() {
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
-        .env.untrusted = [ "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
+        .env.untrusted = [ "KUBECONFIG", "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
         .env.default = [ "OCCLUM=yes","PYTHONHOME=/opt/python-occlum","LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/opt/spark/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/opt/spark","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/opt/spark/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -150,6 +150,12 @@ build_spark() {
     cp -f /usr/lib/x86_64-linux-gnu/*sgx* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/*dcap* /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
     cp -f /usr/lib/x86_64-linux-gnu/libcrypt.so.1 /opt/occlum_spark/image/opt/occlum/glibc/lib --remove-destination
+
+    # add k8s config and k8s *.yaml bash
+    mkdir -p /opt/occlum_spark/image/opt/k8s/
+    mkdir -p /opt/occlum_spark/image/root/.kube/
+    cp -rf /opt/k8s/* /opt/occlum_spark/image/opt/k8s/
+    cp -rf /root/.kube/* /opt/occlum_spark/image/root/.kube/
 
     # copy spark and bigdl and others dependencies
     copy_bom -f /opt/spark.yaml --root image --include-dir /opt/occlum/etc/template
@@ -303,6 +309,82 @@ run_spark_pi() {
                 --class org.apache.spark.examples.SparkPi spark-internal
 }
 
+run_spark_pi_client() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --deploy-mode client \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.driver.host=$LOCAL_IP \
+         --conf spark.driver.port=54321 \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE="5G" \
+         --conf spark.executorEnv.MALLOC_ARENA_MAX=1 \
+         --verbose \
+         --jars $SPARK_HOME/examples/jars/spark-examples_2.12-${SPARK_VERSION}.jar,$SPARK_HOME/examples/jars/scopt_2.12-3.7.1.jar \
+         --class org.apache.spark.examples.SparkPi spark-internal
+}
+
+run_spark_pi_cluster() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run spark Pi${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+         -XX:-UseCompressedOops \
+         -XX:ActiveProcessorCount=4 \
+         -Divy.home="/tmp/.ivy" \
+         -Dos.name="Linux" \
+         -cp ${SPARK_HOME}/jars/*:${SPARK_HOME}/conf/:/bin/jars/* \
+         -Xmx2g \
+         org.apache.spark.deploy.SparkSubmit \
+         --master k8s://https://${kubernetes_master_url}:6443 \
+         --name spark-pi-cluster \
+         --class org.apache.spark.examples.SparkPi \
+         --deploy-mode cluster \
+         --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum-production:2.4.0-SNAPSHOT-build \
+         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+         --conf spark.kubernetes.executor.podTemplateFile=/opt/k8s/executor.yaml \
+         --conf spark.kubernetes.driver.podTemplateFile=/opt/k8s/driver.yaml \
+         --conf spark.kubernetes.file.upload.path=file:///tmp \
+         --conf spark.kubernetes.executor.deleteOnTermination=false \
+         --conf spark.executor.instances=2 \
+         --executor-memory 1g \
+         --executor-cores 4 \
+         --conf spark.cores.max=8 \
+         --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
+         --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="10GB" \
+         --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
+         --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
+         --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
+         --conf spark.kubernetes.driverEnv.SGX_THREAD="2048" \
+         --conf spark.kubernetes.sgx.driver.jvm.mem="1G" \
+         --conf spark.kubernetes.sgx.executor.jvm.mem="7G" \
+         --conf spark.executorEnv.SGX_MEM_SIZE="12GB" \
+         --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_HEAP="1GB" \
+         --conf spark.executorEnv.SGX_THREAD="2048" \
+         local:/opt/spark/examples/jars/spark-examples_2.12-3.1.3.jar
+}
+
 run_spark_unittest() {
     init_instance spark
     build_spark
@@ -426,10 +508,6 @@ run_spark_xgboost() {
                 --master local[4] \
                 --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -i /host/data -s /host/data/model -t 2 -r 100 -d 2 -w 1
 }
@@ -446,12 +524,7 @@ run_spark_gbt() {
                 -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
                 -Xmx10g -Xms10g org.apache.spark.deploy.SparkSubmit \
                 --master local[4] \
-                --conf spark.task.cpus=2 \
                 --class com.intel.analytics.bigdl.dllib.example.nnframes.gbt.gbtClassifierTrainingExampleOnCriteoClickLogsDataset \
-                --num-executors 2 \
-                --executor-cores 2 \
-                --executor-memory 9G \
-                --driver-memory 10G \
                 /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
                 -i /host/data -s /host/data/model -I 100 -d 5
 }
@@ -474,6 +547,23 @@ run_spark_lgbm() {
                 --numIterations 100 \
                 --partition 4 \
                 --modelSavePath /host/data/iris_output
+}
+
+run_spark_lgbm_criteo() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark lgbm criteo example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                -XX:-UseCompressedOops \
+                -XX:ActiveProcessorCount=4 \
+                -Divy.home="/tmp/.ivy" \
+                -Dos.name="Linux" \
+                -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                --master local[4] \
+                --class com.intel.analytics.bigdl.dllib.example.nnframes.lightGBM.lgbmClassifierTrainingExampleOnCriteoClickLogsDataset \
+                /bin/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar \
+                -i /host/data/ -s /host/data/model -I 100 -d 5
 }
 
 run_spark_gbt_e2e() {
@@ -533,6 +623,31 @@ run_spark_sql_e2e() {
                 --kmsServerPort $EHSM_KMS_PORT \
                 --ehsmAPPID $APP_ID \
                 --ehsmAPIKEY $API_KEY
+}
+
+run_pyspark_sql_e2e() {
+    init_instance spark
+    build_spark
+    cd /opt/occlum_spark
+    echo -e "${BLUE}occlum run BigDL PySpark simplequery SQL e2e${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                    -XX:-UseCompressedOops \
+                    -XX:ActiveProcessorCount=4 \
+                    -Divy.home="/tmp/.ivy" \
+                    -Dos.name="Linux" \
+                    -Djdk.lang.Process.launchMechanism=vfork \
+                    -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                    -Xmx1g org.apache.spark.deploy.SparkSubmit \
+                    --py-files /py-examples/bigdl.zip \
+                    /py-examples/simple_query_example.py \
+                   --app_id 123456654321 \
+                   --api_key 123456654321 \
+                   --primary_key_material /host/data/key/simple_encrypted_primary_key \
+                   --input_path /host/data/encryptSimple \
+                   --output_path /host/data/model \
+                   --input_encrypt_mode aes/cbc/pkcs5padding \
+                   --output_encrypt_mode plain_text \
+                   --kms_type SimpleKeyManagementService
 }
 
 run_multi_spark_sql_e2e() {
@@ -604,6 +719,14 @@ case "$arg" in
         run_spark_pi
         cd ../
         ;;
+    pi_client)
+        run_spark_pi_client
+        cd ../
+        ;;
+    pi_cluster)
+        run_spark_pi_cluster
+        cd ../
+        ;;
     lenet)
         run_spark_lenet_mnist
         cd ../
@@ -636,12 +759,20 @@ case "$arg" in
         run_spark_lgbm
         cd ../
         ;;
+    lgbm_criteo)
+        run_spark_lgbm_criteo
+        cd ../
+        ;;
     gbt_e2e)
         run_spark_gbt_e2e
         cd ../
         ;;
     sql_e2e)
         run_spark_sql_e2e
+        cd ../
+        ;;
+    pysql_e2e)
+        run_pyspark_sql_e2e
         cd ../
         ;;
     multi_sql_e2e)

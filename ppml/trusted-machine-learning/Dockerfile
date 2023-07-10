@@ -46,14 +46,15 @@ COPY --from=bigdata  /ppml/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata  /ppml/examples/src/main/resources /ppml/examples/src/main/resources
 COPY --from=bigdata  /usr/local/bin/gosu /usr/local/bin/gosu
 
-ADD ./mllib/bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
-ADD ./mllib/scripts /ppml/scripts
-ADD ./mllib/spark-executor-template.yaml /ppml/spark-executor-template.yaml
-ADD ./mllib/spark-driver-template.yaml /ppml/spark-driver-template.yaml
-ADD ./mllib/entrypoint.sh /opt/entrypoint.sh
-ADD ./lgbm/make-lgbm.sh /ppml/make-lgbm.sh
-ADD ./lgbm/start-lgbm-training.sh /ppml/start-lgbm-training.sh
-ADD ./lgbm/train.conf /ppml/train.conf
+ADD ./bash.manifest.template /ppml
+ADD ./SparkML/bigdl-ppml-submit.sh /ppml/bigdl-ppml-submit.sh
+ADD ./SparkML/scripts /ppml/scripts
+ADD ./SparkML/spark-executor-template.yaml /ppml/spark-executor-template.yaml
+ADD ./SparkML/spark-driver-template.yaml /ppml/spark-driver-template.yaml
+ADD ./SparkML/entrypoint.sh /opt/entrypoint.sh
+ADD ./LightGBM/make-lgbm.sh /ppml/make-lgbm.sh
+ADD ./LightGBM/lgbm-training-entrypoint.sh /ppml/lgbm-training-entrypoint.sh
+ADD ./LightGBM/trainer.conf /ppml/trainer.conf
 
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN echo $http_proxy && \
@@ -71,7 +72,8 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 #LGBM 
 RUN git clone --recursive https://github.com/analytics-zoo/LightGBM.git && \
     apt-get install libssl-dev  && \
-    bash /ppml/make-lgbm.sh
+    bash /ppml/make-lgbm.sh && \
+    pip install synapseml==0.11.1
 
 
 RUN cp /ppml/jars/*.jar ${SPARK_HOME}/jars
