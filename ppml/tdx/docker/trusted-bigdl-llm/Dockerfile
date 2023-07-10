@@ -17,9 +17,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     # Install bigdl-llm
-    pip3 install --pre --upgrade bigdl-llm[all] && \
-    # Remove all dependencies from nvidia.
-    pip3 list | grep nvidia | awk '{print $1}' | xargs pip3 uninstall -y
+    pip3 install --pre --upgrade bigdl-llm[all]
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 

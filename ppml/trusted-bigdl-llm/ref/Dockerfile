@@ -4,7 +4,7 @@ ARG BASE_IMAGE_TAG
 # stage 1. generate SGX secrets and prepare KMS env
 FROM $BASE_IMAGE_NAME:$BASE_IMAGE_TAG as temp
 
-ARG SGX_MEM_SIZE="32G"
+ARG SGX_MEM_SIZE="64G"
 ARG SGX_LOG_LEVEL="error"
 
 ADD ./enclave-key.pem /root/.config/gramine/enclave-key.pem
@@ -31,5 +31,3 @@ RUN cd /ppml && \
     gramine-sgx-quote-dump -m bash.sig|grep mr_signer
 
 WORKDIR /ppml
-
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
