@@ -111,7 +111,7 @@ jobs:
         sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-bigdl-llm-gramine-ref:
-    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-ref' || github.event.inputs.artifact == 'all' }}
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
     steps:
     - uses: actions/checkout@v3
