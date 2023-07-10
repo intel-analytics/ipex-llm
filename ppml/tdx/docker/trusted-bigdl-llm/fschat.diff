@@ -1,0 +1,26 @@
+325a326,348
+> class BigDLLLMAdapter(BaseModelAdapter):
+>     "Model adapater for vicuna-v1.1"
+>
+>     def match(self, model_path: str):
+>         return "bigdl" in model_path
+>
+>     def load_model(self, model_path: str, from_pretrained_kwargs: dict):
+>         revision = from_pretrained_kwargs.get("revision", "main")
+>         from transformers import LlamaTokenizer
+>         tokenizer = LlamaTokenizer.from_pretrained(
+>             model_path, use_fast=False, revision=revision
+>         )
+>         from bigdl.llm.transformers import AutoModelForCausalLM
+>         model = AutoModelForCausalLM.from_pretrained(
+>             model_path,
+>             load_in_4bit=True,
+>             low_cpu_mem_usage=True,
+>             **from_pretrained_kwargs,
+>         )
+>         #self.raise_warning_for_old_weights(model)
+>         return model, tokenizer
+>
+>
+985a1009
+> register_model_adapter(BigDLLLMAdapter)
