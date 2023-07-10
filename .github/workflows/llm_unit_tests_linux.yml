@@ -28,6 +28,7 @@ on:
       - '.github/actions/llm/cli-test/action.yml'
       - '.github/actions/llm/inference-test/action.yml'
       - '.github/actions/llm/langchain-test/action.yml'
+  workflow_dispatch:
 
 env:
   INT4_CKPT_DIR: ./llm/ggml-actions/stable
