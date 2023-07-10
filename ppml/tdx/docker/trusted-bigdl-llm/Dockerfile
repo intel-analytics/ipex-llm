@@ -6,6 +6,9 @@ ARG https_proxy
 RUN mkdir -p /ppml/
 
 
+ADD ./fschat.diff /opt/fschat.diff
+
+
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common -y && \
@@ -17,7 +20,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y python3-pip python3.9-dev python3-wheel && \
     pip3 install --no-cache requests argparse cryptography==3.3.2 urllib3 && \
     # Install bigdl-llm
-    pip3 install --pre --upgrade bigdl-llm[all]
+    pip3 install --pre --upgrade bigdl-llm[all] && \
+    # FastChat related dependencies
+    pip3 install fschat==0.2.18 && \
+    # We would also patch fastchat
+    patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
