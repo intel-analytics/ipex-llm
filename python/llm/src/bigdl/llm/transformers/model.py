@@ -16,7 +16,6 @@
 
 import transformers
 from transformers.configuration_utils import PretrainedConfig
-import json
 from .utils import extract_local_archive_file, load_state_dict, load
 
 
@@ -51,6 +50,9 @@ class _BaseAutoModelClass:
             kwargs["ignore_mismatched_sizes"] = True
 
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
+        print("Note: If there are warnings about mismatched during the loading process, "
+              "please ignore them as it is part of the normal flow. "
+              "The model will be reconverted to the format of BigDL after loading.")
 
         # Note that the ggml_matmul_src1_x_src0_t operation cannot currently
         # be recorded in AutoConfig,
