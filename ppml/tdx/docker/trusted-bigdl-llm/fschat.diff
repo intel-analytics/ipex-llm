@@ -1,7 +1,7 @@
 325a326,348
 > class BigDLLLMAdapter(BaseModelAdapter):
 >     "Model adapater for vicuna-v1.1"
->
+> 
 >     def match(self, model_path: str):
 >         return "bigdl" in model_path
 >
@@ -20,7 +20,7 @@
 >         )
 >         #self.raise_warning_for_old_weights(model)
 >         return model, tokenizer
->
->
+> 
+> 
 985a1009
 > register_model_adapter(BigDLLLMAdapter)
