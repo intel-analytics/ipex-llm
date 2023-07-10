@@ -170,7 +170,7 @@ def setup_package():
                           "onnxruntime-extensions==0.7.0; platform_system!='Darwin'",
                           "onnxruntime-extensions==0.3.1; (platform_machine=='x86_64' or platform_machine == 'AMD64') and \
                           platform_system=='Darwin'",
-                          "openvino-dev==2022.3.0",
+                          "openvino-dev==2022.3.1",
                           "scipy<=1.10.1",
                           "neural-compressor==2.0; platform_system!='Windows'",
                           "onnxsim==0.4.8; platform_system!='Darwin'",
