@@ -45,7 +45,7 @@ BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
-CONVERT_DEP = ['numpy', 'torch', 'transformers', 'sentencepiece', 'accelerate']
+CONVERT_DEP = ['numpy >= 1.22', 'torch', 'transformers', 'sentencepiece', 'accelerate']
 
 
 def get_llm_packages():
@@ -73,7 +73,7 @@ def obtain_lib_urls():
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
                      "main-llama_avx2", "main-gptneox_avx2", "main-bloom_avx2",
                      "main-llama_avx512", "main-gptneox_avx512", "main-bloom_avx512",
-                     "libstarcoder_avx512.so", "main-starcoder_avx512", "quantize-starcoder", 
+                     "libstarcoder_avx512.so", "main-starcoder_avx512", "quantize-starcoder",
                      "libstarcoder_avx2.so", "main-starcoder_avx2"]
 
     def get_date_urls(base_url):
@@ -198,7 +198,7 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
-    
+
     all_requires = []
     all_requires += CONVERT_DEP
 
