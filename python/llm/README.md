@@ -100,7 +100,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = tokenizer.batch_decode(output_ids)
   ```
 
-  See the complete example [here](example/transformers/transformers_int4_pipeline.py). 
+  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py). 
   
 - ##### Using native INT4 format
 
@@ -124,7 +124,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = llm.batch_decode(output_ids)
   ``` 
 
-  See the complete example [here](example/transformers/native_int4_pipeline.py). 
+  See the complete example [here](example/transformers/native_int4/native_int4_pipeline.py). 
 
 #### LangChain API
 You may run the models using the LangChain API in `bigdl-llm`.
