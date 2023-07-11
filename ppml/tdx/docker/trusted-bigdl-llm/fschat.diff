@@ -4,7 +4,7 @@
 > 
 >     def match(self, model_path: str):
 >         return "bigdl" in model_path
->
+> 
 >     def load_model(self, model_path: str, from_pretrained_kwargs: dict):
 >         revision = from_pretrained_kwargs.get("revision", "main")
 >         from transformers import LlamaTokenizer
