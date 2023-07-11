@@ -62,9 +62,8 @@ class ImageFolder(torchvision.datasets.ImageFolder):
             self.jpeg = None
 
     def _read_image_to_bytes(self, path: str):
-        fd = open(path, 'rb')
-        img_str = fd.read()
-        fd.close()
+        with open(path, 'rb') as fd:
+            img_str = fd.read()
         return img_str
 
     def _decode_img_libjpeg_turbo(self, img_str: str):
@@ -139,17 +138,15 @@ class SegmentationImageFolder:
         # because each color corresponds to a different instance
         # with 0 being background
         if self.jpeg is not None and (img_path.endswith(".jpg") or img_path.endswith(".jpeg")):
-            fd = open(img_path, 'rb')
-            img = self.jpeg.decode(fd.read())
-            fd.close()
+            with open(img_path, 'rb') as fd:
+                img = self.jpeg.decode(fd.read())
         else:
             img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         if self.jpeg is not None and (mask_path.endswith(".jpg") or mask_path.endswith(".jpeg")):
-            fd = open(mask_path, 'rb')
-            mask = self.jpeg.decode(fd.read(), pixel_format=TJPF_GRAY)
-            fd.close()
+            with open(mask_path, 'rb') as fd:
+                mask = self.jpeg.decode(fd.read(), pixel_format=TJPF_GRAY)
         else:
             mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
         mask = np.array(mask)
