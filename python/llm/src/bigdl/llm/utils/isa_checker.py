@@ -4,13 +4,12 @@ from cpuinfo import CPUID
 class ISAChecker:
     def __init__(self):
         cpuid = CPUID()
-        self.cpuid = cpuid
         self.flags = cpuid.get_flags(cpuid.get_max_extension_support())
-        if self._avx_vnni():
+        if self._avx_vnni(cpuid):
             self.flags.append('avxvnni')
 
-    def _avx_vnni(self):
-        eax = self.cpuid._run_asm(
+    def _avx_vnni(self, cpuid):
+        eax = cpuid._run_asm(
             b"\xB9\x01\x00\x00\x00",   # mov ecx, 0x1
             b"\xB8\x07\x00\x00\x00",   # mov eax, 0x7
             b"\x0f\xa2",               # cpuid
