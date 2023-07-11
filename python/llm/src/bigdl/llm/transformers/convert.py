@@ -44,6 +44,13 @@ import warnings
 def _replace_with_int4_linear(model, modules_to_not_convert=None,
                               current_key_name=None, convert_shape_only=False):
     has_been_replaced = False
+    model_state_dict = model.state_dict()
+    for name, param in model.named_parameters():
+        if param.data.device == torch.device('meta'):
+            from accelerate.utils.modeling import set_module_tensor_to_device
+            param = model_state_dict[name]
+            set_module_tensor_to_device(model, name, "cpu", torch.empty(*param.size(), dtype=torch.float32))
+   
     for name, module in model.named_children():
         if current_key_name is None:
             current_key_name = []
@@ -82,6 +89,7 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None,
                 module,
                 modules_to_not_convert,
                 current_key_name,
+                convert_shape_only,
             )
     return model, has_been_replaced
 
@@ -99,5 +107,6 @@ def ggml_convert_int4(model, convert_shape_only=False):
             "an issue on github if you think this is a bug."
         )
     else:
-        model.to(torch.float32)
+        # model.to(torch.float32)
+        pass
     return model

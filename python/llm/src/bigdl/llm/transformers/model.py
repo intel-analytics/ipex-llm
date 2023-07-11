@@ -48,6 +48,10 @@ class _BaseAutoModelClass:
         if bigdl_transformers_int4:
             # Avoid KeyError
             kwargs["ignore_mismatched_sizes"] = True
+            # Speed up when loading model
+            kwargs["low_cpu_mem_usage"] = True
+            # Avoid reading from local file at the first initialization
+            kwargs["state_dict"] = {}
 
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         print("Note: If there are warnings about mismatched during the loading process, "
