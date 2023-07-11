@@ -62,8 +62,9 @@ def open_text(path: str) -> List[str]:
         if path.startswith("file://"):
             path = path[len("file://"):]
         lines = []
-        for line in open(path):
-            lines.append(line)
+        with open(path) as f:
+            for line in f:
+                lines.append(line)
     return [line.strip() for line in lines]
 
 
@@ -95,7 +96,8 @@ def open_image(path: str) -> "JpegImageFile":
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         data = s3_client.get_object(Bucket=bucket, Key=key)
-        return Image.open(BytesIO(data["Body"].read()))
+        with BytesIO(data["Body"].read()) as f:
+            return Image.open(f)
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -270,7 +272,6 @@ def write_text(path: str, text: str) -> int:
         fs = pa.hdfs.connect()
         with fs.open(path, 'wb') as f:
             result = f.write(text.encode('utf-8'))
-            f.close()
             return result
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -288,7 +289,6 @@ def write_text(path: str, text: str) -> int:
             path = path[len("file://"):]
         with open(path, 'w') as f:
             result = f.write(text)
-            f.close()
             return result
 
 
@@ -341,8 +341,8 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
         host_port = remote_dir.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
+        with subprocess.Popen(["hadoop", "classpath", "--glob"], stdout=subprocess.PIPE) as p:
+            classpath = p.communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         if len(host_port) > 1:
             fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
@@ -375,24 +375,25 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
 def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
-        process = subprocess.Popen(test_cmd, shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if process.returncode != 0:
-            if 'No such file or directory' in err.decode('utf-8'):
-                mkdir_cmd = 'hdfs dfs -mkdir -p {}'.format(remote_dir)
-                mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
-                ret = mkdir_process.wait()
-                if ret != 0:
-                    return ret
-            else:
-                # ls remote dir error
-                logger.warning(err.decode('utf-8'))
-                return -1
+        with subprocess.Popen(test_cmd, shell=True, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE) as process:
+            out, err = process.communicate()
+            if process.returncode != 0:
+                if 'No such file or directory' in err.decode('utf-8'):
+                    mkdir_cmd = 'hdfs dfs -mkdir -p {}'.format(remote_dir)
+                    mkdir_process = subprocess.run(mkdir_cmd, capture_output=True)
+                    if mkdir_process.returncode != 0:
+                        return mkdir_process.returncode
+                else:
+                    # ls remote dir error
+                    logger.warning(err.decode('utf-8'))
+                    return -1
         cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
+            return -1
+        return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -429,18 +430,19 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
 def put_local_file_to_remote(local_path: str, remote_path: str,
                              filemode: Optional[int] = None) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        try:
-            cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
-            process = subprocess.Popen(cmd, shell=True)
-            process.wait()
-            if filemode:
-                chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
-                process = subprocess.Popen(chmod_cmd, shell=True)
-                process.wait()
-        except Exception as e:
+        cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
             logger.error("Cannot upload file {} to {}: error: {}"
-                         .format(local_path, remote_path, str(e)))
+                         .format(local_path, remote_path, str(p.stderr)))
             return -1
+        if filemode:
+            chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
+            p = subprocess.run(chmod_cmd, capture_output=True)
+            if p.returncode != 0:
+                logger.error("Cannot upload file {} to {}: error: {}"
+                             .format(local_path, remote_path, str(p.stderr)))
+                return -1
         return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -478,8 +480,11 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
     file_list = glob.glob(local_path_prefix + "*")
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -put -f {}* {}'.format(local_path_prefix, remote_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
+            return -1
+        return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -512,8 +517,11 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
 def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
+            return -1
+        return 0
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -540,8 +548,11 @@ def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
 def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
+            return -1
+        return 0
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -574,8 +585,11 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
     prefix = os.path.basename(remote_path_prefix)
     if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
         cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        p = subprocess.run(cmd, capture_output=True)
+        if p.returncode != 0:
+            logger.error("Error: {}".format(str(p.stderr)))
+            return -1
+        return 0
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -619,21 +633,14 @@ def enable_multi_fs_load_static(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            if is_file(path):
-                get_remote_file_to_local(path, temp_path)
-            else:
-                os.mkdir(temp_path)
-                get_remote_dir_to_local(path, temp_path)
-            try:
-                return load_func(temp_path, *args, **kwargs)
-            finally:
-                if os.path.isdir(temp_path):
-                    import shutil
-                    shutil.rmtree(temp_path)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                if is_file(path):
+                    get_remote_file_to_local(path, temp_path)
                 else:
-                    os.remove(temp_path)
-
+                    os.makedirs(temp_path)
+                    get_remote_dir_to_local(path, temp_path)
+                return load_func(temp_path, *args, **kwargs)
     return fs_load
 
 
@@ -650,13 +657,10 @@ def enable_multi_fs_save(save_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 put_local_file_to_remote(temp_path, path)
-            finally:
-                os.remove(temp_path)
             return result
 
     return fs_save
@@ -675,11 +679,9 @@ def enable_multi_fs_load(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return fs_load
