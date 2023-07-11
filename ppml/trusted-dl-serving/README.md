@@ -75,6 +75,21 @@ helm install $your_helm_name .
 You can check the status of pods and services by `kubectl`.
 ```
 kubectl get all -n bigdl-ppml-serving
+
+NAME                                                       READY   STATUS    RESTARTS       AGE
+pod/bigdl-torchserve-backend-deployment-6bbbdd64ff-6kk4q   1/1     Running   0              4m4s
+pod/bigdl-torchserve-backend-deployment-6bbbdd64ff-hpcpx   1/1     Running   0              4m4s
+pod/torchserve-frontend                                    1/1     Running   0              4m4s
+
+NAME                                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/bigdl-torchserve-frontend-service   ClusterIP   ...             <none>        8085/TCP,8081/TCP,8082/TCP   4m4s
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/bigdl-torchserve-backend-deployment   2/2     2            2           4m4s
+
+NAME                                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/bigdl-torchserve-backend-deployment-6bbbdd64ff   2         2         2       4m4s
+
 ```
 Send a prediction request to test if Torchserve is running correctly.
 ```
