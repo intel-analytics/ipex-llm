@@ -1,0 +1,54 @@
+from cpuinfo import CPUID
+
+
+class ISAChecker:
+    def __init__(self):
+        cpuid = CPUID()
+        self.cpuid = cpuid
+        self.flags = cpuid.get_flags(cpuid.get_max_extension_support())
+        if self._avx_vnni():
+            self.flags.append('avxvnni')
+
+    def _avx_vnni(self):
+        eax = self.cpuid._run_asm(
+            b"\xB9\x01\x00\x00\x00",   # mov ecx, 0x1
+            b"\xB8\x07\x00\x00\x00",   # mov eax, 0x7
+            b"\x0f\xa2",               # cpuid
+            b"\xC3"                    # ret
+        )
+        return ((0x10) & eax) != 0
+
+    def check_avx2(self):
+        return 'avx2' in self.flags
+
+    def check_avx_vnni(self):
+        return 'avxvnni' in self.flags
+
+    def check_avx512(self):
+        return 'avx512f' in self.flags and \
+               'avx512bw' in self.flags and \
+               'avx512cd' in self.flags and \
+               'avx512dq' in self.flags and \
+               'avx512vl' in self.flags
+
+    def check_avx512_vnni(self):
+        return 'avx512vnni' in self.flags
+
+
+isa_checker = ISAChecker()
+
+
+def check_avx2():
+    return isa_checker.check_avx2()
+
+
+def check_avx_vnni():
+    return isa_checker.check_avx_vnni() and isa_checker.check_avx2()
+
+
+def check_avx512():
+    return isa_checker.check_avx512()
+
+
+def check_avx512_vnni():
+    return isa_checker.check_avx512_vnni() and isa_checker.check_avx512()
