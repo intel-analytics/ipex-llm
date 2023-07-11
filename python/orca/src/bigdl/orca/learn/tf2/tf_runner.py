@@ -518,17 +518,18 @@ class TFRunner:
             else:
                 filepath = self.load_params["filepath"]
                 file_name = os.path.basename(filepath)
-                temp_path = os.path.join(tempfile.mkdtemp(), file_name)
-                if is_file(filepath):
-                    # h5 format
-                    get_remote_file_to_local(filepath, temp_path)
-                else:
-                    # savemodel format
-                    if os.path.exists(temp_path):
+                with tempfile.TemporaryDirectory() as tempdir:
+                    temp_path = os.path.join(tempdir, file_name)
+                    if is_file(filepath):
+                        # h5 format
+                        get_remote_file_to_local(filepath, temp_path)
+                    else:
+                        # savemodel format
                         os.makedirs(temp_path)
-                    get_remote_dir_to_local(filepath, temp_path)
-                self.load_params["filepath"] = temp_path
-                local_model = self.process_model_load(**self.load_params)
+                        get_remote_dir_to_local(filepath, temp_path)
+                    self.load_params["filepath"] = temp_path
+                    local_model = self.process_model_load(**self.load_params)
+                    self.load_params["filepath"] = filepath
             try:
                 local_model.set_weights(self.model.get_weights())
             except Exception:
@@ -587,9 +588,8 @@ class TFRunner:
 
     def save_model(self, filepath, overwrite, include_optimizer, save_format, signatures, options):
         file_name = os.path.basename(filepath)
-        temp_dir = tempfile.mkdtemp()
-        temp_path = os.path.join(temp_dir, file_name)
-        try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = os.path.join(temp_dir, file_name)
             self.model.save(filepath=temp_path, overwrite=overwrite, save_format=save_format,
                             include_optimizer=include_optimizer, signatures=signatures,
                             options=options)
@@ -600,8 +600,6 @@ class TFRunner:
                 else:
                     # savemodel format
                     put_local_dir_tree_to_remote(temp_path, filepath)
-        finally:
-            shutil.rmtree(temp_dir)
 
     def process_model_load(self, filepath, custom_objects, compile, options):
         """Load the model from provided local filepath."""
@@ -636,16 +634,15 @@ class TFRunner:
             options=options
         )
         file_name = os.path.basename(filepath)
-        temp_path = os.path.join(tempfile.mkdtemp(), file_name)
-        if is_file(filepath):
-            # h5 format
-            get_remote_file_to_local(filepath, temp_path)
-        else:
-            # savemodel format
-            if os.path.exists(temp_path):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = os.path.join(tempdir, file_name)
+            if is_file(filepath):
+                # h5 format
+                get_remote_file_to_local(filepath, temp_path)
+            else:
+                # savemodel format
                 os.makedirs(temp_path)
-            get_remote_dir_to_local(filepath, temp_path)
-        try:
+                get_remote_dir_to_local(filepath, temp_path)
             if self.backend == "tf-distributed":
                 with self.strategy.scope():
                     self.model = self.process_model_load(temp_path, custom_objects, compile,
@@ -653,17 +650,11 @@ class TFRunner:
             else:
                 self.model = self.process_model_load(temp_path, custom_objects, compile,
                                                      options)
-        finally:
-            if os.path.isdir(temp_path):
-                shutil.rmtree(temp_path)
-            else:
-                os.remove(temp_path)
 
     def save_weights(self, filepath, overwrite, save_format, options):
         file_name = os.path.basename(filepath)
-        temp_dir = tempfile.mkdtemp()
-        temp_path = os.path.join(temp_dir, file_name)
-        try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = os.path.join(temp_dir, file_name)
             self.model.save_weights(temp_path, overwrite, save_format, options)
             if self.rank == 0:
                 if save_format == 'h5' or filepath.endswith('.h5') or filepath.endswith('.keras'):
@@ -673,8 +664,6 @@ class TFRunner:
                     # tf format
                     remote_dir = os.path.dirname(filepath)
                     put_local_files_with_prefix_to_remote(temp_path, remote_dir)
-        finally:
-            shutil.rmtree(temp_dir)
 
     def load_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
@@ -686,23 +675,20 @@ class TFRunner:
     def load_remote_weights(self, filepath, by_name, skip_mismatch, options):
         """Loads all layer weights from a remote weight file (Tensorflow or HDF5 format)."""
         file_name = os.path.basename(filepath)
-        temp_dir = tempfile.mkdtemp()
-        if is_file(filepath):
-            # h5 format
-            temp_path = os.path.join(temp_dir, file_name)
-            get_remote_file_to_local(filepath, temp_path)
-        else:
-            # tensorflow format
-            prefix = os.path.basename(filepath)
-            get_remote_files_with_prefix_to_local(filepath, temp_dir)
-            temp_path = os.path.join(temp_dir, prefix)
-        try:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            if is_file(filepath):
+                # h5 format
+                temp_path = os.path.join(temp_dir, file_name)
+                get_remote_file_to_local(filepath, temp_path)
+            else:
+                # tensorflow format
+                prefix = os.path.basename(filepath)
+                get_remote_files_with_prefix_to_local(filepath, temp_dir)
+                temp_path = os.path.join(temp_dir, prefix)
             if options:
                 self.model.load_weights(temp_path, by_name, skip_mismatch, options)
             else:  # To support older TensorFlow versions such as 2.1
                 self.model.load_weights(temp_path, by_name, skip_mismatch)
-        finally:
-            shutil.rmtree(temp_dir)
 
     def shutdown(self):
         """Attempts to shut down the worker."""
