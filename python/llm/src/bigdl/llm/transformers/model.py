@@ -19,7 +19,6 @@ from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, load_state_dict, load
 from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.transformers.convert import ggml_convert_quant
 
 
 class _BaseAutoModelClass:
