@@ -117,10 +117,10 @@ class TransformersPipelineLLM(LLM):
 
         try:
             if task == "text-generation":
-                model = AutoModelForCausalLM.from_pretrained(model_id, load_in_quant="q4_0", **_model_kwargs)
+                model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
             elif task in ("text2text-generation", "summarization"):
                 # TODO: support this when related PR merged
-                model = AutoModelForSeq2SeqLM.from_pretrained(model_id, load_in_quant="q4_0", **_model_kwargs)
+                model = AutoModelForSeq2SeqLM.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
             else:
                 raise ValueError(
                     f"Got invalid task {task}, "

@@ -65,8 +65,7 @@ class TestConvertModel(TestCase):
         assert os.path.isfile(converted_model_path)
 
     def test_transformer_convert_llama(self):
-        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_quant="q4_0")
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
         tempdir = tempfile.mkdtemp(dir=output_dir)
         model.save_pretrained(tempdir)
         model = AutoModelForCausalLM.from_pretrained(tempdir)
@@ -74,11 +73,11 @@ class TestConvertModel(TestCase):
 
     def test_transformer_convert_llama_q5(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_quant="q5_0")
+                                                     load_in_low_bit="q5_0")
 
     def test_transformer_convert_llama_q8(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_quant="q8_0")
+                                                     load_in_low_bit="q8_0")
 
 
 if __name__ == '__main__':

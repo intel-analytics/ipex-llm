@@ -29,13 +29,18 @@ class _BaseAutoModelClass:
     def from_pretrained(cls,
                         *args,
                         **kwargs):
-        qtype = kwargs.pop("load_in_quant", "").lower()
-        if qtype:
+        load_in_4bit = kwargs.pop("load_in_4bit", False)
+        qtype = 0
+        if load_in_4bit:
+            kwargs["low_cpu_mem_usage"] = True
+            qtype = ggml_tensor_qtype['q4_0']
+        load_in_low_bit = kwargs.pop("load_in_low_bit", "").lower()
+        if load_in_low_bit:
             kwargs["low_cpu_mem_usage"] = True
             invalidInputError(qtype in ggml_tensor_qtype,
-                              f"Unknown quantize tensor type: {qtype},"
+                              f"Unknown load_in_low_bit value: {qtype},"
                               f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
-            qtype = ggml_tensor_qtype[qtype]
+            qtype = ggml_tensor_qtype[load_in_low_bit]
 
         subfolder = kwargs.get("subfolder", "")
         variant = kwargs.get("variant", None)

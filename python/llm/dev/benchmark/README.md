@@ -15,7 +15,7 @@ import numpy as np
 from benchmark_util import BenchmarkWrapper
 
 model_path ='THUDM/chatglm-6b'
-model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_quant="q4_0")
+model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
 model = BenchmarkWrapper(model)
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 prompt = "今天睡不着怎么办"

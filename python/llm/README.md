@@ -90,7 +90,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   ```python
   #load Hugging Face Transformers model with INT4 optimizations
   from bigdl.llm.transformers import AutoModelForCausalLM
-  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_quant="q4_0")
+  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
 
   #run the optimized model
   from transformers import AutoTokenizer
@@ -101,7 +101,11 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   ```
 
   See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
-  Notice: The parameter `load_in_quant` can accept five kinds of quantization type. `q4_0` and `q4_1` are INT4 quantization, `q5_0` and `q5_1` are INT5 quantization, `q8_0` is INT8 quantization.  
+
+  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. `q4_0` and `q4_1` are INT4 quantization, `q5_0` and `q5_1` are INT5 quantization, `q8_0` is INT8 quantization. Like:
+  ```python
+  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="q5_0")
+  ```
   
 - ##### Using native INT4 format
 
