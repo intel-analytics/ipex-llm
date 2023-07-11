@@ -54,14 +54,14 @@ from langchain.llms.base import LLM
 
 
 
-class BigdlLLM(LLM):
+class BigdlNativeLLM(LLM):
     """Wrapper around the BigDL-LLM
 
     Example:
         .. code-block:: python
 
-            from langchain.llms import BigdlLLM
-            llm = BigdlLLM(model_path="/path/to/llama/model")
+            from langchain.llms import BigdlNativeLLM
+            llm = BigdlNativeLLM(model_path="/path/to/llama/model")
     """
 
 
@@ -281,8 +281,8 @@ class BigdlLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlLLM
-                llm = BigdlLLM(model_path="/path/to/local/llama/model.bin")
+                from langchain.llms import BigdlNativeLLM
+                llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
         if self.streaming:
@@ -326,8 +326,8 @@ class BigdlLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlLLM
-                llm = BigdlLLM(
+                from langchain.llms import BigdlNativeLLM
+                llm = BigdlNativeLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5
                 )

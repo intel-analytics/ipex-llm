@@ -36,6 +36,9 @@ def main(args):
     if model_family == "gptneox": 
         from bigdl.llm.models import Gptneox  
         modelclass = Gptneox
+    if model_family == "starcoder":   
+        from bigdl.llm.models import Starcoder
+        modelclass = Starcoder
         
     model = modelclass(model_path, n_threads=n_threads)
     response=model(prompt)
@@ -44,6 +47,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
+                        choices=["llama", "bloom", "gptneox", "starcoder"],
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')

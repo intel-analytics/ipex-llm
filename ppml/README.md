@@ -94,7 +94,6 @@ export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-gramine
 sudo docker pull $DOCKER_IMAGE
 
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --cpus=5 \
     --oom-kill-disable \
@@ -223,7 +222,6 @@ To build a secure PPML image that can be used in a production environment, BigDL
     export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-SNAPSHOT # or the custom image built by yourself
 
     sudo docker run -itd \
-        --privileged \
         --net=host \
         --name=bigdl-ppml-client-k8s \
         --cpus=10 \
@@ -300,7 +298,6 @@ export CUSTOM_IMAGE=YOUR_CUSTOM_IMAGE_BUILT_BEFORE
 export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
 
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --cpus=5 \
     --oom-kill-disable \
@@ -367,8 +364,6 @@ In the container, execute `verify-attestation-service.sh` to verify the attestat
   spec:
     containers:
     - name: spark-driver
-      securityContext:
-        privileged: true
       env:
         - name: ATTESTATION
           value: true

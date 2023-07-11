@@ -60,7 +60,7 @@ scale_size_in_bytes = 4
 block_size_in_bytes = QK // 2 + scale_size_in_bytes
 
 
-def ggml_convert_int4(tensor: torch.Tensor):
+def ggml_convert_int4(tensor: torch.Tensor, convert_shape_only=False):
 
     invalidInputError(tensor.dtype == torch.float,
                       "Input tensor must be float32")
@@ -79,12 +79,14 @@ def ggml_convert_int4(tensor: torch.Tensor):
 
     hist = (ctypes.c_int64 * 16)()
 
-    ggml.ggml_quantize_q4_0(src, dst, n, k, hist)
+    if not convert_shape_only:
+        ggml.ggml_quantize_q4_0(src, dst, n, k, hist)
     return dst_tensor
 
 
 class ParamsInt4(torch.nn.Parameter):
-    def __new__(cls, data=None, requires_grad=True, old_data=None, quantized=False, _shape=None):
+    def __new__(cls, data=None, requires_grad=True, old_data=None,
+                quantized=False, _shape=None, convert_shape_only=False):
         if data is None:
             data = torch.empty(0)
 
@@ -92,13 +94,14 @@ class ParamsInt4(torch.nn.Parameter):
         self.data = data
         self.quantized = quantized
         self._shape = _shape
+        self.convert_shape_only = convert_shape_only
         return self
 
     def quantize(self, device):
         if not self.quantized:
             w = self.data.contiguous().float()
             # self.old_data = self.data
-            w_4bit = ggml_convert_int4(w)
+            w_4bit = ggml_convert_int4(w, convert_shape_only=self.convert_shape_only)
             self.data = w_4bit
             self.quantized = True
             self._shape = w.shape

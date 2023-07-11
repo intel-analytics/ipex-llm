@@ -61,7 +61,8 @@ os.environ['LOGLEVEL'] = 'ERROR'  # remove parital output of inc
 class TorchAccelerationOption(AccelerationOption):
     def optimize(self, model, training_data=None, input_sample=None,
                  thread_num=None, dynamic_axes=True, logging=False,
-                 sample_size_for_pot=100, output_tensors=True):
+                 sample_size_for_pot=100, output_tensors=True,
+                 jit_strict=True):
         accelerator = self.get_accelerator()
         if self.get_precision() == "fp32":
             if accelerator is None and self.ipex is False and \
@@ -78,7 +79,8 @@ class TorchAccelerationOption(AccelerationOption):
                                          dynamic_axes=dynamic_axes,
                                          # remove output of openvino
                                          logging=logging,
-                                         output_tensors=output_tensors)
+                                         output_tensors=output_tensors,
+                                         jit_strict=jit_strict)
         else:
             # quantize
             ort_method: str = self.method
@@ -96,7 +98,8 @@ class TorchAccelerationOption(AccelerationOption):
                                             sample_size=sample_size_for_pot,
                                             # remove output of openvino
                                             logging=logging,
-                                            output_tensors=output_tensors)
+                                            output_tensors=output_tensors,
+                                            jit_strict=jit_strict)
         return acce_model
 
 
@@ -166,6 +169,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                  accelerator: Optional[Tuple[str]] = None,
                  precision: Optional[Tuple[str]] = None,
                  use_ipex: Optional[bool] = None,
+                 jit_strict: Optional[bool] = True,
+                 enable_onednn: Optional[bool] = False,
                  search_mode: str = "default",
                  dynamic_axes: Union[bool, dict] = True,
                  logging: bool = False,
@@ -267,6 +272,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                methods whose precision falls within the specified precision tuple.
         :param use_ipex: (optional) if not None, then will only try methods with/without
                this specific ipex setting.
+        :param jit_strict: Whether recording your mutable container types. This parameter will be
+               passed to ``torch.jit.trace``. if ``accelerator != 'jit'`` or
+               ``jit_method='script'``, it will be ignored. Default to True.
+        :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph API,
+                which provides a flexible API for aggressive fusion. Default to
+                ``False``, only valid when accelerator='jit', otherwise will
+                be ignored. For more details, please refer https://github.com/
+                pytorch/pytorch/tree/master/torch/csrc/jit/codegen/
+                onednn#pytorch---onednn-graph-api-bridge.
         :param search_mode: Here are three modes for optimization:
 
                | 1. default: This mode only traverses a subset of all combinations. This subset
@@ -449,13 +463,15 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 option: AccelerationOption = self.ALL_INFERENCE_ACCELERATION_METHOD[method]
                 _precision = option.get_precision()
                 try:
-                    acce_model = option.optimize(model, training_data=training_data,
+                    acce_model = option.optimize(model,
+                                                 training_data=training_data,
                                                  input_sample=input_sample,
                                                  thread_num=thread_num,
                                                  dynamic_axes=dynamic_axes,
                                                  logging=logging,
                                                  output_tensors=output_tensors,
-                                                 sample_size_for_pot=sample_size_for_pot)
+                                                 sample_size_for_pot=sample_size_for_pot,
+                                                 jit_strict=jit_strict)
                 except Exception:
                     traceback.print_exc()
                     result_map[method]["status"] = "fail to convert"
@@ -890,7 +906,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                 model which is able to run on Pytorch or ONNXRuntime can be fetched by
                 `quantized_model.model`.
                 """
-                inc_quantize_arguments = {"model": model, "dataloader": inc_calib_dataloader,
+                inc_quantize_arguments = {"model": model,
+                                          "dataloader": inc_calib_dataloader,
                                           "eval_func": eval_func,
                                           "metric": metric, "thread_num": thread_num,
                                           "framework": framework, "conf": conf,
@@ -919,7 +936,8 @@ class InferenceOptimizer(BaseInferenceOptimizer):
                                                             channels_last=channels_last,
                                                             thread_num=thread_num,
                                                             inplace=inplace,
-                                                            jit_strict=jit_strict)
+                                                            jit_strict=jit_strict,
+                                                            enable_onednn=enable_onednn)
             elif accelerator == 'openvino':
                 model_type = type(model).__name__
                 if not model_type == 'PytorchOpenVINOModel':

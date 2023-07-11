@@ -1,8 +1,8 @@
-# INT4 Inference Pipeline for Large Language Model using BigDL-LLM Transformers-like API
+# BigDL-LLM Native INT4 Inference Pipeline for Large Language Model
 
-In this example, we show a pipeline to convert a large language model to low precision (INT4), and then conduct inference on the converted INT4 model, using BigDL-LLM transformers-like API.
+In this example, we show a pipeline to convert a large language model to BigDL-LLM native INT4 format, and then run inference on the converted INT4 model.
 
-> **Note**: BigDL-LLM currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
+> **Note**: BigDL-LLM native INT4 format currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
@@ -15,20 +15,16 @@ pip install --pre --upgrade bigdl-llm[all]
 
 ## Run Example
 ```bash
-python ./int4_pipeline.py --thread-num THREAD_NUM --model-family MODEL_FAMILY
+python ./native_int4_pipeline.py --thread-num THREAD_NUM --model-family MODEL_FAMILY --repo-id-or-model-path MODEL_PATH
 ```
 arguments info:
 - `--thread-num THREAD_NUM`: **required** argument defining the number of threads to use for inference. It is default to be `2`.
 - `--model-family MODEL_FAMILY`: **required** argument defining the model family of the large language model (supported option: `'llama'`, `'gptneox'`, `'bloom'`, `'starcoder'`). It is default to be `'llama'`.
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: optional argument defining the huggingface repo id from which the large language model is downloaded, or the path to the huggingface checkpoint folder for the model.
+- `--repo-id-or-model-path MODEL_PATH`: **required** argument defining the path to the huggingface checkpoint folder for the model.
 
-  - When model family is `'llama'`, it is default to be `'decapoda-research/llama-7b-hf'`.
-  - When model family is `'gptneox'`, it is default to be `'togethercomputer/RedPajama-INCITE-7B-Chat'`.
-  - When model family is `'bloom'`, it is default to be `'bigscience/bloomz-7b1'`.
-  - When model family is `'starcoder'`, it is default to be `'bigcode/gpt_bigcode-santacoder'`.
-
-  > **Note** `REPO_ID_OR_MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
+  > **Note** `MODEL_PATH` should fits your inputed `MODEL_FAMILY`.
 - `--promp PROMPT`: optional argument defining the prompt to be infered. It is default to be `'Q: What is CPU? A:'`.
+- `--tmp-path TMP_PATH`: optional argument defining the path to store intermediate model during the conversion process. It is default to be `'/tmp'`.
 
 ## Sample Output for Inference
 ### Model family LLaMA
@@ -36,27 +32,23 @@ arguments info:
 --------------------  bigdl-llm based tokenizer  --------------------
 Inference time: xxxx s
 Output:
-[' It’s the acronym for “Central Processing Unit,” and in modern personal computers it means a single microprocessor chip that is used to control various']
+[' It stands for Central Processing Unit. It’s the part of your computer that does the actual computing, or calculating. The first computers were all about adding machines']
 --------------------  HuggingFace transformers tokenizer  --------------------
 Please note that the loading of HuggingFace transformers tokenizer may take some time.
 
-The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
-The tokenizer class you load from this checkpoint is 'LLaMATokenizer'. 
-The class this function is called from is 'LlamaTokenizer'.
 Inference time: xxxx s
 Output:
-["The Central Processing Unit (CPU) is the brains of your computer, and is also known as the microprocessor. It's where all the action"]
+['Central Processing Unit (CPU) is the main component of a computer system, also known as microprocessor. It executes the instructions of software programmes (also']
 --------------------  fast forward  --------------------
-Llama.generate: prefix-match hit
 
-llama_print_timings:        load time =     xxxx ms
-llama_print_timings:      sample time =     xxxx ms /    32 runs   (    xxxx ms per token)
-llama_print_timings: prompt eval time =     xxxx ms /     8 tokens (    xxxx ms per token)
-llama_print_timings:        eval time =     xxxx ms /    31 runs   (    xxxx ms per token)
-llama_print_timings:       total time =     xxxx ms
+bigdl-llm timings:        load time =    xxxx ms
+bigdl-llm timings:      sample time =    xxxx ms /    32 runs   (    xxxx ms per token)
+bigdl-llm timings: prompt eval time =    xxxx ms /     9 tokens (    xxxx ms per token)
+bigdl-llm timings:        eval time =    xxxx ms /    31 runs   (    xxxx ms per token)
+bigdl-llm timings:       total time =    xxxx ms
 Inference time (fast forward): xxxx s
 Output:
-{'id': 'cmpl-5aa68120-c94b-4433-92f4-b75cc323c22f', 'object': 'text_completion', 'created': 1686557904, 'model': './bigdl_llm_llama_q4_0.bin', 'choices': [{'text': ' It’s a small, compact computer unit that runs on a single chip. This can be connected to various peripheral devices, including printers and displays', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
+{'id': 'cmpl-c87e5562-281a-4837-8665-7b122948e0e8', 'object': 'text_completion', 'created': 1688368515, 'model': './bigdl_llm_llama_q4_0.bin', 'choices': [{'text': ' CPU stands for Central Processing Unit. This means that the processors in your computer are what make it run, so if you have a Pentium 4', 'index': 0, 'logprobs': None, 'finish_reason': 'length'}], 'usage': {'prompt_tokens': 9, 'completion_tokens': 32, 'total_tokens': 41}}
 ```
 
 ### Model family GPT-NeoX

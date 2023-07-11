@@ -37,7 +37,7 @@ train_data, test_data = df.randomSplit([0.8, 0.2], 100)
 
 ### 3. Define NCF model
 
-This example defines NCF model in the _Creator Function_ using TensroFlow 2 APIs as follows.
+This example defines NCF model in the _Creator Function_ using TensorFlow 2 APIs as follows.
 
 ```python
 from tensorflow import keras
