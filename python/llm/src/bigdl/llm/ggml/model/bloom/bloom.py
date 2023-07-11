@@ -68,7 +68,7 @@ class Bloom(GenerationMixin):
         f16_kv: bool = True,
         logits_all: bool = False,
         vocab_only: bool = False,
-        use_mmap: bool = True,
+        use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
         n_threads: Optional[int] = 2,
@@ -127,7 +127,7 @@ class Bloom(GenerationMixin):
         self.verbose = verbose
         # TODO: Some parameters are temporarily not supported
         unsupported_arg = {'n_parts': -1, 'n_gpu_layers': 0, 'f16_kv': True, 'logits_all': False,
-                           'vocab_only': False, 'use_mmap': True, 'use_mlock': False,
+                           'vocab_only': False, 'use_mmap': False, 'use_mlock': False,
                            'last_n_tokens_size': 64, 'lora_base': None,
                            'lora_path': None, 'verbose': True}
         for arg in unsupported_arg.keys():
