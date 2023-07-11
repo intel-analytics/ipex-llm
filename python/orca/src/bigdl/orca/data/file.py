@@ -63,8 +63,9 @@ def open_text(path: str) -> List[str]:
         if path.startswith("file://"):
             path = path[len("file://"):]
         lines = []
-        for line in open(path):
-            lines.append(line)
+        with open(path) as f:
+            for line in f:
+                lines.append(line)
     return [line.strip() for line in lines]
 
 
@@ -96,7 +97,8 @@ def open_image(path: str) -> "JpegImageFile":
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         data = s3_client.get_object(Bucket=bucket, Key=key)
-        return Image.open(BytesIO(data["Body"].read()))
+        with BytesIO(data["Body"].read()) as f:
+            return Image.open(f)
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -253,7 +255,6 @@ def write_text(path: str, text: str) -> int:
         fs = pa.hdfs.connect()
         with fs.open(path, 'wb') as f:
             result = f.write(text.encode('utf-8'))
-            f.close()
             return result
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -271,7 +272,6 @@ def write_text(path: str, text: str) -> int:
             path = path[len("file://"):]
         with open(path, 'w') as f:
             result = f.write(text)
-            f.close()
             return result
 
 
@@ -318,8 +318,8 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
         host_port = remote_dir.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
+        with subprocess.Popen(["hadoop", "classpath", "--glob"], stdout=subprocess.PIPE) as p:
+            classpath = p.communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         if len(host_port) > 1:
             fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
@@ -577,21 +577,14 @@ def enable_multi_fs_load_static(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            if is_file(path):
-                get_remote_file_to_local(path, temp_path)
-            else:
-                os.mkdir(temp_path)
-                get_remote_dir_to_local(path, temp_path)
-            try:
-                return load_func(temp_path, *args, **kwargs)
-            finally:
-                if os.path.isdir(temp_path):
-                    import shutil
-                    shutil.rmtree(temp_path)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                if is_file(path):
+                    get_remote_file_to_local(path, temp_path)
                 else:
-                    os.remove(temp_path)
-
+                    os.makedirs(temp_path)
+                    get_remote_dir_to_local(path, temp_path)
+                return load_func(temp_path, *args, **kwargs)
     return fs_load
 
 
@@ -608,13 +601,10 @@ def enable_multi_fs_save(save_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 put_local_file_to_remote(temp_path, path)
-            finally:
-                os.remove(temp_path)
             return result
 
     return fs_save
@@ -633,11 +623,9 @@ def enable_multi_fs_load(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return fs_load

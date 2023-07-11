@@ -44,7 +44,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-"""Wrapper around BigdlLLM embedding models."""
+"""Wrapper around BigdlNative embedding models."""
 import importlib
 from typing import Any, Dict, List, Optional
 
@@ -53,14 +53,14 @@ from pydantic import BaseModel, Extra, Field, root_validator
 from langchain.embeddings.base import Embeddings
 
 
-class BigdlLLMEmbeddings(BaseModel, Embeddings):
+class BigdlNativeEmbeddings(BaseModel, Embeddings):
     """Wrapper around bigdl-llm embedding models.
 
     Example:
         .. code-block:: python
 
-            from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
-            llama = BigdlLLMEmbeddings(model_path="/path/to/model.bin")
+            from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
+            llama = BigdlNativeEmbeddings(model_path="/path/to/model.bin")
     """
 
     model_family: str = "llama"

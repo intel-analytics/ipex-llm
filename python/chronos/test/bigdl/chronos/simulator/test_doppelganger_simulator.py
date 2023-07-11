@@ -90,61 +90,55 @@ class TestDoppelganer(TestCase):
     def test_init_doppelganer(self):
         # The environment variable FTP_URI is only available in Jenkins,
         # thus this unit test can be directly skipped when not in Jenkins
-        try:
-            df = get_train_data()
-        except:
-            return
+        with get_train_data() as df:
+            feature_outputs = [Output(type_=OutputType.CONTINUOUS,
+                                    dim=1,
+                                    normalization=Normalization.MINUSONE_ONE)]
+            attribute_outputs = [Output(type_=OutputType.DISCRETE, dim=9),
+                                Output(type_=OutputType.DISCRETE, dim=3),
+                                Output(type_=OutputType.DISCRETE, dim=2)]
 
-        feature_outputs = [Output(type_=OutputType.CONTINUOUS,
-                                  dim=1,
-                                  normalization=Normalization.MINUSONE_ONE)]
-        attribute_outputs = [Output(type_=OutputType.DISCRETE, dim=9),
-                             Output(type_=OutputType.DISCRETE, dim=3),
-                             Output(type_=OutputType.DISCRETE, dim=2)]
+            doppelganger = DPGANSimulator(L_max=550,
+                                        sample_len=10,
+                                        feature_dim=1,
+                                        num_real_attribute=3,
+                                        num_threads=1)
+            doppelganger.fit(data_feature=df['data_feature'],
+                            data_attribute=df['data_attribute'],
+                            data_gen_flag=df['data_gen_flag'],
+                            feature_outputs=feature_outputs,
+                            attribute_outputs=attribute_outputs,
+                            epoch=2,
+                            batch_size=32)
 
-        doppelganger = DPGANSimulator(L_max=550,
-                                      sample_len=10,
-                                      feature_dim=1,
-                                      num_real_attribute=3,
-                                      num_threads=1)
-        doppelganger.fit(data_feature=df['data_feature'],
-                         data_attribute=df['data_attribute'],
-                         data_gen_flag=df['data_gen_flag'],
-                         feature_outputs=feature_outputs,
-                         attribute_outputs=attribute_outputs,
-                         epoch=2,
-                         batch_size=32)
+            feature, attribute, gen_flags, lengths = doppelganger.generate()
+            assert feature.shape == (1, doppelganger.L_max, 1)
+            assert attribute.shape == (1, df['data_attribute'].shape[-1])
+            assert gen_flags.shape == (1, doppelganger.L_max) and (gen_flags[0, :] == 1).all()
+            assert lengths[0] == doppelganger.L_max
 
-        feature, attribute, gen_flags, lengths = doppelganger.generate()
-        assert feature.shape == (1, doppelganger.L_max, 1)
-        assert attribute.shape == (1, df['data_attribute'].shape[-1])
-        assert gen_flags.shape == (1, doppelganger.L_max) and (gen_flags[0, :] == 1).all()
-        assert lengths[0] == doppelganger.L_max
-
-        with tempfile.TemporaryDirectory() as tf:
-            doppelganger.save(tf)
-            doppelganger.load(tf)
-        df.close()
+            with tempfile.TemporaryDirectory() as tf:
+                doppelganger.save(tf)
+                doppelganger.load(tf)
 
         # illegal input
-        df = get_train_data()
-        feature_outputs = [Output(type_=OutputType.CONTINUOUS,
-                           dim=1,
-                           normalization=Normalization.MINUSONE_ONE)]
-        attribute_outputs = [Output(type_=OutputType.DISCRETE, dim=9),
-                             Output(type_=OutputType.DISCRETE, dim=3),
-                             Output(type_=OutputType.DISCRETE, dim=2)]
+        with get_train_data() as df:
+            feature_outputs = [Output(type_=OutputType.CONTINUOUS,
+                            dim=1,
+                            normalization=Normalization.MINUSONE_ONE)]
+            attribute_outputs = [Output(type_=OutputType.DISCRETE, dim=9),
+                                Output(type_=OutputType.DISCRETE, dim=3),
+                                Output(type_=OutputType.DISCRETE, dim=2)]
 
-        doppelganger = DPGANSimulator(L_max=551,
-                                      sample_len=10,
-                                      feature_dim=1,
-                                      num_real_attribute=3,
-                                      num_threads=1)
+            doppelganger = DPGANSimulator(L_max=551,
+                                        sample_len=10,
+                                        feature_dim=1,
+                                        num_real_attribute=3,
+                                        num_threads=1)
 
-        with pytest.raises(RuntimeError):
-            doppelganger.fit(data_feature=df['data_feature'],
-                             data_attribute=df['data_attribute'],
-                             data_gen_flag=df['data_gen_flag'],
-                             feature_outputs=feature_outputs,
-                             attribute_outputs=attribute_outputs)
-        df.close()
+            with pytest.raises(RuntimeError):
+                doppelganger.fit(data_feature=df['data_feature'],
+                                data_attribute=df['data_attribute'],
+                                data_gen_flag=df['data_gen_flag'],
+                                feature_outputs=feature_outputs,
+                                attribute_outputs=attribute_outputs)

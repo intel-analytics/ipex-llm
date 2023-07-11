@@ -17,9 +17,11 @@
 
 import pytest
 import os
+import tempfile
 from unittest import TestCase
 
 from bigdl.llm import llm_convert
+from bigdl.llm.transformers import AutoModelForCausalLM
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
@@ -61,6 +63,14 @@ class TestConvertModel(TestCase):
                                            model_format="pth",
                                            outtype='int4')
         assert os.path.isfile(converted_model_path)
+
+    def test_transformer_convert_llama(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_4bit=True)
+        tempdir = tempfile.mkdtemp(dir=output_dir)
+        model.save_pretrained(tempdir)
+        model = AutoModelForCausalLM.from_pretrained(tempdir)
+        assert model is not None
 
 
 if __name__ == '__main__':
