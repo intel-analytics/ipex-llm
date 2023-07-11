@@ -106,7 +106,7 @@ class ParamsQuant(torch.nn.Parameter):
         if not self.quantized:
             w = self.data.contiguous().float()
             # self.old_data = self.data
-            w_4bit = ggml_convert_quant(w, convert_shape_only=self.convert_shape_only, self.qtype)
+            w_quantized = ggml_convert_quant(w, self.qtype, convert_shape_only=self.convert_shape_only)
             self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
