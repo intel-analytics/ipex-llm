@@ -12,6 +12,7 @@ if [ "$PCCS_URL" != "" ] ; then
 fi
 
 cd /ppml || exit
+./init.sh
 
 if [[ $SGX_ENABLED == "false" ]]; then
     if [ "$ATTESTATION" = "true" ]; then
