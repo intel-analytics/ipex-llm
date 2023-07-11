@@ -65,7 +65,7 @@ class _BaseAutoModelClass:
         # be recorded in AutoConfig,
         # and this operation is not included in the core Hugging Face infrastructure.
         if bigdl_transformers_int4:
-            from .convert import ggml_convert_int4
+            from .convert import ggml_convert_quant
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
             model = ggml_convert_quant(model, convert_shape_only=True)
@@ -77,7 +77,7 @@ class _BaseAutoModelClass:
             load(model, state_dict)
             del state_dict
         elif qtype:
-            from .convert import ggml_convert_int4
+            from .convert import ggml_convert_quant
             model = model.to("cpu")
             model = ggml_convert_quant(model, qtype)
             model.config.update({"bigdl_transformers_int4": True})
