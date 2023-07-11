@@ -113,9 +113,9 @@ class TransformersLLM(LLM):
 
         # TODO: may refactore this code in the future
         try:
-            model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
+            model = AutoModelForCausalLM.from_pretrained(model_id, load_in_quant="q4_0", **_model_kwargs)
         except:
-            model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
+            model = AutoModel.from_pretrained(model_id, load_in_quant="q4_0", **_model_kwargs)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {

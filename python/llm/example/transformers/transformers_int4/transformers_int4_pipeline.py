@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if model_path == 'decapoda-research/llama-7b-hf':
         # load_in_4bit=True in bigdl.llm.transformers will convert
         # the relevant layers in the model into int4 format
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True)
+        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_quant="q4_0")
         tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
         input_str = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
     elif model_path == 'THUDM/chatglm-6b':
-        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_quant="q4_0")
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
         input_str = "晚上睡不着应该怎么办"

@@ -66,11 +66,19 @@ class TestConvertModel(TestCase):
 
     def test_transformer_convert_llama(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_4bit=True)
+                                                     load_in_quant="q4_0")
         tempdir = tempfile.mkdtemp(dir=output_dir)
         model.save_pretrained(tempdir)
         model = AutoModelForCausalLM.from_pretrained(tempdir)
         assert model is not None
+
+    def test_transformer_convert_llama_q5(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_quant="q5_0")
+
+    def test_transformer_convert_llama_q8(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_quant="q8_0")
 
 
 if __name__ == '__main__':

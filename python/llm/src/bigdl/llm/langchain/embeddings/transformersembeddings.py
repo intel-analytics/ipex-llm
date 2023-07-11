@@ -101,7 +101,7 @@ class TransformersEmbeddings(BaseModel, Embeddings):
         except:
             tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
 
-        model = AutoModel.from_pretrained(model_id, load_in_4bit=True, **_model_kwargs)
+        model = AutoModel.from_pretrained(model_id, load_in_quant="q4_0", **_model_kwargs)
 
         if "trust_remote_code" in _model_kwargs:
             _model_kwargs = {
