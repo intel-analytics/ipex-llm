@@ -100,7 +100,8 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = tokenizer.batch_decode(output_ids)
   ```
 
-  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py). 
+  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
+  Notice: The parameter `load_in_quant` can accept five kinds of quantization type. `q4_0` and `q4_1` are INT4 quantization, `q5_0` and `q5_1` are INT5 quantization, `q8_0` is INT8 quantization.  
   
 - ##### Using native INT4 format
 
