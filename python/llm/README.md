@@ -90,7 +90,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   ```python
   #load Hugging Face Transformers model with INT4 optimizations
   from bigdl.llm.transformers import AutoModelForCausalLM
-  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_4bit=True)
+  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_quant="q4_0")
 
   #run the optimized model
   from transformers import AutoTokenizer

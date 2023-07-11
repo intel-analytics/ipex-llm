@@ -30,7 +30,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
     if model_path == 'decapoda-research/llama-7b-hf':
-        # load_in_4bit=True in bigdl.llm.transformers will convert
+        # load_in_quant="q4_0" in bigdl.llm.transformers will convert
         # the relevant layers in the model into int4 format
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_quant="q4_0")
         tokenizer = LlamaTokenizer.from_pretrained(model_path)
