@@ -69,6 +69,14 @@ def mkdirs(path):
     callZooFunc("float", "mkdirs", path)
 
 
+def rmdir(path):
+    callZooFunc("float", "rmdir", path)
+
+
+def is_file(path):
+    return callZooFunc("float", "isFile", path)
+
+
 def is_local_path(path):
     if path.startswith("/dbfs"):
         return False
@@ -171,27 +179,31 @@ def get_remote_file_to_local(remote_path, local_path, over_write=False):
     callZooFunc("float", "getRemoteFileToLocal", remote_path, local_path, over_write)
 
 
-def get_remote_dir_to_local(remote_dir, local_dir):
+def get_remote_dir_to_local(remote_dir, local_dir, over_write=False):
     # get remote file lists
     file_list = get_file_list(remote_dir)
     # get remote files to local
-    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+    [get_remote_file_to_local(file,
+                              os.path.join(local_dir, os.path.basename(file)),
+                              over_write=over_write)
      for file in file_list]
 
 
-def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
+def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir, over_write=False):
     remote_dir = os.path.dirname(remote_path_prefix)
     prefix = os.path.basename(remote_path_prefix)
     # get remote file lists
     file_list = get_file_list(remote_dir)
     file_list = [file for file in file_list if os.path.basename(file).startswith(prefix)]
     # get remote files to local
-    [get_remote_file_to_local(file, os.path.join(local_dir, os.path.basename(file)))
+    [get_remote_file_to_local(file,
+                              os.path.join(local_dir, os.path.basename(file)),
+                              over_write=over_write)
      for file in file_list]
 
 
-def get_remote_dir_tree_to_local(remote_dir, local_dir):
-    if os.path.exists(local_dir):
+def get_remote_dir_tree_to_local(remote_dir, local_dir, over_write=False):
+    if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     # get remote file lists
     file_list = get_file_list(remote_dir, recursive=True)
@@ -200,7 +212,9 @@ def get_remote_dir_tree_to_local(remote_dir, local_dir):
         filename = os.path.basename(file)
         if not os.path.exists(local_subdir):
             os.makedirs(local_subdir)
-        get_remote_file_to_local(file, os.path.join(local_subdir, filename))
+        get_remote_file_to_local(file,
+                                 os.path.join(local_subdir, filename),
+                                 over_write=over_write)
 
 
 def put_local_file_to_remote(local_path, remote_path, over_write=False):

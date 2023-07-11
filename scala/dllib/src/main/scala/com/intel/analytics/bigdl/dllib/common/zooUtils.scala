@@ -277,6 +277,26 @@ private[bigdl] object zooUtils {
     }
   }
 
+  def isFile(path: String): Boolean = {
+    val updatedPath = if (path.startsWith("/")) {
+      "file://" + path
+    } else {
+      path
+    }
+    val fs = getFileSystem(updatedPath)
+    fs.isFile(new Path(updatedPath))
+  }
+
+  def rmdir(path: String): Unit = {
+    val updatedPath = if (path.startsWith("/")) {
+      "file://" + path
+    } else {
+      path
+    }
+    val fs = getFileSystem(updatedPath)
+    fs.delete(new Path(updatedPath), true)
+  }
+
   /**
    * Save bytes into given path (local or remote file system).
    * WARNING: Don't use it to read large files. It may cause performance issue
