@@ -62,11 +62,11 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
 
                     # Copy the weights
                     paramsQuant = ParamsQuant(data=module.weight.data,
-                                             requires_grad=False,
-                                             quantized=False,
-                                             convert_shape_only=convert_shape_only,
-                                             _shape=None,
-                                             qtype=qtype).to("cpu")
+                                              requires_grad=False,
+                                              quantized=False,
+                                              convert_shape_only=convert_shape_only,
+                                              _shape=None,
+                                              qtype=qtype).to("cpu")
                     new_linear._parameters['weight'] = paramsQuant
 
                     if module.bias is not None:
