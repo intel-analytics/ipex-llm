@@ -55,6 +55,9 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
             result = []
             for x in ts:
                 if isinstance(x, torch.Tensor):
+                    # cast float64 into float32
+                    if x.dtype == torch.float64:
+                        x = x.float()
                     result.append(x.cpu().detach().numpy())
                 elif isinstance(x, np.ndarray):
                     result.append(x)
