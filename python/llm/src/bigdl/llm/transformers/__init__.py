@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-from .convert import ggml_convert_int4
+from .convert import ggml_convert_quant
 from .model import AutoModelForCausalLM, AutoModel
 from .modelling_bigdl import BigdlNativeForCausalLM

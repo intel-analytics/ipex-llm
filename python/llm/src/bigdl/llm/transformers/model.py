@@ -17,6 +17,9 @@
 import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, load_state_dict, load
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.utils.common import invalidInputError
+from bigdl.llm.transformers.convert import ggml_convert_quant
 
 
 class _BaseAutoModelClass:
@@ -27,9 +30,13 @@ class _BaseAutoModelClass:
     def from_pretrained(cls,
                         *args,
                         **kwargs):
-        load_in_4bit = kwargs.pop("load_in_4bit", False)
-        if load_in_4bit:
+        qtype = kwargs.pop("load_in_quant", "").lower()
+        if qtype:
             kwargs["low_cpu_mem_usage"] = True
+            invalidInputError(qtype in ggml_tensor_qtype,
+                              f"Unknown quantize tensor type: {qtype},"
+                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+            qtype = ggml_tensor_qtype[qtype]
 
         subfolder = kwargs.get("subfolder", "")
         variant = kwargs.get("variant", None)
@@ -61,7 +68,7 @@ class _BaseAutoModelClass:
             from .convert import ggml_convert_int4
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
-            model = ggml_convert_int4(model, convert_shape_only=True)
+            model = ggml_convert_quant(model, convert_shape_only=True)
             # Load the quantized model at last.
             archive_file = extract_local_archive_file(pretrained_model_name_or_path,
                                                       subfolder,
@@ -69,10 +76,10 @@ class _BaseAutoModelClass:
             state_dict = load_state_dict(archive_file)
             load(model, state_dict)
             del state_dict
-        elif load_in_4bit:
+        elif qtype:
             from .convert import ggml_convert_int4
             model = model.to("cpu")
-            model = ggml_convert_int4(model)
+            model = ggml_convert_quant(model, qtype)
             model.config.update({"bigdl_transformers_int4": True})
 
         return model
