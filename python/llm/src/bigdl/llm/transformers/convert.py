@@ -41,8 +41,8 @@ from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
 
 
-def _replace_with_quant_linear(model, qtype,
-                               modules_to_not_convert=None, current_key_name=None):
+def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
+                               current_key_name=None, convert_shape_only=False):
     has_been_replaced = False
     for name, module in model.named_children():
         if current_key_name is None:
