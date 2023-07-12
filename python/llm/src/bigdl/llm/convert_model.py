@@ -89,6 +89,7 @@ def llm_convert(model,
         invalidInputError(model_family == "llama" and outtype == 'int4',
                           "Convert GPTQ models should always "
                           "specify `--model-family llama --dtype int4` in the command line.")
+        os.makedirs(outfile, exist_ok=True)
         invalidInputError(os.path.isdir(outfile),
                           "The output_path {} is not a directory".format(outfile))
         _, _used_args = _special_kwarg_check(kwargs=kwargs,
@@ -98,12 +99,13 @@ def llm_convert(model,
                                                                  outtype.lower())
         outfile = os.path.join(outfile, output_filename)
 
+        # TODO: delete this when support AutoTokenizer
         if "tokenizer_path" in _used_args:
             gptq_tokenizer_path = _used_args["tokenizer_path"]
         else:
             gptq_tokenizer_path = None
 
-        convert_gptq2ggml(input_path=model,
+        convert_gptq2ggml(model_path=model,
                           output_path=outfile,
                           tokenizer_path=gptq_tokenizer_path,
                           )

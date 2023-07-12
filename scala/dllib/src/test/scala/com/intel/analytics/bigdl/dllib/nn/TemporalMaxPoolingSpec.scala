@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class TemporalMaxPoolingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val temporalMaxPooling = new TemporalMaxPooling[Float](4).setName("temporalMaxPooling")
-    val input = Tensor[Float](5, 4, 5).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](5, 4, 5).apply1(e => new SecureRandom().nextFloat())
     runSerializationTest(temporalMaxPooling, input)
   }
 }

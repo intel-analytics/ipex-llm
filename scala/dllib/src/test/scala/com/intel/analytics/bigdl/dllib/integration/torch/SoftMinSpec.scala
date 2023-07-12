@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.SoftMin
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Engine
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SoftMinSpec extends TorchSpec {
@@ -28,9 +28,9 @@ class SoftMinSpec extends TorchSpec {
     torchCheck()
     val layer = new SoftMin[Double]()
     val input = Tensor[Double](10)
-    input.apply1(_ => Random.nextDouble())
+    input.apply1(_ => new SecureRandom().nextDouble())
     val gradOutput = Tensor[Double](10)
-    gradOutput.apply1(_ => Random.nextDouble())
+    gradOutput.apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -57,9 +57,9 @@ class SoftMinSpec extends TorchSpec {
     torchCheck()
     val layer = new SoftMin[Double]()
     val input = Tensor[Double](3, 5)
-    input.apply1(_ => Random.nextDouble())
+    input.apply1(_ => new SecureRandom().nextDouble())
     val gradOutput = Tensor[Double](3, 5)
-    gradOutput.apply1(_ => Random.nextDouble())
+    gradOutput.apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -86,9 +86,9 @@ class SoftMinSpec extends TorchSpec {
     torchCheck()
     val layer = new SoftMin[Double]()
     val input = Tensor[Double](4, 6, 6)
-    input.apply1(_ => Random.nextDouble())
+    input.apply1(_ => new SecureRandom().nextDouble())
     val gradOutput = Tensor[Double](4, 6, 6)
-    gradOutput.apply1(_ => Random.nextDouble())
+    gradOutput.apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -115,9 +115,9 @@ class SoftMinSpec extends TorchSpec {
     torchCheck()
     val layer = new SoftMin[Double]()
     val input = Tensor[Double](3, 5, 6, 6)
-    input.apply1(_ => Random.nextDouble())
+    input.apply1(_ => new SecureRandom().nextDouble())
     val gradOutput = Tensor[Double](3, 5, 6, 6)
-    gradOutput.apply1(_ => Random.nextDouble())
+    gradOutput.apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)

@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.Mul
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class MulSpec extends TorchSpec {
@@ -30,8 +30,8 @@ class MulSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val module = new Mul[Double]()
-    val input = Tensor[Double](1, 5).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](1, 5).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5).apply1(e => new SecureRandom().nextDouble())
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Mul()\n" +

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SplitAndSelectSpec extends FlatSpec with Matchers {
   "SplitAndSelect forward" should "be correct" in {
@@ -82,7 +82,7 @@ class SplitAndSelectSpec extends FlatSpec with Matchers {
 class SplitAndSelectSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val splitAndSelect = SplitAndSelect[Float](2, 1, 2).setName("splitSelect")
-    val input = Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 6, 2).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(splitAndSelect, input)
   }
 }

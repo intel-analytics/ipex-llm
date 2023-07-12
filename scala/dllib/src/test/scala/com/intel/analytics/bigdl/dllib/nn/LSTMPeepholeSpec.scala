@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class LSTMPeepholeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val lstmPeephole = LSTMPeephole[Float](6, 4)
     val lstmPeepholeModel = Recurrent[Float]().add(lstmPeephole).setName("lstmPeephole")
-    val input = Tensor[Float](Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](Array(1, 5, 6)).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(lstmPeepholeModel, input, lstmPeephole.getClass)
   }
 }

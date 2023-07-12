@@ -23,13 +23,13 @@ import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import org.apache.commons.lang3.SerializationUtils
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class LRNSpec extends BigDLSpecHelper {
   "LRNDnn with format=nchw" should "work correctly" in {
     val batchSize = 2
-    val input = Tensor[Float](batchSize, 7, 3, 3).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 7, 3, 3).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 7, 3, 3).apply1(e => new SecureRandom().nextFloat())
+    val gradOutput = Tensor[Float](batchSize, 7, 3, 3).apply1(e => new SecureRandom().nextFloat())
 
     RNG.setSeed(100)
     val lrnDnn = LRN(5, 0.0001, 0.75, 1.0)

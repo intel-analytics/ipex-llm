@@ -52,6 +52,7 @@ from bigdl.llm.ggml.model.generation import GenerationMixin
 from typing import List, Optional, Generator, Sequence, Union
 import time
 import uuid
+import warnings
 
 
 class Bloom(GenerationMixin):
@@ -67,7 +68,7 @@ class Bloom(GenerationMixin):
         f16_kv: bool = True,
         logits_all: bool = False,
         vocab_only: bool = False,
-        use_mmap: bool = True,
+        use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
         n_threads: Optional[int] = 2,
@@ -126,12 +127,13 @@ class Bloom(GenerationMixin):
         self.verbose = verbose
         # TODO: Some parameters are temporarily not supported
         unsupported_arg = {'n_parts': -1, 'n_gpu_layers': 0, 'f16_kv': True, 'logits_all': False,
-                           'vocab_only': False, 'use_mmap': True, 'use_mlock': False,
+                           'vocab_only': False, 'use_mmap': False, 'use_mlock': False,
                            'last_n_tokens_size': 64, 'lora_base': None,
                            'lora_path': None, 'verbose': True}
         for arg in unsupported_arg.keys():
-            invalidInputError(getattr(self, arg) == unsupported_arg[arg], f"The parameter {arg}"
-                              " is temporarily unsupported, please use the default value.")
+            if getattr(self, arg) != unsupported_arg[arg]:
+                warnings.warn(f"The parameter {arg} is temporarily unsupported, "
+                              "please use the default value.")
 
     def __call__(
         self,
@@ -173,8 +175,8 @@ class Bloom(GenerationMixin):
                         'repeat_penalty': 1.1, 'top_k': 40, 'tfs_z': 1.0, 'mirostat_mode': 0,
                         'mirostat_tau': 5.0, 'mirostat_eta': 0.1}
         for index in range(len(args)):
-            invalidInputError(args[index] == defult_value[unsupported_arg[index]],
-                              f"The parameter {unsupported_arg[index]} is temporarily "
+            if args[index] != defult_value[unsupported_arg[index]]:
+                warnings.warn(f"The parameter {unsupported_arg[index]} is temporarily "
                               "unsupported, please use the default value.")
 
         if stream:
@@ -357,7 +359,7 @@ class Bloom(GenerationMixin):
                           input_ids=input_ids,
                           seed=self.seed,
                           n_threads=self.n_threads,
-                          n_batch=len(input_ids))
+                          n_batch=self.n_batch)
 
     def _generate(
         self,
@@ -403,8 +405,8 @@ class Bloom(GenerationMixin):
                         'reset': True, 'frequency_penalty': 0.0, 'presence_penalty': 0.0,
                         'tfs_z': 1.0, 'mirostat_mode': 0, 'mirostat_tau': 5.0, 'mirostat_eta': 0.1}
         for index in range(len(args)):
-            invalidInputError(args[index] == defult_value[unsupported_arg[index]],
-                              f"The parameter {unsupported_arg[index]} is temporarily "
+            if args[index] != defult_value[unsupported_arg[index]]:
+                warnings.warn(f"The parameter {unsupported_arg[index]} is temporarily "
                               "unsupported, please use the default value.")
 
         invalidInputError(self.ctx is not None, "The attribute `ctx` of `Bloom` object is None.")
@@ -424,4 +426,4 @@ class Bloom(GenerationMixin):
                            input_ids=input_ids,
                            seed=self.seed,
                            n_threads=self.n_threads,
-                           n_batch=len(input_ids))
+                           n_batch=self.n_batch)

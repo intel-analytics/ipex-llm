@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class BottleSpec extends TorchSpec {
@@ -31,8 +31,8 @@ class BottleSpec extends TorchSpec {
     val module = new Bottle[Double](new Linear[Double](10, 2), 2, 2)
     module.add(new Linear(10, 2))
 
-    val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](4, 10).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](4, 5, 10).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](4, 10).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)

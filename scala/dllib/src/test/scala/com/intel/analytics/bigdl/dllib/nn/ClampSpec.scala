@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class ClampSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(e => new SecureRandom().nextFloat())
     val clamp = Clamp[Float](1, 10).setName("clamp")
     runSerializationTest(clamp, input)
   }

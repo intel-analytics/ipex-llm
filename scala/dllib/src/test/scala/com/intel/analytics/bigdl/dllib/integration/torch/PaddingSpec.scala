@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.Padding
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class PaddingSpec extends TorchSpec {
@@ -33,8 +33,8 @@ class PaddingSpec extends TorchSpec {
     val value = -0.8999761
     val index = 14
 
-    val input = Tensor[Double](3, 13, 11).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](3, 14, 11).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 13, 11).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](3, 14, 11).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Padding(" + dim + "," + pad + "," + nInputDim + "," +
       value + "," + index + ")\n" +
@@ -68,8 +68,8 @@ class PaddingSpec extends TorchSpec {
     val value = 1
     val index = 2
 
-    val input = Tensor[Double](3, 13, 11).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 13, 11).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 13, 11).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5, 13, 11).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Padding(" + dim + "," + pad + "," + nInputDim + "," +
       value + "," + index + ")\n" +
@@ -103,8 +103,8 @@ class PaddingSpec extends TorchSpec {
     val value = -0.8999761
     val index = 1
 
-    val input = Tensor[Double](3, 13, 11).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](3, 14, 11).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](3, 13, 11).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](3, 14, 11).apply1(e => new SecureRandom().nextDouble())
 
     val code = "module = nn.Padding(" + dim + "," + pad + "," + nInputDim + "," +
       value + "," + index + ")\n" +

@@ -19,15 +19,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.Min
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class MinSpec extends TorchSpec {
     "A Min(2)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Min[Double](2)
-    val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -53,8 +53,8 @@ class MinSpec extends TorchSpec {
   "A Min()" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Min[Double]()
-    val input = Tensor[Double](1, 2, 3, 4).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](1, 2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -80,8 +80,8 @@ class MinSpec extends TorchSpec {
   "A Min(2, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = new Min[Double](2, 3)
-    val input = Tensor[Double](3, 5, 3, 4).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](3, 5, 4).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](3, 5, 3, 4).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](3, 5, 4).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)

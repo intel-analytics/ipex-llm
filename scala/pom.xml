@@ -161,8 +161,8 @@
         <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
 
         <hadoop.version>3.3.4</hadoop.version>
-	<guava.version>32.0.1-jre</guava.version>
-	<json4s.version>3.7.0-M11</json4s.version>
+	      <guava.version>32.0.1-jre</guava.version>
+	      <json4s.version>3.7.0-M11</json4s.version>
         <thrift.path>thrift</thrift.path>
         <thrift.version>0.9.2</thrift.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -184,11 +184,14 @@
         <breeze.version>0.13.2</breeze.version>
         <spark-scope>provided</spark-scope>
         <bigdl.basedir>${project.basedir}</bigdl.basedir>
-	    <bigdl-core-all-scope>compile</bigdl-core-all-scope>
+	      <bigdl-core-all-scope>compile</bigdl-core-all-scope>
         <data-store-url>http://download.tensorflow.org</data-store-url>
         <lightgbm.scope>provided</lightgbm.scope>
-        <grpc.version>1.48.1</grpc.version>
+        <grpc.version>1.53.0</grpc.version>
         <parquet.version>1.12.3</parquet.version>
+        <grpc.version>1.53.0</grpc.version>
+        <parquet.version>1.12.2</parquet.version>
+
 
     </properties>
 

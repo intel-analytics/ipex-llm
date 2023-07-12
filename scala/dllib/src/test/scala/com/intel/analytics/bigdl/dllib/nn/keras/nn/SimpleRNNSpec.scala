@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SimpleRNNSpec extends KerasBaseSpec {
 
@@ -93,7 +93,7 @@ class SimpleRNNSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SimpleRNN[Float](8, activation = "relu", inputShape = Shape(4, 5))
     layer.build(Shape(3, 4, 5))
-    val input = Tensor[Float](3, 4, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](3, 4, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

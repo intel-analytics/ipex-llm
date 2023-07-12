@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Abs, MeanAbsolutePercentageCriterion}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.{ModuleLoader, ModulePersister}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class MeanAbsolutePercentageCriterionSpec extends KerasBaseSpec {
   "MeanAbsolutePercentageCriterion" should "be ok" in {

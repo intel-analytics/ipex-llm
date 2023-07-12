@@ -179,7 +179,6 @@ export CUSTOM_IMAGE=YOUR_CUSTOM_IMAGE_BUILT_BEFORE
 export PCCS_URL=YOUR_PCCS_URL # format like https://1.2.3.4:xxxx, obtained from KMS services or a self-deployed one
 
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --cpus=5 \
     --oom-kill-disable \
@@ -246,8 +245,6 @@ In the container, execute `verify-attestation-service.sh` to verify the attestat
   spec:
     containers:
     - name: spark-driver
-      securityContext:
-        privileged: true
       env:
         - name: ATTESTATION
           value: true
@@ -293,7 +290,6 @@ export KUBECONFIG_PATH=/YOUR_DIR/config
 export LOCAL_IP=$LOCAL_IP
 export DOCKER_IMAGE=YOUR_DOCKER_IMAGE
 sudo docker run -itd \
-    --privileged \
     --net=host \
     --name=gramine-bigdata \
     --cpuset-cpus=10 \
@@ -827,7 +823,24 @@ Below is an explanation of these security configurations, Please refer to [Spark
 
 #### 3 env MALLOC_ARENA_MAX explanations
 
-env MALLOC_ARENA_MAX can reduce EPC usage but may cause some errors especially when running pyspark. It is set to 4 by default and you can customize it by `export MALLOC_ARENA_MAX=1`.
+The default value of MALLOC_ARENA_MAX in linux is the number of CPU cores * 8, and it will cost most MALLOC_ARENA_MAX * 128M EPC in SGX.
+
+So we set MALLOC_ARENA_MAX=4 by default to reduce EPC usage, and this has no noticeable impact on performance.
+
+After multiple experiments, setting MALLOC_ARENA_MAX=4 is sufficient in most instances. But in case of PySpark, you may need to set a value greater than 4.
+
+If you run applications locally, you can set it by this:
+
+```bash
+export MALLOC_ARENA_MAX=8
+```
+
+If you use k8s to run spark distributedly, you can set it by this:
+
+```bash
+--conf spark.kubernetes.driverEnv.MALLOC_ARENA_MAX=12 \
+--conf spark.executorEnv.MALLOC_ARENA_MAX=16 \
+```
 
 You can refer to [here](https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning) for more information.
 
@@ -841,8 +854,8 @@ You should install `sgx-dcap-pccs` and configure `uri` and `api_key` correctly. 
 docker pull intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-16g-all:2.4.0-SNAPSHOT
 ```bash
 export NFS_INPUT_PATH=your_nfs_path
-sudo docker run -itd --net=host \
-    --privileged \
+sudo docker run -itd \
+    --net=host \
     -v /etc/kubernetes:/etc/kubernetes \
     -v /root/.kube/config:/root/.kube/config \
     -v $NFS_INPUT_PATH:/bigdl/nfsdata \
@@ -875,8 +888,6 @@ kind: Pod
 spec:
   containers:
   - name: spark-driver
-    securityContext:
-      privileged: true
     env:
       - name: ATTESTATION
         value: true 

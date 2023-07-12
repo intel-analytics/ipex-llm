@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.Engine
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -121,8 +121,8 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "LogSoftMax float module" should "won't return Infinity when input is bigger than 89" in {
     val module = new LogSoftMax[Float]()
-    Random.setSeed(100)
-    val input = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 90)
+    new SecureRandom().setSeed(100)
+    val input = Tensor[Float](2, 5).apply1(e => new SecureRandom().nextFloat() + 90)
     val output = module.forward(input).toTensor[Float]
     output.apply1(v => {v.isInfinity should be (false); v})
   }
@@ -131,7 +131,7 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
 class LogSoftMaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val logSoftMax = LogSoftMax[Float]().setName("logSoftMax")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(logSoftMax, input)
   }
 }

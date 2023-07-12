@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.collection.mutable.HashMap
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class L1HingeEmbeddingCriterionSpec extends TorchSpec {
@@ -31,8 +31,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)
 
-    val input1 = Tensor[Double](2).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
     val input = new Table()
     input(1.0) = input1
     input(2.0) = input2
@@ -68,8 +68,8 @@ class L1HingeEmbeddingCriterionSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)
 
-    val input1 = Tensor[Double](2).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](2).apply1(e => new SecureRandom().nextDouble())
     val input = new Table()
     input(1.0) = input1
     input(2.0) = input2

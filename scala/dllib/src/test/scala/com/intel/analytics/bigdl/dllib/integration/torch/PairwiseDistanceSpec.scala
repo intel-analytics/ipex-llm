@@ -19,18 +19,18 @@ import com.intel.analytics.bigdl.dllib.nn.PairwiseDistance
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class PairwiseDistanceSpec extends TorchSpec {
     "A PairwiseDistance with one dimension input" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    new SecureRandom().setSeed(seed)
 
     val module = new PairwiseDistance[Double](1)
-    val input1 = Tensor[Double](10).apply1(_ => Random.nextDouble())
-    val input2 = Tensor[Double](10).apply1(_ => Random.nextDouble())
+    val input1 = Tensor[Double](10).apply1(_ => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](10).apply1(_ => new SecureRandom().nextDouble())
     val input = T(1.0 -> input1, 2.0 -> input2)
     val gradOutput = Tensor[Double](1).randn()
     val start = System.nanoTime()
@@ -66,11 +66,11 @@ class PairwiseDistanceSpec extends TorchSpec {
   "A PairwiseDistance with two dimension input" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    Random.setSeed(seed)
+    new SecureRandom().setSeed(seed)
 
     val module = new PairwiseDistance[Double](5)
-    val input1 = Tensor[Double](5, 10).apply1(_ => Random.nextDouble())
-    val input2 = Tensor[Double](5, 10).apply1(_ => Random.nextDouble())
+    val input1 = Tensor[Double](5, 10).apply1(_ => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](5, 10).apply1(_ => new SecureRandom().nextDouble())
     val input = T(1.0 -> input1, 2.0 -> input2)
     val gradOutput = Tensor[Double](5).randn()
     val start = System.nanoTime()

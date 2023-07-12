@@ -17,14 +17,17 @@
 
 import pytest
 import os
+import tempfile
 from unittest import TestCase
 
 from bigdl.llm import llm_convert
+from bigdl.llm.transformers import AutoModelForCausalLM
 
 
 llama_model_path = os.environ.get('LLAMA_ORIGIN_PATH')
 gptneox_model_path = os.environ.get('GPTNEOX_ORIGIN_PATH')
 bloom_model_path = os.environ.get('BLOOM_ORIGIN_PATH')
+starcoder_model_path = os.environ.get('STARCODER_ORIGIN_PATH')
 output_dir = os.environ.get('INT4_CKPT_DIR')
 
 class TestConvertModel(TestCase):
@@ -52,6 +55,30 @@ class TestConvertModel(TestCase):
                                            model_format="pth",
                                            outtype='int4')
         assert os.path.isfile(converted_model_path)
+    
+    def test_convert_starcoder(self):
+        converted_model_path = llm_convert(model=starcoder_model_path,
+                                           outfile=output_dir,
+                                           model_family='starcoder',
+                                           model_format="pth",
+                                           outtype='int4')
+        assert os.path.isfile(converted_model_path)
+
+    def test_transformer_convert_llama(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path, load_in_4bit=True)
+        tempdir = tempfile.mkdtemp(dir=output_dir)
+        model.save_pretrained(tempdir)
+        model = AutoModelForCausalLM.from_pretrained(tempdir)
+        assert model is not None
+
+    def test_transformer_convert_llama_q5(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="q5_0")
+
+    def test_transformer_convert_llama_q8(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="q8_0")
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Sequential, SpatialDivisiveNormalizat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialDivisiveNormalizationSpec extends TorchSpec {
@@ -33,11 +33,11 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](1, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](1, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -71,11 +71,11 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 1, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 1, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -109,11 +109,11 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input).toTensor[Double]
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 
@@ -143,15 +143,15 @@ class SpatialDivisiveNormalizationSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val kernel = Tensor[Double](7).apply1(e => Random.nextDouble())
+    val kernel = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
 
     val model = new SpatialDivisiveNormalization[Double](4, kernel)
 
-    Random.setSeed(3)
-    val input = Tensor[Double](3, 4, 5, 5).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(3)
+    val input = Tensor[Double](3, 4, 5, 5).apply1(e => new SecureRandom().nextDouble())
     val output = model.updateOutput(input)
 
-    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => new SecureRandom().nextDouble())
 
     val gradInput = model.backward(input, gradOutput)
 

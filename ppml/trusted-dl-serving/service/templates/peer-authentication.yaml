@@ -1,0 +1,14 @@
+# PeerAuthentication defines how inbound traffic to backend is handled
+{{- if eq .Values.istioTLSEnabled true }}
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: bigdl-torchserve-frontend-peer-authentication
+  namespace: bigdl-ppml-serving
+spec:
+  selector:
+    matchLabels:
+      backend: torchserve
+  mtls:
+    mode: PERMISSIVE
+{{- end }}

@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.llm.models import Llama, Bloom, Gptneox
+from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
 from bigdl.llm.utils import get_avx_flags
 import pytest
 from unittest import TestCase
@@ -28,18 +28,24 @@ class Test_Models_Basics(TestCase):
         self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
         self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
         self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
+        self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
+        thread_num = os.environ.get('THREAD_NUM')
+        if thread_num is not None:
+            self.n_threads = int(thread_num)
+        else:
+            self.n_threads = 2         
 
     def test_llama_completion_success(self):
-        llm = Llama(self.llama_model_path)
+        llm = Llama(self.llama_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=False)
         # assert "Paris" in output['choices'][0]['text']
 
     def test_llama_completion_with_stream_success(self):
-        llm = Llama(self.llama_model_path)
+        llm = Llama(self.llama_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
     def test_bloom_completion_success(self):
-        llm = Bloom(self.bloom_model_path)
+        llm = Bloom(self.bloom_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=False)
         # avx = get_avx_flags()
         # if avx == "_avx512":
@@ -47,17 +53,26 @@ class Test_Models_Basics(TestCase):
         #     assert "Paris" in output['choices'][0]['text']
 
     def test_bloom_completion_with_stream_success(self):
-        llm = Bloom(self.bloom_model_path)
+        llm = Bloom(self.bloom_model_path, n_threads=self.n_threads)
         output = llm("What is the capital of France?", max_tokens=32, stream=True)
 
     def test_gptneox_completion_success(self):
-        llm = Gptneox(self.gptneox_model_path)
+        llm = Gptneox(self.gptneox_model_path, n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=False)
         # assert "Paris" in output['choices'][0]['text']
 
     def test_gptneox_completion_with_stream_success(self):
-        llm = Gptneox(self.gptneox_model_path)
+        llm = Gptneox(self.gptneox_model_path, n_threads=self.n_threads)
         output = llm("Q: What is the capital of France? A:", max_tokens=32, stream=True)
+    
+    def test_starcoder_completion_success(self):
+        llm = Starcoder(self.starcoder_model_path, n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=False)
+        # assert "Paris" in output['choices'][0]['text']
+
+    def test_starcoder_completion_with_stream_success(self):
+        llm = Starcoder(self.starcoder_model_path, n_threads=self.n_threads)
+        output = llm("def print_hello_world(", max_tokens=32, stream=True)
 
 
 if __name__ == '__main__':

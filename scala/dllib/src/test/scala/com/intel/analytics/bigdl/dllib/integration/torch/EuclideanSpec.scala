@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.Euclidean
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class EuclideanSpec extends TorchSpec {
@@ -28,8 +28,8 @@ class EuclideanSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](7).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](7).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](7).apply1(e => new SecureRandom().nextDouble())
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Euclidean(7, 7)\n" +
@@ -82,8 +82,8 @@ class EuclideanSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input = Tensor[Double](8, 7).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](8, 7).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](8, 7).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](8, 7).apply1(e => new SecureRandom().nextDouble())
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Euclidean(7, 7)\n" +

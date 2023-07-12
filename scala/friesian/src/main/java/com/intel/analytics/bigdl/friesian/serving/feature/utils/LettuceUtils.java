@@ -175,7 +175,7 @@ public class LettuceUtils {
         try {
             result = future.get(10000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         }
         return result;
     }
@@ -259,7 +259,7 @@ public class LettuceUtils {
         try {
             result = future.get(10000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         }
         List<String> values = new ArrayList<>(keys.length);
         if (result != null) {

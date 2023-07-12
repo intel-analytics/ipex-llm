@@ -18,6 +18,7 @@ on:
     paths:
       - 'python/llm/**'
       - '.github/workflows/llm_unit_tests_windows.yml'
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -60,3 +61,19 @@ jobs:
           bash python/llm/test/run-llm-install-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run LLM unittests
+        shell: bash
+        run: |
+          pip install pytest pydantic
+          pip install -U langchain==0.0.184
+          pip install -U chromadb==0.3.25
+          pip install -U typing_extensions==4.5.0
+          bash python/llm/test/run-llm-windows-tests.sh
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Clean up
+        shell: bash
+        run: |
+          rm -rf models

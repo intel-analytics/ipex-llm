@@ -29,8 +29,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from bigdl.llm.langchain.llms import BigdlLLM
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
 
 
 
@@ -53,13 +53,13 @@ def main(args):
     texts = text_splitter.split_text(input_doc)
 
     # create embeddings and store into vectordb
-    embeddings = BigdlLLMEmbeddings(model_path=model_path, model_family=model_family, n_threads=n_threads, n_ctx=n_ctx)
+    embeddings = BigdlNativeEmbeddings(model_path=model_path, model_family=model_family, n_threads=n_threads, n_ctx=n_ctx)
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
     #get relavant texts
     docs = docsearch.get_relevant_documents(query)
         
-    bigdl_llm = BigdlLLM(
+    bigdl_llm = BigdlNativeLLM(
         model_path=model_path, model_family=model_family, n_ctx=n_ctx, n_threads=n_threads, callback_manager=callback_manager
     )
 
@@ -71,17 +71,18 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
+    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Question Answering over Docs Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
+                        choices=["llama", "bloom", "gptneox"],
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to the converted llm model')
-    parser.add_argument('-i', '--input-path', type=str,
+    parser.add_argument('-i', '--input-path', type=str, required=True,
                         help='the path to the input doc.')
     parser.add_argument('-q', '--question', type=str, default='What is AI?',
                         help='qustion you want to ask.')
     parser.add_argument('-c','--n-ctx', type=int, default=2048,
-                        help='number of threads to use for inference')
+                        help='the maximum context size')
     parser.add_argument('-t','--thread-num', type=int, default=2,
                         help='number of threads to use for inference')
     args = parser.parse_args()

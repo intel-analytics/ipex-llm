@@ -1,0 +1,17 @@
+# backend sidecar receives and decodes TLS-encrypted connection from frontend
+{{- if eq .Values.istioTLSEnabled true }}
+apiVersion: networking.istio.io/v1alpha3
+kind: Sidecar
+metadata:
+  name: bigdl-torchserve-backend-sidecar
+  namespace: bigdl-ppml-serving
+spec:
+  workloadSelector:
+    labels:
+      backend: torchserve
+  ingress:
+  - port:
+      name: backendport
+      number: {{ .Values.backendPort }}
+      protocol: TCP
+{{- end }}

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class CMulTableSpec extends FlatSpec with Matchers {
   "CMulTable" should "be correct when input is scalar" in {
@@ -46,8 +46,8 @@ class CMulTableSpec extends FlatSpec with Matchers {
 
 class CMulTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

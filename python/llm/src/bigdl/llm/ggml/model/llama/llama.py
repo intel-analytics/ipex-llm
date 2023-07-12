@@ -134,7 +134,7 @@ class Llama(GenerationMixin):
         f16_kv: bool = True,
         logits_all: bool = False,
         vocab_only: bool = False,
-        use_mmap: bool = True,
+        use_mmap: bool = False,
         use_mlock: bool = False,
         embedding: bool = False,
         n_threads: Optional[int] = 2,

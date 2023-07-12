@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.Cosine
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class CosineSpec extends TorchSpec {
@@ -29,8 +29,8 @@ class CosineSpec extends TorchSpec {
     RNG.setSeed(seed)
     val module = new Cosine[Double](2, 3)
 
-    val input = Tensor[Double](3, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](3, 3).apply1(_ => Random.nextDouble())
+    val input = Tensor[Double](3, 2).apply1(_ => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](3, 3).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)
@@ -67,9 +67,9 @@ class CosineSpec extends TorchSpec {
     RNG.setSeed(seed)
 
     val module = new Cosine[Double](3, 2)
-    var input = Tensor[Double](3).apply1(_ => Random.nextDouble())
+    var input = Tensor[Double](3).apply1(_ => new SecureRandom().nextDouble())
 
-    val gradOutput = Tensor[Double](2).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2).apply1(_ => new SecureRandom().nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)

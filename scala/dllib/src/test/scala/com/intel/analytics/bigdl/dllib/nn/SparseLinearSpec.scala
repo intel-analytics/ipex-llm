@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -106,7 +106,8 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 5" in {
     val gradOutput = Tensor(4, 2).rand()
-    val input = Tensor(4, 10).apply1(_ => Random.nextInt(10) / 9 * Random.nextFloat())
+    val input = Tensor(4, 10).apply1(
+      _ => new SecureRandom().nextInt(10) / 9 * new SecureRandom().nextFloat())
     val sl = SparseLinear(10, 2, backwardStart = 5, backwardLength = 5)
     val l = Linear(10, 2)
     l.weight.copy(sl.weight)
@@ -123,8 +124,10 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 6" in {
     val gradOutput = Tensor(4, 2).rand()
-    val input = Tensor(4, 3).apply1(_ => Random.nextInt(5) / 4 * Random.nextFloat())
-    val input2 = Tensor(4, 2).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input = Tensor(4, 3).apply1(
+      _ => new SecureRandom().nextInt(5) / 4 * new SecureRandom().nextFloat())
+    val input2 = Tensor(4, 2).apply1(
+      _ => new SecureRandom().nextInt(2) * new SecureRandom().nextFloat())
     val sl = SparseLinear(5, 2, backwardStart = 1, backwardLength = 5)
     val sparseModel = Sequential().add(ParallelTable().add(Identity()).add(Identity()))
       .add(SparseJoinTable(2))
@@ -150,7 +153,8 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Sparse Linear" should "return the same result with Linear 7" in {
     RandomGenerator.RNG.setSeed(10)
-    val rnd = new Random(10)
+    val rnd = new SecureRandom()
+    rnd.setSeed(10)
     val gradOutput = Tensor(4, 2).rand()
     val input = Tensor(4, 1023213).apply1(_ => rnd.nextInt(100000) / 99999 * rnd.nextFloat())
     val input2 = Tensor(4, 50).apply1(_ => rnd.nextInt(2) * rnd.nextFloat())
@@ -185,7 +189,7 @@ class SparseLinearSpec extends FlatSpec with Matchers with BeforeAndAfter {
 class SparseLinearSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val sparseLinear = SparseLinear[Float](4, 2).setName("sparseLinear")
-    val input = Tensor[Float](2, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 4).apply1(_ => new SecureRandom().nextFloat())
     val sparseInput = Tensor.sparse(input)
     runSerializationTest(sparseLinear, sparseInput)
   }

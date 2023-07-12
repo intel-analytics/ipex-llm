@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class BilinearSpec extends FlatSpec with Matchers {
@@ -31,9 +31,9 @@ class BilinearSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 2).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](5, 5).apply1(e => new SecureRandom().nextDouble())
+    val input2 = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
+    val gradOutput = Tensor[Double](5, 2).apply1(e => new SecureRandom().nextDouble())
 
     var input = new Table()
     input(1.toDouble) = input1
@@ -56,8 +56,8 @@ class BilinearSpec extends FlatSpec with Matchers {
 
 class BilinearSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](5, 3).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](5, 3).apply1(e => new SecureRandom().nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

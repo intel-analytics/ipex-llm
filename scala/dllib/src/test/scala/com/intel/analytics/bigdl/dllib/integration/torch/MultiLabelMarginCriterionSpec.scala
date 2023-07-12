@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.MultiLabelMarginCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Serial
 class MultiLabelMarginCriterionSpec extends TorchSpec {
   "A MultiLabelMarginCriterion " should "generate correct output and grad whith one dimension" in {
     torchCheck()
     val layer = new MultiLabelMarginCriterion[Double]()
-    val input = Tensor[Double](4).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4).apply1(e => new SecureRandom().nextDouble())
     val target = Tensor[Double](4)
     target(Array(1)) = 3
     target(Array(2)) = 2
@@ -59,7 +59,7 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
     torchCheck()
 
     val layer = new MultiLabelMarginCriterion[Double]()
-    val input = Tensor[Double](2, 4).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 4).apply1(e => new SecureRandom().nextDouble())
     val target = Tensor[Double](2, 4)
     target(Array(1, 1)) = 1
     target(Array(1, 2)) = 0

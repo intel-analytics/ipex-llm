@@ -1,7 +1,7 @@
 name: stable-diffusion-win
 on:
-#   pull_request:
-#     branchs: [ main ]
+  # pull_request:
+  #   branchs: [ main ]
   schedule:
     - cron: '0 3 * * *' # GMT time, 3:00 GMT == 3:00 China Everyday
   workflow_dispatch:
@@ -14,4 +14,14 @@ jobs:
         run: |
           wget ftp://10.112.231.51:8821/stable-diffusion/ui-test.log --ftp-user=${{ secrets.FTP_USERNAME }} --ftp-password=${{ secrets.FTP_PASSWORD }}
           cat ui-test.log
+          content=$( cat "ui-test.log" )
           rm ui-test.log
+          if [[ " $content " =~ "6 passed" ]]
+            then
+              echo "All tests passed"
+              exit 0
+            else
+              echo "Some tests failed"
+              exit 1
+          fi
+          

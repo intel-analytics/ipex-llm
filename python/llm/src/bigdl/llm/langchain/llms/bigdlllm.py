@@ -54,14 +54,14 @@ from langchain.llms.base import LLM
 
 
 
-class BigdlLLM(LLM):
+class BigdlNativeLLM(LLM):
     """Wrapper around the BigDL-LLM
 
     Example:
         .. code-block:: python
 
-            from langchain.llms import BigdlLLM
-            llm = BigdlLLM(model_path="/path/to/llama/model")
+            from langchain.llms import BigdlNativeLLM
+            llm = BigdlNativeLLM(model_path="/path/to/llama/model")
     """
 
 
@@ -113,11 +113,11 @@ class BigdlLLM(LLM):
     n_threads: Optional[int] = Field(2, alias="n_threads")
     """Number of threads to use."""
 
-    n_batch: Optional[int] = Field(8, alias="n_batch")
+    n_batch: Optional[int] = Field(512, alias="n_batch")
     """Number of tokens to process in parallel.
     Should be a number between 1 and n_ctx."""
 
-    n_gpu_layers: Optional[int] = Field(None, alias="n_gpu_layers")
+    n_gpu_layers: Optional[int] = Field(0, alias="n_gpu_layers")
     """Number of layers to be loaded into gpu memory. Default None."""
 
     suffix: Optional[str] = Field(None)
@@ -281,8 +281,8 @@ class BigdlLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlLLM
-                llm = BigdlLLM(model_path="/path/to/local/llama/model.bin")
+                from langchain.llms import BigdlNativeLLM
+                llm = BigdlNativeLLM(model_path="/path/to/local/llama/model.bin")
                 llm("This is a prompt.")
         """
         if self.streaming:
@@ -326,8 +326,8 @@ class BigdlLLM(LLM):
         Example:
             .. code-block:: python
 
-                from langchain.llms import BigdlLLM
-                llm = BigdlLLM(
+                from langchain.llms import BigdlNativeLLM
+                llm = BigdlNativeLLM(
                     model_path="/path/to/local/model.bin",
                     temperature = 0.5
                 )

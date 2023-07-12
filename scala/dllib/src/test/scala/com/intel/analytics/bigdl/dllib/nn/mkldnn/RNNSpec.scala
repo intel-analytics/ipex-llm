@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.Nu
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils._
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class RNNSpec extends FlatSpec with Matchers{
   "LSTM UnidirectionalInference updateOutput" should "work correctly" in {
@@ -2420,7 +2420,7 @@ class RNNSpec extends FlatSpec with Matchers{
 
   "PTB model" should "work correctly" in {
     System.setProperty("bigdl.engineType", "mkldnn")
-    Random.setSeed(10)
+    new SecureRandom().setSeed(10)
 
     val inputSize: Int = 1000
     val hiddenSize: Int = 128
@@ -2433,7 +2433,7 @@ class RNNSpec extends FlatSpec with Matchers{
     Engine.setEngineType(MklDnn)
     val modelDnn = model.asInstanceOf[StaticGraph[Float]].cloneModule().toIRgraph()
 
-    val input = Tensor[Float](4, 35).apply1(n => Random.nextInt(999))
+    val input = Tensor[Float](4, 35).apply1(n => new SecureRandom().nextInt(999))
 
     val output = model.forward(input).toTensor[Float]
     val outDnn = modelDnn.forward(input).toTensor[Float]

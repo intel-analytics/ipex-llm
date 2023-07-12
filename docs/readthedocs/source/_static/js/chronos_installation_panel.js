@@ -265,9 +265,9 @@ function refresh_cmd(){
                     if(os=="win"){
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
@@ -276,15 +276,15 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }
                     }
@@ -295,9 +295,9 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             if(os=="win"){
@@ -305,9 +305,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                                 }
                             }
                         }
@@ -318,9 +318,9 @@ function refresh_cmd(){
                     if(os=="win"){
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             cmd="Not supported, please refer to <a href='https://bigdl.readthedocs.io/en/latest/doc/Chronos/Howto/windows_guide.html'>windows_guide.</a>";
@@ -329,15 +329,15 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }
                     }
@@ -348,9 +348,9 @@ function refresh_cmd(){
                     else{
                         if(hardware=="singlenode"){
                             if(version=="nightly"){
-                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }else if(version=="stable"){
-                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                             }
                         }else if(hardware=="cluster"){
                             if(os=="win"){
@@ -358,9 +358,9 @@ function refresh_cmd(){
                             }
                             else{
                                 if(version=="nightly"){
-                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install --pre --upgrade bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                                 }else if(version=="stable"){
-                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0";
+                                    cmd="pip install bigdl-chronos[distributed]; pip install prophet==1.1.0; pip install holidays==0.24";
                                 }
                             }
                         }

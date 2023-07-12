@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.LayerException
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ConcatSpec extends FlatSpec with Matchers {
@@ -93,7 +93,7 @@ class ConcatSpec extends FlatSpec with Matchers {
 
 class ConcatSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](2, 2, 2).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 2).apply1(e => new SecureRandom().nextFloat())
     val concat = Concat[Float](2).setName("concat")
     concat.add(Abs[Float]())
     concat.add(Abs[Float]())

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
   "A TimeDistributed Module" should "setExtraParam works correctly" in {
@@ -248,7 +248,7 @@ class TimeDistributedSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val timeDistributed = TimeDistributed[Float](Linear[Float](5, 5)).
       setName("timeDistributed")
-    val input = Tensor[Float](2, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 5).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(timeDistributed, input)
   }
 }

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class SpatialDropout1DSpec extends KerasBaseSpec {
 
@@ -43,7 +43,7 @@ class SpatialDropout1DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = SpatialDropout1D[Float](0.5, inputShape = Shape(3, 4))
     layer.build(Shape(2, 3, 4))
-    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 4).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(layer, input)
   }
 }

@@ -19,14 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class VariableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val out = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
-    val grad = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    val out = Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
+    val grad = Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
     val variable = new Variable[Float](out, grad).setName("variable")
-    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(variable, input)
   }
 }

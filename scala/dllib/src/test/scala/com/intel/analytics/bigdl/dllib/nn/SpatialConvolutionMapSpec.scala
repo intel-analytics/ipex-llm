@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.Table
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
@@ -40,8 +40,8 @@ class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
       SpatialConvolutionMap.random[Double](nInputPlane, nOutputPlane, 1), kW, kH)
     val layer2 = layer1.cloneModule().asInstanceOf[SpatialConvolutionMap[Double]]
 
-    Random.setSeed(seed)
-    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
+    new SecureRandom().setSeed(seed)
+    val input = Tensor[Double](3, 32, 32).apply1(e => new SecureRandom().nextDouble())
 
     layer2.setScaleW(2.0).setScaleB(0.5)
 
@@ -65,7 +65,7 @@ class SpatialConvolutionMapSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialConvolutionMap = SpatialConvolutionMap[Float](
       SpatialConvolutionMap.random(1, 1, 1), 2, 2).setName("spatialConvolutionMap")
-    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    val input = Tensor[Float](1, 3, 3).apply1( e => new SecureRandom().nextFloat())
     runSerializationTest(spatialConvolutionMap, input)
   }
 }

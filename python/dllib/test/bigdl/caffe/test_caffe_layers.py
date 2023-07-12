@@ -37,9 +37,8 @@ class TestCaffeLayers():
             shapes = testlayer.shapes
             prototxtfile = temp + name + ".prototxt"
             weightfile = temp + name + ".caffemodel"
-            prototxt = open(prototxtfile, 'w')
-            prototxt.write(definition)
-            prototxt.close()
+            with open(prototxtfile, 'w') as prototxt:
+                prototxt.write(definition)
             caffe.set_mode_cpu()
             caffe.set_random_seed(100)
             net = caffe.Net(prototxtfile, caffe.TEST)

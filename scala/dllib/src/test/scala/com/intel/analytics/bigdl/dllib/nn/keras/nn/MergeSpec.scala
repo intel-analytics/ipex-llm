@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, T, Table}
 
-import scala.util.Random
+import java.security.SecureRandom
 
 class MergeSpec extends KerasBaseSpec {
 
@@ -128,8 +128,8 @@ class MergeSerialTest extends ModuleSerializationTest {
     val l2 = InputLayer[Float](inputShape = Shape(4, 8))
     val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
     layer.build(Shape(List(Shape(2, 4, 8), Shape(2, 4, 8))))
-    val input1 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](2, 4, 8).apply1(e => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](2, 4, 8).apply1(e => new SecureRandom().nextFloat())
     val input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2

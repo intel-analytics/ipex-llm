@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
+import java.security.SecureRandom
 
 
 class Cropping3DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val cropping3d = Cropping3D[Float](Array(2, 2), Array(2, 2), Array(2, 2)).setName("Cropping3D")
-    val input = Tensor[Float](1, 9, 9, 9, 9).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](1, 9, 9, 9, 9).apply1(_ => new SecureRandom().nextFloat())
     runSerializationTest(cropping3d, input)
   }
 }
