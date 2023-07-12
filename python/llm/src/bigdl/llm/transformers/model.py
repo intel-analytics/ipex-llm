@@ -48,6 +48,10 @@ class _BaseAutoModelClass:
             kwargs["low_cpu_mem_usage"] = True
 
         if bigdl_transformers_low_bit:
+            invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
+                              f"Unknown load_in_low_bit value: {bigdl_transformers_low_bit},"
+                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+            qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
             # Note that the int4 linear layers cannot currently
             # be recorded in huggingface Pretrained Model or AutoConfig,
             # and huggingface transformers cls.HF_Model.from_pretrained
@@ -63,7 +67,6 @@ class _BaseAutoModelClass:
             # Maybe needed when extract_local_archive_file
             subfolder = kwargs.get("subfolder", "")
             variant = kwargs.get("variant", None)
-            qtype = config_dict.pop("bigdl_transformers_dtype", 'q4_0')
 
             from .convert import ggml_convert_quant
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
@@ -82,27 +85,23 @@ class _BaseAutoModelClass:
             load(model, state_dict)
             del state_dict
 
-        elif load_in_4bit:
-            qtype = ggml_tensor_qtype['q4_0']
-            model = cls.convert_quant(model, qtype, *args, **kwargs)
-        elif load_in_low_bit:
-            load_in_low_bit = load_in_low_bit.lower()
-            invalidInputError(load_in_low_bit in ggml_tensor_qtype,
-                              f"Unknown load_in_low_bit value: {load_in_low_bit},"
-                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
-            qtype = ggml_tensor_qtype[load_in_low_bit]
-            model = cls.convert_quant(model, qtype, *args, **kwargs)
+        elif load_in_4bit or load_in_low_bit:
+            q_k = load_in_low_bit if load_in_low_bit else "q4_0"
+            model = cls.convert_quant(model, q_k, *args, **kwargs)
 
         return model
 
     @classmethod
-    def convert_quant(cls, model, qtype, *args, **kwargs):
+    def convert_quant(cls, model, q_k, *args, **kwargs):
         from .convert import ggml_convert_quant
+        invalidInputError(q_k in ggml_tensor_qtype,
+                          f"Unknown load_in_low_bit value: {q_k},"
+                          f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+        qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
         model = ggml_convert_quant(model, qtype)
-        model.config.update({"bigdl_transformers_low_bit": True,
-                             "bigdl_transformers_dtype": qtype})
+        model.config.update({"bigdl_transformers_low_bit": q_k})
         return model
 
 
