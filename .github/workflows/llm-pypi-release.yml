@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: Set access token
         run: |
-          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> "$GITHUB_ENV"
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
           echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
       - uses: actions/checkout@v3
         with:
