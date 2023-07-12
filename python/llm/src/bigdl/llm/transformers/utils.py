@@ -52,9 +52,6 @@ WEIGHTS_NAME = "pytorch_model.bin"
 
 def extract_local_archive_file(pretrained_model_name_or_path, subfolder, variant):
     pretrained_model_name_or_path = str(pretrained_model_name_or_path)
-    print(os.path.join(pretrained_model_name_or_path,
-                       subfolder,
-                       _add_variant(WEIGHTS_NAME, variant)))
     if os.path.isfile(
         os.path.join(pretrained_model_name_or_path, subfolder, _add_variant(WEIGHTS_NAME, variant))
     ):
