@@ -6,8 +6,6 @@ In this directory, we provide several model-specific examples with BigDL-LLM INT
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
 
-<!--mem requires waiting to be added-->
-
 ## Prepare Environment
 We suggest using conda to manage environment:
 ```bash
@@ -28,13 +26,13 @@ following with
 |`source bigdl-nano-init`|`bigdl-nano-init`|
 
 To better utilize multiple cores for improved performance, consider the following rules:
-1. On server, it is recommended to utilize all the physical cores of a single socket. E.g.
+1. On server, it is recommended to utilize all the physical cores of a single socket. E.g. on Linux,
    ```bash
    # for a server with 48 cores per socket
    export OMP_NUM_THREADS=48
    numactl -C 0-47 -m 0 python -u example.py
    ```
-2. On client machine, it is recommended to use all the performnace-cores along with their hyperthreads:
+2. On client machine, it is recommended to use all the performnace-cores along with their hyperthreads. E.g. on Windows,
    ```powershell
    # for a client machine with 8 Performance-cores
    $env:OMP_NUM_THREADS=16

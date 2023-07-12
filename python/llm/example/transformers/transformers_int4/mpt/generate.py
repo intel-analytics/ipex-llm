@@ -21,6 +21,8 @@ import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
+# you could revise it based on the model you choose to use
+MPT_PROMPT_FORMAT="<human>{prompt} <bot>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example for MPT model')
@@ -35,25 +37,30 @@ if __name__ == '__main__':
     args = parser.parse_args()
     model_path = args.repo_id_or_model_path
 
-    # load model in 4 bit
+    # Load model in 4 bit,
+    # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
                                                  trust_remote_code=True,
                                                  load_in_4bit=True)
 
-    # load tokenizer
+    # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True)
     
-    # Generate predict tokens
+    # Generate predicted tokens
     with torch.inference_mode():
-        input_ids = tokenizer.encode(args.prompt, return_tensors="pt")
+        prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
+        input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
+        # enabling `use_cache=True` allows the model to utilize the previous
+        # key/values attentions to speed up decoding;
+        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+        # it is important to set use_cache=True for MPT models
         output = model.generate(input_ids,
-                                do_sample=False,
                                 use_cache=True,
                                 max_new_tokens=args.n_predict)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
-        print(f'Prompt:\n{args.prompt}')
+        print(f'Prompt:\n{prompt}')
         print(f'Output:\n{output_str}')
