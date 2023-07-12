@@ -17,6 +17,7 @@
 
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/utils/bitsandbytes.py
+# and https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py
 # which is licensed under Apache License 2.0:
 #
 # Copyright 2021 The HuggingFace Inc. team. All rights reserved.
@@ -44,6 +45,13 @@ import warnings
 def _replace_with_int4_linear(model, modules_to_not_convert=None,
                               current_key_name=None, convert_shape_only=False):
     has_been_replaced = False
+
+    # Through our method, certain layers that were initialized on the device "meta"
+    # (associated with the lazy initialization strategy of low_cpu_mem_usage) are not
+    # being correctly moved back to the CPU device for some reason. Therefore, we are
+    # moving these layers back to the CPU here in order to prevent the occurrence
+    # of NoImplementnError. Details refer to:
+    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L3110
     model_state_dict = model.state_dict()
     for name, param in model.named_parameters():
         if param.data.device == torch.device('meta'):

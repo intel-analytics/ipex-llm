@@ -27,42 +27,47 @@ class _BaseAutoModelClass:
     def from_pretrained(cls,
                         *args,
                         **kwargs):
-        load_in_4bit = kwargs.pop("load_in_4bit", False)
-        if load_in_4bit:
-            kwargs["low_cpu_mem_usage"] = True
-
-        subfolder = kwargs.get("subfolder", "")
-        variant = kwargs.get("variant", None)
-        pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
-            if len(args) == 0 else args[0]
 
         # For huggingface transformers cls.HF_Model.from_pretrained could only restore the model
         # in the original format, which is not quantized,
         # we can convert the model to quantized later.
         model = None
+        load_in_4bit = kwargs.pop("load_in_4bit", False)
 
         # Read bigdl_transformers_int4 from config.json
+        pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
+            if len(args) == 0 else args[0]
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
-
         bigdl_transformers_int4 = config_dict.pop("bigdl_transformers_int4", False)
-        if bigdl_transformers_int4:
-            # Avoid KeyError
-            kwargs["ignore_mismatched_sizes"] = True
+
+        if load_in_4bit or bigdl_transformers_int4:
             # Speed up when loading model
             kwargs["low_cpu_mem_usage"] = True
+
+
+        if bigdl_transformers_int4:
+            # Note that the int4 linear layers cannot currently
+            # be recorded in huggingface Pretrained Model or AutoConfig,
+            # and huggingface transformers cls.HF_Model.from_pretrained
+            # could only restore the model in the original format,
+            # which is not quantized. we can Initialize original model first,
+            # convert the model to quantized int4 format later, and then load the quantized model.
+
+            # Avoid KeyError
+            kwargs["ignore_mismatched_sizes"] = True
             # Avoid reading from local file at the first initialization
             kwargs["state_dict"] = {}
 
-        model = cls.HF_Model.from_pretrained(*args, **kwargs)
-        print("Note: If there are warnings about mismatched during the loading process, "
-              "please ignore them as it is part of the normal flow. "
-              "The model will be reconverted to the format of BigDL after loading.")
+            # Maybe needed when extract_local_archive_file
+            subfolder = kwargs.get("subfolder", "")
+            variant = kwargs.get("variant", None)
 
-        # Note that the ggml_matmul_src1_x_src0_t operation cannot currently
-        # be recorded in AutoConfig,
-        # and this operation is not included in the core Hugging Face infrastructure.
-        if bigdl_transformers_int4:
             from .convert import ggml_convert_int4
+            model = cls.HF_Model.from_pretrained(*args, **kwargs)
+            print("Note: If there are warnings during the model loading process, "
+                  "they can be safely ignored; "
+                  "the model will be loaded with INT4 optimizations applied.")
+
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
             model = ggml_convert_int4(model, convert_shape_only=True)
@@ -73,8 +78,10 @@ class _BaseAutoModelClass:
             state_dict = load_state_dict(archive_file)
             load(model, state_dict)
             del state_dict
+
         elif load_in_4bit:
             from .convert import ggml_convert_int4
+            model = cls.HF_Model.from_pretrained(*args, **kwargs)
             model = model.to("cpu")
             model = ggml_convert_int4(model)
             model.config.update({"bigdl_transformers_int4": True})
