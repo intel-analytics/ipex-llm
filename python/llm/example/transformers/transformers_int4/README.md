@@ -7,17 +7,10 @@ We are adding more and more model-specific examples.
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
 
-## Prepare Environment
-We suggest using conda to manage environment:
-```bash
-conda create -n llm python=3.9
-conda activate llm
-
-pip install bigdl-llm[all]
-```
+For OS, BigDL-LLM supports Ubuntu 20.04 or later, CentOS 7 or later, and Windows 10/11.
 
 ## Best Known Configuration
-For better performance, it is recommended to set environment variables set by BigDL-Nano:
+For better performance, it is recommended to set environment variables with the help of BigDL-Nano:
 ```bash
 pip install bigdl-nano
 ```
