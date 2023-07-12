@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
@@ -140,8 +140,8 @@ class ParallelTableSerialTest extends ModuleSerializationTest {
     val parallelTable = ParallelTable[Float]().setName("parallelTable")
     parallelTable.add(Linear[Float](2, 2))
     parallelTable.add(Linear[Float](2, 2))
-    val input1 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     val input = T(1.0f -> input1, 2.0f -> input2)
     runSerializationTest(parallelTable, input)
   }

@@ -21,14 +21,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class AvgPoolGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val avgPoolGrad = AvgPoolGrad[Float](4, 4, 1, 1, -1, -1, DataFormat.NHWC).
       setName("avgPoolGrad")
     val input1 = Tensor[Int](T(4, 32, 32, 3))
-    val input2 = Tensor[Float](4, 32, 32, 3).apply1(_ => new SecureRandom().nextFloat())
+    val input2 = Tensor[Float](4, 32, 32, 3).apply1(_ => Random.nextFloat())
     val input = T(input1, input2)
     runSerializationTest(avgPoolGrad, input)
   }

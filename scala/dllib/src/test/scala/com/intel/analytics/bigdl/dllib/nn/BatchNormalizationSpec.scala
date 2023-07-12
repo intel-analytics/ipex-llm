@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class BatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
@@ -365,7 +365,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
 class BatchNormalizationSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val batchNorm = BatchNormalization[Float](5).setName("batchNorm")
-    val input = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(batchNorm, input)
   }
 }

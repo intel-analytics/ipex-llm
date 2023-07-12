@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.dllib.nn.tf
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class NoOpSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val noOp = new com.intel.analytics.bigdl.dllib.nn.tf.NoOp[Float]().setName("noOp")
-    val input = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
     runSerializationTest(noOp, input)
   }
 }

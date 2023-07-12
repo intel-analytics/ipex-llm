@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
 
 import scala.collection.mutable.HashMap
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class MixtureTableSpec extends TorchSpec {
@@ -28,14 +28,14 @@ class MixtureTableSpec extends TorchSpec {
     torchCheck()
     val mse = new MixtureTable[Double]
 
-    val expertInput = Tensor[Double](5, 3, 6).apply1(e => new SecureRandom().nextDouble())
+    val expertInput = Tensor[Double](5, 3, 6).apply1(e => Random.nextDouble())
     val expertTable = new Table()
-    expertTable(1.0) = Tensor[Double](5, 6).apply1(e => new SecureRandom().nextDouble())
-    expertTable(2.0) = Tensor[Double](5, 6).apply1(e => new SecureRandom().nextDouble())
-    expertTable(3.0) = Tensor[Double](5, 6).apply1(e => new SecureRandom().nextDouble())
+    expertTable(1.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
+    expertTable(2.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
+    expertTable(3.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
 
-    val input1 = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](5, 6).apply1(e => new SecureRandom().nextDouble())
+    val input1 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
     val input = new Table()
     input(1.0) = input1
     input(2.0) = expertTable
@@ -67,9 +67,9 @@ class MixtureTableSpec extends TorchSpec {
     torchCheck()
     val mse = new MixtureTable[Double]
 
-    val expertInput = Tensor[Double](5, 3, 6).apply1(e => new SecureRandom().nextDouble())
-    val input1 = Tensor[Double](5, 3).apply1(e => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](5, 6).apply1(e => new SecureRandom().nextDouble())
+    val expertInput = Tensor[Double](5, 3, 6).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
     val input = new Table()
     input(1.0) = input1
     input(2.0) = expertInput

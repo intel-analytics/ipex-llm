@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.L1Penalty
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class L1PenaltySpec extends TorchSpec {
     "A L1Penalty" should "generate correct output and grad" in {
     torchCheck()
     val layer = new L1Penalty[Double](1, true)
-    val input = Tensor[Double](2, 7).apply1(e => new SecureRandom().nextDouble())
-    val gradOutput = Tensor[Double](2, 7).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](2, 7).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 7).apply1(e => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input)
