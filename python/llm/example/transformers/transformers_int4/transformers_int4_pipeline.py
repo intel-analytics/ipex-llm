@@ -47,7 +47,7 @@ if __name__ == '__main__':
         print('Output:', output_str)
         print(f'Inference time: {end-st} s')
     elif model_path == 'THUDM/chatglm-6b':
-        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True, keep_in_fp32_modules=['output_layer'])
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
         input_str = "晚上睡不着应该怎么办"

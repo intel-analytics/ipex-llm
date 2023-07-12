@@ -46,6 +46,13 @@ class _BaseAutoModelClass:
         if load_in_4bit or load_in_low_bit or bigdl_transformers_low_bit:
             # Speed up when loading model
             kwargs["low_cpu_mem_usage"] = True
+            # Specify some layers not be converted to ensure accuracy
+            keep_in_fp32_modules = kwargs.pop("keep_in_fp32_modules", [])
+            if isinstance(keep_in_fp32_modules, str):
+                keep_in_fp32_modules = list(keep_in_fp32_modules)
+            invalidInputError(isinstance(keep_in_fp32_modules, list),
+                              "Input parameter `keep_in_fp32_modules` should be string or list, "
+                              f"but got {type(keep_in_fp32_modules)}.")
 
         if bigdl_transformers_low_bit:
             invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
@@ -76,7 +83,7 @@ class _BaseAutoModelClass:
 
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
-            model = ggml_convert_quant(model, qtype, convert_shape_only=True)
+            model = ggml_convert_quant(model, qtype, keep_in_fp32_modules, convert_shape_only=True)
             # Load the quantized model at last.
             archive_file = extract_local_archive_file(pretrained_model_name_or_path,
                                                       subfolder,
@@ -87,12 +94,12 @@ class _BaseAutoModelClass:
 
         elif load_in_4bit or load_in_low_bit:
             q_k = load_in_low_bit if load_in_low_bit else "q4_0"
-            model = cls.convert_quant(model, q_k, *args, **kwargs)
+            model = cls.convert_quant(model, q_k, keep_in_fp32_modules, *args, **kwargs)
 
         return model
 
     @classmethod
-    def convert_quant(cls, model, q_k, *args, **kwargs):
+    def convert_quant(cls, model, q_k, keep_in_fp32_modules, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k},"
@@ -100,7 +107,7 @@ class _BaseAutoModelClass:
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
-        model = ggml_convert_quant(model, qtype)
+        model = ggml_convert_quant(model, qtype, keep_in_fp32_modules)
         model.config.update({"bigdl_transformers_low_bit": q_k})
         return model
 
