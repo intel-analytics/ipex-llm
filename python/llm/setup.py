@@ -199,7 +199,7 @@ def setup_package():
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
 
-    all_requires = []
+    all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
 
     metadata = dict(
