@@ -23,18 +23,18 @@ jobs:
         with:
           repository: 'intel-analytics/llm.cpp'
           ref: 'main'
-          token: ${{ env.GITHUB_ACCESS_TOKEN }}
+          token: ${{ github.env.GITHUB_ACCESS_TOKEN }}
       - name: Install Build Environment
         shell: bash
         run: |
           yum update -y
           yum install -y centos-release-scl
-          yum install -y devtoolset-9
+          yum install -y devtoolset-11
           yum install -y sshpass netcat
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-9 'make'
+          scl enable devtoolset-11 'make'
       - name: Move release binary
         shell: bash
         run: |
@@ -74,12 +74,12 @@ jobs:
         run: |
           yum update -y
           yum install -y centos-release-scl
-          yum install -y devtoolset-9
+          yum install -y devtoolset-11
           yum install -y sshpass netcat
       - name: Build binary
         shell: bash
         run: |
-          scl enable devtoolset-9 'make'
+          scl enable devtoolset-11 'make'
       - name: Move release binary
         shell: bash
         run: |
