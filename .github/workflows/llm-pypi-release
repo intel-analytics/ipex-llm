@@ -1,0 +1,129 @@
+name: LLM Pypi Release
+
+# Cancel previous runs in the PR when you push new commits
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/llm-pypi-release.yml'
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  linux-build-avx2:
+    runs-on: [ self-hosted, AVX2, centos7 ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'intel-analytics/llm.cpp'
+      - name: Install Build Environment
+        shell: bash
+        run: |
+          yum update -y
+          yum install -y centos-release-scl
+          yum install -y devtoolset-9
+          yum install -y sshpass netcat
+      - name: Build binary
+        shell: bash
+        run: |
+          scl enable devtoolset-9 'make'
+      - name: Move release binary
+        shell: bash
+        run: |
+          mkdir release
+          mv build/main-bloom release/main-bloom_avx2
+          mv build/quantize-bloom release/quantize-bloom_avx2
+          mv build/libbloom.so release/libbloom_avx2.so
+          mv build/main-llama release/main-llama_avx2
+          mv build/quantize-llama release/quantize-llama_avx2
+          mv build/libllama.so release/libllama_avx2.so
+          mv build/main-gptneox release/main-gptneox_avx2
+          mv build/quantize-gptneox release/quantize-gptneox_avx2
+          mv build/libgptneox.so release/libgptneox_avx2.so
+          mv build/main-starcoder release/main-starcoder_avx2
+          mv build/quantize-starcoder release/quantize-starcoder_avx2
+          mv build/libstarcoder.so release/libstarcoder_avx2.so
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx2
+          path: |
+            release
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          make clean
+
+  linux-build-avx512:
+    runs-on: [ self-hosted, AVX512, centos7 ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'intel-analytics/llm.cpp'
+      - name: Install Build Environment
+        shell: bash
+        run: |
+          yum update -y
+          yum install -y centos-release-scl
+          yum install -y devtoolset-9
+          yum install -y sshpass netcat
+      - name: Build binary
+        shell: bash
+        run: |
+          scl enable devtoolset-9 'make'
+      - name: Move release binary
+        shell: bash
+        run: |
+          mkdir release
+          mv build/main-bloom release/main-bloom_avx512
+          mv build/quantize-bloom release/quantize-bloom_avx512
+          mv build/libbloom.so release/libbloom_avx512.so
+          mv build/main-llama release/main-llama_avx512
+          mv build/quantize-llama release/quantize-llama_avx512
+          mv build/libllama.so release/libllama_avx512.so
+          mv build/main-gptneox release/main-gptneox_avx512
+          mv build/quantize-gptneox release/quantize-gptneox_avx512
+          mv build/libgptneox.so release/libgptneox_avx512.so
+          mv build/main-starcoder release/main-starcoder_avx512
+          mv build/quantize-starcoder release/quantize-starcoder_avx512
+          mv build/libstarcoder.so release/libstarcoder_avx512.so
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-avx512
+          path: |
+            release
+      - name: Clean up test environment
+        shell: bash
+        run: |
+          make clean
+
+  windows-build-avx2:
+    runs-on: [ self-hosted, Windows ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'intel-analytics/llm.cpp'
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+      - name: Add cmake to PATH
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Build binary
+        shell: powershell
+        run: |
+          cmake .
+          cmake --build . --config Release
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-avx2
+          path: |
+            build/Release
