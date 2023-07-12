@@ -21,7 +21,7 @@ import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# you could revise it based on the model you choose to use
+# you could revise it based on the MPT model you choose to use
 MPT_PROMPT_FORMAT="<human>{prompt} <bot>"
 
 if __name__ == '__main__':

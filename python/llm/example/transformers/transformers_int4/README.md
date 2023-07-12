@@ -3,6 +3,7 @@ BigDL-LLM supports INT4 optimizations to any Hugging Face Transformers models.
 
 In this directory, we provide several model-specific examples with BigDL-LLM INT4 optimizations. You can navigate to the folder corresponding to the model you want to use.
 
+We are adding more and more model-specific examples.
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
 
