@@ -23,7 +23,7 @@ jobs:
         with:
           repository: 'intel-analytics/llm.cpp'
           ref: 'main'
-          token: ${{ GITHUB_ACCESS_TOKEN }}
+          token: ${{ env.GITHUB_ACCESS_TOKEN }}
       - name: Install Build Environment
         shell: bash
         run: |
