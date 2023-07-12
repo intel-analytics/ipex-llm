@@ -19,11 +19,14 @@ jobs:
   linux-build-avx2:
     runs-on: [ self-hosted, AVX2, centos7 ]
     steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=${GITHUB_ACCESS_TOKEN}" >> "$GITHUB_ENV"
       - uses: actions/checkout@v3
         with:
           repository: 'intel-analytics/llm.cpp'
           ref: 'main'
-          token: ${{ github.env.GITHUB_ACCESS_TOKEN }}
+          token: ${{ env.github_access_token }}
       - name: Install Build Environment
         shell: bash
         run: |
