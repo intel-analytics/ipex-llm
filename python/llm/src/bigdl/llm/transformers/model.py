@@ -87,9 +87,9 @@ class _BaseAutoModelClass:
             model = cls.convert_quant(model, qtype, *args, **kwargs)
         elif load_in_low_bit:
             load_in_low_bit = load_in_low_bit.lower()
-            invalidInputError(qtype in ggml_tensor_qtype,
-                            f"Unknown load_in_low_bit value: {qtype},"
-                            f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+            invalidInputError(load_in_low_bit in ggml_tensor_qtype,
+                              f"Unknown load_in_low_bit value: {load_in_low_bit},"
+                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
             qtype = ggml_tensor_qtype[load_in_low_bit]
             model = cls.convert_quant(model, qtype, *args, **kwargs)
 
