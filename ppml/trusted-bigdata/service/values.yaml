@@ -6,3 +6,4 @@ imageName: intelanalytics/bigdl-ppml-trusted-bigdata-gramine-reference-8g:2.4.0-
 TEEMode: sgx # sgx or tdx
 jupyterPort: 12345
 k8sMasterURL: your_k8s_master_url # get this by: echo k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
+driverMemory: 1g # specifies the maximum size (in bytes) of the java heap

@@ -27,6 +27,8 @@ spec:
           value: {{ .Values.imageName }}
         - name: RUNTIME_SPARK_MASTER
           value: {{ .Values.k8sMasterURL }}
+        - name: RUNTIME_DRIVER_MEMORY
+          value: {{ .Values.driverMemory}}
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "tdx" }}
           value: "false"
