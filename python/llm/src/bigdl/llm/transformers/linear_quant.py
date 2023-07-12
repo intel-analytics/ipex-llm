@@ -55,12 +55,10 @@ import bigdl.llm.ggml.model.llama.llama_cpp as ggml
 import torch
 import ctypes
 
-QK = 64  # todo read this value from libllama.so
-scale_size_in_bytes = 4
-block_size_in_bytes = QK // 2 + scale_size_in_bytes
 
-
-def ggml_convert_int4(tensor: torch.Tensor, convert_shape_only=False):
+def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
+    QK = ggml.ggml_qk_size(qtype)
+    block_size_in_bytes = ggml.ggml_type_size(qtype)
 
     invalidInputError(tensor.dtype == torch.float,
                       "Input tensor must be float32")
@@ -80,13 +78,19 @@ def ggml_convert_int4(tensor: torch.Tensor, convert_shape_only=False):
     hist = (ctypes.c_int64 * 16)()
 
     if not convert_shape_only:
-        ggml.ggml_quantize_q4_0(src, dst, n, k, hist)
+        ggml.ggml_quantize_tensor(src, dst, qtype, n, k, hist)
     return dst_tensor
 
 
-class ParamsInt4(torch.nn.Parameter):
-    def __new__(cls, data=None, requires_grad=True, old_data=None,
-                quantized=False, _shape=None, convert_shape_only=False):
+class ParamsQuant(torch.nn.Parameter):
+    def __new__(cls,
+                data=None,
+                requires_grad=True,
+                old_data=None,
+                quantized=False,
+                _shape=None,
+                convert_shape_only=False,
+                qtype=None):
         if data is None:
             data = torch.empty(0)
 
@@ -95,14 +99,16 @@ class ParamsInt4(torch.nn.Parameter):
         self.quantized = quantized
         self._shape = _shape
         self.convert_shape_only = convert_shape_only
+        self.qtype = qtype
         return self
 
     def quantize(self, device):
         if not self.quantized:
             w = self.data.contiguous().float()
             # self.old_data = self.data
-            w_4bit = ggml_convert_int4(w, convert_shape_only=self.convert_shape_only)
-            self.data = w_4bit
+            w_quantized = ggml_convert_quant(w, self.qtype,
+                                             convert_shape_only=self.convert_shape_only)
+            self.data = w_quantized
             self.quantized = True
             self._shape = w.shape
         return self
@@ -129,17 +135,21 @@ class ParamsInt4(torch.nn.Parameter):
         if (device is not None and device.type == "cpu" and self.data.device.type == "cpu"):
             return self.quantize(device)
         else:
-            new_param = ParamsInt4(super().to(device=device,
-                                              dtype=dtype,
-                                              non_blocking=non_blocking),
-                                   requires_grad=self.requires_grad,
-                                   quantized=self.quantized,
-                                   _shape=self._shape)
+            new_param = ParamsQuant(super().to(device=device,
+                                               dtype=dtype,
+                                               non_blocking=non_blocking),
+                                    requires_grad=self.requires_grad,
+                                    quantized=self.quantized,
+                                    _shape=self._shape,
+                                    qtype=self.qtype)
 
             return new_param
 
 
-def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape: torch.Size):
+def ggml_matmul_src1_x_src0_t(src0: torch.Tensor,
+                              src1: torch.Tensor,
+                              src0_shape: torch.Size,
+                              src0_qtype: int):
     if src1.dtype != torch.float32:
         src1 = src1.float()
 
@@ -165,6 +175,7 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape
         # ctx=ctx_p,
         src_0_ne=src_0_ne,
         src_0_data=src_0_data,
+        src_0_qtype=src0_qtype,
         src_1_ne=src_1_ne,
         src_1_data=src_1_data,
         result=result_ptr,
@@ -173,15 +184,16 @@ def ggml_matmul_src1_x_src0_t(src0: torch.Tensor, src1: torch.Tensor, src0_shape
     return result_t
 
 
-class LinearInt4(nn.Linear):
-    def __init__(self, input_features, output_features, bias=True):
+class LinearQuant(nn.Linear):
+    def __init__(self, input_features, output_features, qtype, bias=True):
         super().__init__(input_features, output_features, bias)
-        self.weight = ParamsInt4(self.weight.data, requires_grad=False,
-                                 old_data=self.weight.data,
-                                 quantized=False, _shape=None)
+        self.weight = ParamsQuant(self.weight.data, requires_grad=False,
+                                  old_data=self.weight.data,
+                                  quantized=False, _shape=None, qtype=qtype)
         self.in_len = input_features
         self.out_len = output_features
         self.weight_shape = (self.out_len, self.in_len)
+        self.qtype = qtype
 
     def forward(self, x: torch.Tensor):
         # weights are cast automatically as Int8Params, but the bias has to be cast manually
@@ -193,7 +205,7 @@ class LinearInt4(nn.Linear):
 
         x0 = self.weight.data
 
-        result = ggml_matmul_src1_x_src0_t(x0, x, self.weight_shape)
+        result = ggml_matmul_src1_x_src0_t(x0, x, self.weight_shape, self.qtype)
         new_shape = x_shape[:-1] + (self.out_len,)
         result = result.view(new_shape)
 

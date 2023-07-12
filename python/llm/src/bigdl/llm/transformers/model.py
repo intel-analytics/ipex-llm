@@ -17,6 +17,8 @@
 import transformers
 from transformers.configuration_utils import PretrainedConfig
 from .utils import extract_local_archive_file, load_state_dict, load
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
+from bigdl.llm.utils.common import invalidInputError
 
 
 class _BaseAutoModelClass:
@@ -33,19 +35,19 @@ class _BaseAutoModelClass:
         # we can convert the model to quantized later.
         model = None
         load_in_4bit = kwargs.pop("load_in_4bit", False)
+        load_in_low_bit = kwargs.pop("load_in_low_bit", None)
 
-        # Read bigdl_transformers_int4 from config.json
+        # Read bigdl_transformers_low_bit from config.json
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
-        bigdl_transformers_int4 = config_dict.pop("bigdl_transformers_int4", False)
+        bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
 
-        if load_in_4bit or bigdl_transformers_int4:
+        if load_in_4bit or load_in_low_bit or bigdl_transformers_low_bit:
             # Speed up when loading model
             kwargs["low_cpu_mem_usage"] = True
 
-
-        if bigdl_transformers_int4:
+        if bigdl_transformers_low_bit:
             # Note that the int4 linear layers cannot currently
             # be recorded in huggingface Pretrained Model or AutoConfig,
             # and huggingface transformers cls.HF_Model.from_pretrained
@@ -61,8 +63,9 @@ class _BaseAutoModelClass:
             # Maybe needed when extract_local_archive_file
             subfolder = kwargs.get("subfolder", "")
             variant = kwargs.get("variant", None)
+            qtype = config_dict.pop("bigdl_transformers_dtype", 'q4_0')
 
-            from .convert import ggml_convert_int4
+            from .convert import ggml_convert_quant
             model = cls.HF_Model.from_pretrained(*args, **kwargs)
             print("Note: If there are warnings during the model loading process, "
                   "they can be safely ignored; "
@@ -70,7 +73,7 @@ class _BaseAutoModelClass:
 
             # We forcefully modify the model's definition
             # and the tensor shape of int4 weights without quantization.
-            model = ggml_convert_int4(model, convert_shape_only=True)
+            model = ggml_convert_quant(model, qtype, convert_shape_only=True)
             # Load the quantized model at last.
             archive_file = extract_local_archive_file(pretrained_model_name_or_path,
                                                       subfolder,
@@ -80,12 +83,26 @@ class _BaseAutoModelClass:
             del state_dict
 
         elif load_in_4bit:
-            from .convert import ggml_convert_int4
-            model = cls.HF_Model.from_pretrained(*args, **kwargs)
-            model = model.to("cpu")
-            model = ggml_convert_int4(model)
-            model.config.update({"bigdl_transformers_int4": True})
+            qtype = ggml_tensor_qtype['q4_0']
+            model = cls.convert_quant(model, qtype, *args, **kwargs)
+        elif load_in_low_bit:
+            load_in_low_bit = load_in_low_bit.lower()
+            invalidInputError(qtype in ggml_tensor_qtype,
+                            f"Unknown load_in_low_bit value: {qtype},"
+                            f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+            qtype = ggml_tensor_qtype[load_in_low_bit]
+            model = cls.convert_quant(model, qtype, *args, **kwargs)
 
+        return model
+
+    @classmethod
+    def convert_quant(cls, model, qtype, *args, **kwargs):
+        from .convert import ggml_convert_quant
+        model = cls.HF_Model.from_pretrained(*args, **kwargs)
+        model = model.to("cpu")
+        model = ggml_convert_quant(model, qtype)
+        model.config.update({"bigdl_transformers_low_bit": True,
+                             "bigdl_transformers_dtype": qtype})
         return model
 
 
