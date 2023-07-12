@@ -32,6 +32,7 @@ Inference time: xxxx s
 ```log
 Prompt: 晚上睡不着应该怎么办
 Output: 晚上睡不着应该怎么办 晚上睡不着可能会让人感到焦虑和不安,但以下是一些可能有用的建议:
+
 1. 放松身体和思维:尝试进行深呼吸、渐进性
 Inference time: xxxx s
 ```

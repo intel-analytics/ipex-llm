@@ -2,7 +2,7 @@
 
 MPT models are part of the MosaicPretrainedTransformer (MPT) model family, and designed for text generation tasks.
 
-In this dictionary, you will find examples on how you could apply BigDL-LLM INT4 optimizations on MPT models. For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) as a reference MPT model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on MPT models. For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) as a reference MPT model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
