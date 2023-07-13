@@ -16,7 +16,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
-pip instll einops  # additional package required for mpt-7b-chat to conduct generation
+pip install einops  # additional package required for mpt-7b-chat to conduct generation
 ```
 
 ### 2. Config
