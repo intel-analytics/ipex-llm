@@ -27,11 +27,7 @@ from transformers import LlamaTokenizer, AutoTokenizer
 
 class TestTransformersAPI(unittest.TestCase):
 
-    def setUp(self):
-        self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
-        self.bloom_model_path = os.environ.get('BLOOM_INT4_CKPT_PATH')
-        self.gptneox_model_path = os.environ.get('GPTNEOX_INT4_CKPT_PATH')
-        self.starcoder_model_path = os.environ.get('STARCODER_INT4_CKPT_PATH')
+    def setUp(self):        
         thread_num = os.environ.get('THREAD_NUM')
         if thread_num is not None:
             self.n_threads = int(thread_num)
@@ -39,7 +35,7 @@ class TestTransformersAPI(unittest.TestCase):
             self.n_threads = 2
 
     def test_transformers_int4(self):
-        model_path = self.llama_model_path
+        model_path = os.environ.get('ORIGINAL_CHATGLM_6B_PATH')
         model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         input_str = "晚上睡不着应该怎么办"
