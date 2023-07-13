@@ -108,6 +108,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mkdir -p /root/.zinc && \
     mkdir -p /root/.m2 && \
     mkdir -p /root/.kube/ && \
+    mkdir -p /root/.jupyter && \
     mkdir -p /ppml/encrypted-fs && \
 # folder required for distributed encrypted file system
     mkdir -p /ppml/encrypted-fsd && \

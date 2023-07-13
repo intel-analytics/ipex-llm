@@ -40,9 +40,6 @@ spec:
         volumeMounts:
         - name: nfs-storage
           mountPath: /ppml/data
-        - name: nfs-storage
-          mountPath: /root/.jupyter
-          subPath: .jupyter
         - name: ssl-keys
           mountPath: /ppml/keys
         - name: ssl-password

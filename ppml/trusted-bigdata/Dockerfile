@@ -178,8 +178,7 @@ RUN mkdir -p /ppml/lib && \
     mkdir -p /ppml/data && \
     mkdir -p /ppml/models && \
     mkdir -p /ppml/apps && \
-    mkdir -p /ppml/notebook && \
-    mkdir -p /root/.jupyter
+    mkdir -p /ppml/notebook
 
 COPY --from=bigdata /opt/spark-${SPARK_VERSION} /ppml/spark-${SPARK_VERSION}
 COPY --from=bigdata /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/examples/src/main/resources
@@ -225,7 +224,6 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install --no-cache-dir --upgrade setuptools && \
     pip3 install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
     python3 -m ipykernel.kernelspec && \
-    sed -i '/{ path = "\/ppml", uri = "file:\/ppml" }/a\{ path = "/root/.jupyter", uri = "file:/root/.jupyter" },' bash.manifest.template && \
     sed -i "s|\"\${SPARK_HOME}\"/bin/spark-class|/opt/jdk8/bin/java -cp /ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/* -Xmx\$\{RUNTIME_DRIVER_MEMORY\}|" ${SPARK_HOME}/bin/spark-submit && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \

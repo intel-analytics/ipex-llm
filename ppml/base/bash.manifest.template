@@ -58,6 +58,7 @@ fs.mounts = [
   { path = "/root/.cache", uri = "file:/root/.cache" },
   { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
   { path = "/ppml", uri = "file:/ppml" },
+  { path = "/root/.jupyter", uri = "file:/root/.jupyter" },
   { type = "encrypted", path = "/ppml/encrypted-fs", uri = "file:/ppml/encrypted-fs", key_name = "_sgx_mrsigner" },
   { type = "encrypted", path = "/ppml/encrypted-fsd", uri = "file:/ppml/encrypted-fsd", key_name = "sgx_data_key" },
 ]
