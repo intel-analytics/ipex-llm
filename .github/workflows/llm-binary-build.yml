@@ -44,16 +44,16 @@ jobs:
         run: |
           mkdir release
           mv build/main-bloom release/main-bloom_avx2
-          mv build/quantize-bloom release/quantize-bloom_avx2
+          mv build/quantize-bloom release/quantize-bloom
           mv build/libbloom.so release/libbloom_avx2.so
           mv build/main-llama release/main-llama_avx2
-          mv build/quantize-llama release/quantize-llama_avx2
+          mv build/quantize-llama release/quantize-llama
           mv build/libllama.so release/libllama_avx2.so
           mv build/main-gptneox release/main-gptneox_avx2
-          mv build/quantize-gptneox release/quantize-gptneox_avx2
+          mv build/quantize-gptneox release/quantize-gptneox
           mv build/libgptneox.so release/libgptneox_avx2.so
           mv build/main-starcoder release/main-starcoder_avx2
-          mv build/quantize-starcoder release/quantize-starcoder_avx2
+          mv build/quantize-starcoder release/quantize-starcoder
           mv build/libstarcoder.so release/libstarcoder_avx2.so
       - name: Archive build files
         uses: actions/upload-artifact@v3
