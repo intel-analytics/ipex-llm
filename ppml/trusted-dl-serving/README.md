@@ -65,7 +65,7 @@ mr_signer        : 6f0627955......
 
 ### TorchServe
 
-![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/230e3d1c-ce4d-4d47-99c7-7fa30f92f9d0)
+<p align="center"> <img src="https://github.com/Uxito-Ada/BigDL/assets/60865256/28be57a4-f8a6-4b73-b57d-35e17caa4f58" height="200px"><br></p>
 
 The above picture shows the architecture of BigDL PPML TorchServe, which is slightly different with the native Torchserve:
 
