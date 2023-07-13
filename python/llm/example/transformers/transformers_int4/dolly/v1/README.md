@@ -1,7 +1,4 @@
 # Dolly v1
-
-Dolly v1 models are part of the GPT-J model family, and designed for text generation tasks.
-
 In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Dolly v1 models. For illustration purposes, we utilize the [databricks/dolly-v1-6b](https://huggingface.co/databricks/dolly-v1-6b) as a reference Dolly v1 model.
 
 ## 0. Requirements
