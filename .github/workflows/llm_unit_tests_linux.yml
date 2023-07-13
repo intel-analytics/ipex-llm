@@ -19,6 +19,7 @@ on:
       - '.github/actions/llm/cli-test/action.yml'
       - '.github/actions/llm/inference-test/action.yml'
       - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
   pull_request:
     branches: [ main ]
     paths:
@@ -30,6 +31,7 @@ on:
       - '.github/actions/llm/cli-test/action.yml'
       - '.github/actions/llm/inference-test/action.yml'
       - '.github/actions/llm/langchain-test/action.yml'
+      - '.github/actions/llm/download-llm-binary/action.yml'
   workflow_dispatch:
 
 env:
@@ -41,8 +43,11 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
   llm-unit-test-linux-avx512:
     runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+    needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
@@ -61,8 +66,8 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Build BigDL-LLM
-        uses: ./.github/workflows/llm-binary-build.yml
+      - name: Download llm binary
+        uses: .github/actions/llm/download-llm-binary
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env
