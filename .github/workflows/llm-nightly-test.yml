@@ -49,7 +49,7 @@ jobs:
           python -m pip install --upgrade wheel
 
       - name: Download llm binary
-        uses: .github/actions/llm/download-llm-binary
+        uses: ./.github/actions/llm/download-llm-binary
       
       - name: Install BigDL-LLM
         uses: ./.github/actions/llm/setup-llm-env

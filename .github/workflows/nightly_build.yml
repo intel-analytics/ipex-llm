@@ -332,7 +332,7 @@ jobs:
         pip install wheel
         pip install twine
     - name: Download llm binary
-      uses: .github/actions/llm/download-llm-binary
+      uses: ./.github/actions/llm/download-llm-binary
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
