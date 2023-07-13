@@ -335,7 +335,6 @@ jobs:
         export PYPI_VERSION=2.4.0
         nb_version=${PYPI_VERSION}b${TIMESTAMP}
         echo ${nb_version}
-        echo "nb_version=$nb_version" >> $GITHUB_ENV
 
         ## windows ##
         bash python/dev/release_default_windows.sh ${nb_version} false true
@@ -345,11 +344,6 @@ jobs:
 
         ## mac ##
         bash python/dev/release_default_mac.sh ${nb_version} true
-    - name: Build BigDL-LLM
-      uses: ./.github/workflows/llm-pypi-release.yml
-      with:
-        upload: true
-        version: ${{ envs.nb_version }}
 
     - name: Create Job Badge
       if: ${{ always() }}
