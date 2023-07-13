@@ -54,6 +54,7 @@ from ctypes import (
     c_char_p,
     c_void_p,
     c_bool,
+    pointer,
     POINTER,
     _Pointer,  # type: ignore
     Structure,
@@ -307,10 +308,10 @@ _lib.llama_time_us.restype = ctypes.c_int64
 def llama_init_from_file(
     path_model: bytes, params: llama_context_params
 ) -> llama_context_p:
-    return _lib.llama_init_from_file(path_model, params)
+    return _lib.llama_init_from_file(path_model, pointer(params))
 
 
-_lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params]
+_lib.llama_init_from_file.argtypes = [c_char_p, llama_context_params_p]
 _lib.llama_init_from_file.restype = llama_context_p
 
 
