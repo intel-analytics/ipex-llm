@@ -13,6 +13,25 @@ on:
     paths:
       - '.github/workflows/llm-pypi-release.yml'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for release whl'
+        required: true
+        type: string
+      upload:
+        description: 'True to upload to pypi'
+        required: true
+        type: boolean
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version for release whl'
+        required: true
+        type: string
+      upload:
+        description: 'True to upload to pypi'
+        required: true
+        type: boolean
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -140,3 +159,30 @@ jobs:
           name: windows-avx2
           path: |
             build/Release
+
+  release-pypi:
+    needs: [linux-build-avx2, linux-build-avx512, windows-build-avx2]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download all build files
+        uses: actions/download-artifact@v3
+      - name: Move build resources
+        shell: bash
+        run: |
+          rm -rf python/llm/llm-binary || true
+          mkdir python/llm/llm-binary
+          mv linux-avx2/* python/llm/llm-binary/
+          mv linux-avx512/* python/llm/llm-binary/
+          mv windows-avx2/* python/llm/llm-binary/
+          rm -rf linux-avx2
+          rm -rf linux-avx512
+          rm -rf windows-avx2
+      - name: Linux release
+        shell: bash
+        run: |
+          BIGDL_DIR="$(pwd)"
+          echo $BIGDL_DIR
+          LLM_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/llm/dev; pwd)"
+          echo $LLM_SCRIPT_DIR
+          bash ${LLM_SCRIPT_DIR}/release_default_linux.sh ${{ inputs.version }} ${{ inputs.upload }}
+          bash ${LLM_SCRIPT_DIR}/release_default_windows.sh ${{ inputs.version }} ${{ inputs.upload }}

@@ -43,10 +43,6 @@ NANO_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/nano/dev; pwd)"
 echo $NANO_SCRIPT_DIR
 bash ${NANO_SCRIPT_DIR}/release_default_windows.sh ${version} ${upload}
 
-LLM_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/llm/dev; pwd)"
-echo $LLM_SCRIPT_DIR
-bash ${LLM_SCRIPT_DIR}/release_default_windows.sh ${version} ${upload}
-
 CHRONOS_SCRIPT_DIR="$(cd ${BIGDL_DIR}/python/chronos/dev/release; pwd)"
 echo $CHRONOS_SCRIPT_DIR
 bash ${CHRONOS_SCRIPT_DIR}/release_default_windows.sh ${version} ${upload}
