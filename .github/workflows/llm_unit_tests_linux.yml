@@ -38,7 +38,7 @@ env:
   STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
 
   LLM_DIR: ./llm
-  ORIGINAL_CHATGLM_6B_PATH: ./llm/chatglm2-6b/
+  ORIGINAL_CHATGLM_6B_PATH: ./llm/chatglm-6b/
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
