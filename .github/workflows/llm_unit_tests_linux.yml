@@ -13,6 +13,7 @@ on:
     paths:
       - 'python/llm/**'
       - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
       - '.github/actions/llm/setup-llm-env/action.yml'
       - '.github/actions/llm/remove-llm-env/action.yml'
       - '.github/actions/llm/cli-test/action.yml'
@@ -23,6 +24,7 @@ on:
     paths:
       - 'python/llm/**'
       - '.github/workflows/llm_unit_tests_linux.yml'
+      - '.github/workflows/llm-binary-build.yml'
       - '.github/actions/llm/setup-llm-env/action.yml'
       - '.github/actions/llm/remove-llm-env/action.yml'
       - '.github/actions/llm/cli-test/action.yml'
@@ -58,6 +60,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
+
+      - name: Build BigDL-LLM
+        uses: ./.github/workflows/llm-binary-build.yml
 
       - name: Run LLM install (all) test
         uses: ./.github/actions/llm/setup-llm-env

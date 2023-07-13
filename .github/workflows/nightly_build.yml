@@ -329,6 +329,9 @@ jobs:
         pip install wheel
         pip install twine
     
+    - name: Build BigDL-LLM
+      uses: ./.github/workflows/llm-binary-build.yml
+    
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`
