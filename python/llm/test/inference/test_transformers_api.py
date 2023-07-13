@@ -17,8 +17,7 @@
 
 from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
 from bigdl.llm.utils import get_avx_flags
-import pytest
-from unittest import TestCase
+import unittest
 import os
 
 import time
@@ -26,7 +25,7 @@ import torch
 from bigdl.llm.transformers import AutoModelForCausalLM, AutoModel
 from transformers import LlamaTokenizer, AutoTokenizer
 
-class TestTransformersAPI(TestCase):
+class TestTransformersAPI(unittest.TestCase):
 
     def setUp(self):
         self.llama_model_path = os.environ.get('LLAMA_INT4_CKPT_PATH')
@@ -39,12 +38,11 @@ class TestTransformersAPI(TestCase):
         else:
             self.n_threads = 2
 
-    def test_llama_completion_success(self):
+    def test_transformers_int4(self):
         model_path = self.llama_model_path
-        model = AutoModelForCausalLM.from_pretrained(model_path, load_in_4bit=True)
-        tokenizer = LlamaTokenizer.from_pretrained(model_path)
-    
-        input_str = "What is the capital of France?"
+        model = AutoModel.from_pretrained(model_path, trust_remote_code=True, load_in_4bit=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+        input_str = "晚上睡不着应该怎么办"
 
         with torch.inference_mode():
             st = time.time()
@@ -58,4 +56,4 @@ class TestTransformersAPI(TestCase):
 
 
 if __name__ == '__main__':
-    pytest.main([__file__])
+    unittest.main()
