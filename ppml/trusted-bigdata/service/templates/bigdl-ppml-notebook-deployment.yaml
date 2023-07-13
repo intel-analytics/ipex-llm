@@ -18,6 +18,7 @@ spec:
       containers:
       - name: bigdl-ppml-notebook
         image: {{ .Values.imageName }}
+        imagePullPolicy: Always
         command: [ "/ppml/start-notebook.sh" ]
         ports:
         - containerPort: {{ .Values.jupyterPort }}
