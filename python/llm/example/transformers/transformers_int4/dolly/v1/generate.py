@@ -33,7 +33,7 @@ DOLLY_V1_PROMPT_FORMAT = """Below is an instruction that describes a task. Write
 """
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Transformer INT4 example for Dolly v1 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Dolly v1 model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="databricks/dolly-v1-6b",
                         help='The huggingface repo id for the Dolly v1 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
