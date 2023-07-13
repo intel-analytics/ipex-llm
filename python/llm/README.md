@@ -102,7 +102,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
 
   See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
 
-  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. Available stype is sym_int4, asym_int4, sym_int5, asym_int5, sym_int8.
+  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. Available types are `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`.
   ```python
   model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
   ```
