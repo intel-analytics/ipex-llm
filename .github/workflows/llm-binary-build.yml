@@ -142,3 +142,49 @@ jobs:
           name: windows-avx2
           path: |
             build/Release
+  windows-build-avx2-vnni:
+    runs-on: [self-hosted, Windows]
+    steps:
+      - name: Set access token
+        run: |
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN" >> $env:GITHUB_ENV
+          echo "github_access_token=$env:GITHUB_ACCESS_TOKEN"
+      - uses: actions/checkout@v3
+        with:
+          repository: "intel-analytics/llm.cpp"
+          token: ${{ env.github_access_token }}
+      - name: Download w64devkit
+        shell: powershell
+        run: |
+          Invoke-WebRequest -Uri https://github.com/skeeto/w64devkit/releases/download/v1.19.0/w64devkit-1.19.0.zip -OutFile ./w64devkit.zip
+          Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/w64devkit.zip", "$PWD")
+      - name: Build binary
+        shell: powershell
+        run: |
+          $env:Path = '$PWD/w64devkit/bin' + $env:Path
+          make
+      - name: Move release binary
+        shell: bash
+        run: |
+          mkdir release
+          mv build/main-bloom.exe release/main-bloom_vnni.exe
+          mv build/quantize-bloom.exe release/quantize-bloom_vnni.exe
+          mv build/libbloom.dll release/libbloom_vnni.dll
+
+          mv build/main-llama.exe release/main-llama_vnni.exe
+          mv build/quantize-llama.exe release/quantize-llama_vnni.exe
+          mv build/libllama.dll release/libllama_vnni.dll
+
+          mv build/main-gptneox.exe release/main-gptneox_vnni.exe
+          mv build/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
+          mv build/libgptneox.dll release/libgptneox_vnni.dll
+
+          mv build/main-starcoder.exe release/main-starcoder_vnni.exe
+          mv build/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
+          mv build/libstarcoder.dll release/libstarcoder_vnni.dll
+      - name: Archive build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-avx2-vnni
+          path: |
+            release
