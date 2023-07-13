@@ -49,7 +49,8 @@ class _BaseAutoModelClass:
 
         if bigdl_transformers_low_bit:
             invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                              f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
+                              f"Unknown bigdl_transformers_low_bit value:"
+                              f" {bigdl_transformers_low_bit},"
                               f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
             qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
             # Note that the int4 linear layers cannot currently
