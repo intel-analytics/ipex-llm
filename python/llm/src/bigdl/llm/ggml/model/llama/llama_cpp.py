@@ -984,7 +984,7 @@ def ggml_type_size(qtype: ctypes.c_int) -> int:
 _lib.ggml_type_size.argtypes = [
     ctypes.c_int,
 ]
-_lib.ggml_type_size.restype = ctypes.c_int
+_lib.ggml_type_size.restype = ctypes.c_size_t
 
 
 def ggml_qk_size(qtype: ctypes.c_int) -> int:
