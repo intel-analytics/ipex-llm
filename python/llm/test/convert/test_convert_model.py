@@ -73,11 +73,11 @@ class TestConvertModel(TestCase):
 
     def test_transformer_convert_llama_q5(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_low_bit="q5_0")
+                                                     load_in_low_bit="sym_int5")
 
     def test_transformer_convert_llama_q8(self):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
-                                                     load_in_low_bit="q8_0")
+                                                     load_in_low_bit="sym_int8")
 
 
 if __name__ == '__main__':

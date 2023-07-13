@@ -29,6 +29,18 @@ class _BaseAutoModelClass:
     def from_pretrained(cls,
                         *args,
                         **kwargs):
+        """
+        Load a model from a directory or the HF Hub. Use load_in_4bit or load_in_low_bit parameter
+        the weight of model's linears can be loaded to low-bit format, like int4, int5 and int8.
+
+        Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
+        New Arguments:
+            load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
+            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5 or
+                             sym_int8. The model's linear will be loaded into corresponding
+                             low-bit type. sym_int4 means symmetric int 4, asym_int4 means
+                             asymmetric int 4.
+        """
 
         # For huggingface transformers cls.HF_Model.from_pretrained could only restore the model
         # in the original format, which is not quantized,
@@ -49,8 +61,9 @@ class _BaseAutoModelClass:
 
         if bigdl_transformers_low_bit:
             invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                              f"Unknown load_in_low_bit value: {bigdl_transformers_low_bit},"
-                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+                              f"Unknown bigdl_transformers_low_bit value:"
+                              f" {bigdl_transformers_low_bit},"
+                              f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
             qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
             # Note that the int4 linear layers cannot currently
             # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -86,7 +99,7 @@ class _BaseAutoModelClass:
             del state_dict
 
         elif load_in_4bit or load_in_low_bit:
-            q_k = load_in_low_bit if load_in_low_bit else "q4_0"
+            q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.convert_quant(model, q_k, *args, **kwargs)
 
         return model
@@ -95,8 +108,8 @@ class _BaseAutoModelClass:
     def convert_quant(cls, model, q_k, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
-                          f"Unknown load_in_low_bit value: {q_k},"
-                          f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+                          f"Unknown load_in_low_bit value: {q_k}, expected:"
+                          f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
