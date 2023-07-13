@@ -19,7 +19,7 @@ spec:
     - name: data-exchange
       mountPath: /opt/occlum_spark/data
 #    securityContext:
-#      privileged: true
+#      privileged: true using device-plugin to mount sgx env don't need the privileged
     resources:
       requests:
         cpu: 1
