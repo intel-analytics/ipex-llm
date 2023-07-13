@@ -50,7 +50,7 @@ E.g. on Linux,
 ```bash
 # for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
-numactl -C 0-47 -m 0 python -u ./generate.py
+numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 3.3 Sample Output

@@ -17,19 +17,21 @@
 import torch
 import time
 import argparse
+import numpy as np
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModel
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-MPT_PROMPT_FORMAT = "<human>{prompt} <bot>"
+# here the prompt format refers to https://huggingface.co/THUDM/chatglm-6b/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_chatglm.py#L1281
+CHATGLM_V1_PROMPT_FORMAT = "问：{prompt}\n答："
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Transformer INT4 example for MPT model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="mosaicml/mpt-7b-chat",
-                        help='The huggingface repo id for the MPT to be downloaded'
+    parser = argparse.ArgumentParser(description='Transformer INT4 example for ChatGLM v1 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="databricks/dolly-v1-6b",
+                        help='The huggingface repo id for the Dolly v1 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -39,9 +41,9 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_path,
+                                      load_in_4bit=True,
+                                      trust_remote_code=True)
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path,
@@ -49,18 +51,17 @@ if __name__ == '__main__':
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = CHATGLM_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
-        # enabling `use_cache=True` allows the model to utilize the previous
-        # key/values attentions to speed up decoding;
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
-        # it is important to set use_cache=True for MPT models
+        # if your selected model is capable of utilizing previous key/value attentions
+        # to enhance decoding speed, but has `"use_cache": false` in its model config,
+        # it is important to set `use_cache=True` explicitly in the `generate` function
+        # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
-                                use_cache=True,
                                 max_new_tokens=args.n_predict)
         end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)
