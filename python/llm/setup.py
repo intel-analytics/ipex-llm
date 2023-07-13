@@ -33,6 +33,7 @@ import sys
 import urllib.request
 import requests
 import re
+import glob
 
 from setuptools import setup
 
@@ -44,6 +45,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
+github_artifact_dir = os.path.join(llm_home,'../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch', 'transformers', 'sentencepiece', 'accelerate']
 
@@ -129,8 +131,10 @@ def download_libs(url: str, change_permission=False):
     if not os.path.exists(libso_file):
         print(">> Downloading from ", url)
         urllib.request.urlretrieve(url, libso_file)
-        if change_permission:
-            os.chmod(libso_file, 0o775)
+    else:
+        print('>> Skip downloading ', libso_file)
+    if change_permission:
+        os.chmod(libso_file, 0o775)
 
 
 def setup_package():
@@ -193,6 +197,11 @@ def setup_package():
         print(f"Deleting existing libs_dir {libs_dir} ....")
         shutil.rmtree(libs_dir)
     os.makedirs(libs_dir, exist_ok=True)
+    
+    # copy built files for github workflow
+    for built_file in glob.glob(os.path.join(github_artifact_dir,'*')):
+        print(f'Copy workflow built file: {built_file}')
+        shutil.copy(built_file, libs_dir)
 
     lib_urls = obtain_lib_urls()
 
