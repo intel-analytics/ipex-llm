@@ -45,7 +45,7 @@ exclude_patterns = ["*__pycache__*", "*ipynb_checkpoints*"]
 BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 llm_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
-github_artifact_dir = os.path.join(llm_home,'../llm-binary')
+github_artifact_dir = os.path.join(llm_home, '../llm-binary')
 libs_dir = os.path.join(llm_home, "bigdl", "llm", "libs")
 CONVERT_DEP = ['numpy >= 1.22', 'torch', 'transformers', 'sentencepiece', 'accelerate']
 

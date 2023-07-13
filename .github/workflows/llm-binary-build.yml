@@ -11,7 +11,7 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - ".github/workflows/llm-pypi-release.yml"
+      - ".github/workflows/llm-binary-build.yml"
   workflow_dispatch:
   
   workflow_call:
