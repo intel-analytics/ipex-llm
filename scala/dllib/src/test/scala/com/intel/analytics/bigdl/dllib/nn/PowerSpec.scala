@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PowerSpec extends FlatSpec with Matchers {
@@ -134,7 +134,7 @@ class PowerSpec extends FlatSpec with Matchers {
 class PowerSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val power = Power[Float](2.0).setName("power")
-    val input = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     runSerializationTest(power, input)
   }
 }

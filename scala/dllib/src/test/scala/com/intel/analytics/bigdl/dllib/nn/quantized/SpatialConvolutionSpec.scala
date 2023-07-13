@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExecution {
@@ -165,7 +165,7 @@ class SpatialConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialConvolution = NNSpatialConvolution[Float](3, 4, 2, 2).
       setName("spatialConvolution")
-    val input = Tensor[Float](1, 3, 5, 5).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
     runSerializationTest(spatialConvolution, input)
   }
 }

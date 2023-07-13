@@ -19,16 +19,16 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class FusedBatchNormGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val fbatchNormGrad = FusedBatchNormGrad[Float]().setName("fbatchNormGrad")
     val input = T(Tensor[Float](4, 8, 8, 256).rand(),
-      Tensor[Float](4, 8, 8, 256).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](256).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](256).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](256).apply1(_ => new SecureRandom().nextFloat()))
+      Tensor[Float](4, 8, 8, 256).apply1(_ => Random.nextFloat()),
+      Tensor[Float](256).apply1(_ => Random.nextFloat()),
+      Tensor[Float](256).apply1(_ => Random.nextFloat()),
+      Tensor[Float](256).apply1(_ => Random.nextFloat()))
     runSerializationTest(fbatchNormGrad, input)
   }
 }

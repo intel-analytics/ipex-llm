@@ -20,14 +20,14 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class SplitTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A BifurcateSplitTable " should "generate correct output and grad" in {
     val seed = 100
-    new SecureRandom().setSeed(seed)
+    Random.setSeed(seed)
 
     val dim = 2
     val module = new BifurcateSplitTable[Double](dim)
@@ -51,7 +51,7 @@ class SplitTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 class BifurcateSplitTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val batchNorm = BifurcateSplitTable[Float](1).setName("batchNorm")
-    val input = Tensor[Float](2, 5).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(batchNorm, input)
   }
 }
@@ -59,7 +59,7 @@ class BifurcateSplitTableSerialTest extends ModuleSerializationTest {
 class SplitTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val splitTable = SplitTable[Float](2).setName("splitTable")
-    val input = Tensor[Float](2, 10).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 10).apply1( e => Random.nextFloat())
     runSerializationTest(splitTable, input)
   }
 }

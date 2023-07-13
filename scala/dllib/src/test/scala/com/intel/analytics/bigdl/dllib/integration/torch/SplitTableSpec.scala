@@ -19,14 +19,14 @@ import com.intel.analytics.bigdl.dllib.nn.SplitTable
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class SplitTableSpec extends TorchSpec {
     "A SplitTable selects a tensor as an output" should "generate correct output and grad" in {
     torchCheck()
     val seed = 100
-    new SecureRandom().setSeed(seed)
+    Random.setSeed(seed)
 
     val module = new SplitTable[Double](1, 2)
     val input = Tensor[Double](3, 5).randn()

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, Shape}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class InputSpec extends BigDLSpecHelper {
   "Duplicate container" should "not throw exception" in {
@@ -54,7 +54,7 @@ class InputSerialTest extends ModuleSerializationTest {
     val input = InputLayer[Float](inputShape = Shape(20))
     val seq = Sequential[Float]()
     seq.add(input)
-    val inputData = Tensor[Float](2, 20).apply1(_ => new SecureRandom().nextFloat())
+    val inputData = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
     runSerializationTest(seq, inputData)
   }
 }

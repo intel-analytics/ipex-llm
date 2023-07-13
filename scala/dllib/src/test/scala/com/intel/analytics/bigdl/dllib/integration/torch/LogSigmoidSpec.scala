@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.nn.LogSigmoid
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class LogSigmoidSpec extends TorchSpec {
     "A LogSigmoid Module " should "generate correct output and grad" in {
     torchCheck()
     val module = new LogSigmoid[Double]()
-    new SecureRandom().setSeed(100)
-    val input = Tensor[Double](4, 10).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(100)
+    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
     val data = Tensor[Double](4, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 

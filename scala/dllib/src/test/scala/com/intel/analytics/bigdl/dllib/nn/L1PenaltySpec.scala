@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class L1PenaltySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val l1Penalty = L1Penalty[Float](1, true, true).setName("l1Penalty")
-    val input = Tensor[Float](3, 3).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
     runSerializationTest(l1Penalty, input)
   }
 }
