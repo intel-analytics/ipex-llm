@@ -22,14 +22,14 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could revise it based on the MPT model you choose to use
-MPT_PROMPT_FORMAT="<human>{prompt} <bot>"
+MPT_PROMPT_FORMAT = "<human>{prompt} <bot>"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example for MPT model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="mosaicml/mpt-7b-chat",
-                        help='The huggingface repo id for the large language model to be downloaded'
+                        help='The huggingface repo id for the MPT to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="<human>What is AI?<bot>",
+    parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
