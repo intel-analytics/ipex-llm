@@ -2,7 +2,7 @@
 
 Dolly v1 models are part of the GPT-J model family, and designed for text generation tasks.
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Dolly v1 models. For illustration purposes, we utilize the [databricks/dolly-v1-6b](https://huggingface.co/databricks/dolly-v1-6b) as a reference MPT model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Dolly v1 models. For illustration purposes, we utilize the [databricks/dolly-v1-6b](https://huggingface.co/databricks/dolly-v1-6b) as a reference Dolly v1 model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -33,7 +33,7 @@ Arguments info:
 
 > **Note**: When loading the model in 4-bit, BigDL-LLM converts linear layers in the model into INT4 format. In theory, a *X*B model saved in 16-bit will requires approximately 2*X* GB of memory for loading, and ~0.5*X* GB memory for further inference.
 >
-> Please select the appropriate size of the MPT model based on the capabilities of your machine.
+> Please select the appropriate size of the Dolly v1 model based on the capabilities of your machine.
 
 #### 3.1 Client
 For better utilization of multiple cores on the client machine, it is recommended to use all the performance-cores along with their hyperthreads.
@@ -59,8 +59,20 @@ numactl -C 0-47 -m 0 python -u ./generate.py
 #### [databricks/dolly-v1-6b](https://huggingface.co/databricks/dolly-v1-6b)
 ```log
 Inference time: xxxx s
-Prompt:
-<human>What is AI? <bot>
-Output:
-<human>What is AI? <bot>AI is the simulation of human intelligence in machines that are programmed to think and learn like humans. <human>What is machine learning? <bot>Machine learning
+-------------------- Prompt --------------------
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+### Instruction:
+What is AI?
+
+### Response:
+
+-------------------- Output --------------------
+Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+### Instruction:
+What is AI?
+
+### Response:
+AI is an umbrella term for a variety of technologies that enable computers to think and act like humans. AI can be used to automate tasks, analyze data, and
 ```

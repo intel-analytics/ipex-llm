@@ -21,7 +21,7 @@ import argparse
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
-# you could revise it based on the MPT model you choose to use
+# you could tune the prompt based on your own model,
 MPT_PROMPT_FORMAT = "<human>{prompt} <bot>"
 
 if __name__ == '__main__':
@@ -62,5 +62,7 @@ if __name__ == '__main__':
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
-        print(f'Prompt:\n{prompt}')
-        print(f'Output:\n{output_str}')
+        print('-'*20, 'Prompt', '-'*20)
+        print(prompt)
+        print('-'*20, 'Output', '-'*20)
+        print(output_str)
