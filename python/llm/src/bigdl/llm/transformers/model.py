@@ -36,9 +36,10 @@ class _BaseAutoModelClass:
         Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
         New Arguments:
             load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
-            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.
-                             The model's linear will be loaded into corresponding low-bit type. sym_int4
-                             means symmetric int 4, asym_int4 means asymmetric int 4.
+            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5 or
+                             sym_int8. The model's linear will be loaded into corresponding
+                             low-bit type. sym_int4 means symmetric int 4, asym_int4 means
+                             asymmetric int 4.
         """
 
         # For huggingface transformers cls.HF_Model.from_pretrained could only restore the model
