@@ -224,10 +224,12 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     pip3 install --no-cache-dir --upgrade setuptools && \
     pip3 install --no-cache-dir scipy scikit-learn matplotlib seaborn jupyter jupyterlab requests h5py dm-tree && \
     python3 -m ipykernel.kernelspec && \
-    sed -i "s|\"\${SPARK_HOME}\"/bin/spark-class|/opt/jdk8/bin/java -cp /ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/* -Xmx\$\{RUNTIME_DRIVER_MEMORY\}|" ${SPARK_HOME}/bin/spark-submit && \
     cp ${BIGDL_HOME}/jars/bigdl-ppml-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     cp ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ${SPARK_HOME}/jars/ && \
     chmod 777 /usr/bin/python && \
+# Jupyter Notebook
+    cp ${SPARK_HOME}/bin/spark-submit ${SPARK_HOME}/bin/spark-submit-original && \
+    sed -i "s|\"\${SPARK_HOME}\"/bin/spark-class|/opt/jdk8/bin/java -cp /ppml/spark-3.1.3/conf/:/ppml/spark-3.1.3/jars/* -Xmx\$\{RUNTIME_DRIVER_MEMORY\}|" ${SPARK_HOME}/bin/spark-submit && \
 # zeppelin
     chmod +x /ppml/zeppelin/deploy.sh && \
     chmod +x /ppml/zeppelin/delete.sh && \
