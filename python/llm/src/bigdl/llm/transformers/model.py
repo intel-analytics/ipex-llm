@@ -33,7 +33,7 @@ class _BaseAutoModelClass:
         Load a model from a directory or the HF Hub. Use load_in_4bit or load_in_low_bit parameter
         the weight of model's linears can be loaded to low-bit format, like int4, int5 and int8.
 
-        Two new arguments are added rather than huggingface's from_pretrained, listed below.
+        Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
         New Arguments:
             load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
             load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.
