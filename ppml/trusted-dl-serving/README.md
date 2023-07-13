@@ -64,7 +64,8 @@ mr_signer        : 6f0627955......
 *WARNING: We are currently actively developing our images, which indicate that the ENTRYPOINT of the docker image may be changed accordingly.  We will do our best to update our documentation in time.*
 
 ### TorchServe
-![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/49c7fd77-9732-44da-a6b7-7e317693ab2a)
+
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/230e3d1c-ce4d-4d47-99c7-7fa30f92f9d0)
 
 The above picture shows the architecture of BigDL PPML TorchServe, which is slightly different with the native Torchserve:
 
