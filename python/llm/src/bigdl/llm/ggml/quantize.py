@@ -27,9 +27,9 @@ libs_dirname = os.path.dirname(dirname)
 # ggml quantized tensor type, this is different from below file quantized type(_quantize_type)
 ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
                      "asym_int4": 3,  # q4_1 in ggml
-                     "syn_int5": 6,   # q5_0 in ggml
+                     "sym_int5": 6,   # q5_0 in ggml
                      "asym_int5": 7,  # q5_1 in ggml
-                     "syn_int8": 8}   # q8_0 in ggml
+                     "sym_int8": 8}   # q8_0 in ggml
 
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
