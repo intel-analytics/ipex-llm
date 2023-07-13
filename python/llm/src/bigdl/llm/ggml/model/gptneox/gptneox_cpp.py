@@ -54,6 +54,7 @@ from ctypes import (
     c_char_p,
     c_void_p,
     c_bool,
+    pointer,
     POINTER,
     _Pointer,  # type: ignore
     Structure,
@@ -230,10 +231,10 @@ _lib.gptneox_mlock_supported.restype = c_bool
 def gptneox_init_from_file(
     path_model: bytes, params: gptneox_context_params
 ) -> gptneox_context_p:
-    return _lib.gptneox_init_from_file(path_model, params)
+    return _lib.gptneox_init_from_file(path_model, pointer(params))
 
 
-_lib.gptneox_init_from_file.argtypes = [c_char_p, gptneox_context_params]
+_lib.gptneox_init_from_file.argtypes = [c_char_p, gptneox_context_params_p]
 _lib.gptneox_init_from_file.restype = gptneox_context_p
 
 
