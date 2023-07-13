@@ -189,11 +189,11 @@ The native code/lib in `bigdl-llm` has been built using the following tools; in 
 
 | Model family | Platform | Compiler           | GLIBC |
 | ------------ | -------- | ------------------ | ----- |
-| llama        | Linux    | GCC 9.3.1          | 2.17  |
+| llama        | Linux    | GCC 11.2.1         | 2.17  |
 | llama        | Windows  | MSVC 19.36.32532.0 |       |
-| gptneox      | Linux    | GCC 9.3.1          | 2.17  |
+| gptneox      | Linux    | GCC 11.2.1         | 2.17  |
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
-| bloom        | Linux    | GCC 9.4.0          | 2.29  |
+| bloom        | Linux    | GCC 11.2.1         | 2.29  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
-| starcoder    | Linux    | GCC 9.4.0          | 2.29  |
+| starcoder    | Linux    | GCC 11.2.1         | 2.29  |
 | starcoder    | Windows  | MSVC 19.36.32532.0 |       |
