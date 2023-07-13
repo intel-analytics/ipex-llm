@@ -49,8 +49,8 @@ class _BaseAutoModelClass:
 
         if bigdl_transformers_low_bit:
             invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
-                              f"Unknown load_in_low_bit value: {bigdl_transformers_low_bit},"
-                              f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+                              f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
+                              f" excepted sym_int4, asym_int4, sym_int5, asym_int5, sym_int8.")
             qtype = ggml_tensor_qtype[bigdl_transformers_low_bit]
             # Note that the int4 linear layers cannot currently
             # be recorded in huggingface Pretrained Model or AutoConfig,
@@ -86,7 +86,7 @@ class _BaseAutoModelClass:
             del state_dict
 
         elif load_in_4bit or load_in_low_bit:
-            q_k = load_in_low_bit if load_in_low_bit else "q4_0"
+            q_k = load_in_low_bit if load_in_low_bit else "sym_int4"
             model = cls.convert_quant(model, q_k, *args, **kwargs)
 
         return model
@@ -95,8 +95,8 @@ class _BaseAutoModelClass:
     def convert_quant(cls, model, q_k, *args, **kwargs):
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
-                          f"Unknown load_in_low_bit value: {q_k},"
-                          f" excepted q4_0, q4_1, q5_0, q5_1, q8_0.")
+                          f"Unknown load_in_low_bit value: {q_k}, excepted"
+                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8.")
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
