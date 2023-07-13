@@ -64,6 +64,7 @@ mr_signer        : 6f0627955......
 *WARNING: We are currently actively developing our images, which indicate that the ENTRYPOINT of the docker image may be changed accordingly.  We will do our best to update our documentation in time.*
 
 ### TorchServe
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/49c7fd77-9732-44da-a6b7-7e317693ab2a)
 
 The above picture shows the architecture of BigDL PPML TorchServe, which is slightly different with the native Torchserve:
 
@@ -73,7 +74,10 @@ The above picture shows the architecture of BigDL PPML TorchServe, which is slig
 
 To start TorchServe, you need to set the parameters' values in `service/values.yaml` and copy the MAR file which is needed by original TorchServe to `$nfsPath/model/torchserve`.
 
-In addition, if you want to enable SSL/TLS traffic to protect communication between pods (frontend and backends), it is allowed to set `istioTLSEnabled` to **true**, while it is noted that [istio](https://istio.io/latest/docs/setup/install/) should be installed in your cluster before enabling.
+In addition, if you want to enable SSL/TLS traffic to protect communication between pods (frontend and backends), it is allowed to set `istioTLSEnabled` to **true**, while it is noted that [istio](https://istio.io/latest/docs/setup/install/) should be installed in your cluster before enabling. It is shown as below:
+
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/be4b17eb-6e4e-43c6-b9d1-5e2d622fbf33)
+
 
 Then, run the helm command to run it on k8s:
 
