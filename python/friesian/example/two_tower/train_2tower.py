@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import pickle
+from bigdl.friesian.utils import SafePickle
 import argparse
 import math
 from model import *
@@ -157,7 +157,7 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
         get_remote_file_to_local(os.path.join(args.data_dir, "meta/categorical_sizes.pkl"),
                                  local_path)
         with open(os.path.join(local_path, "categorical_sizes.pkl"), 'rb') as f:
-            cat_sizes_dict = pickle.load(f)
+            cat_sizes_dict = SafePickle.load(f)
             for col in id_cols:
                 if col not in embed_in_dims:
                     embed_in_dims[col] = cat_sizes_dict[col]
