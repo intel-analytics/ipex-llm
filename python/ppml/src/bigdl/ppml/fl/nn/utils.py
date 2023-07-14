@@ -29,8 +29,8 @@ class ClassAndArgsWrapper(object):
         self.args = args
 
     def to_protobuf(self):
-        cls = SafePickle.dumps(self.cls)
-        args = SafePickle.dumps(self.args)
+        cls = SafePickle.dump(self.cls)
+        args = SafePickle.dump(self.args)
         return ClassAndArgs(cls=cls, args=args)
 
 
