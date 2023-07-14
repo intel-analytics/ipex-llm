@@ -392,6 +392,7 @@ def stop_orca_context():
 # Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
 # To safely use python pickle
 
+
 class SafePickle:
     key = b'shared-key'
     """
