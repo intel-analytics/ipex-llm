@@ -161,7 +161,7 @@ jobs:
       - name: Build binary
         shell: powershell
         run: |
-          $env:Path = '$PWD/w64devkit/bin' + $env:Path
+          $env:Path = '$PWD/w64devkit/bin;' + $env:Path
           make
       - name: Move release binary
         shell: bash
