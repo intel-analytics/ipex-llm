@@ -13,7 +13,7 @@ on:
     paths:
       - ".github/workflows/llm-pypi-release.yml"
   workflow_dispatch:
-  
+
   workflow_call:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -143,7 +143,8 @@ jobs:
           path: |
             build/Release
   windows-build-avx2-vnni:
-    runs-on: [self-hosted, Windows]
+    # runs-on: [self-hosted, Windows]
+    runs-on: [windows-latest]
     steps:
       - name: Set access token
         run: |
@@ -156,7 +157,10 @@ jobs:
       - name: Download w64devkit
         shell: powershell
         run: |
-          Invoke-WebRequest -Uri https://github.com/skeeto/w64devkit/releases/download/v1.19.0/w64devkit-1.19.0.zip -OutFile ./w64devkit.zip
+          cd ..
+          if (-not (Test-Path ./w64devkit.zip) -or ((Get-FileHash -Path w64devkit.zip -Algorithm SHA256).Hash.ToUpper() -ne '2862F388E1720B40026F2FD95C6100A9932E3B14FB13AAC4F225A02B11E31CA9'.ToUpper())) {
+              Invoke-WebRequest -Uri https://github.com/skeeto/w64devkit/releases/download/v1.19.0/w64devkit-1.19.0.zip -OutFile ./w64devkit.zip
+          }
           Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/w64devkit.zip", "$PWD")
       - name: Build binary
         shell: powershell
