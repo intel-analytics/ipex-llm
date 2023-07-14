@@ -31,8 +31,9 @@ function llama
 
 function gptneox
 {
-    # TODO
-    $command = "$lib_dir/main-gptneox.exe -t $threads -n $n_predict $filteredArguments"
+    $prompt = "A chat between a curious human and an artificial intelligence assistant.`
+            The assistant gives helpful, detailed, and polite answers."
+    $command = "$lib_dir/main-gptneox.exe -t $threads -n $n_predict --color --instruct -p '$prompt' $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
