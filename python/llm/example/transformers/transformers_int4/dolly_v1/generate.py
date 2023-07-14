@@ -23,7 +23,7 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt format refers to https://huggingface.co/databricks/dolly-v1-6b#generate-text
+# here the prompt tuning refers to https://huggingface.co/databricks/dolly-v1-6b#generate-text
 DOLLY_V1_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
 ### Instruction:

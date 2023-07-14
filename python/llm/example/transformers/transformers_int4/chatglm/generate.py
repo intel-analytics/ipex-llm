@@ -23,7 +23,7 @@ from bigdl.llm.transformers import AutoModel
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt format refers to https://huggingface.co/THUDM/chatglm-6b/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_chatglm.py#L1281
+# here the prompt tuning refers to https://huggingface.co/THUDM/chatglm-6b/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_chatglm.py#L1281
 CHATGLM_V1_PROMPT_FORMAT = "问：{prompt}\n答："
 
 if __name__ == '__main__':
