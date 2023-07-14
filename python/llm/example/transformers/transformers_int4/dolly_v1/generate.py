@@ -59,11 +59,12 @@ if __name__ == '__main__':
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         end_key_token_id=tokenizer.encode("### End")[0]
         st = time.time()
-        # if your selected model is capable of utilizing previous key/value attentions
-        # to enhance decoding speed, but has `"use_cache": false` in its model config,
-        # it is important to set `use_cache=True` explicitly in the `generate` function
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations
+        # enabling `use_cache=True` allows the model to utilize the previous
+        # key/values attentions to speed up decoding;
+        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
+        # it is important to set use_cache=True for Dolly v1 models
         output = model.generate(input_ids,
+                                use_cache=True,
                                 max_new_tokens=args.n_predict,
                                 pad_token_id=tokenizer.pad_token_id,
                                 eos_token_id=end_key_token_id)
