@@ -50,7 +50,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```
 
 #### 2.3 Sample Output
-#### [databricks/dolly-v1-6b](https://huggingface.co/databricks/dolly-v1-6b)
+#### [baichuan-inc/Baichuan-13B-Chat](https://huggingface.co/baichuan-inc/Baichuan-13B-Chat)
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
