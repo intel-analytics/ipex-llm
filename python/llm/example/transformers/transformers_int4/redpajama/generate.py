@@ -22,7 +22,7 @@ from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt format refers to https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat#cpu-inference
+# here the prompt tuning refers to https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat#cpu-inference
 RedPajama_PROMPT_FORMAT = "<human>: {prompt}\n<bot>:"
 Generation_CONFIG = {'do_sample': True, 'temperature': 0.7, 'top_p': 0.7, 'top_k': 50, 'return_dict_in_generate': True}
 

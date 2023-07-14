@@ -16,10 +16,7 @@ conda activate llm
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
 ```
 
-### 2. Config
-It is recommended to set several environment variables for better performance. Please refer to [here](../README.md#best-known-configuration) for more information.
-
-### 3. Run
+### 2. Run
 ```
 python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROMPT --n-predict N_PREDICT
 ```
@@ -33,27 +30,26 @@ Arguments info:
 >
 > Please select the appropriate size of the RedPajama model based on the capabilities of your machine.
 
-#### 3.1 Client
-For better utilization of multiple cores on the client machine, it is recommended to use all the performance-cores along with their hyperthreads.
-
-E.g. on Windows,
+#### 2.1 Client
+On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
-# for a client machine with 8 Performance-cores
-$env:OMP_NUM_THREADS=16
-python ./generate.py
+python ./generate.py 
 ```
 
-#### 3.2 Server
-On server, it is recommended to run the example with all the physical cores of a single socket.
+#### 2.2 Server
+For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration) for more information), and run the example with all the physical cores of a single socket.
 
 E.g. on Linux,
 ```bash
-# for a server with 48 cores per socket
+# set BigDL-Nano env variables
+source bigdl-nano-init
+
+# e.g. for a server with 48 cores per socket
 export OMP_NUM_THREADS=48
 numactl -C 0-47 -m 0 python ./generate.py
 ```
 
-#### 3.3 Sample Output
+#### 2.3 Sample Output
 #### [togethercomputer/RedPajama-INCITE-7B-Chat](https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat)
 ```log
 Inference time: xxxx s
