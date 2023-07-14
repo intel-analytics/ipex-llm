@@ -27,9 +27,9 @@ from transformers import AutoTokenizer
 CHATGLM_V1_PROMPT_FORMAT = "问：{prompt}\n答："
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM v1 model')
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm-6b",
-                        help='The huggingface repo id for the ChatGLM v1 model to be downloaded'
+                        help='The huggingface repo id for the ChatGLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
