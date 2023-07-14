@@ -142,6 +142,7 @@ jobs:
           name: windows-avx2
           path: |
             build/Release
+            
   windows-build-avx2-vnni:
     runs-on: [self-hosted, Windows]
     steps:
