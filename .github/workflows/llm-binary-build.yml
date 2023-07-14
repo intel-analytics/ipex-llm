@@ -161,10 +161,12 @@ jobs:
               Invoke-WebRequest -Uri https://github.com/skeeto/w64devkit/releases/download/v1.19.0/w64devkit-1.19.0.zip -OutFile ./w64devkit.zip
           }
           Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/w64devkit.zip", "$PWD")
+          echo "w64devkit_path=$PWD/w64devkit/bin" >> $env:GITHUB_ENV
+          
       - name: Build binary
         shell: powershell
         run: |
-          $env:Path = '$PWD/w64devkit/bin;' + $env:Path
+          $env:Path = '${{ env.w64devkit_path }};' + $env:Path
           make
       - name: Move release binary
         shell: bash
