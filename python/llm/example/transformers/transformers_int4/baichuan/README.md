@@ -17,6 +17,8 @@ pip install transformers_stream_generator  # additional package required for Bai
 ```
 
 ### 2. Config
+> **Note**: You can skip this step on client Windows machine to get optimal performance.
+
 It is recommended to set several environment variables for better performance. Please refer to [here](../README.md#best-known-configuration) for more information.
 
 ### 3. Run
@@ -34,13 +36,9 @@ Arguments info:
 > Please select the appropriate size of the Baichuan model based on the capabilities of your machine.
 
 #### 3.1 Client
-For better utilization of multiple cores on the client machine, it is recommended to use all the performance-cores along with their hyperthreads.
-
-E.g. on Windows,
+On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
-# for a client machine with 8 Performance-cores
-$env:OMP_NUM_THREADS=16
-python ./generate.py
+python ./generate.py 
 ```
 
 #### 3.2 Server
