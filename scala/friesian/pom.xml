@@ -125,7 +125,19 @@
                 <exclusion>
                     <groupId>org.apache.ivy</groupId>
                     <artifactId>ivy</artifactId>
-                </exclusion>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+	        </exclusion>
+		<exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+	        </exclusion>
+		<exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-text</artifactId>
+		</exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -175,6 +187,18 @@
                 <exclusion>
                     <groupId>net.minidev</groupId>
                     <artifactId>json-smart</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-lang3</artifactId>
+	        </exclusion>
+		<exclusion>
+                    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-text</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -193,6 +217,10 @@
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
                     <artifactId>commons-text</artifactId>
+	        </exclusion>
+                <exclusion>
+                    <groupId>org.json4s</groupId>
+                    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -201,6 +229,17 @@
             <artifactId>commons-text</artifactId>
             <version>1.10.0</version>
             <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json4s</groupId>
+	    <artifactId>json4s-jackson_${scala.major.version}</artifactId>
+	    <version>${json4s.version}</version>
+	    <exclusions>
+	        <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+	    </exclusions>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
