@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--load-path', type=str, default=None,
                         help='The path to load the low-bit model.')
     args = parser.parse_args()
-    model_path = args.repo_id_or_model_path
+    model_path = args.model_path
     low_bit = args.low_bit
     load_path = args.load_path
     if load_path:
@@ -43,11 +43,14 @@ if __name__ == '__main__':
         model = AutoModelForCausalLM.from_pretrained(model_path, load_in_low_bit=low_bit)
         tokenizer = LlamaTokenizer.from_pretrained(model_path)
 
-    pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, do_sample=False, max_new_tokens=32)
+    pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, max_new_tokens=32)
     input_str = "Once upon a time, there existed a little girl who liked to have adventures. She wanted to go to places and meet new people, and have fun"
-    print(pipeline(input_str)[0]["generated_text"])
+    output = pipeline(input_str)[0]["generated_text"]
+    print(f"Prompt: {input_str}")
+    print(f"Output: {output}")
 
     save_path = args.save_path
     if save_path:
         model.save_low_bit(save_path)
         tokenizer.save_pretrained(save_path)
+        print(f"Model and tokenizer are saved to {save_path}")

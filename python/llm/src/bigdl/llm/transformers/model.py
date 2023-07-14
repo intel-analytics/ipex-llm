@@ -49,10 +49,9 @@ class _BaseAutoModelClass:
             if len(args) == 0 else args[0]
         config_dict, _ = PretrainedConfig.get_config_dict(pretrained_model_name_or_path)
         bigdl_transformers_low_bit = config_dict.pop("bigdl_transformers_low_bit", False)
-        if bigdl_transformers_low_bit:
-            print(f"Detect model is a low-bit({bigdl_transformers_low_bit}) model,"
-                  f" loading...")
-            return cls.from_low_bit(*args, **kwargs)
+        invalidInputError(not bigdl_transformers_low_bit,
+                          f"Detected model is a low-bit({bigdl_transformers_low_bit}) model, "
+                          f"Please use load_low_bit to load this model.")
 
         # For huggingface transformers cls.HF_Model.from_pretrained could only restore the model
         # in the original format, which is not quantized,
@@ -89,7 +88,7 @@ class _BaseAutoModelClass:
         return model
 
     @classmethod
-    def from_low_bit(cls,
+    def load_low_bit(cls,
                      *args,
                      **kwargs):
         # Read bigdl_transformers_low_bit from config.json
