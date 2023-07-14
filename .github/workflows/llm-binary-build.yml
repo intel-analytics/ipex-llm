@@ -143,8 +143,7 @@ jobs:
           path: |
             build/Release
   windows-build-avx2-vnni:
-    # runs-on: [self-hosted, Windows]
-    runs-on: [windows-latest]
+    runs-on: [self-hosted, Windows]
     steps:
       - name: Set access token
         run: |
