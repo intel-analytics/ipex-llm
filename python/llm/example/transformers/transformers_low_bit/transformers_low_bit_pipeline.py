@@ -35,7 +35,7 @@ if __name__ == '__main__':
     low_bit = args.low_bit
     load_path = args.load_path
     if load_path:
-        model = AutoModelForCausalLM.from_low_bit(load_path)
+        model = AutoModelForCausalLM.load_low_bit(load_path)
         tokenizer = LlamaTokenizer.from_pretrained(load_path)
     else:
         # load_in_low_bit in bigdl.llm.transformers will convert
