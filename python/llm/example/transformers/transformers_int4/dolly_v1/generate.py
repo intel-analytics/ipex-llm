@@ -17,17 +17,25 @@
 import torch
 import time
 import argparse
+import numpy as np
 
 from bigdl.llm.transformers import AutoModelForCausalLM
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-MPT_PROMPT_FORMAT = "<human>{prompt} <bot>"
+# here the prompt tuning refers to https://huggingface.co/databricks/dolly-v1-6b#generate-text
+DOLLY_V1_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+### Instruction:
+{prompt}
+
+### Response:
+"""
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MPT model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="mosaicml/mpt-7b-chat",
-                        help='The huggingface repo id for the MPT to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Dolly v1 model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="databricks/dolly-v1-6b",
+                        help='The huggingface repo id for the Dolly v1 model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -40,27 +48,32 @@ if __name__ == '__main__':
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
     model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True,
-                                                 trust_remote_code=True)
+                                                 load_in_4bit=True)
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path,
-                                              trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = DOLLY_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
+        end_key_token_id=tokenizer.encode("### End")[0]
         st = time.time()
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
         # to obtain optimal performance with BigDL-LLM INT4 optimizations,
-        # it is important to set use_cache=True for MPT models
+        # it is important to set use_cache=True for Dolly v1 models
         output = model.generate(input_ids,
                                 use_cache=True,
-                                max_new_tokens=args.n_predict)
+                                max_new_tokens=args.n_predict,
+                                pad_token_id=tokenizer.pad_token_id,
+                                eos_token_id=end_key_token_id)
         end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
+        end_token_position = None
+        end_token_positions = np.where(output[0] == end_key_token_id)[0]
+        if len(end_token_positions) > 0:
+            end_token_position = end_token_positions[0]
+        output_str = tokenizer.decode(output[0][:end_token_position], skip_special_tokens=False)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)
