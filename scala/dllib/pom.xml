@@ -378,7 +378,7 @@
         </dependency>
 	<dependency>
             <groupId>ml.dmlc</groupId>
-            <artifactId>xgboost4j_${scala.major.version}</artifactId>
+            <artifactId>xgboost4j_2.12</artifactId>
             <version>1.6.2</version>
             <exclusions>
                 <exclusion>
@@ -393,7 +393,7 @@
         </dependency>
         <dependency>
             <groupId>ml.dmlc</groupId>
-            <artifactId>xgboost4j-spark_${scala.major.version}</artifactId>
+            <artifactId>xgboost4j-spark_2.12</artifactId>
             <version>1.6.2</version>
             <exclusions>
                 <exclusion>
