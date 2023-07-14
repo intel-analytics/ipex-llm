@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-from bigdl.nano.utils.common.safepickle import SafePickle
+from bigdl.nano.utils.common import SafePickle
 import yaml
 from pathlib import Path
 from typing import Sequence, Any, Union, Dict

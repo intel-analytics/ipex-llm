@@ -41,7 +41,7 @@ class HorovodBackend(Backend):
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
-        from bigdl.nano.utils.common.safepickle import SafePickle
+        from bigdl.nano.utils.common import SafePickle
         import subprocess
         import sys
 

@@ -17,7 +17,7 @@
 import pickle
 import hmac
 import hashlib
-from bigdl.nano.utils.common import invalidInputError
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 # Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
 # To safely use python pickle

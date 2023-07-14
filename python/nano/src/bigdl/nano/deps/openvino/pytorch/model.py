@@ -28,7 +28,7 @@ from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.context_manager import generate_context_manager, BaseContextManager
 from bigdl.nano.utils.pytorch import get_input_example, get_forward_args, \
     patch_attrs_from_model_to_object, MetaData
-from bigdl.nano.utils.common.safepickle import SafePickle
+from bigdl.nano.utils.common import SafePickle
 
 
 class PytorchOpenVINOModel(AcceleratedLightningModule):

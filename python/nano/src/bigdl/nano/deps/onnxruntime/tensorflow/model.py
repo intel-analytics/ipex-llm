@@ -16,7 +16,7 @@
 
 
 import os
-from bigdl.nano.utils.common.safepickle import SafePickle
+from bigdl.nano.utils.common import SafePickle
 from pathlib import Path
 from typing import Sequence, Any, Union, Dict
 from tempfile import TemporaryDirectory

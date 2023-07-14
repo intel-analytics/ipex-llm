@@ -26,7 +26,7 @@ from bigdl.nano.utils.common import invalidInputError
 from bigdl.nano.pytorch.context_manager import generate_context_manager, BaseContextManager
 from bigdl.nano.utils.pytorch import patch_attrs_from_model_to_object, \
     MetaData
-from bigdl.nano.utils.common.safepickle import SafePickle
+from bigdl.nano.utils.common import SafePickle
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
