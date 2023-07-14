@@ -26,6 +26,24 @@ from bigdl.orca.tfpark import TFDataset, TFEstimator
 from bigdl.orca.tfpark import ZooOptimizer
 
 
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
+
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
+
+
 def make_input_fn(data_df, label_df, mode, batch_size=-1, batch_per_thread=-1):
     if mode == tf.estimator.ModeKeys.TRAIN:
         def input_function():
@@ -51,6 +69,9 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--data_dir", dest="data_dir")
     (options, args) = parser.parse_args(sys.argv)
+
+    is_local_and_existing_uri(os.path.join(options.data_dir, 'train.csv'))
+    is_local_and_existing_uri(os.path.join(options.data_dir, 'eval.csv'))
 
     dftrain = pd.read_csv(os.path.join(options.data_dir, 'train.csv'))
     dfeval = pd.read_csv(os.path.join(options.data_dir, 'eval.csv'))

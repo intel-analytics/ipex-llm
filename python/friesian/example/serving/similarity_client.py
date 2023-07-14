@@ -22,7 +22,22 @@ import pandas as pd
 import argparse
 import time
 import threading
+from urllib.parse import urlparse
+from os.path import exists
+from bigdl.dllib.utils import log4Error
 
+
+def is_local_and_existing_uri(uri):
+    parsed_uri = urlparse(uri)
+
+    log4Error.invalidInputError(not parsed_uri.scheme or parsed_uri.scheme == 'file',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(not parsed_uri.netloc or parsed_uri.netloc.lower() == 'localhost',
+                                "Not Local File!")
+
+    log4Error.invalidInputError(exists(parsed_uri.path),
+                                "File Not Exist!")
 
 if 'http_proxy' in os.environ:
     del os.environ['http_proxy']
@@ -94,6 +109,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename="client.log", level=logging.INFO)
     args = parser.parse_args()
 
+    is_local_and_existing_uri(args.data_dir)
     df = pd.read_parquet(args.data_dir)
     id_list = df["tweet_id"].unique()
     n_thread = 4
