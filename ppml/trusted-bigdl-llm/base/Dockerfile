@@ -13,7 +13,7 @@ ARG https_proxy
 ADD utils.diff /opt/utils.diff
 ADD llm_cli.diff /opt/llm_cli.diff
 
-RUN pip3 install --pre --upgrade bigdl-llm[all] && \
+RUN pip3 install --pre --upgrade bigdl-llm[all]==2.4.0b20230710 && \
     # Remove all dependencies from nvidia as we are supposed to run in SGX
     pip3 list | grep nvidia | awk '{print $1}' | xargs pip3 uninstall -y && \
     # Replace bigdl-llm repo's with our our dependencies
