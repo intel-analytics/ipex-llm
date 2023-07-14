@@ -43,10 +43,10 @@ class _BaseAutoModelClass:
         Two new arguments are added to extend Hugging Face's from_pretrained method as follows:
         New Arguments:
             load_in_4bit: boolean value, True means load linear's weight to symmetric int 4.
-            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5 or
-                             sym_int8. The model's linear will be loaded into corresponding
-                             low-bit type. sym_int4 means symmetric int 4, asym_int4 means
-                             asymmetric int 4.
+            load_in_low_bit: str value, options are sym_int4, asym_int4, sym_int5, asym_int5
+                             or sym_int8. (sym_int4 means symmetric int 4, asym_int4 means
+                             asymmetric int 4, etc.). Relevant low bit optimizations will
+                             be applied to the model.
         """
         pretrained_model_name_or_path = kwargs.get("pretrained_model_name_or_path", None) \
             if len(args) == 0 else args[0]
@@ -78,7 +78,7 @@ class _BaseAutoModelClass:
         from .convert import ggml_convert_quant
         invalidInputError(q_k in ggml_tensor_qtype,
                           f"Unknown load_in_low_bit value: {q_k}, expected:"
-                          f" sym_int4, asym_int4, sym_int5, asym_int5, sym_int8.")
+                          f" sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
         qtype = ggml_tensor_qtype[q_k]
         model = cls.HF_Model.from_pretrained(*args, **kwargs)
         model = model.to("cpu")
@@ -107,7 +107,7 @@ class _BaseAutoModelClass:
 
         invalidInputError(bigdl_transformers_low_bit in ggml_tensor_qtype,
                           f"Unknown bigdl_transformers_low_bit value: {bigdl_transformers_low_bit},"
-                          f" expected sym_int4, asym_int4, sym_int5, asym_int5, sym_int8.")
+                          f" expected: sym_int4, asym_int4, sym_int5, asym_int5 or sym_int8.")
 
         # Speed up when loading model
         kwargs["low_cpu_mem_usage"] = True
