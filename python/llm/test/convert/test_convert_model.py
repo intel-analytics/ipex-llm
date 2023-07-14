@@ -79,6 +79,15 @@ class TestConvertModel(TestCase):
         model = AutoModelForCausalLM.from_pretrained(llama_model_path,
                                                      load_in_low_bit="sym_int8")
 
+    def test_transformer_convert_llama_save_load(self):
+        model = AutoModelForCausalLM.from_pretrained(llama_model_path,
+                                                     load_in_low_bit="asym_int4")
+        tempdir = tempfile.mkdtemp(dir=output_dir)
+        model.save_low_bit(tempdir)
+        newModel = AutoModelForCausalLM.load_low_bit(tempdir)
+        import shutil
+        shutil.rmtree(tempdir)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
