@@ -30,6 +30,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 import speech_recognition as sr
 import pyttsx3
 import argparse
+import time
 
 
 def prepare_chain(args):
@@ -47,6 +48,7 @@ def prepare_chain(args):
 
     # We use our BigdlNativeLLM to subsititute OpenAI web-required API
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+                               
     llm = BigdlNativeLLM(
             model_path=model_path,
             model_family=model_family,
@@ -62,14 +64,24 @@ def prepare_chain(args):
         verbose=True,
         memory=ConversationBufferWindowMemory(k=2),
     )
-
     return voiceassitant_chain
 
 
 def listen(voiceassitant_chain):
+
+
+    from bigdl.llm.transformers import AutoModelForSpeechSeq2Seq
+    from transformers import WhisperProcessor
+    import numpy as np
+    model_path = "./whisper-tiny.en"
+    processor = WhisperProcessor.from_pretrained(model_path)
+    recogn_model = AutoModelForSpeechSeq2Seq.from_pretrained(model_path, load_in_4bit=True)
+    recogn_model.config.forced_decoder_ids = None
+
+
     engine = pyttsx3.init()
     r = sr.Recognizer()
-    with sr.Microphone() as source:
+    with sr.Microphone(device_index=1, sample_rate=16000) as source:
         print("Calibrating...")
         r.adjust_for_ambient_noise(source, duration=5)
         # optional parameters to adjust microphone sensitivity
@@ -82,23 +94,28 @@ def listen(voiceassitant_chain):
             print("listening now...")
             try:
                 audio = r.listen(source, timeout=5, phrase_time_limit=30)
+                # refer to https://github.com/openai/whisper/blob/main/whisper/audio.py#L63
+                frame_data = np.frombuffer(audio.frame_data, np.int16).flatten().astype(np.float32) / 32768.0
                 print("Recognizing...")
-                # whisper model options are found here: https://github.com/openai/whisper#available-models-and-languages
-                # other speech recognition models are also available.
-                text = r.recognize_whisper(
-                    audio,
-                    model="medium.en",
-                    show_dict=True,
-                )["text"]
+                st = time.time()
+                input_features = processor(frame_data,
+                                           sampling_rate=audio.sample_rate,
+                                           return_tensors="pt").input_features
+                predicted_ids = recogn_model.generate(input_features)
+                text = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
+                time_0 = time.time() - st
+
             except Exception as e:
                 unrecognized_speech_text = (
-                    f"Sorry, I didn't catch that. Exception was: {e}s"
+                    f"Sorry, I didn't catch that. Exception was: \n {e}"
                 )
                 text = unrecognized_speech_text
-            print(text)
-
-            response_text = voiceassitant_chain.predict(human_input=text)
+            # print(text)
+            st = time.time()
+            response_text = voiceassitant_chain.predict(human_input=text,
+                                                        stop="\n")
             print(response_text)
+            print(f"Recognized in {time_0}s, Predicted in {time.time() - st}s")
             engine.say(response_text)
             engine.runAndWait()
 
