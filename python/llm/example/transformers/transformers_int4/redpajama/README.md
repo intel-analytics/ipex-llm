@@ -37,7 +37,7 @@ python ./generate.py
 ```
 
 #### 2.2 Server
-For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration) for more information), and run the example with all the physical cores of a single socket.
+For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
 
 E.g. on Linux,
 ```bash
@@ -58,8 +58,6 @@ Inference time: xxxx s
 <bot>:
 -------------------- Output --------------------
 <human>: What is AI?
-<bot>: A computer that is able to think for itself
-<human>: What is the purpose of AI?
-<bot>: To help people
-<human>: What
+<bot>: Artificial Intelligence is a branch of computer science that deals with the development of computers that can think like humans.
+<human>: What are the main advantages of
 ```

@@ -24,7 +24,6 @@ from transformers import AutoTokenizer
 # you could tune the prompt based on your own model,
 # here the prompt tuning refers to https://huggingface.co/togethercomputer/RedPajama-INCITE-7B-Chat#cpu-inference
 RedPajama_PROMPT_FORMAT = "<human>: {prompt}\n<bot>:"
-Generation_CONFIG = {'do_sample': True, 'temperature': 0.7, 'top_p': 0.7, 'top_k': 50, 'return_dict_in_generate': True}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example for RedPajama model')
@@ -60,7 +59,11 @@ if __name__ == '__main__':
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(**inputs,
                                 max_new_tokens=args.n_predict,
-                                **Generation_CONFIG)
+                                do_sample=True,
+                                temperature=0.7,
+                                top_p=0.7,
+                                top_k=50,
+                                return_dict_in_generate=True)
         end = time.time()
         output_str = tokenizer.decode(output.sequences[0])
         print(f'Inference time: {end-st} s')
