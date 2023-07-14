@@ -61,7 +61,7 @@ if __name__ == '__main__':
         output = model.generate(input_ids,
                                 max_new_tokens=args.n_predict)
         end = time.time()
-        output_str = tokenizer.decode(output[0], skip_special_tokens=False)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)
