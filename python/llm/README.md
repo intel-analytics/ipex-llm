@@ -191,13 +191,13 @@ The native code/lib in `bigdl-llm` has been built using the following tools; in 
 | ------------ | -------- | ------------------ | ----- |
 | llama        | Linux    | GCC 11.2.1         | 2.17  |
 | llama        | Windows  | MSVC 19.36.32532.0 |       |
-| llama        | Windows  | GCC 13.1.0         |       |
+| llama        | Windows  | Mingw-w64 11.0.0   |       |
 | gptneox      | Linux    | GCC 11.2.1         | 2.17  |
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
-| gptneox      | Windows  | GCC 13.1.0         |       |
+| gptneox      | Windows  | Mingw-w64 11.0.0   |       |
 | bloom        | Linux    | GCC 11.2.1         | 2.29  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
-| bloom        | Windows  | GCC 13.1.0         |       |
+| bloom        | Windows  | Mingw-w64 11.0.0   |       |
 | starcoder    | Linux    | GCC 11.2.1         | 2.29  |
 | starcoder    | Windows  | MSVC 19.36.32532.0 |       |
-| starcoder    | Windows  | GCC 13.1.0         |       |
+| starcoder    | Windows  | Mingw-w64 11.0.0   |       |
