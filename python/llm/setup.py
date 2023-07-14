@@ -69,7 +69,11 @@ def obtain_lib_urls():
     windows_binarys = ["llama.dll", "gptneox.dll", "bloom.dll",
                        "quantize-llama.exe", "quantize-gptneox.exe", "quantize-bloom.exe",
                        "main-llama.exe", "main-gptneox.exe", "main-bloom.exe",
-                       "starcoder.dll", "quantize-starcoder.exe", "main-starcoder.exe"]
+                       "starcoder.dll", "quantize-starcoder.exe", "main-starcoder.exe",
+                       "libllama_vnni.dll", "libgptneox_vnni.dll", "libbloom_vnni.dll",
+                       "quantize-llama_vnni.exe", "quantize-gptneox_vnni.exe", "quantize-bloom_vnni.exe",
+                       "main-llama_vnni.exe", "main-gptneox_vnni.exe", "main-bloom_vnni.exe",
+                       "starcoder_vnni.dll", "quantize-starcoder_vnni.exe", "main-starcoder_vnni.exe"]
     linux_binarys = ["libllama_avx2.so", "libgptneox_avx2.so", "libbloom_avx2.so",
                      "libllama_avx512.so", "libgptneox_avx512.so", "libbloom_avx512.so",
                      "quantize-llama", "quantize-gptneox", "quantize-bloom",
@@ -152,6 +156,18 @@ def setup_package():
         "libs/main-starcoder.exe",
         "libs/starcoder.dll",
         "libs/quantize-starcoder.exe",
+        "libs/libllama_vnni.dll", 
+        "libs/libgptneox_vnni.dll", 
+        "libs/libbloom_vnni.dll",
+        "libs/quantize-llama_vnni.exe",
+        "libs/quantize-gptneox_vnni.exe", 
+        "libs/quantize-bloom_vnni.exe",
+        "libs/main-llama_vnni.exe", 
+        "libs/main-gptneox_vnni.exe", 
+        "libs/main-bloom_vnni.exe",
+        "libs/starcoder_vnni.dll", 
+        "libs/quantize-starcoder_vnni.exe", 
+        "libs/main-starcoder_vnni.exe"
     ]
     package_data["Linux"] = [
         "libs/libllama_avx2.so",
