@@ -170,8 +170,9 @@ jobs:
           $env:Path = '${{ env.w64devkit_path }};' + $env:Path
           make
       - name: Move release binary
-        shell: bash
+        shell: powershell
         run: |
+          rm -r -fo release
           mkdir release
           mv build/main-bloom.exe release/main-bloom_vnni.exe
           mv build/quantize-bloom.exe release/quantize-bloom_vnni.exe
