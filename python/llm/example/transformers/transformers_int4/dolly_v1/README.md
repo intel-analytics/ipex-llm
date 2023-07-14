@@ -36,7 +36,7 @@ python ./generate.py
 ```
 
 #### 2.2 Server
-For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration) for more information), and run the example with all the physical cores of a single socket.
+For optimal performance on server, it is recommended to set several environment variables (refer to [here](../README.md#best-known-configuration-on-linux) for more information), and run the example with all the physical cores of a single socket.
 
 E.g. on Linux,
 ```bash
