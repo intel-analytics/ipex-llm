@@ -35,8 +35,7 @@ Arguments info:
 > Please select the appropriate size of the Dolly v1 model based on the capabilities of your machine.
 
 #### 3.1 Client
-On client Windows machine, it is recommended to run directly with full utilization of all cores.
-
+On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
 python ./generate.py 
 ```
