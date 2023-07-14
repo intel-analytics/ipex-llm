@@ -28,7 +28,7 @@ MOSS_PROMPT_FORMAT = "You are an AI assistant whose name is MOSS.\n- MOSS is a c
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transformer INT4 example for MOSS model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="fnlp/moss-moon-003-sft",
-                        help='The huggingface repo id for the MPT to be downloaded'
+                        help='The huggingface repo id for the MOSS to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="AI是什么?",
                         help='Prompt to infer')
@@ -53,12 +53,11 @@ if __name__ == '__main__':
         prompt = MOSS_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
         st = time.time()
-        # enabling `use_cache=True` allows the model to utilize the previous
-        # key/values attentions to speed up decoding;
-        # to obtain optimal performance with BigDL-LLM INT4 optimizations,
-        # it is important to set use_cache=True for MPT models
+        # if your selected model is capable of utilizing previous key/value attentions
+        # to enhance decoding speed, but has `"use_cache": false` in its model config,
+        # it is important to set `use_cache=True` explicitly in the `generate` function
+        # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
-                                use_cache=True,
                                 max_new_tokens=args.n_predict)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
