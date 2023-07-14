@@ -45,7 +45,6 @@ RUN pip3 install -r /opt/requirements.txt && \
     pip3 install pytorch_lightning==1.6.4 && \
     pip3 uninstall -y torchvision && \
     pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl && \
-    sed -i '9i\sys.insecure__allow_eventfd = true' /ppml/bash.manifest.template && \
     pip3 install --no-cache markupsafe==2.0.1
 
 WORKDIR /ppml
