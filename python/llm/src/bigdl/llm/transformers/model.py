@@ -22,10 +22,9 @@ from bigdl.llm.utils.common import invalidInputError
 
 
 def save_low_bit(self, *args, **kwargs):
-    invalidInputError(kwargs["bigdl_transformers_low_bit"],
-                      f"The model is not a low-bit model, please use save_pretrained.")
-    if not kwargs.get('variant', None):
-        kwargs['variant'] = kwargs['bigdl_transformers_low_bit']
+    invalidInputError(self.config.to_dict().get("bigdl_transformers_low_bit", False),
+                      f"Detected this model is not a low-bit model, please use from_pretrained's"
+                      f" load_in_4bit or load_in_low_bit parameter to load a 4-bit model first.")
     self.save_pretrained(*args, **kwargs)
 
 
