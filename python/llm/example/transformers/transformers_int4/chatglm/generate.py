@@ -19,25 +19,19 @@ import time
 import argparse
 import numpy as np
 
-from bigdl.llm.transformers import AutoModelForCausalLM
+from bigdl.llm.transformers import AutoModel
 from transformers import AutoTokenizer
 
 # you could tune the prompt based on your own model,
-# here the prompt format refers to https://huggingface.co/databricks/dolly-v1-6b#generate-text
-DOLLY_V1_PROMPT_FORMAT = """Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
-### Instruction:
-{prompt}
-
-### Response:
-"""
+# here the prompt tuning refers to https://huggingface.co/THUDM/chatglm-6b/blob/294cb13118a1e08ad8449ca542624a5c6aecc401/modeling_chatglm.py#L1281
+CHATGLM_V1_PROMPT_FORMAT = "问：{prompt}\n答："
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Transformer INT4 example for Dolly v1 model')
-    parser.add_argument('--repo-id-or-model-path', type=str, default="databricks/dolly-v1-6b",
-                        help='The huggingface repo id for the Dolly v1 model to be downloaded'
+    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for ChatGLM model')
+    parser.add_argument('--repo-id-or-model-path', type=str, default="THUDM/chatglm-6b",
+                        help='The huggingface repo id for the ChatGLM model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
-    parser.add_argument('--prompt', type=str, default="What is AI?",
+    parser.add_argument('--prompt', type=str, default="AI是什么？",
                         help='Prompt to infer')
     parser.add_argument('--n-predict', type=int, default=32,
                         help='Max tokens to predict')
@@ -47,32 +41,27 @@ if __name__ == '__main__':
 
     # Load model in 4 bit,
     # which convert the relevant layers in the model into INT4 format
-    model = AutoModelForCausalLM.from_pretrained(model_path,
-                                                 load_in_4bit=True)
+    model = AutoModel.from_pretrained(model_path,
+                                      load_in_4bit=True,
+                                      trust_remote_code=True)
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True)
     
     # Generate predicted tokens
     with torch.inference_mode():
-        prompt = DOLLY_V1_PROMPT_FORMAT.format(prompt=args.prompt)
+        prompt = CHATGLM_V1_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        end_key_token_id=tokenizer.encode("### End")[0]
         st = time.time()
         # if your selected model is capable of utilizing previous key/value attentions
         # to enhance decoding speed, but has `"use_cache": false` in its model config,
         # it is important to set `use_cache=True` explicitly in the `generate` function
         # to obtain optimal performance with BigDL-LLM INT4 optimizations
         output = model.generate(input_ids,
-                                max_new_tokens=args.n_predict,
-                                pad_token_id=tokenizer.pad_token_id,
-                                eos_token_id=end_key_token_id)
+                                max_new_tokens=args.n_predict)
         end = time.time()
-        end_token_position = None
-        end_token_positions = np.where(output[0] == end_key_token_id)[0]
-        if len(end_token_positions) > 0:
-            end_token_position = end_token_positions[0]
-        output_str = tokenizer.decode(output[0][:end_token_position], skip_special_tokens=False)
+        output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
         print('-'*20, 'Prompt', '-'*20)
         print(prompt)
