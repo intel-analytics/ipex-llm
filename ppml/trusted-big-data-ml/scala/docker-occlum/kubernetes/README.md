@@ -34,7 +34,7 @@ bash build-docker-image.sh
 2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
 3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master URL in `run_spark_xxx.sh`.
 4. Modify `driver.yaml` and `executor.yaml` for your applications.
-   In our demo example, we mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
+   In our demo example, we don't mount SGX devices into a container or pod. Mount device requires privileged: true. In a production deployment, please use K8S SGX device plugin with the device-plugin setting in yaml.
 
 ## Examples
 
@@ -151,21 +151,37 @@ And you can find the source code [here](https://github.com/intel-analytics/BigDL
 --modelSavePath hdfs://IP/input/output/iris
 ```
 
-### Generate SSL keys and ertificate
-You can get bash from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts/generate-ssl.sh).
-Then generate your ssl key and certificate in /ppml/keys, and mount it to `/opt/occlum_spark/image/ppml` in pods.
-If you run this examples in local node, you can mount like the `data-exchange`.
-Or you can use nfs server to mount:
+### Generate SSL keys and certificate
+You can get bash `generate-keys.sh` and `generate-password.sh` from [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/scripts).
+Make sure to add `${JAVA_HOME}/bin` to `$PATH` to avoid `keytool: command not found error`.
+
+Run the script to generate **keys/keys.yaml** and **password/password.yaml**
+  ```bash
+  sudo bash generate-keys.sh
+  sudo bash generate-password.sh YOUR_PASSWORD
+  ```
+
+Deploy **keys/keys.yaml** and **password/password.yaml** as secrets for Kubernetes
+  ```
+  kubectl apply -f keys/keys.yaml
+  kubectl apply -f password/password.yaml
+  ```
+Then mount them to `/opt/occlum_spark/image/ppml` in pods. For example, in *.yaml:
 ```
-#driver.yaml  and executor.yaml
+#driver.yaml and executor.yaml
 volumeMounts:
-- name: nfs-data
-  mountPath: /opt/occlum_spark/image/ppml
+- name: ssl-keys
+  mountPath: /opt/occlum_spark/image/ppml/keys
+- name: ssl-password
+  mountPath: /opt/occlum_spark/image/ppml/password
+
 volumes:
-  - name: nfs-data
-    nfs:
-      server: your_IP
-      path: /ppml
+  - name: ssl-keys
+    secret:
+      secretName: ssl-keys
+  - name: ssl-password
+    secret:
+      secretName: ssl-password
 ```
 
 Then:
@@ -177,6 +193,12 @@ Note that if you do not have ssl key and certificate in `/ppml/keys`, the distri
 [LightGBM] [Warning] Unable to set TLSV2 cipher, ignored and try to set TLSV3...
 error:1410D0B9:SSL routines:SSL_CTX_set_cipher_list:no cipher match
 error:1426E0B9:SSL routines:ciphersuite_cb:no cipher match
+```
+
+## Run PySpark LGBM model encrypt example
+Use the same steps as the previous LGBM example to generate ssl keys and select a KMS to use like [this](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/README.md#bigdl-pyspark-simplequery-e2e-example-using-simple-kms). The source code is [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum/py-examples/encrypted_lightgbm_model_io.py)
+```bash
+./run_spark_lgbm_encrypt_io.sh
 ```
 
 ## Run Spark LightGBMClassifier example using CriteoClickLogsDataset
@@ -437,84 +459,6 @@ Generate 1g Data like [this](https://github.com/intel-analytics/BigDL/tree/main/
     - name: SGX_KERNEL_HEAP
       value: "1GB"
 ```
-
-### [Deprecated] Spark XGBoost example
-
-> Warning: Running XGBoost in distributed mode is not safe due to the fact that Rabit's network (which contains gradient, split, and env) is not protected.
-
-#### UCI dataset [iris.data](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
-
-Prepare UCI dataset `iris.data` and put this file in folder `/tmp/xgboost_data`. 
-You can change the path to iris.data via change mount path `data-exchange` in `executor.yaml`.
-Then:
-```bash
-./run_spark_xgboost.sh
-```
-Parameters:
-
-* path_to_iris.data : String.
-
-  For example, yout host path to iris.data is `/tmp/xgboost_data/iris.data` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
-* num_threads : Int
-* num_round : Int
-* path_to_model_to_be_saved : String.
-
-After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
-
-#### Criteo 1TB Click Logs [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/)
-
-Split 1G data from this dataset and put it into `/tmp/xgboost_data`. 
-Then change the `class` in [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh#L7) to
-`com.intel.analytics.bigdl.dllib.example.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset`.
-
-Add these configurations to [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh):
-
-```bash
-    --conf spark.driver.extraClassPath=local:///opt/spark/jars/* \
-    --conf spark.executor.extraClassPath=local:///opt/spark/jars/* \
-    --conf spark.task.cpus=6 \
-    --conf spark.cores.max=12 \
-    --conf spark.executor.instances=2 \
-    --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=1g \
-    --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="12GB" \
-    --conf spark.kubernetes.driverEnv.SGX_HEAP="1GB" \
-    --conf spark.kubernetes.driverEnv.SGX_KERNEL_HEAP="2GB" \
-    --conf spark.executorEnv.SGX_MEM_SIZE="10GB" \
-    --conf spark.executorEnv.SGX_KERNEL_HEAP="1GB" \
-    --conf spark.executorEnv.SGX_HEAP="1GB" \
-    --executor-cores 6 \
-    --executor-memory 3g \
-    --driver-memory 1g \
-    --conf spark.executorEnv.SGX_EXECUTOR_JVM_MEM_SIZE_NO="3G" \
-    --conf spark.kubernetes.driverEnv.SGX_DRIVER_JVM_MEM_SIZE="1G" 
-```
-
-Change the `parameters` to:
-
-```commandline
--i /host/data/xgboost_data -s /host/data/xgboost_criteo_model -t 32 -r 100 -d 10 -w 2
-```
-
-Then:
-
-```bash
-./run_spark_xgboost.sh
-```
-Parameters:
-
-* -i means inputpath_to_Criteo_data : String.
-
-    For example, yout host path to Criteo dateset is `/tmp/xgboost_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
-* -s means savepath_to_model_to_be_saved : String.
-
-    After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
-
-* -t means num_threads : Int
-* -r means num_round : Int
-* -d means max_depth: Int.
-* -w means num_workers: Int.
-
-**Note: make sure num_threads is no larger than spark.task.cpus.**
 
 ## How to debug
 

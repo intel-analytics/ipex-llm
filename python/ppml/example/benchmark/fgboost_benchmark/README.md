@@ -53,8 +53,8 @@ java -cp $PPML_JAR com.intel.analytics.bigdl.ppml.fl.example.benchmark.FGBoostRe
     --dataSize 10 --numRound 5
     
 # python cmd
-python python/ppml/example/benchmark/fgboost_benchmark/fgboost_dummy_data_benchmark.py 
-    --train_path scala/ppml/demo/data/house-prices-train-preprocessed.csv
-    --test_path scala/ppml/demo/data/house-prices-test-preprocessed.csv
+python python/ppml/example/benchmark/fgboost_benchmark/fgboost_real_data_benchmark.py \
+    --train_path scala/ppml/demo/data/house-prices-train-preprocessed.csv \
+    --test_path scala/ppml/demo/data/house-prices-test-preprocessed.csv \
     --data_size 10 --num_round 5
 ```

@@ -181,7 +181,6 @@ public class FeatureServer extends GrpcServerBase {
             try {
                 result = getFeatures(request, SearchType.USER);
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.warn(e.getMessage());
                 responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
                         .asRuntimeException());
@@ -198,7 +197,6 @@ public class FeatureServer extends GrpcServerBase {
             try {
                 result = getFeatures(request, SearchType.ITEM);
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.warn(e.getMessage());
                 responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
                         .asRuntimeException());

@@ -18,6 +18,10 @@ import warnings
 from functools import wraps
 import importlib
 import sys
+import pickle
+import hmac
+import hashlib
+from bigdl.nano.utils.common import invalidInputError
 
 
 def deprecated(message=""):
@@ -91,3 +95,36 @@ class LazyImport:
         module = importlib.import_module(module_name, package=self.pkg)
         function = getattr(module, function_name)
         return function(*args, **kwargs)
+
+
+# Refer to this guide https://www.synopsys.com/blogs/software-security/python-pickling/
+# To safely use python pickle
+class SafePickle:
+    key = b'shared-key'
+    """
+    Example:
+        >>> from bigdl.chronos.utils import SafePickle
+        >>> with open(file_path, 'wb') as file:
+        >>>     signature = SafePickle.dump(data, file, return_digest=True)
+        >>> with open(file_path, 'rb') as file:
+        >>>     data = SafePickle.load(file, signature)
+    """
+    @classmethod
+    def dump(self, obj, file, return_digest=False, *args, **kwargs):
+        if return_digest:
+            pickled_data = pickle.dumps(obj)
+            file.write(pickled_data)
+            digest = hmac.new(self.key, pickled_data, hashlib.sha1).hexdigest()
+            return digest
+        else:
+            pickle.dump(obj, file, *args, **kwargs)
+
+    @classmethod
+    def load(self, file, digest=None, *args, **kwargs):
+        if digest:
+            content = file.read()
+            new_digest = hmac.new(self.key, content, hashlib.sha1).hexdigest()
+            if digest != new_digest:
+                invalidInputError(False, 'Pickle safe check failed')
+            file.seek(0)
+        return pickle.load(file, *args, **kwargs)

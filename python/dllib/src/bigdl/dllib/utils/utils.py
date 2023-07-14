@@ -83,7 +83,7 @@ def detect_conda_env_name():
     # This only works for anaconda3
     import subprocess
     pro = subprocess.Popen(
-        "conda info",
+        ["conda", "info"],
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
@@ -282,3 +282,8 @@ def remove_batch(shape):
         return [remove_batch(s) for s in shape]
     else:
         return list(shape[1:])
+
+
+def is_valid_ip_address(ip):
+    pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
+    return re.match(pattern, ip) is not None

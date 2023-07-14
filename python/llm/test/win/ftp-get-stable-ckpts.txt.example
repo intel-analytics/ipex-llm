@@ -1,0 +1,8 @@
+open $HOST_IP $PORT
+ftp_username
+ftp_password
+prompt
+cd llm/ggml-actions/stable/
+lcd $BASE_DIR\stable_ckpts
+mget *
+quit

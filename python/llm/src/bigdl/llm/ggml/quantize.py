@@ -24,6 +24,13 @@ from pathlib import Path
 dirname, _ = os.path.split(os.path.abspath(__file__))
 libs_dirname = os.path.dirname(dirname)
 
+# ggml quantized tensor type, this is different from below file quantized type(_quantize_type)
+ggml_tensor_qtype = {"sym_int4": 2,   # q4_0 in ggml
+                     "asym_int4": 3,  # q4_1 in ggml
+                     "sym_int5": 6,   # q5_0 in ggml
+                     "asym_int5": 7,  # q5_1 in ggml
+                     "sym_int8": 8}   # q8_0 in ggml
+
 _llama_quantize_type = {"q4_0": 2,
                         "q4_1": 3,
                         "q5_0": 8,
@@ -36,10 +43,16 @@ _gptneox_quantize_type = {"q4_0": 2,
                           "q5_0": 8,
                           "q5_1": 9,
                           "q8_0": 7}
+_starcoder_quantize_type = {"q4_0": 2,
+                            "q4_1": 3,
+                            "q5_0": 8,
+                            "q5_1": 9,
+                            "q8_0": 7}
 
 _quantize_type = {"llama": _llama_quantize_type,
                   "bloom": _bloom_quantize_type,
-                  "gptneox": _gptneox_quantize_type}
+                  "gptneox": _gptneox_quantize_type,
+                  "starcoder": _starcoder_quantize_type}
 
 
 def quantize(input_path: str, output_path: str,
@@ -52,24 +65,25 @@ def quantize(input_path: str, output_path: str,
             save all related output. Filename of quantized model will be like
             `bigdl_llm_llama_q4_0.bin`.
     :param model_family: Which model family your input model belongs to.
-            Now only `llama`/`bloom`/`gptneox` are supported.
+            Now only `llama`/`bloom`/`gptneox`/`starcoder` are supported.
     :param dtype: Quantization method which differs in the resulting model disk size and
             inference speed. Defalut to `q4_0`. Difference model family may support
             different types, now the supported list is:
             llama : "q4_0", "q4_1", "q4_2"
             bloom : "q4_0", "q4_1"
             gptneox : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
+            starcoder : "q4_0", "q4_1", "q5_0", "q5_1", "q8_0"
 
     :return: the path str to the converted ggml binary checkpoint
     """
-    invalidInputError(model_family in ['llama', 'bloom', 'gptneox'],
+    invalidInputError(model_family in ['llama', 'bloom', 'gptneox', 'starcoder'],
                       "Now we only support quantization of model \
-                       family('llama', 'bloom', 'gptneox')",
+                       family('llama', 'bloom', 'gptneox', 'starcoder')",
                       "{} is not in the list.".format(model_family))
     invalidInputError(os.path.isfile(input_path),
-                      "The file {} was not found".format(input_path))
+                      "The file {} is not found".format(input_path))
     invalidInputError(os.path.isdir(output_path),
-                      "The output_path {} was not a directory".format(output_path))
+                      "The output_path {} is not a directory".format(output_path))
     # convert quantize type str into corresponding int value
     quantize_type_map = _quantize_type[model_family]
     output_filename = "bigdl_llm_{}_{}.bin".format(model_family,

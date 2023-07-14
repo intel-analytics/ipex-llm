@@ -49,7 +49,6 @@ class PPMLContext {
    * @param path data file path
    * @param minPartitions min partitions
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
-   * @param kmsName for multi-data source/KMS mode, name of kms which this data source uses
    * @param primaryKeyName use the name-specific primary key to decrypt data key in file meata
    * @return
    */

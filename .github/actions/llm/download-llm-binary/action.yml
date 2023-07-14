@@ -1,0 +1,19 @@
+name: Download LLM binary files
+description: Download built binary files from github artifact
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download all build files
+      uses: actions/download-artifact@v3
+    - name: Move build resources
+      shell: bash
+      run: |
+        rm -rf python/llm/llm-binary || true
+        mkdir python/llm/llm-binary
+        mv linux-avx2/* python/llm/llm-binary/
+        mv linux-avx512/* python/llm/llm-binary/
+        mv windows-avx2/* python/llm/llm-binary/
+        rm -rf linux-avx2 || true
+        rm -rf linux-avx512 || true
+        rm -rf windows-avx2 || true

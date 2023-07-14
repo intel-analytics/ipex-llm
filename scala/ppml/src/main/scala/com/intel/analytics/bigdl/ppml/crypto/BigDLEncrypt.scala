@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
-import scala.util.Random
+import java.security.SecureRandom
 
 /**
  * BigDL general crypto for encrypt and decrypt data.
@@ -279,7 +279,7 @@ class BigDLEncrypt extends Crypto {
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
-    val header = read(inputStream, 25)
+    val header = read(inputStream, 400)
     verifyHeader(header)
     while (inputStream.available() != 0) {
       val decrypted = decryptPart(inputStream, byteBuffer)

@@ -1,0 +1,13 @@
+name: 'BigDL-LLM inference tests'
+description: 'BigDL-LLM inference tests'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Test LLM inference
+      shell: bash
+      run: |
+        source $CONDA_HOME/bin/activate bigdl-llm-test
+        $CONDA_HOME/bin/conda info
+        bash python/llm/test/run-llm-inference-tests.sh
+        source $CONDA_HOME/bin/deactivate

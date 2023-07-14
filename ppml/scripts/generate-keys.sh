@@ -2,7 +2,7 @@
 OUTPUT=keys.yaml
 
 mkdir -p keys && cd keys
-openssl genrsa -des3 -out server.key 2048
+openssl genrsa -aes256 -out server.key 3072
 openssl req -new -key server.key -out server.csr
 openssl x509 -req -days 9999 -in server.csr -signkey server.key -out server.crt
 #cat server.key > server.pem

@@ -37,7 +37,7 @@ runs:
             --env https_proxy="http://child-prc.intel.com:913" \
             --name=${CONTAINER_NAME} \
             $IMAGE \
-            bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && git clone https://github.com/intel-analytics/BigDL.git && cd BigDL/python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
+            bash -c "pip install tensorflow==2.9.0 torch==1.7.1 pytest argparse && export GIT_SSL_NO_VERIFY=1 && git clone https://github.com/intel-analytics/BigDL.git && cd BigDL/python/orca/dev/test && bash ./run-pytests-basic-env.sh && bash ./run-pytests-basic-pytorch.sh && bash ./run-pytests-basic-tf2.sh" 
 
         exit_status=$(docker wait ${CONTAINER_NAME})
 

@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "required": [
+        "imageName",
+        "TEEMode",
+	"PCCSUrl",
+        "backendNum",
+        "modelName",
+        "inferencePort",
+        "managementPort",
+        "metricsPort",
+        "backendPort",
+	"istioTLSEnabled"
+    ],
+    "properties": {
+      "imageName": {
+        "type": "string"
+      },
+      "TEEMode": {
+        "type": "string",
+        "pattern": "^(sgx|tdx|native)$"
+      },
+      "PCCSUrl": {
+	"anyOf": [ 
+          { 
+	    "type": "string",
+            "maxLength": 0
+          }, 
+          {
+	    "type": "string",
+            "format": "uri"
+	  }
+	]
+      },
+      "backendNum": {
+        "type": "number"
+      },
+      "managementPort": {
+        "type": "number"
+      },
+      "metricsPort": {
+        "type": "number"
+      },
+      "backendPort": {
+        "type": "number"
+      },
+      "istioTLSEnabled": {
+	"type": "boolean"
+      }
+    }
+}

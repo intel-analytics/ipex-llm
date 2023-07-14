@@ -137,7 +137,10 @@ class LogMonitor:
         logger_thread.join()
         thread_stopped.clear()
         if os.path.exists(log_path):
-            os.remove(log_path)
+            try:
+                os.remove(log_path)
+            except Exception as e:
+                print(e)
 
 
 def start_log_server(ip, port):
@@ -147,15 +150,15 @@ def start_log_server(ip, port):
 
         """
         import zmq
-        context = zmq.Context()
-        socket = context.socket(zmq.REP)
-        socket.bind("tcp://{}:{}".format(ip, port))
-        logger.info("started log server on {}:{}".format(ip, port))
+        with zmq.Context() as context:
+            with context.socket(zmq.REP) as socket:
+                socket.bind("tcp://{}:{}".format(ip, port))
+                logger.info("started log server on {}:{}".format(ip, port))
 
-        while True:
-            message = socket.recv()
-            print(message.decode("utf-8"))
-            socket.send(b"received")
+                while True:
+                    message = socket.recv()
+                    print(message.decode("utf-8"))
+                    socket.send(b"received")
 
     import threading
     logger_thread = threading.Thread(
@@ -186,8 +189,8 @@ def stop_log_server(thread, ip, port):
         def stop_thread(thread):
             _async_raise(thread.ident, SystemExit)
 
-        context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.connect("tcp://{}:{}".format(ip, port))
-        socket.send_string("shutdown log server")
+        with zmq.Context() as context:
+            with context.socket(zmq.REQ) as socket:
+                socket.connect("tcp://{}:{}".format(ip, port))
+                socket.send_string("shutdown log server")
         stop_thread(thread)

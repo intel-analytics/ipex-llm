@@ -24,7 +24,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.collection.mutable
 import scala.collection.mutable.WrappedArray
-import scala.util.Random
+import java.security.SecureRandom
 
 private[friesian] object Utils {
   def fillNaIndex(df: DataFrame, fillVal: Any, columns: Array[Int]): DataFrame = {
@@ -241,7 +241,7 @@ private[friesian] object Utils {
   }
 
   def addNegtiveItem[T](negNum: Int, itemSize: Int): Int => Seq[(Int, Int)] = {
-    val r = new Random()
+    val r = new SecureRandom()
     (itemId: Int) =>
       (1 to negNum).map(x => {
         var negItem = 0
@@ -253,9 +253,9 @@ private[friesian] object Utils {
   }
 
   def addNegativeList[T](negNum: Int, itemSize: Int): mutable.WrappedArray[Int] => Seq[Seq[Int]] = {
-    val r = new Random()
+    val r = new SecureRandom()
     (history: WrappedArray[Int]) => {
-      val r = new Random()
+      val r = new SecureRandom()
       val negItemSeq: Seq[Seq[Int]] = (0 to history.length - 1).map(i => {
         (0 to negNum - 1).map(j => {
           var negItem = 0

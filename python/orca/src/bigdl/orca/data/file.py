@@ -22,6 +22,7 @@ import functools
 import glob
 from distutils.dir_util import copy_tree
 from bigdl.dllib.utils.log4Error import invalidOperationError
+from bigdl.dllib.utils import file_utils
 
 from typing import TYPE_CHECKING, List, Callable, Union, Optional
 if TYPE_CHECKING:
@@ -52,7 +53,7 @@ def open_text(path: str) -> List[str]:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -62,8 +63,9 @@ def open_text(path: str) -> List[str]:
         if path.startswith("file://"):
             path = path[len("file://"):]
         lines = []
-        for line in open(path):
-            lines.append(line)
+        with open(path) as f:
+            for line in f:
+                lines.append(line)
     return [line.strip() for line in lines]
 
 
@@ -90,12 +92,13 @@ def open_image(path: str) -> "JpegImageFile":
         from io import BytesIO
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         data = s3_client.get_object(Bucket=bucket, Key=key)
-        return Image.open(BytesIO(data["Body"].read()))
+        with BytesIO(data["Body"].read()) as f:
+            return Image.open(f)
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -129,7 +132,7 @@ def load_numpy(path: str) -> "ndarray":
         from io import BytesIO
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -155,7 +158,7 @@ def exists(path: str) -> bool:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -167,13 +170,7 @@ def exists(path: str) -> bool:
             invalidOperationError(False, str(ex), cause=ex)
         return True
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -test -e {}; echo $?'.format(path)
-        result = subprocess.getstatusoutput(cmd)
-        if result[0] == 0:
-            return result[1] == '0'
-        else:
-            invalidOperationError(False, result[1])
-        return False
+        return file_utils.exists(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -192,13 +189,7 @@ def listdir(path: str) -> List[str]:
         invalidOperationError(False, "not implement")
         return []
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -ls -C {}'.format(path)
-        result = subprocess.getstatusoutput(cmd)
-        if result[0] == 0:
-            return result[1].split('\n')[:-1]
-        else:
-            invalidOperationError(False, result[1])
-        return []
+        return file_utils.get_file_list(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -219,16 +210,13 @@ def makedirs(path: str) -> None:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
         return s3_client.put_object(Bucket=bucket, Key=key, Body='')
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -mkdir {}'.format(path)
-        result = subprocess.getstatusoutput(cmd)
-        if result[0] != 0:
-            invalidOperationError(False, result[1])
+        return file_utils.mkdirs(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -246,10 +234,7 @@ def rmdir(path: str) -> None:
     if path.startswith("s3"):  # s3://bucket/file_path
         invalidOperationError(False, "not implement")
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -rm -r {}'.format(path)
-        result = subprocess.getstatusoutput(cmd)
-        if result[0] != 0:
-            invalidOperationError(False, result[1])
+        file_utils.rmdir(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -270,7 +255,6 @@ def write_text(path: str, text: str) -> int:
         fs = pa.hdfs.connect()
         with fs.open(path, 'wb') as f:
             result = f.write(text.encode('utf-8'))
-            f.close()
             return result
     elif path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
@@ -278,7 +262,7 @@ def write_text(path: str, text: str) -> int:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -288,7 +272,6 @@ def write_text(path: str, text: str) -> int:
             path = path[len("file://"):]
         with open(path, 'w') as f:
             result = f.write(text)
-            f.close()
             return result
 
 
@@ -306,7 +289,7 @@ def is_file(path: str) -> bool:
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -323,13 +306,7 @@ def is_file(path: str) -> bool:
             invalidOperationError(False, str(ex), cause=ex)
             return False
     elif path.startswith("hdfs://"):
-        cmd = 'hdfs dfs -test -f {}; echo $?'.format(path)
-        result = subprocess.getstatusoutput(cmd)
-        if result[0] == 0:
-            return result[1] == '0'
-        else:
-            invalidOperationError(False, result[1])
-        return False
+        return file_utils.is_file(path)
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
@@ -341,8 +318,8 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
         import pyarrow as pa
         host_port = remote_dir.split("://")[1].split("/")[0].split(":")
-        classpath = subprocess.Popen(["hadoop", "classpath", "--glob"],
-                                     stdout=subprocess.PIPE).communicate()[0]
+        with subprocess.Popen(["hadoop", "classpath", "--glob"], stdout=subprocess.PIPE) as p:
+            classpath = p.communicate()[0]
         os.environ["CLASSPATH"] = classpath.decode("utf-8")
         if len(host_port) > 1:
             fs = pa.hdfs.connect(host=host_port[0], port=int(host_port[1]))
@@ -359,7 +336,7 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -372,34 +349,19 @@ def put_local_dir_to_remote(local_dir: str, remote_dir: str):
         copy_tree(local_dir, remote_dir)
 
 
-def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
+def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str,
+                                 over_write: Optional[bool] = False):
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        test_cmd = 'hdfs dfs -ls {}'.format(remote_dir)
-        process = subprocess.Popen(test_cmd, shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        out, err = process.communicate()
-        if process.returncode != 0:
-            if 'No such file or directory' in err.decode('utf-8'):
-                mkdir_cmd = 'hdfs dfs -mkdir -p {}'.format(remote_dir)
-                mkdir_process = subprocess.Popen(mkdir_cmd, shell=True)
-                ret = mkdir_process.wait()
-                if ret != 0:
-                    return ret
-            else:
-                # ls remote dir error
-                logger.warning(err.decode('utf-8'))
-                return -1
-        cmd = 'hdfs dfs -put -f {}/* {}/'.format(local_dir, remote_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        return file_utils.put_local_dir_tree_to_remote(local_dir=local_dir,
+                                                       remote_dir=remote_dir,
+                                                       over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -427,21 +389,12 @@ def put_local_dir_tree_to_remote(local_dir: str, remote_dir: str):
 
 
 def put_local_file_to_remote(local_path: str, remote_path: str,
-                             filemode: Optional[int] = None) -> int:
+                             filemode: Optional[int] = None,
+                             over_write: Optional[bool] = False) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        try:
-            cmd = 'hdfs dfs -put -f {} {}'.format(local_path, remote_path)
-            process = subprocess.Popen(cmd, shell=True)
-            process.wait()
-            if filemode:
-                chmod_cmd = 'hdfs dfs -chmod {} {}'.format(filemode, remote_path)
-                process = subprocess.Popen(chmod_cmd, shell=True)
-                process.wait()
-        except Exception as e:
-            logger.error("Cannot upload file {} to {}: error: {}"
-                         .format(local_path, remote_path, str(e)))
-            return -1
-        return 0
+        return file_utils.put_local_file_to_remote(local_path=local_path,
+                                                   remote_path=remote_path,
+                                                   over_write=over_write)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
@@ -449,7 +402,7 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         try:
             s3_client = boto3.Session(
                 aws_access_key_id=access_key_id,
-                aws_secret_access_key=secret_access_key).client('s3', verify=False)
+                aws_secret_access_key=secret_access_key).client('s3')
             path_parts = remote_path.split("://")[1].split('/')
             bucket = path_parts.pop(0)
             prefix = "/".join(path_parts)
@@ -474,19 +427,20 @@ def put_local_file_to_remote(local_path: str, remote_path: str,
         return 0
 
 
-def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: str) -> int:
+def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: str,
+                                          over_write: Optional[bool] = False) -> int:
     file_list = glob.glob(local_path_prefix + "*")
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -put -f {}* {}'.format(local_path_prefix, remote_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        return file_utils.put_local_files_with_prefix_to_remote(local_path_prefix=local_path_prefix,
+                                                                remote_dir=remote_dir,
+                                                                over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -509,18 +463,19 @@ def put_local_files_with_prefix_to_remote(local_path_prefix: str, remote_dir: st
         return 0
 
 
-def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
+def get_remote_file_to_local(remote_path: str, local_path: str,
+                             over_write: Optional[bool] = False) -> int:
     if remote_path.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get {} {}'.format(remote_path, local_path)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        return file_utils.get_remote_file_to_local(remote_path=remote_path,
+                                                   local_path=local_path,
+                                                   over_write=over_write)
     elif remote_path.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
@@ -537,18 +492,19 @@ def get_remote_file_to_local(remote_path: str, local_path: str) -> int:
         return 0
 
 
-def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
+def get_remote_dir_to_local(remote_dir: str, local_dir: str,
+                            over_write: Optional[bool] = False) -> int:
     if remote_dir.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get {} {}'.format(remote_dir, local_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        return file_utils.get_remote_dir_tree_to_local(remote_dir=remote_dir,
+                                                       local_dir=local_dir,
+                                                       over_write=over_write)
     elif remote_dir.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_dir.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -570,19 +526,21 @@ def get_remote_dir_to_local(remote_dir: str, local_dir: str) -> int:
 
 
 def get_remote_files_with_prefix_to_local(remote_path_prefix: str,
-                                          local_dir: str) -> Union[str, int]:
+                                          local_dir: str,
+                                          over_write: Optional[bool] = False) -> Union[str, int]:
     prefix = os.path.basename(remote_path_prefix)
     if remote_path_prefix.startswith("hdfs"):  # hdfs://url:port/file_path
-        cmd = 'hdfs dfs -get {}* {}'.format(remote_path_prefix, local_dir)
-        process = subprocess.Popen(cmd, shell=True)
-        return process.wait()
+        return file_utils.get_remote_files_with_prefix_to_local(
+            remote_path_prefix=remote_path_prefix,
+            local_dir=local_dir,
+            over_write=over_write)
     elif remote_path_prefix.startswith("s3"):  # s3://bucket/file_path
         access_key_id = os.environ["AWS_ACCESS_KEY_ID"]
         secret_access_key = os.environ["AWS_SECRET_ACCESS_KEY"]
         import boto3
         s3_client = boto3.Session(
             aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key).client('s3', verify=False)
+            aws_secret_access_key=secret_access_key).client('s3')
         path_parts = remote_path_prefix.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         prefix = "/".join(path_parts)
@@ -619,21 +577,14 @@ def enable_multi_fs_load_static(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path.strip("/").split("/")[-1])
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            if is_file(path):
-                get_remote_file_to_local(path, temp_path)
-            else:
-                os.mkdir(temp_path)
-                get_remote_dir_to_local(path, temp_path)
-            try:
-                return load_func(temp_path, *args, **kwargs)
-            finally:
-                if os.path.isdir(temp_path):
-                    import shutil
-                    shutil.rmtree(temp_path)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                if is_file(path):
+                    get_remote_file_to_local(path, temp_path)
                 else:
-                    os.remove(temp_path)
-
+                    os.makedirs(temp_path)
+                    get_remote_dir_to_local(path, temp_path)
+                return load_func(temp_path, *args, **kwargs)
     return fs_load
 
 
@@ -650,13 +601,10 @@ def enable_multi_fs_save(save_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
                 result = save_func(obj, temp_path, *args, **kwargs)
                 put_local_file_to_remote(temp_path, path)
-            finally:
-                os.remove(temp_path)
             return result
 
     return fs_save
@@ -675,11 +623,9 @@ def enable_multi_fs_load(load_func: Callable) -> Callable:
             from bigdl.dllib.utils.file_utils import append_suffix
             file_name = str(uuid.uuid1())
             file_name = append_suffix(file_name, path)
-            temp_path = os.path.join(tempfile.gettempdir(), file_name)
-            get_remote_file_to_local(path, temp_path)
-            try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                temp_path = os.path.join(tmpdir, file_name)
+                get_remote_file_to_local(path, temp_path)
                 return load_func(obj, temp_path, *args, **kwargs)
-            finally:
-                os.remove(temp_path)
 
     return fs_load

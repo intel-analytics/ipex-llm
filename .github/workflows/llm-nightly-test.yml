@@ -1,0 +1,75 @@
+name: LLM Nightly Tests
+
+# Controls when the action will run.
+on:
+  schedule:
+    - cron: '00 13 * * *' # GMT time, 13:00 GMT == 21:00 China
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/llm-nightly-test.yml'
+      - '.github/actions/llm/setup-llm-env/action.yml'
+      - '.github/actions/llm/remove-llm-env/action.yml'
+      - '.github/actions/llm/convert-test/action.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+  llm-nightly-convert-test-avx512:
+    runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
+    needs: llm-cpp-build
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    env:
+      ORIGIN_DIR: ./llm/models
+      LLAMA_ORIGIN_PATH: ./llm/models/llama-7b-hf
+      GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
+      BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
+      STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
+      INT4_CKPT_DIR: ./llm/ggml-actions/nightly
+      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
+      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
+      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
+      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+
+      - name: Download llm binary
+        uses: ./.github/actions/llm/download-llm-binary
+      
+      - name: Install BigDL-LLM
+        uses: ./.github/actions/llm/setup-llm-env
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Download original models & convert 
+        uses: ./.github/actions/llm/convert-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Upload ckpt to ftp
+        run: |
+          apt-get update && apt install tnftp
+          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_llama_7b_q4_0.bin $LLAMA_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_redpajama_7b_q4_0.bin $GPTNEOX_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
+          tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
+
+      - name: Clean up test environment
+        uses: ./.github/actions/llm/remove-llm-env
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}

@@ -83,7 +83,7 @@ statefulset.apps/pccs   1/1     18s
 ## 3. Check if pccs service is running and available:
 Execute command to check if pccs service is available.
 ```bash
-curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v3/rootcacrl"
+curl -v -k -G "https://<your_pccs_ip>:<your_pccs_port>/sgx/certification/v4/rootcacrl"
 
 # you will get similar to below if success
 
