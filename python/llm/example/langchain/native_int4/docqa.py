@@ -19,6 +19,8 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+# Code is adapted from https://python.langchain.com/docs/modules/chains/additional/question_answering.html
+
 import argparse
 
 from langchain.vectorstores import Chroma
@@ -71,7 +73,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Question Answering over Docs Example')
+    parser = argparse.ArgumentParser(description='BigdlNativeLLM Langchain QA over Docs Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
                         choices=["llama", "bloom", "gptneox"],
                         help='the model family')

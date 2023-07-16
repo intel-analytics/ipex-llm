@@ -109,7 +109,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Voice Assistant Example')
+    parser = argparse.ArgumentParser(description='BigdlNativeLLM Langchain Voice Assistant Example')
     parser.add_argument('-x','--model-family', type=str, required=True,
                         help='the model family')
     parser.add_argument('-m','--model-path', type=str, required=True,
