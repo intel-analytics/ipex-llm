@@ -33,6 +33,7 @@ def get_avx_flags():
             invalidOperationError(False, "Unsupported CPUFLAGS.")
     return avx
 
+
 def get_shard_lib_info(lib_base_name: str):
     # Determine the file extension based on the platform
     if sys.platform.startswith("linux") or sys.platform == "darwin":
@@ -49,8 +50,8 @@ def get_shard_lib_info(lib_base_name: str):
     # Construct the paths to the possible shared library names (python/llm/src/bigdl/llm/libs)
     _base_path = pathlib.Path(__file__).parent.parent.resolve()
     _base_path = _base_path / 'libs'
-    # Searching for the library in the current directory under the name "lib{lib_base_name}" (default name
-    # for llmcpp) and "{lib_base_name}" (default name for this repo)
+    # Searching for the library in the current directory under the name "lib{lib_base_name}" 
+    # (default name for llmcpp) and "{lib_base_name}" (default name for this repo)
     _lib_paths = [
         _base_path / f"lib{lib_base_name}{avx}{vnni}{lib_ext}",
         _base_path / f"{lib_base_name}{avx}{vnni}{lib_ext}",
