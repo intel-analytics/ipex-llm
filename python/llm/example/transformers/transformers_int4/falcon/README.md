@@ -18,12 +18,11 @@ pip install einops # additional package required for falcon-7b-instruct and falc
 ```
 
 ### 2. (Optional) Download Model and Replace File
-If you select the Falcon models [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct), please note that there is a bug in their model implementation (`modelling_RW.py`) that causes failures when using the KV cache. Consequently, the BigDL-LLM INT4 optimization may not achieve optimal performance with these models.
+If you select the Falcon models ([tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct)), please note that their code (`modelling_RW.py`) does not support KV cache at the moment. To address issue, we have provided two updated files ([falcon-7b-instruct/modelling_RW.py](./falcon-7b-instruct/modelling_RW.py) and [falcon-40b-instruct/modelling_RW.py](./falcon-40b-instruct/modelling_RW.py)), which can be used to achieve the best performance using BigDL-LLM INT4 optimizations with KV cache support.
 
-To address this issue, we have provided two files: [src/falcon-7b-instruct/modelling_RW.py](./src/falcon-7b-instruct/modelling_RW.py) and [src/falcon-40b-instruct/modelling_RW.py](./src/falcon-40b-instruct/modelling_RW.py). You can replace the `modelling_RW.py file` in the `tiiuae/falcon-7b-instruct` or `tiiuae/falcon-40b-instruct` model files respectively with these files. By doing so, you can resolve the KV cache bug and obtain optimal performance from the BigDL-LLM INT4 optimization.
 
 #### 2.1 Download Model
-You could use the following code to download  [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) with a specific snapshot id. Please note that the provided patched `modelling_RW.py` files are specifically based on these commits.
+You could use the following code to download  [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) with a specific snapshot id. Please note that the `modelling_RW.py` files that we provide are based on these specific commits
 
 ```python
 from huggingface_hub import snapshot_download
@@ -31,20 +30,20 @@ from huggingface_hub import snapshot_download
 # for tiiuae/falcon-7b-instruct
 model_path = snapshot_download(repo_id='tiiuae/falcon-7b-instruct',
                                 revision="c7f670a03d987254220f343c6b026ea0c5147185",
-                                cache_dir="dir/path/where/model/is/stored")
-print(f'tiiuae/falcon-7b-instruct is downloaded to {model_path}')
+                                cache_dir="dir/path/where/model/files/are/downloaded")
+print(f'tiiuae/falcon-7b-instruct checkpoint is downloaded to {model_path}')
 
 # for tiiuae/falcon-40b-instruct
 model_path = snapshot_download(repo_id='tiiuae/falcon-40b-instruct',
                                revision="1e7fdcc9f45d13704f3826e99937917e007cd975",
-                               cache_dir="dir/path/where/model/is/stored")
-print(f'tiiuae/falcon-40b-instruct is downloaded to {model_path}')
+                               cache_dir="dir/path/where/model/files/are/downloaded")
+print(f'tiiuae/falcon-40b-instruct checkpoint is downloaded to {model_path}')
 ```
 
 #### 2.2 Replace `modelling_RW.py`
-For `tiiuae/falcon-7b-instruct`, you should replace the `modelling_RW.py` with [src/falcon-7b-instruct/modelling_RW.py](./src/falcon-7b-instruct/modelling_RW.py).
+For `tiiuae/falcon-7b-instruct`, you should replace the `modelling_RW.py` with [falcon-7b-instruct/modelling_RW.py](./falcon-7b-instruct/modelling_RW.py).
 
-For `tiiuae/falcon-40b-instruct`, you should replace the `modelling_RW.py` with [src/falcon-40b-instruct/modelling_RW.py](./src/falcon-40b-instruct/modelling_RW.py).
+For `tiiuae/falcon-40b-instruct`, you should replace the `modelling_RW.py` with [falcon-40b-instruct/modelling_RW.py](./falcon-40b-instruct/modelling_RW.py).
 
 ### 3. Run
 ```
