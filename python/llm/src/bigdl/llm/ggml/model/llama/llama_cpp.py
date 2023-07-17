@@ -64,30 +64,12 @@ from ctypes import (
 )
 import pathlib
 from bigdl.llm.utils.common import invalidInputError
-from bigdl.llm.utils import get_avx_flags
+from bigdl.llm.utils import get_shard_lib_info
 
 
 # Load the library
 def _load_shared_library(lib_base_name: str):
-    # Determine the file extension based on the platform
-    if sys.platform.startswith("linux") or sys.platform == "darwin":
-        lib_ext = ".so"
-    elif sys.platform == "win32":
-        lib_ext = ".dll"
-    else:
-        invalidInputError(False, "Unsupported platform.")
-
-    avx = get_avx_flags()
-
-    # Construct the paths to the possible shared library names
-    _base_path = pathlib.Path(__file__).parent.parent.parent.parent.resolve()
-    _base_path = _base_path / 'libs'
-    # Searching for the library in the current directory under the name "libllama" (default name
-    # for llamacpp) and "llama" (default name for this repo)
-    _lib_paths = [
-        _base_path / f"lib{lib_base_name}{avx}{lib_ext}",
-        _base_path / f"{lib_base_name}{avx}{lib_ext}",
-    ]
+    _base_path, _lib_path = get_shard_lib_info(lib_base_name=lib_base_name)
 
     if "LLAMA_CPP_LIB" in os.environ:
         lib_base_name = os.environ["LLAMA_CPP_LIB"]
