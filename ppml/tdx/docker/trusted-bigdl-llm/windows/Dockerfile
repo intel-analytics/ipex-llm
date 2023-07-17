@@ -14,4 +14,4 @@ ADD ./llm-convert C:\\ppml\\llm-convert
 # install pip and bigdl-llm
 RUN setx /M PATH '%PATH%;C:\Python'; python -m ensurepip; python -m pip install C:\\ppml\\bigdl_llm-2.4.0.dev0-py3-none-any.whl
 
-CMD ["Set-Alias -Name llm-convert \"python C:\\ppml\\llm-convert\"; Set-Alias -Name llm-cli -Value .\\C:\\python\\Scripts\\llm-cli.ps1; Set-Alias -Name llm-chat -Value .\\C:\\python\\Scripts\\llm-chat.ps1; Set-ExecutionPolicy RemoteSigned"]
+CMD ["Set-Alias -Name llm-convert -Value 'python C:\ppml\llm-convert\'; Set-Alias -Name llm-cli -Value 'C:\python\Scripts\llm-cli.ps1'; Set-Alias -Name llm-chat -Value 'C:\python\Scripts\llm-chat.ps1'; Set-ExecutionPolicy RemoteSigned"]
