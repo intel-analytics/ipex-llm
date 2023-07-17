@@ -22,7 +22,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MPT model (e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-7b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mosaicml/mpt-7b-chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MPT model (e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-30b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mosaicml/mpt-7b-chat'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -67,6 +67,7 @@ AI, or artificial intelligence, is the simulation of human intelligence in machi
 
 #### [mosaicml/mpt-30b-chat](https://huggingface.co/mosaicml/mpt-30b-chat)
 ```log
+Inference time: xxxx s
 -------------------- Prompt --------------------
 <|im_start|>user
 What is AI?<|im_end|>

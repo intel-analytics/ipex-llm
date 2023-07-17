@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MPT model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="mosaicml/mpt-7b-chat",
                         help='The huggingface repo id for the MPT models'
-                             '(e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-7b-chat`) to be downloaded'
+                             '(e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-30b-chat`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
