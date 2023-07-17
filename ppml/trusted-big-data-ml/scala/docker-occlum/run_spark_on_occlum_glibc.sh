@@ -788,6 +788,10 @@ case "$arg" in
         run_spark_lgbm_criteo
         cd ../
         ;;
+    lgbm_model_encrypt)
+        run_spark_lgbm_model_encrypt
+        cd ../
+        ;;
     gbt_e2e)
         run_spark_gbt_e2e
         cd ../
