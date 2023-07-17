@@ -37,6 +37,8 @@ spec:
       #  value: gramine
       - name: MALLOC_ARENA_MAX
         value: 4
+      - name: RUNTIME_DRIVER_MEMORY
+        value: 1g
     volumeMounts:
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
