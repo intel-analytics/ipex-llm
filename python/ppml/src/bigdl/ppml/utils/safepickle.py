@@ -54,8 +54,8 @@ class SafePickle:
         return pickle.load(file, *args, **kwargs)
     
     @classmethod
-    def dumps(object, pickleProtocol=None, *, fix_imports=True):
-        return pickle.dumps(object, pickleProtocol, fix_imports=fix_imports)
+    def dumps(self, obj, protocol=None, *, fix_imports=True, buffer_callback=None):
+        return pickle.dumps(obj, protocol=protocol, fix_imports=fix_imports, buffer_callback=buffer_callback)
     
     @classmethod
     def loads(data, *, fix_imports=True, encoding='ASCII', errors='strict', buffers=None):
