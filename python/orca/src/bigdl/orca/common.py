@@ -424,5 +424,5 @@ class SafePickle:
         return pickle.load(file, *args, **kwargs)
 
     @classmethod
-    def dumps(object, pickleProtocol=None, *, fix_imports=True):
-        return pickle.dumps(object, pickleProtocol, fix_imports=fix_imports)
+    def dumps(self, obj, *args, **kwargs):
+        return pickle.dumps(obj, *args, **kwargs)
