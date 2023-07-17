@@ -422,3 +422,6 @@ class SafePickle:
                 invalidInputError(False, 'Pickle safe check failed')
             file.seek(0)
         return pickle.load(file, *args, **kwargs)
+    @classmethod
+    def dumps(object, pickleProtocol=None, *, fix_imports=True):
+        return pickle.dumps(object, pickleProtocol, fix_imports=fix_imports)

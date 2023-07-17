@@ -65,7 +65,7 @@ class NNClient(object):
 
     def upload_meta(self, loss_fn, optimizer_cls, optimizer_args):
         # upload model to server
-        loss_fn = SafePickle.dump(loss_fn)
+        loss_fn = SafePickle.dumps(loss_fn)
         optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
         request = UploadMetaRequest(client_uuid=self.client_uuid,
                                     loss_fn=loss_fn,

@@ -599,7 +599,7 @@ def save_pkl(data, path):
         path_parts = path.split("://")[1].split('/')
         bucket = path_parts.pop(0)
         key = "/".join(path_parts)
-        content = SafePickle.dump(data)
+        content = SafePickle.dumps(data)
         s3_client.put_object(Bucket=bucket, Key=key, Body=content)
     else:
         if path.startswith("file://"):
