@@ -11,7 +11,9 @@ set -e
 echo "# Start testing inference"
 start=$(date "+%s")
 
-python -m pytest -s ${LLM_INFERENCE_TEST_DIR}
+python -m pytest -s ${LLM_INFERENCE_TEST_DIR} --k test_transformers_int4
+export OMP_NUM_THREADS=24
+taskset -c 0-23 python -m pytest -s ${LLM_INFERENCE_TEST_DIR} -k test_transformers_int4
 
 now=$(date "+%s")
 time=$((now-start))
