@@ -19,15 +19,17 @@ import time
 import argparse
 
 from bigdl.llm.transformers import AutoModelForCausalLM
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, GenerationConfig
 
 # you could tune the prompt based on your own model,
-MPT_PROMPT_FORMAT = "<human>{prompt} <bot>"
+# here the prompt tuning refers to https://huggingface.co/spaces/mosaicml/mpt-30b-chat/blob/main/app.py
+MPT_PROMPT_FORMAT = "<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for MPT model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="mosaicml/mpt-7b-chat",
-                        help='The huggingface repo id for the MPT to be downloaded'
+                        help='The huggingface repo id for the MPT models'
+                             '(e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-7b-chat`) to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--prompt', type=str, default="What is AI?",
                         help='Prompt to infer')
@@ -51,14 +53,19 @@ if __name__ == '__main__':
     with torch.inference_mode():
         prompt = MPT_PROMPT_FORMAT.format(prompt=args.prompt)
         input_ids = tokenizer.encode(prompt, return_tensors="pt")
-        st = time.time()
         # enabling `use_cache=True` allows the model to utilize the previous
         # key/values attentions to speed up decoding;
         # to obtain optimal performance with BigDL-LLM INT4 optimizations,
         # it is important to set use_cache=True for MPT models
+        mpt_generation_config = GenerationConfig(
+            max_new_tokens=args.n_predict, 
+            use_cache=True, 
+            pad_token_id=tokenizer.eos_token_id, 
+            eos_token_id=tokenizer.eos_token_id
+        )
+        st = time.time()
         output = model.generate(input_ids,
-                                use_cache=True,
-                                max_new_tokens=args.n_predict)
+                                generation_config=mpt_generation_config)
         end = time.time()
         output_str = tokenizer.decode(output[0], skip_special_tokens=True)
         print(f'Inference time: {end-st} s')
