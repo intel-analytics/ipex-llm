@@ -16,7 +16,7 @@
 
 import sys
 import pathlib
-from isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
+from bigdl.llm.utils.isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 
 
