@@ -22,7 +22,7 @@ If you select the Falcon models ([tiiuae/falcon-7b-instruct](https://huggingface
 
 
 #### 2.1 Download Model
-You could use the following code to download  [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) with a specific snapshot id. Please note that the `modelling_RW.py` files that we provide are based on these specific commits
+You could use the following code to download  [tiiuae/falcon-7b-instruct](https://huggingface.co/tiiuae/falcon-7b-instruct) or [tiiuae/falcon-40b-instruct](https://huggingface.co/tiiuae/falcon-40b-instruct) with a specific snapshot id. Please note that the `modelling_RW.py` files that we provide are based on these specific commits.
 
 ```python
 from huggingface_hub import snapshot_download
