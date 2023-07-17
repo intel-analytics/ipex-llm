@@ -85,6 +85,7 @@ class _BaseAutoModelClass:
         model = ggml_convert_quant(model, qtype)
         model.config.update({"bigdl_transformers_low_bit": q_k})
 
+        # add save_low_bit to pretrained model dynamically
         import types
         model.save_low_bit = types.MethodType(save_low_bit, model)
 
@@ -134,6 +135,10 @@ class _BaseAutoModelClass:
         print("Note: If there are warnings during the model loading process, "
               "they can be safely ignored; "
               "the model will be loaded with INT4 optimizations applied.")
+
+        # add save_low_bit to pretrained model dynamically
+        import types
+        model.save_low_bit = types.MethodType(save_low_bit, model)
 
         # We forcefully modify the model's definition
         # and the tensor shape of int4 weights without quantization.
