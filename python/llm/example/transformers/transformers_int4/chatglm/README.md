@@ -1,6 +1,6 @@
 # ChatGLM
 
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM models. For illustration purposes, we utilize the [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) and []() as reference ChatGLM models.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on ChatGLM models. For illustration purposes, we utilize the [THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b) as reference a ChatGLM model.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
