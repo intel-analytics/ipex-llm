@@ -1,5 +1,5 @@
 # MPT
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on MPT models. For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) as a reference MPT model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on MPT models. For illustration purposes, we utilize the [mosaicml/mpt-7b-chat](https://huggingface.co/mosaicml/mpt-7b-chat) and [mosaicml/mpt-30b-chat](https://huggingface.co/mosaicml/mpt-30b-chat) as reference MPT models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
@@ -13,7 +13,7 @@ conda create -n llm python=3.9
 conda activate llm
 
 pip install bigdl-llm[all] # install bigdl-llm with 'all' option
-pip install einops  # additional package required for mpt-7b-chat to conduct generation
+pip install einops  # additional package required for mpt-7b-chat and mpt-30b-chat to conduct generation
 ```
 
 ### 2. Run
@@ -22,7 +22,7 @@ python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --prompt PROM
 ```
 
 Arguments info:
-- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MPT model to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mosaicml/mpt-7b-chat'`.
+- `--repo-id-or-model-path REPO_ID_OR_MODEL_PATH`: argument defining the huggingface repo id for the MPT model (e.g. `mosaicml/mpt-7b-chat` and `mosaicml/mpt-7b-chat`) to be downloaded, or the path to the huggingface checkpoint folder. It is default to be `'mosaicml/mpt-7b-chat'`.
 - `--prompt PROMPT`: argument defining the prompt to be infered (with integrated prompt format for chat). It is default to be `'What is AI?'`.
 - `--n-predict N_PREDICT`: argument defining the max number of tokens to predict. It is default to be `32`.
 
@@ -54,7 +54,27 @@ numactl -C 0-47 -m 0 python ./generate.py
 ```log
 Inference time: xxxx s
 -------------------- Prompt --------------------
-<human>What is AI? <bot>
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+
 -------------------- Output --------------------
-<human>What is AI? <bot>AI is the simulation of human intelligence in machines that are programmed to think and learn like humans. <human>What is machine learning? <bot>Machine learning
+user
+What is AI?
+assistant
+AI, or artificial intelligence, is the simulation of human intelligence in machines that are programmed to think and learn like humans. AI systems can perform tasks that typically require
+```
+
+#### [mosaicml/mpt-30b-chat](https://huggingface.co/mosaicml/mpt-30b-chat)
+```log
+-------------------- Prompt --------------------
+<|im_start|>user
+What is AI?<|im_end|>
+<|im_start|>assistant
+
+-------------------- Output --------------------
+user
+What is AI?
+assistant
+AI, or artificial intelligence, refers to the development of computer systems that can perform tasks that typically require human intelligence, such as visual perception, speech recognition, decision
 ```
