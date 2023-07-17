@@ -100,13 +100,20 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = tokenizer.batch_decode(output_ids)
   ```
 
-  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
+  See the complete examples [here](example/transformers/transformers_int4/).  
 
-  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. Available types are `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`.
-  ```python
-  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
-  ```
-  
+  >**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
+  >```python
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  >```
+  >**Note**: You may also save and load these low-bit models as follows:
+  >```python
+  >model.save_low_bit(model_path)
+  >
+  >new_model = AutoModelForCausalLM.load_low_bit(model_path)
+  >```
+  >See the detailed example [here](example/transformers/transformers_low_bit/).
+
 - ##### Using native INT4 format
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
