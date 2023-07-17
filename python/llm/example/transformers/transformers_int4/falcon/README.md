@@ -29,8 +29,8 @@ from huggingface_hub import snapshot_download
 
 # for tiiuae/falcon-7b-instruct
 model_path = snapshot_download(repo_id='tiiuae/falcon-7b-instruct',
-                                revision="c7f670a03d987254220f343c6b026ea0c5147185",
-                                cache_dir="dir/path/where/model/files/are/downloaded")
+                               revision="c7f670a03d987254220f343c6b026ea0c5147185",
+                               cache_dir="dir/path/where/model/files/are/downloaded")
 print(f'tiiuae/falcon-7b-instruct checkpoint is downloaded to {model_path}')
 
 # for tiiuae/falcon-40b-instruct
