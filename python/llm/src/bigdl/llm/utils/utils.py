@@ -16,18 +16,16 @@
 
 import sys
 import pathlib
-from isa_checker import check_avx_vnni
+from isa_checker import check_avx_vnni, check_avx2, check_avx512_vnni
 from bigdl.llm.utils.common import invalidInputError, invalidOperationError
 
 
 def get_avx_flags():
     avx = ""
     if sys.platform != "win32":
-        import subprocess
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        if "avx512_vnni" in msg:
+        if check_avx512_vnni():
             avx = "_avx512"
-        elif "avx2" in msg:
+        elif check_avx2():
             avx = "_avx2"
         else:
             invalidOperationError(False, "Unsupported CPUFLAGS.")
