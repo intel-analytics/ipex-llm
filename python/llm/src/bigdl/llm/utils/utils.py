@@ -32,7 +32,7 @@ def get_avx_flags():
     return avx
 
 
-def get_shard_lib_info(lib_base_name: str):
+def get_shared_lib_info(lib_base_name: str):
     # Determine the file extension based on the platform
     if sys.platform.startswith("linux") or sys.platform == "darwin":
         lib_ext = ".so"

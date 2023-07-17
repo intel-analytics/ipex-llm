@@ -64,13 +64,13 @@ from ctypes import (
     c_size_t,
 )
 import pathlib
-from bigdl.llm.utils import get_shard_lib_info
+from bigdl.llm.utils import get_shared_lib_info
 from bigdl.llm.utils.common import invalidInputError
 
 
 # Load the library
 def _load_shared_library(lib_base_name: str):
-    _base_path, _lib_path = get_shard_lib_info(lib_base_name=lib_base_name)
+    _base_path, _lib_path = get_shared_lib_info(lib_base_name=lib_base_name)
 
     if "BLOOM_CPP_LIB" in os.environ:
         lib_base_name = os.environ["BLOOM_CPP_LIB"]
