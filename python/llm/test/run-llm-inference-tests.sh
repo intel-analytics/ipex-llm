@@ -4,7 +4,7 @@ export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export LLM_HOME=${ANALYTICS_ZOO_ROOT}/python/llm/src
 export LLM_INFERENCE_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/llm/test/inference
 
-export OMP_NUM_THREADS=24
+source bigdl-nano-init
 
 set -e
 
