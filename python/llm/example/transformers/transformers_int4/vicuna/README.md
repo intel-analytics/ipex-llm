@@ -1,5 +1,5 @@
 # Vicuna
-In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Vicuna models. For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3) as a reference Vicuna model.
+In this directory, you will find examples on how you could apply BigDL-LLM INT4 optimizations on Vicuna models. For illustration purposes, we utilize the [lmsys/vicuna-13b-v1.3](https://huggingface.co/lmsys/vicuna-13b-v1.3) and [eachadea/vicuna-7b-1.1](https://huggingface.co/eachadea/vicuna-7b-1.1) as reference Vicuna models.
 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
