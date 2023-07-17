@@ -1,0 +1,2 @@
+from .stable_diffusion import NanoStableDiffusionPipeline
+from .stable_diffusion import NanoStableDiffusionImg2ImgPipeline

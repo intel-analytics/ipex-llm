@@ -1,0 +1,4 @@
+bigdl-nano[pytorch]
+diffusers==0.14.0
+transformers
+openvino-dev==2022.2.0
