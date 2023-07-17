@@ -100,7 +100,12 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = tokenizer.batch_decode(output_ids)
   ```
 
-  See the complete example [here](example/transformers/transformers_int4_pipeline.py). 
+  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
+
+  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. Available types are `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`.
+  ```python
+  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  ```
   
 - ##### Using native INT4 format
 
@@ -124,7 +129,7 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = llm.batch_decode(output_ids)
   ``` 
 
-  See the complete example [here](example/transformers/native_int4_pipeline.py). 
+  See the complete example [here](example/transformers/native_int4/native_int4_pipeline.py). 
 
 #### LangChain API
 You may run the models using the LangChain API in `bigdl-llm`.
@@ -184,11 +189,15 @@ The native code/lib in `bigdl-llm` has been built using the following tools; in 
 
 | Model family | Platform | Compiler           | GLIBC |
 | ------------ | -------- | ------------------ | ----- |
-| llama        | Linux    | GCC 9.3.1          | 2.17  |
+| llama        | Linux    | GCC 11.2.1         | 2.17  |
 | llama        | Windows  | MSVC 19.36.32532.0 |       |
-| gptneox      | Linux    | GCC 9.3.1          | 2.17  |
+| llama        | Windows  | GCC 13.1.0         |       |
+| gptneox      | Linux    | GCC 11.2.1         | 2.17  |
 | gptneox      | Windows  | MSVC 19.36.32532.0 |       |
-| bloom        | Linux    | GCC 9.4.0          | 2.29  |
+| gptneox      | Windows  | GCC 13.1.0         |       |
+| bloom        | Linux    | GCC 11.2.1         | 2.29  |
 | bloom        | Windows  | MSVC 19.36.32532.0 |       |
-| starcoder    | Linux    | GCC 9.4.0          | 2.29  |
+| bloom        | Windows  | GCC 13.1.0         |       |
+| starcoder    | Linux    | GCC 11.2.1         | 2.29  |
 | starcoder    | Windows  | MSVC 19.36.32532.0 |       |
+| starcoder    | Windows  | GCC 13.1.0         |       |

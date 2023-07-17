@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PackSpec extends FlatSpec with Matchers {
@@ -121,8 +121,8 @@ class PackSpec extends FlatSpec with Matchers {
 class PackSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val pack = new Pack[Float](1).setName("pack")
-    val input1 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](2, 2).apply1(e => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     val input = T()
     input(1.0f) = input1
     input(2.0f) = input2

@@ -164,7 +164,7 @@ class GenerationMixin:
             res_list = []
             word_count = 0
             for token in tokens:
-                if word_count > max_new_tokens:
+                if word_count >= max_new_tokens:
                     break
                 res_list.append(token)
                 word_count += 1

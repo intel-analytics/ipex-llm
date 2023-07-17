@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class LocallyConnected2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val locallyConnected2D = LocallyConnected2D[Float](3, 5, 5, 4, 2, 2).
       setName("locallyConnected2D")
-    val input = Tensor[Float](1, 3, 5, 5).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
     runSerializationTest(locallyConnected2D, input)
   }
 }

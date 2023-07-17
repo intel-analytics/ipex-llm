@@ -6,6 +6,7 @@ loader.insecure__use_host_env = true
 loader.env.LD_PRELOAD  = ""
 
 sys.enable_extra_runtime_domain_names_conf = true
+sys.insecure__allow_eventfd = true
 
 #loader.insecure__use_cmdline_argv = true
 loader.insecure_disable_aslr = true
@@ -57,6 +58,7 @@ fs.mounts = [
   { path = "/root/.cache", uri = "file:/root/.cache" },
   { path = "/usr/lib/gcc", uri = "file:/usr/lib/gcc" },
   { path = "/ppml", uri = "file:/ppml" },
+  { path = "/root/.jupyter", uri = "file:/root/.jupyter" },
   { type = "encrypted", path = "/ppml/encrypted-fs", uri = "file:/ppml/encrypted-fs", key_name = "_sgx_mrsigner" },
   { type = "encrypted", path = "/ppml/encrypted-fsd", uri = "file:/ppml/encrypted-fsd", key_name = "sgx_data_key" },
 ]

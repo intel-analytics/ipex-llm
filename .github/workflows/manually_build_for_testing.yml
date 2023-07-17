@@ -15,6 +15,8 @@ on:
         options:
         - all
         - bigdl-ppml-gramine-base
+        - bigdl-ppml-trusted-bigdl-llm-gramine-base
+        - bigdl-ppml-trusted-bigdl-llm-gramine-ref
         - bigdl-ppml-trusted-deep-learning-gramine-base
         - bigdl-ppml-trusted-deep-learning-gramine-ref
         - bigdl-ppml-trusted-dl-serving-gramine-base
@@ -76,6 +78,71 @@ jobs:
         sudo docker tag ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
+
+  bigdl-ppml-trusted-bigdl-llm-gramine-base:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-base' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-bigdl-llm-gramine-base
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-base ########"
+        echo "##############################################################"
+        export base_image=intelanalytics/bigdl-ppml-gramine-base
+        docker pull ${base_image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
+        cd ppml/trusted-bigdl-llm/base
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+
+  bigdl-ppml-trusted-bigdl-llm-gramine-ref:
+    if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-gramine-ref' || github.event.inputs.artifact == 'all' }}
+    runs-on: [self-hosted, Shire]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.sha }}
+    - name: docker login
+      run: |
+        docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+    - name: bigdl-ppml-trusted-bigdl-llm-gramine-ref
+      run: |
+        echo "##############################################################"
+        echo "####### bigdl-ppml-trusted-bigdl-llm-gramine-ref ########"
+        echo "##############################################################"
+        export base_image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-base
+        docker pull ${base_image}:${TAG}
+        export image=intelanalytics/bigdl-ppml-trusted-bigdl-llm-gramine-ref
+        cd ppml/trusted-bigdl-llm/ref
+        openssl genrsa -3 -out enclave-key.pem 3072
+        sudo docker build \
+          --no-cache=true \
+          --build-arg http_proxy=${HTTP_PROXY} \
+          --build-arg https_proxy=${HTTPS_PROXY} \
+          --build-arg no_proxy=${NO_PROXY} \
+          --build-arg BASE_IMAGE_NAME=${base_image} \
+          --build-arg BASE_IMAGE_TAG=${TAG} \
+          -t ${image}:${TAG} -f ./Dockerfile .
+        sudo docker push ${image}:${TAG}
+        sudo docker tag ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
+        sudo docker push 10.239.45.10/arda/${image}:${TAG}
+        sudo docker rmi -f ${image}:${TAG} 10.239.45.10/arda/${image}:${TAG}
 
   bigdl-ppml-trusted-dl-serving-gramine-base:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-dl-serving-gramine-base' || github.event.inputs.artifact == 'all' }}

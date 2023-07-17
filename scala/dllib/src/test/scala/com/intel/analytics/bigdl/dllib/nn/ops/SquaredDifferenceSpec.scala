@@ -19,14 +19,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class SquaredDifferenceSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val squareDiff = SquaredDifference[Float]().setName("squareDiff")
-    val input = T(Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat()))
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
     runSerializationTest(squareDiff, input)
   }
 }

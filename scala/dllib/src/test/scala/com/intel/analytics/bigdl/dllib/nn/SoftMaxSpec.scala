@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class SoftMaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val softMax = SoftMax[Float]().setName("softMax")
-    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(softMax, input)
   }
 }

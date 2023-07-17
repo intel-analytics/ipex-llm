@@ -19,12 +19,12 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class RReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val rrelu = new RReLU[Float](inplace = false).setName("rrelu")
-    val input = Tensor[Float](2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(rrelu, input)
   }
 }

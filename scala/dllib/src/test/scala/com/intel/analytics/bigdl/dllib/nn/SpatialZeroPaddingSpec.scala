@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class SpatialZeroPaddingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val spatialZeroPadding = SpatialZeroPadding[Float](1, 0, -1, 0).
       setName("spatialZeroPadding")
-    val input = Tensor[Float](3, 3, 3).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](3, 3, 3).apply1(_ => Random.nextFloat())
     runSerializationTest(spatialZeroPadding, input)
   }
 }

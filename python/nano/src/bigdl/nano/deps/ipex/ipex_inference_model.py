@@ -231,7 +231,7 @@ class PytorchIPEXJITModel(AcceleratedLightningModule):
                                    jit_strict=status.get('jit_strict', True),
                                    jit_method=status.get('jit_method', None),
                                    weights_prepack=status.get('weights_prepack', None),
-                                   enable_onednn=status.get('enable_onednn', True),
+                                   enable_onednn=status.get('enable_onednn', False),
                                    compression=status.get('compression', "fp32"),)
 
     def _save_model(self, path, compression="fp32"):

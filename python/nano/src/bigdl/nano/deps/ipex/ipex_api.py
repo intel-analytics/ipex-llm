@@ -47,7 +47,7 @@ def ipex_optimize(model: Any, optimizers: Any = None, dtype: Any = None,
 def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
                         use_jit=False, channels_last=None, thread_num=None,
                         inplace=False, jit_strict=True, jit_method=None,
-                        weights_prepack=None, enable_onednn=True,
+                        weights_prepack=None, enable_onednn=False,
                         example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform.
@@ -67,7 +67,7 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
            ``use_ipex=True``, otherwise will be ignored.
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
-           ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+           ``False``, only valid when use_jit is ``True``, otherwise will be ignored.
     :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
            to ``torch.jit.trace``. Default to None. Either this argument or input_sample
            should be specified when use_jit is ``True`` and torch > 2.0,
@@ -85,7 +85,7 @@ def PytorchIPEXJITModel(model, input_sample=None, use_ipex=False,
 def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
                             use_jit=False, channels_last=None, thread_num=None,
                             inplace=False, jit_strict=True, jit_method=None,
-                            weights_prepack=None, enable_onednn=True,
+                            weights_prepack=None, enable_onednn=False,
                             example_kwarg_inputs=None):
     '''
     :param model: the model(nn.module) to be transform.
@@ -105,7 +105,7 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
            ``use_ipex=True``, otherwise will be ignored.
     :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
            API, which provides a flexible API for aggressive fusion. Default to
-           ``True``, only valid when use_jit is ``True``, otherwise will be ignored.
+           ``False``, only valid when use_jit is ``True``, otherwise will be ignored.
     :param example_kwarg_inputs: keyword arguments of example inputs that will be passed
            to ``torch.jit.trace``. Default to None. Either this argument or input_sample
            should be specified when use_jit is ``True`` and torch > 2.0,
@@ -123,7 +123,8 @@ def PytorchIPEXJITBF16Model(model, input_sample=None, use_ipex=False,
 def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
                                  input_sample=None, channels_last=None,
                                  thread_num=None, inplace=False,
-                                 jit_strict=True, example_kwarg_inputs=None):
+                                 jit_strict=True, example_kwarg_inputs=None,
+                                 enable_onednn=False):
     '''
     :param model: the model(nn.module) to be transform.
     :param calib_data: calibration data is required for static quantization.
@@ -140,13 +141,17 @@ def PytorchIPEXQuantizationModel(model, calib_data, q_config=None,
            to ``torch.jit.trace``. Default to None. Either this argument or input_sample
            should be specified when use_jit is ``True`` and torch > 2.0,
            otherwise will be ignored.
+    :param enable_onednn: Whether to use PyTorch JIT graph fuser based on oneDNN Graph
+           API, which provides a flexible API for aggressive fusion. Default to
+           ``False``.
     '''
     from .ipex_quantization_model import PytorchIPEXQuantizationModel
     return PytorchIPEXQuantizationModel(model, calib_data, q_config=q_config,
                                         input_sample=input_sample, channels_last=channels_last,
                                         thread_num=thread_num, inplace=inplace,
                                         jit_strict=jit_strict,
-                                        example_kwarg_inputs=example_kwarg_inputs)
+                                        example_kwarg_inputs=example_kwarg_inputs,
+                                        enable_onednn=enable_onednn)
 
 
 def PytorchIPEXPUModel(model, thread_num=None, precision="fp32", use_ipex=False):

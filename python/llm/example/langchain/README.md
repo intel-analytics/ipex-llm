@@ -44,3 +44,29 @@ arguments info:
 - `-q QUESTION`: question to ask. Default is `What is AI?`.
 - `-c CONTEXT_SIZE`: specify the maximum context size. Default is `2048`.
 - `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
+
+### 3. Voice Assistant
+> This example is adapted from https://python.langchain.com/docs/use_cases/chatbots/voice_assistant with only tiny code change.
+
+Some extra dependencies are required to be installed for this example.
+```bash
+pip install SpeechRecognition
+pip install pyttsx3
+pip install PyAudio
+pip install whisper.ai
+pip install soundfile
+```
+
+```bash
+python ./voiceassistant.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
+```
+
+arguments info:
+- `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model
+- `-x MODEL_FAMILY`: **required**, the model family of the model specified in `-m`, available options are `llama`, `gptneox` and `bloom`
+- `-t THREAD_NUM`: specify the number of threads to use for inference. Default is `2`.
+
+When you see output says
+> listening now...
+
+Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.

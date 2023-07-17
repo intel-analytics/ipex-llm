@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialConvolutionSpec extends TorchSpec {
@@ -43,8 +43,8 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
 
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -89,8 +89,8 @@ class SpatialConvolutionSpec extends TorchSpec {
     val model = new Sequential[Double]()
     model.add(layer)
 
-    new SecureRandom().setSeed(3)
-    val input = Tensor[Double](8, 64, 27, 27).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(3)
+    val input = Tensor[Double](8, 64, 27, 27).apply1(e => Random.nextDouble())
 
     val output = model.updateOutput(input)
 
@@ -126,7 +126,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
-    val input = Tensor[Double](3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer(layer, input, 1e-3) should be(true)
@@ -137,7 +137,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
     val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
-    val input = Tensor[Double](3, 32, 32).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight(layer, input, 1e-3) should be(true)
@@ -159,8 +159,8 @@ class SpatialConvolutionSpec extends TorchSpec {
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, withBias = false)
 
-    new SecureRandom().setSeed(seed)
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    Random.setSeed(seed)
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -193,7 +193,7 @@ class SpatialConvolutionSpec extends TorchSpec {
     RNG.setSeed(seed)
     layer.setInitMethod(MsraFiller(false), Zeros)
 
-    val input = Tensor[Double](16, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
 
     val code = "layer = nn.SpatialConvolutionMM(3, 64, 11, 11, 4, 4, 2, 2)\n" +
       "torch.manualSeed(" + seed + ")\n" +

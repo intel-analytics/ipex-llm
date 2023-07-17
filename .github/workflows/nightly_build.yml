@@ -116,7 +116,7 @@ jobs:
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/serving/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/ppml/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_3.1.3<\/artifactId>/' scala/assembly/pom.xml
-          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x --file scala/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=3.1.3 -DSPARK_PLATFORM=SPARK_3.1 -P spark_3.x -P sign --file scala/pom.xml
       
           mv scala/pom.xml.origin scala/pom.xml
           mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
@@ -153,7 +153,7 @@ jobs:
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/serving/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/ppml/pom.xml
           sed -i 's/<artifactId>bigdl-parent-spark_${spark.version}<\/artifactId>/<artifactId>bigdl-parent-spark_2.4.6<\/artifactId>/' scala/assembly/pom.xml
-          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=2.4.6 -DSPARK_PLATFORM=SPARK_2.4 -P spark_2.x --file scala/pom.xml
+          mvn -Dhttp.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttp.proxyPort=${{ secrets.HTTP_PROXY_PORT_2 }} -Dhttps.proxyHost=${{ secrets.HTTP_PROXY_HOST_2 }} -Dhttps.proxyPort=${{ secrets.HTTP_PROXY_PORT_3 }} clean deploy -DskipTests -Dspark.version=2.4.6 -DSPARK_PLATFORM=SPARK_2.4 -P spark_2.x -P sign --file scala/pom.xml
      
           mv scala/pom.xml.origin scala/pom.xml
           mv scala/common/spark-version/pom.xml.origin scala/common/spark-version/pom.xml
@@ -305,11 +305,14 @@ jobs:
         job-name: docker-build-bigdl
         runner-hosted-on: 'Shanghai'
   
+  llm-cpp-build:
+    uses: ./.github/workflows/llm-binary-build.yml
+
   python-build:
     # python build can only be published once a day, please do not publish it manually
     if: ${{ github.event.schedule || github.event.inputs.artifact == 'all'}} 
     runs-on: [self-hosted, Bree]
-
+    needs: llm-cpp-build
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK8
@@ -328,7 +331,8 @@ jobs:
         pip install build
         pip install wheel
         pip install twine
-    
+    - name: Download llm binary
+      uses: ./.github/actions/llm/download-llm-binary
     - name: Build package
       run: |
         export TIMESTAMP=`date '+%Y%m%d'`

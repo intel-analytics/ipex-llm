@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class EqualSpec extends FlatSpec with Matchers {
   "Equal Float operation" should "works correctly" in {
@@ -138,8 +138,8 @@ class EqualSpec extends FlatSpec with Matchers {
 class EqualSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val equal = Equal[Float]().setName("equal")
-    val input = T(Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat()),
-      Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat()))
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
     runSerializationTest(equal, input,
       equal.asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }

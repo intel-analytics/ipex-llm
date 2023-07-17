@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.apache.zookeeper.ZooDefs.Ids
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class TransformerLayerSpec extends FlatSpec with Matchers {
   "tranformer decode stack" should "work correctly" in {
@@ -1064,7 +1064,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
 class SelfAttentionMaskSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new SelfAttentionMask[Float]().setName("SelfAttentionMask")
-    val input = Tensor[Float](2, 6, 4).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -1072,7 +1072,7 @@ class SelfAttentionMaskSerialTest extends ModuleSerializationTest {
 class PaddingMaskSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new PaddingMask[Float]().setName("PaddingMask")
-    val input = Tensor[Float](2, 6, 4).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -1080,7 +1080,7 @@ class PaddingMaskSerialTest extends ModuleSerializationTest {
 class PositionEncodeWithShiftSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new PositionEncodeWithShift[Float]().setName("PositionEncodeWithShift")
-    val input = Tensor[Float](2, 6, 4).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -1088,7 +1088,7 @@ class PositionEncodeWithShiftSerialTest extends ModuleSerializationTest {
 class PositionEncodeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val model = new PositionEncode[Float]().setName("PositionEncode")
-    val input = Tensor[Float](2, 6, 4).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 6, 4).apply1(_ => Random.nextFloat())
     runSerializationTest(model, input)
   }
 }
@@ -1131,7 +1131,7 @@ class TransformerSerialTest extends ModuleSerializationTest {
       postprocessDropout, attentionDropout, reluDropout,
       transformerType = LanguageModel, beamSearch = beamSearch).setName("Transformer")
 
-    val input = Tensor[Float](2, 6).apply1(_ => new SecureRandom().nextInt(10) + 1)
+    val input = Tensor[Float](2, 6).apply1(_ => Random.nextInt(10) + 1)
     runSerializationTest(model, input)
   }
 }
