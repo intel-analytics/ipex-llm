@@ -30,10 +30,10 @@ sudo docker rm -f $container_name
 sudo docker run -i \
         --net=host \
         --name=$container_name \
-        -e SGX_MEM_SIZE=15GB \
+        -e SGX_MEM_SIZE=19GB \
         -e SGX_THREAD=2048 \
         -e SGX_HEAP=1GB \
-        -e SGX_KERNEL_HEAP=1GB \
+        -e SGX_KERNEL_HEAP=2GB \
         -e ENABLE_SGX_DEBUG=true \
         -e ATTESTATION=true \
         -e USING_TMP_HOSTFS=false \

@@ -40,11 +40,13 @@ init_instance() {
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
     occlum init
-    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
+    new_json="$(jq '.resource_limits.user_space_size = "50MB" |
+        .resource_limits.user_space_max_size = "SGX_MEM_SIZE" |
+        .resource_limits.init_num_of_threads = 10 |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
         .metadata.debuggable = "ENABLE_SGX_DEBUG" |
-        .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
+        .resource_limits.kernel_space_heap_size="4MB" |
         .resource_limits.kernel_space_heap_max_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin", "/bin" ] |
         .env.untrusted = [ "MALLOC_ARENA_MAX", "ATTESTATION_DEBUG", "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" , "_SPARK_AUTH_SECRET" ] |
