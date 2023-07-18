@@ -16,11 +16,17 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
-    git clone https://github.com/analytics-zoo/pytorch-serve.git && \
+    git clone https://github.com/Hanyu-Jin/pytorch-serve.git && \
     cd pytorch-serve && \
+    git checkout model_decryption && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
-    mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar
+    mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
+    cd /ppml && \
+    git clone https://github.com/Hanyu-Jin/transformers-PPML.git && \
+    cd transformers-PPML && \
+    git checkout v4.28.1-encryption && \
+    python setup.py install
     
 
 # Stage.2 Tritonserver
@@ -132,6 +138,9 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
 
+# Transformers
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/transformers
+
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
 
@@ -147,12 +156,13 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y --no-install-recommends software-properties-common libb64-0d             libcurl4-openssl-dev libre2-5 git gperf dirmngr libgoogle-perftools-dev libnuma-dev curl libgomp1 openmpi-bin patchelf python3 libarchive-dev libpython3-dev && \
     apt-get install -y libssl-dev && \
 # Optimization related
-    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch_112,inference] vit_pytorch && \
+    pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference] vit_pytorch neural-compressor==2.2 && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
     pip3 install --no-cache-dir torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
+    rm /usr/local/cuda/lib64/stubs/libcublasLt.so.11 && \
     mkdir -p ${JAVA_HOME} && \
     cp -r /usr/lib/jvm/java-${JDK_VERSION}-openjdk-amd64/* ${JAVA_HOME} && \
     cp /usr/local/lib/python3.9/dist-packages/ts/configs/metrics.yaml /ppml && \
