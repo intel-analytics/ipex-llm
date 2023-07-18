@@ -106,13 +106,16 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   >```python
   >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
   >```
-  >**Note**: You may also save and load these low-bit models as follows:
-  >```python
-  >model.save_low_bit(model_path)
-  >
-  >new_model = AutoModelForCausalLM.load_low_bit(model_path)
-  >```
-  >See the detailed example [here](example/transformers/transformers_low_bit/).
+  >See the complete example [here](example/transformers/transformers_low_bit/).
+
+  
+  After the model is optimizaed using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
+  ```python
+  model.save_low_bit(model_path)
+  
+  new_model = AutoModelForCausalLM.load_low_bit(model_path)
+  ```
+  See the example [here](example/transformers/transformers_low_bit/).
 
 - ##### Using native INT4 format
 
