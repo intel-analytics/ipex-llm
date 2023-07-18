@@ -12,6 +12,22 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models.png" width='85%'/>
 </p>
 
+### Verified models
+We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following models have been verified on Intel laptops.
+| Model     | Example                                                  |
+|-----------|----------------------------------------------------------|
+| LLaMA     | [link](example/transformers/transformers_int4/vicuna)    |
+| MPT       | [link](example/transformers/transformers_int4/mpt)       |
+| Falcon    | [link](example/transformers/transformers_int4/falcon)    |
+| ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
+| ChatGLM2  | [link](example/transformers/transformers_int4/chatglm2)  | 
+| MOSS      | [link](example/transformers/transformers_int4/moss)      | 
+| Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
+| Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
+| RedPajama | [link](example/transformers/transformers_int4/redpajama) | 
+| Phoenix   | [link](example/transformers/transformers_int4/phoenix)   | 
+| StarCoder | [link](example/transformers/transformers_int4/starcoder) | 
+
 
 ### Working with `bigdl-llm`
 
