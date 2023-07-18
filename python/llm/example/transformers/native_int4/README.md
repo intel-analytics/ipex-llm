@@ -2,7 +2,7 @@
 
 In this example, we show a pipeline to convert a large language model to BigDL-LLM native INT4 format, and then run inference on the converted INT4 model.
 
-> **Note**: BigDL-LLM native INT4 format currently supports model family LLaMA, GPT-NeoX, BLOOM and StarCoder.
+> **Note**: BigDL-LLM native INT4 format currently supports model family **LLaMA**(such as Vicuna, Guanaco, Koala, Baize, WizardLM, etc.), **GPT-NeoX**(such as RedPajama), **BLOOM** (such as Phoenix) and **StarCoder**.
 
 ## Prepare Environment
 We suggest using conda to manage environment:
