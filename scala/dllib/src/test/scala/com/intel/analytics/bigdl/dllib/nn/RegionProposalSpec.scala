@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class RegionProposalSpec extends FlatSpec with Matchers {
   "RegionProposal" should "be ok" in {

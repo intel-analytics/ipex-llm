@@ -19,7 +19,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SparseTensorSpec  extends FlatSpec with Matchers {
@@ -103,7 +103,7 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
 
   "resize tensor to higher dim when nElement < sum(size)" should "return right result" in {
     val indices = Array(Array(0, 4, 5, 7, 9))
-    val values = Array.fill(5)(new SecureRandom().nextFloat())
+    val values = Array.fill(5)(Random.nextFloat())
     val sTensor = Tensor.sparse(indices, values, Array(10))
     sTensor.resize(Array(1, 10), 5)
     Tensor.dense(sTensor).squeeze().toArray().sum should be (values.sum)
@@ -119,7 +119,7 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
   }
 
   "Tensor.dense narrowed tensor" should "return right result" in {
-    val values = Array.fill(30)(new SecureRandom().nextFloat())
+    val values = Array.fill(30)(Random.nextFloat())
     val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
     val narrowed = sTensor.narrow(1, 2, 4)
     val narrowedSum = values.slice(5, 25).sum

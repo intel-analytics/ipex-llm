@@ -21,14 +21,14 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class SequentialSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val dense = Dense[Float](10, inputShape = Shape(20))
     val kseq = KSequential[Float]()
     kseq.add(dense)
-    val input = Tensor[Float](2, 20).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
     runSerializationTest(kseq, input)
   }
 }

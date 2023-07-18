@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.typeAttr
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class ReshapeSpec extends TensorflowSpecHelper {
   "Reshape" should "be correct for Float" in {
@@ -56,7 +56,7 @@ class ReshapeSpec extends TensorflowSpecHelper {
 class ReshapeLoadTFSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val reshapeLoadTF = new ReshapeLoadTF[Float]().setName("reshapeLoadTF")
-    val input = T(Tensor[Float](5, 5, 5).apply1(_ => new SecureRandom().nextFloat()),
+    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
       Tensor[Int](T(1, 5, 25)))
     runSerializationTest(reshapeLoadTF, input)
   }

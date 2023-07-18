@@ -20,16 +20,16 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class DepthwiseConv2DBackpropFilterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val depWiseConv2dBackProp = DepthwiseConv2DBackpropFilter[Float](1,
       1, 0, 0, DataFormat.NHWC).setName("depWiseConv2dBackProp")
-    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => new SecureRandom().nextFloat()),
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
       Tensor[Int](T(2, 2, 3, 1)),
-      Tensor[Float](4, 23, 23, 3).apply1(_ => new SecureRandom().nextFloat()))
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
     runSerializationTest(depWiseConv2dBackProp, input)
   }
 }

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
@@ -59,7 +59,7 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
 class LinearSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val linear = NNLinear[Float](10, 2).setName("linear")
-    val input = Tensor[Float](10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(linear, input)
   }
 }
