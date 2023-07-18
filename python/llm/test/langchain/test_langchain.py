@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.llm.utils import get_avx_flags
 from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
 from bigdl.llm.langchain.llms import BigdlNativeLLM
 import pytest
