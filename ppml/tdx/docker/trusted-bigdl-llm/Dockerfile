@@ -28,6 +28,22 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install --pre --upgrade gradio==3.36.1 && \
     pip3 install --pre --upgrade bigdl-nano
 
+# Install dependencies for bigdl-llm-demo
+ADD ./requirements.txt /opt/requirements.txt
+RUN pip3 install -r /opt/requirements.txt && \
+    pip3 install typing-inspect==0.8.0 typing_extensions==4.5.0 && \
+    pip3 install ray==2.3.1 && \
+    pip3 install sentence-transformers --no-deps && \
+    pip3 install cmake ninja cpuid && \
+    pip3 install scikit-build && \
+    pip3 install cchardet && \
+    pip3 install cryptography && \
+    pip3 install pytorch_lightning==1.6.4 && \
+    pip3 uninstall -y torchvision && \
+    pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl
+
+
+
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
 
 WORKDIR /ppml
