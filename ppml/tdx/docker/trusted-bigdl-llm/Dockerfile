@@ -14,7 +14,7 @@ ADD ./requirements.txt /opt/requirements.txt
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt install software-properties-common libunwind8-dev vim -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
-    apt-get install -y python3.9 && \
+    apt-get install -y python3.9 git curl wget && \
     rm /usr/bin/python3 && \
     ln -s /usr/bin/python3.9 /usr/bin/python3 && \
     ln -s /usr/bin/python3 /usr/bin/python && \
@@ -39,7 +39,12 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     pip3 install cryptography && \
     pip3 install pytorch_lightning==1.6.4 && \
     pip3 uninstall -y torchvision && \
-    pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl
+    pip3 install https://download.pytorch.org/whl/nightly/cpu-cxx11-abi/torch-2.0.0.dev20230228%2Bcpu.cxx11.abi-cp39-cp39-linux_x86_64.whl && \
+# Install bigdl-ppml
+    cd /root && \
+    git clone https://github.com/intel-analytics/BigDL.git && \
+    mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
+    rm -rf /root/BigDL
 
 
 
