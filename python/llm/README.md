@@ -12,6 +12,22 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
             <img src="https://github.com/bigdl-project/bigdl-project.github.io/blob/master/assets/llm-models.png" width='85%'/>
 </p>
 
+### Verified models
+We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following models have been verified on Intel laptops.
+| Model     | Example                                                  |
+|-----------|----------------------------------------------------------|
+| LLaMA     | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/vicuna)    |
+| MPT       | [link](example/transformers/transformers_int4/mpt)       |
+| Falcon    | [link](example/transformers/transformers_int4/falcon)    |
+| ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
+| ChatGLM2  | [link](example/transformers/transformers_int4/chatglm2)  | 
+| MOSS      | [link](example/transformers/transformers_int4/moss)      | 
+| Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
+| Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
+| RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
+| Phoenix   | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/phoenix)   | 
+| StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
+
 
 ### Working with `bigdl-llm`
 
@@ -100,13 +116,23 @@ You may run the models using `transformers`-style API in `bigdl-llm`.
   output = tokenizer.batch_decode(output_ids)
   ```
 
-  See the complete example [here](example/transformers/transformers_int4/transformers_int4_pipeline.py).  
+  See the complete examples [here](example/transformers/transformers_int4/).  
 
-  Notice: For more quantized precision, you can use another parameter `load_in_low_bit`. Available types are `sym_int4`, `asym_int4`, `sym_int5`, `asym_int5` and `sym_int8`.
-  ```python
-  model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
-  ```
+  >**Note**: You may apply more low bit optimizations (including INT8, INT5 and INT4) as follows: 
+  >```python
+  >model = AutoModelForCausalLM.from_pretrained('/path/to/model/', load_in_low_bit="sym_int5")
+  >```
+  >See the complete example [here](example/transformers/transformers_low_bit/).
+
   
+  After the model is optimizaed using INT4 (or INT8/INT5), you may save and load the optimized model as follows:
+  ```python
+  model.save_low_bit(model_path)
+  
+  new_model = AutoModelForCausalLM.load_low_bit(model_path)
+  ```
+  See the example [here](example/transformers/transformers_low_bit/).
+
 - ##### Using native INT4 format
 
   You may also convert Hugging Face *Transformers* models into native INT4 format for maximum performance as follows.
