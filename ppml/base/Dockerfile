@@ -57,6 +57,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
     git clone https://github.com/gramineproject/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
+    mkdir -p /opt/intel/SGXDataCenterAttestationPrimitives/driver/linux/include/asm && \
+    cp /opt/intel/SGXDataCenterAttestationPrimitives/driver/linux/include/sgx_user.h /opt/intel/SGXDataCenterAttestationPrimitives/driver/linux/include/asm/sgx.h && \
     cd /gramine && \
     git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
