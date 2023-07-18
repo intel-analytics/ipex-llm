@@ -12,7 +12,7 @@ ADD ./requirements.txt /opt/requirements.txt
 
 # Install PYTHON 3.9
 RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt install software-properties-common libunwind8-dev vim -y && \
+    apt install software-properties-common libunwind8-dev vim less -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get install -y python3.9 git curl wget && \
     rm /usr/bin/python3 && \
@@ -46,6 +46,11 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     mv /root/BigDL/python/ppml/src/bigdl/ppml/ /usr/local/lib/python3.9/dist-packages/bigdl/ && \
     rm -rf /root/BigDL
 
+
+# To boost fschat performance, do the following:
+# source bigdl-nano-init -t
+# export KMP_AFFINITY=granularity=fine,compact
+# export OMP_NUM_THREADS=#phy cores
 
 
 ENV PYTHONPATH /usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/local/lib/python3.9/dist-packages:/usr/lib/python3/dist-packages
