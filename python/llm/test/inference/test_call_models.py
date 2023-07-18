@@ -16,7 +16,6 @@
 
 
 from bigdl.llm.models import Llama, Bloom, Gptneox, Starcoder
-from bigdl.llm.utils import get_avx_flags
 import pytest
 from unittest import TestCase
 import os
