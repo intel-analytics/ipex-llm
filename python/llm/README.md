@@ -16,7 +16,7 @@ See the ***optimized performance*** of `phoenix-inst-chat-7b`, `vicuna-13b-v1.1`
 We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following models have been verified on Intel laptops.
 | Model     | Example                                                  |
 |-----------|----------------------------------------------------------|
-| LLaMA     | [link](example/transformers/transformers_int4/vicuna)    |
+| LLaMA     | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/vicuna)    |
 | MPT       | [link](example/transformers/transformers_int4/mpt)       |
 | Falcon    | [link](example/transformers/transformers_int4/falcon)    |
 | ChatGLM   | [link](example/transformers/transformers_int4/chatglm)   | 
@@ -24,9 +24,9 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | MOSS      | [link](example/transformers/transformers_int4/moss)      | 
 | Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
 | Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
-| RedPajama | [link](example/transformers/transformers_int4/redpajama) | 
-| Phoenix   | [link](example/transformers/transformers_int4/phoenix)   | 
-| StarCoder | [link](example/transformers/transformers_int4/starcoder) | 
+| RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
+| Phoenix   | [link11](example/transformers/native_int4), [link2](example/transformers/transformers_int4/phoenix)   | 
+| StarCoder | [link11](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
 
 
 ### Working with `bigdl-llm`
