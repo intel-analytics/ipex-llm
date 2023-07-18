@@ -65,15 +65,29 @@ mr_signer        : 6f0627955......
 
 ### TorchServe
 
-In order to deploy TorchServe on k8s with helmchart, TorchServe in DL-Serving is slightly different with the original Torchserve. First, the frontend and backends of TorchServe are decoupled and run in different pods. Second, TorchServe does not need the config file because it can generate a config file from the parameters in `service/values.yaml` directly. Third,  we enable model encryption, SSL and sidecar to ensure the security of TorchServe. The following picture shows the architecture of TorchServe in DL-Serving.
+<img src="https://github.com/Uxito-Ada/BigDL/assets/60865256/28be57a4-f8a6-4b73-b57d-35e17caa4f58" height="300px">
 
-To start TorchServe, you need to set the parameters' values in `service/values.yaml` and copy the MAR file which is needed by original TorchServe to `$nfsPath/model/torchserve`. Then, run the helm command to run it on k8s.
-```
+The above picture shows the architecture of BigDL PPML TorchServe, which is slightly different with the native Torchserve:
+
+- The frontend and backends of TorchServe are decoupled and run in different pods.
+- TorchServe does not need the config file because it can generate a config file from the parameters in `service/values.yaml` directly.
+- We enable model encryption, SSL and sidecar to ensure the security of TorchServe. 
+
+To start TorchServe, you need to set the parameters' values in `service/values.yaml` and copy the MAR file which is needed by original TorchServe to `$nfsPath/model/torchserve`.
+
+In addition, if you want to enable SSL/TLS traffic to protect communication between pods (frontend and backends), it is allowed to set `istioTLSEnabled` to **true**, while it is noted that [istio](https://istio.io/latest/docs/setup/install/) should be installed in your cluster before enabling. It is shown as below:
+
+![image](https://github.com/Uxito-Ada/BigDL/assets/60865256/be4b17eb-6e4e-43c6-b9d1-5e2d622fbf33)
+
+
+Then, run the helm command to run it on k8s:
+
+```shell
 cd service
-helm install $your_helm_name .
+helm install bigdl-ppml-torchserve .
 ```
 You can check the status of pods and services by `kubectl`.
-```
+```shell
 kubectl get all -n bigdl-ppml-serving
 
 NAME                                                       READY   STATUS    RESTARTS       AGE
@@ -92,7 +106,7 @@ replicaset.apps/bigdl-torchserve-backend-deployment-6bbbdd64ff   2         2    
 
 ```
 Send a prediction request to test if Torchserve is running correctly.
-```
+```shell
 curl https://$clusterIP:$inferencePort/predictions/BERT_LARGE -T sample_input_bert.json  -k
 
 # you should get the inference output as response.

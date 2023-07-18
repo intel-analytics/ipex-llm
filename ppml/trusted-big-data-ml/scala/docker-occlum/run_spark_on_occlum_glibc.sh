@@ -566,6 +566,31 @@ run_spark_lgbm_criteo() {
                 -i /host/data/ -s /host/data/model -I 100 -d 5
 }
 
+run_spark_lgbm_model_encrypt() {
+    init_instance spark
+    build_spark
+    echo -e "${BLUE}occlum run BigDL Spark lgbm model encrypt example${NC}"
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+                    -XX:-UseCompressedOops \
+                    -XX:ActiveProcessorCount=4 \
+                    -Divy.home="/tmp/.ivy" \
+                    -Dos.name="Linux" \
+                    -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:/bin/jars/*" \
+                    -Xmx5g -Xms5g org.apache.spark.deploy.SparkSubmit \
+                    --conf spark.hadoop.io.compression.codecs="com.intel.analytics.bigdl.ppml.crypto.CryptoCodec" \
+                    --master local[4] \
+                    --py-files local:/py-examples/bigdl.zip \
+                    local:/py-examples/encrypted_lightgbm_model_io.py \
+                    --app_id 123456654321 \
+                    --api_key 123456654321 \
+                    --primary_key_material /host/data/key/simple_encrypted_primary_key \
+                    --input_path /host/data/iris.data \
+                    --output_path /host/data/model \
+                    --input_encrypt_mode plain_text \
+                    --output_encrypt_mode plain_text \
+                    --kms_type SimpleKeyManagementService
+}
+
 run_spark_gbt_e2e() {
     init_instance spark
     build_spark
@@ -761,6 +786,10 @@ case "$arg" in
         ;;
     lgbm_criteo)
         run_spark_lgbm_criteo
+        cd ../
+        ;;
+    lgbm_model_encrypt)
+        run_spark_lgbm_model_encrypt
         cd ../
         ;;
     gbt_e2e)

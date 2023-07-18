@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
-import java.security.SecureRandom
+import scala.util.Random
 
   /**
   * Created by yao on 9/21/16.
@@ -67,7 +67,7 @@ class MulConstantSpec extends FlatSpec {
 class MulConstantSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val mulConst = MulConstant[Float](1.0).setName("mulConst")
-    val input = Tensor[Float](10, 10).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
     runSerializationTest(mulConst, input)
   }
 }

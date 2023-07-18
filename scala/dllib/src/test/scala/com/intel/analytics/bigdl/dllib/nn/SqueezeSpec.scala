@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class SqueezeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     var squeeze = Squeeze[Float](2).setName("squeeze")
-    val input = Tensor[Float](2, 1, 2).apply1( e => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 1, 2).apply1( e => Random.nextFloat())
     runSerializationTest(squeeze, input)
 
     squeeze = Squeeze[Float](Array(2), batchMode = true).setName("squeeze")

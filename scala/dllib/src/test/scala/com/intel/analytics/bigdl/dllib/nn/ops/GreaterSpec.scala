@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class GreaterSpec extends FlatSpec with Matchers {
   "Greater Float operation" should "works correctly" in {
@@ -105,8 +105,8 @@ class GreaterSpec extends FlatSpec with Matchers {
 class GreaterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val greater = Greater[Float]().setName("greater")
-    val input1 = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
-    val input2 = Tensor[Float](5).apply1(_ => new SecureRandom().nextFloat())
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
     val input = T(input1, input2)
     runSerializationTest(greater, input, greater.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
