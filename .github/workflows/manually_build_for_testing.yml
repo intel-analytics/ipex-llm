@@ -80,9 +80,10 @@ jobs:
         sudo docker push 10.239.45.10/arda/${base_image}:${TAG}
         sudo docker rmi -f ${base_image}:${TAG} 10.239.45.10/arda/${base_image}:${TAG}
 
-    bigdl-ppml-trusted-bigdl-llm-tdx:
+  bigdl-ppml-trusted-bigdl-llm-tdx:
     if: ${{ github.event.inputs.artifact == 'bigdl-ppml-trusted-bigdl-llm-tdx' || github.event.inputs.artifact == 'all' }}
     runs-on: [self-hosted, Shire]
+
     steps:
     - uses: actions/checkout@v3
       with:
