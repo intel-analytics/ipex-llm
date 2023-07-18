@@ -22,13 +22,13 @@ parser.add_argument('--input_meta', type=str, required=True,
                     help="item metadata file")
 
 args = parser.parse_args()
-fi = open(args.input_meta, "r")
-out_file = args.input_meta.split(".json")[0] + ".csv"
-fo = open(out_file, "w")
-for line in fi:
-    try:
-        obj = json.loads(line)
-        cat = obj["categories"][0][-1]
-        print(obj["asin"] + "\t" + cat, file=fo)
-    except:
-        print("Invalid line in input_meta file. Json like data is expected.")
+with open(args.input_meta, "r") as fi:
+    out_file = args.input_meta.split(".json")[0] + ".csv"
+    with open(out_file, "w") as fo:
+        for line in fi:
+            try:
+                obj = json.loads(line)
+                cat = obj["categories"][0][-1]
+                print(obj["asin"] + "\t" + cat, file=fo)
+            except:
+                print("Invalid line in input_meta file. Json like data is expected.")

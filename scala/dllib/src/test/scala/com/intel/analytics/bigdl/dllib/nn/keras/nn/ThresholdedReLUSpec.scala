@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class ThresholdedReLUSpec extends KerasBaseSpec{
 
@@ -64,7 +64,7 @@ class ThresholdedReLUSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = ThresholdedReLU[Float](2.7, inputShape = Shape(3, 128))
     layer.build(Shape(2, 3, 128))
-    val input = Tensor[Float](2, 3, 128).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 3, 128).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

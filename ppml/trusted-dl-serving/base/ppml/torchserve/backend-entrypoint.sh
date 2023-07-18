@@ -8,6 +8,7 @@ MODEL_NAME=$MODEL_NAME
 local_pod_ip=$( hostname -I | awk '{print $1}' )
 
 cd /ppml || exit
+./init.sh
 
 # Set PCCS conf
 if [ "$PCCS_URL" != "" ] ; then

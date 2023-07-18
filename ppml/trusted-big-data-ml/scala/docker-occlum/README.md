@@ -450,6 +450,28 @@ You can find GBT result under folder `/path/to/data/model/`.
 /path/to/data/model/*.txt
 ```
 
+## BigDL LGBM model encrypt Example
+
+### Download data
+You can download the iris.data from [here](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data).Then mount `/path/to/data/iris.data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/:/opt/occlum_spark/data
+```
+
+1.Change the file [start-spark-local.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/start-spark-local.sh) last line from `bash /opt/run_spark_on_occlum_glibc.sh $1` to `bash`
+And then run `bash start-spark-local.sh` to enter docker container.
+```
+bash start-spark-local.sh
+```
+2.To generate primary key for encrypt and decrypt. The primary key will be generated in `/opt/occlum_spark/data/key/simple_encrypted_primary_key`.
+```
+bash /opt/ehsm_entry.sh generatekey simple $APP_ID $API_KEY
+```
+3.To run the BigDL SimpleQuery e2e Example. The source code is [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/scala/docker-occlum/py-examples/encrypted_lightgbm_model_io.py)
+```
+bash /opt/run_spark_on_occlum_glibc.sh lgbm_model_encrypt
+```
+
 ## BigDL GBT e2e Example
 
 ### Download data

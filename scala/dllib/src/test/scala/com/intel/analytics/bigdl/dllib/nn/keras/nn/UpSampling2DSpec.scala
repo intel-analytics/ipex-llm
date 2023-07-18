@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 class UpSampling2DSpec extends KerasBaseSpec {
 
@@ -64,7 +64,7 @@ class UpSampling2DSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = UpSampling2D[Float](inputShape = Shape(4, 8, 8))
     layer.build(Shape(2, 4, 8, 8))
-    val input = Tensor[Float](2, 4, 8, 8).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 4, 8, 8).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 }

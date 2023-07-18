@@ -1,0 +1,18 @@
+i11a12,24
+> function get_avx_flags() {
+>   avx="avx2"
+>   if command -v lscpu &>/dev/null; then
+>     msg=$(lscpu)
+>     if [[ $msg == *"avx512_vnni"* ]]; then
+>       avx="avx512"
+>     fi
+>   else
+>     echo "lscpu command not found. Please make sure it is installed."
+>   fi
+>   echo $avx
+> }
+>
+77c90
+< avx_flag=avx512
+---
+> avx_flag=$(get_avx_flags)

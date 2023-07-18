@@ -27,15 +27,15 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 
 import scala.math._
-import java.security.SecureRandom
+import scala.util.Random
 
 class AlexNetSpec extends TorchSpec {
   "AlexNet float" should "generate correct output" in {
     torchCheck()
 
-    new SecureRandom().setSeed(1)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => new SecureRandom().nextDouble())
-    val labels = Tensor[Double](8).apply1(e => new SecureRandom().nextInt(100))
+    Random.setSeed(1)
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -189,9 +189,9 @@ gradInput = model.gradInput
   "AlexNet Float save to torch" should "generate correct output" in {
     torchCheck()
 
-    new SecureRandom().setSeed(1)
-    val input = Tensor[Float](8, 3, 224, 224).apply1(e => new SecureRandom().nextFloat())
-    val labels = Tensor[Float](8).apply1(e => new SecureRandom().nextInt(100))
+    Random.setSeed(1)
+    val input = Tensor[Float](8, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](8).apply1(e => Random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)

@@ -21,51 +21,43 @@
 
 import argparse
 
-from bigdl.llm.langchain.llms import BigdlLLM
+from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
 from langchain import PromptTemplate, LLMChain
-from langchain.callbacks.manager import CallbackManager
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain import HuggingFacePipeline
 
 
 def main(args):
     
     question = args.question
     model_path = args.model_path
-    model_family = args.model_family
-    n_threads = args.thread_num
-    
     template ="""{question}"""
 
     prompt = PromptTemplate(template=template, input_variables=["question"])
 
-    # Callbacks support token-wise streaming
-    callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    
-    # Verbose is required to pass to the callback manager
-    llm = BigdlLLM(
-        model_path=model_path,
-        model_family=model_family,
-        n_threads=n_threads,
-        callback_manager=callback_manager, 
-        verbose=True
+    # llm = TransformersPipelineLLM.from_model_id(
+    #     model_id=model_path,
+    #     task="text-generation",
+    #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+    # )
+
+    llm = TransformersLLM.from_model_id(
+        model_id=model_path,
+        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
     )
 
     llm_chain = LLMChain(prompt=prompt, llm=llm)
 
-    llm_chain.run(question)
+    output = llm_chain.run(question)
+    print("====output=====")
+    print(output)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BigDL-LLM Langchain Streaming Chat Example')
-    parser.add_argument('-x','--model-family', type=str, required=True,
-                        choices=["llama", "bloom", "gptneox"],
-                        help='the model family')
+    parser = argparse.ArgumentParser(description='Llama-CPP-Python style API Simple Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
-                        help='the path to the converted llm model')
+                        help='the path to transformers model')
     parser.add_argument('-q', '--question', type=str, default='What is AI?',
                         help='qustion you want to ask.')
-    parser.add_argument('-t','--thread-num', type=int, default=2,
-                        help='Number of threads to use for inference')
     args = parser.parse_args()
     
     main(args)

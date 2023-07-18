@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class VolumetricConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val volumetricConvolution = VolumetricConvolution[Float](2, 3, 2, 2, 2, dT = 1, dW = 1, dH = 1,
       padT = 0, padW = 0, padH = 0, withBias = true).setName("volumetricConvolution")
-    val input = Tensor[Float](2, 2, 2, 2).apply1(_ => new SecureRandom().nextFloat())
+    val input = Tensor[Float](2, 2, 2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(volumetricConvolution, input)
   }
 }

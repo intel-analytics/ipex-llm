@@ -51,12 +51,10 @@ def load_data(dest_dir='/tmp/.bigdl/dataset', nb_words=None, oov_char=2):
     """
     path = download_imdb(dest_dir)
 
-    f = open(path, 'rb')
+    with open(path, 'rb') as f:
+        (x_train, y_train), (x_test, y_test) = cPickle.load(f)
+        # imdb.pkl would return different numbers of variables, not 4
 
-    (x_train, y_train), (x_test, y_test) = cPickle.load(f)
-    # imdb.pkl would return different numbers of variables, not 4
-
-    f.close()
     shuffle_by_seed([x_train, y_train, x_test, y_test])
     x = x_train + x_test
 
@@ -108,11 +106,9 @@ def get_word_index(dest_dir='/tmp/.bigdl/dataset', filename='imdb_word_index.pkl
                                dest_dir,
                                'https://s3.amazonaws.com/text-datasets/imdb_word_index.pkl',
                                )
-    f = open(path, 'rb')
+    with open(path, 'rb') as f:
+        data = cPickle.load(f, encoding='latin1')
 
-    data = cPickle.load(f, encoding='latin1')
-
-    f.close()
     return data
 
 

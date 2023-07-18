@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.{ModuleLoader, ModulePersister, ModuleSerializationTest}
 
-import java.security.SecureRandom
+import scala.util.Random
 
 
 class DetectionOutputFrcnnSerialTest extends ModuleSerializationTest {

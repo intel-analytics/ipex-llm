@@ -17,6 +17,7 @@
 
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/utils/bitsandbytes.py
+# and https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py
 # which is licensed under Apache License 2.0:
 #
 # Copyright 2021 The HuggingFace Inc. team. All rights reserved.
@@ -37,12 +38,30 @@
 import torch
 import torch.nn as nn
 from accelerate import init_empty_weights
-from bigdl.llm.transformers.linear_int4 import LinearInt4, ParamsInt4
+from bigdl.llm.transformers.linear_quant import LinearQuant, ParamsQuant
 import warnings
 
 
-def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_name=None):
+def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
+                               current_key_name=None, convert_shape_only=False):
     has_been_replaced = False
+
+    # Through our method, certain layers that were initialized on the device "meta"
+    # (associated with the lazy initialization strategy of low_cpu_mem_usage) are not
+    # being correctly moved back to the CPU device for some reason. Therefore, we are
+    # moving these layers back to the CPU here in order to prevent the occurrence
+    # of NoImplementnError. Details refer to:
+    # https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py#L3110
+    model_state_dict = model.state_dict()
+    for name, param in model.named_parameters():
+        if param.data.device == torch.device('meta'):
+            from accelerate.utils.modeling import set_module_tensor_to_device
+            param = model_state_dict[name]
+            set_module_tensor_to_device(model,
+                                        name,
+                                        "cpu",
+                                        torch.empty(*param.size(), dtype=torch.float32))
+
     for name, module in model.named_children():
         if current_key_name is None:
             current_key_name = []
@@ -52,17 +71,22 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
             if not any(key in ".".join(current_key_name) for key in modules_to_not_convert):
                 with init_empty_weights():
 
-                    new_linear = LinearInt4(
+                    new_linear = LinearQuant(
                         module.in_features,
                         module.out_features,
+                        qtype,
                         module.bias is not None,
                     )
 
                     # Copy the weights
-                    new_linear._parameters['weight'] = ParamsInt4(data=module.weight.data,
-                                                                  requires_grad=False,
-                                                                  quantized=False,
-                                                                  _shape=None).to("cpu")
+                    paramsQuant = ParamsQuant(data=module.weight.data,
+                                              requires_grad=False,
+                                              quantized=False,
+                                              convert_shape_only=convert_shape_only,
+                                              _shape=None,
+                                              qtype=qtype).to("cpu")
+                    new_linear._parameters['weight'] = paramsQuant
+
                     if module.bias is not None:
                         new_linear._parameters['bias'] = nn.Parameter(module.bias.data).to("cpu")
 
@@ -75,18 +99,20 @@ def _replace_with_int4_linear(model, modules_to_not_convert=None, current_key_na
 
         # Remove the last key for recursion
         if len(list(module.children())) > 0:
-            _, has_been_replaced = _replace_with_int4_linear(
+            _, has_been_replaced = _replace_with_quant_linear(
                 module,
+                qtype,
                 modules_to_not_convert,
                 current_key_name,
+                convert_shape_only,
             )
     return model, has_been_replaced
 
 
-def ggml_convert_int4(model):
+def ggml_convert_quant(model, qtype, convert_shape_only=False):
     modules_to_not_convert = []  # ["lm_head"]
-    model, has_been_replaced = _replace_with_int4_linear(
-        model, modules_to_not_convert, None
+    model, has_been_replaced = _replace_with_quant_linear(
+        model, qtype, modules_to_not_convert, None, convert_shape_only=convert_shape_only
     )
     if not has_been_replaced:
         warnings.warn(

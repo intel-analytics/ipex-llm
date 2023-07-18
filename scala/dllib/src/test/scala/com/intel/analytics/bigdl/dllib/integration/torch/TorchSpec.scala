@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.scalatest._
 
-import java.security.SecureRandom
+import scala.util.Random
 
 case class TestCaseIdentity(value: String) {
   def suffix: String = List(".t7", value).mkString(".")
@@ -32,7 +32,7 @@ class TorchSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   override def withFixture(test: NoArgTest): Outcome = {
-    new SecureRandom().setSeed(1)
+    Random.setSeed(1)
     RNG.setSeed(100)
 
     // the identity name is class name + test case name

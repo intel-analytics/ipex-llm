@@ -29,8 +29,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from bigdl.llm.langchain.llms import BigdlLLM
-from bigdl.llm.langchain.embeddings import BigdlLLMEmbeddings
+from bigdl.llm.langchain.llms import BigdlNativeLLM
+from bigdl.llm.langchain.embeddings import BigdlNativeEmbeddings
 
 
 
@@ -53,13 +53,13 @@ def main(args):
     texts = text_splitter.split_text(input_doc)
 
     # create embeddings and store into vectordb
-    embeddings = BigdlLLMEmbeddings(model_path=model_path, model_family=model_family, n_threads=n_threads, n_ctx=n_ctx)
+    embeddings = BigdlNativeEmbeddings(model_path=model_path, model_family=model_family, n_threads=n_threads, n_ctx=n_ctx)
     docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": str(i)} for i in range(len(texts))]).as_retriever()
 
     #get relavant texts
     docs = docsearch.get_relevant_documents(query)
         
-    bigdl_llm = BigdlLLM(
+    bigdl_llm = BigdlNativeLLM(
         model_path=model_path, model_family=model_family, n_ctx=n_ctx, n_threads=n_threads, callback_manager=callback_manager
     )
 

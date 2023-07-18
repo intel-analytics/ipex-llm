@@ -142,9 +142,9 @@ def dict_to_row(schema, row_dict):
                 img_bytes = f.read()
             row[k] = bytearray(img_bytes)
         elif schema_field.feature_type == FeatureType.NDARRAY:
-            memfile = BytesIO()
-            np.savez_compressed(memfile, arr=v)
-            row[k] = bytearray(memfile.getvalue())
+            with BytesIO() as memfile:
+                np.savez_compressed(memfile, arr=v)
+                row[k] = bytearray(memfile.getvalue())
         else:
             row[k] = v
     return pyspark.Row(**row)
@@ -181,5 +181,5 @@ def pa_fs(path):
 def decode_imagebytes2PIL(image_btyes):
     from PIL import Image
     from io import BytesIO
-    imagebs = BytesIO(image_btyes)
-    return Image.open(imagebs)
+    with BytesIO(image_btyes) as imagebs:
+        return Image.open(imagebs)
