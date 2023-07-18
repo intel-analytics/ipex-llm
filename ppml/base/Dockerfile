@@ -51,7 +51,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Gramine
     apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y apt-utils wget unzip protobuf-compiler libgmp3-dev libmpfr-dev libmpfr-doc libmpc-dev && \
-    pip install --no-cache-dir meson==0.63.2 cmake==3.24.1.1 toml==0.10.2 pyelftools cffi dill==0.3.4 psutil && \
+    pip install --no-cache-dir meson==0.63.2 cmake==3.24.1.1 tomli>=1.1.0 tomli-w>=0.4.0 pyelftools cffi dill==0.3.4 psutil && \
 # Create a link to cmake, upgrade cmake version so that it is compatible with latest meson build (require version >= 3.17)
     ln -s /usr/local/bin/cmake /usr/bin/cmake && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
@@ -60,7 +60,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /gramine && \
     git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
-    meson setup build/ --buildtype=release  -Dsgx=enabled   -Dsgx_driver=dcap1.10 -Dlibgomp=enabled && \
+    meson setup build/ --buildtype=release  -Dsgx=enabled  -Dsgx_driver=dcap -Dlibgomp=enabled && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
