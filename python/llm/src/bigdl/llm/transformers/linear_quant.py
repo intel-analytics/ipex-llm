@@ -57,6 +57,7 @@ import torch
 import ctypes
 IS_SERVER = check_avx512_vnni()
 
+
 def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
     QK = ggml.ggml_qk_size(qtype)
     block_size_in_bytes = ggml.ggml_type_size(qtype)
@@ -220,7 +221,8 @@ class LinearQuant(nn.Linear):
 
         x0 = self.weight.data
 
-        if IS_SERVER and x_2d.shape[0] < 96:  # todo may need to set a different number on different platform
+        # todo may need to set a different number on different platforms
+        if IS_SERVER and x_2d.shape[0] < 96:
             result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
