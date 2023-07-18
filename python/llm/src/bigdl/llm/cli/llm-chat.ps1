@@ -2,6 +2,7 @@ $llm_dir = (Split-Path -Parent (python -c "import bigdl.llm;print(bigdl.llm.__fi
 $lib_dir = Join-Path $llm_dir "libs"
 $prompt_dir = Join-Path $llm_dir "cli/prompts"
 
+$vnni_enable = ((python -c "from bigdl.llm.utils.isa_checker import check_avx_vnni;print(check_avx_vnni())").ToLower() -eq "true")
 $model_family = ""
 $threads = 8
 # Number of tokens to predict (made it larger than default because we want a long interaction)
@@ -23,16 +24,19 @@ function Display-Help
 
 function llama
 {
+    $exec_file = if ($vnni_enable) { "main-llama_vnni.exe" } else { "main-llama.exe" }
     $prompt_file = Join-Path $prompt_dir "chat-with-llm.txt"
-    $command = "$lib_dir/main-llama.exe -t $threads -n $n_predict -f $prompt_file -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict -f $prompt_file -i --color --reverse-prompt 'USER:' --in-prefix ' ' $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }
 
 function gptneox
 {
-    # TODO
-    $command = "$lib_dir/main-gptneox.exe -t $threads -n $n_predict $filteredArguments"
+    $exec_file = if ($vnni_enable) { "main-gptneox_vnni.exe" } else { "main-gptneox.exe" }
+    $prompt = "A chat between a curious human and an artificial intelligence assistant.`
+            The assistant gives helpful, detailed, and polite answers."
+    $command = "$lib_dir/$exec_file -t $threads -n $n_predict --color --instruct -p '$prompt' $filteredArguments"
     Write-Host "$command"
     Invoke-Expression $command
 }

@@ -47,6 +47,9 @@ function llama {
 }
 
 function gptneox {
+  PROMPT="A chat between a curious human <human> and an artificial intelligence assistant <bot>.\
+  The assistant gives helpful, detailed, and polite answers to the human's questions."
+  EXTRA_ARGS+=('--instruct' '-p' '"$PROMPT"')
   command="$lib_dir/main-gptneox_$avx_flag -t $threads -n $n_predict ${filteredArguments[*]} ${EXTRA_ARGS[*]}"
   echo "$command"
   eval "$command"
@@ -86,7 +89,6 @@ echo "AVX Flags: $avx_flag"
 if [[ "$model_family" == "llama" ]]; then
   llama
 elif [[ "$model_family" == "gptneox" ]]; then
-  # TODO
   gptneox
 else
   echo "llm-chat does not support model_family $model_family for now."
