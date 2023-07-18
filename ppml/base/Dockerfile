@@ -1,6 +1,6 @@
 ARG BIGDL_VERSION=2.4.0-SNAPSHOT
 ARG SPARK_VERSION=3.1.3
-ARG GRAMINE_BRANCH=devel-v1.3.1-2023-07-13
+ARG GRAMINE_BRANCH=v1.5
 
 FROM ubuntu:20.04
 ARG http_proxy
@@ -55,7 +55,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Create a link to cmake, upgrade cmake version so that it is compatible with latest meson build (require version >= 3.17)
     ln -s /usr/local/bin/cmake /usr/bin/cmake && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential autoconf bison gawk git ninja-build python3-click python3-jinja2 wget pkg-config cmake libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-cryptography python3-pip python3-protobuf nasm && \
-    git clone https://github.com/analytics-zoo/gramine.git /gramine && \
+    git clone https://github.com/gramineproject/gramine.git /gramine && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /opt/intel/SGXDataCenterAttestationPrimitives && \
     cd /gramine && \
     git checkout ${GRAMINE_BRANCH} && \
