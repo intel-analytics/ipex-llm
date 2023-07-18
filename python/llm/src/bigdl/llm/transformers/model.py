@@ -165,5 +165,6 @@ class AutoModel(_BaseAutoModelClass):
 class AutoModelForSpeechSeq2Seq(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForSpeechSeq2Seq
 
+
 class AutoModelForSeq2SeqLM(_BaseAutoModelClass):
     HF_Model = transformers.AutoModelForSeq2SeqLM
