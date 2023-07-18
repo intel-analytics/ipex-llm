@@ -60,7 +60,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd /gramine && \
     git checkout ${GRAMINE_BRANCH} && \
 # Also create the patched gomp
-    meson setup build/ --buildtype=release  -Dsgx=enabled  -Dsgx_driver=dcap -Dlibgomp=enabled && \
+    meson setup build/ --buildtype=release -Dsgx=enabled -Ddcap=enabled -Dlibgomp=enabled && \
     ninja -C build/ && \
     ninja -C build/ install && \
     cd /ppml/ && \
