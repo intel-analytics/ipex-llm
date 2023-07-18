@@ -58,7 +58,7 @@ cd BigDL/ppml/
     ```
     Now, you should have bound the service account and user by injecting the token of service account into the user.
 
-    However, in some latest versions of k8s, the token would not be generated automatically after creating the service account, and you will find no secret when running `kubectl get secret|grep service-account-token` above. In such a case, you could manually create a secret annoted with spark service account by refering to case 1 in [Troubleshooting](#troubleshooting), and this operation will inject the service account's token into the secret.
+    However, in some latest versions of k8s, the token would not be generated automatically after creating the service account, and you will find no secret when running `kubectl get secret|grep service-account-token` above. In such a case, you could manually create a secret annoted with spark service account by refering to case 1 in [Troubleshooting](#troubleshooting).
 
     Then, continue to bind the spark user with k8s cluster:
 
@@ -124,3 +124,4 @@ https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-
    type: kubernetes.io/service-account-token
    EOF
    ```
+   This operation will inject the `spark` service account's token into the secret `spark-service-account-token`.
