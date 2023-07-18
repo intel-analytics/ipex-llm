@@ -72,13 +72,13 @@ cd BigDL/ppml/
     ```
 
 
-1. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
+2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash
     kubectl config use-context spark-context
     kubectl config view --flatten --minify > /YOUR_DIR/config
     ```
-2. Create k8s secret
+3. Create k8s secret
     
     Value of `YOUR_PASSWORD`, the secret created below, should be the same as the password you specified for SSL in above section **Prepare the ssl_key and ssl_password**:
     ```bash
