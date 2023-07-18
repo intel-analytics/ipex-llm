@@ -55,7 +55,9 @@ from bigdl.llm.utils.isa_checker import check_avx512_vnni
 
 import torch
 import ctypes
+from bigdl.llm.ggml.quantize import ggml_tensor_qtype
 IS_SERVER = check_avx512_vnni()
+SYM_INT4 = ggml_tensor_qtype["sym_int4"]
 
 
 def ggml_convert_quant(tensor: torch.Tensor, qtype: int, convert_shape_only=False):
@@ -222,14 +224,14 @@ class LinearQuant(nn.Linear):
         x0 = self.weight.data
 
         # todo may need to set a different number on different platforms
-        if IS_SERVER and x_2d.shape[0] < 96:
+        if self.qtype == SYM_INT4 and IS_SERVER and x_2d.shape[0] >= 96:
+            x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
+            result = F.linear(x, x0_fp32, self.bias)
+        else:
             result = ggml_matmul_src1_x_src0_t(x0, x_2d, self.weight_shape, self.qtype)
             new_shape = x_shape[:-1] + (self.out_len,)
             result = result.view(new_shape)
             if self.bias is not None:
                 result += self.bias
-        else:
-            x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
-            result = F.linear(x, x0_fp32, self.bias)
 
         return result.to(x.dtype)
