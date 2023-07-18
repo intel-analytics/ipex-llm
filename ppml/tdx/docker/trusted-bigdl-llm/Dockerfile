@@ -7,6 +7,7 @@ RUN mkdir -p /ppml/
 
 
 ADD ./fschat.diff /opt/fschat.diff
+ADD ./requirements.txt /opt/requirements.txt
 
 
 # Install PYTHON 3.9
@@ -26,11 +27,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     # We would also patch fastchat
     patch /usr/local/lib/python3.9/dist-packages/fastchat/model/model_adapter.py /opt/fschat.diff && \
     pip3 install --pre --upgrade gradio==3.36.1 && \
-    pip3 install --pre --upgrade bigdl-nano
-
+    pip3 install --pre --upgrade bigdl-nano && \
 # Install dependencies for bigdl-llm-demo
-ADD ./requirements.txt /opt/requirements.txt
-RUN pip3 install -r /opt/requirements.txt && \
+    pip3 install -r /opt/requirements.txt && \
     pip3 install typing-inspect==0.8.0 typing_extensions==4.5.0 && \
     pip3 install ray==2.3.1 && \
     pip3 install sentence-transformers --no-deps && \
