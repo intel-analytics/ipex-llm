@@ -224,7 +224,7 @@ class LinearQuant(nn.Linear):
         x0 = self.weight.data
 
         # todo may need to set a different number on different platforms
-        if self.qtype == SYM_INT4 and IS_SERVER and x_2d.shape[0] >= 96:
+        if IS_SERVER and self.qtype == SYM_INT4 and x_2d.shape[0] >= 96:
             x0_fp32 = ggml_int4_convert_fp32(x0, self.weight_shape, self.weight_length)
             result = F.linear(x, x0_fp32, self.bias)
         else:
