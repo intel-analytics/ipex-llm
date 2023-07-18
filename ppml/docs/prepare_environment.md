@@ -111,16 +111,16 @@ https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-
 
 ### TroubleShooting
 1. Spark service account secret are not automatically generated when Spark Service Account are created.
-
-Newer versions of Kubernetes don't automatically created spark service account secret. Please generate manually with the following command:
-```bash
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-name: spark-service-account-token
-annotations:
-    kubernetes.io/service-account.name: spark
-type: kubernetes.io/service-account-token
-EOF
-```
+   
+   Newer versions of Kubernetes don't automatically created spark service account secret. Please generate manually with the following command:
+   ```bash
+   kubectl apply -f - <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+   name: spark-service-account-token
+   annotations:
+       kubernetes.io/service-account.name: spark
+   type: kubernetes.io/service-account-token
+   EOF
+   ```
