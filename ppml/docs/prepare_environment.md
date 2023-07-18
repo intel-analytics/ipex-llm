@@ -55,7 +55,14 @@ cd BigDL/ppml/
     # bind service account and user
     kubectl config set-credentials spark-user \
                   --token=$(kubectl get secret <spark_service_account_secret> -o jsonpath={.data.token} | base64 -d)
+    ```
+    Now, you should have bound the service account and user by injecting the token of service account into the user.
 
+    However, in some latest versions of k8s, the token would not be generated automatically after creating the service account, and you will find no secret when running `kubectl get secret|grep service-account-token` above. In such a case, you could manually create a secret annoted with spark service account by refering to case 1 in [Troubleshooting](#troubleshooting), and this operation will inject the service account's token into the secret.
+
+    Then, continue to bind the spark user with k8s cluster:
+
+    ```bash
     # bind user and context
     kubectl config set-context spark-context --user=spark-user
 
@@ -65,13 +72,13 @@ cd BigDL/ppml/
     ```
 
 
-2. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
+1. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
     ```bash
     kubectl config use-context spark-context
     kubectl config view --flatten --minify > /YOUR_DIR/config
     ```
-3. Create k8s secret
+2. Create k8s secret
     
     Value of `YOUR_PASSWORD`, the secret created below, should be the same as the password you specified for SSL in above section **Prepare the ssl_key and ssl_password**:
     ```bash
