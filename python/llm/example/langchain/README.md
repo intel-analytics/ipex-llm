@@ -73,7 +73,7 @@ Please say something through your microphone (e.g. What is AI). The programe wil
 
 ### 4. Math
 
-This is an example of using `LLMMathChain`. The examples has been validate with [phoenix-7b](https://huggingface.co/FreedomIntelligence/phoenix-inst-chat-7b).
+This is an example using `LLMMathChain`. This example has been validated using [phoenix-7b](https://huggingface.co/FreedomIntelligence/phoenix-inst-chat-7b).
 
 ```bash
 python transformers_int4/math.py -m MODEL_PATH -q QUESTION
