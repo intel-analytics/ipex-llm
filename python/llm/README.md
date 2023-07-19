@@ -24,6 +24,7 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | MOSS      | [link](example/transformers/transformers_int4/moss)      | 
 | Baichuan  | [link](example/transformers/transformers_int4/baichuan)  | 
 | Dolly-v1  | [link](example/transformers/transformers_int4/dolly_v1)  | 
+| Dolly-v2  | [link](example/transformers/transformers_int4/dolly_v2)  | 
 | RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
 | Phoenix   | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/phoenix)   | 
 | StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
