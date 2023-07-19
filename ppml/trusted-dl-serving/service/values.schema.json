@@ -12,9 +12,8 @@
         "metricsPort",
         "backendPort",
 	"istioTLSEnabled", 
-        "modelFile",
         "modelDecryption",
-        "decryptionKey"
+        "aesKey"
     ],
     "properties": {
       "imageName": {
