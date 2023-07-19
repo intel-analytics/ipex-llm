@@ -226,10 +226,10 @@ def setup_package():
         
     # Check if all package files are ready
     for file in package_data[platform_name]:
-        file_path = os.path.join('src/bigdl/llm', file)
-        if not os.path.exists(file):
-            print(f'Could not find package dependency file: {file}')
-            raise FileNotFoundError(f'Could not find package dependency file: {file}')        
+        file_path = os.path.join(libs_dir, os.path.basename(file))
+        if not os.path.exists(file_path):
+            print(f'Could not find package dependency file: {file_path}')
+            raise FileNotFoundError(f'Could not find package dependency file: {file_path}')        
 
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
