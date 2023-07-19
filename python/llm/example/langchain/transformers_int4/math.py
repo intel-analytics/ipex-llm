@@ -1,3 +1,4 @@
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -19,44 +20,36 @@
 # Otherwise there would be module not found error in non-pip's setting as Python would
 # only search the first bigdl package and end up finding only one sub-package.
 
+# Code is adapted from https://python.langchain.com/docs/modules/chains/additional/llm_math
+
 import argparse
 
+from langchain.chains import LLMMathChain
 from bigdl.llm.langchain.llms import TransformersLLM, TransformersPipelineLLM
-from langchain import PromptTemplate, LLMChain
-from langchain import HuggingFacePipeline
 
 
 def main(args):
     
     question = args.question
     model_path = args.model_path
-    template ="""{question}"""
-
-    prompt = PromptTemplate(template=template, input_variables=["question"])
-
-    # llm = TransformersPipelineLLM.from_model_id(
-    #     model_id=model_path,
-    #     task="text-generation",
-    #     model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
-    # )
-
+    
     llm = TransformersLLM.from_model_id(
         model_id=model_path,
-        model_kwargs={"temperature": 0, "max_length": 64, "trust_remote_code": True},
+        model_kwargs={"temperature": 0, "max_length": 1024, "trust_remote_code": True},
     )
+    
+    llm_math = LLMMathChain.from_llm(llm, verbose=True)
 
-    llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-    output = llm_chain.run(question)
+    output = llm_math.run(question)
     print("====output=====")
     print(output)
-
+    
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='TransformersLLM Langchain Chat Example')
+    parser = argparse.ArgumentParser(description='TransformersLLM Langchain Math Example')
     parser.add_argument('-m','--model-path', type=str, required=True,
                         help='the path to transformers model')
-    parser.add_argument('-q', '--question', type=str, default='What is AI?',
+    parser.add_argument('-q', '--question', type=str, default='What is 13 raised to the .3432 power?',
                         help='qustion you want to ask.')
     args = parser.parse_args()
     
