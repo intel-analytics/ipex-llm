@@ -25,9 +25,17 @@ if [[ $SGX_ENABLED == "false" ]]; then
         bash attestation.sh
         bash temp_command_file
     fi
-    /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODLE_FILE --model-decryption $MODEL_DECRYPTION --decryption-key $DECRYPTION_KEY
+    if [[ $MODEL_DECRYPTION == "true" ]]; then
+        /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE --model-decryption --decryption-key $DECRYPTION_KEY
+    else
+        /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE
+    fi
 else
-    export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODLE_FILE --model-decryption $MODEL_DECRYPTION --decryption-key $DECRYPTION_KEY"
+    if [[ $MODEL_DECRYPTION == "true" ]]; then
+        export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE --model-decryption  --decryption-key $DECRYPTION_KEY"
+    else
+        export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODEL_FILE"
+    fi
     if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
           rm /ppml/temp_command_file || true

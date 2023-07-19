@@ -54,7 +54,7 @@
       "modelDecryption": {
         "type": "boolean"
       },
-      "decryptionKey": {
+      "aesKey": {
         "type": "string"
       }
     }

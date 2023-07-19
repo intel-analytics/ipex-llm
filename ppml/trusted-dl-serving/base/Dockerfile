@@ -140,6 +140,7 @@ COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/loca
 
 # Transformers
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/transformers*/transformers /usr/local/lib/python3.9/dist-packages/transformers
+COPY --from=temp /usr/local/lib/python3.9/dist-packages/tokenizers* /usr/local/lib/python3.9/dist-packages/
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
@@ -157,7 +158,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y libssl-dev && \
 # Optimization related
     pip3 install --pre --no-cache --upgrade bigdl-nano[pytorch,inference]==2.4.0b20230718 && \
-    pip3 install --pre --no-cache --upgrade  vit_pytorch neural-compressor==2.2 && \
+    pip3 install --pre --no-cache --upgrade  vit_pytorch neural-compressor==2.2 huggingface_hub==0.14.1 regex==2023.5.5 && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
