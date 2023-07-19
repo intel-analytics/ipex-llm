@@ -171,19 +171,19 @@ jobs:
           mkdir release
           mv build/Release/main-bloom.exe release/main-bloom_vnni.exe
           mv build/Release/quantize-bloom.exe release/quantize-bloom_vnni.exe
-          mv build/Release/libbloom.dll release/libbloom_vnni.dll
+          mv build/Release/bloom.dll release/libbloom_vnni.dll
 
           mv build/Release/main-llama.exe release/main-llama_vnni.exe
           mv build/Release/quantize-llama.exe release/quantize-llama_vnni.exe
-          mv build/Release/libllama.dll release/libllama_vnni.dll
+          mv build/Release/llama.dll release/libllama_vnni.dll
 
           mv build/Release/main-gptneox.exe releasee/main-gptneox_vnni.exe
           mv build/Release/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
-          mv build/Release/libgptneox.dll release/libgptneox_vnni.dll
+          mv build/Release/gptneox.dll release/libgptneox_vnni.dll
 
           mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
           mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
-          mv build/Release/libstarcoder.dll release/libstarcoder_vnni.dll
+          mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
 
       - name: Archive build files
         uses: actions/upload-artifact@v3
