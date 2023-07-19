@@ -33,6 +33,18 @@ import pyttsx3
 import argparse
 import time
 
+vicuna_template = """
+{history}
+Q: {human_input}
+A:"""
+
+chatglm2_template = """{history}\n\n问：{human_input}\n\n答："""
+
+
+template_dict = {
+    "vicuna": vicuna_template,
+    "chatglm2": chatglm2_template
+}
 
 def prepare_chain(args):
 
@@ -41,16 +53,12 @@ def prepare_chain(args):
     # Use a easy prompt could bring good-enough result
     # For Chinese Prompt
     # template = """{history}\n\n问：{human_input}\n\n答："""
-    template = """
-    {history}
-    Q: {human_input}
-    A:"""
+    template = template_dict[args.template]
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
     llm = TransformersLLM.from_model_id(
             model_id=llm_model_path,
             model_kwargs={"temperature": 0,
-                          "max_length": args.max_length,
                           "trust_remote_code": True},
     )
 
@@ -59,6 +67,7 @@ def prepare_chain(args):
         llm=llm,
         prompt=prompt,
         verbose=True,
+        llm_kwargs={"max_new_tokens":32},
         memory=ConversationBufferWindowMemory(k=2),
     )
 
@@ -129,7 +138,9 @@ if __name__ == '__main__':
     parser.add_argument('-x','--max-length', type=int, default=256,
                         help='the max length of model tokens input')
     parser.add_argument('-l', '--language', type=str, default="english",
-                        help='language to be transcribed')
+                        help='the language to be transcribed')
+    parser.add_argument('-t', '--template', type=str, default=vicuna_template,
+                        help='the template of conversation prompt')
     args = parser.parse_args()
 
     main(args)
