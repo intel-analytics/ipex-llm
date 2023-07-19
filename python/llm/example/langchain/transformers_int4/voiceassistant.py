@@ -33,18 +33,23 @@ import pyttsx3
 import argparse
 import time
 
-vicuna_template = """
+english_template = """
 {history}
 Q: {human_input}
 A:"""
 
-chatglm2_template = """{history}\n\n问：{human_input}\n\n答："""
+chinese_template = """{history}\n\n问：{human_input}\n\n答："""
 
 
 template_dict = {
-    "vicuna": vicuna_template,
-    "chatglm2": chatglm2_template
+    "english": english_template,
+    "chinese": chinese_template
 }
+
+llm_load_methods = (
+    TransformersLLM.from_model_id,
+    TransformersLLM.from_model_id_low_bit,
+)
 
 def prepare_chain(args):
 
@@ -53,10 +58,11 @@ def prepare_chain(args):
     # Use a easy prompt could bring good-enough result
     # For Chinese Prompt
     # template = """{history}\n\n问：{human_input}\n\n答："""
-    template = template_dict[args.template]
+    template = template_dict[args.language]
     prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-    llm = TransformersLLM.from_model_id(
+    method_index = 1 if args.directly else 0
+    llm = llm_load_methods[method_index](
             model_id=llm_model_path,
             model_kwargs={"temperature": 0,
                           "trust_remote_code": True},
@@ -67,7 +73,7 @@ def prepare_chain(args):
         llm=llm,
         prompt=prompt,
         verbose=True,
-        llm_kwargs={"max_new_tokens":32},
+        llm_kwargs={"max_new_tokens":args.max_new_tokens},
         memory=ConversationBufferWindowMemory(k=2),
     )
 
@@ -135,12 +141,12 @@ if __name__ == '__main__':
                         help="the path to the huggingface speech recognition model")
     parser.add_argument('-m','--llm-model-path', type=str, required=True,
                         help='the path to the huggingface llm model')
-    parser.add_argument('-x','--max-length', type=int, default=256,
-                        help='the max length of model tokens input')
+    parser.add_argument('-x','--max-new-tokens', type=int, default=32,
+                        help='the max new tokens of model tokens input')
     parser.add_argument('-l', '--language', type=str, default="english",
                         help='the language to be transcribed')
-    parser.add_argument('-t', '--template', type=str, default=vicuna_template,
-                        help='the template of conversation prompt')
+    parser.add_argument('-d', '--directly', action='store_true',
+                        help='whether to load low bit model directly')
     args = parser.parse_args()
 
     main(args)
