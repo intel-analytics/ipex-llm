@@ -130,6 +130,53 @@ class TransformersLLM(LLM):
             **kwargs,
         )
 
+    @classmethod
+    def from_model_id_low_bit(
+        cls,
+        model_id: str,
+        model_kwargs: Optional[dict] = None,
+        **kwargs: Any,
+    ) -> LLM:
+        """Construct object from model_id"""
+        try:
+            from bigdl.llm.transformers import (
+                AutoModel,
+                AutoModelForCausalLM,
+            )
+            from transformers import AutoTokenizer, LlamaTokenizer
+
+        except ImportError:
+            raise ValueError(
+                "Could not import transformers python package. "
+                "Please install it with `pip install transformers`."
+            )
+
+        _model_kwargs = model_kwargs or {}
+        # TODO: may refactore this code in the future
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(model_id, **_model_kwargs)
+        except:
+            tokenizer = LlamaTokenizer.from_pretrained(model_id, **_model_kwargs)
+
+        # TODO: may refactore this code in the future
+        try:
+            model = AutoModelForCausalLM.load_low_bit(model_id, **_model_kwargs)
+        except:
+            model = AutoModel.load_low_bit(model_id, **_model_kwargs)
+
+        if "trust_remote_code" in _model_kwargs:
+            _model_kwargs = {
+                k: v for k, v in _model_kwargs.items() if k != "trust_remote_code"
+            }
+
+        return cls(
+            model_id=model_id,
+            model=model,
+            tokenizer=tokenizer,
+            model_kwargs=_model_kwargs,
+            **kwargs,
+        )
+
     @property
     def _identifying_params(self) -> Mapping[str, Any]:
         """Get the identifying parameters."""
