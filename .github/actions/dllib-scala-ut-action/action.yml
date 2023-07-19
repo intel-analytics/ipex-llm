@@ -9,14 +9,14 @@ runs:
         export SPARK_LOCAL_HOSTNAME=localhost
         export KERAS_BACKEND=tensorflow
         cd scala
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.1.3 
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" "-Dtest=com.intel.analytics.bigdl.dllib.models.*Test" test -P spark_3.x -Dspark.version=3.1.3 
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" "-Dtest=com.intel.analytics.bigdl.dllib.estimator.*Test" test -P spark_3.x -Dspark.version=3.1.3
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" "-Dtest=com.intel.analytics.bigdl.dllib.nnframes.*Test" test -P spark_3.x -Dspark.version=3.1.3
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" "-Dtest=com.intel.analytics.bigdl.dllib.feature.*Test" test -P spark_3.x -Dspark.version=3.1.3
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" "-Dtest=com.intel.analytics.bigdl.dllib.utils.intermediate.*Test" test -P spark_3.x -Dspark.version=3.1.3
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" "-Dtest=com.intel.analytics.bigdl.dllib.utils.tf.*Test" test -P spark_3.x -Dspark.version=3.1.3
-        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" "-Dtest=com.intel.analytics.bigdl.dllib.utils.python.api.*Test" test -P spark_3.x -Dspark.version=3.1.3
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.optim" "-Dtest=com.intel.analytics.bigdl.dllib.optim.*Test" test -P spark_3.x -Dspark.version=3.4.1 
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.models" "-Dtest=com.intel.analytics.bigdl.dllib.models.*Test" test -P spark_3.x -Dspark.version=3.4.1 
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.estimator" "-Dtest=com.intel.analytics.bigdl.dllib.estimator.*Test" test -P spark_3.x -Dspark.version=3.4.1
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nnframes" "-Dtest=com.intel.analytics.bigdl.dllib.nnframes.*Test" test -P spark_3.x -Dspark.version=3.4.1
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.feature" "-Dtest=com.intel.analytics.bigdl.dllib.feature.*Test" test -P spark_3.x -Dspark.version=3.4.1
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.intermediate" "-Dtest=com.intel.analytics.bigdl.dllib.utils.intermediate.*Test" test -P spark_3.x -Dspark.version=3.4.1
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.tf" "-Dtest=com.intel.analytics.bigdl.dllib.utils.tf.*Test" test -P spark_3.x -Dspark.version=3.4.1
+        mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.utils.python.api" "-Dtest=com.intel.analytics.bigdl.dllib.utils.python.api.*Test" test -P spark_3.x -Dspark.version=3.4.1
         #need python requirements
         #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.keras" "-Dtest=com.intel.analytics.bigdl.dllib.keras.*Test" test -P spark_3.x -Dspark.version=3.1.3 
         #mvn "-DwildcardSuites=com.intel.analytics.bigdl.dllib.nn.mkldnn" "-Dtest=com.intel.analytics.bigdl.dllib.nn.mkldnn.*Test" test -P spark_3.x -Dspark.version=3.1.3 
