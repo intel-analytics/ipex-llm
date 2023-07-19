@@ -25,7 +25,7 @@ Follow the instructions in [Convert model](https://github.com/intel-analytics/Bi
 ### 1. Streaming Chat
 
 ```bash
-python ./streamchat.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -q QUESTION -t THREAD_NUM
+python native_int4/streamchat.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -q QUESTION -t THREAD_NUM
 ```
 arguments info:
 - `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model
@@ -35,7 +35,7 @@ arguments info:
 
 ### 2. Question Answering over Docs
 ```bash
-python ./docqa.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -i DOC_PATH -q QUESTION -c CONTEXT_SIZE -t THREAD_NUM
+python native_int4/docqa.py -m CONVERTED_MODEL_PATH -x MODEL_FAMILY -i DOC_PATH -q QUESTION -c CONTEXT_SIZE -t THREAD_NUM
 ```
 arguments info:
 - `-m CONVERTED_MODEL_PATH`: **required**, path to the converted model in above step
@@ -58,7 +58,7 @@ pip install soundfile
 ```
 
 ```bash
-python ./voiceassistant.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
+python native_int4/voiceassistant.py -x MODEL_FAMILY -m CONVERTED_MODEL_PATH -t THREAD_NUM
 ```
 
 arguments info:
@@ -70,3 +70,15 @@ When you see output says
 > listening now...
 
 Please say something through your microphone (e.g. What is AI). The programe will automatically detect when you have completed your speech and recogize them.
+
+### 4. Math
+
+This is an example of using `LLMMathChain`. The examples has been validate with [phoenix-7b](https://huggingface.co/FreedomIntelligence/phoenix-inst-chat-7b).
+
+```bash
+python transformers_int4/math.py -m MODEL_PATH -q QUESTION
+```
+arguments info:
+- `-m CONVERTED_MODEL_PATH`: **required**, path to the transformers model
+- `-q QUESTION`: question to ask. Default is `What is 13 raised to the .3432 power?`.
+
