@@ -227,6 +227,7 @@ def setup_package():
     # Check if all package files are ready
     for file in package_data[platform_name]:
         if not os.path.exists(file):
+            print(f'Could not find package dependency file: {file}')
             raise FileNotFoundError(f'Could not find package dependency file: {file}')        
 
     all_requires = ['py-cpuinfo']
