@@ -141,7 +141,7 @@ jobs:
           name: windows-avx2
           path: |
             build/Release
-            
+
   windows-build-avx2-vnni:
     runs-on: [self-hosted, Windows]
     steps:
@@ -153,42 +153,38 @@ jobs:
         with:
           repository: "intel-analytics/llm.cpp"
           token: ${{ env.github_access_token }}
-      - name: Download w64devkit
-        shell: powershell
-        run: |
-          cd ..
-          if (-not (Test-Path ./w64devkit.zip) -or ((Get-FileHash -Path w64devkit.zip -Algorithm SHA256).Hash.ToUpper() -ne '2862F388E1720B40026F2FD95C6100A9932E3B14FB13AAC4F225A02B11E31CA9'.ToUpper())) {
-              Invoke-WebRequest -Uri https://github.com/skeeto/w64devkit/releases/download/v1.19.0/w64devkit-1.19.0.zip -OutFile ./w64devkit.zip
-          }
-          if (Test-Path ./w64devkit) { rm -r -fo w64devkit }
-          Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$PWD/w64devkit.zip", "$PWD")
-          echo "w64devkit_path=$PWD/w64devkit/bin" >> $env:GITHUB_ENV
-          
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+      - name: Add cmake to PATH
+        uses: ilammy/msvc-dev-cmd@v1
       - name: Build binary
         shell: powershell
         run: |
-          $env:Path = '${{ env.w64devkit_path }};' + $env:Path
-          make
+          cmake -DAVXVNNI=ON .
+          cmake --build . --config Release
       - name: Move release binary
         shell: powershell
         run: |
           if (Test-Path ./release) { rm -r -fo release }
           mkdir release
-          mv build/main-bloom.exe release/main-bloom_vnni.exe
-          mv build/quantize-bloom.exe release/quantize-bloom_vnni.exe
-          mv build/libbloom.dll release/libbloom_vnni.dll
+          mv build/Release/main-bloom.exe release/main-bloom_vnni.exe
+          mv build/Release/quantize-bloom.exe release/quantize-bloom_vnni.exe
+          mv build/Release/bloom.dll release/libbloom_vnni.dll
 
-          mv build/main-llama.exe release/main-llama_vnni.exe
-          mv build/quantize-llama.exe release/quantize-llama_vnni.exe
-          mv build/libllama.dll release/libllama_vnni.dll
+          mv build/Release/main-llama.exe release/main-llama_vnni.exe
+          mv build/Release/quantize-llama.exe release/quantize-llama_vnni.exe
+          mv build/Release/llama.dll release/libllama_vnni.dll
 
-          mv build/main-gptneox.exe release/main-gptneox_vnni.exe
-          mv build/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
-          mv build/libgptneox.dll release/libgptneox_vnni.dll
+          mv build/Release/main-gptneox.exe releasee/main-gptneox_vnni.exe
+          mv build/Release/quantize-gptneox.exe release/quantize-gptneox_vnni.exe
+          mv build/Release/gptneox.dll release/libgptneox_vnni.dll
 
-          mv build/main-starcoder.exe release/main-starcoder_vnni.exe
-          mv build/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
-          mv build/libstarcoder.dll release/libstarcoder_vnni.dll
+          mv build/Release/main-starcoder.exe release/main-starcoder_vnni.exe
+          mv build/Release/quantize-starcoder.exe release/quantize-starcoder_vnni.exe
+          mv build/Release/starcoder.dll release/libstarcoder_vnni.dll
+
       - name: Archive build files
         uses: actions/upload-artifact@v3
         with:
