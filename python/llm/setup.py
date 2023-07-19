@@ -223,6 +223,11 @@ def setup_package():
 
     for url in lib_urls[platform_name]:
         download_libs(url, change_permission=change_permission)
+        
+    # Check if all package files are ready
+    for file in package_data[platform_name]:
+        if not os.path.exists(file):
+            raise FileNotFoundError(f'Could not find package dependency file: {file}')        
 
     all_requires = ['py-cpuinfo']
     all_requires += CONVERT_DEP
