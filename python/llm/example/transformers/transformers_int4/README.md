@@ -15,6 +15,7 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | RedPajama | [link](redpajama) | 
 | Phoenix   | [link](phoenix)   | 
 | StarCoder | [link](starcoder) | 
+| InternLM  | [link](internlm)  | 
 
 ## Recommended Requirements
 To run the examples, we recommend using Intel® Xeon® processors (server), or >= 12th Gen Intel® Core™ processor (client).
