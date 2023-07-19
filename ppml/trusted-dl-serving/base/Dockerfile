@@ -20,7 +20,9 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cd pytorch-serve && \
     python setup.py install && \
     mkdir -p /ppml/torchserve && \
-    mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar
+    mv ts/frontend/model-server.jar /ppml/torchserve/frontend.jar && \
+    cd model-archiver && \
+    pip install .
     
 
 # Stage.2 Tritonserver
@@ -131,6 +133,8 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin
 # Torchserve
 COPY --from=temp /ppml/torchserve/frontend.jar /ppml/torchserve/frontend.jar
 COPY --from=temp /usr/local/lib/python3.9/dist-packages/torchserve*/ts /usr/local/lib/python3.9/dist-packages/ts
+COPY --from=temp /usr/loacl/lib/python3.9/dist-packages/model-archiver /usr/local/lib/python3.9/dist-packages/model-archiver
+COPY --from=temp /usr/local/bin/torch-model-archiver /usr/local/bin/torch-model-archiver
 
 # Start Script for Torchserve, Tritonserver and TF-Serving
 ADD ./ppml /ppml
@@ -164,7 +168,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 transformers && \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 transformers cryptography && \
     ls /opt/tritonserver/backends/pytorch && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 
