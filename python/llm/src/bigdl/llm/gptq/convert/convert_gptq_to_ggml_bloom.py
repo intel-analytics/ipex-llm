@@ -45,9 +45,9 @@ def convert_non_q4(src_name, dst_name, model, fout):
     shape = v.shape
     print("Processing non-Q4 variable: " + src_name +
           " with shape: ", shape, " and type: ", v.dtype)
-    if len(shape) == 1:
-        print("  Converting to float32")
-        v = v.to(torch.float32)
+    # if len(shape) == 1:
+    #     print("  Converting to float32")
+    #     v = v.to(torch.float32)
 
     ftype_cur = {torch.float16: 1, torch.float32: 0}[v.dtype]
 
@@ -83,11 +83,13 @@ def convert_fp_to_q4(src_name, dst_name, model, fout):
     scales = (wmax - wmin) / maxq
     zero = np.atleast_3d(np.round(-wmin / scales))
     scales = np.atleast_3d(scales)
-    zero_scales = scales * zero
+    zero_scales = np.atleast_3d(wmin)
 
-    qweight = np.clip(np.round((weight + zero_scales) / scales), 0, maxq)
+    qq = np.asarray((weight - zero_scales) / scales + 0.5, dtype=np.int16)
+    print(f"qq.max = {qq.max()} min = {qq.min()}")
+    qweight = np.clip(qq, 0, maxq)
 
-    addends = - zero_scales
+    addends = zero_scales
 
     addends_view = np.asarray(addends, dtype=np.float16).view(dtype=np.int16)
     scales_view = np.asarray(scales, dtype=np.float16).view(dtype=np.int16)
@@ -207,7 +209,7 @@ def convert_q4(src_name, dst_name, model, fout, n_head, permute=False):
     #             .reshape(blob.shape))
 
     # header
-    write_he  ader(fout, shape, dst_name, ftype)  # ftype = Q4_1
+    write_header(fout, shape, dst_name, ftype)  # ftype = Q4_1
 
     # data
     blob.tofile(fout)
@@ -227,13 +229,18 @@ def find_quantized_model_file(model_path):
 def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
     input_path = find_quantized_model_file(model_path)
 
-    if input_path.endswith('pt'):
-        model = torch.load(input_path, map_location="cpu")
-    elif input_path.endswith('safetensors'):
-        from safetensors.torch import load_file
-        model = load_file(input_path)
-    else:
-        invalidInputError(False, "unknown input model path, only support .safetensors or .pt file.")
+    # To debug f16_to_q4
+    from transformers import BloomForCausalLM
+    model = BloomForCausalLM.from_pretrained(model_path, torch_dtype='auto')
+    model = model.state_dict()
+
+    # if input_path.endswith('pt'):
+    #     model = torch.load(input_path, map_location="cpu")
+    # elif input_path.endswith('safetensors'):
+    #     from safetensors.torch import load_file
+    #     model = load_file(input_path)
+    # else:
+    #     invalidInputError(False, "unknown input model path, only support .safetensors or .pt file.")
 
     embedding_layer = model[next(iter(model))]
     n_vocab, n_embd = embedding_layer.shape
@@ -312,31 +319,58 @@ def convert_gptq2ggml(model_path, output_path, tokenizer_path=None):
     convert_non_q4("transformer.word_embeddings_layernorm.weight", "norm.weight", model, fout)
     convert_non_q4("transformer.word_embeddings_layernorm.bias", "norm.bias", model, fout)
 
+    # for i in range(n_layer):
+    #     convert_non_q4(f"transformer.h.{i}.input_layernorm.weight",
+    #                    f"layers.{i}.attention_norm.weight", model, fout)
+    #     convert_non_q4(f"transformer.h.{i}.input_layernorm.bias",
+    #                    f"layers.{i}.attention_norm.bias", model, fout)
+    #     convert_q4(f"transformer.h.{i}.self_attention.query_key_value",
+    #                f"layers.{i}.attention.query_key_value.weight", model, fout, n_head, permute=True)
+    #     # convert_q4(f"transformer.h.{i}.self_attention.query_key_value",
+    #     #            f"layers.{i}.attention.query_key_value.weight", model, fout, n_head)
+    #     convert_non_q4(f"transformer.h.{i}.self_attention.query_key_value.bias",
+    #                    f"layers.{i}.attention.query_key_value.bias", model, fout)
+    #     convert_q4(f"transformer.h.{i}.self_attention.dense",
+    #                f"layers.{i}.attention.wo.weight", model, fout, n_head)
+    #     convert_non_q4(f"transformer.h.{i}.self_attention.dense.bias",
+    #                    f"layers.{i}.attention.wo.bias", model, fout)
+    #     convert_non_q4(f"transformer.h.{i}.post_attention_layernorm.weight",
+    #                    f"layers.{i}.ffn_norm.weight", model, fout)
+    #     convert_non_q4(f"transformer.h.{i}.post_attention_layernorm.bias",
+    #                    f"layers.{i}.ffn_norm.bias", model, fout)
+    #     convert_q4(f"transformer.h.{i}.mlp.dense_h_to_4h",
+    #                f"layers.{i}.feed_forward.w1.weight", model, fout, n_head)
+    #     convert_non_q4(f"transformer.h.{i}.mlp.dense_h_to_4h.bias",
+    #                    f"layers.{i}.feed_forward.w1.bias", model, fout)
+    #     convert_q4(f"transformer.h.{i}.mlp.dense_4h_to_h",
+    #                f"layers.{i}.feed_forward.w2.weight", model, fout, n_head)
+    #     convert_non_q4(f"transformer.h.{i}.mlp.dense_4h_to_h.bias",
+    #                    f"layers.{i}.feed_forward.w2.bias", model, fout)
     for i in range(n_layer):
         convert_non_q4(f"transformer.h.{i}.input_layernorm.weight",
                        f"layers.{i}.attention_norm.weight", model, fout)
         convert_non_q4(f"transformer.h.{i}.input_layernorm.bias",
                        f"layers.{i}.attention_norm.bias", model, fout)
-        convert_q4(f"transformer.h.{i}.self_attention.query_key_value",
-                   f"layers.{i}.attention.query_key_value.weight", model, fout, n_head, permute=True)
+        convert_fp_to_q4(f"transformer.h.{i}.self_attention.query_key_value.weight",
+                   f"layers.{i}.attention.query_key_value.weight", model, fout)
         # convert_q4(f"transformer.h.{i}.self_attention.query_key_value",
         #            f"layers.{i}.attention.query_key_value.weight", model, fout, n_head)
         convert_non_q4(f"transformer.h.{i}.self_attention.query_key_value.bias",
                        f"layers.{i}.attention.query_key_value.bias", model, fout)
-        convert_q4(f"transformer.h.{i}.self_attention.dense",
-                   f"layers.{i}.attention.wo.weight", model, fout, n_head)
+        convert_fp_to_q4(f"transformer.h.{i}.self_attention.dense.weight",
+                         f"layers.{i}.attention.wo.weight", model, fout)
         convert_non_q4(f"transformer.h.{i}.self_attention.dense.bias",
                        f"layers.{i}.attention.wo.bias", model, fout)
         convert_non_q4(f"transformer.h.{i}.post_attention_layernorm.weight",
                        f"layers.{i}.ffn_norm.weight", model, fout)
         convert_non_q4(f"transformer.h.{i}.post_attention_layernorm.bias",
                        f"layers.{i}.ffn_norm.bias", model, fout)
-        convert_q4(f"transformer.h.{i}.mlp.dense_h_to_4h",
-                   f"layers.{i}.feed_forward.w1.weight", model, fout, n_head)
+        convert_fp_to_q4(f"transformer.h.{i}.mlp.dense_h_to_4h.weight",
+                   f"layers.{i}.feed_forward.w1.weight", model, fout)
         convert_non_q4(f"transformer.h.{i}.mlp.dense_h_to_4h.bias",
                        f"layers.{i}.feed_forward.w1.bias", model, fout)
-        convert_q4(f"transformer.h.{i}.mlp.dense_4h_to_h",
-                   f"layers.{i}.feed_forward.w2.weight", model, fout, n_head)
+        convert_fp_to_q4(f"transformer.h.{i}.mlp.dense_4h_to_h.weight",
+                   f"layers.{i}.feed_forward.w2.weight", model, fout)
         convert_non_q4(f"transformer.h.{i}.mlp.dense_4h_to_h.bias",
                        f"layers.{i}.feed_forward.w2.bias", model, fout)
     convert_non_q4("transformer.ln_f.weight", "output_norm.weight", model, fout)
