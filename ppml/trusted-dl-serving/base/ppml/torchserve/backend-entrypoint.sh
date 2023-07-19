@@ -16,15 +16,18 @@ if [ "$PCCS_URL" != "" ] ; then
     echo 'USE_SECURE_CERT=FALSE' >> /etc/sgx_default_qcnl.conf
 fi
 
+MODEL_FILE="/tmp/model/torchserve/${MODEL_NAME}.mar"
+DECRYPTION_KEY="/tmp/key/torchserve/${AES_KEY}"
+
 if [[ $SGX_ENABLED == "false" ]]; then
     if [ "$ATTESTATION" = "true" ]; then
         rm /ppml/temp_command_file || true
         bash attestation.sh
         bash temp_command_file
     fi
-    /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME
+    /usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODLE_FILE --model-decryption $MODEL_DECRYPTION --decryption-key $DECRYPTION_KEY
 else
-    export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME"
+    export sgx_command="/usr/bin/python3 /usr/local/lib/python3.9/dist-packages/ts/model_service_worker.py --sock-type tcp --port $port --host $local_pod_ip --metrics-config /ppml/metrics.yaml --frontend-ip $FRONTEND_IP --frontend-port $FRONTEND_PORT --model-name $MODEL_NAME --model-file $MODLE_FILE --model-decryption $MODEL_DECRYPTION --decryption-key $DECRYPTION_KEY"
     if [ "$ATTESTATION" = "true" ]; then
           # Also consider ENCRYPTEDFSD condition
           rm /ppml/temp_command_file || true

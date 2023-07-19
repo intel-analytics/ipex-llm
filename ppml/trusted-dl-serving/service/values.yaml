@@ -10,3 +10,5 @@ managementPort: 8081
 metricsPort: 8082
 backendPort: 9000
 istioTLSEnabled: false # istio TLS protects pod communication between backend and frontend, pls make sure istio has been installed in your cluster before enabling
+modelDecryption: True
+decryptionKey: your_key_file_name

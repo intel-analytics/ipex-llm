@@ -45,6 +45,10 @@ spec:
       value: "{{ .Values.backendNum }}"
     - name: MODEL_NAME
       value: "{{ .Values.modelName }}"
+    - name: MODEL_DECRYPTION
+      value: "{{ .Vaules.modelDecryption }}"
+    - name: DECRYPTION_KEY
+      value: "{{ .Values.decryptionKey }}"
     resources:
       requests:
         cpu: 2

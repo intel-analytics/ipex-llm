@@ -160,7 +160,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
 # Torchserve
     pip3 install --no-cache-dir torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cpu && \
     pip3 install --no-cache-dir cython pillow==9.0.1 captum packaging nvgpu && \
-    pip3 install --no-cache-dir torch-model-archiver==0.6.1 torch-workflow-archiver==0.2.5 && \
+    pip3 install --no-cache-dir torch-workflow-archiver==0.2.5 && \
     apt-get install -y openjdk-${JDK_VERSION}-jdk && \
     rm /usr/local/cuda/lib64/stubs/libcublasLt.so.11 && \
     mkdir -p ${JAVA_HOME} && \
@@ -174,7 +174,7 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     cp /sbin/tini /usr/bin/tini && \
 # We need to downgrade markupsafe, the markupsafe required by bigdl-nano removed `soft_unicode`
 # which is then required by our third-layer gramine make command
-    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 transformers && \
+    pip3 install --no-cache markupsafe==2.0.1 pyarrow==6.0.1 && \
     ls /opt/tritonserver/backends/pytorch && \
     patchelf --add-needed /usr/local/cuda/lib64/stubs/libcublasLt.so.12 /opt/tritonserver/backends/pytorch/libtorch_cuda.so
 

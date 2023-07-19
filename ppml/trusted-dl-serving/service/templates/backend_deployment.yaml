@@ -36,6 +36,10 @@ spec:
           value: "{{ .Values.managementPort }}"
         - name: MODEL_NAME
           value: "{{ .Values.modelName }}"
+        - name: MODEL_DECRYPTION
+          value: "{{ .Values.modelDecryption }}"
+        - name: DECRYPTION_KEY
+          value: "{{ .Values.decryptionKey }}"
         - name: SGX_ENABLED
         {{- if eq .Values.TEEMode "sgx" }}
           value: "true"

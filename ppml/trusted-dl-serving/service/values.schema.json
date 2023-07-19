@@ -11,7 +11,10 @@
         "managementPort",
         "metricsPort",
         "backendPort",
-	"istioTLSEnabled"
+	"istioTLSEnabled", 
+        "modelFile",
+        "modelDecryption",
+        "decryptionKey"
     ],
     "properties": {
       "imageName": {
@@ -47,6 +50,12 @@
       },
       "istioTLSEnabled": {
 	"type": "boolean"
+      },
+      "modelDecryption": {
+        "type": "boolean"
+      },
+      "decryptionKey": {
+        "type": "string"
       }
     }
 }
