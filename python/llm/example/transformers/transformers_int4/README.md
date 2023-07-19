@@ -12,6 +12,7 @@ You can use BigDL-LLM to run any Huggingface Transformer models with INT4 optimi
 | MOSS      | [link](moss)      | 
 | Baichuan  | [link](baichuan)  | 
 | Dolly-v1  | [link](dolly_v1)  | 
+| Dolly-v2  | [link](dolly_v2)  | 
 | RedPajama | [link](redpajama) | 
 | Phoenix   | [link](phoenix)   | 
 | StarCoder | [link](starcoder) | 
