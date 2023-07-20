@@ -76,7 +76,6 @@ jobs:
         uses: ./.github/actions/llm/setup-llm-env
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          OMP_NUM_THREADS: 24
 
       - name: Download ckpt models
         run: |
