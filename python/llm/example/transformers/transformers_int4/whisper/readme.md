@@ -5,8 +5,8 @@ In this directory, you will find examples on how you could apply BigDL-LLM INT4 
 ## 0. Requirements
 To run these examples with BigDL-LLM, we have some recommended requirements for your machine, please refer to [here](../README.md#recommended-requirements) for more information.
 
-## Example: Predict Tokens using `generate()` API
-In the example [generate.py](./generate.py), we show a basic use case for a Whisper model to predict the next N tokens using `generate()` API, with BigDL-LLM INT4 optimizations.
+## Example: Recognize Tokens using `generate()` API
+In the example [generate.py](./generate.py), we show a basic use case for a Whisper model to conduct transcription using `generate()` API, with BigDL-LLM INT4 optimizations.
 ### 1. Install
 We suggest using conda to manage environment:
 ```bash
@@ -18,7 +18,7 @@ pip install bigdl-llm[all] # install bigdl-llm with 'all' option
 
 ### 2. Run
 ```
-python ./generate.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --repo-id-or-data-path REPO_ID_OR_DATA_PATH --language LANGUAGE
+python ./recognize.py --repo-id-or-model-path REPO_ID_OR_MODEL_PATH --repo-id-or-data-path REPO_ID_OR_DATA_PATH --language LANGUAGE
 ```
 
 Arguments info:
@@ -33,7 +33,7 @@ Arguments info:
 #### 2.1 Client
 On client Windows machine, it is recommended to run directly with full utilization of all cores:
 ```powershell
-python ./generate.py 
+python ./recognize.py 
 ```
 
 #### 2.2 Server
@@ -53,7 +53,7 @@ numactl -C 0-47 -m 0 python ./generate.py
 #### [openai/whisper-tiny](https://huggingface.co/openai/whisper-tiny)
 
 ```log
-Inference time: 0.23290777206420898 s
+Inference time: xxxx s
 -------------------- Output --------------------
 [" Mr. Quilter is the Apostle of the Middle classes and we're glad to welcome his Gospel."]
 ```
