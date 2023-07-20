@@ -41,6 +41,9 @@ env:
   BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_bloom_7b_q4_0.bin
   STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/stable/bigdl_llm_santacoder_1b_q4_0.bin
 
+  LLM_DIR: ./llm
+  ORIGINAL_CHATGLM_6B_PATH: ./llm/chatglm-6b/
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
@@ -73,6 +76,7 @@ jobs:
         uses: ./.github/actions/llm/setup-llm-env
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          OMP_NUM_THREADS: 24
 
       - name: Download ckpt models
         run: |
@@ -91,6 +95,10 @@ jobs:
           if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
             echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
             wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $ORIGINAL_CHATGLM_6B_PATH ]; then
+            echo "Directory $ORIGINAL_CHATGLM_6B_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/${ORIGINAL_CHATGLM_6B_PATH:1} -P $LLM_DIR
           fi
 
       - name: Run LLM cli test
