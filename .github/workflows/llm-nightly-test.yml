@@ -41,6 +41,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
+    env:
+      THREAD_NUM: 24
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
