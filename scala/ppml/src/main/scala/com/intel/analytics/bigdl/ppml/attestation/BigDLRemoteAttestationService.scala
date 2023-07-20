@@ -100,6 +100,8 @@ object BigDLRemoteAttestationService {
         JsonUtil.fromJson(classOf[TDXMRTDPolicy], msg)
       case "TDXReportDataPolicy" =>
         JsonUtil.fromJson(classOf[TDXReportDataPolicy], msg)
+      case "TDXLaunchTimePolicy" =>
+        JsonUtil.fromJson(classOf[TDXLaunchTimePolicy], msg)
       case _ =>
         null
     }
