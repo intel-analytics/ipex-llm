@@ -281,9 +281,9 @@ def llama_attention_forward_4_31(
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
-                          f"`attn_output` should be of size {(bsz, self.num_heads,
-                                                              q_len, self.head_dim)},"
-                          f" but is {attn_output.size()}")
+                          f"attn_output should be of size {(bsz, self.num_heads,
+                                                              q_len, self.head_dim)}, "
+                          f"but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
