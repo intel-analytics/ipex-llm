@@ -32,7 +32,3 @@ fi
 
 
 ls -al /dev/sgx
-
-gramine-sgx-get-token --output /ppml/bash.token --sig /ppml/bash.sig
-
-chmod +x /ppml/bash.token

@@ -48,7 +48,6 @@ bash.manifest.sgx: bash.manifest
 bash.sig: bash.manifest.sgx
 
 bash.token: bash.sig
-	gramine-sgx-get-token --output bash.token --sig bash.sig
 
 ifeq ($(SGX),)
 GRAMINE = gramine-direct
