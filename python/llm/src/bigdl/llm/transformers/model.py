@@ -80,10 +80,9 @@ class _BaseAutoModelClass:
         trans_version = transformers.__version__
         if version.parse(trans_version) >= version.parse("4.31.0"):
             convert_forward(
-                        model,
-                        transformers.models.llama.modeling_llama.LlamaAttention,
-                        llama_attention_forward_4_31,
-                    )
+                model,
+                transformers.models.llama.modeling_llama.LlamaAttention,
+                llama_attention_forward_4_31,)
         else:
             # todo implement 4.28.0 ~ 4.30.2
             pass

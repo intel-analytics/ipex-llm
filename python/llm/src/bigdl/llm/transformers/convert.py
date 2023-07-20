@@ -18,7 +18,8 @@
 # Some parts of this file is adapted from
 # https://github.com/huggingface/transformers/blob/v4.30.2/src/transformers/utils/bitsandbytes.py
 # and https://github.com/huggingface/transformers/blob/main/src/transformers/modeling_utils.py
-# and https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/llama/modeling_llama.py
+# and https://github.com/huggingface/transformers/blob/v4.31.0/src/transformers/models/
+#     llama/modeling_llama.py
 # which is licensed under Apache License 2.0:
 #
 # Copyright 2021 The HuggingFace Inc. team. All rights reserved.
@@ -45,6 +46,7 @@ from typing import List, Optional, Tuple, Union
 import math
 import torch.nn.functional as F
 from bigdl.llm.utils.common import invalidInputError
+
 
 def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                                current_key_name=None, convert_shape_only=False):
@@ -140,8 +142,8 @@ def convert_forward(m, target_m, new_forward):
 
 def rotate_half(x):
     """Rotates half the hidden dims of the input."""
-    x1 = x[...,: x.shape[-1] // 2]
-    x2 = x[..., x.shape[-1] // 2 :]
+    x1 = x[..., :x.shape[-1] // 2]
+    x2 = x[..., x.shape[-1] // 2:]
     return torch.cat((-x2, x1), dim=-1)
 
 
@@ -169,7 +171,10 @@ def repeat_kv(hidden_states: torch.Tensor, n_rep: int) -> torch.Tensor:
                                                            n_rep, slen, head_dim)
     return hidden_states.reshape(batch, num_key_value_heads * n_rep, slen, head_dim)
 
+
 KV_CACHE_ALLOC_BLOCK_LENGTH = 256
+
+
 def llama_attention_forward_4_31(
     self,
     hidden_states: torch.Tensor,
@@ -230,7 +235,7 @@ def llama_attention_forward_4_31(
             self.kv_cache[0] = new_cache_key
 
             new_cache_value = torch.empty(bsz, self.num_heads,
-                                        kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim)
+                                          kv_seq_len + KV_CACHE_ALLOC_BLOCK_LENGTH, self.head_dim)
             new_cache_value[:, :, :kv_seq_len-1, :] = self.kv_cache[1][:, :, :kv_seq_len-1, :]
             self.kv_cache[1] = new_cache_value
 
@@ -258,16 +263,15 @@ def llama_attention_forward_4_31(
 
     if attn_weights.size() != (bsz, self.num_heads, q_len, kv_seq_len):
         invalidInputError(False,
-            f"Attention weights should be of size {(bsz, self.num_heads, q_len, kv_seq_len)}, "
-            f"but is {attn_weights.size()}"
-        )
+                          f"Attention weights should be of size {(bsz, self.num_heads,
+                                                                  q_len, kv_seq_len)}, "
+                          f"but is {attn_weights.size()}")
 
     if attention_mask is not None:
         if attention_mask.size() != (bsz, 1, q_len, kv_seq_len):
             invalidInputError(False,
-                f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
-                "but is {attention_mask.size()}"
-            )
+                              f"Attention mask should be of size {(bsz, 1, q_len, kv_seq_len)}, "
+                              "but is {attention_mask.size()}")
         attn_weights = attn_weights + attention_mask
 
     # upcast attention to fp32
@@ -277,9 +281,9 @@ def llama_attention_forward_4_31(
 
     if attn_output.size() != (bsz, self.num_heads, q_len, self.head_dim):
         invalidInputError(False,
-            f"`attn_output` should be of size {(bsz, self.num_heads, q_len, self.head_dim)},"
-            f" but is {attn_output.size()}"
-        )
+                          f"`attn_output` should be of size {(bsz, self.num_heads,
+                                                              q_len, self.head_dim)},"
+                          f" but is {attn_output.size()}")
 
     attn_output = attn_output.transpose(1, 2).contiguous()
     attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
