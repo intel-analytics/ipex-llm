@@ -28,7 +28,8 @@ We may use any Hugging Face Transfomer models on `bigdl-llm`, and the following 
 | RedPajama | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/redpajama) | 
 | Phoenix   | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/phoenix)   | 
 | StarCoder | [link1](example/transformers/native_int4), [link2](example/transformers/transformers_int4/starcoder) | 
-| InternLM  | [link](example/transformers/transformers_int4/internlm)  | 
+| InternLM  | [link](example/transformers/transformers_int4/internlm)  |
+| Whisper   | [link](example/transformers/transformers_int4/whisper)   |
 
 
 ### Working with `bigdl-llm`

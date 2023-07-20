@@ -23,9 +23,9 @@ from transformers import WhisperProcessor
 from datasets import load_dataset
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Predict Tokens using `generate()` API for Whisper model')
+    parser = argparse.ArgumentParser(description='Recognize Tokens using `generate()` API for Whisper model')
     parser.add_argument('--repo-id-or-model-path', type=str, default="openai/whisper-tiny",
-                        help='The huggingface repo id for the whisper model to be downloaded'
+                        help='The huggingface repo id for the Whisper model to be downloaded'
                              ', or the path to the huggingface checkpoint folder')
     parser.add_argument('--repo-id-or-data-path', type=str,
                         default="hf-internal-testing/librispeech_asr_dummy",
@@ -45,11 +45,11 @@ if __name__ == '__main__':
                                                       load_in_4bit=True)
     model.config.forced_decoder_ids = None
 
-    # Load tokenizer
+    # Load processor
     processor = WhisperProcessor.from_pretrained(model_path)
     forced_decoder_ids = processor.get_decoder_prompt_ids(language=language, task="transcribe")
 
-    # load dummy dataset and read audio files
+    # Load dummy dataset and read audio files
     ds = load_dataset(dataset_path, "clean", split="validation")
 
     # Generate predicted tokens
