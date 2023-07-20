@@ -61,6 +61,7 @@ def _replace_with_quant_linear(model, qtype, modules_to_not_convert=None,
                                         name,
                                         "cpu",
                                         torch.empty(*param.size(), dtype=torch.float32))
+    del model_state_dict
 
     for name, module in model.named_children():
         if current_key_name is None:
