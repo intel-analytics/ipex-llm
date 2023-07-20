@@ -75,3 +75,7 @@ def check_avx512():
 
 def check_avx512_vnni():
     return isa_checker.check_avx512_vnni() and isa_checker.check_avx512()
+
+
+def is_server():
+    return check_avx512_vnni()
