@@ -14,28 +14,33 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  ORIGIN_DIR: ./llm/models
+  LLAMA_ORIGIN_PATH: ./llm/models/llama-7b-hf
+  GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
+  BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
+  STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
+
+  INT4_CKPT_DIR: ./llm/ggml-actions/nightly
+  LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
+  GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
+  BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
+  STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
+
+  LLM_DIR: ./llm
+  ORIGINAL_CHATGLM2_6B_PATH: ./llm/chatglm2-6b/
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   llm-cpp-build:
     uses: ./.github/workflows/llm-binary-build.yml
-  llm-nightly-convert-test-avx512:
+  llm-nightly-convert-and-inference-test-avx512:
     runs-on: [ self-hosted, llm, AVX512, ubuntu-20.04-lts ]
     needs: llm-cpp-build
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9"]
-    env:
-      ORIGIN_DIR: ./llm/models
-      LLAMA_ORIGIN_PATH: ./llm/models/llama-7b-hf
-      GPTNEOX_ORIGIN_PATH: ./llm/models/gptneox-7b-redpajama-bf16
-      BLOOM_ORIGIN_PATH: ./llm/models/bloomz-7b1
-      STARCODER_ORIGIN_PATH: ./llm/models/gpt_bigcode-santacoder
-      INT4_CKPT_DIR: ./llm/ggml-actions/nightly
-      LLAMA_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_llama_q4_0.bin
-      GPTNEOX_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_gptneox_q4_0.bin
-      BLOOM_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_bloom_q4_0.bin
-      STARCODER_INT4_CKPT_PATH: ./llm/ggml-actions/nightly/bigdl_llm_starcoder_q4_0.bin
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -69,6 +74,44 @@ jobs:
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_bloom_7b_q4_0.bin $BLOOM_INT4_CKPT_PATH
           tnftp -u ${LLM_FTP_URL}/${INT4_CKPT_DIR:1}/bigdl_llm_santacoder_1b_q4_0.bin $STARCODER_INT4_CKPT_PATH
 
+      - name: Download ckpt & original models
+        run: |
+          if [ ! -d $LLAMA_INT4_CKPT_PATH ]; then
+            echo "Directory $LLAMA_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $LLM_FTP_URL/${LLAMA_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $GPTNEOX_INT4_CKPT_PATH ]; then
+            echo "Directory $GPTNEOX_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $LLM_FTP_URL/${GPTNEOX_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $BLOOM_INT4_CKPT_PATH ]; then
+            echo "Directory $BLOOM_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $LLM_FTP_URL/${BLOOM_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $STARCODER_INT4_CKPT_PATH ]; then
+            echo "Directory $STARCODER_INT4_CKPT_PATH not found. Downloading from FTP server..."
+            wget --no-verbose $LLM_FTP_URL/${STARCODER_INT4_CKPT_PATH:1} -P $INT4_CKPT_DIR
+          fi
+          if [ ! -d $ORIGINAL_CHATGLM2_6B_PATH ]; then
+            echo "Directory $ORIGINAL_CHATGLM2_6B_PATH not found. Downloading from FTP server..."
+            wget -r -nH --no-verbose --cut-dirs=2 $LLM_FTP_URL/${ORIGINAL_CHATGLM2_6B_PATH:1} -P $LLM_DIR
+          fi
+
+      - name: Run LLM cli test
+        uses: ./.github/actions/llm/cli-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run LLM inference test
+        uses: ./.github/actions/llm/inference-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run LLM langchain test
+        uses: ./.github/actions/llm/langchain-test
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+    
       - name: Clean up test environment
         uses: ./.github/actions/llm/remove-llm-env
         env:
